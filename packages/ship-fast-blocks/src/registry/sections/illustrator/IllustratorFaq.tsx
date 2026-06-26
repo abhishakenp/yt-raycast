@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * IllustratorFaq — a narrow, centered FAQ list for an illustrator /
@@ -11,9 +11,9 @@ import { cn } from "#/lib/utils.ts"
  * questions. Renders fully with no props via baked-in defaults.
  */
 export const IllustratorFaq = defineComponent({
-  name: "IllustratorFaq",
+  name: 'IllustratorFaq',
   description:
-    "Narrow centered FAQ list for an illustrator / visual-artist portfolio on a raised card-colored band: a centered uppercase accent eyebrow + serif heading above a constrained definition-list of soft background-colored cards, each pairing a serif question with a relaxed answer paragraph. Use to answer common commission, licensing, and shipping questions.",
+    'Narrow centered FAQ list for an illustrator / visual-artist portfolio on a raised card-colored band: a centered uppercase accent eyebrow + serif heading above a constrained definition-list of soft background-colored cards, each pairing a serif question with a relaxed answer paragraph. Use to answer common commission, licensing, and shipping questions.',
   props: z.object({
     /** Uppercase accent eyebrow label. */
     eyebrow: z.string().optional(),
@@ -26,28 +26,28 @@ export const IllustratorFaq = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "FAQ"
-    const heading = props.heading ?? "Common Questions"
+    const eyebrow = props.eyebrow ?? 'FAQ'
+    const heading = props.heading ?? 'Common Questions'
     const items = props.items?.length
       ? props.items
       : [
           {
-            question: "What is your commission process?",
+            question: 'What is your commission process?',
             answer:
-              "I typically start with a discovery call to understand your project needs, followed by a detailed proposal including timeline and pricing. After contract and deposit, I create sketches for approval before moving to final artwork. Most projects take 4-8 weeks depending on complexity.",
+              'I typically start with a discovery call to understand your project needs, followed by a detailed proposal including timeline and pricing. After contract and deposit, I create sketches for approval before moving to final artwork. Most projects take 4-8 weeks depending on complexity.',
           },
           {
-            question: "Do you license existing illustrations?",
+            question: 'Do you license existing illustrations?',
             answer:
-              "Yes, many of my personal pieces are available for licensing. Rates depend on usage, duration, and exclusivity. Contact me with your specific needs for a custom quote.",
+              'Yes, many of my personal pieces are available for licensing. Rates depend on usage, duration, and exclusivity. Contact me with your specific needs for a custom quote.',
           },
           {
-            question: "What are your print shipping options?",
+            question: 'What are your print shipping options?',
             answer:
-              "All prints are shipped flat in protective sleeves within 2 business days. Standard US shipping is $6 (5-7 days), Express is $15 (2-3 days). International shipping available to 40+ countries starting at $18.",
+              'All prints are shipped flat in protective sleeves within 2 business days. Standard US shipping is $6 (5-7 days), Express is $15 (2-3 days). International shipping available to 40+ countries starting at $18.',
           },
           {
-            question: "Are you currently accepting new projects?",
+            question: 'Are you currently accepting new projects?',
             answer:
               "I'm booking projects starting September 2024. Picture book manuscripts should reach out 6-12 months ahead of desired completion. Editorial and smaller commercial projects can often accommodate tighter timelines.",
           },
@@ -56,7 +56,7 @@ export const IllustratorFaq = defineComponent({
     return (
       <section
         className={cn(
-          "bg-card px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36",
+          'bg-card px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36',
           props.className,
         )}
       >
@@ -71,10 +71,7 @@ export const IllustratorFaq = defineComponent({
           </div>
           <dl className="space-y-4">
             {items.map((item) => (
-              <div
-                key={item.question}
-                className="rounded-lg bg-background p-6"
-              >
+              <div key={item.question} className="rounded-lg bg-background p-6">
                 <dt className="mb-2 font-serif text-lg">{item.question}</dt>
                 <dd className="leading-relaxed text-muted-foreground">
                   {item.answer}

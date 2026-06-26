@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * DentalHero — split, two-column hero for a dental practice / dentist landing
@@ -17,9 +17,9 @@ import { Image } from "#/lib/img.tsx"
  * orthodontists, or family / cosmetic dental clinics.
  */
 export const DentalHero = defineComponent({
-  name: "DentalHero",
+  name: 'DentalHero',
   description:
-    "Split two-column hero for a dental practice / dentist landing page on a soft muted band with blurred mint blobs: a left text column with a pulsing now-accepting-new-patients pill, a big headline with an accented middle word, a lede paragraph, a filled primary Schedule-Your-Visit CTA plus an outlined click-to-call phone button, and a row of check-marked trust badges; a right column with a rounded treatment-room photo and a floating ratings card showing overlapping dentist avatars and a star rating. CTAs route through useNavigate; imagery uses the Image component. Use as the top hero for dentists, dental offices, orthodontists, or family / cosmetic dental clinics.",
+    'Split two-column hero for a dental practice / dentist landing page on a soft muted band with blurred mint blobs: a left text column with a pulsing now-accepting-new-patients pill, a big headline with an accented middle word, a lede paragraph, a filled primary Schedule-Your-Visit CTA plus an outlined click-to-call phone button, and a row of check-marked trust badges; a right column with a rounded treatment-room photo and a floating ratings card showing overlapping dentist avatars and a star rating. CTAs route through useNavigate; imagery uses the Image component. Use as the top hero for dentists, dental offices, orthodontists, or family / cosmetic dental clinics.',
   props: z.object({
     badge: z.string().optional(),
     headingPre: z.string().optional(),
@@ -39,29 +39,29 @@ export const DentalHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroBadge = props.badge ?? "Now accepting new patients"
-    const heroPre = props.headingPre ?? "Your smile deserves"
-    const heroHighlight = props.highlight ?? "exceptional"
-    const heroPost = props.headingPost ?? "care"
+    const heroBadge = props.badge ?? 'Now accepting new patients'
+    const heroPre = props.headingPre ?? 'Your smile deserves'
+    const heroHighlight = props.highlight ?? 'exceptional'
+    const heroPost = props.headingPost ?? 'care'
     const heroSub =
       props.subheading ??
-      "Experience modern, gentle dentistry at Bright Smile Dental. Our Portland practice combines cutting-edge technology with compassionate care for the whole family."
-    const heroPrimary = props.primaryCta ?? "Schedule Your Visit"
-    const heroPhone = props.phone ?? "(503) 555-0142"
+      'Experience modern, gentle dentistry at Bright Smile Dental. Our Portland practice combines cutting-edge technology with compassionate care for the whole family.'
+    const heroPrimary = props.primaryCta ?? 'Schedule Your Visit'
+    const heroPhone = props.phone ?? '(503) 555-0142'
     const heroImageAlt =
       props.imageAlt ??
-      "Modern dental office treatment room with dental chair and equipment"
-    const heroRating = props.rating ?? "4.9"
-    const heroReviews = props.reviewsLabel ?? "From 324 reviews"
+      'Modern dental office treatment room with dental chair and equipment'
+    const heroRating = props.rating ?? '4.9'
+    const heroReviews = props.reviewsLabel ?? 'From 324 reviews'
     const heroBadges = props.badges?.length
       ? props.badges
-      : ["Same-day emergencies", "Insurance accepted", "Pain-free techniques"]
+      : ['Same-day emergencies', 'Insurance accepted', 'Pain-free techniques']
     const avatars = props.avatars?.length
       ? props.avatars
       : [
-          "Professional headshot of Dr. Sarah Chen, female dentist in white coat with warm smile",
-          "Professional headshot of Dr. Michael Torres, male dentist with friendly confident expression",
-          "Professional headshot of Dr. Emily Watson, female dentist with warm approachable smile",
+          'Professional headshot of Dr. Sarah Chen, female dentist in white coat with warm smile',
+          'Professional headshot of Dr. Michael Torres, male dentist with friendly confident expression',
+          'Professional headshot of Dr. Emily Watson, female dentist with warm approachable smile',
         ]
 
     const Star = ({ className }: { className?: string }) => (
@@ -92,7 +92,7 @@ export const DentalHero = defineComponent({
 
     return (
       <section
-        className={cn("relative overflow-hidden bg-muted", props.className)}
+        className={cn('relative overflow-hidden bg-muted', props.className)}
       >
         <div aria-hidden="true" className="absolute inset-0 opacity-30">
           <div className="absolute -right-40 -top-40 size-96 rounded-full bg-primary/20 blur-3xl" />
@@ -108,7 +108,7 @@ export const DentalHero = defineComponent({
                 </span>
               </div>
               <h1 className="mb-6 text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                {heroPre} <span className="text-primary">{heroHighlight}</span>{" "}
+                {heroPre} <span className="text-primary">{heroHighlight}</span>{' '}
                 {heroPost}
               </h1>
               <p className="mx-auto mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground lg:mx-0">

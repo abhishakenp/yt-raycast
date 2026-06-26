@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * ResumeCvCta — a focused closing call-to-action band for a personal resume /
@@ -15,7 +15,7 @@ import { CtaBand } from "#/section-kit/CtaBand.tsx"
  * CV downloads. Renders fully with no props via baked-in defaults.
  */
 export const ResumeCvCta = defineComponent({
-  name: "ResumeCvCta",
+  name: 'ResumeCvCta',
   description:
     "Focused closing call-to-action band for a personal resume / CV / portfolio site: a full-width primary-colored band with an availability eyebrow, a warm 'Let's work together' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Get in Touch' button plus an outlined 'Download CV' button). Both CTAs route through useNavigate. Use near the bottom of a personal portfolio, online résumé, or professional profile page to drive contact and CV downloads.",
   props: z.object({
@@ -36,15 +36,15 @@ export const ResumeCvCta = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Available for work"
+    const eyebrow = props.eyebrow ?? 'Available for work'
     const headline = props.headline ?? "Let's work together"
     const subheading =
       props.subheading ??
       "I'm currently open to new opportunities and freelance collaborations. Tell me about your project and let's build something thoughtful."
-    const primaryCta = props.primaryCta ?? "Get in Touch"
-    const primaryTarget = props.primaryTarget ?? "Contact"
-    const secondaryCta = props.secondaryCta ?? "Download CV"
-    const secondaryTarget = props.secondaryTarget ?? "CV"
+    const primaryCta = props.primaryCta ?? 'Get in Touch'
+    const primaryTarget = props.primaryTarget ?? 'Contact'
+    const secondaryCta = props.secondaryCta ?? 'Download CV'
+    const secondaryTarget = props.secondaryTarget ?? 'CV'
 
     return (
       <CtaBand
@@ -53,8 +53,8 @@ export const ResumeCvCta = defineComponent({
         title={headline}
         subtitle={subheading}
         actions={[
-          { label: primaryCta, target: primaryTarget, variant: "primary" },
-          { label: secondaryCta, target: secondaryTarget, variant: "outline" },
+          { label: primaryCta, target: primaryTarget, variant: 'primary' },
+          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
         ]}
         className={props.className}
       />

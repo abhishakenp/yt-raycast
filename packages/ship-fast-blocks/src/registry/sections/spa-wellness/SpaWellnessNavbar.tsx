@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * SpaWellnessNavbar — serene top navigation bar for a day-spa / wellness site.
@@ -14,7 +14,7 @@ import { SiteNav } from "#/section-kit/SiteNav.tsx"
  * defaults.
  */
 export const SpaWellnessNavbar = defineComponent({
-  name: "SpaWellnessNavbar",
+  name: 'SpaWellnessNavbar',
   description:
     "Serene top navigation bar for a day-spa / wellness site built on the shared SiteNav composite: a light bordered-bottom bar with a serif wordmark on the left, centered nav links (Treatments / Memberships / Gift Cards / Contact), a filled primary 'Book Now' CTA on the right, and a real mobile drawer. The wordmark and links route through useNavigate. Use as the opening site navigation for spas, wellness retreats, massage studios, bathhouses, and treatment clinics.",
   props: z.object({
@@ -33,17 +33,17 @@ export const SpaWellnessNavbar = defineComponent({
   component: ({ props }) => {
     const links = props.links?.length
       ? props.links
-      : ["Treatments", "Memberships", "Gift Cards", "Contact"]
+      : ['Treatments', 'Memberships', 'Gift Cards', 'Contact']
     return (
       <SiteNav
-        brand={props.brand ?? "Lumen Spa"}
+        brand={props.brand ?? 'Lumen Spa'}
         brandClassName="font-serif text-xl font-semibold tracking-tight"
         nav={links}
         cta={{
-          label: props.cta ?? "Book Now",
-          target: props.ctaTarget ?? "Booking",
+          label: props.cta ?? 'Book Now',
+          target: props.ctaTarget ?? 'Booking',
         }}
-        homeTarget={props.homeTarget ?? "Home"}
+        homeTarget={props.homeTarget ?? 'Home'}
         className={props.className}
       />
     )

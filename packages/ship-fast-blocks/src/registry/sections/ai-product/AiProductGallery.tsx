@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AiProductGallery — a product-screenshot showcase grid for a clean, light AI
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * feature tiles.
  */
 export const AiProductGallery = defineComponent({
-  name: "AiProductGallery",
+  name: 'AiProductGallery',
   description:
-    "Product-screenshot showcase grid for a clean, light AI SaaS / product page: a centered heading and paragraph above a responsive 1 → 2 → 3 column grid of bordered cards, each a clickable tile with a 4:3 alt-driven image, a bold title, and a short caption, lifting with a shadow on hover. Each card routes through useNavigate. Use to surface real in-app screenshots or feature highlights for AI tools, SaaS apps, editors, dashboards, or any product worth showing visually.",
+    'Product-screenshot showcase grid for a clean, light AI SaaS / product page: a centered heading and paragraph above a responsive 1 → 2 → 3 column grid of bordered cards, each a clickable tile with a 4:3 alt-driven image, a bold title, and a short caption, lifting with a shadow on hover. Each card routes through useNavigate. Use to surface real in-app screenshots or feature highlights for AI tools, SaaS apps, editors, dashboards, or any product worth showing visually.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -31,41 +31,41 @@ export const AiProductGallery = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "See WriteFlow in action"
+    const heading = props.heading ?? 'See WriteFlow in action'
     const description =
       props.description ??
-      "Real screenshots from the app showing powerful features that transform your writing workflow."
+      'Real screenshots from the app showing powerful features that transform your writing workflow.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Distraction-free editor",
-            description: "Clean interface that keeps you focused on writing.",
+            title: 'Distraction-free editor',
+            description: 'Clean interface that keeps you focused on writing.',
           },
           {
-            title: "Real-time collaboration",
-            description: "Work together with your team in real-time.",
+            title: 'Real-time collaboration',
+            description: 'Work together with your team in real-time.',
           },
           {
-            title: "Writing analytics",
-            description: "Track productivity and improvement over time.",
+            title: 'Writing analytics',
+            description: 'Track productivity and improvement over time.',
           },
           {
-            title: "Template library",
-            description: "200+ templates to jumpstart any writing project.",
+            title: 'Template library',
+            description: '200+ templates to jumpstart any writing project.',
           },
           {
-            title: "Idea capture",
-            description: "Quick capture tools for inspiration anywhere.",
+            title: 'Idea capture',
+            description: 'Quick capture tools for inspiration anywhere.',
           },
           {
-            title: "Export anywhere",
-            description: "Publish to Word, PDF, Markdown, or your CMS.",
+            title: 'Export anywhere',
+            description: 'Publish to Word, PDF, Markdown, or your CMS.',
           },
         ]
 
     return (
-      <section className={cn("py-20 lg:py-32", props.className)}>
+      <section className={cn('py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

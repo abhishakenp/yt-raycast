@@ -9,7 +9,9 @@ describe('html-export-builder', () => {
       expect(result).toContain('data-ship-fast-export-badge="1"')
       expect(result).toContain('Built with Ship Fast')
       expect(result).toContain('</body>')
-      expect(result.indexOf('data-ship-fast-export-badge')).toBeLessThan(result.indexOf('</body>'))
+      expect(result.indexOf('data-ship-fast-export-badge')).toBeLessThan(
+        result.indexOf('</body>'),
+      )
     })
 
     it('should append badge if no body tag exists', () => {
@@ -21,7 +23,8 @@ describe('html-export-builder', () => {
     })
 
     it('should remove existing badge before injecting new one', () => {
-      const html = '<html><body><h1>Test</h1><a data-ship-fast-export-badge="1">Old Badge</a></body></html>'
+      const html =
+        '<html><body><h1>Test</h1><a data-ship-fast-export-badge="1">Old Badge</a></body></html>'
       const result = injectShipFastBadge(html)
       expect(result).not.toContain('Old Badge')
       expect(result).toContain('data-ship-fast-export-badge="1"')

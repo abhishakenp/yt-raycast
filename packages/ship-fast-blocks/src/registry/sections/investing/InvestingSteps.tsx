@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * InvestingSteps — onboarding timeline + transfer CTA for an investing / fintech
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * trade — on a brokerage or trading-app page. Renders fully with no props.
  */
 export const InvestingSteps = defineComponent({
-  name: "InvestingSteps",
+  name: 'InvestingSteps',
   description:
-    "Onboarding timeline + transfer CTA for an investing / fintech page: a centered heading + lead above a responsive 3-step horizontal timeline (large numbered primary tiles with connecting lines on desktop), followed by a muted rounded panel pairing a portfolio-transfer headline + paragraph and an arrow link with a supporting dashboard photo. The transfer link routes through useNavigate. Use to explain how to get started (create account, fund, trade) on a brokerage or trading-app page.",
+    'Onboarding timeline + transfer CTA for an investing / fintech page: a centered heading + lead above a responsive 3-step horizontal timeline (large numbered primary tiles with connecting lines on desktop), followed by a muted rounded panel pairing a portfolio-transfer headline + paragraph and an arrow link with a supporting dashboard photo. The transfer link routes through useNavigate. Use to explain how to get started (create account, fund, trade) on a brokerage or trading-app page.',
   props: z.object({
     /** Brand / platform name woven into the transfer copy. */
     brand: z.string().optional(),
@@ -40,38 +40,39 @@ export const InvestingSteps = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Vestora"
-    const heading = props.heading ?? "Start investing in minutes"
+    const brand = props.brand ?? 'Vestora'
+    const heading = props.heading ?? 'Start investing in minutes'
     const description =
       props.description ??
-      "A streamlined onboarding process designed to get you trading quickly and securely."
+      'A streamlined onboarding process designed to get you trading quickly and securely.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Create your account",
+            title: 'Create your account',
             description:
-              "Sign up in under 2 minutes. Verify your identity securely with our streamlined KYC process.",
+              'Sign up in under 2 minutes. Verify your identity securely with our streamlined KYC process.',
           },
           {
-            title: "Fund your portfolio",
+            title: 'Fund your portfolio',
             description:
-              "Connect your bank account for instant transfers. Start with as little as $1 or deposit up to $100,000.",
+              'Connect your bank account for instant transfers. Start with as little as $1 or deposit up to $100,000.',
           },
           {
-            title: "Start trading",
+            title: 'Start trading',
             description:
-              "Browse thousands of stocks, ETFs, and crypto. Place your first trade with zero commission.",
+              'Browse thousands of stocks, ETFs, and crypto. Place your first trade with zero commission.',
           },
         ]
-    const transferHeading = props.transferHeading ?? "Already have investments elsewhere?"
+    const transferHeading =
+      props.transferHeading ?? 'Already have investments elsewhere?'
     const transferDescription =
       props.transferDescription ??
       `Our automated transfer service makes it easy to bring your portfolio to ${brand}. We'll handle the paperwork and reimburse any transfer fees up to $500.`
-    const transferCta = props.transferCta ?? "Learn about transfers"
+    const transferCta = props.transferCta ?? 'Learn about transfers'
     const transferImageAlt =
       props.transferImageAlt ??
-      "laptop showing financial dashboard with charts and account balances"
+      'laptop showing financial dashboard with charts and account balances'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -89,10 +90,12 @@ export const InvestingSteps = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">{heading}</h2>
+            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+              {heading}
+            </h2>
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
           <div className="grid gap-8 lg:grid-cols-3 lg:gap-12">
@@ -104,7 +107,9 @@ export const InvestingSteps = defineComponent({
                   </div>
                   <div className="flex-1 lg:text-center">
                     <h3 className="mb-2 text-xl font-semibold">{step.title}</h3>
-                    <p className="leading-relaxed text-muted-foreground">{step.description}</p>
+                    <p className="leading-relaxed text-muted-foreground">
+                      {step.description}
+                    </p>
                   </div>
                 </div>
                 {i < items.length - 1 && (
@@ -122,8 +127,12 @@ export const InvestingSteps = defineComponent({
           <div className="mt-16 rounded-2xl bg-muted/50 p-8 lg:p-12">
             <div className="grid items-center gap-8 lg:grid-cols-2">
               <div>
-                <h3 className="mb-4 text-2xl font-semibold">{transferHeading}</h3>
-                <p className="mb-6 leading-relaxed text-muted-foreground">{transferDescription}</p>
+                <h3 className="mb-4 text-2xl font-semibold">
+                  {transferHeading}
+                </h3>
+                <p className="mb-6 leading-relaxed text-muted-foreground">
+                  {transferDescription}
+                </p>
                 <button
                   type="button"
                   onClick={() => go(transferCta)}

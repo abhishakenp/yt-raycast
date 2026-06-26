@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DirectoryHero — centered, search-led hero for a local-business directory /
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * search-first entry point is wanted.
  */
 export const DirectoryHero = defineComponent({
-  name: "DirectoryHero",
+  name: 'DirectoryHero',
   description:
-    "Centered, search-led hero for a local-business DIRECTORY / listings landing page: a card-surface band with a large centered headline, a supporting paragraph, a prominent rounded SEARCH bar (leading magnifier icon plus an embedded primary submit button), and a Popular: row of clickable dot-separated query chips beneath. Search submit and every chip route through useNavigate. Use as the opening hero for local directories, business-listing marketplaces, find-a-service / find-a-pro platforms, review-and-discovery sites, or city guides where a trustworthy, search-first entry point is wanted.",
+    'Centered, search-led hero for a local-business DIRECTORY / listings landing page: a card-surface band with a large centered headline, a supporting paragraph, a prominent rounded SEARCH bar (leading magnifier icon plus an embedded primary submit button), and a Popular: row of clickable dot-separated query chips beneath. Search submit and every chip route through useNavigate. Use as the opening hero for local directories, business-listing marketplaces, find-a-service / find-a-pro platforms, review-and-discovery sites, or city guides where a trustworthy, search-first entry point is wanted.',
   props: z.object({
     /** Hero heading. */
     heading: z.string().optional(),
@@ -34,21 +34,21 @@ export const DirectoryHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Discover Local Businesses Near You"
+    const heading = props.heading ?? 'Discover Local Businesses Near You'
     const subheading =
       props.subheading ??
-      "From cozy cafes to trusted plumbers, find the best local services with real reviews and verified ratings from your community."
+      'From cozy cafes to trusted plumbers, find the best local services with real reviews and verified ratings from your community.'
     const searchPlaceholder =
-      props.searchPlaceholder ?? "Search businesses, services, or categories..."
-    const searchCta = props.searchCta ?? "Search"
-    const popularLabel = props.popularLabel ?? "Popular:"
+      props.searchPlaceholder ?? 'Search businesses, services, or categories...'
+    const searchCta = props.searchCta ?? 'Search'
+    const popularLabel = props.popularLabel ?? 'Popular:'
     const popular = props.popular?.length
       ? props.popular
-      : ["Coffee Shops", "Hair Salons", "Electricians", "Yoga Studios"]
+      : ['Coffee Shops', 'Hair Salons', 'Electricians', 'Yoga Studios']
 
     return (
       <header
-        className={cn("bg-card pb-20 pt-16 lg:pb-28 lg:pt-24", props.className)}
+        className={cn('bg-card pb-20 pt-16 lg:pb-28 lg:pt-24', props.className)}
       >
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h1 className="mb-6 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">

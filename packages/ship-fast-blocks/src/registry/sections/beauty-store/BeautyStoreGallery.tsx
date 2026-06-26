@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BeautyStoreGallery — a behind-the-scenes mosaic image gallery for a beauty /
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * visual showcase block.
  */
 export const BeautyStoreGallery = defineComponent({
-  name: "BeautyStoreGallery",
+  name: 'BeautyStoreGallery',
   description:
-    "Behind-the-scenes mosaic image gallery for a beauty / skincare storefront: centered eyebrow, heading, and short paragraph above a responsive grid. A large feature image with an overlay gradient and caption (top-left tile, spanning 2 columns and 2 rows on desktop) surrounded by smaller square images. All images use alt-driven lazy <Image>. Use for editorial product moments, brand storytelling, spa/lifestyle photography, or any cosmetics / wellness visual showcase block.",
+    'Behind-the-scenes mosaic image gallery for a beauty / skincare storefront: centered eyebrow, heading, and short paragraph above a responsive grid. A large feature image with an overlay gradient and caption (top-left tile, spanning 2 columns and 2 rows on desktop) surrounded by smaller square images. All images use alt-driven lazy <Image>. Use for editorial product moments, brand storytelling, spa/lifestyle photography, or any cosmetics / wellness visual showcase block.',
   props: z.object({
     /** Eyebrow text above heading. */
     eyebrow: z.string().optional(),
@@ -30,24 +30,24 @@ export const BeautyStoreGallery = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Behind the Scenes"
-    const heading = props.heading ?? "Beauty in Every Detail"
+    const eyebrow = props.eyebrow ?? 'Behind the Scenes'
+    const heading = props.heading ?? 'Beauty in Every Detail'
     const description =
       props.description ??
-      "From our curated collections to your daily routine, discover moments of beauty that inspire."
-    const featureCaption = props.featureCaption ?? "Spa Experiences"
+      'From our curated collections to your daily routine, discover moments of beauty that inspire.'
+    const featureCaption = props.featureCaption ?? 'Spa Experiences'
     const imageAlts = props.imageAlts?.length
       ? props.imageAlts
       : [
-          "woman receiving facial treatment at luxury spa with soft ambient lighting",
-          "flat lay of organic skincare products with dried flowers",
-          "collection of colorful lipsticks arranged artistically",
-          "elegant perfume bottle with soft rose petals",
-          "minimalist skincare routine products on marble countertop",
+          'woman receiving facial treatment at luxury spa with soft ambient lighting',
+          'flat lay of organic skincare products with dried flowers',
+          'collection of colorful lipsticks arranged artistically',
+          'elegant perfume bottle with soft rose petals',
+          'minimalist skincare routine products on marble countertop',
         ]
 
     return (
-      <section className={cn("py-20 lg:py-28", props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary">

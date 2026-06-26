@@ -1,11 +1,11 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 export const PodcastAuthors = defineComponent({
-  name: "PodcastAuthors",
+  name: 'PodcastAuthors',
   description:
     "Host roster section for a podcast site, rendering a responsive grid of warm token-styled host cards. Each card pairs a rounded avatar image with the host's name, role, a short bio, and a row of social pills. Use it to introduce the people behind a podcast and give listeners a face and voice to connect with.",
   props: z.object({
@@ -30,44 +30,44 @@ export const PodcastAuthors = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Your hosts"
-    const heading = props.heading ?? "Meet your hosts"
+    const eyebrow = props.eyebrow ?? 'Your hosts'
+    const heading = props.heading ?? 'Meet your hosts'
     const subheading =
       props.subheading ??
-      "The voices behind every transmission — three people who love sound as much as the stories it carries."
+      'The voices behind every transmission — three people who love sound as much as the stories it carries.'
     const hosts = props.hosts?.length
       ? props.hosts
       : [
           {
-            name: "Mara Delacroix",
-            role: "Host & Investigative Journalist",
+            name: 'Mara Delacroix',
+            role: 'Host & Investigative Journalist',
             bio: "Mara has chased stories across three continents and brings a reporter's instinct for the human thread inside every episode. She steers each conversation with warmth and a relentless curiosity.",
             avatarAlt:
-              "warm studio headshot of a smiling woman journalist with curly hair, soft amber lighting",
-            socials: ["Twitter", "Instagram", "LinkedIn"],
+              'warm studio headshot of a smiling woman journalist with curly hair, soft amber lighting',
+            socials: ['Twitter', 'Instagram', 'LinkedIn'],
           },
           {
-            name: "Theo Iwasaki",
-            role: "Producer & Sound Designer",
-            bio: "Theo shapes the static into signal, sculpting the textures, scoring, and quiet moments that make the show feel intimate. He believes the best edit is the one you never notice.",
+            name: 'Theo Iwasaki',
+            role: 'Producer & Sound Designer',
+            bio: 'Theo shapes the static into signal, sculpting the textures, scoring, and quiet moments that make the show feel intimate. He believes the best edit is the one you never notice.',
             avatarAlt:
-              "warm studio headshot of a calm man sound engineer wearing headphones, golden lamp glow",
-            socials: ["Twitter", "Instagram"],
+              'warm studio headshot of a calm man sound engineer wearing headphones, golden lamp glow',
+            socials: ['Twitter', 'Instagram'],
           },
           {
-            name: "Priya Anand",
-            role: "Music Supervisor",
-            bio: "Priya curates the moods between the words, hunting down the perfect cue to land an emotional beat. Her crate-digging gives every episode its unmistakable warm, lo-fi heartbeat.",
+            name: 'Priya Anand',
+            role: 'Music Supervisor',
+            bio: 'Priya curates the moods between the words, hunting down the perfect cue to land an emotional beat. Her crate-digging gives every episode its unmistakable warm, lo-fi heartbeat.',
             avatarAlt:
-              "warm studio headshot of a joyful woman music curator beside a record shelf, cozy backlight",
-            socials: ["Instagram", "Spotify", "LinkedIn"],
+              'warm studio headshot of a joyful woman music curator beside a record shelf, cozy backlight',
+            socials: ['Instagram', 'Spotify', 'LinkedIn'],
           },
         ]
 
     return (
       <section
         className={cn(
-          "bg-background py-20 text-foreground lg:py-28",
+          'bg-background py-20 text-foreground lg:py-28',
           props.className,
         )}
       >

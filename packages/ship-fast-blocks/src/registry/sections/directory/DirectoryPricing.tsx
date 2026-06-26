@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DirectoryPricing — 3-tier business-listing pricing table for a local-business
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * or find-a-service platforms.
  */
 export const DirectoryPricing = defineComponent({
-  name: "DirectoryPricing",
+  name: 'DirectoryPricing',
   description:
-    "3-tier business-listing pricing table for a local-business DIRECTORY: a card-surface section with a centered heading and description and a responsive 3-column grid of plan cards — each has an uppercase plan name, a big price with optional period, a tagline, an included-features list with primary check icons plus an excluded-features list with muted cross icons, and a full-width CTA button. A highlighted Most Popular plan inverts to a dark foreground surface with a floating badge. CTAs route through useNavigate. Use as the listing or subscription pricing section on local directories, business-listing marketplaces, or find-a-service platforms.",
+    '3-tier business-listing pricing table for a local-business DIRECTORY: a card-surface section with a centered heading and description and a responsive 3-column grid of plan cards — each has an uppercase plan name, a big price with optional period, a tagline, an included-features list with primary check icons plus an excluded-features list with muted cross icons, and a full-width CTA button. A highlighted Most Popular plan inverts to a dark foreground surface with a floating badge. CTAs route through useNavigate. Use as the listing or subscription pricing section on local directories, business-listing marketplaces, or find-a-service platforms.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -43,61 +43,61 @@ export const DirectoryPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "List Your Business"
+    const heading = props.heading ?? 'List Your Business'
     const description =
       props.description ??
-      "Choose the plan that works for your business. Start free and upgrade as you grow."
+      'Choose the plan that works for your business. Start free and upgrade as you grow.'
     const plans = props.plans?.length
       ? props.plans
       : [
           {
-            name: "Basic",
-            price: "Free",
-            period: "",
-            tagline: "Perfect for getting started",
+            name: 'Basic',
+            price: 'Free',
+            period: '',
+            tagline: 'Perfect for getting started',
             features: [
-              "Basic business listing",
-              "Contact information",
-              "Customer reviews",
+              'Basic business listing',
+              'Contact information',
+              'Customer reviews',
             ],
-            excluded: ["Photos & media", "Priority placement"],
-            cta: "Get Started Free",
+            excluded: ['Photos & media', 'Priority placement'],
+            cta: 'Get Started Free',
             featured: false,
-            badge: "",
+            badge: '',
           },
           {
-            name: "Premium",
-            price: "$29",
-            period: "/month",
-            tagline: "Best for growing businesses",
+            name: 'Premium',
+            price: '$29',
+            period: '/month',
+            tagline: 'Best for growing businesses',
             features: [
-              "Everything in Basic",
-              "Up to 20 photos",
-              "Business description",
-              "Priority search results",
-              "Analytics dashboard",
+              'Everything in Basic',
+              'Up to 20 photos',
+              'Business description',
+              'Priority search results',
+              'Analytics dashboard',
             ],
             excluded: [],
-            cta: "Start 14-Day Trial",
+            cta: 'Start 14-Day Trial',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Enterprise",
-            price: "$79",
-            period: "/month",
-            tagline: "For multi-location businesses",
+            name: 'Enterprise',
+            price: '$79',
+            period: '/month',
+            tagline: 'For multi-location businesses',
             features: [
-              "Everything in Premium",
-              "Multiple locations (5+)",
-              "Unlimited photos",
-              "Featured placement",
-              "Dedicated support",
+              'Everything in Premium',
+              'Multiple locations (5+)',
+              'Unlimited photos',
+              'Featured placement',
+              'Dedicated support',
             ],
             excluded: [],
-            cta: "Contact Sales",
+            cta: 'Contact Sales',
             featured: false,
-            badge: "",
+            badge: '',
           },
         ]
 
@@ -132,7 +132,7 @@ export const DirectoryPricing = defineComponent({
     )
 
     return (
-      <section className={cn("bg-card py-16 lg:py-24", props.className)}>
+      <section className={cn('bg-card py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center lg:mb-16">
             <h2 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl">
@@ -148,10 +148,10 @@ export const DirectoryPricing = defineComponent({
               <div
                 key={plan.name}
                 className={cn(
-                  "relative rounded-xl border p-6 lg:p-8",
+                  'relative rounded-xl border p-6 lg:p-8',
                   plan.featured
-                    ? "border-border bg-foreground text-background"
-                    : "border-border bg-background",
+                    ? 'border-border bg-foreground text-background'
+                    : 'border-border bg-background',
                 )}
               >
                 {plan.featured && plan.badge ? (
@@ -163,10 +163,10 @@ export const DirectoryPricing = defineComponent({
                 ) : null}
                 <div
                   className={cn(
-                    "mb-2 text-sm font-medium uppercase tracking-wide",
+                    'mb-2 text-sm font-medium uppercase tracking-wide',
                     plan.featured
-                      ? "text-background/60"
-                      : "text-muted-foreground",
+                      ? 'text-background/60'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {plan.name}
@@ -174,8 +174,8 @@ export const DirectoryPricing = defineComponent({
                 <div className="mb-4 flex items-baseline gap-1">
                   <span
                     className={cn(
-                      "text-4xl font-bold",
-                      plan.featured ? "text-background" : "text-foreground",
+                      'text-4xl font-bold',
+                      plan.featured ? 'text-background' : 'text-foreground',
                     )}
                   >
                     {plan.price}
@@ -184,8 +184,8 @@ export const DirectoryPricing = defineComponent({
                     <span
                       className={
                         plan.featured
-                          ? "text-background/60"
-                          : "text-muted-foreground"
+                          ? 'text-background/60'
+                          : 'text-muted-foreground'
                       }
                     >
                       {plan.period}
@@ -194,10 +194,10 @@ export const DirectoryPricing = defineComponent({
                 </div>
                 <p
                   className={cn(
-                    "mb-6",
+                    'mb-6',
                     plan.featured
-                      ? "text-background/70"
-                      : "text-muted-foreground",
+                      ? 'text-background/70'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {plan.tagline}
@@ -207,10 +207,10 @@ export const DirectoryPricing = defineComponent({
                     <li
                       key={feat}
                       className={cn(
-                        "flex items-center gap-3",
+                        'flex items-center gap-3',
                         plan.featured
-                          ? "text-background/80"
-                          : "text-muted-foreground",
+                          ? 'text-background/80'
+                          : 'text-muted-foreground',
                       )}
                     >
                       <Check className="size-5 shrink-0 text-primary" />
@@ -231,10 +231,10 @@ export const DirectoryPricing = defineComponent({
                   type="button"
                   onClick={() => go(plan.cta)}
                   className={cn(
-                    "w-full rounded-lg py-3 font-medium transition-colors",
+                    'w-full rounded-lg py-3 font-medium transition-colors',
                     plan.featured
-                      ? "bg-background text-foreground hover:bg-background/90"
-                      : "border border-input text-foreground hover:border-muted-foreground/50 hover:bg-muted",
+                      ? 'bg-background text-foreground hover:bg-background/90'
+                      : 'border border-input text-foreground hover:border-muted-foreground/50 hover:bg-muted',
                   )}
                 >
                   {plan.cta}

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * ConsultingProcess — dark 4-step "How We Work" process band for a
@@ -13,7 +13,7 @@ import { cn } from "#/lib/utils.ts"
  * Renders fully with no props via four baked-in default steps.
  */
 export const ConsultingProcess = defineComponent({
-  name: "ConsultingProcess",
+  name: 'ConsultingProcess',
   description:
     "Dark 4-step 'How We Work' process band for a management-consulting firm page: a centered heading and lead paragraph on a primary-background band above a responsive grid of numbered steps (01-04), each with a large muted number, a title and a description; subtle horizontal connectors between steps (hidden on mobile). Tokens-only, no links. Use as a methodology / workflow / how-it-works section for consulting firms, professional-services groups, or B2B advisory businesses.",
   props: z.object({
@@ -28,39 +28,39 @@ export const ConsultingProcess = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "How We Work"
+    const heading = props.heading ?? 'How We Work'
     const description =
       props.description ??
-      "Our proven methodology ensures every engagement delivers measurable, sustainable results."
+      'Our proven methodology ensures every engagement delivers measurable, sustainable results.'
     const steps = props.steps?.length
       ? props.steps
       : [
           {
-            title: "Discovery & Diagnosis",
+            title: 'Discovery & Diagnosis',
             description:
-              "We begin by deeply understanding your business, conducting rigorous analysis of your market position, operations, and strategic challenges to identify the core issues.",
+              'We begin by deeply understanding your business, conducting rigorous analysis of your market position, operations, and strategic challenges to identify the core issues.',
           },
           {
-            title: "Strategy Development",
+            title: 'Strategy Development',
             description:
-              "Working collaboratively with your team, we develop tailored strategies that leverage your strengths and address your most critical opportunities and challenges.",
+              'Working collaboratively with your team, we develop tailored strategies that leverage your strengths and address your most critical opportunities and challenges.',
           },
           {
-            title: "Implementation Support",
+            title: 'Implementation Support',
             description:
-              "We roll up our sleeves to help execute the strategy, providing hands-on support for organizational changes, process improvements, and capability building.",
+              'We roll up our sleeves to help execute the strategy, providing hands-on support for organizational changes, process improvements, and capability building.',
           },
           {
-            title: "Sustained Impact",
+            title: 'Sustained Impact',
             description:
-              "We measure success by lasting results. We build your internal capabilities and establish mechanisms to ensure improvements endure long after our engagement.",
+              'We measure success by lasting results. We build your internal capabilities and establish mechanisms to ensure improvements endure long after our engagement.',
           },
         ]
 
     return (
       <section
         className={cn(
-          "bg-primary py-24 text-primary-foreground",
+          'bg-primary py-24 text-primary-foreground',
           props.className,
         )}
       >
@@ -69,15 +69,13 @@ export const ConsultingProcess = defineComponent({
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               {heading}
             </h2>
-            <p className="text-lg text-primary-foreground/70">
-              {description}
-            </p>
+            <p className="text-lg text-primary-foreground/70">{description}</p>
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {steps.map((step, i) => (
               <div key={step.title} className="relative">
                 <div className="mb-4 text-6xl font-bold text-primary-foreground/20">
-                  {String(i + 1).padStart(2, "0")}
+                  {String(i + 1).padStart(2, '0')}
                 </div>
                 <h3 className="mb-3 text-xl font-semibold">{step.title}</h3>
                 <p className="leading-relaxed text-primary-foreground/60">

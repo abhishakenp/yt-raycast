@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CloudInfraFeatures — product capabilities grid for a cloud-infrastructure /
@@ -11,9 +11,9 @@ import { cn } from "#/lib/utils.ts"
  * tint on hover. Tokens-only. Renders fully on zero arguments.
  */
 export const CloudInfraFeatures = defineComponent({
-  name: "CloudInfraFeatures",
+  name: 'CloudInfraFeatures',
   description:
-    "Product capabilities grid for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a responsive 3-column card grid. Each card has a rounded tinted icon tile with an inline SVG, a title, and a description; cards lift with a primary border tint on hover. Tokens-only. Use for feature grids on cloud hosting, IaaS, PaaS, serverless, container, DevOps, or developer-tooling sites.",
+    'Product capabilities grid for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a responsive 3-column card grid. Each card has a rounded tinted icon tile with an inline SVG, a title, and a description; cards lift with a primary border tint on hover. Tokens-only. Use for feature grids on cloud hosting, IaaS, PaaS, serverless, container, DevOps, or developer-tooling sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -26,43 +26,42 @@ export const CloudInfraFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading =
-      props.heading ?? "Everything you need to ship faster"
+    const heading = props.heading ?? 'Everything you need to ship faster'
     const description =
       props.description ??
-      "From container orchestration to serverless functions, CloudShift provides the infrastructure building blocks modern applications demand."
+      'From container orchestration to serverless functions, CloudShift provides the infrastructure building blocks modern applications demand.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Container Registry",
+            title: 'Container Registry',
             description:
-              "Secure, scalable Docker registry with vulnerability scanning. Push and pull images globally with edge caching.",
+              'Secure, scalable Docker registry with vulnerability scanning. Push and pull images globally with edge caching.',
           },
           {
-            title: "Serverless Functions",
+            title: 'Serverless Functions',
             description:
-              "Deploy functions in 12 languages. Auto-scaling from zero to thousands of instances in milliseconds.",
+              'Deploy functions in 12 languages. Auto-scaling from zero to thousands of instances in milliseconds.',
           },
           {
-            title: "Managed Databases",
+            title: 'Managed Databases',
             description:
-              "PostgreSQL, MySQL, and Redis with automated backups, point-in-time recovery, and read replicas.",
+              'PostgreSQL, MySQL, and Redis with automated backups, point-in-time recovery, and read replicas.',
           },
           {
-            title: "Edge Security",
+            title: 'Edge Security',
             description:
-              "DDoS protection, WAF rules, and bot management deployed across 300+ edge locations worldwide.",
+              'DDoS protection, WAF rules, and bot management deployed across 300+ edge locations worldwide.',
           },
           {
-            title: "Object Storage",
+            title: 'Object Storage',
             description:
-              "S3-compatible storage with 99.999999999% durability. Global CDN integration for instant asset delivery.",
+              'S3-compatible storage with 99.999999999% durability. Global CDN integration for instant asset delivery.',
           },
           {
-            title: "Observability",
+            title: 'Observability',
             description:
-              "Real-time metrics, distributed tracing, and intelligent alerting. Pinpoint issues before users notice.",
+              'Real-time metrics, distributed tracing, and intelligent alerting. Pinpoint issues before users notice.',
           },
         ]
 
@@ -148,7 +147,7 @@ export const CloudInfraFeatures = defineComponent({
     ]
 
     return (
-      <section className={cn("py-20 lg:py-32", props.className)}>
+      <section className={cn('py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * BeautyStoreBenefits — a four-up "why choose us" benefits grid for a beauty /
@@ -12,7 +12,7 @@ import { cn } from "#/lib/utils.ts"
  * shipping) or any e-commerce trust / UVP block. Tokens-only, no links.
  */
 export const BeautyStoreBenefits = defineComponent({
-  name: "BeautyStoreBenefits",
+  name: 'BeautyStoreBenefits',
   description:
     "Four-up 'why choose us' benefits grid for a beauty / skincare / cosmetics storefront: centered section heading and intro paragraph above a responsive grid of cards, each with a rounded tinted icon circle (rotating inline line-icons), a bold title, and a short description. Use for clean-beauty value propositions (clean ingredients, cruelty-free, sustainable, fast shipping) or any e-commerce trust / UVP block.",
   props: z.object({
@@ -27,7 +27,7 @@ export const BeautyStoreBenefits = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Why Choose Lumière"
+    const heading = props.heading ?? 'Why Choose Lumière'
     const description =
       props.description ??
       "We're committed to bringing you the best in clean beauty with thoughtful curation and exceptional service."
@@ -35,24 +35,24 @@ export const BeautyStoreBenefits = defineComponent({
       ? props.items
       : [
           {
-            title: "Clean Ingredients",
+            title: 'Clean Ingredients',
             description:
-              "Every product is vetted for clean, non-toxic ingredients that are safe for your skin.",
+              'Every product is vetted for clean, non-toxic ingredients that are safe for your skin.',
           },
           {
-            title: "Cruelty-Free",
+            title: 'Cruelty-Free',
             description:
-              "We never stock products tested on animals. Beauty should never come at that cost.",
+              'We never stock products tested on animals. Beauty should never come at that cost.',
           },
           {
-            title: "Sustainable",
+            title: 'Sustainable',
             description:
-              "Eco-friendly packaging and carbon-neutral shipping on all orders over $50.",
+              'Eco-friendly packaging and carbon-neutral shipping on all orders over $50.',
           },
           {
-            title: "Fast Shipping",
+            title: 'Fast Shipping',
             description:
-              "Free 2-day shipping on orders over $75. 30-day hassle-free returns on all products.",
+              'Free 2-day shipping on orders over $75. 30-day hassle-free returns on all products.',
           },
         ]
 
@@ -112,7 +112,7 @@ export const BeautyStoreBenefits = defineComponent({
     ]
 
     return (
-      <section className={cn("py-20 lg:py-28", props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 font-serif text-3xl font-semibold text-foreground sm:text-4xl">

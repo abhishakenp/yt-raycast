@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * DirectorySteps — "How It Works" 3-step explainer for a local-business
@@ -11,9 +11,9 @@ import { cn } from "#/lib/utils.ts"
  * find-a-service platforms, or review-and-discovery sites.
  */
 export const DirectorySteps = defineComponent({
-  name: "DirectorySteps",
+  name: 'DirectorySteps',
   description:
-    "How-It-Works 3-step explainer for a local-business DIRECTORY: a card-surface section with a centered heading and description and a responsive 3-column grid of numbered steps — each a centered rounded muted-badge number above a step title and a descriptive paragraph. Static, no links. Use to explain the search / compare / connect flow on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.",
+    'How-It-Works 3-step explainer for a local-business DIRECTORY: a card-surface section with a centered heading and description and a responsive 3-column grid of numbered steps — each a centered rounded muted-badge number above a step title and a descriptive paragraph. Static, no links. Use to explain the search / compare / connect flow on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -26,32 +26,32 @@ export const DirectorySteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "How It Works"
+    const heading = props.heading ?? 'How It Works'
     const description =
       props.description ??
-      "Find and connect with local businesses in three simple steps"
+      'Find and connect with local businesses in three simple steps'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Search & Discover",
+            title: 'Search & Discover',
             description:
-              "Enter what you need and your location. Browse thousands of verified local businesses across 24 categories.",
+              'Enter what you need and your location. Browse thousands of verified local businesses across 24 categories.',
           },
           {
-            title: "Compare & Review",
+            title: 'Compare & Review',
             description:
-              "Check real customer reviews, photos, hours, and pricing. Filter by ratings, distance, and availability.",
+              'Check real customer reviews, photos, hours, and pricing. Filter by ratings, distance, and availability.',
           },
           {
-            title: "Connect & Book",
+            title: 'Connect & Book',
             description:
-              "Call directly, book online, or send a message. Get directions and save favorites for quick access.",
+              'Call directly, book online, or send a message. Get directions and save favorites for quick access.',
           },
         ]
 
     return (
-      <section className={cn("bg-card py-16 lg:py-24", props.className)}>
+      <section className={cn('bg-card py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center lg:mb-16">
             <h2 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl">

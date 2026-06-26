@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CafeHero — split-layout hero section for a cozy neighborhood cafe / coffee
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * fully with no props via baked-in "Little Owl Coffee" defaults.
  */
 export const CafeHero = defineComponent({
-  name: "CafeHero",
+  name: 'CafeHero',
   description:
-    "Split-layout hero section for a cozy cafe / coffee shop landing page: left side with an open-now availability pill (pulsing dot), serif headline with an italic amber highlight phrase, supporting paragraph, dual rounded CTAs (filled primary + outlined secondary), and an inline KPI strip; right side has a tall interior photo with a floating customer-review card anchored bottom-left. CTAs route through useNavigate. Use as the opening hero for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink businesses.",
+    'Split-layout hero section for a cozy cafe / coffee shop landing page: left side with an open-now availability pill (pulsing dot), serif headline with an italic amber highlight phrase, supporting paragraph, dual rounded CTAs (filled primary + outlined secondary), and an inline KPI strip; right side has a tall interior photo with a floating customer-review card anchored bottom-left. CTAs route through useNavigate. Use as the opening hero for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink businesses.',
   props: z.object({
     /** Availability / status pill text. */
     badge: z.string().optional(),
@@ -52,36 +52,36 @@ export const CafeHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Now Open — 7am to 7pm Daily"
-    const headingTop = props.headingTop ?? "Coffee that feels like"
-    const highlight = props.highlight ?? "home"
-    const headingBottom = props.headingBottom ?? ""
+    const badge = props.badge ?? 'Now Open — 7am to 7pm Daily'
+    const headingTop = props.headingTop ?? 'Coffee that feels like'
+    const highlight = props.highlight ?? 'home'
+    const headingBottom = props.headingBottom ?? ''
     const subheading =
       props.subheading ??
       "Specialty coffee, house-made pastries, and a cozy corner for your morning ritual. Located in the heart of Portland's Pearl District since 2018."
-    const primaryCta = props.primaryCta ?? "View Menu"
-    const secondaryCta = props.secondaryCta ?? "Find Us"
+    const primaryCta = props.primaryCta ?? 'View Menu'
+    const secondaryCta = props.secondaryCta ?? 'Find Us'
     const imageAlt =
       props.imageAlt ??
-      "Cozy coffee shop interior with warm wood tables, exposed brick walls, and soft morning light streaming through large windows"
-    const quote = props.quote ?? "Best latte in Portland, hands down."
-    const quoteName = props.quoteName ?? "Sarah Chen"
-    const quoteRole = props.quoteRole ?? "Verified Google Review"
+      'Cozy coffee shop interior with warm wood tables, exposed brick walls, and soft morning light streaming through large windows'
+    const quote = props.quote ?? 'Best latte in Portland, hands down.'
+    const quoteName = props.quoteName ?? 'Sarah Chen'
+    const quoteRole = props.quoteRole ?? 'Verified Google Review'
     const quoteAvatarAlt =
       props.quoteAvatarAlt ??
-      "Professional headshot of Sarah Chen, a smiling customer with short dark hair"
+      'Professional headshot of Sarah Chen, a smiling customer with short dark hair'
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "4.9", label: "Google Rating" },
-          { value: "6", label: "Years Serving" },
-          { value: "12", label: "Coffee Origins" },
+          { value: '4.9', label: 'Google Rating' },
+          { value: '6', label: 'Years Serving' },
+          { value: '12', label: 'Coffee Origins' },
         ]
 
     return (
       <section
         className={cn(
-          "px-6 pb-20 pt-32 lg:px-8 lg:pb-32 lg:pt-40",
+          'px-6 pb-20 pt-32 lg:px-8 lg:pb-32 lg:pt-40',
           props.className,
         )}
       >
@@ -93,7 +93,7 @@ export const CafeHero = defineComponent({
                 {badge}
               </div>
               <h1 className="font-serif text-4xl font-medium leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                {headingTop}{" "}
+                {headingTop}{' '}
                 <span className="italic text-primary">{highlight}</span>
                 {headingBottom ? ` ${headingBottom}` : null}
               </h1>
@@ -124,9 +124,7 @@ export const CafeHero = defineComponent({
                       <p className="font-serif text-3xl font-medium text-foreground">
                         {s.value}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        {s.label}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{s.label}</p>
                     </div>
                   </div>
                 ))}
@@ -157,9 +155,7 @@ export const CafeHero = defineComponent({
                     <p className="text-sm font-medium text-card-foreground">
                       {quoteName}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {quoteRole}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{quoteRole}</p>
                   </div>
                 </div>
               </div>

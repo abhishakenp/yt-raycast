@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from 'react'
 import {
   KeyboardSensor,
   PointerSensor,
@@ -6,60 +6,60 @@ import {
   useSensors,
   DragEndEvent,
   DragStartEvent,
-} from "@dnd-kit/core";
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { HeaderGroup } from "react-table";
-import { GenericDocument } from "convex/server";
+} from '@dnd-kit/core'
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
+import { HeaderGroup } from 'react-table'
+import { GenericDocument } from 'convex/server'
 
 export function useColumnDragAndDrop({
   headerGroups,
   reorderColumns,
   columnOrder,
 }: {
-  headerGroups: HeaderGroup<GenericDocument>[];
-  reorderColumns: (item: { index: number }, newIndex: number) => void;
-  columnOrder: string[];
+  headerGroups: HeaderGroup<GenericDocument>[]
+  reorderColumns: (item: { index: number }, newIndex: number) => void
+  columnOrder: string[]
 }) {
-  const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState<number>(0);
+  const [activeColumnId, setActiveColumnId] = useState<string | null>(null)
+  const [dragOffset, setDragOffset] = useState<number>(0)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
-  );
+  )
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveColumnId(event.active.id as string);
-    setDragOffset(0);
-  }, []);
+    setActiveColumnId(event.active.id as string)
+    setDragOffset(0)
+  }, [])
 
   const handleDragMove = useCallback((event: any) => {
     if (event.delta) {
-      setDragOffset(event.delta.x);
+      setDragOffset(event.delta.x)
     }
-  }, []);
+  }, [])
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      const { active, over } = event;
-      setActiveColumnId(null);
-      setDragOffset(0);
+      const { active, over } = event
+      setActiveColumnId(null)
+      setDragOffset(0)
 
       if (!over || active.id === over.id) {
-        return;
+        return
       }
 
-      const oldIndex = columnOrder.indexOf(active.id as string);
-      const overIndex = columnOrder.indexOf(over.id as string);
+      const oldIndex = columnOrder.indexOf(active.id as string)
+      const overIndex = columnOrder.indexOf(over.id as string)
 
       // Since we always drop to the right of the hovered column,
       // we need to adjust the target index when dragging from right to left
-      let targetIndex = overIndex;
+      let targetIndex = overIndex
       if (oldIndex > overIndex) {
         // Dragging from right to left: place after the hovered column
-        targetIndex = overIndex + 1;
+        targetIndex = overIndex + 1
       }
 
       // Prevent reordering the *select column (always at index 0)
@@ -69,45 +69,45 @@ export function useColumnDragAndDrop({
         oldIndex !== 0 &&
         targetIndex !== 0
       ) {
-        reorderColumns({ index: oldIndex }, targetIndex);
+        reorderColumns({ index: oldIndex }, targetIndex)
       }
     },
     [reorderColumns, columnOrder],
-  );
+  )
 
   const handleDragCancel = useCallback(() => {
-    setActiveColumnId(null);
-    setDragOffset(0);
-  }, []);
+    setActiveColumnId(null)
+    setDragOffset(0)
+  }, [])
 
   // Get the active column for drag overlay
   const activeColumn = useMemo(
     () => headerGroups[0]?.headers.find((h) => h.id === activeColumnId),
     [headerGroups, activeColumnId],
-  );
+  )
 
   // Calculate the position of the active column
   const activeColumnPosition = useMemo(() => {
-    if (!activeColumn) return null;
+    if (!activeColumn) return null
 
     const columnIndex = headerGroups[0]?.headers.findIndex(
       (h) => h.id === activeColumnId,
-    );
-    if (columnIndex === -1) return null;
+    )
+    if (columnIndex === -1) return null
 
     // Calculate the left position by summing up widths of previous columns
-    let left = 0;
+    let left = 0
     for (let i = 0; i < columnIndex; i++) {
-      const colWidth = headerGroups[0].headers[i].getHeaderProps().style?.width;
-      if (typeof colWidth === "string") {
-        left += parseFloat(colWidth);
-      } else if (typeof colWidth === "number") {
-        left += colWidth;
+      const colWidth = headerGroups[0].headers[i].getHeaderProps().style?.width
+      if (typeof colWidth === 'string') {
+        left += parseFloat(colWidth)
+      } else if (typeof colWidth === 'number') {
+        left += colWidth
       }
     }
 
-    return left;
-  }, [activeColumn, activeColumnId, headerGroups]);
+    return left
+  }, [activeColumn, activeColumnId, headerGroups])
 
   return {
     sensors,
@@ -118,5 +118,5 @@ export function useColumnDragAndDrop({
     handleDragMove,
     handleDragEnd,
     handleDragCancel,
-  };
+  }
 }

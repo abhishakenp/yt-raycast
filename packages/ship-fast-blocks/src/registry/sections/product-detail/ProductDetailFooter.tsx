@@ -1,11 +1,11 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 export const ProductDetailFooter = defineComponent({
-  name: "ProductDetailFooter",
+  name: 'ProductDetailFooter',
   description:
-    "Site footer for the Product Detail page family, wrapping the shared SiteFooter composite. Renders the Aurora brand mark and tagline, multi-column Shop / Support / Company / Legal link groups, a social row, and a bottom legal bar — tuned for a premium single-product page like the Aurora Pro Headphones. Use as the closing band of a product detail page; fully prop-driven with Aurora defaults.",
+    'Site footer for the Product Detail page family, wrapping the shared SiteFooter composite. Renders the Aurora brand mark and tagline, multi-column Shop / Support / Company / Legal link groups, a social row, and a bottom legal bar — tuned for a premium single-product page like the Aurora Pro Headphones. Use as the closing band of a product detail page; fully prop-driven with Aurora defaults.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -30,21 +30,33 @@ export const ProductDetailFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Aurora"
-    const tagline = props.tagline ?? "Premium audio, engineered for everyday life."
+    const brand = props.brand ?? 'Aurora'
+    const tagline =
+      props.tagline ?? 'Premium audio, engineered for everyday life.'
     const columns = props.columns?.length
       ? props.columns
       : [
-          { title: "Shop", links: ["Aurora Pro", "Aurora Air", "Accessories", "Gift Cards"] },
-          { title: "Support", links: ["Help Center", "Shipping", "Returns", "Warranty"] },
-          { title: "Company", links: ["About", "Careers", "Press", "Sustainability"] },
-          { title: "Legal", links: ["Privacy", "Terms", "Cookies"] },
+          {
+            title: 'Shop',
+            links: ['Aurora Pro', 'Aurora Air', 'Accessories', 'Gift Cards'],
+          },
+          {
+            title: 'Support',
+            links: ['Help Center', 'Shipping', 'Returns', 'Warranty'],
+          },
+          {
+            title: 'Company',
+            links: ['About', 'Careers', 'Press', 'Sustainability'],
+          },
+          { title: 'Legal', links: ['Privacy', 'Terms', 'Cookies'] },
         ]
     const social = props.social?.length
       ? props.social
-      : [{ label: "Instagram" }, { label: "YouTube" }, { label: "X" }]
-    const legal = props.legal?.length ? props.legal : ["Privacy", "Terms", "Accessibility"]
-    const note = props.note ?? "Crafted in California."
+      : [{ label: 'Instagram' }, { label: 'YouTube' }, { label: 'X' }]
+    const legal = props.legal?.length
+      ? props.legal
+      : ['Privacy', 'Terms', 'Accessibility']
+    const note = props.note ?? 'Crafted in California.'
 
     const mark = (
       <svg

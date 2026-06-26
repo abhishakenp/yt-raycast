@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CryptoNavbar — glassy sticky top navigation bar for a crypto / DeFi
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * bridges, staking networks, or Web3 infrastructure sites.
  */
 export const CryptoNavbar = defineComponent({
-  name: "CryptoNavbar",
+  name: 'CryptoNavbar',
   description:
-    "Glassy sticky top navigation bar for a crypto / DeFi infrastructure landing page: backdrop-blurred, border-bottomed header with a high-contrast brand bolt icon + protocol name on the left, horizontal nav links in the center, and a dual button group on the right (secondary text link + primary filled CTA). All links route through useNavigate. Use as the sticky site header for crypto protocols, layer-1/layer-2 chains, DeFi platforms, bridges, staking networks, or Web3 infrastructure sites.",
+    'Glassy sticky top navigation bar for a crypto / DeFi infrastructure landing page: backdrop-blurred, border-bottomed header with a high-contrast brand bolt icon + protocol name on the left, horizontal nav links in the center, and a dual button group on the right (secondary text link + primary filled CTA). All links route through useNavigate. Use as the sticky site header for crypto protocols, layer-1/layer-2 chains, DeFi platforms, bridges, staking networks, or Web3 infrastructure sites.',
   props: z.object({
     /** Brand / protocol name shown beside the logo icon. */
     brand: z.string().optional(),
@@ -36,15 +36,15 @@ export const CryptoNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "NexusChain"
+    const brand = props.brand ?? 'NexusChain'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Network", "Roadmap", "Partners"]
+      : ['Features', 'Network', 'Roadmap', 'Partners']
     const homeTarget = props.homeTarget ?? nav[0]
-    const docLabel = props.docLabel ?? "Documentation"
-    const docTarget = props.docTarget ?? "View Documentation"
-    const ctaLabel = props.ctaLabel ?? "Launch App"
-    const ctaTarget = props.ctaTarget ?? "Start Building"
+    const docLabel = props.docLabel ?? 'Documentation'
+    const docTarget = props.docTarget ?? 'View Documentation'
+    const ctaLabel = props.ctaLabel ?? 'Launch App'
+    const ctaTarget = props.ctaTarget ?? 'Start Building'
 
     const BoltIcon = ({ className }: { className?: string }) => (
       <svg
@@ -66,7 +66,7 @@ export const CryptoNavbar = defineComponent({
     return (
       <nav
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CryptoContactCta — inverted dark final call-to-action band for a crypto /
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * for protocols, chains, DeFi platforms, or Web3 infrastructure sites.
  */
 export const CryptoContactCta = defineComponent({
-  name: "CryptoContactCta",
+  name: 'CryptoContactCta',
   description:
-    "Inverted dark final call-to-action band for a crypto / DeFi landing page: centered bg-foreground section with a large headline, supporting paragraph, dual buttons (filled light primary + outlined secondary), and trust chips with check-circle icons beneath. All buttons route through useNavigate. Use as a closing conversion action for protocols, chains, DeFi platforms, or Web3 infrastructure sites.",
+    'Inverted dark final call-to-action band for a crypto / DeFi landing page: centered bg-foreground section with a large headline, supporting paragraph, dual buttons (filled light primary + outlined secondary), and trust chips with check-circle icons beneath. All buttons route through useNavigate. Use as a closing conversion action for protocols, chains, DeFi platforms, or Web3 infrastructure sites.',
   props: z.object({
     /** Headline text. */
     heading: z.string().optional(),
@@ -30,19 +30,18 @@ export const CryptoContactCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading =
-      props.heading ?? "Start building on NexusChain today"
+    const heading = props.heading ?? 'Start building on NexusChain today'
     const description =
       props.description ??
-      "Join 340+ protocols processing $2.4B in daily volume. Deploy your first contract in minutes with our comprehensive developer tools."
-    const primaryCta = props.primaryCta ?? "Get Started"
-    const secondaryCta = props.secondaryCta ?? "Contact Sales"
+      'Join 340+ protocols processing $2.4B in daily volume. Deploy your first contract in minutes with our comprehensive developer tools.'
+    const primaryCta = props.primaryCta ?? 'Get Started'
+    const secondaryCta = props.secondaryCta ?? 'Contact Sales'
     const trust = props.trust?.length
       ? props.trust
       : [
-          "Free testnet access",
-          "No credit card required",
-          "Enterprise support available",
+          'Free testnet access',
+          'No credit card required',
+          'Enterprise support available',
         ]
 
     const CheckCircle = ({ className }: { className?: string }) => (
@@ -63,7 +62,7 @@ export const CryptoContactCta = defineComponent({
     return (
       <section
         className={cn(
-          "bg-foreground py-20 text-background lg:py-32",
+          'bg-foreground py-20 text-background lg:py-32',
           props.className,
         )}
       >

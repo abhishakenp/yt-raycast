@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const brandMark = (
   <svg
@@ -20,7 +20,7 @@ const brandMark = (
 )
 
 export const TutoringNavbar = defineComponent({
-  name: "TutoringNavbar",
+  name: 'TutoringNavbar',
   description:
     "Friendly, trustworthy navigation header for the tutoring page family. Composes the SiteNav kit composite to render a graduation-cap brand mark, warm wordmark, a desktop link row, an optional phone number, and a sticky 'Book a Session' call to action with a real mobile drawer. Use it as the first band of any tutoring site or whenever a generated education/tutoring page needs a consistent, route-aware top nav without hand-rolling markup.",
   props: z.object({
@@ -34,12 +34,12 @@ export const TutoringNavbar = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "BrightPath Tutoring"
+    const brand = props.brand ?? 'BrightPath Tutoring'
     const nav = props.nav?.length
       ? props.nav
-      : ["Subjects", "How it Works", "Pricing", "Tutors", "Contact"]
-    const ctaLabel = props.ctaLabel ?? "Book a Session"
-    const ctaTarget = props.ctaTarget ?? "Contact"
+      : ['Subjects', 'How it Works', 'Pricing', 'Tutors', 'Contact']
+    const ctaLabel = props.ctaLabel ?? 'Book a Session'
+    const ctaTarget = props.ctaTarget ?? 'Contact'
 
     return (
       <SiteNav
@@ -47,8 +47,8 @@ export const TutoringNavbar = defineComponent({
         brandMark={brandMark}
         brandClassName="font-semibold"
         nav={nav}
-        phone={props.phone ?? "(555) 240-1188"}
-        cta={{ label: ctaLabel, target: ctaTarget, variant: "primary" }}
+        phone={props.phone ?? '(555) 240-1188'}
+        cta={{ label: ctaLabel, target: ctaTarget, variant: 'primary' }}
         homeTarget={props.homeTarget ?? nav[0]}
         sticky={props.sticky ?? true}
         className={props.className}

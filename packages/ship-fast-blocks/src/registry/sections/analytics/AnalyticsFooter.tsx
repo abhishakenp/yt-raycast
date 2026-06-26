@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const brandMark = (
   <svg
@@ -21,19 +21,25 @@ const brandMark = (
 )
 
 const DEFAULT_COLUMNS: { title: string; links: string[] }[] = [
-  { title: "Product", links: ["Features", "Dashboards", "Integrations", "Pricing"] },
-  { title: "Resources", links: ["Docs", "API Reference", "Changelog", "Status"] },
-  { title: "Company", links: ["About", "Careers", "Customers", "Contact"] },
-  { title: "Legal", links: ["Privacy", "Terms", "Security", "DPA"] },
+  {
+    title: 'Product',
+    links: ['Features', 'Dashboards', 'Integrations', 'Pricing'],
+  },
+  {
+    title: 'Resources',
+    links: ['Docs', 'API Reference', 'Changelog', 'Status'],
+  },
+  { title: 'Company', links: ['About', 'Careers', 'Customers', 'Contact'] },
+  { title: 'Legal', links: ['Privacy', 'Terms', 'Security', 'DPA'] },
 ]
 
 const DEFAULT_SOCIAL: { label: string; href?: string }[] = [
-  { label: "X" },
-  { label: "GitHub" },
-  { label: "LinkedIn" },
+  { label: 'X' },
+  { label: 'GitHub' },
+  { label: 'LinkedIn' },
 ]
 
-const DEFAULT_LEGAL = ["Privacy", "Terms", "Cookies"]
+const DEFAULT_LEGAL = ['Privacy', 'Terms', 'Cookies']
 
 /**
  * AnalyticsFooter — sharp, data-forward site footer for an analytics product,
@@ -45,9 +51,9 @@ const DEFAULT_LEGAL = ["Privacy", "Terms", "Cookies"]
  * navigation. Renders fully with no props via baked-in defaults.
  */
 export const AnalyticsFooter = defineComponent({
-  name: "AnalyticsFooter",
+  name: 'AnalyticsFooter',
   description:
-    "Sharp, data-forward site footer for an analytics product, composing the shared SiteFooter kit composite. Renders a bar-chart brand mark, a confident tagline, social links, and four link columns (Product, Resources, Company, Legal), plus a bottom bar with copyright, a short note, and legal links. Accepts public props to override every block. Use it as the closing band of any analytics, BI, or data-product site for consistent, route-aware navigation.",
+    'Sharp, data-forward site footer for an analytics product, composing the shared SiteFooter kit composite. Renders a bar-chart brand mark, a confident tagline, social links, and four link columns (Product, Resources, Company, Legal), plus a bottom bar with copyright, a short note, and legal links. Accepts public props to override every block. Use it as the closing band of any analytics, BI, or data-product site for consistent, route-aware navigation.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -62,14 +68,14 @@ export const AnalyticsFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Pulse Analytics"
+    const brand = props.brand ?? 'Pulse Analytics'
     const tagline =
       props.tagline ??
-      "The fast, queryable analytics platform that turns raw events into decisions you can ship."
+      'The fast, queryable analytics platform that turns raw events into decisions you can ship.'
     const columns = props.columns?.length ? props.columns : DEFAULT_COLUMNS
     const social = props.social?.length ? props.social : DEFAULT_SOCIAL
     const legal = props.legal?.length ? props.legal : DEFAULT_LEGAL
-    const note = props.note ?? "Built for teams who trust their data."
+    const note = props.note ?? 'Built for teams who trust their data.'
 
     return (
       <SiteFooter

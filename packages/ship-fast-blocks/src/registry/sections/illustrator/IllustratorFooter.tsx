@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * IllustratorFooter — a multi-column dark site footer for an illustrator /
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * portfolios. Renders fully with no props via baked-in "Mira Chen" defaults.
  */
 export const IllustratorFooter = defineComponent({
-  name: "IllustratorFooter",
+  name: 'IllustratorFooter',
   description:
-    "Multi-column dark site footer for an illustrator / visual-artist portfolio: a foreground-colored band with inverted type holding a wide brand column (serif wordmark, bio blurb, copyright) beside two link columns (navigation + information), with a hairline-divided bottom row of two small notes. Links and the wordmark route through useNavigate. Use as the closing footer for illustrator and creative portfolios.",
+    'Multi-column dark site footer for an illustrator / visual-artist portfolio: a foreground-colored band with inverted type holding a wide brand column (serif wordmark, bio blurb, copyright) beside two link columns (navigation + information), with a hairline-divided bottom row of two small notes. Links and the wordmark route through useNavigate. Use as the closing footer for illustrator and creative portfolios.',
   props: z.object({
     /** Artist / brand name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -41,29 +41,34 @@ export const IllustratorFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Mira Chen"
-    const homeTarget = props.homeTarget ?? "Work"
+    const brand = props.brand ?? 'Mira Chen'
+    const homeTarget = props.homeTarget ?? 'Work'
     const description =
       props.description ??
       "Independent illustrator creating whimsical art for children's books, editorial features, and collectors worldwide. Based in Portland, Oregon."
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Illustration. All rights reserved.`
-    const navHeading = props.navHeading ?? "Navigation"
+    const navHeading = props.navHeading ?? 'Navigation'
     const navLinks = props.navLinks?.length
       ? props.navLinks
-      : ["Portfolio", "Shop", "About", "Contact"]
-    const infoHeading = props.infoHeading ?? "Information"
+      : ['Portfolio', 'Shop', 'About', 'Contact']
+    const infoHeading = props.infoHeading ?? 'Information'
     const infoLinks = props.infoLinks?.length
       ? props.infoLinks
-      : ["Licensing", "Shipping & Returns", "Privacy Policy", "Terms of Service"]
-    const noteLeft = props.noteLeft ?? "Designed with care in Portland, OR"
-    const noteRight = props.noteRight ?? "Made with paper, paint & pixels"
+      : [
+          'Licensing',
+          'Shipping & Returns',
+          'Privacy Policy',
+          'Terms of Service',
+        ]
+    const noteLeft = props.noteLeft ?? 'Designed with care in Portland, OR'
+    const noteRight = props.noteRight ?? 'Made with paper, paint & pixels'
 
     return (
       <footer
         className={cn(
-          "bg-foreground px-4 py-12 text-background sm:px-6 sm:py-16 lg:px-8",
+          'bg-foreground px-4 py-12 text-background sm:px-6 sm:py-16 lg:px-8',
           props.className,
         )}
       >

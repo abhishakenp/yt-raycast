@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * DevToolHero — two-column product hero for a developer tool / API platform.
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * backend-as-a-service, or technical SaaS landing pages.
  */
 export const DevToolHero = defineComponent({
-  name: "DevToolHero",
+  name: 'DevToolHero',
   description:
-    "Two-column product hero for a developer tool / API platform: a left content column with an animated release/version pill, a bold headline with a brand-accent highlighted phrase, a supporting paragraph, dual CTAs (filled primary + outline secondary) and a no-credit-card footnote, beside a right dark code-window mockup (traffic-light dots, filename tab, SDK code snippet) with a floating developer-avatar social-proof card. Clean light slate-and-blue aesthetic. All CTAs route through useNavigate. Use as the top hero for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
+    'Two-column product hero for a developer tool / API platform: a left content column with an animated release/version pill, a bold headline with a brand-accent highlighted phrase, a supporting paragraph, dual CTAs (filled primary + outline secondary) and a no-credit-card footnote, beside a right dark code-window mockup (traffic-light dots, filename tab, SDK code snippet) with a floating developer-avatar social-proof card. Clean light slate-and-blue aesthetic. All CTAs route through useNavigate. Use as the top hero for developer tools, API platforms, backend-as-a-service, or technical SaaS.',
   props: z.object({
     badge: z.string().optional(),
     headingTop: z.string().optional(),
@@ -40,19 +40,19 @@ export const DevToolHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "v2.4 Now Available"
+    const badge = props.badge ?? 'v2.4 Now Available'
     const headingTop =
-      props.headingTop ?? "Build faster with developer APIs that"
-    const highlight = props.highlight ?? "just work"
-    const headingBottom = props.headingBottom ?? ""
+      props.headingTop ?? 'Build faster with developer APIs that'
+    const highlight = props.highlight ?? 'just work'
+    const headingBottom = props.headingBottom ?? ''
     const subheading =
       props.subheading ??
-      "Authentication, storage, real-time events, and more — all in one platform. Used by 50,000+ developers at companies like Stripe, Notion, and Linear."
-    const primaryCta = props.primaryCta ?? "Start Building Free"
-    const secondaryCta = props.secondaryCta ?? "View Documentation"
+      'Authentication, storage, real-time events, and more — all in one platform. Used by 50,000+ developers at companies like Stripe, Notion, and Linear.'
+    const primaryCta = props.primaryCta ?? 'Start Building Free'
+    const secondaryCta = props.secondaryCta ?? 'View Documentation'
     const footnote =
-      props.footnote ?? "No credit card required. 10,000 free requests/month."
-    const codeFile = props.codeFile ?? "example.js"
+      props.footnote ?? 'No credit card required. 10,000 free requests/month.'
+    const codeFile = props.codeFile ?? 'example.js'
     const code =
       props.code ??
       `import { DevStack } from '@devstack/sdk';
@@ -72,8 +72,8 @@ await ds.storage.set(\`user:\${user.id}\`, {
   preferences: { theme: 'dark' },
   lastLogin: new Date().toISOString()
 });`
-    const proofTitle = props.proofTitle ?? "50,000+ developers"
-    const proofSubtitle = props.proofSubtitle ?? "trust DevStack"
+    const proofTitle = props.proofTitle ?? '50,000+ developers'
+    const proofSubtitle = props.proofSubtitle ?? 'trust DevStack'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -95,10 +95,7 @@ await ds.storage.set(\`user:\${user.id}\`, {
 
     return (
       <section
-        className={cn(
-          "relative overflow-hidden bg-muted/40",
-          props.className,
-        )}
+        className={cn('relative overflow-hidden bg-muted/40', props.className)}
         aria-labelledby="hero-heading"
       >
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
@@ -180,7 +177,9 @@ await ds.storage.set(\`user:\${user.id}\`, {
                     />
                   </div>
                   <div className="text-xs">
-                    <p className="font-semibold text-foreground">{proofTitle}</p>
+                    <p className="font-semibold text-foreground">
+                      {proofTitle}
+                    </p>
                     <p className="text-muted-foreground">{proofSubtitle}</p>
                   </div>
                 </div>

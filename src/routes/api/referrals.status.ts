@@ -5,7 +5,8 @@ import { createReferralStatusApiResponse } from '@/features/referrals/server/ref
 export const Route = createFileRoute('/api/referrals/status')({
   server: {
     handlers: {
-      GET: async ({ request }) => await createReferralStatusApiResponse(request),
+      GET: async ({ request }) =>
+        await createReferralStatusApiResponse(request),
     },
   },
 })

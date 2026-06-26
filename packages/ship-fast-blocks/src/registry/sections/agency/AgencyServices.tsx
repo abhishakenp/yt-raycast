@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * AgencyServices — capabilities / services grid for a creative digital-agency
@@ -14,7 +14,7 @@ import { cn } from "#/lib/utils.ts"
  * baked-in default services.
  */
 export const AgencyServices = defineComponent({
-  name: "AgencyServices",
+  name: 'AgencyServices',
   description:
     "Capabilities / services grid for a creative digital-agency page: a left-aligned section heading and lead paragraph above a responsive 1/2/3-column grid of hover-lift cards, each with a rounded tinted icon tile (rotating inline line-icons), a title and a description; cards lift and glow on hover. Tokens-only, no links. Use to present an agency's offerings (brand strategy, UI/UX, development, marketing, motion, creative direction) or any 'what we do' / capabilities block.",
   props: z.object({
@@ -29,43 +29,42 @@ export const AgencyServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading =
-      props.heading ?? "Capabilities that cover the full journey."
+    const heading = props.heading ?? 'Capabilities that cover the full journey.'
     const description =
       props.description ??
-      "From initial concept to final pixel, we offer end-to-end services designed to transform ambitious ideas into market-leading digital products."
+      'From initial concept to final pixel, we offer end-to-end services designed to transform ambitious ideas into market-leading digital products.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Brand Strategy",
+            title: 'Brand Strategy',
             description:
-              "Positioning, messaging, and visual identity systems that resonate with your audience and differentiate you from competitors.",
+              'Positioning, messaging, and visual identity systems that resonate with your audience and differentiate you from competitors.',
           },
           {
-            title: "UI/UX Design",
+            title: 'UI/UX Design',
             description:
-              "User-centered interfaces crafted through research, wireframing, and high-fidelity prototyping for web and mobile.",
+              'User-centered interfaces crafted through research, wireframing, and high-fidelity prototyping for web and mobile.',
           },
           {
-            title: "Web Development",
+            title: 'Web Development',
             description:
-              "Performance-first frontend engineering with modern frameworks, clean architecture, and scalable infrastructure.",
+              'Performance-first frontend engineering with modern frameworks, clean architecture, and scalable infrastructure.',
           },
           {
-            title: "Digital Marketing",
+            title: 'Digital Marketing',
             description:
-              "Data-driven growth campaigns across SEO, content, paid media, and social to acquire and retain high-value customers.",
+              'Data-driven growth campaigns across SEO, content, paid media, and social to acquire and retain high-value customers.',
           },
           {
-            title: "Motion Design",
+            title: 'Motion Design',
             description:
-              "Cinematic animations, micro-interactions, and video production that bring interfaces and stories to life.",
+              'Cinematic animations, micro-interactions, and video production that bring interfaces and stories to life.',
           },
           {
-            title: "Creative Direction",
+            title: 'Creative Direction',
             description:
-              "Holistic creative leadership ensuring every touchpoint aligns with your brand vision and business objectives.",
+              'Holistic creative leadership ensuring every touchpoint aligns with your brand vision and business objectives.',
           },
         ]
 
@@ -164,7 +163,7 @@ export const AgencyServices = defineComponent({
     ]
 
     return (
-      <section className={cn("relative py-24 sm:py-32", props.className)}>
+      <section className={cn('relative py-24 sm:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-16 max-w-3xl">
             <h2 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl">

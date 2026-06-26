@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CommunityForumSteps — numbered step timeline for a community-platform / discussion-forum
@@ -11,7 +11,7 @@ import { cn } from "#/lib/utils.ts"
  * flows, or product walkthroughs.
  */
 export const CommunityForumSteps = defineComponent({
-  name: "CommunityForumSteps",
+  name: 'CommunityForumSteps',
   description:
     "Numbered step timeline for a community-platform / discussion-forum landing page: a centered heading and description above a responsive 3-column timeline of numbered steps, each with a primary-colored number circle, a title, and a description; a thin connector line runs between steps on desktop. No links — instructional / persuasive only. Use as the 'how it works' / 'get started' section for community platforms, SaaS onboarding flows, or product walkthroughs.",
   props: z.object({
@@ -26,33 +26,32 @@ export const CommunityForumSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading =
-      props.heading ?? "Launch your community in minutes"
+    const heading = props.heading ?? 'Launch your community in minutes'
     const description =
       props.description ??
-      "From zero to thriving community in three simple steps."
+      'From zero to thriving community in three simple steps.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Create your space",
+            title: 'Create your space',
             description:
-              "Choose your community name, customize the look and feel, and set up your initial topic categories. No technical skills required.",
+              'Choose your community name, customize the look and feel, and set up your initial topic categories. No technical skills required.',
           },
           {
-            title: "Invite your people",
+            title: 'Invite your people',
             description:
-              "Send invitation links, import your existing mailing list, or make your community discoverable. Set membership rules that work for you.",
+              'Send invitation links, import your existing mailing list, or make your community discoverable. Set membership rules that work for you.',
           },
           {
-            title: "Start conversations",
+            title: 'Start conversations',
             description:
-              "Post your first discussion topic, welcome new members, and watch your community flourish with meaningful exchanges.",
+              'Post your first discussion topic, welcome new members, and watch your community flourish with meaningful exchanges.',
           },
         ]
 
     return (
-      <section className={cn("py-24 lg:py-32", props.className)}>
+      <section className={cn('py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">

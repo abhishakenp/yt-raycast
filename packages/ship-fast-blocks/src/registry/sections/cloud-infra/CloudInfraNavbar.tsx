@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CloudInfraNavbar — sticky translucent top navigation bar for a cloud
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * engineering-focused landing page.
  */
 export const CloudInfraNavbar = defineComponent({
-  name: "CloudInfraNavbar",
+  name: 'CloudInfraNavbar',
   description:
     "Sticky translucent top navigation bar for a cloud / developer-platform SaaS site: blurred backdrop, border-bottomed header with a cloud-glyph logo tile + brand name on the left, horizontal nav links in the center, and a 'Sign in' text link + 'Get Started' pill-shaped primary CTA on the right (desktop). Every link and CTA routes through useNavigate for page-switching. Use as the site header for cloud hosting, PaaS, IaaS, serverless, DevOps, or engineering-focused landing pages.",
   props: z.object({
@@ -32,18 +32,18 @@ export const CloudInfraNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "CloudShift"
+    const brand = props.brand ?? 'CloudShift'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Pricing", "Showcase", "FAQ"]
-    const ctaLabel = props.ctaLabel ?? "Get Started"
+      : ['Features', 'Pricing', 'Showcase', 'FAQ']
+    const ctaLabel = props.ctaLabel ?? 'Get Started'
     const homeTarget = props.homeTarget ?? nav[0]
-    const signInTarget = props.signInTarget ?? "Sign in"
+    const signInTarget = props.signInTarget ?? 'Sign in'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -65,7 +65,7 @@ export const CloudInfraNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

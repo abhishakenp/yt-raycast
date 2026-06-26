@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * NewsroomHero — front-page lead-story hero for a digital newsroom / magazine.
@@ -18,7 +18,7 @@ import { Image } from "#/lib/img.tsx"
  * content sites. Renders fully with no props.
  */
 export const NewsroomHero = defineComponent({
-  name: "NewsroomHero",
+  name: 'NewsroomHero',
   description:
     "Front-page lead-story hero for a digital newsroom / magazine: a small uppercase category kicker, a huge serif display headline, a standfirst/dek paragraph, a byline (author avatar + name + role) carrying date and read time, a wide lead photograph with a small italic caption and a 'Read the full story' CTA, beside a slim right-hand rail of secondary 'also in the news' headlines (small tag + title) separated by hairline rules. Editorial, print-inspired magazine aesthetic with serif display type, muted contrast and generous whitespace. The CTA routes through useNavigate. Use as the masthead / front-page hero for online newspapers, digital magazines, longform publications, investigative outlets or editorial content sites.",
   props: z.object({
@@ -59,54 +59,52 @@ export const NewsroomHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const kicker = props.kicker ?? "Investigation"
+    const kicker = props.kicker ?? 'Investigation'
     const headline =
       props.headline ??
       "Inside the quiet collapse of the city's last public water board"
     const dek =
       props.dek ??
-      "For a decade, residents were told the taps were safe. A six-month investigation into leaked memos, redacted reports and a vanishing budget reveals how oversight failed an entire district — and who knew."
+      'For a decade, residents were told the taps were safe. A six-month investigation into leaked memos, redacted reports and a vanishing budget reveals how oversight failed an entire district — and who knew.'
     const author = {
-      name: props.author?.name ?? "Mara Delacroix",
-      role: props.author?.role ?? "Senior Investigations Editor",
+      name: props.author?.name ?? 'Mara Delacroix',
+      role: props.author?.role ?? 'Senior Investigations Editor',
       avatarAlt:
         props.author?.avatarAlt ??
-        "portrait headshot of a female investigative journalist",
+        'portrait headshot of a female investigative journalist',
     }
-    const date = props.date ?? "June 22, 2026"
-    const readTime = props.readTime ?? "14 min read"
+    const date = props.date ?? 'June 22, 2026'
+    const readTime = props.readTime ?? '14 min read'
     const imageAlt =
       props.imageAlt ??
-      "documentary photograph of an aging municipal water treatment facility at dusk"
+      'documentary photograph of an aging municipal water treatment facility at dusk'
     const caption =
       props.caption ??
-      "The Eastside treatment plant, decommissioned without public notice in 2021. Photograph by the newsroom."
-    const cta = props.cta ?? "Read the full story"
-    const sideStories =
-      props.sideStories ??
-      [
-        {
-          tag: "Politics",
-          title: "Council moves to freeze rates ahead of contested vote",
-        },
-        {
-          tag: "Climate",
-          title: "Heat records fall again as the grid strains under demand",
-        },
-        {
-          tag: "Culture",
-          title: "The novelists quietly rewriting the city's memory",
-        },
-        {
-          tag: "Business",
-          title: "A family bakery, a rent hike, and the fight to stay open",
-        },
-      ]
+      'The Eastside treatment plant, decommissioned without public notice in 2021. Photograph by the newsroom.'
+    const cta = props.cta ?? 'Read the full story'
+    const sideStories = props.sideStories ?? [
+      {
+        tag: 'Politics',
+        title: 'Council moves to freeze rates ahead of contested vote',
+      },
+      {
+        tag: 'Climate',
+        title: 'Heat records fall again as the grid strains under demand',
+      },
+      {
+        tag: 'Culture',
+        title: "The novelists quietly rewriting the city's memory",
+      },
+      {
+        tag: 'Business',
+        title: 'A family bakery, a rent hike, and the fight to stay open',
+      },
+    ]
 
     return (
       <section
         aria-labelledby="newsroom-hero-heading"
-        className={cn("bg-background", props.className)}
+        className={cn('bg-background', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid gap-12 lg:grid-cols-3 lg:gap-16">
@@ -134,9 +132,7 @@ export const NewsroomHero = defineComponent({
                   className="size-10 rounded-full object-cover"
                 />
                 <div className="text-sm">
-                  <p className="font-semibold text-foreground">
-                    {author.name}
-                  </p>
+                  <p className="font-semibold text-foreground">{author.name}</p>
                   <p className="text-muted-foreground">{author.role}</p>
                 </div>
                 <div className="ml-auto text-right text-xs text-muted-foreground">
@@ -178,7 +174,7 @@ export const NewsroomHero = defineComponent({
                   <li key={i} className="py-4 first:pt-0">
                     <button
                       type="button"
-                      onClick={() => go(story.title ?? "")}
+                      onClick={() => go(story.title ?? '')}
                       className="group block w-full text-left"
                     >
                       <span className="mb-1 block text-xs font-semibold uppercase tracking-widest text-accent">

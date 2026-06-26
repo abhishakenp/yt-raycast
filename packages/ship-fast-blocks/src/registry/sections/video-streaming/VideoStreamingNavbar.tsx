@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * VideoStreamingNavbar — sticky site header for a cinematic video-streaming
@@ -23,7 +23,7 @@ const PlayMark = ({ className }: { className?: string }) => (
 )
 
 export const VideoStreamingNavbar = defineComponent({
-  name: "VideoStreamingNavbar",
+  name: 'VideoStreamingNavbar',
   description:
     "Sticky site header for a cinematic video-streaming brand built on the shared SiteNav composite: a bold wordmark + inline primary play-triangle mark, centered desktop nav links (Browse, Shows, Movies, Pricing), a 'Start Watching' CTA, and a real mobile drawer. Use as the header for streaming services, on-demand video apps, or OTT platforms where signup is the primary action.",
   props: z.object({
@@ -42,16 +42,16 @@ export const VideoStreamingNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Browse", "Shows", "Movies", "Pricing"]
+      : ['Browse', 'Shows', 'Movies', 'Pricing']
     return (
       <SiteNav
-        brand={props.brand ?? "Lumen"}
+        brand={props.brand ?? 'Lumen'}
         brandMark={<PlayMark className="size-7 text-primary" />}
         brandClassName="font-bold tracking-tight"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Start Watching",
-          target: props.ctaTarget ?? "Pricing",
+          label: props.ctaLabel ?? 'Start Watching',
+          target: props.ctaTarget ?? 'Pricing',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

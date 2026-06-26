@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * IllustratorHero — split-layout hero section for an illustrator / visual-artist
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * baked-in "Mira Chen" defaults.
  */
 export const IllustratorHero = defineComponent({
-  name: "IllustratorHero",
+  name: 'IllustratorHero',
   description:
-    "Split-layout hero section for an illustrator / visual-artist portfolio: left side with an uppercase accent eyebrow label, large serif headline with two color-highlighted phrases, supporting paragraph, and dual rounded CTAs (filled primary with arrow + outlined secondary); right side has a tall 4:5 portrait photo with two soft blurred pastel accent orbs at the corners. CTAs route through useNavigate. Use as the opening hero for illustrators, painters, picture-book artists, editorial illustrators, or warm editorial creative portfolios.",
+    'Split-layout hero section for an illustrator / visual-artist portfolio: left side with an uppercase accent eyebrow label, large serif headline with two color-highlighted phrases, supporting paragraph, and dual rounded CTAs (filled primary with arrow + outlined secondary); right side has a tall 4:5 portrait photo with two soft blurred pastel accent orbs at the corners. CTAs route through useNavigate. Use as the opening hero for illustrators, painters, picture-book artists, editorial illustrators, or warm editorial creative portfolios.',
   props: z.object({
     /** Uppercase accent eyebrow label. */
     eyebrow: z.string().optional(),
@@ -42,19 +42,19 @@ export const IllustratorHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Illustrator & Visual Artist"
-    const headingStart = props.headingStart ?? "Creating worlds through"
-    const highlightOne = props.highlightOne ?? "color"
-    const headingMid = props.headingMid ?? "and"
-    const highlightTwo = props.highlightTwo ?? "story"
+    const eyebrow = props.eyebrow ?? 'Illustrator & Visual Artist'
+    const headingStart = props.headingStart ?? 'Creating worlds through'
+    const highlightOne = props.highlightOne ?? 'color'
+    const headingMid = props.headingMid ?? 'and'
+    const highlightTwo = props.highlightTwo ?? 'story'
     const subheading =
       props.subheading ??
       "I'm Mira Chen, an independent illustrator based in Portland, Oregon. I craft whimsical illustrations for children's books, editorial features, and digital prints that spark imagination."
-    const primaryCta = props.primaryCta ?? "View Portfolio"
-    const secondaryCta = props.secondaryCta ?? "Browse Prints"
+    const primaryCta = props.primaryCta ?? 'View Portfolio'
+    const secondaryCta = props.secondaryCta ?? 'Browse Prints'
     const imageAlt =
       props.imageAlt ??
-      "Artist studio workspace with watercolor paintings, brushes, and colorful illustration drafts spread across a wooden desk near a sunny window"
+      'Artist studio workspace with watercolor paintings, brushes, and colorful illustration drafts spread across a wooden desk near a sunny window'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -76,7 +76,7 @@ export const IllustratorHero = defineComponent({
     return (
       <section
         className={cn(
-          "relative px-4 pb-20 pt-16 sm:px-6 sm:pb-28 sm:pt-24 lg:px-8 lg:pb-36 lg:pt-32",
+          'relative px-4 pb-20 pt-16 sm:px-6 sm:pb-28 sm:pt-24 lg:px-8 lg:pb-36 lg:pt-32',
           props.className,
         )}
       >
@@ -87,9 +87,9 @@ export const IllustratorHero = defineComponent({
                 {eyebrow}
               </p>
               <h1 className="mb-6 font-serif text-4xl leading-tight sm:text-5xl lg:text-6xl xl:text-7xl">
-                {headingStart}{" "}
-                <span className="text-chart-2">{highlightOne}</span>{" "}
-                {headingMid}{" "}
+                {headingStart}{' '}
+                <span className="text-chart-2">{highlightOne}</span>{' '}
+                {headingMid}{' '}
                 <span className="text-chart-3">{highlightTwo}</span>
               </h1>
               <p className="mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl">

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NewsletterNavbar — sticky, backdrop-blurred top navigation bar for an editorial
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * creators. Renders fully with no props via baked-in defaults.
  */
 export const NewsletterNavbar = defineComponent({
-  name: "NewsletterNavbar",
+  name: 'NewsletterNavbar',
   description:
     "Sticky, backdrop-blurred top navigation bar for an editorial newsletter / subscription site: a serif initial-mark logo tile + publication name on the left, quiet text nav links in the center, and the final nav label promoted to an outlined 'Subscribe' pill on the right (desktop); a hamburger button on mobile. Warm, calm, literary aesthetic on a light paper-toned surface. Items route through useNavigate for page-switching. Use as the sticky site header for newsletters, Substack-style publications, blogs, essayists, digests, or content creators.",
   props: z.object({
@@ -27,15 +27,15 @@ export const NewsletterNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "The Quiet Observer"
+    const brand = props.brand ?? 'The Quiet Observer'
     const nav = props.nav?.length
       ? props.nav
-      : ["Recent Issues", "About", "Subscribe"]
+      : ['Recent Issues', 'About', 'Subscribe']
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-foreground font-serif font-medium text-background",
+          'grid place-items-center rounded-lg bg-foreground font-serif font-medium text-background',
           className,
         )}
         aria-hidden="true"
@@ -47,7 +47,7 @@ export const NewsletterNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm",
+          'sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm',
           props.className,
         )}
       >

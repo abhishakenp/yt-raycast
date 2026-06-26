@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * FurnitureStoreFeatures — a centered guarantees / value-prop grid. A padded
@@ -13,9 +13,9 @@ import { cn } from "#/lib/utils.ts"
  * home-decor, interiors, or any warm retail brand. Renders fully with no props.
  */
 export const FurnitureStoreFeatures = defineComponent({
-  name: "FurnitureStoreFeatures",
+  name: 'FurnitureStoreFeatures',
   description:
-    "Centered guarantees / value-prop grid: a padded section with a centered eyebrow + heading above a 4-up grid (1/2/4 columns responsive) of items, each a centered circular muted icon tile over a title and short paragraph; decorative outline icons rotate through a baked-in check / clock / cube / refresh set tinted primary. Use to showcase store guarantees, perks, or why-choose-us value props for furniture, home-decor, interiors, or any warm retail brand.",
+    'Centered guarantees / value-prop grid: a padded section with a centered eyebrow + heading above a 4-up grid (1/2/4 columns responsive) of items, each a centered circular muted icon tile over a title and short paragraph; decorative outline icons rotate through a baked-in check / clock / cube / refresh set tinted primary. Use to showcase store guarantees, perks, or why-choose-us value props for furniture, home-decor, interiors, or any warm retail brand.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -25,30 +25,30 @@ export const FurnitureStoreFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Why Haven & Home"
-    const heading = props.heading ?? "Designed for how you live"
+    const eyebrow = props.eyebrow ?? 'Why Haven & Home'
+    const heading = props.heading ?? 'Designed for how you live'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Certified Sustainable",
+            title: 'Certified Sustainable',
             description:
-              "FSC-certified wood, recycled fabrics, and non-toxic finishes on every piece.",
+              'FSC-certified wood, recycled fabrics, and non-toxic finishes on every piece.',
           },
           {
-            title: "10-Year Warranty",
+            title: '10-Year Warranty',
             description:
-              "Built to last. Every frame, cushion, and joint guaranteed for a decade.",
+              'Built to last. Every frame, cushion, and joint guaranteed for a decade.',
           },
           {
-            title: "White Glove Delivery",
+            title: 'White Glove Delivery',
             description:
-              "Room-of-choice delivery, assembly, and packaging removal included.",
+              'Room-of-choice delivery, assembly, and packaging removal included.',
           },
           {
-            title: "30-Day Returns",
+            title: '30-Day Returns',
             description:
-              "Not the perfect fit? Return or exchange within 30 days, no questions asked.",
+              'Not the perfect fit? Return or exchange within 30 days, no questions asked.',
           },
         ]
 
@@ -109,7 +109,7 @@ export const FurnitureStoreFeatures = defineComponent({
 
     return (
       <section
-        className={cn("py-16 lg:py-24", props.className)}
+        className={cn('py-16 lg:py-24', props.className)}
         aria-labelledby="furniture-features-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

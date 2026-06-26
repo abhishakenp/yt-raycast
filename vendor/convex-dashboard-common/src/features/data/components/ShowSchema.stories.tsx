@@ -1,8 +1,8 @@
-import { Meta, StoryObj } from "@storybook/nextjs";
-import { Shape } from "shapes";
-import { ShowSchema } from "@common/features/data/components/ShowSchema";
-import { SchemaJson } from "@common/lib/format";
-import { Sheet } from "@ui/Sheet";
+import { Meta, StoryObj } from '@storybook/nextjs'
+import { Shape } from 'shapes'
+import { ShowSchema } from '@common/features/data/components/ShowSchema'
+import { SchemaJson } from '@common/lib/format'
+import { Sheet } from '@ui/Sheet'
 
 const meta = {
   component: ShowSchema,
@@ -11,21 +11,21 @@ const meta = {
     inProgressSchema: undefined,
     shapes: new Map<string, Shape>([
       [
-        "tasks",
+        'tasks',
         {
-          type: "Object",
+          type: 'Object',
           fields: [
             {
-              fieldName: "status",
+              fieldName: 'status',
               optional: false,
-              shape: { type: "String" },
+              shape: { type: 'String' },
             },
           ],
         },
       ],
     ]),
   },
-  parameters: { a11y: { test: "todo" } },
+  parameters: { a11y: { test: 'todo' } },
   decorators: [
     (Story) => (
       <Sheet>
@@ -33,28 +33,28 @@ const meta = {
       </Sheet>
     ),
   ],
-} satisfies Meta<typeof ShowSchema>;
+} satisfies Meta<typeof ShowSchema>
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const sampleSchema: SchemaJson = {
   tables: [
     {
-      tableName: "tasks",
+      tableName: 'tasks',
       indexes: [],
       searchIndexes: [],
       vectorIndexes: [],
       documentType: {
-        type: "object",
+        type: 'object',
         value: {
           status: {
             fieldType: {
-              type: "union",
+              type: 'union',
               value: [
-                { type: "literal", value: "todo" },
-                { type: "literal", value: "in-progress" },
-                { type: "literal", value: "done" },
+                { type: 'literal', value: 'todo' },
+                { type: 'literal', value: 'in-progress' },
+                { type: 'literal', value: 'done' },
               ],
             },
             optional: false,
@@ -64,28 +64,28 @@ const sampleSchema: SchemaJson = {
     },
   ],
   schemaValidation: true,
-};
+}
 
-export const NoSchema: Story = { args: {} };
+export const NoSchema: Story = { args: {} }
 
 export const GenerationError: Story = {
   args: {
     hasShapeError: true,
   },
-};
+}
 
 export const LoadingSchema: Story = {
   args: {
     inProgressSchema: sampleSchema,
   },
-};
+}
 
 export const LoadingSchemaWithExistingSchema: Story = {
   args: {
     activeSchema: sampleSchema,
     inProgressSchema: sampleSchema,
   },
-};
+}
 
 export const SavedSchema: Story = {
   args: {
@@ -94,13 +94,13 @@ export const SavedSchema: Story = {
       schemaValidation: false,
     },
   },
-};
+}
 
 export const EnforcedSchema: Story = {
   args: {
     activeSchema: sampleSchema,
   },
-};
+}
 
 export const SchemaValidationInProgress: Story = {
   args: {
@@ -110,4 +110,4 @@ export const SchemaValidationInProgress: Story = {
       totalDocs: 2,
     },
   },
-};
+}

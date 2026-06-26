@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * KidsEducationGallery — "learning in action" masonry photo gallery for a kids /
@@ -13,7 +13,7 @@ import { Image } from "#/lib/img.tsx"
  * learning apps. Renders fully with no props via baked-in defaults.
  */
 export const KidsEducationGallery = defineComponent({
-  name: "KidsEducationGallery",
+  name: 'KidsEducationGallery',
   description:
     "Learning-in-action masonry photo gallery for a kids / family learning platform: a centered eyebrow + heading + description intro above a responsive masonry grid of square photo tiles (the 2nd tile spans 2x2, a later tile spans 2 columns); each tile zooms on hover and reveals a caption over a soft bottom gradient. Use to show joyful candid learner photos for kids-education startups, children's e-learning platforms, camps, and family learning apps.",
   props: z.object({
@@ -30,51 +30,58 @@ export const KidsEducationGallery = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Gallery"
-    const heading = props.heading ?? "Learning in Action"
+    const eyebrow = props.eyebrow ?? 'Gallery'
+    const heading = props.heading ?? 'Learning in Action'
     const description =
       props.description ??
-      "See the joy of discovery through the eyes of our young learners from around the world."
+      'See the joy of discovery through the eyes of our young learners from around the world.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            caption: "Craft Time",
-            imageAlt: "Young girl smiling while doing a craft project with colorful paper",
-          },
-          {
-            caption: "Building Together",
+            caption: 'Craft Time',
             imageAlt:
-              "Children collaborating on a large building blocks project in a bright classroom",
+              'Young girl smiling while doing a craft project with colorful paper',
           },
           {
-            caption: "Garden Science",
-            imageAlt: "Child excitedly observing a plant growing in a small pot",
+            caption: 'Building Together',
+            imageAlt:
+              'Children collaborating on a large building blocks project in a bright classroom',
           },
           {
-            caption: "Robotics Fun",
-            imageAlt: "Young boy focused on assembling a robot kit with concentration",
+            caption: 'Garden Science',
+            imageAlt:
+              'Child excitedly observing a plant growing in a small pot',
           },
           {
-            caption: "Art Studio",
-            imageAlt: "Children painting at easels with bright colorful paints in art class",
+            caption: 'Robotics Fun',
+            imageAlt:
+              'Young boy focused on assembling a robot kit with concentration',
           },
           {
-            caption: "Microscope Lab",
-            imageAlt: "Child using a microscope to examine slides with curiosity",
+            caption: 'Art Studio',
+            imageAlt:
+              'Children painting at easels with bright colorful paints in art class',
           },
           {
-            caption: "Reading Corner",
-            imageAlt: "Young children reading books together in a cozy library corner",
+            caption: 'Microscope Lab',
+            imageAlt:
+              'Child using a microscope to examine slides with curiosity',
           },
           {
-            caption: "Nature Walk",
-            imageAlt: "Children outdoors on a nature walk exploring and collecting leaves",
+            caption: 'Reading Corner',
+            imageAlt:
+              'Young children reading books together in a cozy library corner',
+          },
+          {
+            caption: 'Nature Walk',
+            imageAlt:
+              'Children outdoors on a nature walk exploring and collecting leaves',
           },
         ]
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-secondary">
@@ -91,9 +98,9 @@ export const KidsEducationGallery = defineComponent({
               <div
                 key={g.caption}
                 className={cn(
-                  "group relative aspect-square overflow-hidden rounded-2xl",
-                  i === 1 && "md:col-span-2 md:row-span-2",
-                  i === 7 && "md:col-span-2",
+                  'group relative aspect-square overflow-hidden rounded-2xl',
+                  i === 1 && 'md:col-span-2 md:row-span-2',
+                  i === 7 && 'md:col-span-2',
                 )}
               >
                 <Image

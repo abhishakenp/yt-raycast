@@ -32,13 +32,17 @@ describe('partner coupons', () => {
         '[{"code":"SHIP25","percentOff":25,"razorpayOfferId":"offer_25","stripePromotionCode":"promo_25"}]',
     }
 
-    expect(validatePartnerCoupon(' ship25 ', { provider: 'razorpay', env })).toMatchObject({
+    expect(
+      validatePartnerCoupon(' ship25 ', { provider: 'razorpay', env }),
+    ).toMatchObject({
       ok: true,
       code: 'SHIP25',
       percentOff: 25,
       providerCouponId: 'offer_25',
     })
-    expect(validatePartnerCoupon('SHIP25', { provider: 'stripe', env })).toMatchObject({
+    expect(
+      validatePartnerCoupon('SHIP25', { provider: 'stripe', env }),
+    ).toMatchObject({
       ok: true,
       providerCouponId: 'promo_25',
     })
@@ -46,14 +50,19 @@ describe('partner coupons', () => {
 
   it('rejects unknown or provider-incomplete coupons', () => {
     const env = {
-      SHIP_FAST_PARTNER_COUPONS: '[{"code":"SHIP25","percentOff":25,"razorpayOfferId":"offer_25"}]',
+      SHIP_FAST_PARTNER_COUPONS:
+        '[{"code":"SHIP25","percentOff":25,"razorpayOfferId":"offer_25"}]',
     }
 
-    expect(validatePartnerCoupon('missing', { provider: 'razorpay', env })).toMatchObject({
+    expect(
+      validatePartnerCoupon('missing', { provider: 'razorpay', env }),
+    ).toMatchObject({
       ok: false,
       error: 'Coupon code is not valid.',
     })
-    expect(validatePartnerCoupon('SHIP25', { provider: 'stripe', env })).toMatchObject({
+    expect(
+      validatePartnerCoupon('SHIP25', { provider: 'stripe', env }),
+    ).toMatchObject({
       ok: false,
       error: 'Coupon is not configured for stripe.',
     })

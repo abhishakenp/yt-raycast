@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ConsultingPricing — 3-tier engagement-models pricing block for a
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * with no props via three baked-in default tiers.
  */
 export const ConsultingPricing = defineComponent({
-  name: "ConsultingPricing",
+  name: 'ConsultingPricing',
   description:
-    "3-tier engagement-models pricing block for a management-consulting firm page: a centered heading and lead paragraph above a responsive 3-column grid of tier cards, with an optional featured middle tier (dark primary card with a badge). Each tier shows name, price, unit, description, a feature list with check icons, and a CTA button. All CTAs route through useNavigate. Use for pricing, service tiers, or engagement models on consulting, advisory, or professional-services sites.",
+    '3-tier engagement-models pricing block for a management-consulting firm page: a centered heading and lead paragraph above a responsive 3-column grid of tier cards, with an optional featured middle tier (dark primary card with a badge). Each tier shows name, price, unit, description, a feature list with check icons, and a CTA button. All CTAs route through useNavigate. Use for pricing, service tiers, or engagement models on consulting, advisory, or professional-services sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -41,53 +41,53 @@ export const ConsultingPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Engagement Models"
+    const heading = props.heading ?? 'Engagement Models'
     const description =
       props.description ??
-      "Flexible approaches tailored to your unique challenges, timeline, and organizational needs."
+      'Flexible approaches tailored to your unique challenges, timeline, and organizational needs.'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Strategic Advisory",
-            price: "$45K",
-            unit: "/month",
+            name: 'Strategic Advisory',
+            price: '$45K',
+            unit: '/month',
             description:
-              "Ideal for executive-level guidance on strategic direction, market entry, or transformation planning. Includes weekly advisory sessions and strategic roadmapping.",
+              'Ideal for executive-level guidance on strategic direction, market entry, or transformation planning. Includes weekly advisory sessions and strategic roadmapping.',
             features: [
-              "Monthly strategy sessions",
-              "Executive coaching",
-              "Market intelligence reports",
+              'Monthly strategy sessions',
+              'Executive coaching',
+              'Market intelligence reports',
             ],
-            cta: "Learn More",
+            cta: 'Learn More',
           },
           {
-            name: "Transformation Partnership",
-            price: "Custom",
+            name: 'Transformation Partnership',
+            price: 'Custom',
             description:
-              "Comprehensive support for major transformation initiatives. Dedicated team embedded with your organization for strategy through implementation.",
+              'Comprehensive support for major transformation initiatives. Dedicated team embedded with your organization for strategy through implementation.',
             features: [
-              "Dedicated project team",
-              "Full implementation support",
-              "Change management",
-              "Capability building",
+              'Dedicated project team',
+              'Full implementation support',
+              'Change management',
+              'Capability building',
             ],
-            cta: "Schedule Consultation",
+            cta: 'Schedule Consultation',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Capability Building",
-            price: "$85K",
-            unit: "/program",
+            name: 'Capability Building',
+            price: '$85K',
+            unit: '/program',
             description:
-              "Intensive training and development programs to build internal consulting capabilities and leadership skills within your organization.",
+              'Intensive training and development programs to build internal consulting capabilities and leadership skills within your organization.',
             features: [
-              "Workshop-based training",
-              "Real project application",
-              "12-week program duration",
+              'Workshop-based training',
+              'Real project application',
+              '12-week program duration',
             ],
-            cta: "Learn More",
+            cta: 'Learn More',
           },
         ]
 
@@ -109,7 +109,7 @@ export const ConsultingPricing = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
@@ -122,10 +122,10 @@ export const ConsultingPricing = defineComponent({
               <div
                 key={tier.name}
                 className={cn(
-                  "relative rounded-xl border p-8",
+                  'relative rounded-xl border p-8',
                   tier.featured
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-muted",
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-border bg-muted',
                 )}
               >
                 {tier.badge && (
@@ -137,10 +137,10 @@ export const ConsultingPricing = defineComponent({
                 )}
                 <h3
                   className={cn(
-                    "mb-2 text-xl font-semibold",
+                    'mb-2 text-xl font-semibold',
                     tier.featured
-                      ? "text-primary-foreground"
-                      : "text-foreground",
+                      ? 'text-primary-foreground'
+                      : 'text-foreground',
                   )}
                 >
                   {tier.name}
@@ -148,10 +148,10 @@ export const ConsultingPricing = defineComponent({
                 <div className="mb-6">
                   <span
                     className={cn(
-                      "text-3xl font-bold",
+                      'text-3xl font-bold',
                       tier.featured
-                        ? "text-primary-foreground"
-                        : "text-foreground",
+                        ? 'text-primary-foreground'
+                        : 'text-foreground',
                     )}
                   >
                     {tier.price}
@@ -160,8 +160,8 @@ export const ConsultingPricing = defineComponent({
                     <span
                       className={cn(
                         tier.featured
-                          ? "text-primary-foreground/60"
-                          : "text-muted-foreground",
+                          ? 'text-primary-foreground/60'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.unit}
@@ -170,30 +170,30 @@ export const ConsultingPricing = defineComponent({
                 </div>
                 <p
                   className={cn(
-                    "mb-6 text-sm",
+                    'mb-6 text-sm',
                     tier.featured
-                      ? "text-primary-foreground/70"
-                      : "text-muted-foreground",
+                      ? 'text-primary-foreground/70'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {tier.description}
                 </p>
                 <ul
                   className={cn(
-                    "mb-8 space-y-3 text-sm",
+                    'mb-8 space-y-3 text-sm',
                     tier.featured
-                      ? "text-primary-foreground/80"
-                      : "text-muted-foreground",
+                      ? 'text-primary-foreground/80'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {tier.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2">
                       <CheckIcon
                         className={cn(
-                          "mt-0.5 size-5 flex-shrink-0",
+                          'mt-0.5 size-5 flex-shrink-0',
                           tier.featured
-                            ? "text-primary-foreground/60"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/60'
+                            : 'text-muted-foreground',
                         )}
                       />
                       <span>{feature}</span>
@@ -204,10 +204,10 @@ export const ConsultingPricing = defineComponent({
                   type="button"
                   onClick={() => go(tier.cta)}
                   className={cn(
-                    "w-full rounded-md px-4 py-3 font-medium transition-colors",
+                    'w-full rounded-md px-4 py-3 font-medium transition-colors',
                     tier.featured
-                      ? "bg-background text-foreground hover:bg-muted"
-                      : "border border-border bg-background text-foreground hover:bg-muted",
+                      ? 'bg-background text-foreground hover:bg-muted'
+                      : 'border border-border bg-background text-foreground hover:bg-muted',
                   )}
                 >
                   {tier.cta}

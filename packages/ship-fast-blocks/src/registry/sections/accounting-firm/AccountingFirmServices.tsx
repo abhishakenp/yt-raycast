@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * AccountingFirmServices — capabilities grid for a CPA / accounting-firm site.
@@ -15,9 +15,9 @@ import { cn } from "#/lib/utils.ts"
  * Renders fully with no props via baked-in defaults.
  */
 export const AccountingFirmServices = defineComponent({
-  name: "AccountingFirmServices",
+  name: 'AccountingFirmServices',
   description:
-    "Services / capabilities grid for a CPA / accounting-firm site: a centered heading + lede above a responsive 1-to-3 column grid of bordered service cards, each with a filled primary icon tile, a title, a description, and a check-marked feature list. A rotating set of finance-themed line icons (document, chart, report, cash, scale, trend) cycles across cards. Calm professional-services look. Use to present offerings on accounting firms, CPA practices, tax-preparation, bookkeeping/payroll, audit & assurance, estate or retirement planning, or financial advisory sites.",
+    'Services / capabilities grid for a CPA / accounting-firm site: a centered heading + lede above a responsive 1-to-3 column grid of bordered service cards, each with a filled primary icon tile, a title, a description, and a check-marked feature list. A rotating set of finance-themed line icons (document, chart, report, cash, scale, trend) cycles across cards. Calm professional-services look. Use to present offerings on accounting firms, CPA practices, tax-preparation, bookkeeping/payroll, audit & assurance, estate or retirement planning, or financial advisory sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -36,71 +36,71 @@ export const AccountingFirmServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Comprehensive financial services"
+    const heading = props.heading ?? 'Comprehensive financial services'
     const description =
       props.description ??
-      "From daily bookkeeping to complex tax strategy, we handle every aspect of your financial life with precision and care."
+      'From daily bookkeeping to complex tax strategy, we handle every aspect of your financial life with precision and care.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Tax Planning & Preparation",
+            title: 'Tax Planning & Preparation',
             description:
-              "Strategic tax planning for individuals and businesses. We maximize deductions, minimize liabilities, and ensure full compliance with federal, state, and local regulations.",
+              'Strategic tax planning for individuals and businesses. We maximize deductions, minimize liabilities, and ensure full compliance with federal, state, and local regulations.',
             points: [
-              "Individual & business returns",
-              "IRS audit representation",
-              "Estate & trust tax planning",
+              'Individual & business returns',
+              'IRS audit representation',
+              'Estate & trust tax planning',
             ],
           },
           {
-            title: "Business Advisory",
+            title: 'Business Advisory',
             description:
-              "Growth-focused guidance for businesses at every stage. From startup formation to succession planning, we help you make informed financial decisions.",
+              'Growth-focused guidance for businesses at every stage. From startup formation to succession planning, we help you make informed financial decisions.',
             points: [
-              "Cash flow management",
-              "Business valuations",
-              "M&A advisory services",
+              'Cash flow management',
+              'Business valuations',
+              'M&A advisory services',
             ],
           },
           {
-            title: "Audit & Assurance",
+            title: 'Audit & Assurance',
             description:
-              "Independent audit services that build stakeholder confidence. We deliver thorough, objective assessments with clear, actionable findings.",
+              'Independent audit services that build stakeholder confidence. We deliver thorough, objective assessments with clear, actionable findings.',
             points: [
-              "Financial statement audits",
-              "Internal control reviews",
-              "Compliance audits",
+              'Financial statement audits',
+              'Internal control reviews',
+              'Compliance audits',
             ],
           },
           {
-            title: "Bookkeeping & Payroll",
+            title: 'Bookkeeping & Payroll',
             description:
-              "Accurate, timely financial records that keep your business running smoothly. We handle the details so you can focus on growth.",
+              'Accurate, timely financial records that keep your business running smoothly. We handle the details so you can focus on growth.',
             points: [
-              "Monthly bookkeeping",
-              "Full-service payroll",
-              "Accounts payable/receivable",
+              'Monthly bookkeeping',
+              'Full-service payroll',
+              'Accounts payable/receivable',
             ],
           },
           {
-            title: "Estate Planning",
+            title: 'Estate Planning',
             description:
-              "Protect your legacy with comprehensive estate planning. We coordinate with attorneys to ensure your wealth transfers efficiently and tax-effectively.",
+              'Protect your legacy with comprehensive estate planning. We coordinate with attorneys to ensure your wealth transfers efficiently and tax-effectively.',
             points: [
-              "Trust administration",
-              "Wealth transfer strategies",
-              "Charitable giving plans",
+              'Trust administration',
+              'Wealth transfer strategies',
+              'Charitable giving plans',
             ],
           },
           {
-            title: "Retirement Planning",
+            title: 'Retirement Planning',
             description:
-              "Build a secure future with personalized retirement strategies. We help you navigate 401(k)s, IRAs, pensions, and Social Security optimization.",
+              'Build a secure future with personalized retirement strategies. We help you navigate 401(k)s, IRAs, pensions, and Social Security optimization.',
             points: [
-              "401(k) & IRA optimization",
-              "Social Security timing",
-              "Distribution strategies",
+              '401(k) & IRA optimization',
+              'Social Security timing',
+              'Distribution strategies',
             ],
           },
         ]
@@ -196,9 +196,7 @@ export const AccountingFirmServices = defineComponent({
     ]
 
     return (
-      <section
-        className={cn("bg-background py-20 lg:py-28", props.className)}
-      >
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * DashboardTopbar — a sticky top app-bar for a SaaS admin dashboard. A bordered
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * content column. Renders fully with no props via baked-in "Orbit" defaults.
  */
 export const DashboardTopbar = defineComponent({
-  name: "DashboardTopbar",
+  name: 'DashboardTopbar',
   description:
-    "A sticky top app-bar for a SaaS admin dashboard: a bordered card header bar with a left search field (leading magnifier icon), and on the right a notification bell (with an unread dot), a mail button, a divider and a user chip (avatar + name + role). The bell, mail and user chip route through useNavigate. Use as the top bar of an authenticated admin area, back office, analytics console or internal SaaS tool, paired above the main content column.",
+    'A sticky top app-bar for a SaaS admin dashboard: a bordered card header bar with a left search field (leading magnifier icon), and on the right a notification bell (with an unread dot), a mail button, a divider and a user chip (avatar + name + role). The bell, mail and user chip route through useNavigate. Use as the top bar of an authenticated admin area, back office, analytics console or internal SaaS tool, paired above the main content column.',
   props: z.object({
     /** Search field placeholder text. */
     search: z.string().optional(),
@@ -39,13 +39,13 @@ export const DashboardTopbar = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
     const searchPlaceholder =
-      props.search ?? "Search orders, customers, products..."
-    const notificationsTarget = props.notificationsTarget ?? "Notifications"
-    const messagesTarget = props.messagesTarget ?? "Messages"
-    const userTarget = props.userTarget ?? "Settings"
+      props.search ?? 'Search orders, customers, products...'
+    const notificationsTarget = props.notificationsTarget ?? 'Notifications'
+    const messagesTarget = props.messagesTarget ?? 'Messages'
+    const userTarget = props.userTarget ?? 'Settings'
 
-    const userName = props.user?.name ?? "Alex Morgan"
-    const userRole = props.user?.role ?? "Admin"
+    const userName = props.user?.name ?? 'Alex Morgan'
+    const userRole = props.user?.role ?? 'Admin'
     const userAvatarAlt =
       props.user?.avatarAlt ??
       `portrait headshot of ${userName}, friendly professional`
@@ -53,7 +53,7 @@ export const DashboardTopbar = defineComponent({
     return (
       <header
         className={cn(
-          "z-10 flex h-16 items-center justify-between border-b border-border bg-card px-4 sm:px-6",
+          'z-10 flex h-16 items-center justify-between border-b border-border bg-card px-4 sm:px-6',
           props.className,
         )}
       >

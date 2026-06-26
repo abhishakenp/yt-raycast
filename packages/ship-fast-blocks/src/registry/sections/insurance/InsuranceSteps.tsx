@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * InsuranceSteps — "how it works" 3-step process band for an insurance page. On
@@ -12,7 +12,7 @@ import { cn } from "#/lib/utils.ts"
  * Renders fully with no props via baked-in defaults.
  */
 export const InsuranceSteps = defineComponent({
-  name: "InsuranceSteps",
+  name: 'InsuranceSteps',
   description:
     "'How it works' 3-step process band for an insurance page on a soft muted canvas: a centered eyebrow chip + heading + lede above a responsive grid of numbered step cards, each with a solid brand-colored number tile, a title and a description, connected by right-pointing arrows between cards on desktop. Use to explain a simple get-covered / get-a-quote flow for insurance carriers, insurtech startups, brokers, or financial-protection products.",
   props: z.object({
@@ -29,28 +29,28 @@ export const InsuranceSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Simple Process"
-    const heading = props.heading ?? "Get covered in 3 easy steps"
+    const eyebrow = props.eyebrow ?? 'Simple Process'
+    const heading = props.heading ?? 'Get covered in 3 easy steps'
     const description =
       props.description ??
-      "No paperwork, no hassle. Start protecting what matters in under 2 minutes."
+      'No paperwork, no hassle. Start protecting what matters in under 2 minutes.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Get Your Quote",
+            title: 'Get Your Quote',
             description:
-              "Answer a few quick questions about yourself and what you need to protect. Our smart system instantly calculates your personalized rate.",
+              'Answer a few quick questions about yourself and what you need to protect. Our smart system instantly calculates your personalized rate.',
           },
           {
-            title: "Customize Coverage",
+            title: 'Customize Coverage',
             description:
-              "Adjust deductibles, add riders, and tailor your policy to fit your exact needs and budget. See price changes in real-time.",
+              'Adjust deductibles, add riders, and tailor your policy to fit your exact needs and budget. See price changes in real-time.',
           },
           {
             title: "You're Protected",
             description:
-              "Purchase instantly and download your policy documents immediately. Coverage begins the moment you need it.",
+              'Purchase instantly and download your policy documents immediately. Coverage begins the moment you need it.',
           },
         ]
 
@@ -72,7 +72,7 @@ export const InsuranceSteps = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-4 inline-block rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-primary">

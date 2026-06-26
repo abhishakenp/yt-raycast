@@ -10,12 +10,18 @@ export function sectionSubheadline(section: SectionLike): string {
   return value ? `<p class="eyebrow">${escapeHtml(value)}</p>` : ''
 }
 
-export function sectionBody(section: SectionLike, className = 'section-body'): string {
+export function sectionBody(
+  section: SectionLike,
+  className = 'section-body',
+): string {
   const value = String(section.body || '').trim()
   return value ? `<p class="${className}">${escapeHtml(value)}</p>` : ''
 }
 
-export function renderItemList<T>(items: T[] = [], render: (item: T, index: number) => string): string {
+export function renderItemList<T>(
+  items: T[] = [],
+  render: (item: T, index: number) => string,
+): string {
   return items.map(render).join('\n')
 }
 

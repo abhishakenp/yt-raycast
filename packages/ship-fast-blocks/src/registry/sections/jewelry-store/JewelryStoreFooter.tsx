@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * JewelryStoreFooter — rich five-column footer for a luxury jewelry maison on
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in "Maison Noir" defaults.
  */
 export const JewelryStoreFooter = defineComponent({
-  name: "JewelryStoreFooter",
+  name: 'JewelryStoreFooter',
   description:
-    "Rich five-column footer for a luxury jewelry maison on a bordered near-black band: a wide brand block (serif gold wordmark, blurb, round initial-letter social buttons) leads link columns (collections, services) and a plain-text contact column, above a bottom row with an auto-updating copyright line and legal links. The wordmark and every link route through useNavigate. Use as the closing footer for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.",
+    'Rich five-column footer for a luxury jewelry maison on a bordered near-black band: a wide brand block (serif gold wordmark, blurb, round initial-letter social buttons) leads link columns (collections, services) and a plain-text contact column, above a bottom row with an auto-updating copyright line and legal links. The wordmark and every link route through useNavigate. Use as the closing footer for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',
   props: z.object({
     /** Maison / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -42,58 +42,58 @@ export const JewelryStoreFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Maison Noir"
-    const homeTarget = props.homeTarget ?? "Collections"
+    const brand = props.brand ?? 'Maison Noir'
+    const homeTarget = props.homeTarget ?? 'Collections'
     const about =
       props.about ??
-      "Crafting exceptional jewelry since 1892. Every piece tells a story of heritage, craftsmanship, and enduring beauty."
+      'Crafting exceptional jewelry since 1892. Every piece tells a story of heritage, craftsmanship, and enduring beauty.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Collections",
+            title: 'Collections',
             links: [
-              "Éternelle Bridal",
-              "Lumière Essentials",
-              "Grand Gala",
-              "Archive Revival",
-              "Maison Classics",
+              'Éternelle Bridal',
+              'Lumière Essentials',
+              'Grand Gala',
+              'Archive Revival',
+              'Maison Classics',
               "Gentleman's Edit",
             ],
           },
           {
-            title: "Services",
+            title: 'Services',
             links: [
-              "Bespoke Design",
-              "Private Appointments",
-              "Lifetime Care",
-              "Valuation Services",
-              "Restoration",
-              "Corporate Gifting",
+              'Bespoke Design',
+              'Private Appointments',
+              'Lifetime Care',
+              'Valuation Services',
+              'Restoration',
+              'Corporate Gifting',
             ],
           },
         ]
-    const contactTitle = props.contactTitle ?? "Contact"
+    const contactTitle = props.contactTitle ?? 'Contact'
     const contact = props.contact?.length
       ? props.contact
       : [
-          "+33 1 42 86 87 88",
-          "concierge@maisonnoir.com",
-          "12 Place Vendôme, 75001 Paris, France",
-          "730 Fifth Avenue, New York, NY 10019",
+          '+33 1 42 86 87 88',
+          'concierge@maisonnoir.com',
+          '12 Place Vendôme, 75001 Paris, France',
+          '730 Fifth Avenue, New York, NY 10019',
         ]
     const socials = props.socials?.length
       ? props.socials
-      : ["Instagram", "Pinterest", "Facebook"]
-    const copyright = props.copyright ?? "All rights reserved."
+      : ['Instagram', 'Pinterest', 'Facebook']
+    const copyright = props.copyright ?? 'All rights reserved.'
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
 
     return (
       <footer
         className={cn(
-          "border-t border-border bg-background py-20",
+          'border-t border-border bg-background py-20',
           props.className,
         )}
       >

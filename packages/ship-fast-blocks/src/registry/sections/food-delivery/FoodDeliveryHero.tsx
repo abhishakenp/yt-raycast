@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FoodDeliveryHero — split two-column hero band for a food-delivery / restaurant
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * services. Renders fully with no props via baked-in "Nosh" defaults.
  */
 export const FoodDeliveryHero = defineComponent({
-  name: "FoodDeliveryHero",
+  name: 'FoodDeliveryHero',
   description:
     "Split two-column hero band for a food-delivery / restaurant landing page: left column with a big two-line headline, a supporting paragraph, a rounded-full delivery-address search input (leading map-pin icon) and a filled Find Food submit button plus a serving-cities note; right column with a large rounded food photo and a floating 'Order Confirmed / arriving in N min' tracking card pinned to its bottom-left. Form-submit and search CTA route through useNavigate; the food image is alt-driven. Use as the opening hero for food-delivery apps, restaurant aggregators, online-ordering platforms, or grocery/takeout services.",
   props: z.object({
@@ -42,27 +42,25 @@ export const FoodDeliveryHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const headingTop = props.headingTop ?? "Your favorite food,"
-    const headingBottom = props.headingBottom ?? "delivered in minutes"
+    const headingTop = props.headingTop ?? 'Your favorite food,'
+    const headingBottom = props.headingBottom ?? 'delivered in minutes'
     const heroSub =
       props.subheading ??
-      "From local favorites to national chains, Nosh brings the best restaurants in your city straight to your door. Track your order in real-time, every time."
+      'From local favorites to national chains, Nosh brings the best restaurants in your city straight to your door. Track your order in real-time, every time.'
     const addressPlaceholder =
-      props.addressPlaceholder ?? "Enter your delivery address"
-    const searchCta = props.searchCta ?? "Find Food"
+      props.addressPlaceholder ?? 'Enter your delivery address'
+    const searchCta = props.searchCta ?? 'Find Food'
     const serving =
       props.serving ??
-      "Serving San Francisco, Los Angeles, New York & 40+ cities nationwide"
+      'Serving San Francisco, Los Angeles, New York & 40+ cities nationwide'
     const heroImageAlt =
       props.imageAlt ??
-      "Overhead view of colorful gourmet dishes arranged on marble table with fresh vegetables and herbs"
-    const badgeTitle = props.badgeTitle ?? "Order Confirmed"
-    const badgeSubtitle = props.badgeSubtitle ?? "Arriving in 24 min"
+      'Overhead view of colorful gourmet dishes arranged on marble table with fresh vegetables and herbs'
+    const badgeTitle = props.badgeTitle ?? 'Order Confirmed'
+    const badgeSubtitle = props.badgeSubtitle ?? 'Arriving in 24 min'
 
     return (
-      <section
-        className={cn("pb-16 pt-32 lg:pb-24 lg:pt-40", props.className)}
-      >
+      <section className={cn('pb-16 pt-32 lg:pb-24 lg:pt-40', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">

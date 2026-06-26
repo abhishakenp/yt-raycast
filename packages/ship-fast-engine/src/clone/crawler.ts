@@ -1,9 +1,9 @@
-"use node"
+'use node'
 
-import { URL } from "url"
-import { parseHTML } from "linkedom"
-import type { PageGraph, CloneOptions } from "./types.ts"
-import { assertPublicUrl } from "./security.ts"
+import { URL } from 'url'
+import { parseHTML } from 'linkedom'
+import type { PageGraph, CloneOptions } from './types.ts'
+import { assertPublicUrl } from './security.ts'
 
 // Parallel fan-out crawl; build cycle-safe page graph; URL normalization; depth/page caps; concurrency cap
 
@@ -22,21 +22,21 @@ export function normalizeUrl(raw: string): string {
 
     // Lowercase host, treat www.host === host
     let host = url.hostname.toLowerCase()
-    if (host.startsWith("www.")) {
+    if (host.startsWith('www.')) {
       host = host.slice(4)
     }
     url.hostname = host
 
     // Strip default ports
     if (
-      (url.protocol === "http:" && url.port === "80") ||
-      (url.protocol === "https:" && url.port === "443")
+      (url.protocol === 'http:' && url.port === '80') ||
+      (url.protocol === 'https:' && url.port === '443')
     ) {
-      url.port = ""
+      url.port = ''
     }
 
     // Drop fragment
-    url.hash = ""
+    url.hash = ''
 
     // Collapse directory-index aliases: a trailing default document — `index.html`
     // (and index.htm/php/aspx/jsp) — addresses the SAME resource the web server
@@ -46,13 +46,16 @@ export function normalizeUrl(raw: string): string {
     // phantom duplicate. We strip ONLY the default-document filename (leaving the
     // directory slash intact), so this never merges genuinely distinct paths like
     // `/a` vs `/a/` — it only canonicalizes the well-known index alias.
-    url.pathname = url.pathname.replace(/\/index\.(?:html?|php|aspx?|jsp)$/i, "/")
+    url.pathname = url.pathname.replace(
+      /\/index\.(?:html?|php|aspx?|jsp)$/i,
+      '/',
+    )
 
     // Sort query params
     const params = Array.from(url.searchParams.entries()).sort(([a], [b]) =>
       a === b ? 0 : a < b ? -1 : 1,
     )
-    url.search = ""
+    url.search = ''
     for (const [key, value] of params) {
       url.searchParams.append(key, value)
     }
@@ -90,15 +93,22 @@ function contentSignature(html: string): string | null {
     const body = doc.body
     if (!body) return null
     // Drop non-rendering nodes that add noise (inline scripts/styles vary per build).
-    body.querySelectorAll("script, style, template, noscript").forEach((n) => n.remove())
+    body
+      .querySelectorAll('script, style, template, noscript')
+      .forEach((n) => n.remove())
     // Normalized visible text (collapse whitespace, lowercase).
-    const text = (body.textContent || "").replace(/\s+/g, " ").trim().toLowerCase()
+    const text = (body.textContent || '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase()
     // Ordered skeleton of structural/heading/media tags — captures "shape".
     const skeleton = Array.from(
-      body.querySelectorAll("h1,h2,h3,h4,section,article,header,footer,nav,aside,main,img,table,form,ul,ol,p"),
+      body.querySelectorAll(
+        'h1,h2,h3,h4,section,article,header,footer,nav,aside,main,img,table,form,ul,ol,p',
+      ),
     )
       .map((el) => el.tagName.toLowerCase())
-      .join(">")
+      .join('>')
     // A page with essentially no body text is a STUB; collapse ALL such stubs
     // together (signature keyed only on skeleton) so 16 empty-H1 pages dedupe to one.
     if (text.length < 40) {
@@ -124,10 +134,12 @@ function structuralSignature(html: string): string | null {
     const { document: doc } = parseHTML(html)
     const body = doc.body
     if (!body) return null
-    body.querySelectorAll("script, style, template, noscript").forEach((n) => n.remove())
+    body
+      .querySelectorAll('script, style, template, noscript')
+      .forEach((n) => n.remove())
     const blocks = Array.from(
       body.querySelectorAll(
-        "h1,h2,h3,h4,h5,h6,section,article,header,footer,nav,aside,main,img,table,form,ul,ol,li,p,blockquote",
+        'h1,h2,h3,h4,h5,h6,section,article,header,footer,nav,aside,main,img,table,form,ul,ol,li,p,blockquote',
       ),
     )
     // Require enough structure to make an accidental shape-collision unlikely; a
@@ -143,13 +155,13 @@ function structuralSignature(html: string): string | null {
     const countKey = Array.from(counts.entries())
       .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([t, n]) => `${t}${n}`)
-      .join(",")
+      .join(',')
     // Coarse length bucket (log scale) so prose vs. its translation — within ~2x
     // length — still bucket together, while a structurally-identical but
     // content-wise much larger page stays distinct.
-    const text = (body.textContent || "").replace(/\s+/g, " ").trim()
+    const text = (body.textContent || '').replace(/\s+/g, ' ').trim()
     const lenBucket = Math.round(Math.log2(Math.max(1, text.length)))
-    return `struct:${skeleton.join(">")}|${countKey}|${lenBucket}`
+    return `struct:${skeleton.join('>')}|${countKey}|${lenBucket}`
   } catch {
     return null
   }
@@ -169,10 +181,12 @@ function textShingles(html: string): Set<string> | null {
     const { document: doc } = parseHTML(html)
     const body = doc.body
     if (!body) return null
-    body.querySelectorAll("script, style, template, noscript").forEach((n) => n.remove())
-    const words = (body.textContent || "")
+    body
+      .querySelectorAll('script, style, template, noscript')
+      .forEach((n) => n.remove())
+    const words = (body.textContent || '')
       .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/[^a-z0-9\s]/g, ' ')
       .split(/\s+/)
       .filter((w) => w.length > 0)
     // Too little text to fingerprint reliably — let the stub path handle it.
@@ -214,7 +228,7 @@ function extractLinks(html: string, baseUrl: string): string[] {
     const href = match[1]
     try {
       const absolute = new URL(href, baseUrl).toString()
-      if (absolute.startsWith("http://") || absolute.startsWith("https://")) {
+      if (absolute.startsWith('http://') || absolute.startsWith('https://')) {
         links.push(absolute)
       }
     } catch {
@@ -252,28 +266,32 @@ async function fetchPage(
     await assertPublicUrl(url)
 
     const response = await fetch(url, {
-      redirect: "follow",
+      redirect: 'follow',
       headers: {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
       },
       signal: AbortSignal.timeout(30000), // 30s timeout per page
     })
     if (!response.ok) {
-      return { html: "", finalUrl: url, success: false }
+      return { html: '', finalUrl: url, success: false }
     }
     const html = await response.text()
     // response.url is the final URL after any redirects.
     const finalUrl = response.url || url
     return { html, finalUrl, success: true }
   } catch {
-    return { html: "", finalUrl: url, success: false }
+    return { html: '', finalUrl: url, success: false }
   }
 }
 
 export async function crawlSite(
   seedUrl: string,
   options: CloneOptions = {},
-): Promise<{ graph: PageGraph; pages: Map<string, { html: string; depth: number }> }> {
+): Promise<{
+  graph: PageGraph
+  pages: Map<string, { html: string; depth: number }>
+}> {
   const {
     maxDepth = MAX_DEPTH_DEFAULT,
     maxPages = MAX_PAGES_DEFAULT,
@@ -299,7 +317,12 @@ export async function crawlSite(
   // Helper to add node to graph
   const addNode = (url: string, normalized: string) => {
     if (!state.graph.nodes.has(normalized)) {
-      state.graph.nodes.set(normalized, { url, normalizedUrl: normalized, outgoing: [], incoming: [] })
+      state.graph.nodes.set(normalized, {
+        url,
+        normalizedUrl: normalized,
+        outgoing: [],
+        incoming: [],
+      })
     }
   }
 
@@ -321,7 +344,7 @@ export async function crawlSite(
   let nextIndex = 0
 
   const processNext = async (): Promise<void> => {
-    if (signal?.aborted) throw new DOMException("aborted", "AbortError")
+    if (signal?.aborted) throw new DOMException('aborted', 'AbortError')
     if (nextIndex >= state.queue.length) {
       return
     }
@@ -345,7 +368,7 @@ export async function crawlSite(
     reservedPages++
 
     onEvent?.({
-      type: "crawl_progress",
+      type: 'crawl_progress',
       crawled: state.pages.size,
       total: maxPages,
     })
@@ -384,7 +407,11 @@ export async function crawlSite(
     // recorded (below) but never matched-away here.
     if (signature && depth > 0) {
       const canonical = state.contentSeen.get(signature)
-      if (canonical && canonical !== finalNormalized && state.pages.has(canonical)) {
+      if (
+        canonical &&
+        canonical !== finalNormalized &&
+        state.pages.has(canonical)
+      ) {
         // Already have a page with this exact body. Record the graph node/edge so
         // link structure is preserved, but do NOT store a duplicate page or count
         // it toward the cap.
@@ -405,7 +432,11 @@ export async function crawlSite(
     const structSig = structuralSignature(html)
     if (structSig && depth > 0) {
       const canonical = state.structuralSeen.get(structSig)
-      if (canonical && canonical !== finalNormalized && state.pages.has(canonical)) {
+      if (
+        canonical &&
+        canonical !== finalNormalized &&
+        state.pages.has(canonical)
+      ) {
         addNode(finalUrl, finalNormalized)
         addEdge(canonical, finalNormalized)
         reservedPages--
@@ -451,7 +482,10 @@ export async function crawlSite(
     {
       const homeOrPageShingles = shingles ?? textShingles(html)
       if (homeOrPageShingles) {
-        state.shingleSeen.push({ url: finalNormalized, shingles: homeOrPageShingles })
+        state.shingleSeen.push({
+          url: finalNormalized,
+          shingles: homeOrPageShingles,
+        })
       }
     }
     // Record the structural fingerprint (home included) so later translation/
@@ -461,7 +495,7 @@ export async function crawlSite(
     }
 
     onEvent?.({
-      type: "crawl_progress",
+      type: 'crawl_progress',
       crawled: state.pages.size,
       total: maxPages,
     })
@@ -483,7 +517,11 @@ export async function crawlSite(
   }
 
   // Fan out with concurrency cap. Cap on SUCCESSFUL pages (reservedPages).
-  while (nextIndex < state.queue.length && reservedPages < maxPages && !signal?.aborted) {
+  while (
+    nextIndex < state.queue.length &&
+    reservedPages < maxPages &&
+    !signal?.aborted
+  ) {
     while (
       processing.size < concurrency &&
       nextIndex < state.queue.length &&
@@ -501,7 +539,7 @@ export async function crawlSite(
   await Promise.all(processing)
 
   onEvent?.({
-    type: "crawl_progress",
+    type: 'crawl_progress',
     crawled: state.pages.size,
     total: maxPages,
   })

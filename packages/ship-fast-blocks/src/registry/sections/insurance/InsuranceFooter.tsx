@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * InsuranceFooter — fat 6-column dark footer for an insurance page. On a
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * or financial-protection products. Renders fully with no props via defaults.
  */
 export const InsuranceFooter = defineComponent({
-  name: "InsuranceFooter",
+  name: 'InsuranceFooter',
   description:
-    "Fat 6-column dark footer for an insurance page on a foreground-colored band: a wide brand block (shield logo + name, tagline, round social buttons), several link columns (products, company, resources, legal), and a dedicated contact column with phone, email and address rows. A bottom bar shows the copyright note beside alt-driven trust badges. Every link and social routes through useNavigate; badges use the Image component. Use as the closing site footer for insurance carriers, insurtech startups, brokers, or financial-protection products.",
+    'Fat 6-column dark footer for an insurance page on a foreground-colored band: a wide brand block (shield logo + name, tagline, round social buttons), several link columns (products, company, resources, legal), and a dedicated contact column with phone, email and address rows. A bottom bar shows the copyright note beside alt-driven trust badges. Every link and social routes through useNavigate; badges use the Image component. Use as the closing site footer for insurance carriers, insurtech startups, brokers, or financial-protection products.',
   props: z.object({
     /** Brand / company name shown beside the shield logo. */
     brand: z.string().optional(),
@@ -47,71 +47,70 @@ export const InsuranceFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "SecureLife"
+    const brand = props.brand ?? 'SecureLife'
     const tagline =
       props.tagline ??
-      "Protecting what matters most for over 25 years. Licensed in all 50 states."
+      'Protecting what matters most for over 25 years. Licensed in all 50 states.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Products",
+            title: 'Products',
             links: [
-              "Home Insurance",
-              "Auto Insurance",
-              "Life Insurance",
-              "Health Insurance",
-              "Renters Insurance",
+              'Home Insurance',
+              'Auto Insurance',
+              'Life Insurance',
+              'Health Insurance',
+              'Renters Insurance',
             ],
           },
           {
-            title: "Company",
-            links: ["About Us", "Careers", "Press", "Blog", "Contact"],
+            title: 'Company',
+            links: ['About Us', 'Careers', 'Press', 'Blog', 'Contact'],
           },
           {
-            title: "Resources",
+            title: 'Resources',
             links: [
-              "Help Center",
-              "Claims Center",
-              "Agent Portal",
-              "Policy Documents",
-              "Insurance 101",
+              'Help Center',
+              'Claims Center',
+              'Agent Portal',
+              'Policy Documents',
+              'Insurance 101',
             ],
           },
           {
-            title: "Legal",
+            title: 'Legal',
             links: [
-              "Privacy Policy",
-              "Terms of Service",
-              "Cookie Policy",
-              "Licenses",
-              "Sitemap",
+              'Privacy Policy',
+              'Terms of Service',
+              'Cookie Policy',
+              'Licenses',
+              'Sitemap',
             ],
           },
         ]
-    const contactTitle = props.contactTitle ?? "Contact"
-    const phone = props.phone ?? "1-800-555-0199"
-    const email = props.email ?? "support@securelife.com"
-    const address =
-      props.address ?? "500 Insurance Plaza, New York, NY 10004"
+    const contactTitle = props.contactTitle ?? 'Contact'
+    const phone = props.phone ?? '1-800-555-0199'
+    const email = props.email ?? 'support@securelife.com'
+    const address = props.address ?? '500 Insurance Plaza, New York, NY 10004'
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Insurance. All rights reserved.`
     const socials = props.socials?.length
       ? props.socials
-      : ["Facebook", "Twitter", "LinkedIn"]
+      : ['Facebook', 'Twitter', 'LinkedIn']
     const badges = props.badges?.length
       ? props.badges
       : [
-          "Better Business Bureau A+ rating badge",
-          "Norton Secured SSL certificate badge",
+          'Better Business Bureau A+ rating badge',
+          'Norton Secured SSL certificate badge',
         ]
     const homeTarget = props.homeTarget ?? brand
 
     const Shield = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -150,7 +149,7 @@ export const InsuranceFooter = defineComponent({
 
     return (
       <footer
-        className={cn("bg-foreground py-16 text-background", props.className)}
+        className={cn('bg-foreground py-16 text-background', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-6 lg:gap-12">

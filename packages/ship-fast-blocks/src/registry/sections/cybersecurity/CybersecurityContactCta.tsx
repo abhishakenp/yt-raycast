@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CybersecurityContactCta — dark final demo call-to-action band. A full-bleed
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * baked-in demo-CTA defaults.
  */
 export const CybersecurityContactCta = defineComponent({
-  name: "CybersecurityContactCta",
+  name: 'CybersecurityContactCta',
   description:
-    "Dark final demo call-to-action band: a full-bleed brand-surface section, centered, with a large heading, a wide supporting paragraph, dual CTAs (solid inverted primary + outlined secondary), and a small reassurance note underneath; both CTAs route through useNavigate. Use as the closing conversion band above the footer for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.",
+    'Dark final demo call-to-action band: a full-bleed brand-surface section, centered, with a large heading, a wide supporting paragraph, dual CTAs (solid inverted primary + outlined secondary), and a small reassurance note underneath; both CTAs route through useNavigate. Use as the closing conversion band above the footer for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.',
   props: z.object({
     /** Headline. */
     heading: z.string().optional(),
@@ -31,19 +31,19 @@ export const CybersecurityContactCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to see SentinelGuard in action?"
+    const heading = props.heading ?? 'Ready to see SentinelGuard in action?'
     const description =
       props.description ??
-      "Join 500+ enterprises protecting their infrastructure with AI-powered security. Schedule a personalized demo with our security experts."
-    const primaryCta = props.primaryCta ?? "Schedule Live Demo"
-    const secondaryCta = props.secondaryCta ?? "Start 14-Day Free Trial"
+      'Join 500+ enterprises protecting their infrastructure with AI-powered security. Schedule a personalized demo with our security experts.'
+    const primaryCta = props.primaryCta ?? 'Schedule Live Demo'
+    const secondaryCta = props.secondaryCta ?? 'Start 14-Day Free Trial'
     const note =
       props.note ??
-      "No credit card required. Full platform access. Cancel anytime."
+      'No credit card required. Full platform access. Cancel anytime.'
 
     return (
       <section
-        className={cn("bg-foreground py-24 text-background", props.className)}
+        className={cn('bg-foreground py-24 text-background', props.className)}
       >
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">

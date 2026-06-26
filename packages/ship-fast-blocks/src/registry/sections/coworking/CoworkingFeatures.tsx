@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * CoworkingFeatures — amenity / perks grid for a coworking or shared-workspace
@@ -13,7 +13,7 @@ import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
  * props via bright, modern baked-in defaults.
  */
 export const CoworkingFeatures = defineComponent({
-  name: "CoworkingFeatures",
+  name: 'CoworkingFeatures',
   description:
     "Amenity / perks grid for a coworking or shared-workspace page built on the shared FeatureGrid composite: a centered heading block above a responsive grid of amenity cards, each with an inline line-icon tile, a short title, and a benefit-led description (fast WiFi, meeting rooms, free coffee, 24/7 access, phone booths, community events). Use to communicate what's included with a membership for coworking spaces, shared offices, flex-office providers, or business centers.",
   props: z.object({
@@ -128,39 +128,39 @@ export const CoworkingFeatures = defineComponent({
 
     const defaults = [
       {
-        title: "Lightning-fast WiFi",
+        title: 'Lightning-fast WiFi',
         description:
-          "Symmetrical gigabit fiber on a dedicated business line, with backup internet so you never drop a call mid-meeting.",
+          'Symmetrical gigabit fiber on a dedicated business line, with backup internet so you never drop a call mid-meeting.',
         icon: Wifi,
       },
       {
-        title: "Bookable meeting rooms",
+        title: 'Bookable meeting rooms',
         description:
-          "Glass-walled rooms for two to twelve, each with a 4K display and easy whiteboards — reserve from the app in seconds.",
+          'Glass-walled rooms for two to twelve, each with a 4K display and easy whiteboards — reserve from the app in seconds.',
         icon: Meeting,
       },
       {
-        title: "Unlimited free coffee",
+        title: 'Unlimited free coffee',
         description:
-          "Locally roasted drip, a self-serve espresso bar, fresh tea, and filtered water on tap all day, every day.",
+          'Locally roasted drip, a self-serve espresso bar, fresh tea, and filtered water on tap all day, every day.',
         icon: Coffee,
       },
       {
-        title: "24/7 keycard access",
+        title: '24/7 keycard access',
         description:
-          "Members come and go on their own schedule with secure fob entry, on-site staff by day, and round-the-clock CCTV.",
+          'Members come and go on their own schedule with secure fob entry, on-site staff by day, and round-the-clock CCTV.',
         icon: Clock,
       },
       {
-        title: "Private phone booths",
+        title: 'Private phone booths',
         description:
-          "Soundproof one-person pods scattered across every floor for focused calls, quick standups, and deep work.",
+          'Soundproof one-person pods scattered across every floor for focused calls, quick standups, and deep work.',
         icon: Booth,
       },
       {
-        title: "Community events",
+        title: 'Community events',
         description:
-          "Weekly lunch-and-learns, member mixers, and workshops that turn neighbors into collaborators and clients.",
+          'Weekly lunch-and-learns, member mixers, and workshops that turn neighbors into collaborators and clients.',
         icon: Community,
       },
     ]
@@ -175,10 +175,10 @@ export const CoworkingFeatures = defineComponent({
 
     return (
       <FeatureGrid
-        heading={props.heading ?? "Everything you need to do your best work"}
+        heading={props.heading ?? 'Everything you need to do your best work'}
         subheading={
           props.subheading ??
-          "A bright, thoughtfully designed workspace with the amenities that actually move your day forward."
+          'A bright, thoughtfully designed workspace with the amenities that actually move your day forward.'
         }
         features={features}
         columns={props.columns ?? 3}

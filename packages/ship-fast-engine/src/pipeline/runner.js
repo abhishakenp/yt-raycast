@@ -43,7 +43,10 @@ export async function runAll({
     },
   ]
   const persistTasks = () => {
-    writeFileSync(join(workspace, 'tasks.json'), JSON.stringify({ tasks }, null, 2))
+    writeFileSync(
+      join(workspace, 'tasks.json'),
+      JSON.stringify({ tasks }, null, 2),
+    )
   }
 
   sessionCtx?.setPrompt?.(normalizedPrompt)
@@ -98,7 +101,9 @@ export async function runAll({
       ctxPages: 0,
     })
 
-    _log(`  ✓ OpenUI module generation complete: ${completed}/${tasks.length} frontend tasks ready in ${elapsed}s`)
+    _log(
+      `  ✓ OpenUI module generation complete: ${completed}/${tasks.length} frontend tasks ready in ${elapsed}s`,
+    )
     sessionCtx?.broadcast?.({
       type: 'run_completed',
       elapsed,
@@ -118,9 +123,13 @@ export async function runAll({
 }
 
 export async function runEdit() {
-  throw new Error('Legacy edit pipeline has been removed. Add an OpenUI-native edit engine before enabling edits.')
+  throw new Error(
+    'Legacy edit pipeline has been removed. Add an OpenUI-native edit engine before enabling edits.',
+  )
 }
 
 export async function generateAlternativeDesign() {
-  throw new Error('Legacy alternative design pipeline has been removed. No fallback design generation is available.')
+  throw new Error(
+    'Legacy alternative design pipeline has been removed. No fallback design generation is available.',
+  )
 }

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ElectronicsStoreProducts — a "Trending Products" catalog grid on a muted band
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * useNavigate. Use as the main catalog grid on electronics or gadget storefronts.
  */
 export const ElectronicsStoreProducts = defineComponent({
-  name: "ElectronicsStoreProducts",
+  name: 'ElectronicsStoreProducts',
   description:
-    "Trending Products catalog grid on a muted band for an electronics storefront: a header row pairs a heading with filter chips (first chip primary-active), above a 1-to-4 column grid of product cards — square image with an optional corner badge (Best Seller / New) and a floating round add-to-cart button, then title, subtitle, price and a star rating. A centered outlined View All button closes the section. Cards, chips and button route through useNavigate; imagery is alt-driven. Use as the main catalog grid on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.",
+    'Trending Products catalog grid on a muted band for an electronics storefront: a header row pairs a heading with filter chips (first chip primary-active), above a 1-to-4 column grid of product cards — square image with an optional corner badge (Best Seller / New) and a floating round add-to-cart button, then title, subtitle, price and a star rating. A centered outlined View All button closes the section. Cards, chips and button route through useNavigate; imagery is alt-driven. Use as the main catalog grid on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -41,80 +41,80 @@ export const ElectronicsStoreProducts = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Trending Products"
+    const heading = props.heading ?? 'Trending Products'
     const filters = props.filters?.length
       ? props.filters
-      : ["All", "New", "Popular"]
-    const viewAll = props.viewAll ?? "View All Products"
+      : ['All', 'New', 'Popular']
+    const viewAll = props.viewAll ?? 'View All Products'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Bose QuietComfort Ultra",
-            subtitle: "Wireless Noise Cancelling",
-            price: "$429.00",
-            rating: "4.8",
-            badge: "New",
+            title: 'Bose QuietComfort Ultra',
+            subtitle: 'Wireless Noise Cancelling',
+            price: '$429.00',
+            rating: '4.8',
+            badge: 'New',
             imageAlt:
-              "Bose QuietComfort Ultra wireless noise cancelling headphones in black",
+              'Bose QuietComfort Ultra wireless noise cancelling headphones in black',
           },
           {
-            title: "Galaxy Watch 6 Classic",
-            subtitle: "47mm, Bluetooth",
-            price: "$349.99",
-            rating: "4.7",
+            title: 'Galaxy Watch 6 Classic',
+            subtitle: '47mm, Bluetooth',
+            price: '$349.99',
+            rating: '4.7',
             imageAlt:
-              "Samsung Galaxy Watch 6 Classic with rotating bezel and leather strap",
+              'Samsung Galaxy Watch 6 Classic with rotating bezel and leather strap',
           },
           {
-            title: "Marshall Emberton II",
-            subtitle: "Portable Speaker",
-            price: "$149.99",
-            rating: "4.9",
-            badge: "Best Seller",
+            title: 'Marshall Emberton II',
+            subtitle: 'Portable Speaker',
+            price: '$149.99',
+            rating: '4.9',
+            badge: 'Best Seller',
             imageAlt:
-              "Marshall Emberton II portable bluetooth speaker in black and brass",
+              'Marshall Emberton II portable bluetooth speaker in black and brass',
           },
           {
-            title: "Keychron Q1 Pro",
-            subtitle: "Wireless Mechanical",
-            price: "$199.00",
-            rating: "4.6",
+            title: 'Keychron Q1 Pro',
+            subtitle: 'Wireless Mechanical',
+            price: '$199.00',
+            rating: '4.6',
             imageAlt:
-              "Mechanical gaming keyboard with RGB backlighting and custom keycaps",
+              'Mechanical gaming keyboard with RGB backlighting and custom keycaps',
           },
           {
-            title: "Dell XPS 15",
-            subtitle: "Intel Core i7, 16GB RAM",
-            price: "$1,549.00",
-            rating: "4.7",
+            title: 'Dell XPS 15',
+            subtitle: 'Intel Core i7, 16GB RAM',
+            price: '$1,549.00',
+            rating: '4.7',
             imageAlt:
-              "Dell XPS 15 laptop with infinity edge display on modern desk",
+              'Dell XPS 15 laptop with infinity edge display on modern desk',
           },
           {
-            title: "DJI Mini 4 Pro",
-            subtitle: "Drone with RC 2",
-            price: "$759.00",
-            rating: "4.9",
-            badge: "New",
+            title: 'DJI Mini 4 Pro',
+            subtitle: 'Drone with RC 2',
+            price: '$759.00',
+            rating: '4.9',
+            badge: 'New',
             imageAlt:
-              "DJI Mini 4 Pro drone with remote controller on outdoor grass",
+              'DJI Mini 4 Pro drone with remote controller on outdoor grass',
           },
           {
-            title: "Fujifilm X100VI",
-            subtitle: "40MP, Silver",
-            price: "$1,599.00",
-            rating: "4.8",
+            title: 'Fujifilm X100VI',
+            subtitle: '40MP, Silver',
+            price: '$1,599.00',
+            rating: '4.8',
             imageAlt:
-              "Fujifilm X100VI premium compact camera in silver with vintage design",
+              'Fujifilm X100VI premium compact camera in silver with vintage design',
           },
           {
-            title: "Canon EOS R6 Mark II",
-            subtitle: "Body Only",
-            price: "$2,499.00",
-            rating: "4.9",
+            title: 'Canon EOS R6 Mark II',
+            subtitle: 'Body Only',
+            price: '$2,499.00',
+            rating: '4.9',
             imageAlt:
-              "Canon EOS R6 Mark II mirrorless camera with RF lens attached",
+              'Canon EOS R6 Mark II mirrorless camera with RF lens attached',
           },
         ]
 
@@ -135,7 +135,7 @@ export const ElectronicsStoreProducts = defineComponent({
 
     const Star = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4", className)}
+        className={cn('size-4', className)}
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -145,9 +145,7 @@ export const ElectronicsStoreProducts = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-muted/40 py-16 lg:py-24", props.className)}
-      >
+      <section className={cn('bg-muted/40 py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-2xl font-semibold text-foreground">
@@ -160,10 +158,10 @@ export const ElectronicsStoreProducts = defineComponent({
                   type="button"
                   onClick={() => go(f)}
                   className={cn(
-                    "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                    'rounded-lg px-4 py-2 text-sm font-medium transition-colors',
                     i === 0
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border bg-card text-card-foreground hover:bg-accent",
+                      ? 'bg-primary text-primary-foreground'
+                      : 'border border-border bg-card text-card-foreground hover:bg-accent',
                   )}
                 >
                   {f}
@@ -189,10 +187,10 @@ export const ElectronicsStoreProducts = defineComponent({
                   {p.badge ? (
                     <span
                       className={cn(
-                        "absolute left-3 top-3 rounded px-2 py-1 text-xs font-medium",
-                        p.badge === "Best Seller"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-foreground text-background",
+                        'absolute left-3 top-3 rounded px-2 py-1 text-xs font-medium',
+                        p.badge === 'Best Seller'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-foreground text-background',
                       )}
                     >
                       {p.badge}

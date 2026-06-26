@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FurnitureStoreHero — split, two-column hero for a warm minimal furniture /
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in "Haven & Home" defaults.
  */
 export const FurnitureStoreHero = defineComponent({
-  name: "FurnitureStoreHero",
+  name: 'FurnitureStoreHero',
   description:
-    "Split two-column hero for a warm minimal furniture / home-decor store: a soft muted band with a tall left column (uppercase collection eyebrow, large headline, supporting paragraph, primary + secondary CTA buttons, bordered KPI strip) beside a full-bleed lifestyle room photo with a floating featured-product price card pinned to its corner; photo stacks above copy on mobile. CTAs route through useNavigate. Use as the top hero for furniture stores, home-decor or interiors brands, or any warm boutique-retail landing page needing a product-forward lifestyle shot.",
+    'Split two-column hero for a warm minimal furniture / home-decor store: a soft muted band with a tall left column (uppercase collection eyebrow, large headline, supporting paragraph, primary + secondary CTA buttons, bordered KPI strip) beside a full-bleed lifestyle room photo with a floating featured-product price card pinned to its corner; photo stacks above copy on mobile. CTAs route through useNavigate. Use as the top hero for furniture stores, home-decor or interiors brands, or any warm boutique-retail landing page needing a product-forward lifestyle shot.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -37,24 +37,24 @@ export const FurnitureStoreHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Spring Collection 2026"
-    const heading = props.heading ?? "Create a home that feels like you"
+    const eyebrow = props.eyebrow ?? 'Spring Collection 2026'
+    const heading = props.heading ?? 'Create a home that feels like you'
     const subheading =
       props.subheading ??
-      "Thoughtfully designed furniture and decor for modern living. Minimal, warm, and made to last for generations."
-    const primaryCta = props.primaryCta ?? "Explore Rooms"
-    const secondaryCta = props.secondaryCta ?? "New Arrivals"
+      'Thoughtfully designed furniture and decor for modern living. Minimal, warm, and made to last for generations.'
+    const primaryCta = props.primaryCta ?? 'Explore Rooms'
+    const secondaryCta = props.secondaryCta ?? 'New Arrivals'
     const imageAlt =
       props.imageAlt ??
-      "Bright modern living room with cream linen sofa, warm wood coffee table, and potted plants in natural light"
-    const featuredLabel = props.featuredLabel ?? "Featured: The Cloud Sofa"
-    const featuredPrice = props.featuredPrice ?? "Starting at $2,849"
+      'Bright modern living room with cream linen sofa, warm wood coffee table, and potted plants in natural light'
+    const featuredLabel = props.featuredLabel ?? 'Featured: The Cloud Sofa'
+    const featuredPrice = props.featuredPrice ?? 'Starting at $2,849'
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "15K+", label: "Happy Homes" },
-          { value: "4.9", label: "Average Rating" },
-          { value: "48h", label: "Delivery to Metro" },
+          { value: '15K+', label: 'Happy Homes' },
+          { value: '4.9', label: 'Average Rating' },
+          { value: '48h', label: 'Delivery to Metro' },
         ]
 
     const ArrowLong = ({ className }: { className?: string }) => (
@@ -76,7 +76,7 @@ export const FurnitureStoreHero = defineComponent({
 
     return (
       <section
-        className={cn("relative bg-muted", props.className)}
+        className={cn('relative bg-muted', props.className)}
         aria-labelledby="furniture-hero-heading"
       >
         <div className="mx-auto max-w-7xl">

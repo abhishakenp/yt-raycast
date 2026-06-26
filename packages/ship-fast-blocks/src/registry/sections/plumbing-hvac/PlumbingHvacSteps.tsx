@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * PlumbingHvacSteps — a "How it works" band for a plumbing & HVAC trade site. A
@@ -12,7 +12,7 @@ import { cn } from "#/lib/utils.ts"
  * contractor. Renders fully with no props via baked-in defaults.
  */
 export const PlumbingHvacSteps = defineComponent({
-  name: "PlumbingHvacSteps",
+  name: 'PlumbingHvacSteps',
   description:
     "A 'How it works' band for a plumbing & HVAC trade site: a centered heading + optional intro above a responsive row of 3 numbered steps, each with a large gradient/primary numbered badge, a title, and a short description, joined by a faint accent connector line. Defaults walk a customer through the booking experience — Call us, We diagnose, We fix it. Use to set expectations and reduce friction for homeowners calling a plumber or HVAC contractor.",
   props: z.object({
@@ -32,33 +32,33 @@ export const PlumbingHvacSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Getting help is simple"
+    const heading = props.heading ?? 'Getting help is simple'
     const subheading =
       props.subheading ??
-      "No runaround, no hidden fees. Three easy steps from your first call to a fully working home."
+      'No runaround, no hidden fees. Three easy steps from your first call to a fully working home.'
     const steps = props.steps?.length
       ? props.steps
       : [
           {
-            title: "Call us",
+            title: 'Call us',
             description:
               "Reach a real person 24/7. Tell us what's wrong and we'll book a same-day or next-day visit that fits your schedule.",
           },
           {
-            title: "We diagnose",
+            title: 'We diagnose',
             description:
-              "A licensed technician arrives on time, inspects the issue, and gives you a clear, upfront quote before any work begins.",
+              'A licensed technician arrives on time, inspects the issue, and gives you a clear, upfront quote before any work begins.',
           },
           {
-            title: "We fix it",
+            title: 'We fix it',
             description:
-              "We complete the repair or installation right the first time, clean up after ourselves, and back it with our guarantee.",
+              'We complete the repair or installation right the first time, clean up after ourselves, and back it with our guarantee.',
           },
         ]
 
     return (
       <section
-        className={cn("bg-background py-20 lg:py-28", props.className)}
+        className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="plumbing-hvac-steps-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

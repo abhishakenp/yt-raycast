@@ -1,9 +1,9 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 export const TravelAgencyCta = defineComponent({
-  name: "TravelAgencyCta",
+  name: 'TravelAgencyCta',
   description:
     "Closing call-to-action band for the Travel Agency page family. Composes the shared CtaBand kit composite in the primary tone to invite visitors to start planning, with a primary 'Plan a Trip' action and an outline 'Talk to an advisor' action. Use as the final conversion band before the footer. All copy and actions are prop-driven with wanderlust-themed defaults so it renders with no props.",
   props: z.object({
@@ -19,22 +19,22 @@ export const TravelAgencyCta = defineComponent({
   component: ({ props }) => {
     return (
       <CtaBand
-        eyebrow={props.eyebrow ?? "Your next adventure awaits"}
-        title={props.title ?? "Start planning your trip"}
+        eyebrow={props.eyebrow ?? 'Your next adventure awaits'}
+        title={props.title ?? 'Start planning your trip'}
         subtitle={
           props.subtitle ??
           "Tell us where you're dreaming of going and we'll craft a journey tailored just for you — no obligation, no pressure."
         }
         actions={[
           {
-            label: props.primaryLabel ?? "Plan a Trip",
-            target: props.primaryTarget ?? "Plan a Trip",
-            variant: "primary",
+            label: props.primaryLabel ?? 'Plan a Trip',
+            target: props.primaryTarget ?? 'Plan a Trip',
+            variant: 'primary',
           },
           {
-            label: props.secondaryLabel ?? "Talk to an advisor",
-            target: props.secondaryTarget ?? "Contact",
-            variant: "outline",
+            label: props.secondaryLabel ?? 'Talk to an advisor',
+            target: props.secondaryTarget ?? 'Contact',
+            variant: 'outline',
           },
         ]}
         tone="primary"

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CorporateSteps — numbered implementation timeline / process section for an
@@ -11,9 +11,9 @@ import { cn } from "#/lib/utils.ts"
  * roadmap for enterprise software vendors, consultancies, or managed services.
  */
 export const CorporateSteps = defineComponent({
-  name: "CorporateSteps",
+  name: 'CorporateSteps',
   description:
-    "Numbered implementation timeline / process section for an enterprise / corporate B2B site: centered heading above a responsive 1/2/4-column grid of numbered phase cards with circled step numbers, titles, descriptions, and horizontal connector lines between desktop items. Use to present a methodology, onboarding flow, or project roadmap for enterprise software, consultancies, or managed services.",
+    'Numbered implementation timeline / process section for an enterprise / corporate B2B site: centered heading above a responsive 1/2/4-column grid of numbered phase cards with circled step numbers, titles, descriptions, and horizontal connector lines between desktop items. Use to present a methodology, onboarding flow, or project roadmap for enterprise software, consultancies, or managed services.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -26,38 +26,37 @@ export const CorporateSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading =
-      props.heading ?? "Implementation in four phases"
+    const heading = props.heading ?? 'Implementation in four phases'
     const description =
       props.description ??
-      "Our proven methodology ensures seamless deployment with minimal disruption to your operations."
+      'Our proven methodology ensures seamless deployment with minimal disruption to your operations.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Discovery",
+            title: 'Discovery',
             description:
-              "Comprehensive assessment of your current infrastructure, workflows, and business objectives. We identify opportunities and define success metrics.",
+              'Comprehensive assessment of your current infrastructure, workflows, and business objectives. We identify opportunities and define success metrics.',
           },
           {
-            title: "Design",
+            title: 'Design',
             description:
-              "Custom architecture design tailored to your requirements. Security-first approach with scalability built into every component.",
+              'Custom architecture design tailored to your requirements. Security-first approach with scalability built into every component.',
           },
           {
-            title: "Deployment",
+            title: 'Deployment',
             description:
-              "Phased rollout with parallel systems during transition. Our team manages the entire process with 24/7 support throughout.",
+              'Phased rollout with parallel systems during transition. Our team manages the entire process with 24/7 support throughout.',
           },
           {
-            title: "Optimization",
+            title: 'Optimization',
             description:
-              "Continuous monitoring and refinement post-deployment. Regular reviews ensure maximum ROI and alignment with evolving needs.",
+              'Continuous monitoring and refinement post-deployment. Regular reviews ensure maximum ROI and alignment with evolving needs.',
           },
         ]
 
     return (
-      <section className={cn("bg-muted/50 py-20 lg:py-32", props.className)}>
+      <section className={cn('bg-muted/50 py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

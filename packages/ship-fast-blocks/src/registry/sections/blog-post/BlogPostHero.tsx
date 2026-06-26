@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BlogPostHero — bespoke single-article masthead for an editorial blog post
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * magazines, or editorial reading pages.
  */
 export const BlogPostHero = defineComponent({
-  name: "BlogPostHero",
+  name: 'BlogPostHero',
   description:
-    "Bespoke single-article hero for an editorial blog post detail page: a narrow reading column with an uppercase category/eyebrow kicker, a large editorial headline (routable via useNavigate), an optional dek/subtitle, and a byline row showing an author avatar, name, publication date, and reading-time separated by dots, followed by a wide rounded cover image. Use as the article masthead for blogs, journals, magazines, or editorial reading pages.",
+    'Bespoke single-article hero for an editorial blog post detail page: a narrow reading column with an uppercase category/eyebrow kicker, a large editorial headline (routable via useNavigate), an optional dek/subtitle, and a byline row showing an author avatar, name, publication date, and reading-time separated by dots, followed by a wide rounded cover image. Use as the article masthead for blogs, journals, magazines, or editorial reading pages.',
   props: z.object({
     /** Category / topic eyebrow kicker label. */
     kicker: z.string().optional(),
@@ -38,25 +38,23 @@ export const BlogPostHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const kicker = props.kicker ?? "Engineering"
-    const title =
-      props.title ??
-      "The Quiet Art of Writing Software That Lasts"
+    const kicker = props.kicker ?? 'Engineering'
+    const title = props.title ?? 'The Quiet Art of Writing Software That Lasts'
     const dek =
       props.dek ??
       "Durable systems aren't built in a hurry. They're shaped by patience, restraint, and a willingness to delete more than you add."
-    const author = props.author ?? "Jordan Avery"
+    const author = props.author ?? 'Jordan Avery'
     const authorAvatarAlt =
       props.authorAvatarAlt ??
-      "Professional headshot of Jordan Avery, a software engineer with a warm, thoughtful expression"
-    const date = props.date ?? "June 18, 2026"
-    const readingTime = props.readingTime ?? "8 min read"
+      'Professional headshot of Jordan Avery, a software engineer with a warm, thoughtful expression'
+    const date = props.date ?? 'June 18, 2026'
+    const readingTime = props.readingTime ?? '8 min read'
     const coverAlt =
       props.coverAlt ??
-      "A sunlit wooden workshop desk with a laptop, an open notebook, and a cup of coffee, shot from above"
+      'A sunlit wooden workshop desk with a laptop, an open notebook, and a cup of coffee, shot from above'
 
     return (
-      <section className={cn("bg-background py-16 lg:py-24", props.className)}>
+      <section className={cn('bg-background py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-3xl px-6 lg:px-8">
           <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {kicker}

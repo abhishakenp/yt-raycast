@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * InvestingFooter — rich multi-column footer for an investing / fintech site. A
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * no props via baked-in "Vestora" defaults.
  */
 export const InvestingFooter = defineComponent({
-  name: "InvestingFooter",
+  name: 'InvestingFooter',
   description:
-    "Rich multi-column footer for an investing / fintech site: a muted bordered-top footer with a brand block (trend-line logo tile + name, tagline, and a row of social-initial buttons) beside a responsive grid of link columns, above a divider row carrying an auto-updating copyright line and a small FINRA/SIPC-style legal disclosure. The brand button, social buttons and every link route through useNavigate. Use as the closing site footer for a brokerage, trading app, robo-advisor or crypto exchange.",
+    'Rich multi-column footer for an investing / fintech site: a muted bordered-top footer with a brand block (trend-line logo tile + name, tagline, and a row of social-initial buttons) beside a responsive grid of link columns, above a divider row carrying an auto-updating copyright line and a small FINRA/SIPC-style legal disclosure. The brand button, social buttons and every link route through useNavigate. Use as the closing site footer for a brokerage, trading app, robo-advisor or crypto exchange.',
   props: z.object({
     /** Brand / platform name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -38,30 +38,47 @@ export const InvestingFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Vestora"
-    const homeTarget = props.homeTarget ?? "Features"
+    const brand = props.brand ?? 'Vestora'
+    const homeTarget = props.homeTarget ?? 'Features'
     const tagline =
       props.tagline ??
-      "Modern investing for everyone. Trade stocks, ETFs, options, and crypto with zero commission."
+      'Modern investing for everyone. Trade stocks, ETFs, options, and crypto with zero commission.'
     const columns = props.columns?.length
       ? props.columns
       : [
-          { title: "Product", links: ["Features", "Pricing", "Mobile App", "API"] },
-          { title: "Company", links: ["About", "Careers", "Press", "Blog"] },
-          { title: "Resources", links: ["Help Center", "Investing 101", "Market News", "Tax Center"] },
-          { title: "Legal", links: ["Privacy", "Terms", "Disclosures", "FINRA"] },
+          {
+            title: 'Product',
+            links: ['Features', 'Pricing', 'Mobile App', 'API'],
+          },
+          { title: 'Company', links: ['About', 'Careers', 'Press', 'Blog'] },
+          {
+            title: 'Resources',
+            links: [
+              'Help Center',
+              'Investing 101',
+              'Market News',
+              'Tax Center',
+            ],
+          },
+          {
+            title: 'Legal',
+            links: ['Privacy', 'Terms', 'Disclosures', 'FINRA'],
+          },
         ]
     const copyright =
-      props.copyright ?? `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
+      props.copyright ??
+      `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
     const disclosure =
       props.disclosure ??
       `Securities trading offered through ${brand} Securities LLC, member FINRA/SIPC. Crypto trading offered through ${brand} Crypto LLC. Investing involves risk, including loss of principal.`
-    const socials = props.socials?.length ? props.socials : ["Twitter", "LinkedIn", "Instagram"]
+    const socials = props.socials?.length
+      ? props.socials
+      : ['Twitter', 'LinkedIn', 'Instagram']
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -81,7 +98,12 @@ export const InvestingFooter = defineComponent({
     )
 
     return (
-      <footer className={cn("border-t border-border bg-muted/50 pb-8 pt-16", props.className)}>
+      <footer
+        className={cn(
+          'border-t border-border bg-muted/50 pb-8 pt-16',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">
             <div className="col-span-2 md:col-span-4 lg:col-span-1">
@@ -91,7 +113,9 @@ export const InvestingFooter = defineComponent({
                 className="mb-4 flex items-center gap-2"
               >
                 <LogoMark className="size-8" />
-                <span className="text-xl font-semibold tracking-tight">{brand}</span>
+                <span className="text-xl font-semibold tracking-tight">
+                  {brand}
+                </span>
               </button>
               <p className="mb-4 text-sm text-muted-foreground">{tagline}</p>
               <div className="flex gap-4">
@@ -103,7 +127,9 @@ export const InvestingFooter = defineComponent({
                     onClick={() => go(social)}
                     className="grid size-10 place-items-center rounded-lg bg-secondary text-secondary-foreground transition-colors hover:bg-accent"
                   >
-                    <span className="text-xs font-semibold">{social.charAt(0)}</span>
+                    <span className="text-xs font-semibold">
+                      {social.charAt(0)}
+                    </span>
                   </button>
                 ))}
               </div>

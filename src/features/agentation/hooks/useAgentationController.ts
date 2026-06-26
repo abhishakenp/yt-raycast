@@ -8,7 +8,9 @@ import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-
 export const useAgentationController = (sessionId: string) => {
   const createAnnotation = useMutation(api.sessions['createAnnotation'])
   const deleteAnnotation = useMutation(api.sessions.deleteAnnotation)
-  const annotations = useQuery(api.sessions.listAnnotations, { sessionId: sessionId as Id<'sessions'> })
+  const annotations = useQuery(api.sessions.listAnnotations, {
+    sessionId: sessionId as Id<'sessions'>,
+  })
   const [annotationError, setAnnotationError] = useState<string>()
   const [isCreating, setIsCreating] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -21,14 +23,18 @@ export const useAgentationController = (sessionId: string) => {
     try {
       const currentAnnotations = annotations ?? []
       const anonymousOwnerSecret =
-        typeof window === 'undefined' ? undefined : readAnonymousOwnerSecret(window.localStorage, sessionId)
+        typeof window === 'undefined'
+          ? undefined
+          : readAnonymousOwnerSecret(window.localStorage, sessionId)
       const content = [
         'Apply these annotated preview changes.',
         '',
         ...currentAnnotations.map((annotation, index) =>
           [
             `${index + 1}. ${annotation.elementLabel}`,
-            annotation.elementPath ? `Path: ${annotation.elementPath}` : undefined,
+            annotation.elementPath
+              ? `Path: ${annotation.elementPath}`
+              : undefined,
             annotation.comment,
           ]
             .filter(Boolean)
@@ -36,14 +42,19 @@ export const useAgentationController = (sessionId: string) => {
         ),
       ].join('\n\n')
 
-      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ anonymousOwnerSecret, content }),
-      })
+      const response = await fetch(
+        `/api/sessions/${encodeURIComponent(sessionId)}/chat`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ anonymousOwnerSecret, content }),
+        },
+      )
 
       if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as { error?: string } | null
+        const data = (await response.json().catch(() => null)) as {
+          error?: string
+        } | null
         throw new Error(data?.error ?? `Send failed with ${response.status}`)
       }
     } catch (error) {
@@ -67,7 +78,9 @@ export const useAgentationController = (sessionId: string) => {
 
     try {
       const anonymousOwnerSecret =
-        typeof window === 'undefined' ? undefined : readAnonymousOwnerSecret(window.localStorage, sessionId)
+        typeof window === 'undefined'
+          ? undefined
+          : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
       await createAnnotation({
         sessionId: sessionId as Id<'sessions'>,
@@ -81,7 +94,9 @@ export const useAgentationController = (sessionId: string) => {
         payloadJson,
       })
     } catch (error) {
-      setAnnotationError(error instanceof Error ? error.message : 'Create failed')
+      setAnnotationError(
+        error instanceof Error ? error.message : 'Create failed',
+      )
     } finally {
       setIsCreating(false)
     }
@@ -93,7 +108,9 @@ export const useAgentationController = (sessionId: string) => {
 
     try {
       const anonymousOwnerSecret =
-        typeof window === 'undefined' ? undefined : readAnonymousOwnerSecret(window.localStorage, sessionId)
+        typeof window === 'undefined'
+          ? undefined
+          : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
       await deleteAnnotation({
         sessionId: sessionId as Id<'sessions'>,
@@ -101,7 +118,9 @@ export const useAgentationController = (sessionId: string) => {
         annotationId,
       })
     } catch (error) {
-      setAnnotationError(error instanceof Error ? error.message : 'Delete failed')
+      setAnnotationError(
+        error instanceof Error ? error.message : 'Delete failed',
+      )
     } finally {
       setIsDeleting(false)
     }

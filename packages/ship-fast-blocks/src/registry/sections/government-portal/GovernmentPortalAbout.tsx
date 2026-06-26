@@ -1,9 +1,9 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * GovernmentPortalAbout — classic Indian-government / public-sector (PSU)
@@ -16,7 +16,7 @@ import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
  * utility or public-sector portal.
  */
 export const GovernmentPortalAbout = defineComponent({
-  name: "GovernmentPortalAbout",
+  name: 'GovernmentPortalAbout',
   description:
     "Classic Indian-government / public-sector (PSU) About / Overview band: a Managing Director / Chairman message box (portrait photo + name + designation + excerpt + 'read more') beside a short formal 'About / Overview' prose column. Gov-blue #3346B5 panel headers, leader name in #350788, body in #333; the read-more link routes through useNavigate. Pairs with the tender / notice board and citizen-services sections of the family. Use for the official leadership message, about, profile or organisation-overview section of any classic government, civic, municipal, PSU, utility or public-sector portal.",
   props: z.object({
@@ -44,22 +44,22 @@ export const GovernmentPortalAbout = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
     const leader = props.leader ?? {
-      name: "Sri Anil Kumar Shukla",
-      designation: "Managing Director",
+      name: 'Sri Anil Kumar Shukla',
+      designation: 'Managing Director',
       photo: undefined,
       message:
-        "It gives me immense pleasure to lead an organisation that continues to power the State with reliability and an unwavering commitment to clean, efficient generation. Guided by the principles of transparency, accountability and public service, we remain dedicated to serving every citizen and stakeholder with integrity.",
-      href: "/about/md-message",
+        'It gives me immense pleasure to lead an organisation that continues to power the State with reliability and an unwavering commitment to clean, efficient generation. Guided by the principles of transparency, accountability and public service, we remain dedicated to serving every citizen and stakeholder with integrity.',
+      href: '/about/md-message',
     }
     const overview = props.overview ?? {
-      heading: "About / Overview",
-      body: "Established as a State Government undertaking, the organisation operates under the administrative control of the concerned Department and functions in accordance with statutory norms, public-procurement rules and citizen-service charters. Our mandate spans generation, distribution and public welfare, delivered through a network of regional offices and field units committed to good governance and the highest standards of public accountability.",
+      heading: 'About / Overview',
+      body: 'Established as a State Government undertaking, the organisation operates under the administrative control of the concerned Department and functions in accordance with statutory norms, public-procurement rules and citizen-service charters. Our mandate spans generation, distribution and public welfare, delivered through a network of regional offices and field units committed to good governance and the highest standards of public accountability.',
     }
     const leaderPhotoAlt = `Official portrait of ${leader.name}, ${leader.designation}`
 
     return (
       <section
-        className={cn("px-6 py-12 lg:px-8", props.className)}
+        className={cn('px-6 py-12 lg:px-8', props.className)}
         style={{ fontFamily: '"Open Sans", "Alegreya Sans", sans-serif' }}
         aria-label={overview.heading}
       >
@@ -98,7 +98,7 @@ export const GovernmentPortalAbout = defineComponent({
                 </p>
                 <button
                   type="button"
-                  onClick={() => go(leader.href ?? "/about/md-message")}
+                  onClick={() => go(leader.href ?? '/about/md-message')}
                   className="mt-3 inline-block text-[14px] font-medium text-[#0792D0] transition-colors hover:underline"
                 >
                   Read more...

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * JobBoardCta — a dark conversion CTA panel for a job-board / careers site. A
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props.
  */
 export const JobBoardCta = defineComponent({
-  name: "JobBoardCta",
+  name: 'JobBoardCta',
   description:
-    "Dark conversion CTA panel for a job-board / careers site: a centered rounded inverted card (foreground bg, background text) on a light section, holding a heading, supporting paragraph, a pair of buttons (a solid inverted primary with a trailing arrow + an outlined secondary) and a small reassurance note. Both buttons route through useNavigate. Use as the closing conversion block on job boards, hiring marketplaces or recruiting platforms.",
+    'Dark conversion CTA panel for a job-board / careers site: a centered rounded inverted card (foreground bg, background text) on a light section, holding a heading, supporting paragraph, a pair of buttons (a solid inverted primary with a trailing arrow + an outlined secondary) and a small reassurance note. Both buttons route through useNavigate. Use as the closing conversion block on job boards, hiring marketplaces or recruiting platforms.',
   props: z.object({
     /** Panel heading. */
     heading: z.string().optional(),
@@ -31,14 +31,13 @@ export const JobBoardCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to find your next role?"
+    const heading = props.heading ?? 'Ready to find your next role?'
     const description =
       props.description ??
-      "Join 48,000+ professionals who found their dream jobs through WorkFlow. Your next opportunity is waiting."
-    const primary = props.primary ?? "Browse all jobs"
-    const secondary = props.secondary ?? "Post a job"
-    const note =
-      props.note ?? "Free for job seekers. No credit card required."
+      'Join 48,000+ professionals who found their dream jobs through WorkFlow. Your next opportunity is waiting.'
+    const primary = props.primary ?? 'Browse all jobs'
+    const secondary = props.secondary ?? 'Post a job'
+    const note = props.note ?? 'Free for job seekers. No credit card required.'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -59,7 +58,7 @@ export const JobBoardCta = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-20", props.className)}>
+      <section className={cn('bg-background py-20', props.className)}>
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-3xl bg-foreground p-8 text-center text-background sm:p-12 lg:p-16">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">

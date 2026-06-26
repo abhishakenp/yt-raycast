@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * MobileAppFeatures — a centered-intro, 6-up feature grid for a clean,
@@ -15,9 +15,9 @@ import { cn } from "#/lib/utils.ts"
  * defaults.
  */
 export const MobileAppFeatures = defineComponent({
-  name: "MobileAppFeatures",
+  name: 'MobileAppFeatures',
   description:
-    "Centered-intro 6-up feature grid for a clean, minimalist mobile-app marketing page: a centered heading + description over a responsive 2-/3-column grid of feature cells, each with a rounded muted icon tile (warming to the accent color on hover), a short title, and a relaxed description paragraph; icons rotate through a built-in line-style glyph set. Use as the core value-prop / feature grid on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.",
+    'Centered-intro 6-up feature grid for a clean, minimalist mobile-app marketing page: a centered heading + description over a responsive 2-/3-column grid of feature cells, each with a rounded muted icon tile (warming to the accent color on hover), a short title, and a relaxed description paragraph; icons rotate through a built-in line-style glyph set. Use as the core value-prop / feature grid on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -27,7 +27,7 @@ export const MobileAppFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Everything you need to succeed"
+    const heading = props.heading ?? 'Everything you need to succeed'
     const description =
       props.description ??
       "We've stripped away the complexity. DailyFlow gives you just the right tools to build habits that stick—without the overwhelm."
@@ -35,61 +35,121 @@ export const MobileAppFeatures = defineComponent({
       ? props.items
       : [
           {
-            title: "Smart Reminders",
+            title: 'Smart Reminders',
             description:
-              "Gentle nudges at the right time. Our AI learns your routine and suggests optimal moments for each habit.",
+              'Gentle nudges at the right time. Our AI learns your routine and suggests optimal moments for each habit.',
           },
           {
-            title: "Visual Progress",
+            title: 'Visual Progress',
             description:
-              "Beautiful charts and streak counters that make every small win feel meaningful and motivating.",
+              'Beautiful charts and streak counters that make every small win feel meaningful and motivating.',
           },
           {
-            title: "Self-Compassion Mode",
+            title: 'Self-Compassion Mode',
             description:
               "Miss a day? No problem. We don't break streaks for small slips—life happens, and we get it.",
           },
           {
-            title: "Accountability Groups",
+            title: 'Accountability Groups',
             description:
-              "Join small groups of 3-5 people with similar goals. Share progress and celebrate wins together.",
+              'Join small groups of 3-5 people with similar goals. Share progress and celebrate wins together.',
           },
           {
-            title: "Dark Mode",
+            title: 'Dark Mode',
             description:
-              "Easy on the eyes, day or night. Automatic switching based on your system preferences.",
+              'Easy on the eyes, day or night. Automatic switching based on your system preferences.',
           },
           {
-            title: "Widget Support",
+            title: 'Widget Support',
             description:
-              "Track habits right from your home screen with beautiful iOS and Android widgets.",
+              'Track habits right from your home screen with beautiful iOS and Android widgets.',
           },
         ]
 
     const featureIcons: ReactNode[] = [
-      <svg key="clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+      <svg
+        key="clock"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>,
-      <svg key="chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+      <svg
+        key="chart"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
         <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>,
-      <svg key="heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+      <svg
+        key="heart"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
         <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
       </svg>,
-      <svg key="users" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+      <svg
+        key="users"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
         <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
       </svg>,
-      <svg key="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+      <svg
+        key="moon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
         <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
       </svg>,
-      <svg key="phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+      <svg
+        key="phone"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
         <path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
       </svg>,
     ]
 
     return (
       <section
-        className={cn("py-20 lg:py-32", props.className)}
+        className={cn('py-20 lg:py-32', props.className)}
         aria-labelledby="mobileapp-features-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -109,7 +169,9 @@ export const MobileAppFeatures = defineComponent({
                   {featureIcons[i % featureIcons.length]}
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
-                <p className="leading-relaxed text-muted-foreground">{item.description}</p>
+                <p className="leading-relaxed text-muted-foreground">
+                  {item.description}
+                </p>
               </div>
             ))}
           </div>

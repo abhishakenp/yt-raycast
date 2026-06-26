@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * SpaWellnessCta — warm booking call-to-action band for a day-spa / wellness
@@ -13,7 +13,7 @@ import { CtaBand } from "#/section-kit/CtaBand.tsx"
  * baked-in defaults.
  */
 export const SpaWellnessCta = defineComponent({
-  name: "SpaWellnessCta",
+  name: 'SpaWellnessCta',
   description:
     "Warm booking call-to-action band for a day-spa / wellness page built on the shared CtaBand composite at tone='primary': a serif headline, a short supporting line, and dual pill CTAs (filled 'Book Now' + outlined 'Call'). Both route through useNavigate. Use as a closing conversion band inviting visitors to reserve a treatment or call the spa.",
   props: z.object({
@@ -32,14 +32,14 @@ export const SpaWellnessCta = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Your moment of calm is waiting"
+    const heading = props.heading ?? 'Your moment of calm is waiting'
     const subheading =
       props.subheading ??
       "Reserve a treatment today and give yourself the rest you've earned."
-    const primaryCta = props.primaryCta ?? "Book Now"
-    const primaryTarget = props.primaryTarget ?? "Booking"
-    const secondaryCta = props.secondaryCta ?? "Call"
-    const secondaryTarget = props.secondaryTarget ?? "Contact"
+    const primaryCta = props.primaryCta ?? 'Book Now'
+    const primaryTarget = props.primaryTarget ?? 'Booking'
+    const secondaryCta = props.secondaryCta ?? 'Call'
+    const secondaryTarget = props.secondaryTarget ?? 'Contact'
 
     return (
       <CtaBand
@@ -47,8 +47,8 @@ export const SpaWellnessCta = defineComponent({
         title={heading}
         subtitle={subheading}
         actions={[
-          { label: primaryCta, target: primaryTarget, variant: "primary" },
-          { label: secondaryCta, target: secondaryTarget, variant: "outline" },
+          { label: primaryCta, target: primaryTarget, variant: 'primary' },
+          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
         ]}
         className={props.className}
       />

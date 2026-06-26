@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const DotWave = ({ className }: { className?: string }) => (
   <svg
@@ -112,7 +112,7 @@ const Music = ({ className }: { className?: string }) => (
 const ICONS = [DotWave, Music, Sparkle, Mic, Headphones, Chat]
 
 export const PodcastTopics = defineComponent({
-  name: "PodcastTopics",
+  name: 'PodcastTopics',
   description:
     "A responsive feature grid of the Signal & Static podcast's recurring topics and themes, built on FeatureGrid. Each card pairs a small token-styled icon tile with a topic title and a one-line description of what that thread covers. Use it to show, at a glance, what an audio show keeps returning to episode after episode.",
   props: z.object({
@@ -124,42 +124,42 @@ export const PodcastTopics = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "What we talk about"
+    const heading = props.heading ?? 'What we talk about'
     const subheading =
       props.subheading ??
-      "Six threads we keep pulling on, episode after episode."
+      'Six threads we keep pulling on, episode after episode.'
     const topics = props.topics?.length
       ? props.topics
       : [
           {
-            title: "Sound Design",
+            title: 'Sound Design',
             description:
-              "How texture, room tone, and silence quietly shape what a scene feels like.",
+              'How texture, room tone, and silence quietly shape what a scene feels like.',
           },
           {
-            title: "Music & Scoring",
+            title: 'Music & Scoring',
             description:
-              "Score cues, needle drops, and the warm low end that carries an episode.",
+              'Score cues, needle drops, and the warm low end that carries an episode.',
           },
           {
-            title: "Storytelling Craft",
+            title: 'Storytelling Craft',
             description:
-              "Structure, pacing, and the small turns that keep a listener leaning in.",
+              'Structure, pacing, and the small turns that keep a listener leaning in.',
           },
           {
-            title: "Behind the Mic",
+            title: 'Behind the Mic',
             description:
-              "Honest field notes on gear, takes, and the long road to a final cut.",
+              'Honest field notes on gear, takes, and the long road to a final cut.',
           },
           {
-            title: "Interviews",
+            title: 'Interviews',
             description:
-              "Long, unhurried conversations with the makers behind the sounds we love.",
+              'Long, unhurried conversations with the makers behind the sounds we love.',
           },
           {
-            title: "Listener Mailbag",
+            title: 'Listener Mailbag',
             description:
-              "Your questions, hot takes, and voice memos, answered on the air.",
+              'Your questions, hot takes, and voice memos, answered on the air.',
           },
         ]
     const features = topics.map((t, i) => {

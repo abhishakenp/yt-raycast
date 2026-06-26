@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * AuthLogos — bespoke trusted-by strip for Authly, a developer authentication
@@ -11,7 +11,7 @@ import { cn } from "#/lib/utils.ts"
  * API, or developer SaaS to establish credibility. Renders fully with no props.
  */
 export const AuthLogos = defineComponent({
-  name: "AuthLogos",
+  name: 'AuthLogos',
   description:
     "Bespoke trusted-by logo strip for a developer-auth product: a centered uppercase eyebrow ('Trusted by engineering teams at') above a responsive wrapping row of company wordmarks rendered as token-styled text spans (logos-as-text, not images) in muted foreground. Use as a quiet social-proof band beneath the hero of an auth platform, identity API, or developer SaaS landing page.",
   props: z.object({
@@ -22,13 +22,20 @@ export const AuthLogos = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Trusted by engineering teams at"
+    const eyebrow = props.eyebrow ?? 'Trusted by engineering teams at'
     const logos = props.logos?.length
       ? props.logos
-      : ["Northwind", "Vertex Labs", "Cobalt", "Hyperline", "Quanta", "Stackforge"]
+      : [
+          'Northwind',
+          'Vertex Labs',
+          'Cobalt',
+          'Hyperline',
+          'Quanta',
+          'Stackforge',
+        ]
 
     return (
-      <section className={cn("bg-background", props.className)}>
+      <section className={cn('bg-background', props.className)}>
         <div className="mx-auto max-w-7xl px-6 py-14 lg:px-8">
           <p className="text-center text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
             {eyebrow}

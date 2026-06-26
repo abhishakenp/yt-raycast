@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * WineryBreweryCta — a bold, centered visit-and-join band for a winery or
@@ -15,7 +15,7 @@ import { CtaBand } from "#/section-kit/CtaBand.tsx"
  * memberships. Renders fully with no props via warm baked-in defaults.
  */
 export const WineryBreweryCta = defineComponent({
-  name: "WineryBreweryCta",
+  name: 'WineryBreweryCta',
   description:
     "Bold, centered visit-and-join band for a winery or brewery home page: a full-width section wrapping a strong primary-colored card with an hours eyebrow, a serif headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Plan Your Visit' button plus an outlined 'Join the Wine Club' button). Both CTAs route through useNavigate. Use near the bottom of a winery, vineyard, cellar door, brewery, taproom, or cidery page to drive visits and memberships.",
   props: z.object({
@@ -36,15 +36,15 @@ export const WineryBreweryCta = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const headline = props.headline ?? "Come taste the seasons with us"
+    const headline = props.headline ?? 'Come taste the seasons with us'
     const subheading =
       props.subheading ??
-      "Weekend flights fill fast — book your visit, or join the club to have estate pours arrive at your door all year long."
-    const primaryCta = props.primaryCta ?? "Plan Your Visit"
-    const primaryTarget = props.primaryTarget ?? "Visit"
-    const secondaryCta = props.secondaryCta ?? "Join the Wine Club"
-    const secondaryTarget = props.secondaryTarget ?? "Wines"
-    const hours = props.hours ?? "Tasting room · Thu–Sun · 11am–6pm"
+      'Weekend flights fill fast — book your visit, or join the club to have estate pours arrive at your door all year long.'
+    const primaryCta = props.primaryCta ?? 'Plan Your Visit'
+    const primaryTarget = props.primaryTarget ?? 'Visit'
+    const secondaryCta = props.secondaryCta ?? 'Join the Wine Club'
+    const secondaryTarget = props.secondaryTarget ?? 'Wines'
+    const hours = props.hours ?? 'Tasting room · Thu–Sun · 11am–6pm'
 
     return (
       <CtaBand
@@ -53,8 +53,8 @@ export const WineryBreweryCta = defineComponent({
         title={headline}
         subtitle={subheading}
         actions={[
-          { label: primaryCta, target: primaryTarget, variant: "primary" },
-          { label: secondaryCta, target: secondaryTarget, variant: "outline" },
+          { label: primaryCta, target: primaryTarget, variant: 'primary' },
+          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
         ]}
         className={props.className}
       />

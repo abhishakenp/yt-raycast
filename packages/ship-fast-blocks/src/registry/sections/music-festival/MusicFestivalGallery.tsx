@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MusicFestivalGallery — a dark photo gallery band of past-year memories for a
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * series, or any recurring multi-day event.
  */
 export const MusicFestivalGallery = defineComponent({
-  name: "MusicFestivalGallery",
+  name: 'MusicFestivalGallery',
   description:
-    "Dark photo gallery band of past-year memories for a music / arts festival landing page: a full-bleed inverted (foreground background, light text) section with a centered eyebrow + heading + caption, then a mosaic photo grid (one tall portrait tile spanning two rows and one wide tile spanning two columns) of festival moments like crowds, stages and installations. Photos use the alt-driven Image component. Use to convey atmosphere and social proof on music festivals, arts festivals, concert series, raves, or any recurring multi-day event.",
+    'Dark photo gallery band of past-year memories for a music / arts festival landing page: a full-bleed inverted (foreground background, light text) section with a centered eyebrow + heading + caption, then a mosaic photo grid (one tall portrait tile spanning two rows and one wide tile spanning two columns) of festival moments like crowds, stages and installations. Photos use the alt-driven Image component. Use to convey atmosphere and social proof on music festivals, arts festivals, concert series, raves, or any recurring multi-day event.',
   props: z.object({
     /** Eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -28,26 +28,26 @@ export const MusicFestivalGallery = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Memories"
-    const heading = props.heading ?? "Horizon 2024"
+    const eyebrow = props.eyebrow ?? 'Memories'
+    const heading = props.heading ?? 'Horizon 2024'
     const description =
       props.description ??
       "Last year's magic. This year's memories are waiting to be made."
     const imageAlts = props.imageAlts?.length
       ? props.imageAlts
       : [
-          "Festival main stage at night with colorful laser lights and a massive crowd",
-          "Friends dancing together with arms raised at an outdoor music festival",
-          "Aerial view of an illuminated ferris wheel at a music festival at dusk",
-          "Concert crowd silhouettes against dramatic stage lighting and smoke",
-          "Person on friends shoulders watching a sunset performance at a festival",
-          "Neon art installation with people walking through at a night festival",
+          'Festival main stage at night with colorful laser lights and a massive crowd',
+          'Friends dancing together with arms raised at an outdoor music festival',
+          'Aerial view of an illuminated ferris wheel at a music festival at dusk',
+          'Concert crowd silhouettes against dramatic stage lighting and smoke',
+          'Person on friends shoulders watching a sunset performance at a festival',
+          'Neon art installation with people walking through at a night festival',
         ]
 
     return (
       <section
         className={cn(
-          "bg-foreground py-24 text-background lg:py-32",
+          'bg-foreground py-24 text-background lg:py-32',
           props.className,
         )}
       >
@@ -72,9 +72,9 @@ export const MusicFestivalGallery = defineComponent({
                 h={i === 1 ? 800 : 400}
                 loading="lazy"
                 className={cn(
-                  "h-48 w-full rounded-lg object-cover md:h-64",
-                  i === 1 && "md:row-span-2",
-                  i === 5 && "md:col-span-2",
+                  'h-48 w-full rounded-lg object-cover md:h-64',
+                  i === 1 && 'md:row-span-2',
+                  i === 5 && 'md:col-span-2',
                 )}
               />
             ))}

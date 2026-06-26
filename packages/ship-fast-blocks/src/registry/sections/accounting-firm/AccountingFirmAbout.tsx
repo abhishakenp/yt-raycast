@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AccountingFirmAbout — split about band for a CPA / accounting-firm site. A
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * "Northridge" defaults.
  */
 export const AccountingFirmAbout = defineComponent({
-  name: "AccountingFirmAbout",
+  name: 'AccountingFirmAbout',
   description:
-    "Split about band for a CPA / accounting-firm site: a muted two-column section with a 4:3 photo on one side and, on the other, an uppercase eyebrow, a heading, two body paragraphs, a 2x2 KPI grid of firm stats, and a founder credit row (round avatar + name + role). Calm professional-services credibility band; photo and founder avatar use the alt-driven Image component. Use to tell the firm story on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or financial advisory practices.",
+    'Split about band for a CPA / accounting-firm site: a muted two-column section with a 4:3 photo on one side and, on the other, an uppercase eyebrow, a heading, two body paragraphs, a 2x2 KPI grid of firm stats, and a founder credit row (round avatar + name + role). Calm professional-services credibility band; photo and founder avatar use the alt-driven Image component. Use to tell the firm story on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or financial advisory practices.',
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -40,34 +40,33 @@ export const AccountingFirmAbout = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "About Northridge"
-    const heading =
-      props.heading ?? "Three decades of financial excellence"
+    const eyebrow = props.eyebrow ?? 'About Northridge'
+    const heading = props.heading ?? 'Three decades of financial excellence'
     const paragraphs = props.paragraphs?.length
       ? props.paragraphs
       : [
-          "Founded in 1987 by Robert Northridge, our firm has grown from a one-person practice to a team of 24 dedicated professionals serving clients throughout Oregon and Washington.",
-          "We believe in building lasting relationships. Our average client tenure exceeds 11 years—a testament to the trust we earn through consistent results and personal attention. Every engagement is led by a partner, ensuring senior-level expertise on every matter.",
+          'Founded in 1987 by Robert Northridge, our firm has grown from a one-person practice to a team of 24 dedicated professionals serving clients throughout Oregon and Washington.',
+          'We believe in building lasting relationships. Our average client tenure exceeds 11 years—a testament to the trust we earn through consistent results and personal attention. Every engagement is led by a partner, ensuring senior-level expertise on every matter.',
         ]
     const imageAlt =
       props.imageAlt ??
-      "modern glass office building exterior with blue sky reflection"
+      'modern glass office building exterior with blue sky reflection'
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "37", label: "Years in practice" },
-          { value: "24", label: "Team members" },
-          { value: "800+", label: "Active clients" },
-          { value: "11.2", label: "Average client years" },
+          { value: '37', label: 'Years in practice' },
+          { value: '24', label: 'Team members' },
+          { value: '800+', label: 'Active clients' },
+          { value: '11.2', label: 'Average client years' },
         ]
-    const founderName = props.founderName ?? "Robert Northridge, CPA"
-    const founderRole = props.founderRole ?? "Founder & Managing Partner"
+    const founderName = props.founderName ?? 'Robert Northridge, CPA'
+    const founderRole = props.founderRole ?? 'Founder & Managing Partner'
     const founderAvatarAlt =
       props.founderAvatarAlt ??
-      "professional headshot of Robert Northridge founder in navy suit with warm smile"
+      'professional headshot of Robert Northridge founder in navy suit with warm smile'
 
     return (
-      <section className={cn("bg-muted py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="order-2 lg:order-1">
@@ -90,8 +89,8 @@ export const AccountingFirmAbout = defineComponent({
                 <p
                   key={p}
                   className={cn(
-                    "leading-relaxed text-muted-foreground",
-                    i === 0 ? "mb-6 text-lg" : "mb-8",
+                    'leading-relaxed text-muted-foreground',
+                    i === 0 ? 'mb-6 text-lg' : 'mb-8',
                   )}
                 >
                   {p}

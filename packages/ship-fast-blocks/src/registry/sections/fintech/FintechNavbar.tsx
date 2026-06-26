@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * FintechNavbar — sticky site header for a fintech / neobank / digital-banking
@@ -30,7 +30,7 @@ const ShieldMark = ({ className }: { className?: string }) => (
 )
 
 export const FintechNavbar = defineComponent({
-  name: "FintechNavbar",
+  name: 'FintechNavbar',
   description:
     "Sticky fintech / neobank site header built on the shared SiteNav composite: an inline shield brand mark + product wordmark, horizontal desktop nav links, a primary 'Get Started' pill CTA, and a real mobile drawer. All links and CTA route through useNavigate for page-switching. Use as the header for banking apps, digital wallets, payment products, lending platforms, or finance startup landing pages.",
   props: z.object({
@@ -49,16 +49,16 @@ export const FintechNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Security", "Pricing", "FAQ"]
+      : ['Features', 'Security', 'Pricing', 'FAQ']
     return (
       <SiteNav
-        brand={props.brand ?? "Vault"}
+        brand={props.brand ?? 'Vault'}
         brandMark={<ShieldMark className="size-8 text-primary" />}
         brandClassName="text-xl font-semibold tracking-tight"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Get Started",
-          target: props.ctaTarget ?? "Open an Account",
+          label: props.ctaLabel ?? 'Get Started',
+          target: props.ctaTarget ?? 'Open an Account',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

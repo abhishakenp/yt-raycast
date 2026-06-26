@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * KnowledgeBaseNavbar — sticky, translucent top navigation bar for a help-center
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * or FAQ hubs. Renders fully with no props via baked-in "Help Center" defaults.
  */
 export const KnowledgeBaseNavbar = defineComponent({
-  name: "KnowledgeBaseNavbar",
+  name: 'KnowledgeBaseNavbar',
   description:
     "Sticky translucent top navigation bar for a help-center / knowledge-base / support site: backdrop-blurred, border-bottomed header pinned to the top with a solid rounded brand tile (book glyph) + wordmark on the left, horizontal nav links in the center, and a compact muted 'Search' pill with a ⌘K hint on the right (desktop), plus a hamburger menu on mobile. Calm, light, editorial documentation aesthetic; brand, nav links and search pill route through useNavigate for page-switching. Use as the sticky site header for help centers, support portals, knowledge bases, docs landings or FAQ hubs.",
   props: z.object({
@@ -31,17 +31,17 @@ export const KnowledgeBaseNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Help Center"
+    const brand = props.brand ?? 'Help Center'
     const nav = props.nav?.length
       ? props.nav
-      : ["Categories", "Guides", "FAQ", "Contact"]
-    const searchLabel = props.searchLabel ?? "Search"
-    const homeTarget = props.homeTarget ?? nav[0] ?? "Categories"
+      : ['Categories', 'Guides', 'FAQ', 'Contact']
+    const searchLabel = props.searchLabel ?? 'Search'
+    const homeTarget = props.homeTarget ?? nav[0] ?? 'Categories'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -82,7 +82,7 @@ export const KnowledgeBaseNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >
@@ -132,7 +132,16 @@ export const KnowledgeBaseNavbar = defineComponent({
               className="p-2 text-muted-foreground hover:text-foreground md:hidden"
               aria-label="Open menu"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="12" x2="21" y2="12" />
                 <line x1="3" y1="18" x2="21" y2="18" />

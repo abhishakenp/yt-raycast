@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DirectoryNavbar — clean horizontal top navigation bar for a local-business
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * find-a-service platforms, review-and-discovery sites, or city guides.
  */
 export const DirectoryNavbar = defineComponent({
-  name: "DirectoryNavbar",
+  name: 'DirectoryNavbar',
   description:
-    "Clean horizontal top navigation bar for a local-business DIRECTORY / listings site: a bordered card-surface header with a location-pin glyph plus wordmark on the left, a centered row of category nav links, and a right-side cluster of a text Sign In action and a filled primary List Your Business CTA. Every link and CTA routes through useNavigate. Use as the site header for local directories, business-listing marketplaces, find-a-service / find-a-pro platforms, review-and-discovery sites, city guides, or yellow-pages-style apps.",
+    'Clean horizontal top navigation bar for a local-business DIRECTORY / listings site: a bordered card-surface header with a location-pin glyph plus wordmark on the left, a centered row of category nav links, and a right-side cluster of a text Sign In action and a filled primary List Your Business CTA. Every link and CTA routes through useNavigate. Use as the site header for local directories, business-listing marketplaces, find-a-service / find-a-pro platforms, review-and-discovery sites, city guides, or yellow-pages-style apps.',
   props: z.object({
     /** Brand / directory name shown in the navbar. */
     brand: z.string().optional(),
@@ -31,12 +31,12 @@ export const DirectoryNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "LocalFindr"
+    const brand = props.brand ?? 'LocalFindr'
     const nav = props.nav?.length
       ? props.nav
-      : ["Categories", "Featured", "How It Works", "Pricing"]
-    const signIn = props.signIn ?? "Sign In"
-    const listCta = props.listCta ?? "List Your Business"
+      : ['Categories', 'Featured', 'How It Works', 'Pricing']
+    const signIn = props.signIn ?? 'Sign In'
+    const listCta = props.listCta ?? 'List Your Business'
     const homeTarget = props.homeTarget ?? nav[0]
 
     const PinLogo = ({ className }: { className?: string }) => (
@@ -57,7 +57,7 @@ export const DirectoryNavbar = defineComponent({
 
     return (
       <nav
-        className={cn("border-b border-border bg-card", props.className)}
+        className={cn('border-b border-border bg-card', props.className)}
         aria-label="Main navigation"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

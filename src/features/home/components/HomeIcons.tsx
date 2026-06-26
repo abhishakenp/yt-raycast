@@ -86,7 +86,13 @@ export const ShareIcon = ({
     aria-label={label}
     onClick={onClick}
   >
-    <svg className="size-[18px]" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+    <svg
+      className="size-[18px]"
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      aria-hidden="true"
+    >
       {children}
     </svg>
   </button>

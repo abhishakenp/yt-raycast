@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * DevToolGallery — a 2x2 product screenshot gallery for a developer tool / API
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * screenshots for developer tools, API platforms, or technical SaaS.
  */
 export const DevToolGallery = defineComponent({
-  name: "DevToolGallery",
+  name: 'DevToolGallery',
   description:
-    "2x2 product screenshot gallery for a developer tool / API platform: a centered heading + intro above a responsive 1/2-column grid of figures, each a bordered dark-framed clickable image (alt-driven, zoom-on-hover) with a centered title + caption beneath. Each tile routes through useNavigate. Use to show dashboard, API explorer, edge network, and team workspace screenshots for developer tools, API platforms, or technical SaaS.",
+    '2x2 product screenshot gallery for a developer tool / API platform: a centered heading + intro above a responsive 1/2-column grid of figures, each a bordered dark-framed clickable image (alt-driven, zoom-on-hover) with a centered title + caption beneath. Each tile routes through useNavigate. Use to show dashboard, API explorer, edge network, and team workspace screenshots for developer tools, API platforms, or technical SaaS.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -26,34 +26,34 @@ export const DevToolGallery = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Built for modern teams"
+    const heading = props.heading ?? 'Built for modern teams'
     const description =
       props.description ??
-      "From the dashboard to your IDE, every touchpoint is designed for developer productivity."
+      'From the dashboard to your IDE, every touchpoint is designed for developer productivity.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Analytics Dashboard",
-            caption: "Real-time metrics and request logs",
+            title: 'Analytics Dashboard',
+            caption: 'Real-time metrics and request logs',
           },
           {
-            title: "API Explorer",
-            caption: "Interactive documentation and testing",
+            title: 'API Explorer',
+            caption: 'Interactive documentation and testing',
           },
           {
-            title: "Global Edge Network",
-            caption: "250+ locations worldwide",
+            title: 'Global Edge Network',
+            caption: '250+ locations worldwide',
           },
           {
-            title: "Team Workspaces",
-            caption: "Collaborate with your entire engineering team",
+            title: 'Team Workspaces',
+            caption: 'Collaborate with your entire engineering team',
           },
         ]
 
     return (
       <section
-        className={cn("py-20 lg:py-28", props.className)}
+        className={cn('py-20 lg:py-28', props.className)}
         aria-labelledby="gallery-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

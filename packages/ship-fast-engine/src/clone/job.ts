@@ -1,15 +1,21 @@
-import type { ClonedPage, CloneOptions, CloneResult, ExtractedTokens, ClonedSection } from "./types.ts"
-import { crawlSite, normalizeUrl } from "./crawler.ts"
-import { capturePages } from "./capture.ts"
-import type { CapturedPageWithShots } from "./capture.ts"
-import { segmentPage, extractPageNavLinks } from "./segment.ts"
-import type { Section } from "./segment.ts"
-import { dedupSections, applyDedup, hashSection } from "./dedup.ts"
-import { extractTokens } from "./tokens.ts"
-import { convertSections } from "./convert.ts"
-import type { ClonedSectionWithSource } from "./convert.ts"
-import { downloadPageAssets } from "./assets.ts"
-import { generateFallbackSection, expectedContentStrings } from "./fallback.ts"
+import type {
+  ClonedPage,
+  CloneOptions,
+  CloneResult,
+  ExtractedTokens,
+  ClonedSection,
+} from './types.ts'
+import { crawlSite, normalizeUrl } from './crawler.ts'
+import { capturePages } from './capture.ts'
+import type { CapturedPageWithShots } from './capture.ts'
+import { segmentPage, extractPageNavLinks } from './segment.ts'
+import type { Section } from './segment.ts'
+import { dedupSections, applyDedup, hashSection } from './dedup.ts'
+import { extractTokens } from './tokens.ts'
+import { convertSections } from './convert.ts'
+import type { ClonedSectionWithSource } from './convert.ts'
+import { downloadPageAssets } from './assets.ts'
+import { generateFallbackSection, expectedContentStrings } from './fallback.ts'
 
 // Orchestrates crawl→capture→segment→dedup→convert per page; streams progress; assembles per-page OpenUI-Lang.
 // HOME-FIRST: the seed/home page (depth 0 / seedUrl) is converted and emitted FIRST,
@@ -21,7 +27,7 @@ export async function cloneSite(
   options: CloneOptions,
 ): Promise<CloneResult> {
   const {
-    workspace = "",
+    workspace = '',
     maxDepth = 3,
     maxPages = 20,
     concurrency = 4,
@@ -34,21 +40,21 @@ export async function cloneSite(
   const assets = new Map<string, string>()
 
   const defaultTokens: ExtractedTokens = {
-    background: "#ffffff",
-    foreground: "#000000",
-    primary: "#3b82f6",
-    secondary: "#64748b",
-    muted: "#64748b",
-    accent: "#8b5cf6",
-    border: "#e2e8f0",
-    radius: "0.5rem",
-    fontFamily: "sans-serif",
-    spacing: "1rem",
+    background: '#ffffff',
+    foreground: '#000000',
+    primary: '#3b82f6',
+    secondary: '#64748b',
+    muted: '#64748b',
+    accent: '#8b5cf6',
+    border: '#e2e8f0',
+    radius: '0.5rem',
+    fontFamily: 'sans-serif',
+    spacing: '1rem',
   }
 
   try {
     // Phase 1: Crawl
-    onEvent?.({ type: "crawl_progress", crawled: 0, total: maxPages })
+    onEvent?.({ type: 'crawl_progress', crawled: 0, total: maxPages })
     const { graph, pages: crawledPages } = await crawlSite(seedUrl, {
       maxDepth,
       maxPages,
@@ -58,7 +64,7 @@ export async function cloneSite(
     })
 
     if (crawledPages.size === 0) {
-      throw new Error("No pages could be crawled")
+      throw new Error('No pages could be crawled')
     }
 
     // Identify the HOME page: depth 0, else the normalized seed url, else first crawled.
@@ -98,7 +104,9 @@ export async function cloneSite(
         const bn = normalizeUrl(b) === normalizeUrl(seedUrl) ? -1 : 0
         return an - bn
       }
-      const retryUrls = missing.sort(retryHomeFirst).slice(0, Math.max(1, Math.min(missing.length, maxPages)))
+      const retryUrls = missing
+        .sort(retryHomeFirst)
+        .slice(0, Math.max(1, Math.min(missing.length, maxPages)))
       if (retryUrls.length > 0) {
         const retried = await capturePages(retryUrls, concurrency, signal)
         for (const [k, v] of retried.entries()) {
@@ -108,7 +116,7 @@ export async function cloneSite(
     }
 
     if (rawCapturedPages.size === 0) {
-      throw new Error("No pages could be captured")
+      throw new Error('No pages could be captured')
     }
 
     // CANONICAL KEY-SPACE UNIFICATION (fixes HOME-FIRST key mismatch):
@@ -138,11 +146,11 @@ export async function cloneSite(
     {
       const homeCaptured = homeUrl ? capturedPages.get(homeUrl) : undefined
       if (homeUrl && homeCaptured) {
-        let homeHost = ""
+        let homeHost = ''
         try {
           homeHost = new URL(normalizeUrl(homeUrl)).hostname
         } catch {
-          homeHost = ""
+          homeHost = ''
         }
         const seenNav = new Set<string>()
         for (const rawHref of extractPageNavLinks(homeCaptured)) {
@@ -153,7 +161,7 @@ export async function cloneSite(
             continue
           }
           // Same-domain only (mirrors crawler.isSameDomain: compare normalized hosts).
-          let targetHost = ""
+          let targetHost = ''
           try {
             targetHost = new URL(normalized).hostname
           } catch {
@@ -172,11 +180,13 @@ export async function cloneSite(
     const allTokens: ExtractedTokens[] = []
 
     // Order so the HOME page is segmented/tokenized first (token baseline = home).
-    const capturedEntries = Array.from(capturedPages.entries()).sort(([a], [b]) => {
-      if (a === homeUrl) return -1
-      if (b === homeUrl) return 1
-      return 0
-    })
+    const capturedEntries = Array.from(capturedPages.entries()).sort(
+      ([a], [b]) => {
+        if (a === homeUrl) return -1
+        if (b === homeUrl) return 1
+        return 0
+      },
+    )
 
     for (const [url, captured] of capturedEntries) {
       try {
@@ -189,7 +199,12 @@ export async function cloneSite(
         }
 
         if (workspace) {
-          const pageAssets = await downloadPageAssets(captured, workspace, concurrency, signal)
+          const pageAssets = await downloadPageAssets(
+            captured,
+            workspace,
+            concurrency,
+            signal,
+          )
           for (const [original, local] of pageAssets.entries()) {
             assets.set(original, local)
           }
@@ -197,7 +212,7 @@ export async function cloneSite(
       } catch (error) {
         const msg = `Failed to process page ${url}: ${error}`
         errors.push(msg)
-        onEvent?.({ type: "error", error: msg })
+        onEvent?.({ type: 'error', error: msg })
       }
     }
 
@@ -227,8 +242,8 @@ export async function cloneSite(
         `need >= ${HOME_MIN_CONTENT_STRINGS}). The capture is likely a browser/proxy ` +
         `error page or an unrelated document, not the requested site.`
       errors.push(msg)
-      onEvent?.({ type: "error", error: msg })
-      onEvent?.({ type: "done" })
+      onEvent?.({ type: 'error', error: msg })
+      onEvent?.({ type: 'done' })
       return {
         success: false,
         pages: [],
@@ -274,7 +289,7 @@ export async function cloneSite(
     // replacing the var's own name globally in the program is sufficient.
     const rekeySection = (
       base: ClonedSectionWithSource,
-      kind: ClonedSection["kind"],
+      kind: ClonedSection['kind'],
       url: string,
       newIndex: number,
     ): ClonedSectionWithSource => {
@@ -289,7 +304,7 @@ export async function cloneSite(
         oldVar === newVar
           ? base.program
           : base.program.replace(
-              new RegExp(`\\bsection_${kind}_${base.index}(?=_|\\b)`, "g"),
+              new RegExp(`\\bsection_${kind}_${base.index}(?=_|\\b)`, 'g'),
               newVar,
             )
       return { ...base, pageUrl: url, index: newIndex, program }
@@ -334,17 +349,25 @@ export async function cloneSite(
       // Reassemble in page order, pulling shared sections from cache and
       // re-keying every emitted instance to a globally-unique variable index so
       // the assembled multi-page program has no duplicate top-level definitions.
-      const converted: ClonedSectionWithSource[] = sections.map((section, i) => {
-        const idx = globalIndex++
-        const cached = convertedCache.get(hashes[i])
-        if (cached) {
-          return rekeySection(cached, section.kind, url, idx)
-        }
-        return {
-          ...generateFallbackSection(section.kind, url, idx, tokens, section.html),
-          sourceHtml: section.html,
-        }
-      })
+      const converted: ClonedSectionWithSource[] = sections.map(
+        (section, i) => {
+          const idx = globalIndex++
+          const cached = convertedCache.get(hashes[i])
+          if (cached) {
+            return rekeySection(cached, section.kind, url, idx)
+          }
+          return {
+            ...generateFallbackSection(
+              section.kind,
+              url,
+              idx,
+              tokens,
+              section.html,
+            ),
+            sourceHtml: section.html,
+          }
+        },
+      )
 
       return {
         url,
@@ -362,26 +385,38 @@ export async function cloneSite(
     const orderedUrls = [
       homeUrl,
       ...Array.from(dedupedPageSections.keys()).filter((u) => u !== homeUrl),
-    ].filter((u): u is string => Boolean(u) && dedupedPageSections.has(u as string))
+    ].filter(
+      (u): u is string => Boolean(u) && dedupedPageSections.has(u as string),
+    )
 
     for (const url of orderedUrls) {
       try {
-        onEvent?.({ type: "page_converting", pageUrl: url, pageIndex: pages.length })
+        onEvent?.({
+          type: 'page_converting',
+          pageUrl: url,
+          pageIndex: pages.length,
+        })
         const clonedPage = await convertPage(url)
         pages.push(clonedPage)
-        onEvent?.({ type: "page_complete", pageUrl: url })
+        onEvent?.({ type: 'page_complete', pageUrl: url })
       } catch (error) {
         // Per-page failure is isolated: emit a fallback page, never hard-fail the job.
         const msg = `Failed to convert sections for ${url}: ${error}`
         errors.push(msg)
-        onEvent?.({ type: "error", error: msg })
+        onEvent?.({ type: 'error', error: msg })
 
         // Fallback sections must also use globally-unique indices, or their
         // `section_${kind}_${index}` vars collide with other pages' sections in
         // the single assembled program.
         const sections = dedupedPageSections.get(url) ?? []
         const fallbackSections = sections.map((section) => ({
-          ...generateFallbackSection(section.kind, url, globalIndex++, tokens, section.html),
+          ...generateFallbackSection(
+            section.kind,
+            url,
+            globalIndex++,
+            tokens,
+            section.html,
+          ),
           sourceHtml: section.html,
         }))
 
@@ -394,11 +429,11 @@ export async function cloneSite(
           error: msg,
           ...(url === homeUrl ? { navLinks: homeNavLinks } : {}),
         })
-        onEvent?.({ type: "page_complete", pageUrl: url })
+        onEvent?.({ type: 'page_complete', pageUrl: url })
       }
     }
 
-    onEvent?.({ type: "done" })
+    onEvent?.({ type: 'done' })
 
     return {
       success: pages.length > 0,
@@ -411,7 +446,7 @@ export async function cloneSite(
   } catch (error) {
     const msg = `Clone job failed: ${error}`
     errors.push(msg)
-    onEvent?.({ type: "error", error: msg })
+    onEvent?.({ type: 'error', error: msg })
 
     return {
       success: false,

@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FurnitureStoreNewsletter — a centered newsletter subscribe CTA on a soft muted
@@ -16,9 +16,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * defaults.
  */
 export const FurnitureStoreNewsletter = defineComponent({
-  name: "FurnitureStoreNewsletter",
+  name: 'FurnitureStoreNewsletter',
   description:
-    "Centered newsletter subscribe CTA on a soft muted band: a narrow column with heading + description, an inline email form (screen-reader-only label, primary submit button, stacks on mobile), a fine-print note, and a centered row of social icon buttons; form submit and socials route through useNavigate, with baked-in Instagram / Pinterest / Facebook glyphs matched by name and unknown socials shown as text. Use as a closing email-capture / follow-us CTA for furniture, home-decor, or any retail brand.",
+    'Centered newsletter subscribe CTA on a soft muted band: a narrow column with heading + description, an inline email form (screen-reader-only label, primary submit button, stacks on mobile), a fine-print note, and a centered row of social icon buttons; form submit and socials route through useNavigate, with baked-in Instagram / Pinterest / Facebook glyphs matched by name and unknown socials shown as text. Use as a closing email-capture / follow-us CTA for furniture, home-decor, or any retail brand.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -30,18 +30,18 @@ export const FurnitureStoreNewsletter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Join the Haven & Home family"
+    const heading = props.heading ?? 'Join the Haven & Home family'
     const description =
       props.description ??
-      "Subscribe for exclusive offers, early access to new collections, and design inspiration delivered to your inbox."
-    const placeholder = props.placeholder ?? "Enter your email"
-    const submit = props.submit ?? "Subscribe"
+      'Subscribe for exclusive offers, early access to new collections, and design inspiration delivered to your inbox.'
+    const placeholder = props.placeholder ?? 'Enter your email'
+    const submit = props.submit ?? 'Subscribe'
     const note =
       props.note ??
-      "Join 45,000+ subscribers. Unsubscribe anytime. No spam, ever."
+      'Join 45,000+ subscribers. Unsubscribe anytime. No spam, ever.'
     const socials = props.socials?.length
       ? props.socials
-      : ["Instagram", "Pinterest", "Facebook"]
+      : ['Instagram', 'Pinterest', 'Facebook']
 
     const socialIcons: Record<string, ReactNode> = {
       Instagram: (
@@ -78,7 +78,7 @@ export const FurnitureStoreNewsletter = defineComponent({
 
     return (
       <section
-        className={cn("bg-muted py-16 lg:py-24", props.className)}
+        className={cn('bg-muted py-16 lg:py-24', props.className)}
         aria-labelledby="furniture-newsletter-heading"
       >
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">

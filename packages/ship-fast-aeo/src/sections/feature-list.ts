@@ -1,6 +1,12 @@
 import type { SectionLike } from '../contracts/page-aeo.ts'
 import { escapeHtml } from '../utils.ts'
-import { renderGenericCard, renderItemList, sectionBody, sectionHeadline, sectionSubheadline } from './helpers.ts'
+import {
+  renderGenericCard,
+  renderItemList,
+  sectionBody,
+  sectionHeadline,
+  sectionSubheadline,
+} from './helpers.ts'
 
 export function renderFeatureListSection(section: SectionLike): string {
   return `

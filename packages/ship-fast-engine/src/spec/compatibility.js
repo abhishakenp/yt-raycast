@@ -58,9 +58,11 @@ function inferPagesFromWorkspace(workspace) {
 }
 
 function buildCompatibilityContext(workspace) {
-  const prompt = readTextFileIfPresent(workspace, 'prompt.txt') || 'Generated Project'
+  const prompt =
+    readTextFileIfPresent(workspace, 'prompt.txt') || 'Generated Project'
   const designBrief = readTextFileIfPresent(workspace, 'design.md')
-  const projectContext = readJsonFileIfPresent(workspace, 'project-context.json') || {}
+  const projectContext =
+    readJsonFileIfPresent(workspace, 'project-context.json') || {}
   const inferredPages =
     Array.isArray(projectContext.pages) && projectContext.pages.length
       ? projectContext.pages
@@ -68,7 +70,9 @@ function buildCompatibilityContext(workspace) {
 
   const ctx = {
     ...projectContext,
-    project_name: projectContext.project_name || promptSnippet(prompt, 40, 'Generated Project'),
+    project_name:
+      projectContext.project_name ||
+      promptSnippet(prompt, 40, 'Generated Project'),
     pages: inferredPages,
   }
 
@@ -81,7 +85,10 @@ function buildCompatibilityContext(workspace) {
 }
 
 function saveCompatibleSiteSpec(workspace, siteSpec) {
-  writeFileSync(join(workspace, SITE_SPEC_FILE), JSON.stringify(siteSpec, null, 2))
+  writeFileSync(
+    join(workspace, SITE_SPEC_FILE),
+    JSON.stringify(siteSpec, null, 2),
+  )
 }
 
 function loadRawSiteSpec(workspace) {
@@ -89,7 +96,9 @@ function loadRawSiteSpec(workspace) {
 }
 
 function siteSpecNeedsBlueprints(siteSpec) {
-  return (siteSpec?.pages || []).some((page) => !page?.renderBlueprint?.bodyHtml)
+  return (siteSpec?.pages || []).some(
+    (page) => !page?.renderBlueprint?.bodyHtml,
+  )
 }
 
 // Compatibility path for sessions that were generated before site-spec.json existed.
@@ -112,7 +121,10 @@ export function ensureCompatibleSiteSpec(workspace) {
     ? enrichSiteSpecWithWorkspaceBlueprints(baseSiteSpec, workspace)
     : baseSiteSpec
 
-  const aeoEnrichedSiteSpec = enrichSiteSpecAeo(hydratedSiteSpec, context.prompt)
+  const aeoEnrichedSiteSpec = enrichSiteSpecAeo(
+    hydratedSiteSpec,
+    context.prompt,
+  )
 
   saveCompatibleSiteSpec(workspace, aeoEnrichedSiteSpec)
   return aeoEnrichedSiteSpec

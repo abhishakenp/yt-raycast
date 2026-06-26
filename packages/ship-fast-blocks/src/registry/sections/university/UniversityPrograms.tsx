@@ -1,11 +1,11 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { cn } from '#/lib/utils.ts'
 
 export const UniversityPrograms = defineComponent({
-  name: "UniversityPrograms",
+  name: 'UniversityPrograms',
   description:
     "Bespoke degree-program showcase for the University page family with a prestigious, collegiate aesthetic. Opens with a SectionHeading, then lays out a responsive grid of program cards — each naming a school, a degree, and a short blurb, with a per-card 'Explore program' link routed via useNavigate. Card and border tokens give each program a refined, catalog-style frame. Use to summarize flagship academic offerings across colleges on a university homepage.",
   props: z.object({
@@ -27,62 +27,71 @@ export const UniversityPrograms = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Academics"
-    const heading = props.heading ?? "Programs that shape leaders"
+    const eyebrow = props.eyebrow ?? 'Academics'
+    const heading = props.heading ?? 'Programs that shape leaders'
     const subheading =
       props.subheading ??
-      "Choose from more than 120 degree programs across our colleges, each taught by faculty at the frontier of their field."
-    const linkLabel = props.linkLabel ?? "Explore program"
-    const linkTarget = props.linkTarget ?? "Academics"
+      'Choose from more than 120 degree programs across our colleges, each taught by faculty at the frontier of their field.'
+    const linkLabel = props.linkLabel ?? 'Explore program'
+    const linkTarget = props.linkTarget ?? 'Academics'
     const programs = props.programs?.length
       ? props.programs
       : [
           {
-            school: "School of Engineering",
-            degree: "B.S. Computer Science",
+            school: 'School of Engineering',
+            degree: 'B.S. Computer Science',
             blurb:
-              "Build systems, algorithms, and AI alongside faculty advancing the field, with hands-on lab and research opportunities from year one.",
+              'Build systems, algorithms, and AI alongside faculty advancing the field, with hands-on lab and research opportunities from year one.',
           },
           {
-            school: "College of Arts & Sciences",
-            degree: "B.A. Economics",
+            school: 'College of Arts & Sciences',
+            degree: 'B.A. Economics',
             blurb:
-              "Study markets, policy, and human behavior with a rigorous quantitative core and seminars led by published researchers.",
+              'Study markets, policy, and human behavior with a rigorous quantitative core and seminars led by published researchers.',
           },
           {
-            school: "School of Life Sciences",
-            degree: "B.S. Biology",
+            school: 'School of Life Sciences',
+            degree: 'B.S. Biology',
             blurb:
-              "Explore molecular, organismal, and ecological biology with access to fully equipped wet labs and field stations.",
+              'Explore molecular, organismal, and ecological biology with access to fully equipped wet labs and field stations.',
           },
           {
-            school: "Whitmore School of Business",
-            degree: "B.B.A. Finance",
+            school: 'Whitmore School of Business',
+            degree: 'B.B.A. Finance',
             blurb:
-              "Master corporate finance, markets, and analytics with a curriculum shaped by industry fellows and a trading lab.",
+              'Master corporate finance, markets, and analytics with a curriculum shaped by industry fellows and a trading lab.',
           },
           {
-            school: "School of Public Health",
-            degree: "B.S. Public Health",
+            school: 'School of Public Health',
+            degree: 'B.S. Public Health',
             blurb:
-              "Tackle epidemiology, health policy, and community wellbeing through coursework paired with field practicums.",
+              'Tackle epidemiology, health policy, and community wellbeing through coursework paired with field practicums.',
           },
           {
-            school: "College of Humanities",
-            degree: "B.A. History",
+            school: 'College of Humanities',
+            degree: 'B.A. History',
             blurb:
-              "Investigate the past through primary-source seminars, archival research, and a renowned faculty of historians.",
+              'Investigate the past through primary-source seminars, archival research, and a renowned faculty of historians.',
           },
         ]
 
     return (
-      <section className={cn("bg-background py-20 text-foreground sm:py-24", props.className)}>
+      <section
+        className={cn(
+          'bg-background py-20 text-foreground sm:py-24',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <SectionHeading eyebrow={eyebrow} title={heading} subtitle={subheading} />
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={subheading}
+          />
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {programs.map((program, i) => (
               <article
-                key={`${program.degree ?? "program"}-${i}`}
+                key={`${program.degree ?? 'program'}-${i}`}
                 className="flex flex-col rounded-2xl border border-border bg-card p-7 text-card-foreground transition hover:border-primary/40 hover:shadow-lg"
               >
                 <p className="font-serif text-sm font-semibold uppercase tracking-wide text-primary">

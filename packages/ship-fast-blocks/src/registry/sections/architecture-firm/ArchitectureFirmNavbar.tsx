@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ArchitectureFirmNavbar — sticky, translucent top navigation bar for an
@@ -16,9 +16,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * defaults.
  */
 export const ArchitectureFirmNavbar = defineComponent({
-  name: "ArchitectureFirmNavbar",
+  name: 'ArchitectureFirmNavbar',
   description:
-    "Sticky translucent top navigation bar for an architecture-studio / design-practice site: backdrop-blurred, border-bottomed header pinned to the top with a light letter-spaced studio wordmark on the left, a horizontal set of quiet monochrome nav links on the right (desktop) and a hamburger menu button on mobile. Calm, editorial, Scandinavian-minimalist aesthetic. Links route through useNavigate for page-switching. Use as the sticky site header for architecture firms, design studios, interior-design practices, landscape architects, urban planners or built-environment portfolio sites.",
+    'Sticky translucent top navigation bar for an architecture-studio / design-practice site: backdrop-blurred, border-bottomed header pinned to the top with a light letter-spaced studio wordmark on the left, a horizontal set of quiet monochrome nav links on the right (desktop) and a hamburger menu button on mobile. Calm, editorial, Scandinavian-minimalist aesthetic. Links route through useNavigate for page-switching. Use as the sticky site header for architecture firms, design studios, interior-design practices, landscape architects, urban planners or built-environment portfolio sites.',
   props: z.object({
     /** Studio / firm name shown as the wordmark. */
     brand: z.string().optional(),
@@ -28,15 +28,15 @@ export const ArchitectureFirmNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Atelier Móði"
+    const brand = props.brand ?? 'Atelier Móði'
     const nav = props.nav?.length
       ? props.nav
-      : ["Work", "Philosophy", "Studio", "Contact"]
+      : ['Work', 'Philosophy', 'Studio', 'Contact']
 
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

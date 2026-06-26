@@ -40,7 +40,10 @@ const source = `${stmts.join('\n')}\nhome = Stack([${ids.join(', ')}])\nroot = P
 
 console.log('composed sections:', ids.length, '| source chars:', source.length)
 try {
-  await auditOpenUIProgram(source, { expectedRoot: 'PageSwitch', expectedPageIds: ['home'] })
+  await auditOpenUIProgram(source, {
+    expectedRoot: 'PageSwitch',
+    expectedPageIds: ['home'],
+  })
   console.log('AUDIT: VALID ✅')
 } catch (e) {
   console.log('AUDIT FAILED:', e instanceof Error ? e.message : String(e))

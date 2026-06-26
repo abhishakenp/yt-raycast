@@ -57,6 +57,22 @@ describe('GeneratedModulePreview', () => {
     expect(screen.queryByTestId('openui-viewer')).toBeNull()
   })
 
+  it('renders storage-backed clone HTML from an iframe URL', () => {
+    render(
+      <GeneratedModulePreview
+        source=""
+        sourceUrl="https://storage.test/tvnl-home"
+        sessionId="session-1"
+      />,
+    )
+
+    const iframe = screen.getByTitle('Generated website preview')
+    expect(iframe).toBeInstanceOf(HTMLIFrameElement)
+    expect(iframe.getAttribute('src')).toBe('https://storage.test/tvnl-home')
+    expect(iframe.hasAttribute('srcdoc')).toBe(false)
+    expect(screen.queryByTestId('openui-viewer')).toBeNull()
+  })
+
   it('keeps OpenUI sources on the OpenUI renderer', async () => {
     render(
       <GeneratedModulePreview

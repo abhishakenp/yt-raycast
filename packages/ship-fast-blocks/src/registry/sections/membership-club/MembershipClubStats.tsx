@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * MembershipClubStats — community stats band for a private membership club /
@@ -11,9 +11,9 @@ import { cn } from "#/lib/utils.ts"
  * or curated collectives. Renders fully with no props.
  */
 export const MembershipClubStats = defineComponent({
-  name: "MembershipClubStats",
+  name: 'MembershipClubStats',
   description:
-    "Community stats band for a private membership club / exclusive community page: a bordered, muted-surface band holding a responsive 2-up / 4-up grid of centered stat cells, each pairing a large thin numeric value with an uppercase tracked caption. Use as a compact proof band between pricing and how-it-works for members clubs, professional networks, founders communities or curated collectives.",
+    'Community stats band for a private membership club / exclusive community page: a bordered, muted-surface band holding a responsive 2-up / 4-up grid of centered stat cells, each pairing a large thin numeric value with an uppercase tracked caption. Use as a compact proof band between pricing and how-it-works for members clubs, professional networks, founders communities or curated collectives.',
   props: z.object({
     stats: z
       .array(z.object({ value: z.string(), label: z.string() }))
@@ -24,16 +24,16 @@ export const MembershipClubStats = defineComponent({
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "487", label: "Active Members" },
-          { value: "8", label: "Global Clubhouses" },
-          { value: "50+", label: "Events Per Month" },
-          { value: "94%", label: "Annual Retention" },
+          { value: '487', label: 'Active Members' },
+          { value: '8', label: 'Global Clubhouses' },
+          { value: '50+', label: 'Events Per Month' },
+          { value: '94%', label: 'Annual Retention' },
         ]
 
     return (
       <section
         className={cn(
-          "w-full border-y border-border bg-card py-16 lg:py-24",
+          'w-full border-y border-border bg-card py-16 lg:py-24',
           props.className,
         )}
         aria-label="Community statistics"

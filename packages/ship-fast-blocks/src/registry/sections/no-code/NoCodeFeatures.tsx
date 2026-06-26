@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * NoCodeFeatures — centered-header 6-up feature grid on a bright canvas. A
@@ -12,7 +12,7 @@ import { cn } from "#/lib/utils.ts"
  * SaaS, or product landing page. Renders fully with no props.
  */
 export const NoCodeFeatures = defineComponent({
-  name: "NoCodeFeatures",
+  name: 'NoCodeFeatures',
   description:
     "Centered-header 6-up feature grid on a bright canvas: a muted eyebrow, bold heading, and supporting paragraph above a 1-to-3 column grid of soft-bordered cards, each with a rounded tinted icon tile (rotating token tints) that scales up on hover, a title, and a description. Use as the core 'everything you need' features section for a no-code / app-builder SaaS or product landing page.",
   props: z.object({
@@ -29,54 +29,53 @@ export const NoCodeFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Features"
-    const heading =
-      props.heading ?? "Everything you need to build amazing apps"
+    const eyebrow = props.eyebrow ?? 'Features'
+    const heading = props.heading ?? 'Everything you need to build amazing apps'
     const description =
       props.description ??
-      "From drag-and-drop design to powerful integrations, Buildr gives you all the tools to bring your ideas to life."
+      'From drag-and-drop design to powerful integrations, Buildr gives you all the tools to bring your ideas to life.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Drag & Drop Builder",
+            title: 'Drag & Drop Builder',
             description:
-              "Intuitive visual editor with 50+ pre-built components. Simply drag elements onto your canvas and arrange them exactly how you want.",
+              'Intuitive visual editor with 50+ pre-built components. Simply drag elements onto your canvas and arrange them exactly how you want.',
           },
           {
-            title: "200+ Templates",
+            title: '200+ Templates',
             description:
-              "Start with professionally designed templates for SaaS, e-commerce, portfolios, blogs, and more. Fully customizable to match your brand.",
+              'Start with professionally designed templates for SaaS, e-commerce, portfolios, blogs, and more. Fully customizable to match your brand.',
           },
           {
-            title: "Mobile Responsive",
+            title: 'Mobile Responsive',
             description:
-              "Every app automatically adapts to any screen size. Preview and fine-tune your design for desktop, tablet, and mobile in real-time.",
+              'Every app automatically adapts to any screen size. Preview and fine-tune your design for desktop, tablet, and mobile in real-time.',
           },
           {
-            title: "Lightning Fast",
+            title: 'Lightning Fast',
             description:
-              "Apps built on Buildr load instantly with global CDN delivery, automatic image optimization, and code minification built-in.",
+              'Apps built on Buildr load instantly with global CDN delivery, automatic image optimization, and code minification built-in.',
           },
           {
-            title: "Secure by Default",
+            title: 'Secure by Default',
             description:
               "SSL certificates, DDoS protection, and SOC 2 compliance included. Your data and your users' data are always protected.",
           },
           {
-            title: "100+ Integrations",
+            title: '100+ Integrations',
             description:
-              "Connect with Stripe, Airtable, Zapier, Make, and more. Automate workflows and add powerful functionality without code.",
+              'Connect with Stripe, Airtable, Zapier, Make, and more. Automate workflows and add powerful functionality without code.',
           },
         ]
 
     const iconTints = [
-      "bg-primary/10 text-primary",
-      "bg-secondary text-secondary-foreground",
-      "bg-accent text-accent-foreground",
-      "bg-chart-2/15 text-chart-2",
-      "bg-chart-4/15 text-chart-4",
-      "bg-chart-1/15 text-chart-1",
+      'bg-primary/10 text-primary',
+      'bg-secondary text-secondary-foreground',
+      'bg-accent text-accent-foreground',
+      'bg-chart-2/15 text-chart-2',
+      'bg-chart-4/15 text-chart-4',
+      'bg-chart-1/15 text-chart-1',
     ]
     const icons: ReactNode[] = [
       <svg
@@ -174,7 +173,7 @@ export const NoCodeFeatures = defineComponent({
 
     return (
       <section
-        className={cn("bg-background py-24", props.className)}
+        className={cn('bg-background py-24', props.className)}
         aria-labelledby="nc-features"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -198,7 +197,7 @@ export const NoCodeFeatures = defineComponent({
               >
                 <div
                   className={cn(
-                    "mb-4 grid size-12 place-items-center rounded-xl transition-transform group-hover:scale-110",
+                    'mb-4 grid size-12 place-items-center rounded-xl transition-transform group-hover:scale-110',
                     iconTints[i % iconTints.length],
                   )}
                 >

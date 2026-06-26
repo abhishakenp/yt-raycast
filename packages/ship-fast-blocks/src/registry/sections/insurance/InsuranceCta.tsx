@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * InsuranceCta — full-bleed closing call-to-action panel for an insurance page.
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * props via baked-in defaults.
  */
 export const InsuranceCta = defineComponent({
-  name: "InsuranceCta",
+  name: 'InsuranceCta',
   description:
-    "Full-bleed closing call-to-action panel for an insurance page: a rounded brand-colored panel with a subtle dotted overlay, centered heading and lede, dual CTAs (a solid get-a-quote button and an outline call/phone button), and a small footnote of trust points. Both CTAs route through useNavigate. Use as the final conversion push near the footer for insurance carriers, insurtech startups, brokers, or financial-protection products.",
+    'Full-bleed closing call-to-action panel for an insurance page: a rounded brand-colored panel with a subtle dotted overlay, centered heading and lede, dual CTAs (a solid get-a-quote button and an outline call/phone button), and a small footnote of trust points. Both CTAs route through useNavigate. Use as the final conversion push near the footer for insurance carriers, insurtech startups, brokers, or financial-protection products.',
   props: z.object({
     /** Panel heading. */
     heading: z.string().optional(),
@@ -33,16 +33,16 @@ export const InsuranceCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to protect what matters?"
+    const heading = props.heading ?? 'Ready to protect what matters?'
     const description =
       props.description ??
-      "Get your personalized quote in under 2 minutes. Join 50,000+ families who trust SecureLife for their insurance needs."
-    const primaryCta = props.primaryCta ?? "Get Your Free Quote"
-    const phoneCta = props.phoneCta ?? "Call 1-800-555-0199"
-    const phone = props.phone ?? "1-800-555-0199"
+      'Get your personalized quote in under 2 minutes. Join 50,000+ families who trust SecureLife for their insurance needs.'
+    const primaryCta = props.primaryCta ?? 'Get Your Free Quote'
+    const phoneCta = props.phoneCta ?? 'Call 1-800-555-0199'
+    const phone = props.phone ?? '1-800-555-0199'
     const footnote =
       props.footnote ??
-      "No credit check required • Cancel anytime • Instant coverage"
+      'No credit check required • Cancel anytime • Instant coverage'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -79,7 +79,7 @@ export const InsuranceCta = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl bg-primary p-8 text-center lg:p-16">
             <div
@@ -87,8 +87,8 @@ export const InsuranceCta = defineComponent({
               className="absolute inset-0 text-primary-foreground opacity-10"
               style={{
                 backgroundImage:
-                  "radial-gradient(currentColor 1px, transparent 1px)",
-                backgroundSize: "16px 16px",
+                  'radial-gradient(currentColor 1px, transparent 1px)',
+                backgroundSize: '16px 16px',
               }}
             />
             <div className="relative z-10">

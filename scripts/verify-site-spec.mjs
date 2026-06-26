@@ -10,7 +10,8 @@ const args = new Map(
   }),
 )
 
-const workspaceArg = args.get('--workspace') ?? process.env.SHIP_FAST_VERIFY_WORKSPACE
+const workspaceArg =
+  args.get('--workspace') ?? process.env.SHIP_FAST_VERIFY_WORKSPACE
 const requireOpenUi = parseBoolean(args.get('--require-openui') ?? '1')
 const requireManifest = parseBoolean(args.get('--require-manifest') ?? '0')
 const allowFailedTasks = parseBoolean(args.get('--allow-failed-tasks') ?? '0')
@@ -38,14 +39,20 @@ const tasks = readOptionalTasks()
 const errors = []
 
 if (html.length < minHtmlBytes) {
-  errors.push(`index.html is too small: ${html.length} bytes, expected at least ${minHtmlBytes}`)
+  errors.push(
+    `index.html is too small: ${html.length} bytes, expected at least ${minHtmlBytes}`,
+  )
 }
 
 if (!/<(main|body|html|section)\b/i.test(html)) {
   errors.push('index.html does not look like a rendered HTML page')
 }
 
-if (/Waiting for generated module|Generation failed|FunctionPathNotFound|fetch failed/i.test(html)) {
+if (
+  /Waiting for generated module|Generation failed|FunctionPathNotFound|fetch failed/i.test(
+    html,
+  )
+) {
   errors.push('index.html contains runtime placeholder or failure text')
 }
 
@@ -55,7 +62,9 @@ if (requireOpenUi) {
   if (!openUiSource) {
     errors.push('home.openui is required but missing')
   } else if (openUiSource.trim().length < 20) {
-    errors.push('home.openui is too small to represent a generated OpenUI source')
+    errors.push(
+      'home.openui is too small to represent a generated OpenUI source',
+    )
   }
 }
 
@@ -70,7 +79,9 @@ if (manifest) {
 if (tasks) {
   const failedTasks = tasks.filter((task) => task.status === 'FAILED')
   if (!allowFailedTasks && failedTasks.length > 0) {
-    errors.push(`tasks.json contains failed tasks: ${failedTasks.map((task) => task.id).join(', ')}`)
+    errors.push(
+      `tasks.json contains failed tasks: ${failedTasks.map((task) => task.id).join(', ')}`,
+    )
   }
 }
 
@@ -135,7 +146,9 @@ function readJsonFile(fileName) {
   try {
     return JSON.parse(raw)
   } catch (error) {
-    errorsOrThrow(`${fileName} is not valid JSON: ${error instanceof Error ? error.message : String(error)}`)
+    errorsOrThrow(
+      `${fileName} is not valid JSON: ${error instanceof Error ? error.message : String(error)}`,
+    )
   }
 }
 
@@ -145,7 +158,9 @@ function readOptionalJsonFile(fileName) {
   try {
     return JSON.parse(raw)
   } catch (error) {
-    errorsOrThrow(`${fileName} is not valid JSON: ${error instanceof Error ? error.message : String(error)}`)
+    errorsOrThrow(
+      `${fileName} is not valid JSON: ${error instanceof Error ? error.message : String(error)}`,
+    )
   }
 }
 
@@ -162,7 +177,9 @@ function readOptionalTasks() {
 }
 
 function errorsOrThrow(message) {
-  console.error(JSON.stringify({ ok: false, workspace, errors: [message] }, null, 2))
+  console.error(
+    JSON.stringify({ ok: false, workspace, errors: [message] }, null, 2),
+  )
   process.exit(1)
 }
 
@@ -172,7 +189,8 @@ function validateSiteSpecShape(spec) {
     return ['site-spec.json must contain an object']
   }
 
-  const richSpec = 'projectName' in spec || 'pages' in spec || 'exportableFrameworks' in spec
+  const richSpec =
+    'projectName' in spec || 'pages' in spec || 'exportableFrameworks' in spec
   if (richSpec) {
     const result = validateSiteSpec(spec)
     return result.valid ? [] : result.errors
@@ -181,11 +199,22 @@ function validateSiteSpecShape(spec) {
   if (typeof spec.brand !== 'string' || spec.brand.trim().length === 0) {
     siteSpecErrors.push('legacy site spec requires a non-empty brand')
   }
-  if ('modules' in spec && (typeof spec.modules !== 'object' || Array.isArray(spec.modules))) {
-    siteSpecErrors.push('legacy site spec modules must be an object when present')
+  if (
+    'modules' in spec &&
+    (typeof spec.modules !== 'object' || Array.isArray(spec.modules))
+  ) {
+    siteSpecErrors.push(
+      'legacy site spec modules must be an object when present',
+    )
   }
-  if ('theme' in spec && typeof spec.theme !== 'string' && typeof spec.theme !== 'object') {
-    siteSpecErrors.push('legacy site spec theme must be a string or object when present')
+  if (
+    'theme' in spec &&
+    typeof spec.theme !== 'string' &&
+    typeof spec.theme !== 'object'
+  ) {
+    siteSpecErrors.push(
+      'legacy site spec theme must be a string or object when present',
+    )
   }
 
   return siteSpecErrors
@@ -212,7 +241,9 @@ function validateOpenUiManifest(manifest) {
     if (!file) {
       entryErrors.push(`openui manifest entry ${index} is missing file`)
     } else if (!existsSync(join(workspace, file))) {
-      entryErrors.push(`openui manifest entry ${index} points to missing file ${file}`)
+      entryErrors.push(
+        `openui manifest entry ${index} points to missing file ${file}`,
+      )
     }
     return entryErrors
   })
@@ -223,6 +254,8 @@ function summarizeSiteSpec(spec) {
     name: spec.projectName ?? spec.brand ?? basename(workspace),
     siteType: spec.siteType ?? null,
     pages: Array.isArray(spec.pages) ? spec.pages.length : null,
-    exportableFrameworks: Array.isArray(spec.exportableFrameworks) ? spec.exportableFrameworks : null,
+    exportableFrameworks: Array.isArray(spec.exportableFrameworks)
+      ? spec.exportableFrameworks
+      : null,
   }
 }

@@ -1,43 +1,43 @@
-import { Meta, StoryObj } from "@storybook/nextjs";
-import { ConvexProvider } from "convex/react";
-import { ComponentProps, useMemo } from "react";
-import udfs from "@common/udfs";
-import { DataFilters } from "@common/features/data/components/DataFilters/DataFilters";
-import { mockConvexReactClient } from "@common/lib/mockConvexReactClient";
+import { Meta, StoryObj } from '@storybook/nextjs'
+import { ConvexProvider } from 'convex/react'
+import { ComponentProps, useMemo } from 'react'
+import udfs from '@common/udfs'
+import { DataFilters } from '@common/features/data/components/DataFilters/DataFilters'
+import { mockConvexReactClient } from '@common/lib/mockConvexReactClient'
 import {
   ConnectedDeployment,
   ConnectedDeploymentContext,
   DeploymentInfoContext,
-} from "@common/lib/deploymentContext";
-import { mockDeploymentInfo } from "@common/lib/mockDeploymentInfo";
-import { fn } from "storybook/test";
+} from '@common/lib/deploymentContext'
+import { mockDeploymentInfo } from '@common/lib/mockDeploymentInfo'
+import { fn } from 'storybook/test'
 
 // @ts-expect-error -- simplified mock for Storybook
-const deployment: ConnectedDeployment = {};
+const deployment: ConnectedDeployment = {}
 
 const mockClient = mockConvexReactClient()
   .registerQueryFake(udfs.listById.default, ({ ids }) => ids.map(() => null))
-  .registerQueryFake(udfs.getVersion.default, () => "0.19.0")
+  .registerQueryFake(udfs.getVersion.default, () => '0.19.0')
   .registerQueryFake(udfs.components.list, () => [])
   .registerQueryFake(
     udfs.indexes.default,
     ({ tableName: _tableName, tableNamespace: _tableNamespace }) => [],
-  );
+  )
 
 const meta = {
   component: DataFilters,
   render: (args) => <Example {...args} />,
-  parameters: { a11y: { test: "todo" } },
-} satisfies Meta<typeof DataFilters>;
+  parameters: { a11y: { test: 'todo' } },
+} satisfies Meta<typeof DataFilters>
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 function Example(args: ComponentProps<typeof DataFilters>) {
   const connectedDeployment = useMemo(
     () => ({ deployment, isDisconnected: false }),
     [],
-  );
+  )
   return (
     <ConnectedDeploymentContext.Provider value={connectedDeployment}>
       <ConvexProvider client={mockClient}>
@@ -46,28 +46,28 @@ function Example(args: ComponentProps<typeof DataFilters>) {
         </DeploymentInfoContext.Provider>
       </ConvexProvider>
     </ConnectedDeploymentContext.Provider>
-  );
+  )
 }
 
 export const Default: Story = {
   args: {
-    tableName: "myTable",
+    tableName: 'myTable',
     defaultDocument: { myColumn: 0 },
     filters: { clauses: [] },
     onFiltersChange: fn(),
     setDraftFilters: fn(),
     setShowFilters: fn(),
-    tableFields: ["myColumn"],
-    componentId: "myComponent",
+    tableFields: ['myColumn'],
+    componentId: 'myComponent',
     activeSchema: null,
     numRows: 0,
     numRowsLoaded: 0,
     hasFilters: true,
     showFilters: true,
-    allFields: ["*select", "myColumn"],
+    allFields: ['*select', 'myColumn'],
     hiddenColumns: [],
     setHiddenColumns: fn(),
     columnOrder: [],
     setColumnOrder: fn(),
   },
-};
+}

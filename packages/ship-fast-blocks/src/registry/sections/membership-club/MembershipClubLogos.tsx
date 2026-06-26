@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MembershipClubLogos — quiet "members come from" wordmark strip for a private
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * founders communities or alumni collectives. Renders fully with no props.
  */
 export const MembershipClubLogos = defineComponent({
-  name: "MembershipClubLogos",
+  name: 'MembershipClubLogos',
   description:
     "Quiet 'members come from' wordmark strip for a private membership club / exclusive community page: a bordered, muted-surface band with a centered uppercase caption above a responsive grid of company wordmarks rendered as low-contrast text buttons that brighten on hover (last two hide on small screens). Each wordmark routes through useNavigate. Use as a social-proof strip between hero and benefits for members clubs, professional networks, founders communities or alumni collectives.",
   props: z.object({
@@ -23,17 +23,14 @@ export const MembershipClubLogos = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const label = props.label ?? "Members come from"
+    const label = props.label ?? 'Members come from'
     const companies = props.companies?.length
       ? props.companies
-      : ["Stripe", "Notion", "Figma", "Linear", "Vercel", "Webflow"]
+      : ['Stripe', 'Notion', 'Figma', 'Linear', 'Vercel', 'Webflow']
 
     return (
       <section
-        className={cn(
-          "w-full border-y border-border bg-card",
-          props.className,
-        )}
+        className={cn('w-full border-y border-border bg-card', props.className)}
         aria-label="Member companies"
       >
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -48,8 +45,8 @@ export const MembershipClubLogos = defineComponent({
                 onClick={() => go(company)}
                 aria-label={`${company} company`}
                 className={cn(
-                  "text-lg font-medium tracking-tight text-muted-foreground/70 transition-colors hover:text-foreground",
-                  i >= 4 && "hidden md:block",
+                  'text-lg font-medium tracking-tight text-muted-foreground/70 transition-colors hover:text-foreground',
+                  i >= 4 && 'hidden md:block',
                 )}
               >
                 {company}

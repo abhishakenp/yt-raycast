@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ManufacturingCta — a dark closing call-to-action band for a precision-
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * manufacturer pages. Renders fully with no props via baked-in defaults.
  */
 export const ManufacturingCta = defineComponent({
-  name: "ManufacturingCta",
+  name: 'ManufacturingCta',
   description:
-    "A dark closing call-to-action band for a precision-manufacturing site: on a foreground-colored centered block, a large heading, a supporting paragraph, dual CTAs (a solid background-on-foreground button plus an outlined button) and a small note line beneath. Both CTAs route through useNavigate. Bold, industrial, conversion-focused. Use as the final conversion prompt before the footer on machine-shop, fabricator or contract-manufacturer pages.",
+    'A dark closing call-to-action band for a precision-manufacturing site: on a foreground-colored centered block, a large heading, a supporting paragraph, dual CTAs (a solid background-on-foreground button plus an outlined button) and a small note line beneath. Both CTAs route through useNavigate. Bold, industrial, conversion-focused. Use as the final conversion prompt before the footer on machine-shop, fabricator or contract-manufacturer pages.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -26,18 +26,18 @@ export const ManufacturingCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to Start Your Project?"
+    const heading = props.heading ?? 'Ready to Start Your Project?'
     const description =
       props.description ??
-      "Get a detailed quote within 24 hours. Our engineers review every submission for manufacturability and will suggest cost-saving alternatives when possible."
-    const primaryCta = props.primaryCta ?? "Request a Quote"
-    const secondaryCta = props.secondaryCta ?? "Call (206) 555-1234"
+      'Get a detailed quote within 24 hours. Our engineers review every submission for manufacturability and will suggest cost-saving alternatives when possible.'
+    const primaryCta = props.primaryCta ?? 'Request a Quote'
+    const secondaryCta = props.secondaryCta ?? 'Call (206) 555-1234'
     const note =
       props.note ??
-      "Located in Kent, Washington • Serving customers nationwide since 1989"
+      'Located in Kent, Washington • Serving customers nationwide since 1989'
 
     return (
-      <section className={cn("bg-foreground py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-foreground py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl font-semibold tracking-tight text-background sm:text-4xl">
             {heading}

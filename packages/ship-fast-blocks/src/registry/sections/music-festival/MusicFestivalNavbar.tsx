@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MusicFestivalNavbar — fixed, translucent top navigation bar for a music /
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * camping/desert events, raves, or any multi-day ticketed live event.
  */
 export const MusicFestivalNavbar = defineComponent({
-  name: "MusicFestivalNavbar",
+  name: 'MusicFestivalNavbar',
   description:
     "Fixed, translucent top navigation bar for a music / arts festival landing page: a blurred, border-bottomed header pinned to the top with the bold festival wordmark on the left, a horizontal row of nav links in the center, a primary pill 'Get Tickets' CTA on the right, and a hamburger menu button on mobile. Every nav link and the CTA route through useNavigate, and the nav labels match site routes so PageSwitch can swap pages. Use as the sticky site header for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed live event.",
   props: z.object({
@@ -32,18 +32,18 @@ export const MusicFestivalNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "HORIZON"
+    const brand = props.brand ?? 'HORIZON'
     const nav = props.nav?.length
       ? props.nav
-      : ["Lineup", "Experience", "Schedule", "Tickets", "FAQ"]
-    const ctaLabel = props.ctaLabel ?? "Get Tickets"
+      : ['Lineup', 'Experience', 'Schedule', 'Tickets', 'FAQ']
+    const ctaLabel = props.ctaLabel ?? 'Get Tickets'
     const homeTarget = props.homeTarget ?? nav[0]
-    const ctaTarget = props.ctaTarget ?? "Buy Tickets"
+    const ctaTarget = props.ctaTarget ?? 'Buy Tickets'
 
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >
@@ -81,7 +81,17 @@ export const MusicFestivalNavbar = defineComponent({
               onClick={() => go(homeTarget)}
               className="p-2 md:hidden"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <path d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>

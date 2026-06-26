@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const Mark = ({ className }: { className?: string }) => (
   <svg
@@ -22,7 +22,7 @@ const Mark = ({ className }: { className?: string }) => (
 )
 
 export const SalonBarberNavbar = defineComponent({
-  name: "SalonBarberNavbar",
+  name: 'SalonBarberNavbar',
   description:
     "Sticky barbershop / salon header built on the shared SiteNav composite. Renders a confident grooming brand with a scissors brand mark, desktop nav links, a tap-to-call phone number, and a primary booking CTA, plus a real mobile drawer. Use it as the top-of-page header for any barbershop, salon, or men's grooming site, or as the global nav band when composing a multi-page grooming experience.",
   props: z.object({
@@ -35,15 +35,20 @@ export const SalonBarberNavbar = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const nav = props.nav?.length ? props.nav : ["Services", "Gallery", "Team", "Pricing"]
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Services', 'Gallery', 'Team', 'Pricing']
     return (
       <SiteNav
-        brand={props.brand ?? "Fade & Co."}
+        brand={props.brand ?? 'Fade & Co.'}
         brandMark={<Mark className="size-8 text-primary" />}
         brandClassName="text-xl font-semibold tracking-tight"
         nav={nav}
-        phone={props.phone ?? "(212) 555-0147"}
-        cta={{ label: props.ctaLabel ?? "Book Now", target: props.ctaTarget ?? "Pricing" }}
+        phone={props.phone ?? '(212) 555-0147'}
+        cta={{
+          label: props.ctaLabel ?? 'Book Now',
+          target: props.ctaTarget ?? 'Pricing',
+        }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}
       />

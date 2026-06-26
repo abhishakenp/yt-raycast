@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * SubscriptionBoxNavbar — sticky, playful site header for a subscription-box
@@ -31,7 +31,7 @@ const GiftBoxMark = ({ className }: { className?: string }) => (
 )
 
 export const SubscriptionBoxNavbar = defineComponent({
-  name: "SubscriptionBoxNavbar",
+  name: 'SubscriptionBoxNavbar',
   description:
     "Sticky, playful subscription-box site header built on the shared SiteNav composite: gift-box wordmark + ribboned box mark, desktop nav links (How it works, Boxes, Pricing, FAQ), a 'Get Started' pill CTA, and a real mobile drawer. Use as the header for any curated monthly box, recurring-delivery, or membership-kit brand where the unboxing experience is the hook.",
   props: z.object({
@@ -50,16 +50,16 @@ export const SubscriptionBoxNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["How it works", "Boxes", "Pricing", "FAQ"]
+      : ['How it works', 'Boxes', 'Pricing', 'FAQ']
     return (
       <SiteNav
-        brand={props.brand ?? "BoxJoy"}
+        brand={props.brand ?? 'BoxJoy'}
         brandMark={<GiftBoxMark className="size-8 text-primary" />}
         brandClassName="text-xl font-bold tracking-tight"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Get Started",
-          target: props.ctaTarget ?? "Pricing",
+          label: props.ctaLabel ?? 'Get Started',
+          target: props.ctaTarget ?? 'Pricing',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

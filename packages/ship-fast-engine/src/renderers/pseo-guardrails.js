@@ -20,7 +20,11 @@ function collectLinkedRoutes(siteSpec) {
     const pathOnly = h.split('?')[0].split('#')[0]
     set.add(normalizePath(pathOnly))
   }
-  for (const list of [siteSpec.navigation?.global, siteSpec.navigation?.footer, siteSpec.navigation?.ctas]) {
+  for (const list of [
+    siteSpec.navigation?.global,
+    siteSpec.navigation?.footer,
+    siteSpec.navigation?.ctas,
+  ]) {
     for (const a of list || []) addHref(a?.href)
   }
   for (const page of siteSpec.pages || []) {
@@ -62,7 +66,9 @@ export function applyGeneratedSitePseoGuardrails(siteSpec) {
     group.sort((a, b) => String(a.route).localeCompare(String(b.route)))
     for (let i = THIN_FAMILY_MAX_INDEXABLE; i < group.length; i++) {
       const page = group[i]
-      const desc = String(page.seo?.description || page.description || '').trim()
+      const desc = String(
+        page.seo?.description || page.description || '',
+      ).trim()
       if (desc.length < THIN_DESC_MIN_CHARS) {
         if (!page.seo) page.seo = {}
         page.seo.noIndex = true
@@ -78,9 +84,12 @@ export function applyGeneratedSitePseoGuardrails(siteSpec) {
   })
 
   if (missing.length) {
-    if (!siteSpec.navigation) siteSpec.navigation = { global: [], footer: [], ctas: [] }
+    if (!siteSpec.navigation)
+      siteSpec.navigation = { global: [], footer: [], ctas: [] }
     const footer = [...(siteSpec.navigation.footer || [])]
-    const seen = new Set(footer.map((x) => normalizePath(String(x?.href || '').split('?')[0])))
+    const seen = new Set(
+      footer.map((x) => normalizePath(String(x?.href || '').split('?')[0])),
+    )
     for (const page of missing) {
       const href = normalizePath(page.route)
       if (seen.has(href)) continue

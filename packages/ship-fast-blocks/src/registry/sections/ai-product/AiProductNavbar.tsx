@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AiProductNavbar — sticky, blurred top navigation bar for a clean, light AI
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * modern minimal SaaS marketing site. Renders fully with no props.
  */
 export const AiProductNavbar = defineComponent({
-  name: "AiProductNavbar",
+  name: 'AiProductNavbar',
   description:
     "Sticky backdrop-blurred top navigation bar for a clean, light AI SaaS / product landing page: a near-black rounded brand tile with a pen/edit glyph + product name on the left, a horizontal set of nav links (desktop), and a muted 'Sign in' text link plus a near-black filled primary CTA button on the right. Links and CTAs route through useNavigate for page-switching. Use as the sticky site header for AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or any modern minimal conversion-focused SaaS marketing site.",
   props: z.object({
@@ -32,18 +32,18 @@ export const AiProductNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "WriteFlow"
+    const brand = props.brand ?? 'WriteFlow'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Pricing", "Stories", "FAQ"]
-    const signInLabel = props.signInLabel ?? "Sign in"
-    const cta = props.cta ?? "Start free trial"
-    const ctaTarget = props.ctaTarget ?? "Start writing free"
+      : ['Features', 'Pricing', 'Stories', 'FAQ']
+    const signInLabel = props.signInLabel ?? 'Sign in'
+    const cta = props.cta ?? 'Start free trial'
+    const ctaTarget = props.ctaTarget ?? 'Start writing free'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-foreground text-background",
+          'grid place-items-center rounded-lg bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -66,7 +66,7 @@ export const AiProductNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >

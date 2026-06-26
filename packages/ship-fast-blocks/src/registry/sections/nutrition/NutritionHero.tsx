@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * NutritionHero — split two-column hero for a nutrition-coaching / wellness landing
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * programs or healthy-eating apps.
  */
 export const NutritionHero = defineComponent({
-  name: "NutritionHero",
+  name: 'NutritionHero',
   description:
     "Split two-column hero for a nutrition-coaching / wellness landing page: a left column with a primary eyebrow, big tracking-tight headline, relaxed subheading, dual pill CTAs (filled primary + outlined card), and a stacked trust-avatar row with a social-proof note; a right column with a large rounded food photo and an overlapping floating 'meal logged' card (check badge + title + subtitle). All CTAs route through useNavigate; imagery uses the alt-driven Image component. Use as the top hero for nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs, weight-loss services or healthy-eating apps.",
   props: z.object({
@@ -35,28 +35,27 @@ export const NutritionHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Evidence-Based Nutrition Coaching"
+    const eyebrow = props.eyebrow ?? 'Evidence-Based Nutrition Coaching'
     const heading =
-      props.heading ?? "Finally, a nutrition plan that fits your life"
+      props.heading ?? 'Finally, a nutrition plan that fits your life'
     const subheading =
       props.subheading ??
-      "Personalized meal plans, expert coaching, and sustainable habits. Join 50,000+ clients who have transformed their relationship with food—and their bodies."
-    const primaryCta = props.primaryCta ?? "Start 7-Day Free Trial"
-    const secondaryCta = props.secondaryCta ?? "See Transformations"
-    const trustNote =
-      props.trustNote ?? "Trusted by 50,000+ clients worldwide"
+      'Personalized meal plans, expert coaching, and sustainable habits. Join 50,000+ clients who have transformed their relationship with food—and their bodies.'
+    const primaryCta = props.primaryCta ?? 'Start 7-Day Free Trial'
+    const secondaryCta = props.secondaryCta ?? 'See Transformations'
+    const trustNote = props.trustNote ?? 'Trusted by 50,000+ clients worldwide'
     const avatars = props.avatars?.length
       ? props.avatars
       : [
-          "professional headshot of a smiling woman with brown hair",
-          "professional headshot of a man with short dark hair smiling",
-          "professional headshot of a blonde woman smiling outdoors",
+          'professional headshot of a smiling woman with brown hair',
+          'professional headshot of a man with short dark hair smiling',
+          'professional headshot of a blonde woman smiling outdoors',
         ]
     const imageAlt =
       props.imageAlt ??
-      "overhead view of a colorful healthy meal prep with fresh vegetables grains and proteins in ceramic bowls"
-    const badgeTitle = props.badgeTitle ?? "Meal logged"
-    const badgeSubtitle = props.badgeSubtitle ?? "Mediterranean bowl • 485 cal"
+      'overhead view of a colorful healthy meal prep with fresh vegetables grains and proteins in ceramic bowls'
+    const badgeTitle = props.badgeTitle ?? 'Meal logged'
+    const badgeSubtitle = props.badgeSubtitle ?? 'Mediterranean bowl • 485 cal'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -77,7 +76,10 @@ export const NutritionHero = defineComponent({
 
     return (
       <section
-        className={cn("relative overflow-hidden bg-background", props.className)}
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-7xl px-4 pb-24 pt-16 sm:px-6 lg:px-8 lg:pb-32 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">

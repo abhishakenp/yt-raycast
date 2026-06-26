@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 function UniversityBrandMark() {
   return (
@@ -22,7 +22,7 @@ function UniversityBrandMark() {
 }
 
 export const UniversityNavbar = defineComponent({
-  name: "UniversityNavbar",
+  name: 'UniversityNavbar',
   description:
     "Prestigious collegiate site header for the University page family. Composes the shared SiteNav kit composite with a serif wordmark, a graduation-cap brand mark, academic nav links, an optional admissions phone line, and a prominent 'Apply' call to action targeting the Admissions page. Use as the top band of any university homepage or as the persistent header across a multi-page campus site.",
   props: z.object({
@@ -36,13 +36,13 @@ export const UniversityNavbar = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Whitmore University"
+    const brand = props.brand ?? 'Whitmore University'
     const nav = props.nav?.length
       ? props.nav
-      : ["Academics", "Admissions", "Campus Life", "Research", "About"]
-    const phone = props.phone ?? "Admissions: (800) 555-0142"
-    const ctaLabel = props.ctaLabel ?? "Apply"
-    const ctaTarget = props.ctaTarget ?? "Admissions"
+      : ['Academics', 'Admissions', 'Campus Life', 'Research', 'About']
+    const phone = props.phone ?? 'Admissions: (800) 555-0142'
+    const ctaLabel = props.ctaLabel ?? 'Apply'
+    const ctaTarget = props.ctaTarget ?? 'Admissions'
 
     return (
       <SiteNav

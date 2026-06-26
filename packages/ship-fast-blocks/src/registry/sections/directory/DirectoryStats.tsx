@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * DirectoryStats — compact 4-up statistics band for a local-business directory.
@@ -11,9 +11,9 @@ import { cn } from "#/lib/utils.ts"
  * review-and-discovery sites to convey scale and trust.
  */
 export const DirectoryStats = defineComponent({
-  name: "DirectoryStats",
+  name: 'DirectoryStats',
   description:
-    "Compact 4-up statistics band for a local-business DIRECTORY: a muted, border-topped-and-bottomed strip with a centered responsive grid of big-number metrics (value plus label) — typically businesses listed, verified reviews, cities covered, and average rating. Static, no links. Use directly beneath the hero of local directories, listing marketplaces, find-a-service platforms, or review-and-discovery sites to convey scale and trust.",
+    'Compact 4-up statistics band for a local-business DIRECTORY: a muted, border-topped-and-bottomed strip with a centered responsive grid of big-number metrics (value plus label) — typically businesses listed, verified reviews, cities covered, and average rating. Static, no links. Use directly beneath the hero of local directories, listing marketplaces, find-a-service platforms, or review-and-discovery sites to convey scale and trust.',
   props: z.object({
     /** Stat tiles (big value + label). */
     stats: z
@@ -25,15 +25,15 @@ export const DirectoryStats = defineComponent({
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "12,450+", label: "Local Businesses" },
-          { value: "48,200+", label: "Verified Reviews" },
-          { value: "156", label: "Cities Covered" },
-          { value: "4.8", label: "Average Rating" },
+          { value: '12,450+', label: 'Local Businesses' },
+          { value: '48,200+', label: 'Verified Reviews' },
+          { value: '156', label: 'Cities Covered' },
+          { value: '4.8', label: 'Average Rating' },
         ]
 
     return (
       <section
-        className={cn("border-y border-border bg-muted py-12", props.className)}
+        className={cn('border-y border-border bg-muted py-12', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-8 text-center md:grid-cols-4">

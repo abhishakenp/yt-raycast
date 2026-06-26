@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * SubscriptionBoxSteps — bespoke "how it works" band for a subscription-box
@@ -70,7 +70,7 @@ const TruckIcon = ({ className }: { className?: string }) => (
 const STEP_ICONS = [PickIcon, TuneIcon, TruckIcon]
 
 export const SubscriptionBoxSteps = defineComponent({
-  name: "SubscriptionBoxSteps",
+  name: 'SubscriptionBoxSteps',
   description:
     "Bespoke 'how it works' band for a subscription-box brand: a padded section with the shared SectionHeading over a 3-column grid of numbered step cards (Choose, Customize, Delivered), each with a playful number badge, an inline outline icon, a title, and a short description. Use to explain the recurring-box flow on any subscription or membership-kit page.",
   props: z.object({
@@ -83,35 +83,35 @@ export const SubscriptionBoxSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "How it works"
-    const heading = props.heading ?? "Three happy little steps"
+    const eyebrow = props.eyebrow ?? 'How it works'
+    const heading = props.heading ?? 'Three happy little steps'
     const subheading =
       props.subheading ??
-      "From picking your vibe to ripping the tape off your first box — it could not be simpler."
+      'From picking your vibe to ripping the tape off your first box — it could not be simpler.'
     const steps = props.steps?.length
       ? props.steps
       : [
           {
-            title: "Choose your box",
+            title: 'Choose your box',
             description:
-              "Pick the size and theme that fits you. Mini for a treat, Deluxe for the full haul.",
+              'Pick the size and theme that fits you. Mini for a treat, Deluxe for the full haul.',
           },
           {
-            title: "Customize the goodies",
+            title: 'Customize the goodies',
             description:
               "Tell us what you love and skip what you don't. Every box is tuned to your taste.",
           },
           {
-            title: "Delivered to your door",
+            title: 'Delivered to your door',
             description:
-              "Sit back and watch it arrive. Free shipping, every month, ready to unbox.",
+              'Sit back and watch it arrive. Free shipping, every month, ready to unbox.',
           },
         ]
 
     return (
       <section
         className={cn(
-          "bg-background py-20 text-foreground sm:py-24",
+          'bg-background py-20 text-foreground sm:py-24',
           props.className,
         )}
       >

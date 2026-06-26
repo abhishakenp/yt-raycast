@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ManufacturingTestimonials — a two-tier testimonials grid for a precision-
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * defaults.
  */
 export const ManufacturingTestimonials = defineComponent({
-  name: "ManufacturingTestimonials",
+  name: 'ManufacturingTestimonials',
   description:
-    "A two-tier testimonials grid for a precision-manufacturing site: a centered eyebrow + heading intro above a row of three featured quote cards (5-star rating, full quote, avatar + name + role) and, beneath, a row of three compact quote cards (short quote, smaller avatar + name + role). Bordered, muted cards with alt-driven avatars. Clean, neutral, trustworthy. Use to surface engineer and procurement social proof on machine-shop or contract-manufacturer pages.",
+    'A two-tier testimonials grid for a precision-manufacturing site: a centered eyebrow + heading intro above a row of three featured quote cards (5-star rating, full quote, avatar + name + role) and, beneath, a row of three compact quote cards (short quote, smaller avatar + name + role). Bordered, muted cards with alt-driven avatars. Clean, neutral, trustworthy. Use to surface engineer and procurement social proof on machine-shop or contract-manufacturer pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -43,35 +43,35 @@ export const ManufacturingTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Testimonials"
+    const eyebrow = props.eyebrow ?? 'Testimonials'
     const heading =
-      props.heading ?? "Trusted by Engineers and Procurement Teams"
+      props.heading ?? 'Trusted by Engineers and Procurement Teams'
     const featured = props.featured?.length
       ? props.featured
       : [
           {
             quote:
-              "Vertex has been our go-to machine shop for aerospace brackets for 8 years. Their AS9100 certification and attention to detail gives us confidence every time. Zero defects on 15,000+ parts shipped.",
-            name: "Michael Chen",
-            role: "Senior Manufacturing Engineer, Boeing Defense",
+              'Vertex has been our go-to machine shop for aerospace brackets for 8 years. Their AS9100 certification and attention to detail gives us confidence every time. Zero defects on 15,000+ parts shipped.',
+            name: 'Michael Chen',
+            role: 'Senior Manufacturing Engineer, Boeing Defense',
             avatarAlt:
-              "Professional headshot of Michael Chen, Senior Manufacturing Engineer",
+              'Professional headshot of Michael Chen, Senior Manufacturing Engineer',
           },
           {
             quote:
-              "When we needed 500 EV heat sinks turned around in two weeks for a prototype build, Vertex delivered. Their online portal made tracking progress effortless. Highly recommend for automotive programs.",
-            name: "Sarah Martinez",
-            role: "Supply Chain Director, Rivian Automotive",
+              'When we needed 500 EV heat sinks turned around in two weeks for a prototype build, Vertex delivered. Their online portal made tracking progress effortless. Highly recommend for automotive programs.',
+            name: 'Sarah Martinez',
+            role: 'Supply Chain Director, Rivian Automotive',
             avatarAlt:
-              "Professional headshot of Sarah Martinez, Supply Chain Director",
+              'Professional headshot of Sarah Martinez, Supply Chain Director',
           },
           {
             quote:
-              "Vertex helped us redesign a critical surgical instrument for manufacturability, cutting our cost by 40% while improving the ergonomics. Their engineering team is world-class.",
-            name: "Dr. James Wilson",
-            role: "Chief of Orthopedic Surgery, Mayo Clinic",
+              'Vertex helped us redesign a critical surgical instrument for manufacturability, cutting our cost by 40% while improving the ergonomics. Their engineering team is world-class.',
+            name: 'Dr. James Wilson',
+            role: 'Chief of Orthopedic Surgery, Mayo Clinic',
             avatarAlt:
-              "Professional headshot of Dr. James Wilson, Chief of Orthopedic Surgery",
+              'Professional headshot of Dr. James Wilson, Chief of Orthopedic Surgery',
           },
         ]
     const compact = props.compact?.length
@@ -79,27 +79,27 @@ export const ManufacturingTestimonials = defineComponent({
       : [
           {
             quote:
-              "The ITAR compliance and secure facility made Vertex our preferred supplier for classified defense components. Documentation is always flawless.",
-            name: "Robert Thompson",
-            role: "Program Manager, Lockheed Martin",
+              'The ITAR compliance and secure facility made Vertex our preferred supplier for classified defense components. Documentation is always flawless.',
+            name: 'Robert Thompson',
+            role: 'Program Manager, Lockheed Martin',
             avatarAlt:
-              "Professional headshot of Robert Thompson, Program Manager at Lockheed Martin",
+              'Professional headshot of Robert Thompson, Program Manager at Lockheed Martin',
           },
           {
             quote:
               "We've reduced lead times from 8 weeks to 3 weeks on our valve bodies since partnering with Vertex. Their capacity planning is exceptional.",
-            name: "Jennifer Kim",
-            role: "VP Operations, Halliburton",
+            name: 'Jennifer Kim',
+            role: 'VP Operations, Halliburton',
             avatarAlt:
-              "Professional headshot of Jennifer Kim, VP Operations at Halliburton",
+              'Professional headshot of Jennifer Kim, VP Operations at Halliburton',
           },
           {
             quote:
-              "From small R&D batches to 10,000-unit production runs, Vertex scales with us. Consistent quality across every order size.",
-            name: "David Patel",
-            role: "CTO, Figure AI Robotics",
+              'From small R&D batches to 10,000-unit production runs, Vertex scales with us. Consistent quality across every order size.',
+            name: 'David Patel',
+            role: 'CTO, Figure AI Robotics',
             avatarAlt:
-              "Professional headshot of David Patel, CTO of robotics startup",
+              'Professional headshot of David Patel, CTO of robotics startup',
           },
         ]
 
@@ -117,9 +117,7 @@ export const ManufacturingTestimonials = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-background py-20 lg:py-28", props.className)}
-      >
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">

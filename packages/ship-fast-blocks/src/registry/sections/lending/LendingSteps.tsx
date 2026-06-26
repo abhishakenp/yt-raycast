@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * LendingSteps — a 3-step "how it works" flow on a muted section band for a
@@ -13,7 +13,7 @@ import { cn } from "#/lib/utils.ts"
  * defaults.
  */
 export const LendingSteps = defineComponent({
-  name: "LendingSteps",
+  name: 'LendingSteps',
   description:
     "3-step 'how it works' flow on a muted band for a lending or fintech marketing page: centered heading + description above a responsive 3-up grid of white step cards, each with a numbered primary circle badge, a title, a descriptive paragraph and a small clock-noted time estimate; connecting arrow glyphs between cards on desktop. Use to explain a simple apply-and-fund process — check rate, choose terms, get funded — on loan, onboarding, or fintech landing pages.",
   props: z.object({
@@ -31,34 +31,34 @@ export const LendingSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const stepsHeading = props.heading ?? "How it works"
+    const stepsHeading = props.heading ?? 'How it works'
     const stepsDesc =
-      props.description ?? "Three simple steps to get the funds you need."
+      props.description ?? 'Three simple steps to get the funds you need.'
     const stepItems = props.items?.length
       ? props.items
       : [
           {
-            title: "Check your rate",
+            title: 'Check your rate',
             description:
               "Tell us how much you need and what it's for. We'll show you personalized rates in 2 minutes—no impact to your credit score.",
-            note: "Takes 2 minutes",
+            note: 'Takes 2 minutes',
           },
           {
-            title: "Choose your terms",
+            title: 'Choose your terms',
             description:
-              "Pick the loan amount and term that fit your budget. Adjust your monthly payment until it feels right.",
-            note: "Takes 5 minutes",
+              'Pick the loan amount and term that fit your budget. Adjust your monthly payment until it feels right.',
+            note: 'Takes 5 minutes',
           },
           {
-            title: "Get funded",
+            title: 'Get funded',
             description:
               "E-sign your documents and we'll deposit funds directly to your bank account as soon as the next business day.",
-            note: "Next day delivery",
+            note: 'Next day delivery',
           },
         ]
 
     return (
-      <section className={cn("bg-muted py-24 lg:py-32", props.className)}>
+      <section className={cn('bg-muted py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

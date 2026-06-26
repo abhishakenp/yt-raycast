@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LawFirmNavbar — sticky top navigation bar for a corporate / trial law-firm
@@ -17,7 +17,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Reinhart & Associates" defaults.
  */
 export const LawFirmNavbar = defineComponent({
-  name: "LawFirmNavbar",
+  name: 'LawFirmNavbar',
   description:
     "Sticky bordered top navigation bar for a corporate / trial law-firm site on the card surface: a squared brand tile bearing the firm initial beside a two-line serif wordmark (firm name + tracked-uppercase tagline) on the left, a row of quiet monochrome nav links plus a solid 'Free Consultation' CTA on the right (desktop), and a hamburger menu button on mobile. Refined, authoritative, serif-driven editorial aesthetic with sharp squared corners. Links route through useNavigate for page-switching. Use as the sticky site header for law firms, attorneys, legal practices, solicitors, barristers, corporate counsel, litigation boutiques, estate-planning, tax or accounting/advisory firms.",
   props: z.object({
@@ -33,20 +33,23 @@ export const LawFirmNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Reinhart & Associates"
-    const tagline = props.tagline ?? "Attorneys at Law"
+    const brand = props.brand ?? 'Reinhart & Associates'
+    const tagline = props.tagline ?? 'Attorneys at Law'
     const nav = props.nav?.length
       ? props.nav
-      : ["Practice Areas", "Attorneys", "Testimonials", "FAQ", "Contact"]
-    const ctaLabel = props.ctaLabel ?? "Free Consultation"
+      : ['Practice Areas', 'Attorneys', 'Testimonials', 'FAQ', 'Contact']
+    const ctaLabel = props.ctaLabel ?? 'Free Consultation'
 
     const brandInitial =
-      brand.replace(/[^A-Za-z]/g, "").charAt(0).toUpperCase() || "R"
+      brand
+        .replace(/[^A-Za-z]/g, '')
+        .charAt(0)
+        .toUpperCase() || 'R'
 
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-card",
+          'sticky top-0 z-50 border-b border-border bg-card',
           props.className,
         )}
       >

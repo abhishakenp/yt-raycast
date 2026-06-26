@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LendingFooter — a dark, rich multi-column site footer for a lending or fintech
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * consolidation, or financing pages. Renders fully with no props via defaults.
  */
 export const LendingFooter = defineComponent({
-  name: "LendingFooter",
+  name: 'LendingFooter',
   description:
-    "Dark rich multi-column site footer for a lending or fintech marketing page: near-ink (foreground-toned) band with a brand column (logo tile, name, tagline, social text-links) plus three link columns; a divided bottom row carries the copyright, a set of legal links and a long fine-print regulatory disclosure. Links route through useNavigate. Use as the closing footer with legal disclosures on personal-loan, debt-consolidation, or financing pages.",
+    'Dark rich multi-column site footer for a lending or fintech marketing page: near-ink (foreground-toned) band with a brand column (logo tile, name, tagline, social text-links) plus three link columns; a divided bottom row carries the copyright, a set of legal links and a long fine-print regulatory disclosure. Links route through useNavigate. Use as the closing footer with legal disclosures on personal-loan, debt-consolidation, or financing pages.',
   props: z.object({
     /** Brand / lender name shown beside the footer logo tile. */
     brand: z.string().optional(),
@@ -34,51 +34,51 @@ export const LendingFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "ClearLoan"
-    const homeTarget = props.homeTarget ?? "How it Works"
+    const brand = props.brand ?? 'ClearLoan'
+    const homeTarget = props.homeTarget ?? 'How it Works'
     const footerTagline =
       props.tagline ??
-      "Simple, honest personal loans. No hidden fees, no surprises."
+      'Simple, honest personal loans. No hidden fees, no surprises.'
     const socials = props.socials?.length
       ? props.socials
-      : ["Twitter", "Instagram", "LinkedIn"]
+      : ['Twitter', 'Instagram', 'LinkedIn']
     const footerColumns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Products",
+            title: 'Products',
             links: [
-              "Personal Loans",
-              "Debt Consolidation",
-              "Home Improvement",
-              "Medical Loans",
-              "Auto Loans",
+              'Personal Loans',
+              'Debt Consolidation',
+              'Home Improvement',
+              'Medical Loans',
+              'Auto Loans',
             ],
           },
           {
-            title: "Company",
-            links: ["About Us", "Careers", "Press", "Partners", "Contact"],
+            title: 'Company',
+            links: ['About Us', 'Careers', 'Press', 'Partners', 'Contact'],
           },
           {
-            title: "Resources",
+            title: 'Resources',
             links: [
-              "Help Center",
-              "Blog",
-              "Loan Calculator",
-              "Credit Education",
-              "Refer a Friend",
+              'Help Center',
+              'Blog',
+              'Loan Calculator',
+              'Credit Education',
+              'Refer a Friend',
             ],
           },
         ]
     const footerLegalLinks = props.legalLinks?.length
       ? props.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Cookie Policy", "Disclosures"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Disclosures']
     const footerCopyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
     const footerDisclosure =
       props.disclosure ??
-      "ClearLoan Inc. NMLS ID #1234567. Loans are made by ClearLoan Inc. or lending partners. All loans are subject to credit approval. Your actual rate depends on credit score, loan amount, loan term, credit usage and history. Example: A $15,000 loan with an APR of 10.99% and 48 month term would have monthly payments of $384. The total amount paid would be $18,432. Annual percentage rates (APRs) through ClearLoan range from 6.99% to 24.99%."
+      'ClearLoan Inc. NMLS ID #1234567. Loans are made by ClearLoan Inc. or lending partners. All loans are subject to credit approval. Your actual rate depends on credit score, loan amount, loan term, credit usage and history. Example: A $15,000 loan with an APR of 10.99% and 48 month term would have monthly payments of $384. The total amount paid would be $18,432. Annual percentage rates (APRs) through ClearLoan range from 6.99% to 24.99%.'
 
     const Logo = ({ className }: { className?: string }) => (
       <svg
@@ -96,7 +96,7 @@ export const LendingFooter = defineComponent({
     )
 
     return (
-      <footer className={cn("bg-foreground py-16", props.className)}>
+      <footer className={cn('bg-foreground py-16', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-1">

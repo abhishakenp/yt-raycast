@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const brandMark = (
   <svg
@@ -28,7 +28,7 @@ const brandMark = (
  * fully with no props via baked-in "LearnSpace" defaults.
  */
 export const OnlineCourseNavbar = defineComponent({
-  name: "OnlineCourseNavbar",
+  name: 'OnlineCourseNavbar',
   description:
     "Sticky top navigation header for an online-course / e-learning platform built on the shared SiteNav kit composite: a book/open-pages brand mark, a wordmark, a desktop link row, and a single solid primary 'Enroll' CTA with a real mobile drawer. Brand, links, and CTA all route through the kit's useNavigate for page-switching. Use as the site header for course platforms, e-learning marketplaces, MOOCs, bootcamps, academies, or training providers.",
   props: z.object({
@@ -45,10 +45,10 @@ export const OnlineCourseNavbar = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "LearnSpace"
+    const brand = props.brand ?? 'LearnSpace'
     const nav = props.nav?.length
       ? props.nav
-      : ["Courses", "Instructors", "Pricing", "FAQ"]
+      : ['Courses', 'Instructors', 'Pricing', 'FAQ']
 
     return (
       <SiteNav
@@ -57,9 +57,9 @@ export const OnlineCourseNavbar = defineComponent({
         brandClassName="font-semibold tracking-tight"
         nav={nav}
         cta={{
-          label: props.cta ?? "Enroll",
-          target: props.ctaTarget ?? "Pricing",
-          variant: "primary",
+          label: props.cta ?? 'Enroll',
+          target: props.ctaTarget ?? 'Pricing',
+          variant: 'primary',
         }}
         homeTarget={nav[0]}
         className={props.className}

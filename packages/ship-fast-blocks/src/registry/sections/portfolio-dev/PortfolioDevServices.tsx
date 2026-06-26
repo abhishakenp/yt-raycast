@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * PortfolioDevServices — a 4-up services band for a modern developer portfolio.
@@ -14,9 +14,9 @@ import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
  * offerings. Renders fully with no props via baked-in defaults.
  */
 export const PortfolioDevServices = defineComponent({
-  name: "PortfolioDevServices",
+  name: 'PortfolioDevServices',
   description:
-    "4-up services band for a modern developer portfolio: a centered heading and subheading above a responsive grid of plain feature cards (no icons) describing the work the developer takes on — production web apps, cross-platform mobile, REST/GraphQL APIs, and cloud/DevOps. Each card pairs a short title with a concrete one-line description. Theme-token only. Use mid-page on a freelance engineer, full-stack developer, or studio portfolio to summarize offerings.",
+    '4-up services band for a modern developer portfolio: a centered heading and subheading above a responsive grid of plain feature cards (no icons) describing the work the developer takes on — production web apps, cross-platform mobile, REST/GraphQL APIs, and cloud/DevOps. Each card pairs a short title with a concrete one-line description. Theme-token only. Use mid-page on a freelance engineer, full-stack developer, or studio portfolio to summarize offerings.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -34,30 +34,30 @@ export const PortfolioDevServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Services"
-    const subheading = props.subheading ?? "What I build"
+    const heading = props.heading ?? 'Services'
+    const subheading = props.subheading ?? 'What I build'
     const features = props.features?.length
       ? props.features
       : [
           {
-            title: "Web Apps",
+            title: 'Web Apps',
             description:
-              "Production React, Next.js, and TypeScript apps with clean architecture and fast load times.",
+              'Production React, Next.js, and TypeScript apps with clean architecture and fast load times.',
           },
           {
-            title: "Mobile",
+            title: 'Mobile',
             description:
-              "Cross-platform React Native apps that feel native on both iOS and Android.",
+              'Cross-platform React Native apps that feel native on both iOS and Android.',
           },
           {
-            title: "APIs",
+            title: 'APIs',
             description:
-              "Robust REST and GraphQL backends with Node, Postgres, and solid auth.",
+              'Robust REST and GraphQL backends with Node, Postgres, and solid auth.',
           },
           {
-            title: "Cloud / DevOps",
+            title: 'Cloud / DevOps',
             description:
-              "CI/CD, containerization, and infra-as-code on AWS, Vercel, and Cloudflare.",
+              'CI/CD, containerization, and infra-as-code on AWS, Vercel, and Cloudflare.',
           },
         ]
 

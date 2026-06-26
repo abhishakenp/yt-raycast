@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ContactFormDetails — two-up band pairing a working contact form with a
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in defaults.
  */
 export const ContactFormDetails = defineComponent({
-  name: "ContactFormDetails",
+  name: 'ContactFormDetails',
   description:
-    "Two-up band pairing a working contact form with a contact-details card. Left side: full-name, email, and message fields with labels, placeholders, and a wide send button. Right side: a tinted-icon list of contact info (email, phone, address, hours) plus a row of social-link buttons. Raised cards with soft shadows and border tokens. Use as the main conversion block on contact, support, or sales-inquiry pages.",
+    'Two-up band pairing a working contact form with a contact-details card. Left side: full-name, email, and message fields with labels, placeholders, and a wide send button. Right side: a tinted-icon list of contact info (email, phone, address, hours) plus a row of social-link buttons. Raised cards with soft shadows and border tokens. Use as the main conversion block on contact, support, or sales-inquiry pages.',
   props: z.object({
     /** Contact form copy: field labels, placeholders, submit + confirmation. */
     form: z
@@ -38,9 +38,7 @@ export const ContactFormDetails = defineComponent({
         items: z
           .array(
             z.object({
-              icon: z
-                .enum(["mail", "phone", "map-pin", "clock"])
-                .optional(),
+              icon: z.enum(['mail', 'phone', 'map-pin', 'clock']).optional(),
               label: z.string(),
               value: z.string(),
               value2: z.string().optional(),
@@ -55,48 +53,48 @@ export const ContactFormDetails = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
 
-    const nameLabel = props.form?.nameLabel ?? "Full Name"
-    const namePlaceholder = props.form?.namePlaceholder ?? "John Doe"
-    const emailLabel = props.form?.emailLabel ?? "Email Address"
-    const emailPlaceholder = props.form?.emailPlaceholder ?? "john@company.com"
-    const messageLabel = props.form?.messageLabel ?? "Message"
+    const nameLabel = props.form?.nameLabel ?? 'Full Name'
+    const namePlaceholder = props.form?.namePlaceholder ?? 'John Doe'
+    const emailLabel = props.form?.emailLabel ?? 'Email Address'
+    const emailPlaceholder = props.form?.emailPlaceholder ?? 'john@company.com'
+    const messageLabel = props.form?.messageLabel ?? 'Message'
     const messagePlaceholder =
       props.form?.messagePlaceholder ??
-      "Tell us about your project, timeline, and budget..."
-    const submitLabel = props.form?.submit ?? "Send Message"
+      'Tell us about your project, timeline, and budget...'
+    const submitLabel = props.form?.submit ?? 'Send Message'
     const confirmation =
       props.form?.confirmation ??
-      "Thanks for reaching out! We will get back to you shortly."
+      'Thanks for reaching out! We will get back to you shortly.'
 
-    const detailsHeading = props.details?.heading ?? "Contact Information"
+    const detailsHeading = props.details?.heading ?? 'Contact Information'
     const detailItems = props.details?.items?.length
       ? props.details.items
       : [
           {
-            icon: "mail" as const,
-            label: "Email",
-            value: "hello@orbitdigital.co",
+            icon: 'mail' as const,
+            label: 'Email',
+            value: 'hello@orbitdigital.co',
           },
           {
-            icon: "phone" as const,
-            label: "Phone",
-            value: "+1 (415) 555-1234",
+            icon: 'phone' as const,
+            label: 'Phone',
+            value: '+1 (415) 555-1234',
           },
           {
-            icon: "map-pin" as const,
-            label: "Office",
-            value: "1201 Mission Street, Suite 400",
-            value2: "San Francisco, CA 94103",
+            icon: 'map-pin' as const,
+            label: 'Office',
+            value: '1201 Mission Street, Suite 400',
+            value2: 'San Francisco, CA 94103',
           },
           {
-            icon: "clock" as const,
-            label: "Business Hours",
-            value: "Mon — Fri: 9:00 AM – 6:00 PM PST",
+            icon: 'clock' as const,
+            label: 'Business Hours',
+            value: 'Mon — Fri: 9:00 AM – 6:00 PM PST',
           },
         ]
     const socials = props.details?.socials?.length
       ? props.details.socials
-      : ["Twitter", "LinkedIn", "GitHub", "Instagram"]
+      : ['Twitter', 'LinkedIn', 'GitHub', 'Instagram']
 
     const detailIcons: Record<string, ReactNode> = {
       mail: (
@@ -130,7 +128,7 @@ export const ContactFormDetails = defineComponent({
           <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
         </svg>
       ),
-      "map-pin": (
+      'map-pin': (
         <svg
           width="20"
           height="20"
@@ -166,24 +164,24 @@ export const ContactFormDetails = defineComponent({
 
     const socialPath = (label: string) => {
       const l = label.toLowerCase()
-      if (l.includes("linkedin"))
+      if (l.includes('linkedin'))
         return {
-          path: "M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z",
+          path: 'M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z',
           extra: true,
         }
-      if (l.includes("github"))
+      if (l.includes('github'))
         return {
-          path: "M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22",
+          path: 'M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22',
           extra: false,
         }
-      if (l.includes("instagram"))
+      if (l.includes('instagram'))
         return {
-          path: "M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z",
+          path: 'M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z',
           extra: false,
           insta: true,
         }
       return {
-        path: "M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z",
+        path: 'M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z',
         extra: false,
       }
     }
@@ -191,7 +189,7 @@ export const ContactFormDetails = defineComponent({
     return (
       <section
         className={cn(
-          "grid items-start gap-10 lg:grid-cols-2",
+          'grid items-start gap-10 lg:grid-cols-2',
           props.className,
         )}
       >
@@ -201,7 +199,7 @@ export const ContactFormDetails = defineComponent({
           <form
             onSubmit={(e) => {
               e.preventDefault()
-              go("Contact")
+              go('Contact')
             }}
           >
             <div className="mb-6">
@@ -286,7 +284,7 @@ export const ContactFormDetails = defineComponent({
                 className="flex items-start gap-4 rounded-lg border border-transparent bg-muted/40 p-5 transition-all hover:border-border hover:bg-muted/60"
               >
                 <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-                  {detailIcons[item.icon ?? "mail"]}
+                  {detailIcons[item.icon ?? 'mail']}
                 </span>
                 <div>
                   <h3 className="mb-0.5 text-[0.95rem] font-semibold text-foreground">

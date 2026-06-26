@@ -13,7 +13,12 @@ export const HINGLISH_LANGUAGE: LanguageEntry = {
   nativeName: 'Hinglish (Hindi–English)',
   fontFamily: 'Noto Sans Devanagari, Inter, system-ui, sans-serif',
   skipFullTranslation: true,
-  keywords: ['hinglish', 'hinglish website', 'hindi english mix', 'hindi-english'],
+  keywords: [
+    'hinglish',
+    'hinglish website',
+    'hindi english mix',
+    'hindi-english',
+  ],
 }
 
 export const INDIC_PURE_LANGUAGES: LanguageEntry[] = [
@@ -36,63 +41,119 @@ export const INDIC_PURE_LANGUAGES: LanguageEntry[] = [
     name: 'Telugu',
     nativeName: 'తెలుగు',
     fontFamily: 'Noto Sans Telugu, sans-serif',
-    keywords: ['telugu', 'తెలుగు', 'in telugu', 'telugu website', 'telugu language'],
+    keywords: [
+      'telugu',
+      'తెలుగు',
+      'in telugu',
+      'telugu website',
+      'telugu language',
+    ],
   },
   {
     code: 'kn',
     name: 'Kannada',
     nativeName: 'ಕನ್ನಡ',
     fontFamily: 'Noto Sans Kannada, sans-serif',
-    keywords: ['kannada', 'ಕನ್ನಡ', 'in kannada', 'kannada website', 'kannada language'],
+    keywords: [
+      'kannada',
+      'ಕನ್ನಡ',
+      'in kannada',
+      'kannada website',
+      'kannada language',
+    ],
   },
   {
     code: 'ml',
     name: 'Malayalam',
     nativeName: 'മലയാളം',
     fontFamily: 'Noto Sans Malayalam, sans-serif',
-    keywords: ['malayalam', 'മലയാളം', 'in malayalam', 'malayalam website', 'malayalam language'],
+    keywords: [
+      'malayalam',
+      'മലയാളം',
+      'in malayalam',
+      'malayalam website',
+      'malayalam language',
+    ],
   },
   {
     code: 'bn',
     name: 'Bengali',
     nativeName: 'বাংলা',
     fontFamily: 'Noto Sans Bengali, sans-serif',
-    keywords: ['bengali', 'bangla', 'বাংলা', 'in bengali', 'bengali website', 'bengali language'],
+    keywords: [
+      'bengali',
+      'bangla',
+      'বাংলা',
+      'in bengali',
+      'bengali website',
+      'bengali language',
+    ],
   },
   {
     code: 'mr',
     name: 'Marathi',
     nativeName: 'मराठी',
     fontFamily: 'Noto Sans Devanagari, sans-serif',
-    keywords: ['marathi', 'मराठी', 'in marathi', 'marathi website', 'marathi language'],
+    keywords: [
+      'marathi',
+      'मराठी',
+      'in marathi',
+      'marathi website',
+      'marathi language',
+    ],
   },
   {
     code: 'gu',
     name: 'Gujarati',
     nativeName: 'ગુજરાતી',
     fontFamily: 'Noto Sans Gujarati, sans-serif',
-    keywords: ['gujarati', 'ગુજરાતી', 'in gujarati', 'gujarati website', 'gujarati language'],
+    keywords: [
+      'gujarati',
+      'ગુજરાતી',
+      'in gujarati',
+      'gujarati website',
+      'gujarati language',
+    ],
   },
   {
     code: 'pa',
     name: 'Punjabi',
     nativeName: 'ਪੰਜਾਬੀ',
     fontFamily: 'Noto Sans Gurmukhi, sans-serif',
-    keywords: ['punjabi', 'ਪੰਜਾਬੀ', 'in punjabi', 'punjabi website', 'punjabi language'],
+    keywords: [
+      'punjabi',
+      'ਪੰਜਾਬੀ',
+      'in punjabi',
+      'punjabi website',
+      'punjabi language',
+    ],
   },
   {
     code: 'or',
     name: 'Odia',
     nativeName: 'ଓଡ଼ିଆ',
     fontFamily: 'Noto Sans Oriya, sans-serif',
-    keywords: ['odia', 'oriya', 'ଓଡ଼ିଆ', 'in odia', 'odia website', 'odia language'],
+    keywords: [
+      'odia',
+      'oriya',
+      'ଓଡ଼ିଆ',
+      'in odia',
+      'odia website',
+      'odia language',
+    ],
   },
   {
     code: 'as',
     name: 'Assamese',
     nativeName: 'অসমীয়া',
     fontFamily: 'Noto Sans Bengali, sans-serif',
-    keywords: ['assamese', 'অসমীয়া', 'in assamese', 'assamese website', 'assamese language'],
+    keywords: [
+      'assamese',
+      'অসমীয়া',
+      'in assamese',
+      'assamese website',
+      'assamese language',
+    ],
   },
   {
     code: 'ur',
@@ -106,14 +167,26 @@ export const INDIC_PURE_LANGUAGES: LanguageEntry[] = [
     name: 'Maithili',
     nativeName: 'मैथिली',
     fontFamily: 'Noto Sans Devanagari, sans-serif',
-    keywords: ['maithili', 'मैथिली', 'in maithili', 'maithili website', 'maithili language'],
+    keywords: [
+      'maithili',
+      'मैथिली',
+      'in maithili',
+      'maithili website',
+      'maithili language',
+    ],
   },
   {
     code: 'kok',
     name: 'Konkani',
     nativeName: 'कोंकणी',
     fontFamily: 'Noto Sans Devanagari, sans-serif',
-    keywords: ['konkani', 'कोंकणी', 'in konkani', 'konkani website', 'konkani language'],
+    keywords: [
+      'konkani',
+      'कोंकणी',
+      'in konkani',
+      'konkani website',
+      'konkani language',
+    ],
   },
   {
     code: 'mni',
@@ -134,14 +207,26 @@ export const INDIC_PURE_LANGUAGES: LanguageEntry[] = [
     name: 'Santali',
     nativeName: 'ᱥᱟᱱᱛᱟᱲᱤ',
     fontFamily: 'Noto Sans Ol Chiki, sans-serif',
-    keywords: ['santali', 'ᱥᱟᱱᱛᱟᱲᱤ', 'in santali', 'santali website', 'santali language'],
+    keywords: [
+      'santali',
+      'ᱥᱟᱱᱛᱟᱲᱤ',
+      'in santali',
+      'santali website',
+      'santali language',
+    ],
   },
   {
     code: 'ks',
     name: 'Kashmiri',
     nativeName: 'कॉशुर',
     fontFamily: 'Noto Nastaliq Urdu, sans-serif',
-    keywords: ['kashmiri', 'कॉशुर', 'in kashmiri', 'kashmiri website', 'kashmiri language'],
+    keywords: [
+      'kashmiri',
+      'कॉशुर',
+      'in kashmiri',
+      'kashmiri website',
+      'kashmiri language',
+    ],
   },
   {
     code: 'doi',
@@ -162,25 +247,44 @@ export const INDIC_PURE_LANGUAGES: LanguageEntry[] = [
     name: 'Sindhi',
     nativeName: 'سنڌي',
     fontFamily: 'Noto Nastaliq Urdu, sans-serif',
-    keywords: ['sindhi', 'سنڌي', 'in sindhi', 'sindhi website', 'sindhi language'],
+    keywords: [
+      'sindhi',
+      'سنڌي',
+      'in sindhi',
+      'sindhi website',
+      'sindhi language',
+    ],
   },
   {
     code: 'sa',
     name: 'Sanskrit',
     nativeName: 'संस्कृतम्',
     fontFamily: 'Noto Sans Devanagari, sans-serif',
-    keywords: ['sanskrit', 'संस्कृतम्', 'in sanskrit', 'sanskrit website', 'sanskrit language'],
+    keywords: [
+      'sanskrit',
+      'संस्कृतम्',
+      'in sanskrit',
+      'sanskrit website',
+      'sanskrit language',
+    ],
   },
   {
     code: 'ne',
     name: 'Nepali',
     nativeName: 'नेपाली',
     fontFamily: 'Noto Sans Devanagari, sans-serif',
-    keywords: ['nepali', 'नेपाली', 'in nepali', 'nepali website', 'nepali language'],
+    keywords: [
+      'nepali',
+      'नेपाली',
+      'in nepali',
+      'nepali website',
+      'nepali language',
+    ],
   },
 ]
 
-const MIXED_ENGLISH_SUFFIX_LANGUAGES: LanguageEntry[] = INDIC_PURE_LANGUAGES.filter((l) => l.code !== 'hi')
+const MIXED_ENGLISH_SUFFIX_LANGUAGES: LanguageEntry[] =
+  INDIC_PURE_LANGUAGES.filter((l) => l.code !== 'hi')
 
 const MIXED_ENGLISH_SLANG_KEYWORDS: Record<string, string[]> = {
   ta: ['tanglish', 'tanglish website', 'in tanglish'],
@@ -207,11 +311,54 @@ const MIXED_ENGLISH_SLANG_KEYWORDS: Record<string, string[]> = {
 }
 
 const ROMANIZED_PROMPT_LANGUAGE_HINTS: Record<string, string[]> = {
-  hi: ['aur', 'hai', 'hain', 'ke', 'ki', 'ka', 'mein', 'liye', 'banao', 'karo', 'chahiye'],
-  ta: ['oru', 'irukku', 'venum', 'seyyunga', 'panna', 'oda', 'la', 'ku', 'inga'],
-  te: ['oka', 'undali', 'undi', 'cheyyandi', 'kosam', 'lo', 'ki', 'tho', 'meeru'],
+  hi: [
+    'aur',
+    'hai',
+    'hain',
+    'ke',
+    'ki',
+    'ka',
+    'mein',
+    'liye',
+    'banao',
+    'karo',
+    'chahiye',
+  ],
+  ta: [
+    'oru',
+    'irukku',
+    'venum',
+    'seyyunga',
+    'panna',
+    'oda',
+    'la',
+    'ku',
+    'inga',
+  ],
+  te: [
+    'oka',
+    'undali',
+    'undi',
+    'cheyyandi',
+    'kosam',
+    'lo',
+    'ki',
+    'tho',
+    'meeru',
+  ],
   kn: ['ondu', 'beku', 'ide', 'maadi', 'alli', 'ge', 'nanna', 'nimma'],
-  ml: ['oru', 'aanu', 'athil', 'okke', 'cheyyuka', 'cheyyunna', 'undaakuka', 'venam', 'ente', 'de'],
+  ml: [
+    'oru',
+    'aanu',
+    'athil',
+    'okke',
+    'cheyyuka',
+    'cheyyunna',
+    'undaakuka',
+    'venam',
+    'ente',
+    'de',
+  ],
   bn: ['ekta', 'ache', 'korun', 'jonno', 'amar', 'apnar'],
   mr: ['ahe', 'karaycha', 'sathi', 'madhe', 'majha', 'tumcha'],
   gu: ['che', 'mate', 'karvu', 'ma', 'mari', 'tamari'],
@@ -266,7 +413,10 @@ export const KNOWN_LANGUAGES = [
 
 export const INDIAN_LANGUAGE_CODES = new Set(KNOWN_LANGUAGES.map((l) => l.code))
 
-export const preferMixedEnglishBcp47FromPrompt = (prompt: unknown, pureBcp47Code: string): string | null => {
+export const preferMixedEnglishBcp47FromPrompt = (
+  prompt: unknown,
+  pureBcp47Code: string,
+): string | null => {
   const pl = String(prompt || '').toLowerCase()
   const words = MIXED_ENGLISH_SLANG_KEYWORDS[pureBcp47Code]
   if (!words) return null
@@ -276,7 +426,9 @@ export const preferMixedEnglishBcp47FromPrompt = (prompt: unknown, pureBcp47Code
   return null
 }
 
-export const preferMixedEnglishBcp47FromSnippet = (snippet: unknown): string | null => {
+export const preferMixedEnglishBcp47FromSnippet = (
+  snippet: unknown,
+): string | null => {
   const pl = String(snippet || '').toLowerCase()
   if (/\bhinglish\b/.test(pl)) return 'hinglish'
   if (/\bmanglish\b/.test(pl)) return 'ml-en'
@@ -286,7 +438,9 @@ export const preferMixedEnglishBcp47FromSnippet = (snippet: unknown): string | n
   if (/\b(benglish|banglish)\b/.test(pl)) return 'bn-en'
   if (/\bgunglish\b/.test(pl)) return 'gu-en'
   if (/\bpunglish\b/.test(pl)) return 'pa-en'
-  for (const [pureCode, words] of Object.entries(MIXED_ENGLISH_SLANG_KEYWORDS)) {
+  for (const [pureCode, words] of Object.entries(
+    MIXED_ENGLISH_SLANG_KEYWORDS,
+  )) {
     for (const w of words) {
       if (pl.includes(w.toLowerCase())) return `${pureCode}-en`
     }
@@ -301,7 +455,8 @@ export const isMixedEnglishIndicCode = (code: unknown): boolean => {
   return c === 'hinglish' || /^[a-z]{2,8}-en$/.test(c)
 }
 
-export const isRomanizedIndicCode = (code: unknown): boolean => /^[a-z]{2,8}-latn$/i.test(String(code || '').trim())
+export const isRomanizedIndicCode = (code: unknown): boolean =>
+  /^[a-z]{2,8}-latn$/i.test(String(code || '').trim())
 
 // Any non-English locale we render via /api/translate: plain 2-char ISO, xx-latn
 // (romanized), or the code-mixed variants (hinglish / xx-en). English is the only
@@ -319,7 +474,9 @@ export const isTranslatableLocale = (code: unknown): boolean => {
   )
 }
 
-export const preferRomanizedBcp47FromSnippet = (snippet: unknown): string | null => {
+export const preferRomanizedBcp47FromSnippet = (
+  snippet: unknown,
+): string | null => {
   const pl = String(snippet || '').toLowerCase()
   for (const l of INDIC_PURE_LANGUAGES) {
     const n = l.name.toLowerCase()
@@ -339,7 +496,9 @@ export const preferRomanizedBcp47FromSnippet = (snippet: unknown): string | null
   return null
 }
 
-export const preferIndicBcp47FromRomanizedPrompt = (snippet: unknown): string | null => {
+export const preferIndicBcp47FromRomanizedPrompt = (
+  snippet: unknown,
+): string | null => {
   const words = new Set(
     String(snippet || '')
       .toLowerCase()

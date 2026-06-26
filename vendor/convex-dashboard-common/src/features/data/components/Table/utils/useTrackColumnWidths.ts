@@ -1,24 +1,24 @@
-import { useGlobalLocalStorage } from "@common/lib/useGlobalLocalStorage";
-import { useEffect } from "react";
-import { TableState } from "react-table";
-import { usePrevious } from "react-use";
+import { useGlobalLocalStorage } from '@common/lib/useGlobalLocalStorage'
+import { useEffect } from 'react'
+import { TableState } from 'react-table'
+import { usePrevious } from 'react-use'
 
 export const useTrackColumnWidths = (
   state: TableState<object>,
   localStorageKey: string,
 ) => {
-  const { isResizingColumn } = state.columnResizing;
+  const { isResizingColumn } = state.columnResizing
   const [savedWidths, setSavedWidths] = useGlobalLocalStorage<
     | {
-        columnWidths: { [key: string]: number };
+        columnWidths: { [key: string]: number }
       }
     | undefined
-  >(localStorageKey, { columnWidths: {} });
+  >(localStorageKey, { columnWidths: {} })
 
-  const wasResizingColumn = usePrevious(isResizingColumn);
+  const wasResizingColumn = usePrevious(isResizingColumn)
   useEffect(() => {
     if (
-      localStorageKey !== "_disabled" &&
+      localStorageKey !== '_disabled' &&
       wasResizingColumn &&
       !isResizingColumn
     ) {
@@ -28,7 +28,7 @@ export const useTrackColumnWidths = (
           [wasResizingColumn]:
             state.columnResizing.columnWidths[wasResizingColumn],
         },
-      });
+      })
     }
   }, [
     isResizingColumn,
@@ -37,7 +37,7 @@ export const useTrackColumnWidths = (
     setSavedWidths,
     state.columnResizing.columnWidths,
     localStorageKey,
-  ]);
+  ])
 
-  return () => setSavedWidths(undefined);
-};
+  return () => setSavedWidths(undefined)
+}

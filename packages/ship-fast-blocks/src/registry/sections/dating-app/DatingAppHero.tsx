@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * DatingAppHero — bright, romantic split hero for a dating / matchmaking app. A
@@ -17,7 +17,7 @@ import { Image } from "#/lib/img.tsx"
  * props via baked-in "HeartLink" defaults.
  */
 export const DatingAppHero = defineComponent({
-  name: "DatingAppHero",
+  name: 'DatingAppHero',
   description:
     "Bright, romantic split hero for a dating / matchmaking app: a soft rose/primary-to-muted gradient canvas, two columns — left has a live-matches pulse pill, a large 'find someone who [highlight]' headline with the accent phrase in primary, a supporting paragraph, dual CTAs (filled 'Download Free' + outlined 'See How It Works'), and stacked overlapping avatar social proof; right has a tall rounded photo with an overlaid online profile card and a floating 'It's a Match!' verified badge. Buttons route through useNavigate; all imagery is alt-driven <Image>. Use as the top hero for dating apps, matchmaking services, singles or relationship platforms.",
   props: z.object({
@@ -44,30 +44,30 @@ export const DatingAppHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroBadge = props.badge ?? "2.1M+ matches made this month"
-    const headingPre = props.headingPre ?? "Find someone who"
-    const heroHighlight = props.highlight ?? "gets you"
+    const heroBadge = props.badge ?? '2.1M+ matches made this month'
+    const headingPre = props.headingPre ?? 'Find someone who'
+    const heroHighlight = props.highlight ?? 'gets you'
     const heroSub =
       props.subheading ??
-      "HeartLink connects you with genuine people looking for real relationships. Our smart matching algorithm finds compatibility beyond the surface—based on values, interests, and relationship goals."
-    const heroPrimary = props.primaryCta ?? "Download Free"
-    const heroSecondary = props.secondaryCta ?? "See How It Works"
-    const heroSocial = props.socialProof ?? "Join 2M+ singles finding love"
+      'HeartLink connects you with genuine people looking for real relationships. Our smart matching algorithm finds compatibility beyond the surface—based on values, interests, and relationship goals.'
+    const heroPrimary = props.primaryCta ?? 'Download Free'
+    const heroSecondary = props.secondaryCta ?? 'See How It Works'
+    const heroSocial = props.socialProof ?? 'Join 2M+ singles finding love'
     const avatars = props.avatars?.length
       ? props.avatars
       : [
-          "professional headshot of a smiling woman with brown hair",
-          "professional headshot of a smiling man with short curly hair",
-          "professional headshot of a smiling woman with blonde hair",
-          "professional headshot of a smiling man with beard",
+          'professional headshot of a smiling woman with brown hair',
+          'professional headshot of a smiling man with short curly hair',
+          'professional headshot of a smiling woman with blonde hair',
+          'professional headshot of a smiling man with beard',
         ]
     const heroImageAlt =
-      props.heroImageAlt ?? "happy couple on a coffee date laughing together"
-    const profileName = props.profileName ?? "Sarah, 28"
-    const profileMeta = props.profileMeta ?? "Marketing Manager • 2 miles away"
+      props.heroImageAlt ?? 'happy couple on a coffee date laughing together'
+    const profileName = props.profileName ?? 'Sarah, 28'
+    const profileMeta = props.profileMeta ?? 'Marketing Manager • 2 miles away'
     const profileImageAlt =
       props.profileImageAlt ??
-      "profile photo of Sarah a 28 year old marketing manager"
+      'profile photo of Sarah a 28 year old marketing manager'
     const matchBadge = props.matchBadge ?? "It's a Match!"
 
     const HeartGlyph = ({ className }: { className?: string }) => (
@@ -116,7 +116,7 @@ export const DatingAppHero = defineComponent({
     )
 
     return (
-      <section className={cn("relative overflow-hidden", props.className)}>
+      <section className={cn('relative overflow-hidden', props.className)}>
         <div
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-muted"
@@ -129,7 +129,8 @@ export const DatingAppHero = defineComponent({
                 {heroBadge}
               </div>
               <h1 className="mb-6 text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                {headingPre} <span className="text-primary">{heroHighlight}</span>
+                {headingPre}{' '}
+                <span className="text-primary">{heroHighlight}</span>
               </h1>
               <p className="mb-8 text-lg leading-relaxed text-muted-foreground sm:text-xl">
                 {heroSub}
@@ -197,7 +198,9 @@ export const DatingAppHero = defineComponent({
                       <p className="font-semibold text-card-foreground">
                         {profileName}
                       </p>
-                      <p className="text-sm text-muted-foreground">{profileMeta}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {profileMeta}
+                      </p>
                     </div>
                     <span className="grid size-10 place-items-center rounded-full bg-primary/10 text-primary">
                       <HeartGlyph className="size-5" />

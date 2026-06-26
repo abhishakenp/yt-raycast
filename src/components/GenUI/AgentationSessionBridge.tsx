@@ -18,16 +18,27 @@ interface AgentationSessionBridgeProps {
 }
 
 const getOwnerSecret = (sessionId: string) =>
-  typeof window === 'undefined' ? undefined : readAnonymousOwnerSecret(window.localStorage, sessionId)
+  typeof window === 'undefined'
+    ? undefined
+    : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
-const AgentationSessionBridge = ({ enabled, sessionId }: AgentationSessionBridgeProps) => {
-  const [AgentationComponent, setAgentationComponent] = useState<ComponentType<AgentationProps> | null>(null)
+const AgentationSessionBridge = ({
+  enabled,
+  sessionId,
+}: AgentationSessionBridgeProps) => {
+  const [AgentationComponent, setAgentationComponent] =
+    useState<ComponentType<AgentationProps> | null>(null)
   const saveSession = useMutation(api.sessions.saveAgentationSession)
   const upsertAnnotation = useMutation(api.sessions.upsertAnnotation)
-  const deleteAnnotation = useMutation(api.sessions.deleteAnnotationByAgentationId)
+  const deleteAnnotation = useMutation(
+    api.sessions.deleteAnnotationByAgentationId,
+  )
   const clearAnnotations = useMutation(api.sessions.clearAnnotations)
   const convexSessionId = sessionId as Id<'sessions'>
-  const agentationSessionKey = useMemo(() => buildAgentationSessionKey(sessionId), [sessionId])
+  const agentationSessionKey = useMemo(
+    () => buildAgentationSessionKey(sessionId),
+    [sessionId],
+  )
 
   useEffect(() => {
     if (!enabled || AgentationComponent || typeof window === 'undefined') return
@@ -111,7 +122,10 @@ const AgentationSessionBridge = ({ enabled, sessionId }: AgentationSessionBridge
           ].join('\n'),
         }),
       }).catch((error) => {
-        console.error('[Agentation] Failed to send annotations to agent:', error)
+        console.error(
+          '[Agentation] Failed to send annotations to agent:',
+          error,
+        )
       })
     },
     [sessionId],

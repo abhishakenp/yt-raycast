@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LawFirmFooter — a dark, four-column site footer on the foreground surface for a
@@ -17,9 +17,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * "Reinhart & Associates" defaults.
  */
 export const LawFirmFooter = defineComponent({
-  name: "LawFirmFooter",
+  name: 'LawFirmFooter',
   description:
-    "Dark four-column site footer on the foreground surface for a law firm: a wide brand column with a squared initial tile, two-line serif wordmark (firm name + tracked-uppercase tagline), an about paragraph and an address line with a pin icon, alongside a practice-areas link column, a firm link column and a contact column with phone / email / hours rows, above a bordered-top bar with an auto-updating copyright line and legal links. High-contrast, refined, authoritative editorial aesthetic with sharp squared corners; the brand button and every link route through useNavigate. Use as the closing site footer for law firms, attorneys, legal practices, corporate counsel, consulting, accounting or professional-services sites.",
+    'Dark four-column site footer on the foreground surface for a law firm: a wide brand column with a squared initial tile, two-line serif wordmark (firm name + tracked-uppercase tagline), an about paragraph and an address line with a pin icon, alongside a practice-areas link column, a firm link column and a contact column with phone / email / hours rows, above a bordered-top bar with an auto-updating copyright line and legal links. High-contrast, refined, authoritative editorial aesthetic with sharp squared corners; the brand button and every link route through useNavigate. Use as the closing site footer for law firms, attorneys, legal practices, corporate counsel, consulting, accounting or professional-services sites.',
   props: z.object({
     /** Firm / brand name shown in the wordmark and brand-tile initial. */
     brand: z.string().optional(),
@@ -43,50 +43,52 @@ export const LawFirmFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Reinhart & Associates"
-    const tagline = props.tagline ?? "Attorneys at Law"
+    const brand = props.brand ?? 'Reinhart & Associates'
+    const tagline = props.tagline ?? 'Attorneys at Law'
     const about =
       props.about ??
-      "Premier corporate and trial counsel serving Fortune 500 companies, emerging enterprises, and private clients since 1987."
+      'Premier corporate and trial counsel serving Fortune 500 companies, emerging enterprises, and private clients since 1987.'
     const address =
-      props.address ??
-      "450 Lexington Avenue, 28th Floor, New York, NY 10017"
-    const practiceTitle = props.practiceTitle ?? "Practice Areas"
+      props.address ?? '450 Lexington Avenue, 28th Floor, New York, NY 10017'
+    const practiceTitle = props.practiceTitle ?? 'Practice Areas'
     const practiceLinks = props.practiceLinks?.length
       ? props.practiceLinks
       : [
-          "Corporate & Securities",
-          "Commercial Litigation",
-          "Employment Law",
-          "Real Estate",
-          "Intellectual Property",
-          "Tax & Estates",
+          'Corporate & Securities',
+          'Commercial Litigation',
+          'Employment Law',
+          'Real Estate',
+          'Intellectual Property',
+          'Tax & Estates',
         ]
-    const firmTitle = props.firmTitle ?? "Firm"
+    const firmTitle = props.firmTitle ?? 'Firm'
     const firmLinks = props.firmLinks?.length
       ? props.firmLinks
       : [
-          "Our Attorneys",
-          "News & Insights",
-          "Careers",
-          "Pro Bono",
-          "Diversity",
-          "Contact",
+          'Our Attorneys',
+          'News & Insights',
+          'Careers',
+          'Pro Bono',
+          'Diversity',
+          'Contact',
         ]
-    const contactTitle = props.contactTitle ?? "Contact"
-    const phone = props.phone ?? "(212) 555-0147"
-    const email = props.email ?? "consult@reinhart.law"
-    const hours = props.hours ?? "Mon–Fri: 8:00 AM – 7:00 PM"
+    const contactTitle = props.contactTitle ?? 'Contact'
+    const phone = props.phone ?? '(212) 555-0147'
+    const email = props.email ?? 'consult@reinhart.law'
+    const hours = props.hours ?? 'Mon–Fri: 8:00 AM – 7:00 PM'
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} LLP. All rights reserved.`
     const legalLinks = props.legalLinks?.length
       ? props.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Attorney Advertising"]
-    const homeTarget = props.homeTarget ?? "Practice Areas"
+      : ['Privacy Policy', 'Terms of Service', 'Attorney Advertising']
+    const homeTarget = props.homeTarget ?? 'Practice Areas'
 
     const brandInitial =
-      brand.replace(/[^A-Za-z]/g, "").charAt(0).toUpperCase() || "R"
+      brand
+        .replace(/[^A-Za-z]/g, '')
+        .charAt(0)
+        .toUpperCase() || 'R'
 
     const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
@@ -160,7 +162,7 @@ export const LawFirmFooter = defineComponent({
     return (
       <footer
         className={cn(
-          "border-t border-border bg-foreground py-16 text-background",
+          'border-t border-border bg-foreground py-16 text-background',
           props.className,
         )}
       >

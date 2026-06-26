@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * JewelryStoreTestimonials — client testimonials grid for a luxury jewelry
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * with no props via baked-in defaults.
  */
 export const JewelryStoreTestimonials = defineComponent({
-  name: "JewelryStoreTestimonials",
+  name: 'JewelryStoreTestimonials',
   description:
-    "Client testimonials grid for a luxury jewelry maison on a subtle muted band: a centered gold eyebrow + serif heading introduce a responsive 1/3-column grid of quote cards, each on a raised background surface with a five-star gold rating row, a quote wrapped in typographic quotation marks, and a round avatar beside the client name and location. Use as social proof for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.",
+    'Client testimonials grid for a luxury jewelry maison on a subtle muted band: a centered gold eyebrow + serif heading introduce a responsive 1/3-column grid of quote cards, each on a raised background surface with a five-star gold rating row, a quote wrapped in typographic quotation marks, and a round avatar beside the client name and location. Use as social proof for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -33,34 +33,34 @@ export const JewelryStoreTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Client Stories"
-    const heading = props.heading ?? "Words of Appreciation"
+    const eyebrow = props.eyebrow ?? 'Client Stories'
+    const heading = props.heading ?? 'Words of Appreciation'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
-              "The bespoke ring Maison Noir created for my wife exceeded every expectation. The attention to detail and personal service made the entire experience unforgettable.",
-            name: "James Whitfield",
-            location: "New York, NY",
+              'The bespoke ring Maison Noir created for my wife exceeded every expectation. The attention to detail and personal service made the entire experience unforgettable.',
+            name: 'James Whitfield',
+            location: 'New York, NY',
             avatarAlt:
-              "professional headshot of a middle-aged businessman in dark suit",
+              'professional headshot of a middle-aged businessman in dark suit',
           },
           {
             quote:
               "My grandmother's necklace was restored to its original glory by their master jewelers. The care they took with a family heirloom was truly remarkable.",
-            name: "Isabella Chen",
-            location: "San Francisco, CA",
+            name: 'Isabella Chen',
+            location: 'San Francisco, CA',
             avatarAlt:
-              "professional headshot of a young woman with dark hair and warm smile",
+              'professional headshot of a young woman with dark hair and warm smile',
           },
           {
             quote:
-              "The investment in Maison Noir pieces has been remarkable. The quality and timeless design mean these jewels will be treasured for generations.",
-            name: "Henrik Åberg",
-            location: "Stockholm, Sweden",
+              'The investment in Maison Noir pieces has been remarkable. The quality and timeless design mean these jewels will be treasured for generations.',
+            name: 'Henrik Åberg',
+            location: 'Stockholm, Sweden',
             avatarAlt:
-              "professional headshot of an older distinguished gentleman with gray hair",
+              'professional headshot of an older distinguished gentleman with gray hair',
           },
         ]
 
@@ -80,7 +80,7 @@ export const JewelryStoreTestimonials = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted py-32", props.className)}>
+      <section className={cn('bg-muted py-32', props.className)}>
         <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="mx-auto mb-20 max-w-2xl text-center">
             <p className="mb-4 text-sm uppercase tracking-[0.3em] text-primary">

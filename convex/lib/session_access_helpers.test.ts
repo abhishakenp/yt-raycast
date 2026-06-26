@@ -380,7 +380,9 @@ describe('session access helpers', () => {
   })
 
   it('bypasses ownership check when DISABLE_PAYWALL is true', async () => {
-    ;(areExportPaywallsDisabled as ReturnType<typeof vi.fn>).mockReturnValue(true)
+    ;(areExportPaywallsDisabled as ReturnType<typeof vi.fn>).mockReturnValue(
+      true,
+    )
     const { ctx } = mutationCtxForSessions({
       identity: identityFor({ tokenIdentifier: 'token:other' }),
       sessions: [sessionDoc({ userId: 'token:owner' })],

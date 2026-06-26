@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ElectronicsStoreNavbar — sticky translucent top navigation bar for a premium
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * shops, consumer-tech retailers, audio/headphone shops, or camera/drone stores.
  */
 export const ElectronicsStoreNavbar = defineComponent({
-  name: "ElectronicsStoreNavbar",
+  name: 'ElectronicsStoreNavbar',
   description:
-    "Sticky translucent top navigation bar for a premium electronics / gadgets e-commerce storefront: a blurred, border-bottomed header pinned to the top with a bolt logo mark plus store name on the left, horizontal category nav links, and utility icons on the right (search, cart with a quantity badge, mobile hamburger). Every link and icon routes through useNavigate; nav labels match site routes for page switching. Use as the sticky site header for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, camera/drone stores, or any modern product-catalog storefront.",
+    'Sticky translucent top navigation bar for a premium electronics / gadgets e-commerce storefront: a blurred, border-bottomed header pinned to the top with a bolt logo mark plus store name on the left, horizontal category nav links, and utility icons on the right (search, cart with a quantity badge, mobile hamburger). Every link and icon routes through useNavigate; nav labels match site routes for page switching. Use as the sticky site header for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, camera/drone stores, or any modern product-catalog storefront.',
   props: z.object({
     /** Brand / store name shown in the navbar. */
     brand: z.string().optional(),
@@ -31,18 +31,18 @@ export const ElectronicsStoreNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "TechNova"
+    const brand = props.brand ?? 'TechNova'
     const nav = props.nav?.length
       ? props.nav
-      : ["Products", "Deals", "Categories", "Support"]
-    const cartCount = props.cartCount ?? "3"
+      : ['Products', 'Deals', 'Categories', 'Support']
+    const cartCount = props.cartCount ?? '3'
     const homeTarget = props.homeTarget ?? nav[0]
-    const cartTarget = props.cartTarget ?? "Shop Now"
+    const cartTarget = props.cartTarget ?? 'Shop Now'
 
     const BoltMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-foreground text-background",
+          'grid place-items-center rounded-lg bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -65,7 +65,7 @@ export const ElectronicsStoreNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

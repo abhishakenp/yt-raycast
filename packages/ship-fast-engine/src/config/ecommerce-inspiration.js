@@ -50,8 +50,12 @@ export const formatDesignReferenceUrlsForPrompt = (urls = [], notes = '') => {
   const numbered = list
     .map((u, i) => {
       const hint = inferPathHintFromReferenceUrl(u)
-      const hintLine = hint ? `\n   Path hint (from URL path only, not live page content): ${hint}` : ''
-      const rootHint = !hint ? `\n   (Homepage/root URL — no path segments; rely on the user's description and optional notes below.)` : ''
+      const hintLine = hint
+        ? `\n   Path hint (from URL path only, not live page content): ${hint}`
+        : ''
+      const rootHint = !hint
+        ? `\n   (Homepage/root URL — no path segments; rely on the user's description and optional notes below.)`
+        : ''
       return `${i + 1}. ${u}${hintLine}${rootHint}`
     })
     .join('\n')

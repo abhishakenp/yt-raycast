@@ -4,7 +4,12 @@ function cleanEnv() {
   const env = { ...process.env }
   delete env.ANTHROPIC_API_KEY
   delete env.CLAUDECODE
-  const extraPaths = ['/Users/livio/.local/bin', '/opt/homebrew/bin', '/usr/local/bin', '/usr/bin']
+  const extraPaths = [
+    '/Users/livio/.local/bin',
+    '/opt/homebrew/bin',
+    '/usr/local/bin',
+    '/usr/bin',
+  ]
   const current = env.PATH || ''
   const missing = extraPaths.filter((p) => !current.includes(p))
   if (missing.length) env.PATH = `${missing.join(':')}:${current}`
@@ -28,7 +33,10 @@ export async function claudeStream(prompt, { system, onChunk } = {}) {
   for await (const message of sdkStream) {
     if (message.type === 'stream_event') {
       const event = message.event
-      if (event?.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+      if (
+        event?.type === 'content_block_delta' &&
+        event.delta?.type === 'text_delta'
+      ) {
         const text = event.delta.text || ''
         if (text) {
           full += text

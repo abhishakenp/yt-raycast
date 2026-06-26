@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * SaasNavbar — glassy sticky top navigation bar for an AI-product / SaaS landing
@@ -35,9 +35,9 @@ const ClockMark = ({ className }: { className?: string }) => (
 )
 
 export const SaasNavbar = defineComponent({
-  name: "SaasNavbar",
+  name: 'SaasNavbar',
   description:
-    "Glassy sticky top navigation bar for an AI-product / SaaS landing page built on the shared SiteNav composite: a gradient-tile clock-glyph logo and product wordmark, horizontal desktop nav links, a pill primary CTA, and a real mobile drawer. Nav items and CTA route through useNavigate for page-switching. Use as the sticky site header for AI tools, SaaS apps, productivity/scheduling products, developer tools, or modern B2B startups.",
+    'Glassy sticky top navigation bar for an AI-product / SaaS landing page built on the shared SiteNav composite: a gradient-tile clock-glyph logo and product wordmark, horizontal desktop nav links, a pill primary CTA, and a real mobile drawer. Nav items and CTA route through useNavigate for page-switching. Use as the sticky site header for AI tools, SaaS apps, productivity/scheduling products, developer tools, or modern B2B startups.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -54,16 +54,16 @@ export const SaasNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "How It Works", "Pricing", "Testimonials", "FAQ"]
+      : ['Features', 'How It Works', 'Pricing', 'Testimonials', 'FAQ']
     return (
       <SiteNav
-        brand={props.brand ?? "Chronos AI"}
+        brand={props.brand ?? 'Chronos AI'}
         brandMark={<ClockMark className="size-[18px]" />}
         brandClassName="text-xl font-extrabold tracking-tight"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Get Started",
-          target: props.ctaTarget ?? "Start free trial",
+          label: props.ctaLabel ?? 'Get Started',
+          target: props.ctaTarget ?? 'Start free trial',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

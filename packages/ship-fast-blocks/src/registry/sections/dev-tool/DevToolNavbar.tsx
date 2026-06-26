@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DevToolNavbar — sticky, backdrop-blurred top navigation bar for a developer
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * technical SaaS products.
  */
 export const DevToolNavbar = defineComponent({
-  name: "DevToolNavbar",
+  name: 'DevToolNavbar',
   description:
     "Sticky, backdrop-blurred top navigation bar for a developer tool / API platform site: border-bottomed header with a blue brand 'bolt' logo tile + product name on the left, horizontal nav links on the right (desktop), and a 'Sign In' text link plus a filled primary 'Get Started' CTA. Clean, light, slate-and-blue product aesthetic. All links and CTAs route through useNavigate. Use as the sticky site header for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
   props: z.object({
@@ -34,19 +34,19 @@ export const DevToolNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "DevStack"
+    const brand = props.brand ?? 'DevStack'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Pricing", "Docs", "Blog"]
-    const homeTarget = props.homeTarget ?? "Features"
-    const signInLabel = props.signInLabel ?? "Sign In"
-    const ctaLabel = props.ctaLabel ?? "Get Started"
-    const ctaTarget = props.ctaTarget ?? "Start Building Free"
+      : ['Features', 'Pricing', 'Docs', 'Blog']
+    const homeTarget = props.homeTarget ?? 'Features'
+    const signInLabel = props.signInLabel ?? 'Sign In'
+    const ctaLabel = props.ctaLabel ?? 'Get Started'
+    const ctaTarget = props.ctaTarget ?? 'Start Building Free'
 
     const BoltMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -69,7 +69,7 @@ export const DevToolNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md',
           props.className,
         )}
         role="navigation"

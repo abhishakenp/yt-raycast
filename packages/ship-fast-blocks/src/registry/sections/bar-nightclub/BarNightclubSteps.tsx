@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * BarNightclubSteps — numbered "how to book" flow for a cocktail-bar /
@@ -12,7 +12,7 @@ import { cn } from "#/lib/utils.ts"
  * props via baked-in defaults.
  */
 export const BarNightclubSteps = defineComponent({
-  name: "BarNightclubSteps",
+  name: 'BarNightclubSteps',
   description:
     "Numbered 'how to book' flow for a cocktail-bar / nightclub page: a centered eyebrow, light-weight heading and lead, then a responsive 4-up grid of steps, each with a large circle-bordered numeral, a medium title, and a short muted description. Quiet, editorial and monochrome. Use to walk guests through a reservation / booking process for bars, nightclubs, lounges, or any reservations-driven venue.",
   props: z.object({
@@ -29,35 +29,35 @@ export const BarNightclubSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Reservations"
-    const heading = props.heading ?? "How to Book"
+    const eyebrow = props.eyebrow ?? 'Reservations'
+    const heading = props.heading ?? 'How to Book'
     const description =
       props.description ??
-      "Reserve your table in minutes. VIP and bottle service available for groups of 6 or more."
+      'Reserve your table in minutes. VIP and bottle service available for groups of 6 or more.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Choose Your Night",
-            description: "Select from upcoming events or general admission",
+            title: 'Choose Your Night',
+            description: 'Select from upcoming events or general admission',
           },
           {
-            title: "Pick Your Table",
-            description: "Booth, bar seating, or VIP section",
+            title: 'Pick Your Table',
+            description: 'Booth, bar seating, or VIP section',
           },
           {
-            title: "Add Bottle Service",
-            description: "Optional: reserve premium spirits and mixers",
+            title: 'Add Bottle Service',
+            description: 'Optional: reserve premium spirits and mixers',
           },
           {
-            title: "Confirm & Arrive",
-            description: "Receive QR code entry via email",
+            title: 'Confirm & Arrive',
+            description: 'Receive QR code entry via email',
           },
         ]
 
     return (
       <section
-        className={cn("border-t border-border py-24 lg:py-32", props.className)}
+        className={cn('border-t border-border py-24 lg:py-32', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * InsuranceLogos — press / trust logo strip for an insurance / fintech page. A
@@ -10,9 +10,9 @@ import { cn } from "#/lib/utils.ts"
  * mentions or partner brands. Renders fully with no props via baked-in defaults.
  */
 export const InsuranceLogos = defineComponent({
-  name: "InsuranceLogos",
+  name: 'InsuranceLogos',
   description:
-    "Press / trust logo strip for an insurance / fintech page: a centered uppercase eyebrow label above a responsive grid of muted wordmark logos (2 up on mobile, 6 up on desktop) at reduced opacity, on a border-bottomed band. Use right under the hero to establish credibility with press mentions or partner brands.",
+    'Press / trust logo strip for an insurance / fintech page: a centered uppercase eyebrow label above a responsive grid of muted wordmark logos (2 up on mobile, 6 up on desktop) at reduced opacity, on a border-bottomed band. Use right under the hero to establish credibility with press mentions or partner brands.',
   props: z.object({
     /** Uppercase eyebrow label above the logos. */
     label: z.string().optional(),
@@ -21,13 +21,13 @@ export const InsuranceLogos = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const label = props.label ?? "Trusted by industry leaders"
+    const label = props.label ?? 'Trusted by industry leaders'
     const items = props.items?.length
       ? props.items
-      : ["Forbes", "Bloomberg", "TechCrunch", "WSJ", "Inc. 5000", "NerdWallet"]
+      : ['Forbes', 'Bloomberg', 'TechCrunch', 'WSJ', 'Inc. 5000', 'NerdWallet']
 
     return (
-      <section className={cn("border-b border-border py-12", props.className)}>
+      <section className={cn('border-b border-border py-12', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {label}

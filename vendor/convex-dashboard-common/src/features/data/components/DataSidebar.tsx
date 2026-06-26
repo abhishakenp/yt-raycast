@@ -1,24 +1,24 @@
-import { CubeIcon, MagnifyingGlassIcon, PlusIcon } from "@radix-ui/react-icons";
-import { useMutation } from "convex/react";
-import classNames from "classnames";
-import { useContext, useState } from "react";
-import udfs from "@common/udfs";
-import { useInvalidateShapes } from "@common/features/data/lib/api";
-import { TextInput } from "@ui/TextInput";
+import { CubeIcon, MagnifyingGlassIcon, PlusIcon } from '@radix-ui/react-icons'
+import { useMutation } from 'convex/react'
+import classNames from 'classnames'
+import { useContext, useState } from 'react'
+import udfs from '@common/udfs'
+import { useInvalidateShapes } from '@common/features/data/lib/api'
+import { TextInput } from '@ui/TextInput'
 import {
   isTableMissingFromSchema,
   useActiveSchema,
   validateConvexIdentifier,
-} from "@common/features/data/lib/helpers";
-import { TableTab } from "@common/features/data/components/TableTab";
-import { TableMetadata } from "@common/lib/useTableMetadata";
-import { NentSwitcher } from "@common/elements/NentSwitcher";
-import { Loading } from "@ui/Loading";
-import { Button } from "@ui/Button";
-import { useNents } from "@common/lib/useNents";
-import { PermissionsContext } from "@common/lib/deploymentContext";
-import { toast } from "@common/lib/utils";
-import { PermissionDeniedTip } from "@common/elements/NoPermissionMessage";
+} from '@common/features/data/lib/helpers'
+import { TableTab } from '@common/features/data/components/TableTab'
+import { TableMetadata } from '@common/lib/useTableMetadata'
+import { NentSwitcher } from '@common/elements/NentSwitcher'
+import { Loading } from '@ui/Loading'
+import { Button } from '@ui/Button'
+import { useNents } from '@common/lib/useNents'
+import { PermissionsContext } from '@common/lib/deploymentContext'
+import { toast } from '@common/lib/utils'
+import { PermissionDeniedTip } from '@common/elements/NoPermissionMessage'
 
 export function DataSidebar({
   tableData,
@@ -26,22 +26,22 @@ export function DataSidebar({
   showSchema,
   onTableCreated,
 }: {
-  tableData: TableMetadata;
-  onSelectTable?: () => void;
-  showSchema: { hasSaved: boolean; showSchema: () => void } | undefined;
-  onTableCreated?: () => void;
+  tableData: TableMetadata
+  onSelectTable?: () => void
+  showSchema: { hasSaved: boolean; showSchema: () => void } | undefined
+  onTableCreated?: () => void
 }) {
-  const { name: selectedTable, tables } = tableData;
+  const { name: selectedTable, tables } = tableData
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const searchQueryLowercase = searchQuery.toLowerCase();
-  const schema = useActiveSchema();
+  const [searchQuery, setSearchQuery] = useState('')
+  const searchQueryLowercase = searchQuery.toLowerCase()
+  const schema = useActiveSchema()
 
   return (
     <div
       className={classNames(
-        "flex w-full h-full flex-col bg-background-secondary scrollbar",
-        "py-4",
+        'flex w-full h-full flex-col bg-background-secondary scrollbar',
+        'py-4',
       )}
     >
       <div className="mb-2 flex flex-col px-3">
@@ -60,8 +60,8 @@ export function DataSidebar({
             onChange={(e) => setSearchQuery(e.target.value)}
             type="search"
             className={classNames(
-              "placeholder:text-content-tertiary truncate relative w-full text-left text-xs text-content-primary disabled:bg-background-tertiary disabled:text-content-secondary disabled:cursor-not-allowed",
-              "focus:outline-hidden bg-background-secondary font-normal",
+              'placeholder:text-content-tertiary truncate relative w-full text-left text-xs text-content-primary disabled:bg-background-tertiary disabled:text-content-secondary disabled:cursor-not-allowed',
+              'focus:outline-hidden bg-background-secondary font-normal',
             )}
           />
         </div>
@@ -103,53 +103,53 @@ export function DataSidebar({
         )}
       </div>
     </div>
-  );
+  )
 }
 
 export function CreateNewTable({
   tableData,
   onTableCreated,
 }: {
-  tableData: TableMetadata;
-  onTableCreated?: () => void;
+  tableData: TableMetadata
+  onTableCreated?: () => void
 }) {
-  const { tables, selectTable } = tableData;
-  const invalidateShapes = useInvalidateShapes();
+  const { tables, selectTable } = tableData
+  const invalidateShapes = useInvalidateShapes()
 
-  const createTable = useMutation(udfs.createTable.default);
-  const [newTableName, setNewTableName] = useState<string>();
+  const createTable = useMutation(udfs.createTable.default)
+  const [newTableName, setNewTableName] = useState<string>()
   const validationError = validateConvexIdentifier(
-    newTableName || "",
-    "Table name",
-  );
-  const { selectedNent } = useNents();
+    newTableName || '',
+    'Table name',
+  )
+  const { selectedNent } = useNents()
 
-  const { useIsOperationAllowed } = useContext(PermissionsContext);
+  const { useIsOperationAllowed } = useContext(PermissionsContext)
 
-  const canCreateTable = useIsOperationAllowed("WriteData");
+  const canCreateTable = useIsOperationAllowed('WriteData')
 
   return newTableName !== undefined ? (
     <form
       className="mt-1 inline"
       onSubmit={async (e) => {
-        e.preventDefault();
+        e.preventDefault()
         if (!newTableName) {
-          return;
+          return
         }
 
         if (tables && Array.from(tables?.keys()).includes(newTableName)) {
-          toast("error", `Table "${newTableName}" already exists.`);
+          toast('error', `Table "${newTableName}" already exists.`)
         }
         try {
           await createTable({
             table: newTableName,
             componentId: selectedNent?.id ?? null,
-          });
-          await invalidateShapes();
-          selectTable(newTableName);
-          onTableCreated?.();
+          })
+          await invalidateShapes()
+          selectTable(newTableName)
+          onTableCreated?.()
         } finally {
-          setNewTableName(undefined);
+          setNewTableName(undefined)
         }
       }}
     >
@@ -158,8 +158,8 @@ export function CreateNewTable({
         className="mt-1"
         labelHidden
         onKeyDown={(e) => {
-          if (e.key === "Escape") {
-            setNewTableName(undefined);
+          if (e.key === 'Escape') {
+            setNewTableName(undefined)
           }
         }}
         autoFocus
@@ -201,15 +201,15 @@ export function CreateNewTable({
     <Button
       size="sm"
       className="mt-1 max-w-full"
-      onClick={() => setNewTableName("")}
+      onClick={() => setNewTableName('')}
       icon={<PlusIcon aria-hidden="true" />}
       inline
       disabled={
-        !canCreateTable || !!(selectedNent && selectedNent.state !== "active")
+        !canCreateTable || !!(selectedNent && selectedNent.state !== 'active')
       }
       tip={
-        selectedNent && selectedNent.state !== "active"
-          ? "Cannot create tables in an unmounted component."
+        selectedNent && selectedNent.state !== 'active'
+          ? 'Cannot create tables in an unmounted component.'
           : !canCreateTable && (
               <PermissionDeniedTip
                 message="You do not have permission to create tables in this deployment."
@@ -220,9 +220,9 @@ export function CreateNewTable({
     >
       <span className="truncate">Create Table</span>
     </Button>
-  );
+  )
 }
 
 export function DataSideBarSkeleton() {
-  return <div className="size-full bg-background-secondary" />;
+  return <div className="size-full bg-background-secondary" />
 }

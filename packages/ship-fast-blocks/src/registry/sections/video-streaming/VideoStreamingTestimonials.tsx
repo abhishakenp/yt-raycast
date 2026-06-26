@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * VideoStreamingTestimonials — a 3-up subscriber-review wall for a
@@ -13,9 +13,9 @@ import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
  * social proof on streaming services or OTT apps. Renders fully with no props.
  */
 export const VideoStreamingTestimonials = defineComponent({
-  name: "VideoStreamingTestimonials",
+  name: 'VideoStreamingTestimonials',
   description:
-    "A 3-up subscriber-review wall for a video-streaming page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted review, and an attribution row pairing the subscriber name with the review source (App Store, Trustpilot, Google Play). Use for social proof on streaming services, OTT apps, or on-demand video platforms.",
+    'A 3-up subscriber-review wall for a video-streaming page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted review, and an attribution row pairing the subscriber name with the review source (App Store, Trustpilot, Google Play). Use for social proof on streaming services, OTT apps, or on-demand video platforms.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -33,30 +33,30 @@ export const VideoStreamingTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Loved by millions"
+    const heading = props.heading ?? 'Loved by millions'
     const reviews = props.reviews?.length
       ? props.reviews
       : [
           {
             quote:
               "Cancelled three other services after switching. The 4K looks unreal on my TV, downloads actually work on flights, and I've never once seen an ad. This is the only subscription I'd fight to keep.",
-            name: "Daniel Okafor",
+            name: 'Daniel Okafor',
             rating: 5,
-            source: "App Store",
+            source: 'App Store',
           },
           {
             quote:
-              "The originals alone are worth it, but what sold me is how it just works — same spot on my phone, laptop, and living room TV. Five profiles means the whole house finally stopped fighting over one account.",
-            name: "Sofia Almeida",
+              'The originals alone are worth it, but what sold me is how it just works — same spot on my phone, laptop, and living room TV. Five profiles means the whole house finally stopped fighting over one account.',
+            name: 'Sofia Almeida',
             rating: 5,
-            source: "Trustpilot",
+            source: 'Trustpilot',
           },
           {
             quote:
-              "Streams instantly, never buffers, and the recommendations actually nail what I want to watch next. Standard plan is the sweet spot for our family — easily the best value in streaming right now.",
-            name: "Hannah Wei",
+              'Streams instantly, never buffers, and the recommendations actually nail what I want to watch next. Standard plan is the sweet spot for our family — easily the best value in streaming right now.',
+            name: 'Hannah Wei',
             rating: 4,
-            source: "Google Play",
+            source: 'Google Play',
           },
         ]
 

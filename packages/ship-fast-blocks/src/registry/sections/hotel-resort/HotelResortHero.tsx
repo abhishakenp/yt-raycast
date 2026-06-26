@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * HotelResortHero — full-bleed oceanfront photo hero for a luxury hotel /
@@ -17,9 +17,9 @@ import { Image } from "#/lib/img.tsx"
  * with no props via baked-in "Azure Coast" defaults.
  */
 export const HotelResortHero = defineComponent({
-  name: "HotelResortHero",
+  name: 'HotelResortHero',
   description:
-    "Full-bleed oceanfront photo hero for a luxury hotel / resort & spa landing page: a near-full-viewport section over a full-cover background image with a darkening token gradient, a small uppercase location eyebrow, a thin oversized multi-line headline, a light supporting paragraph, dual CTAs (solid light primary + glassy outlined secondary), and a row of trust badges beneath (a star badge plus location-pin badges). Editorial, airy and high-end; CTAs route through useNavigate and imagery uses the alt-driven Image component. Use as the opening hero for hotels, beach or coastal resorts, spa retreats, boutique inns, villas, or wellness destinations.",
+    'Full-bleed oceanfront photo hero for a luxury hotel / resort & spa landing page: a near-full-viewport section over a full-cover background image with a darkening token gradient, a small uppercase location eyebrow, a thin oversized multi-line headline, a light supporting paragraph, dual CTAs (solid light primary + glassy outlined secondary), and a row of trust badges beneath (a star badge plus location-pin badges). Editorial, airy and high-end; CTAs route through useNavigate and imagery uses the alt-driven Image component. Use as the opening hero for hotels, beach or coastal resorts, spa retreats, boutique inns, villas, or wellness destinations.',
   props: z.object({
     /** Uppercase location eyebrow above the headline. */
     location: z.string().optional(),
@@ -41,20 +41,20 @@ export const HotelResortHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const location = props.location ?? "Malibu, California"
-    const headingTop = props.headingTop ?? "Where the Pacific"
-    const headingBottom = props.headingBottom ?? "meets perfection"
+    const location = props.location ?? 'Malibu, California'
+    const headingTop = props.headingTop ?? 'Where the Pacific'
+    const headingBottom = props.headingBottom ?? 'meets perfection'
     const subheading =
       props.subheading ??
-      "Escape to Azure Coast Resort & Spa, an award-winning oceanfront sanctuary. Experience private beach access, world-class dining, and restorative wellness in our 47 exclusive suites."
-    const primaryCta = props.primaryCta ?? "Check Availability"
-    const secondaryCta = props.secondaryCta ?? "Explore Suites"
+      'Escape to Azure Coast Resort & Spa, an award-winning oceanfront sanctuary. Experience private beach access, world-class dining, and restorative wellness in our 47 exclusive suites.'
+    const primaryCta = props.primaryCta ?? 'Check Availability'
+    const secondaryCta = props.secondaryCta ?? 'Explore Suites'
     const imageAlt =
       props.imageAlt ??
-      "Aerial view of luxury oceanfront resort with infinity pool overlooking turquoise waters at sunset"
+      'Aerial view of luxury oceanfront resort with infinity pool overlooking turquoise waters at sunset'
     const badges = props.badges?.length
       ? props.badges
-      : ["5-Star Forbes Rating", "Private Beach Access"]
+      : ['5-Star Forbes Rating', 'Private Beach Access']
 
     const StarIcon = ({ className }: { className?: string }) => (
       <svg
@@ -72,7 +72,7 @@ export const HotelResortHero = defineComponent({
     return (
       <section
         className={cn(
-          "relative flex min-h-screen items-center pt-20",
+          'relative flex min-h-screen items-center pt-20',
           props.className,
         )}
       >

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NewsroomNavbar — refined editorial masthead bar for a digital newsroom or
@@ -18,7 +18,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * defaults.
  */
 export const NewsroomNavbar = defineComponent({
-  name: "NewsroomNavbar",
+  name: 'NewsroomNavbar',
   description:
     "Refined editorial masthead bar for a digital newsroom or online magazine: a sticky, press-feeling header in three tiers — a thin top utility strip with today's date on the left and a live 'BREAKING' ticker on the right; a prominent center-stage serif wordmark row flanked by a search affordance and a filled 'Subscribe' button plus a text 'Sign in' link; and a dense bordered horizontal section nav beneath (Latest, World, Politics, Business, Tech, Culture, Opinion). Section links, search, subscribe and sign-in route through useNavigate for page-switching. Use as the sticky site header for digital newspapers, magazines, newsrooms, media brands or longform publications.",
   props: z.object({
@@ -38,29 +38,29 @@ export const NewsroomNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "The Daily Ledger"
-    const date = props.date ?? "Sunday, June 22, 2026"
+    const brand = props.brand ?? 'The Daily Ledger'
+    const date = props.date ?? 'Sunday, June 22, 2026'
     const breaking =
       props.breaking ??
-      "Central bank holds rates steady as inflation cools to a three-year low"
+      'Central bank holds rates steady as inflation cools to a three-year low'
     const sections = props.sections?.length
       ? props.sections
       : [
-          "Latest",
-          "World",
-          "Politics",
-          "Business",
-          "Tech",
-          "Culture",
-          "Opinion",
+          'Latest',
+          'World',
+          'Politics',
+          'Business',
+          'Tech',
+          'Culture',
+          'Opinion',
         ]
-    const subscribeCta = props.subscribeCta ?? "Subscribe"
-    const signInCta = props.signInCta ?? "Sign in"
+    const subscribeCta = props.subscribeCta ?? 'Subscribe'
+    const signInCta = props.signInCta ?? 'Sign in'
 
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background",
+          'sticky top-0 z-50 border-b border-border bg-background',
           props.className,
         )}
       >
@@ -93,7 +93,7 @@ export const NewsroomNavbar = defineComponent({
               <button
                 type="button"
                 aria-label="Search"
-                onClick={() => go("Search")}
+                onClick={() => go('Search')}
                 className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <svg
@@ -148,10 +148,10 @@ export const NewsroomNavbar = defineComponent({
                   type="button"
                   onClick={() => go(label)}
                   className={cn(
-                    "shrink-0 rounded-sm px-3 py-1.5 text-sm font-medium uppercase tracking-wide transition-colors hover:bg-muted hover:text-foreground",
+                    'shrink-0 rounded-sm px-3 py-1.5 text-sm font-medium uppercase tracking-wide transition-colors hover:bg-muted hover:text-foreground',
                     i === 0
-                      ? "text-foreground underline decoration-primary decoration-2 underline-offset-8"
-                      : "text-muted-foreground",
+                      ? 'text-foreground underline decoration-primary decoration-2 underline-offset-8'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {label}

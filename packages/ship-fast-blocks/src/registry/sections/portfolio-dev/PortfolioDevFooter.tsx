@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const CodeMark = ({ className }: { className?: string }) => (
   <svg
@@ -19,7 +19,7 @@ const CodeMark = ({ className }: { className?: string }) => (
 )
 
 export const PortfolioDevFooter = defineComponent({
-  name: "PortfolioDevFooter",
+  name: 'PortfolioDevFooter',
   description:
     "Rich, multi-column closing footer for a developer portfolio built on the shared SiteFooter composite: a brand block pairs a mono wordmark with an inline </> code mark, a tagline, and a social row (GitHub, LinkedIn, Twitter, Email), beside a responsive grid of Work and Connect link columns. A bordered-top bottom bar carries an auto-updating copyright line and a closing note. Use as the site-wide footer for developer, engineer, freelancer, or indie-hacker portfolios; renders fully with no props via baked-in 'alex.dev' defaults.",
   props: z.object({
@@ -43,37 +43,37 @@ export const PortfolioDevFooter = defineComponent({
     const social = props.social?.length
       ? props.social
       : [
-          { label: "GitHub" },
-          { label: "LinkedIn" },
-          { label: "Twitter" },
-          { label: "Email" },
+          { label: 'GitHub' },
+          { label: 'LinkedIn' },
+          { label: 'Twitter' },
+          { label: 'Email' },
         ]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Work",
-            links: ["Projects", "Open Source", "Case Studies", "Resume"],
+            title: 'Work',
+            links: ['Projects', 'Open Source', 'Case Studies', 'Resume'],
           },
           {
-            title: "Connect",
-            links: ["GitHub", "LinkedIn", "Twitter", "Contact"],
+            title: 'Connect',
+            links: ['GitHub', 'LinkedIn', 'Twitter', 'Contact'],
           },
         ]
 
     return (
       <SiteFooter
-        brand={props.brand ?? "alex.dev"}
+        brand={props.brand ?? 'alex.dev'}
         brandMark={<CodeMark className="size-8 text-primary" />}
         brandClassName="font-mono text-lg font-semibold"
         tagline={
           props.tagline ??
-          "Full-stack developer building fast, accessible web apps."
+          'Full-stack developer building fast, accessible web apps.'
         }
         social={social}
         columns={columns}
-        legal={["Privacy", "Terms"]}
-        note={props.note ?? "Built with care."}
+        legal={['Privacy', 'Terms']}
+        note={props.note ?? 'Built with care.'}
         className={props.className}
       />
     )

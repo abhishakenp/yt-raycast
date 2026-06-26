@@ -5,7 +5,9 @@ export type FaqItem = {
   answer: string
 }
 
-export function extractFaqItems(page: SitePageLike | null | undefined): FaqItem[] {
+export function extractFaqItems(
+  page: SitePageLike | null | undefined,
+): FaqItem[] {
   return (page?.sections || [])
     .filter((section) => section.type === 'faq')
     .flatMap((section) => section.items || [])

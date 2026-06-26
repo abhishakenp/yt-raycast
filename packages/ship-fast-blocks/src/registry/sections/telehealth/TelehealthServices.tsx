@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const ICONS = [
   // Primary Care — stethoscope
@@ -74,9 +74,9 @@ const ICONS = [
 ]
 
 export const TelehealthServices = defineComponent({
-  name: "TelehealthServices",
+  name: 'TelehealthServices',
   description:
-    "Services overview band for a telehealth site, built on the shared FeatureGrid composite. Renders a centered heading and a four-up card grid covering the core virtual-care offerings — Primary Care, Mental Health, Prescriptions, and Urgent Care — each with a calm primary-toned inline icon, a title, and a short description. Cards collapse to two columns and then a single column on smaller screens. Use to summarize what a telehealth provider treats and help visitors self-route to the right service.",
+    'Services overview band for a telehealth site, built on the shared FeatureGrid composite. Renders a centered heading and a four-up card grid covering the core virtual-care offerings — Primary Care, Mental Health, Prescriptions, and Urgent Care — each with a calm primary-toned inline icon, a title, and a short description. Cards collapse to two columns and then a single column on smaller screens. Use to summarize what a telehealth provider treats and help visitors self-route to the right service.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -86,32 +86,32 @@ export const TelehealthServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Care for whatever comes up"
+    const heading = props.heading ?? 'Care for whatever comes up'
     const subheading =
       props.subheading ??
-      "From everyday checkups to last-minute concerns, our providers are ready when you are."
+      'From everyday checkups to last-minute concerns, our providers are ready when you are.'
     const services = props.services?.length
       ? props.services
       : [
           {
-            title: "Primary Care",
+            title: 'Primary Care',
             description:
-              "Routine checkups, chronic condition management, and ongoing guidance from a doctor who knows your history.",
+              'Routine checkups, chronic condition management, and ongoing guidance from a doctor who knows your history.',
           },
           {
-            title: "Mental Health",
+            title: 'Mental Health',
             description:
-              "Confidential video sessions with licensed therapists and psychiatrists, on a schedule that fits your life.",
+              'Confidential video sessions with licensed therapists and psychiatrists, on a schedule that fits your life.',
           },
           {
-            title: "Prescriptions",
+            title: 'Prescriptions',
             description:
-              "Get new prescriptions or refills sent straight to your preferred pharmacy after a quick virtual visit.",
+              'Get new prescriptions or refills sent straight to your preferred pharmacy after a quick virtual visit.',
           },
           {
-            title: "Urgent Care",
+            title: 'Urgent Care',
             description:
-              "Fast, on-demand care for colds, infections, and minor injuries — typically seen in under 15 minutes.",
+              'Fast, on-demand care for colds, infections, and minor injuries — typically seen in under 15 minutes.',
           },
         ]
 

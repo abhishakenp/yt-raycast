@@ -33,9 +33,7 @@ describe('dev-flags', () => {
 
     expect(source).toContain("import { devFlags } from '../lib/dev-flags")
     expect(source).toContain('devFlags.disablePaywall')
-    expect(source).not.toMatch(
-      /String\(process\.env\.DISABLE_PAYWALL/,
-    )
+    expect(source).not.toMatch(/String\(process\.env\.DISABLE_PAYWALL/)
   })
 
   it('EXPORT_HISTORICAL_SUBSCRIPTION_ACCESS is fully removed from payments', () => {

@@ -1,9 +1,9 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 export const TelehealthCta = defineComponent({
-  name: "TelehealthCta",
+  name: 'TelehealthCta',
   description:
     "Full-width closing call-to-action band for a telehealth site, built on the shared CtaBand composite with a primary tone. Centers an optional eyebrow, a reassuring title ('Talk to a doctor now'), a supporting subtitle, and a row of routable pill actions — a primary 'Get Started' button (auto-inverted to read against the primary background) that routes to booking, plus an outlined 'Learn more' button. Use as the final conversion band near the footer of a telehealth page.",
   props: z.object({
@@ -17,15 +17,15 @@ export const TelehealthCta = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Ready when you are"
-    const headline = props.headline ?? "Talk to a doctor now"
+    const eyebrow = props.eyebrow ?? 'Ready when you are'
+    const headline = props.headline ?? 'Talk to a doctor now'
     const subheading =
       props.subheading ??
-      "Skip the waiting room. Connect with a board-certified provider over secure video in minutes."
-    const primaryCta = props.primaryCta ?? "Get Started"
-    const primaryTarget = props.primaryTarget ?? "Contact"
-    const secondaryCta = props.secondaryCta ?? "Learn more"
-    const secondaryTarget = props.secondaryTarget ?? "How it works"
+      'Skip the waiting room. Connect with a board-certified provider over secure video in minutes.'
+    const primaryCta = props.primaryCta ?? 'Get Started'
+    const primaryTarget = props.primaryTarget ?? 'Contact'
+    const secondaryCta = props.secondaryCta ?? 'Learn more'
+    const secondaryTarget = props.secondaryTarget ?? 'How it works'
 
     return (
       <CtaBand
@@ -34,8 +34,8 @@ export const TelehealthCta = defineComponent({
         title={headline}
         subtitle={subheading}
         actions={[
-          { label: primaryCta, target: primaryTarget, variant: "primary" },
-          { label: secondaryCta, target: secondaryTarget, variant: "outline" },
+          { label: primaryCta, target: primaryTarget, variant: 'primary' },
+          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
         ]}
         className={props.className}
       />

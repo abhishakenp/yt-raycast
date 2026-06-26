@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * BarNightclubMenu — two-column drinks menu for a cocktail-bar / nightclub
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * restaurants. Renders fully with no props via baked-in defaults.
  */
 export const BarNightclubMenu = defineComponent({
-  name: "BarNightclubMenu",
+  name: 'BarNightclubMenu',
   description:
-    "Two-column drinks menu for a cocktail-bar / nightclub page: a centered eyebrow, light-weight heading and lead, then a responsive two-column grid of named menu sections (such as house signatures and classics & premium), each with an underlined uppercase header and a list of items showing a name, muted description, and right-aligned price. Closes with a bordered footnote panel and a routable download-menu link. Editorial, monochrome and hairline-bordered; the footnote link routes through useNavigate. Use to present a cocktail / drinks list for bars, lounges, speakeasies, or restaurants.",
+    'Two-column drinks menu for a cocktail-bar / nightclub page: a centered eyebrow, light-weight heading and lead, then a responsive two-column grid of named menu sections (such as house signatures and classics & premium), each with an underlined uppercase header and a list of items showing a name, muted description, and right-aligned price. Closes with a bordered footnote panel and a routable download-menu link. Editorial, monochrome and hairline-bordered; the footnote link routes through useNavigate. Use to present a cocktail / drinks list for bars, lounges, speakeasies, or restaurants.',
   props: z.object({
     /** Wide letter-spaced uppercase eyebrow. */
     eyebrow: z.string().optional(),
@@ -50,101 +50,104 @@ export const BarNightclubMenu = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Drinks Menu"
-    const heading = props.heading ?? "Signature Cocktails"
+    const eyebrow = props.eyebrow ?? 'Drinks Menu'
+    const heading = props.heading ?? 'Signature Cocktails'
     const description =
       props.description ??
-      "Handcrafted by our award-winning mixologists. All cocktails available as non-alcoholic upon request."
+      'Handcrafted by our award-winning mixologists. All cocktails available as non-alcoholic upon request.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "House Signatures",
+            title: 'House Signatures',
             items: [
               {
-                name: "Midnight in Paris",
+                name: 'Midnight in Paris',
                 description:
                   "Hendrick's Gin, St-Germain, blackberries, lemon, champagne float",
-                price: "$18",
+                price: '$18',
               },
               {
-                name: "Smoke & Mirrors",
+                name: 'Smoke & Mirrors',
                 description:
-                  "Mezcal, Aperol, smoked honey, grapefruit, habanero bitters",
-                price: "$19",
+                  'Mezcal, Aperol, smoked honey, grapefruit, habanero bitters',
+                price: '$19',
               },
               {
-                name: "Velvet Underground",
+                name: 'Velvet Underground',
                 description:
-                  "Bourbon, Amaro Nonino, velvet falernum, aromatic bitters",
-                price: "$17",
+                  'Bourbon, Amaro Nonino, velvet falernum, aromatic bitters',
+                price: '$17',
               },
               {
-                name: "Neon Nights",
+                name: 'Neon Nights',
                 description:
-                  "Vodka, blue curaçao, coconut, lime, activated charcoal",
-                price: "$16",
+                  'Vodka, blue curaçao, coconut, lime, activated charcoal',
+                price: '$16',
               },
               {
-                name: "The Nocturnal",
-                description: "Rye whiskey, coffee liqueur, cold brew, orange peel",
-                price: "$18",
-              },
-              {
-                name: "Golden Hour",
+                name: 'The Nocturnal',
                 description:
-                  "Tequila reposado, passion fruit, turmeric, ginger beer",
-                price: "$17",
+                  'Rye whiskey, coffee liqueur, cold brew, orange peel',
+                price: '$18',
+              },
+              {
+                name: 'Golden Hour',
+                description:
+                  'Tequila reposado, passion fruit, turmeric, ginger beer',
+                price: '$17',
               },
             ],
           },
           {
-            title: "Classics & Premium",
+            title: 'Classics & Premium',
             items: [
               {
-                name: "NOIR Old Fashioned",
+                name: 'NOIR Old Fashioned',
                 description:
-                  "Woodford Reserve, house bitters, demerara, expressed orange",
-                price: "$16",
+                  'Woodford Reserve, house bitters, demerara, expressed orange',
+                price: '$16',
               },
               {
-                name: "Perfect Manhattan",
+                name: 'Perfect Manhattan',
                 description:
-                  "Rittenhouse Rye, Carpano Antica, Dolin Dry, Luxardo cherry",
-                price: "$17",
+                  'Rittenhouse Rye, Carpano Antica, Dolin Dry, Luxardo cherry',
+                price: '$17',
               },
               {
-                name: "French 75",
-                description: "Plymouth Gin, lemon, simple syrup, Champagne",
-                price: "$15",
+                name: 'French 75',
+                description: 'Plymouth Gin, lemon, simple syrup, Champagne',
+                price: '$15',
               },
               {
-                name: "Negroni Sbagliato",
-                description: "Campari, sweet vermouth, Prosecco (bubbly Negroni)",
-                price: "$15",
+                name: 'Negroni Sbagliato',
+                description:
+                  'Campari, sweet vermouth, Prosecco (bubbly Negroni)',
+                price: '$15',
               },
               {
-                name: "Premium Whiskey Flight",
+                name: 'Premium Whiskey Flight',
                 description:
                   "1oz pours: Yamazaki 12, Macallan 18, Blanton's Single Barrel",
-                price: "$45",
+                price: '$45',
               },
               {
-                name: "Champagne by the Glass",
-                description: "Dom Pérignon 2013, Krug Grande Cuvée, Veuve Clicquot",
-                price: "$28-85",
+                name: 'Champagne by the Glass',
+                description:
+                  'Dom Pérignon 2013, Krug Grande Cuvée, Veuve Clicquot',
+                price: '$28-85',
               },
             ],
           },
         ]
     const footnote =
       props.footnote ??
-      "Full menu includes beer, wine, and non-alcoholic options"
-    const footnoteCta = props.footnoteCta ?? "Download Full Menu (PDF)"
+      'Full menu includes beer, wine, and non-alcoholic options'
+    const footnoteCta = props.footnoteCta ?? 'Download Full Menu (PDF)'
 
     return (
       <section
-        className={cn("border-t border-border py-24 lg:py-32", props.className)}
+        className={cn('border-t border-border py-24 lg:py-32', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">

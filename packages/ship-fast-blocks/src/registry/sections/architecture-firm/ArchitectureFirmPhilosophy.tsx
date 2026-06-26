@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ArchitectureFirmPhilosophy — split approach / philosophy section for an
@@ -18,7 +18,7 @@ import { Image } from "#/lib/img.tsx"
  * points.
  */
 export const ArchitectureFirmPhilosophy = defineComponent({
-  name: "ArchitectureFirmPhilosophy",
+  name: 'ArchitectureFirmPhilosophy',
   description:
     "Split approach / philosophy section for an architecture-studio / design-practice page: on a subtle card surface, a two-column layout with an eyebrow + light heading and a vertical list of approach points (each a round muted icon tile beside a title + paragraph) on one side, and a tall studio/model photograph with a floating 'years-of-practice' stat card overlapping its lower-left corner on the other. Calm, editorial, monochrome. Tokens-only, no links. Use as a philosophy / approach / values / 'how we think' section for architecture firms, design studios, interior designers or any practice articulating its design principles.",
   props: z.object({
@@ -39,34 +39,34 @@ export const ArchitectureFirmPhilosophy = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Our Approach"
+    const eyebrow = props.eyebrow ?? 'Our Approach'
     const heading =
       props.heading ??
-      "Architecture as a conversation between place and purpose"
+      'Architecture as a conversation between place and purpose'
     const points = props.points?.length
       ? props.points
       : [
           {
-            title: "Contextual Sensitivity",
+            title: 'Contextual Sensitivity',
             description:
               "Every site tells a story. We listen to the landscape, the neighborhood's rhythm, and the existing built environment before drawing a single line. Our buildings respond to their place rather than imposing upon it.",
           },
           {
-            title: "Daylight & Material",
+            title: 'Daylight & Material',
             description:
-              "Natural light is our primary material. We choreograph how daylight moves through spaces across seasons, pairing this with honest materials that age gracefully—stone, wood, steel, and glass selected for longevity.",
+              'Natural light is our primary material. We choreograph how daylight moves through spaces across seasons, pairing this with honest materials that age gracefully—stone, wood, steel, and glass selected for longevity.',
           },
           {
-            title: "Human-Centered Design",
+            title: 'Human-Centered Design',
             description:
-              "Buildings exist for people. We design for the subtle rituals of daily life—the quality of morning light in a kitchen, the acoustics of conversation, the threshold between public and private.",
+              'Buildings exist for people. We design for the subtle rituals of daily life—the quality of morning light in a kitchen, the acoustics of conversation, the threshold between public and private.',
           },
         ]
     const imageAlt =
       props.imageAlt ??
-      "Architectural model on work table showing building massing study with natural lighting"
-    const statValue = props.statValue ?? "12"
-    const statLabel = props.statLabel ?? "Years of practice"
+      'Architectural model on work table showing building massing study with natural lighting'
+    const statValue = props.statValue ?? '12'
+    const statLabel = props.statLabel ?? 'Years of practice'
 
     // Approach-point icons (decorative; tint via currentColor token).
     const icons: ReactNode[] = [
@@ -123,7 +123,7 @@ export const ArchitectureFirmPhilosophy = defineComponent({
     return (
       <section
         aria-labelledby="architecture-firm-philosophy-heading"
-        className={cn("bg-card py-24 lg:py-32", props.className)}
+        className={cn('bg-card py-24 lg:py-32', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2 lg:gap-24">

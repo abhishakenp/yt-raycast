@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * VideoStreamingFeatures — a 4-column feature grid for a video-streaming
@@ -62,9 +62,9 @@ const FeatureIcon = ({ glyph }: { glyph: ReactNode }) => (
 )
 
 export const VideoStreamingFeatures = defineComponent({
-  name: "VideoStreamingFeatures",
+  name: 'VideoStreamingFeatures',
   description:
-    "A 4-column feature grid for a video-streaming landing page built on the shared FeatureGrid composite: a centered heading + subheading above a responsive grid of feature cards, each pairing an inline stroke-SVG glyph (cycled per index) with a bold title and a muted blurb. Use to spell out streaming value props — 4K Ultra HD, offline downloads, watch on any device, zero ads, Dolby Atmos, profiles — beneath a streaming hero.",
+    'A 4-column feature grid for a video-streaming landing page built on the shared FeatureGrid composite: a centered heading + subheading above a responsive grid of feature cards, each pairing an inline stroke-SVG glyph (cycled per index) with a bold title and a muted blurb. Use to spell out streaming value props — 4K Ultra HD, offline downloads, watch on any device, zero ads, Dolby Atmos, profiles — beneath a streaming hero.',
   props: z.object({
     /** Centered section heading above the grid. */
     heading: z.string().optional(),
@@ -85,39 +85,39 @@ export const VideoStreamingFeatures = defineComponent({
     const heading = props.heading ?? "Everything you'd expect — and more"
     const subheading =
       props.subheading ??
-      "One subscription, every screen, zero compromises. Stream in stunning quality, take it offline, and never sit through an ad."
+      'One subscription, every screen, zero compromises. Stream in stunning quality, take it offline, and never sit through an ad.'
     const features = props.features?.length
       ? props.features
       : [
           {
-            title: "4K Ultra HD",
+            title: '4K Ultra HD',
             description:
-              "Watch in crisp 4K with HDR on supported titles — every frame mastered to look exactly as the creators intended.",
+              'Watch in crisp 4K with HDR on supported titles — every frame mastered to look exactly as the creators intended.',
           },
           {
-            title: "Offline Downloads",
+            title: 'Offline Downloads',
             description:
-              "Save shows and movies to any device and watch on the plane, the subway, or anywhere the signal drops.",
+              'Save shows and movies to any device and watch on the plane, the subway, or anywhere the signal drops.',
           },
           {
-            title: "Watch on Any Device",
+            title: 'Watch on Any Device',
             description:
-              "Pick up right where you left off across phone, tablet, laptop, and smart TV — your place follows you everywhere.",
+              'Pick up right where you left off across phone, tablet, laptop, and smart TV — your place follows you everywhere.',
           },
           {
-            title: "Zero Ads",
+            title: 'Zero Ads',
             description:
-              "No interruptions, ever. Press play and stay in the story from the opening scene to the final credits.",
+              'No interruptions, ever. Press play and stay in the story from the opening scene to the final credits.',
           },
           {
-            title: "Dolby Atmos Sound",
+            title: 'Dolby Atmos Sound',
             description:
-              "Immersive, theater-grade audio that moves around you for the moments that deserve to be heard, not just watched.",
+              'Immersive, theater-grade audio that moves around you for the moments that deserve to be heard, not just watched.',
           },
           {
-            title: "Up to 5 Profiles",
+            title: 'Up to 5 Profiles',
             description:
-              "Give everyone their own space with personalized recommendations, watchlists, and a dedicated Kids mode.",
+              'Give everyone their own space with personalized recommendations, watchlists, and a dedicated Kids mode.',
           },
         ]
 

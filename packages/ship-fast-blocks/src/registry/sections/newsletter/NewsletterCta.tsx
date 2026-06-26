@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NewsletterCta — inverted final-CTA subscribe band for an editorial newsletter.
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const NewsletterCta = defineComponent({
-  name: "NewsletterCta",
+  name: 'NewsletterCta',
   description:
-    "Inverted final-CTA subscribe band for an editorial newsletter: a full-width dark foreground band, centered, with a large serif headline, a relaxed lede, an inline email subscribe form (translucent email input + solid background submit button that stacks on mobile), and a small note line with an inline upgrade link. Warm, calm, literary mood inverted for emphasis. The form submit and the note link route through useNavigate. Use as the closing conversion band for newsletters, publications, blogs, or content creators.",
+    'Inverted final-CTA subscribe band for an editorial newsletter: a full-width dark foreground band, centered, with a large serif headline, a relaxed lede, an inline email subscribe form (translucent email input + solid background submit button that stacks on mobile), and a small note line with an inline upgrade link. Warm, calm, literary mood inverted for emphasis. The form submit and the note link route through useNavigate. Use as the closing conversion band for newsletters, publications, blogs, or content creators.',
   props: z.object({
     /** Headline. */
     heading: z.string().optional(),
@@ -36,23 +36,18 @@ export const NewsletterCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Start your Sunday with insight"
+    const heading = props.heading ?? 'Start your Sunday with insight'
     const description =
       props.description ??
-      "Join 12,000+ readers who make The Quiet Observer part of their weekend ritual. No spam. Unsubscribe anytime."
-    const emailPlaceholder = props.emailPlaceholder ?? "your@email.com"
-    const submit = props.submit ?? "Subscribe Free"
-    const notePrefix = props.notePrefix ?? "Or "
-    const noteLink = props.noteLink ?? "upgrade to paid"
-    const noteSuffix = props.noteSuffix ?? " for the full experience."
+      'Join 12,000+ readers who make The Quiet Observer part of their weekend ritual. No spam. Unsubscribe anytime.'
+    const emailPlaceholder = props.emailPlaceholder ?? 'your@email.com'
+    const submit = props.submit ?? 'Subscribe Free'
+    const notePrefix = props.notePrefix ?? 'Or '
+    const noteLink = props.noteLink ?? 'upgrade to paid'
+    const noteSuffix = props.noteSuffix ?? ' for the full experience.'
 
     return (
-      <section
-        className={cn(
-          "bg-foreground py-16 md:py-24",
-          props.className,
-        )}
-      >
+      <section className={cn('bg-foreground py-16 md:py-24', props.className)}>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-4 font-serif text-3xl font-medium text-background sm:text-4xl lg:text-5xl">
             {heading}

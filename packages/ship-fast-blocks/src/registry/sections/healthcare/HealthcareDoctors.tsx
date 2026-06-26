@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * HealthcareDoctors — physician team grid for a medical-clinic page. A centered
@@ -14,7 +14,7 @@ import { Image } from "#/lib/img.tsx"
  * with no props via baked-in board-certified-physician defaults.
  */
 export const HealthcareDoctors = defineComponent({
-  name: "HealthcareDoctors",
+  name: 'HealthcareDoctors',
   description:
     "Physician team grid for a medical-clinic page: a centered eyebrow chip, heading and intro above a responsive 1/2/4-column grid of profile cards, each with a tall 3:4 alt-driven headshot that gently zooms on hover, the doctor's name, an accent-colored specialty line, and a short bio. Tokens-only, no links. Use for a 'meet our physicians' / care-team / provider-bios section of a doctors' office, family-medicine practice, pediatric / women's-health clinic, hospital or medical group.",
   props: z.object({
@@ -38,47 +38,47 @@ export const HealthcareDoctors = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Our Team"
-    const heading = props.heading ?? "Meet our physicians"
+    const eyebrow = props.eyebrow ?? 'Our Team'
+    const heading = props.heading ?? 'Meet our physicians'
     const description =
       props.description ??
-      "Board-certified doctors with decades of combined experience, committed to building lasting relationships with every patient."
+      'Board-certified doctors with decades of combined experience, committed to building lasting relationships with every patient.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            name: "Dr. Sarah Chen, MD",
-            specialty: "Internal Medicine",
-            bio: "Harvard Medical School. 15 years experience. Specializes in chronic disease management and preventive care.",
+            name: 'Dr. Sarah Chen, MD',
+            specialty: 'Internal Medicine',
+            bio: 'Harvard Medical School. 15 years experience. Specializes in chronic disease management and preventive care.',
             photoAlt:
-              "Professional headshot of Dr. Sarah Chen, a female physician with shoulder-length dark hair wearing a white coat",
+              'Professional headshot of Dr. Sarah Chen, a female physician with shoulder-length dark hair wearing a white coat',
           },
           {
-            name: "Dr. James Mitchell, MD",
-            specialty: "Family Medicine",
-            bio: "Stanford University. 12 years experience. Board certified in family medicine with focus on holistic care.",
+            name: 'Dr. James Mitchell, MD',
+            specialty: 'Family Medicine',
+            bio: 'Stanford University. 12 years experience. Board certified in family medicine with focus on holistic care.',
             photoAlt:
-              "Professional headshot of Dr. James Mitchell, a male physician in his 40s with short gray hair and glasses",
+              'Professional headshot of Dr. James Mitchell, a male physician in his 40s with short gray hair and glasses',
           },
           {
-            name: "Dr. Priya Patel, DO",
+            name: 'Dr. Priya Patel, DO',
             specialty: "Women's Health",
-            bio: "Johns Hopkins University. 10 years experience. OB/GYN trained, specializing in reproductive health and wellness.",
+            bio: 'Johns Hopkins University. 10 years experience. OB/GYN trained, specializing in reproductive health and wellness.',
             photoAlt:
-              "Professional headshot of Dr. Priya Patel, a female physician with long dark hair wearing a white coat and stethoscope",
+              'Professional headshot of Dr. Priya Patel, a female physician with long dark hair wearing a white coat and stethoscope',
           },
           {
-            name: "Dr. Michael Torres, MD",
-            specialty: "Pediatrics",
-            bio: "UCSF School of Medicine. 8 years experience. Fellow of the American Academy of Pediatrics. Speaks English and Spanish.",
+            name: 'Dr. Michael Torres, MD',
+            specialty: 'Pediatrics',
+            bio: 'UCSF School of Medicine. 8 years experience. Fellow of the American Academy of Pediatrics. Speaks English and Spanish.',
             photoAlt:
-              "Professional headshot of Dr. Michael Torres, a male pediatrician in his 30s with a warm smile",
+              'Professional headshot of Dr. Michael Torres, a male pediatrician in his 30s with a warm smile',
           },
         ]
 
     return (
       <section
-        className={cn("bg-background py-20 lg:py-28", props.className)}
+        className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="doctors-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -110,9 +110,7 @@ export const HealthcareDoctors = defineComponent({
                 <h3 className="mb-1 text-xl font-bold text-foreground">
                   {doc.name}
                 </h3>
-                <p className="mb-2 font-medium text-primary">
-                  {doc.specialty}
-                </p>
+                <p className="mb-2 font-medium text-primary">{doc.specialty}</p>
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {doc.bio}
                 </p>

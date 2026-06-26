@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BeautyStoreProducts — shoppable bestsellers product grid for a beauty / skincare /
@@ -17,7 +17,7 @@ import { Image } from "#/lib/img.tsx"
  * listing. Renders fully with no props via 8 clean-beauty baked-in defaults.
  */
 export const BeautyStoreProducts = defineComponent({
-  name: "BeautyStoreProducts",
+  name: 'BeautyStoreProducts',
   description:
     "Shoppable bestsellers product grid for a beauty / skincare / cosmetics e-commerce landing page: a section eyebrow and heading on the left with a 'view all' link on the right, above a responsive 2-to-4-column grid of product cards. Each card has an alt-driven square product photo that zooms on hover, an optional status badge (Bestseller / Clean / New), a floating add-to-cart button that appears on hover, brand name, product title, star rating strip + review count, and price. CTAs and product clicks route through useNavigate. Use on beauty store homepages, skincare shop grids, makeup bestsellers, or any e-commerce product listing.",
   props: z.object({
@@ -43,65 +43,65 @@ export const BeautyStoreProducts = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Most Loved"
-    const heading = props.heading ?? "Bestsellers"
-    const viewAll = props.viewAll ?? "View All Products"
+    const eyebrow = props.eyebrow ?? 'Most Loved'
+    const heading = props.heading ?? 'Bestsellers'
+    const viewAll = props.viewAll ?? 'View All Products'
     const items = props.items?.length
       ? props.items
       : [
           {
-            brand: "The Ordinary",
-            title: "Hyaluronic Acid 2% + B5 Hydrating Serum",
-            price: "$8.90",
-            reviews: "(2,847)",
-            badge: "Bestseller",
+            brand: 'The Ordinary',
+            title: 'Hyaluronic Acid 2% + B5 Hydrating Serum',
+            price: '$8.90',
+            reviews: '(2,847)',
+            badge: 'Bestseller',
           },
           {
-            brand: "Glow Recipe",
-            title: "Watermelon Glow Sleeping Mask",
-            price: "$45.00",
-            reviews: "(1,932)",
-            badge: "Clean",
+            brand: 'Glow Recipe',
+            title: 'Watermelon Glow Sleeping Mask',
+            price: '$45.00',
+            reviews: '(1,932)',
+            badge: 'Clean',
           },
           {
-            brand: "Laneige",
-            title: "BB Cushion Foundation SPF 50",
-            price: "$39.00",
-            reviews: "(4,156)",
-            badge: "New",
+            brand: 'Laneige',
+            title: 'BB Cushion Foundation SPF 50',
+            price: '$39.00',
+            reviews: '(4,156)',
+            badge: 'New',
           },
           {
-            brand: "Rare Beauty",
-            title: "Soft Pinch Liquid Blush - Hope",
-            price: "$23.00",
-            reviews: "(8,421)",
+            brand: 'Rare Beauty',
+            title: 'Soft Pinch Liquid Blush - Hope',
+            price: '$23.00',
+            reviews: '(8,421)',
           },
           {
-            brand: "CeraVe",
-            title: "Moisturizing Cream with Ceramides",
-            price: "$16.99",
-            reviews: "(15,203)",
-            badge: "Bestseller",
+            brand: 'CeraVe',
+            title: 'Moisturizing Cream with Ceramides',
+            price: '$16.99',
+            reviews: '(15,203)',
+            badge: 'Bestseller',
           },
           {
-            brand: "Fenty Beauty",
-            title: "Gloss Bomb Universal Lip Luminizer",
-            price: "$21.00",
-            reviews: "(6,789)",
+            brand: 'Fenty Beauty',
+            title: 'Gloss Bomb Universal Lip Luminizer',
+            price: '$21.00',
+            reviews: '(6,789)',
           },
           {
-            brand: "Drunk Elephant",
-            title: "Protini Polypeptide Cream",
-            price: "$68.00",
-            reviews: "(3,245)",
-            badge: "Clean",
+            brand: 'Drunk Elephant',
+            title: 'Protini Polypeptide Cream',
+            price: '$68.00',
+            reviews: '(3,245)',
+            badge: 'Clean',
           },
           {
-            brand: "Charlotte Tilbury",
-            title: "Airbrush Flawless Finish Setting Powder",
-            price: "$45.00",
-            reviews: "(2,156)",
-            badge: "New",
+            brand: 'Charlotte Tilbury',
+            title: 'Airbrush Flawless Finish Setting Powder',
+            price: '$45.00',
+            reviews: '(2,156)',
+            badge: 'New',
           },
         ]
 
@@ -148,15 +148,13 @@ export const BeautyStoreProducts = defineComponent({
     )
 
     const badgeClass = (badge?: string) => {
-      if (badge === "Clean") return "bg-secondary text-secondary-foreground"
-      if (badge === "New") return "bg-accent text-accent-foreground"
-      return "bg-primary text-primary-foreground"
+      if (badge === 'Clean') return 'bg-secondary text-secondary-foreground'
+      if (badge === 'New') return 'bg-accent text-accent-foreground'
+      return 'bg-primary text-primary-foreground'
     }
 
     return (
-      <section
-        className={cn("bg-muted/40 py-20 lg:py-28", props.className)}
-      >
+      <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -194,7 +192,7 @@ export const BeautyStoreProducts = defineComponent({
                   {product.badge ? (
                     <span
                       className={cn(
-                        "absolute left-3 top-3 rounded-full px-2 py-1 text-xs font-semibold",
+                        'absolute left-3 top-3 rounded-full px-2 py-1 text-xs font-semibold',
                         badgeClass(product.badge),
                       )}
                     >

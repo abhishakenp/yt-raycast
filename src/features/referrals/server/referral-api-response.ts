@@ -85,9 +85,7 @@ export const createReferralRecordApiResponse = async (
     return json(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : 'Unable to record referral.',
+          error instanceof Error ? error.message : 'Unable to record referral.',
       },
       { status: 500 },
     )

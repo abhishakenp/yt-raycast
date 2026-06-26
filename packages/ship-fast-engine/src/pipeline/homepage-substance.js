@@ -27,13 +27,16 @@ function looksLikeDeclaredAppUi(html) {
   return (
     /\bdata-mobile-nav-toggle\b/.test(h) ||
     (/\bdata-tab-group\b/.test(h) && /\bdata-tab-panel\b/.test(h)) ||
-    (/<aside[^>]{0,200}\bw-64\b/i.test(h) && /<main[^>]{0,120}\bflex-1\b/i.test(h)) ||
+    (/<aside[^>]{0,200}\bw-64\b/i.test(h) &&
+      /<main[^>]{0,120}\bflex-1\b/i.test(h)) ||
     (/<aside\b/i.test(h) && /<main\b/i.test(h)) ||
     (/\bclass="[^"]*\b(?:sidebar|app-shell|app-layout|dash-board|dash-layout|rail-nav|nav-rail)\b/i.test(
       h,
     ) &&
       /<main\b/i.test(h)) ||
-    (/<nav\b/i.test(h) && /<main\b/i.test(h) && /\b(?:sidebar|drawer|panel|rail)\b/i.test(h))
+    (/<nav\b/i.test(h) &&
+      /<main\b/i.test(h) &&
+      /\b(?:sidebar|drawer|panel|rail)\b/i.test(h))
   )
 }
 
@@ -52,12 +55,15 @@ function hasMarketingStructure(bodyHtml) {
   if (/<main\b/i.test(b) && wc >= 40) return true
   if (/class="[^"]*\b(grid|grid-cols|md:grid)\b/i.test(b)) return true
   if (/class="[^"]*bento/i.test(b)) return true
-  if (wc >= 48 && /<(div|ul|ol)\b/i.test(b) && /\b(?:button|href=)\b/i.test(b)) return true
+  if (wc >= 48 && /<(div|ul|ol)\b/i.test(b) && /\b(?:button|href=)\b/i.test(b))
+    return true
   return false
 }
 
 const siteSpecLooksEcommerce = (siteSpec) =>
-  String(siteSpec?.siteType || siteSpec?.metadata?.siteType || '').toLowerCase() === 'ecommerce'
+  String(
+    siteSpec?.siteType || siteSpec?.metadata?.siteType || '',
+  ).toLowerCase() === 'ecommerce'
 
 function hasEcommerceSignals(bodyHtml) {
   const textSignals =
@@ -79,13 +85,15 @@ function looksLikeSubstantialEcommerceHomepage(html) {
   const words = visibleTextFromHtmlFragment(body).split(/\s+/).filter(Boolean)
   const wc = words.length
   if (wc >= 95) return true
-  if (wc >= 55 && hasEcommerceSignals(body) && hasMarketingStructure(body)) return true
+  if (wc >= 55 && hasEcommerceSignals(body) && hasMarketingStructure(body))
+    return true
   return false
 }
 
 function looksLikeHybridLlmHomepage(html) {
   const h = String(html || '')
-  if (!/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(h)) return false
+  if (!/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(h))
+    return false
   if (h.length < 12000) return false
   return /<(section|nav|footer)\b/i.test(h)
 }
@@ -94,7 +102,11 @@ export function shouldReplaceLlmHomepageWithRenderer(html, siteSpec) {
   if (!html || typeof html !== 'string') return true
   if (!siteSpec?.pages?.length) return false
   if (looksLikeHybridLlmHomepage(html)) return false
-  if (siteSpecLooksEcommerce(siteSpec) && looksLikeSubstantialEcommerceHomepage(html)) return false
+  if (
+    siteSpecLooksEcommerce(siteSpec) &&
+    looksLikeSubstantialEcommerceHomepage(html)
+  )
+    return false
 
   if (looksLikeThreeJsGame(html)) return false
   if (looksLikeDeclaredAppUi(html)) return false
@@ -104,7 +116,11 @@ export function shouldReplaceLlmHomepageWithRenderer(html, siteSpec) {
   const wc = words.length
   const rawLen = String(html).length
 
-  if (rawLen >= 14000 && wc >= 42 && /<(header|main|footer|nav|section|article)\b/i.test(body))
+  if (
+    rawLen >= 14000 &&
+    wc >= 42 &&
+    /<(header|main|footer|nav|section|article)\b/i.test(body)
+  )
     return false
   if (rawLen >= 9000 && wc >= 50) return false
 
@@ -119,6 +135,8 @@ export function shouldReplaceLlmHomepageWithRenderer(html, siteSpec) {
 
 export function htmlDocumentPassesPreviewQuality(html, siteSpec) {
   return Boolean(
-    html && typeof html === 'string' && !shouldReplaceLlmHomepageWithRenderer(html, siteSpec),
+    html &&
+      typeof html === 'string' &&
+      !shouldReplaceLlmHomepageWithRenderer(html, siteSpec),
   )
 }

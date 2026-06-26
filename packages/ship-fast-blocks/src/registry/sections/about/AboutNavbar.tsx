@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AboutNavbar — glassy sticky top navigation bar for a modern company / ABOUT
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * props via baked-in "Kinetic Labs" defaults.
  */
 export const AboutNavbar = defineComponent({
-  name: "AboutNavbar",
+  name: 'AboutNavbar',
   description:
     "Glassy sticky top navigation bar for a modern company / ABOUT page: a backdrop-blurred, border-bottomed header pinned to the top with an indigo-to-violet gradient zap-glyph logo tile + brand name on the left, a horizontal set of nav links in the center (desktop), and a dark 'Work with us' pill CTA with a trailing arrow on the right. Every nav item and the CTA route through useNavigate for page-switching. Use as the sticky site header for startups, product studios, agencies, SaaS companies, or any premium brand's about/company page.",
   props: z.object({
@@ -31,18 +31,18 @@ export const AboutNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Kinetic Labs"
+    const brand = props.brand ?? 'Kinetic Labs'
     const nav = props.nav?.length
       ? props.nav
-      : ["Our Story", "Values", "Team", "Stats"]
-    const cta = props.cta ?? "Work with us"
-    const ctaTarget = props.ctaTarget ?? "Get in touch"
+      : ['Our Story', 'Values', 'Team', 'Stats']
+    const cta = props.cta ?? 'Work with us'
+    const ctaTarget = props.ctaTarget ?? 'Get in touch'
 
     // Shared brand mark — indigo→violet gradient tile + zap glyph (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid size-7 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground",
+          'grid size-7 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -83,7 +83,7 @@ export const AboutNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border/60 bg-background/75 backdrop-blur-md supports-[backdrop-filter]:bg-background/60",
+          'sticky top-0 z-50 border-b border-border/60 bg-background/75 backdrop-blur-md supports-[backdrop-filter]:bg-background/60',
           props.className,
         )}
       >

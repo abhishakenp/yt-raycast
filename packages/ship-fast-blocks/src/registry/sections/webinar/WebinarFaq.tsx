@@ -1,12 +1,12 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 export const WebinarFaq = defineComponent({
-  name: "WebinarFaq",
+  name: 'WebinarFaq',
   description:
-    "Frequently asked questions band for a webinar or virtual event: a SectionHeading over a stacked list of native <details>/<summary> disclosures. Each item shows a token-styled question with a chevron that expands to reveal the answer, handling cost, recording, timing, and access objections. Use to remove last-mile hesitation before registration on a webinar landing page.",
+    'Frequently asked questions band for a webinar or virtual event: a SectionHeading over a stacked list of native <details>/<summary> disclosures. Each item shows a token-styled question with a chevron that expands to reveal the answer, handling cost, recording, timing, and access objections. Use to remove last-mile hesitation before registration on a webinar landing page.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -17,31 +17,31 @@ export const WebinarFaq = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "FAQ"
-    const heading = props.heading ?? "Frequently asked questions"
+    const eyebrow = props.eyebrow ?? 'FAQ'
+    const heading = props.heading ?? 'Frequently asked questions'
     const subheading =
       props.subheading ??
-      "Everything you might want to know before you register."
+      'Everything you might want to know before you register.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            question: "How much does it cost to attend?",
+            question: 'How much does it cost to attend?',
             answer:
-              "Nothing — the live session is completely free. We just ask that you register so we can send you the join link and reminders.",
+              'Nothing — the live session is completely free. We just ask that you register so we can send you the join link and reminders.',
           },
           {
-            question: "Will the session be recorded?",
+            question: 'Will the session be recorded?',
             answer:
               "Yes. Everyone who registers receives the full recording by email afterward, so you won't miss anything if you can't make it live.",
           },
           {
-            question: "How long is the webinar?",
+            question: 'How long is the webinar?',
             answer:
-              "Plan for about 60 minutes — roughly 45 minutes of content plus 15 minutes of live Q&A at the end.",
+              'Plan for about 60 minutes — roughly 45 minutes of content plus 15 minutes of live Q&A at the end.',
           },
           {
-            question: "Can I ask questions during the event?",
+            question: 'Can I ask questions during the event?',
             answer:
               "Absolutely. You can drop questions in the chat at any time, and we'll answer as many as possible during the dedicated Q&A.",
           },
@@ -53,9 +53,18 @@ export const WebinarFaq = defineComponent({
         ]
 
     return (
-      <section className={cn("bg-background py-20 text-foreground lg:py-28", props.className)}>
+      <section
+        className={cn(
+          'bg-background py-20 text-foreground lg:py-28',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-3xl px-6 lg:px-8">
-          <SectionHeading eyebrow={eyebrow} title={heading} subtitle={subheading} />
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={subheading}
+          />
 
           <div className="mt-12 flex flex-col gap-4">
             {items.map((item, i) => (
@@ -78,7 +87,9 @@ export const WebinarFaq = defineComponent({
                     <path d="m6 9 6 6 6-6" />
                   </svg>
                 </summary>
-                <p className="mt-3 text-sm leading-7 text-muted-foreground">{item.answer}</p>
+                <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                  {item.answer}
+                </p>
               </details>
             ))}
           </div>

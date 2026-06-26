@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * CoworkingTestimonials — 3-up member-review wall for a coworking or shared-
@@ -13,7 +13,7 @@ import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
  * Renders fully with no props via bright, modern baked-in defaults.
  */
 export const CoworkingTestimonials = defineComponent({
-  name: "CoworkingTestimonials",
+  name: 'CoworkingTestimonials',
   description:
     "3-up member-review wall for a coworking or shared-workspace page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid. Each card renders a filled star row, a quoted member testimonial, and an attribution row pairing the member's name with their role and company. Use for social proof on coworking spaces, shared offices, or flex-office providers.",
   props: z.object({
@@ -42,25 +42,25 @@ export const CoworkingTestimonials = defineComponent({
           {
             quote:
               "Moving my startup here was the easiest decision of the year. The WiFi never blinks, the meeting rooms are always free when I need them, and I've already hired two people I met at a member lunch.",
-            name: "Maya Chen",
-            role: "Founder",
-            company: "Loop Analytics",
+            name: 'Maya Chen',
+            role: 'Founder',
+            company: 'Loop Analytics',
             rating: 5,
           },
           {
             quote:
-              "As a freelancer I was tired of cafés. A dedicated desk here gives me a real workspace, great coffee, and a community to bounce ideas off. My productivity has genuinely doubled.",
-            name: "Devon Park",
-            role: "Product Designer",
-            company: "Independent",
+              'As a freelancer I was tired of cafés. A dedicated desk here gives me a real workspace, great coffee, and a community to bounce ideas off. My productivity has genuinely doubled.',
+            name: 'Devon Park',
+            role: 'Product Designer',
+            company: 'Independent',
             rating: 5,
           },
           {
             quote:
               "We took a private office for our remote team's hub and it's perfect. 24/7 access fits our timezone spread, and the staff treat us like family. Couldn't recommend it more.",
-            name: "Aisha Rahman",
-            role: "Operations Lead",
-            company: "Northwind Labs",
+            name: 'Aisha Rahman',
+            role: 'Operations Lead',
+            company: 'Northwind Labs',
             rating: 5,
           },
         ]
@@ -75,10 +75,10 @@ export const CoworkingTestimonials = defineComponent({
 
     return (
       <TestimonialGrid
-        heading={props.heading ?? "Loved by our members"}
+        heading={props.heading ?? 'Loved by our members'}
         subheading={
           props.subheading ??
-          "Founders, freelancers, and remote teams who made Northside their home base."
+          'Founders, freelancers, and remote teams who made Northside their home base.'
         }
         items={items}
         className={props.className}

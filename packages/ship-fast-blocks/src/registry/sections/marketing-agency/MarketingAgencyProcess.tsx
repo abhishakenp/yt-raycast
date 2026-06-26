@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * MarketingAgencyProcess — a numbered 'how we work' process timeline. A centered
@@ -11,7 +11,7 @@ import { cn } from "#/lib/utils.ts"
  * agencies, consultancies, or service firms. Renders fully with no props.
  */
 export const MarketingAgencyProcess = defineComponent({
-  name: "MarketingAgencyProcess",
+  name: 'MarketingAgencyProcess',
   description:
     "Numbered 'how we work' process timeline: a centered eyebrow + heading + description above a responsive 4-up grid of steps, each with a filled primary number badge, a step title, and a short description; a thin connector line bridges adjacent steps on desktop. Use to explain a working methodology (discovery, strategy, execution, scale) for marketing / growth agencies, consultancies, or service firms.",
   props: z.object({
@@ -24,38 +24,38 @@ export const MarketingAgencyProcess = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Our Process"
-    const heading = props.heading ?? "How We Work"
+    const eyebrow = props.eyebrow ?? 'Our Process'
+    const heading = props.heading ?? 'How We Work'
     const description =
       props.description ??
-      "A proven framework that delivers consistent results."
+      'A proven framework that delivers consistent results.'
     const steps = props.steps?.length
       ? props.steps
       : [
           {
-            title: "Discovery",
+            title: 'Discovery',
             description:
-              "Deep dive into your business, competitors, and current performance. We audit every channel and identify quick wins.",
+              'Deep dive into your business, competitors, and current performance. We audit every channel and identify quick wins.',
           },
           {
-            title: "Strategy",
+            title: 'Strategy',
             description:
-              "Custom growth roadmap with clear milestones, budget allocation, and KPIs. Everything documented in Notion.",
+              'Custom growth roadmap with clear milestones, budget allocation, and KPIs. Everything documented in Notion.',
           },
           {
-            title: "Execution",
+            title: 'Execution',
             description:
-              "Campaign launches, creative production, and iterative optimization. Weekly standups and async updates.",
+              'Campaign launches, creative production, and iterative optimization. Weekly standups and async updates.',
           },
           {
-            title: "Scale",
+            title: 'Scale',
             description:
-              "Double down on winners, cut losers, and expand to new channels. Monthly strategy reviews and pivoting.",
+              'Double down on winners, cut losers, and expand to new channels. Monthly strategy reviews and pivoting.',
           },
         ]
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <p className="mb-3 text-sm font-medium text-muted-foreground">

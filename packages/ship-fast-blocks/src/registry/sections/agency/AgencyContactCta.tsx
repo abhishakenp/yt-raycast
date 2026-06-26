@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AgencyContactCta — contact CTA + real inquiry form for a creative
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in defaults.
  */
 export const AgencyContactCta = defineComponent({
-  name: "AgencyContactCta",
+  name: 'AgencyContactCta',
   description:
     "Contact CTA with a real inquiry form for a creative digital-agency page: a centered heading and lead over a soft blurred glow, a functional form (name, email, project-type select, message, submit button with a send icon), and a footer row with an email link on the left and social links on the right. Form submit, the email link and each social link route through useNavigate. Use as the closing 'get in touch' / start-a-project conversion section for agencies, studios, or any service business.",
   props: z.object({
@@ -42,30 +42,30 @@ export const AgencyContactCta = defineComponent({
     const description =
       props.description ??
       "Have a project in mind? We'd love to hear about it. Share your vision and we'll respond within 24 hours."
-    const submit = props.submit ?? "Send message"
-    const emailLabel = props.emailLabel ?? "Prefer email?"
-    const email = props.email ?? "hello@studiorise.co"
+    const submit = props.submit ?? 'Send message'
+    const emailLabel = props.emailLabel ?? 'Prefer email?'
+    const email = props.email ?? 'hello@studiorise.co'
     const projectTypes = props.projectTypes?.length
       ? props.projectTypes
       : [
-          "Brand Strategy",
-          "Web Design & Development",
-          "Digital Marketing",
-          "Motion Design",
-          "Other",
+          'Brand Strategy',
+          'Web Design & Development',
+          'Digital Marketing',
+          'Motion Design',
+          'Other',
         ]
     const socials = props.socials?.length
       ? props.socials
-      : ["Twitter", "Instagram", "LinkedIn", "Dribbble"]
-    const contactTarget = props.contactTarget ?? "Contact"
+      : ['Twitter', 'Instagram', 'LinkedIn', 'Dribbble']
+    const contactTarget = props.contactTarget ?? 'Contact'
 
     const inputCls =
-      "w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+      'w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
 
     return (
       <section
         className={cn(
-          "relative overflow-hidden py-24 sm:py-32",
+          'relative overflow-hidden py-24 sm:py-32',
           props.className,
         )}
       >
@@ -129,7 +129,10 @@ export const AgencyContactCta = defineComponent({
               >
                 Project type
               </label>
-              <select id="agency-type" className={cn(inputCls, "appearance-none")}>
+              <select
+                id="agency-type"
+                className={cn(inputCls, 'appearance-none')}
+              >
                 {projectTypes.map((opt) => (
                   <option key={opt} className="bg-background">
                     {opt}
@@ -149,7 +152,7 @@ export const AgencyContactCta = defineComponent({
                 rows={4}
                 required
                 placeholder="Tell us about your project, goals, and timeline."
-                className={cn(inputCls, "resize-none")}
+                className={cn(inputCls, 'resize-none')}
               />
             </div>
             <button

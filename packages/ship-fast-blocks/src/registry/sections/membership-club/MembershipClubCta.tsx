@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MembershipClubCta — full-width primary-surface conversion CTA for a private
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * with no props.
  */
 export const MembershipClubCta = defineComponent({
-  name: "MembershipClubCta",
+  name: 'MembershipClubCta',
   description:
     "Full-width primary-surface conversion CTA for a private membership club / exclusive community page: a centered narrow column on the inverted primary surface with a thin display heading, a relaxed supporting line, dual rounded-pill CTAs (solid light primary + outlined secondary) and a small contact footnote (with email) below. CTAs route through useNavigate. Use as the closing 'Ready to join' band for members clubs, professional networks, founders communities, mastermind groups or paid community subscriptions.",
   props: z.object({
@@ -29,13 +29,13 @@ export const MembershipClubCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to join us?"
+    const heading = props.heading ?? 'Ready to join us?'
     const description =
       props.description ??
       "Applications are reviewed on a rolling basis. We keep membership intentionally small to preserve the quality of connections. Join 487 members who've found their people."
-    const primaryCta = props.primaryCta ?? "Apply for Membership"
-    const secondaryCta = props.secondaryCta ?? "Contact Us"
-    const email = props.email ?? "hello@theguild.club"
+    const primaryCta = props.primaryCta ?? 'Apply for Membership'
+    const secondaryCta = props.secondaryCta ?? 'Contact Us'
+    const email = props.email ?? 'hello@theguild.club'
     const footnote =
       props.footnote ??
       `Questions? Email us at ${email} — we reply within 24 hours.`
@@ -43,7 +43,7 @@ export const MembershipClubCta = defineComponent({
     return (
       <section
         className={cn(
-          "w-full bg-primary py-20 text-primary-foreground lg:py-32",
+          'w-full bg-primary py-20 text-primary-foreground lg:py-32',
           props.className,
         )}
         aria-labelledby="cta-heading"

@@ -1,7 +1,8 @@
 import { SITE_TYPE_INSTRUCTIONS } from '../config.js'
 
 export function templatePrompt(siteType = 'landing', designSystem = null) {
-  const typeInstructions = SITE_TYPE_INSTRUCTIONS[siteType] || SITE_TYPE_INSTRUCTIONS.landing
+  const typeInstructions =
+    SITE_TYPE_INSTRUCTIONS[siteType] || SITE_TYPE_INSTRUCTIONS.landing
 
   const designBlock =
     designSystem ||

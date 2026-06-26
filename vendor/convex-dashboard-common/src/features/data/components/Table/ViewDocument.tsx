@@ -1,18 +1,18 @@
-import { GenericDocument } from "convex/server";
-import { useState } from "react";
-import { TextInput } from "@ui/TextInput";
-import { AuthorizeEditsConfirmationDialog } from "@common/elements/AuthorizeEditsConfirmationDialog";
-import { EditDocumentField } from "@common/features/data/components/Table/EditDocumentField";
+import { GenericDocument } from 'convex/server'
+import { useState } from 'react'
+import { TextInput } from '@ui/TextInput'
+import { AuthorizeEditsConfirmationDialog } from '@common/elements/AuthorizeEditsConfirmationDialog'
+import { EditDocumentField } from '@common/features/data/components/Table/EditDocumentField'
 import {
   documentValidatorForTable,
   validatorForColumn,
-} from "@common/features/data/components/Table/utils/validators";
-import { SchemaJson, displayObjectFieldSchema } from "@common/lib/format";
-import { useNents } from "@common/lib/useNents";
-import { CopyButton } from "@common/elements/CopyButton";
-import { stringifyValue } from "@common/lib/stringifyValue";
-import { Button } from "@ui/Button";
-import { ValidatorTooltip } from "./ValidatorTooltip";
+} from '@common/features/data/components/Table/utils/validators'
+import { SchemaJson, displayObjectFieldSchema } from '@common/lib/format'
+import { useNents } from '@common/lib/useNents'
+import { CopyButton } from '@common/elements/CopyButton'
+import { stringifyValue } from '@common/lib/stringifyValue'
+import { Button } from '@ui/Button'
+import { ValidatorTooltip } from './ValidatorTooltip'
 
 export function ViewDocument({
   rows,
@@ -24,68 +24,68 @@ export function ViewDocument({
   authorizeEdits,
   activeSchema,
 }: {
-  rows: GenericDocument[];
-  columns: string[];
-  tableName: string;
-  componentId: string | null;
-  canManageTable: boolean;
-  areEditsAuthorized: boolean;
-  authorizeEdits?: () => void;
-  activeSchema: SchemaJson | null;
+  rows: GenericDocument[]
+  columns: string[]
+  tableName: string
+  componentId: string | null
+  canManageTable: boolean
+  areEditsAuthorized: boolean
+  authorizeEdits?: () => void
+  activeSchema: SchemaJson | null
 }) {
   const [showAuthorizeEditsModalColumn, setShowAuthorizeEditsModalColumn] =
     useState<
       string | undefined // edited column when shown, `undefined` when hidden
-    >(undefined);
-  const [query, setQuery] = useState("");
+    >(undefined)
+  const [query, setQuery] = useState('')
   const [editingColumn, setEditingColumn] = useState<string | undefined>(
     undefined,
-  );
+  )
 
-  const { selectedNent } = useNents();
+  const { selectedNent } = useNents()
   const isInUnmountedComponent = !!(
-    selectedNent && selectedNent.state !== "active"
-  );
+    selectedNent && selectedNent.state !== 'active'
+  )
 
-  let allowTopLevelUndefined = true;
+  let allowTopLevelUndefined = true
 
   const documentValidator =
-    activeSchema && documentValidatorForTable(activeSchema, tableName);
+    activeSchema && documentValidatorForTable(activeSchema, tableName)
 
   const validator =
     editingColumn && documentValidator
       ? validatorForColumn(documentValidator, editingColumn)
-      : undefined;
+      : undefined
 
   // If we're doing validation, and the column is not optional, we don't want to allow top-level undefined.
   if (
     validator &&
     editingColumn &&
-    documentValidator?.type === "object" &&
+    documentValidator?.type === 'object' &&
     !documentValidator.value[editingColumn]?.optional
   ) {
-    allowTopLevelUndefined = false;
+    allowTopLevelUndefined = false
   }
 
-  const shouldSurfaceValidatorErrors = activeSchema?.schemaValidation;
+  const shouldSurfaceValidatorErrors = activeSchema?.schemaValidation
 
   return (
     <div className="flex size-full min-w-40 flex-col items-start overflow-y-hidden rounded-r border-l bg-background-secondary/70">
       {showAuthorizeEditsModalColumn && (
         <AuthorizeEditsConfirmationDialog
           onClose={() => {
-            setShowAuthorizeEditsModalColumn(undefined);
+            setShowAuthorizeEditsModalColumn(undefined)
           }}
           onConfirm={async () => {
-            authorizeEdits?.();
-            setEditingColumn(showAuthorizeEditsModalColumn);
-            setShowAuthorizeEditsModalColumn(undefined);
+            authorizeEdits?.()
+            setEditingColumn(showAuthorizeEditsModalColumn)
+            setShowAuthorizeEditsModalColumn(undefined)
           }}
         />
       )}
       <div className="flex w-full flex-col gap-2 border-b p-4 px-2">
         <div className="flex items-center justify-between gap-1 text-xs">
-          {rows.length} document{rows.length !== 1 && "s"} selected
+          {rows.length} document{rows.length !== 1 && 's'} selected
           <CopyButton
             text={
               rows.length === 1 ? stringifyValue(rows[0]) : stringifyValue(rows)
@@ -94,7 +94,7 @@ export function ViewDocument({
             className="text-xs"
             tip={
               rows.length === 1
-                ? "Copy document"
+                ? 'Copy document'
                 : `Copy ${rows.length} selected documents`
             }
             tipSide="left"
@@ -113,12 +113,12 @@ export function ViewDocument({
         {columns
           .filter(
             (c) =>
-              c !== "*select" &&
+              c !== '*select' &&
               c.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
           )
           .sort()
           .map((column) => {
-            const value = Array.from(new Set(rows.map((row) => row[column])));
+            const value = Array.from(new Set(rows.map((row) => row[column])))
             return (
               <div
                 key={column}
@@ -126,7 +126,7 @@ export function ViewDocument({
               >
                 <div className="flex w-full items-center justify-between gap-4">
                   <div className="shrink text-xs font-medium">{column}</div>
-                  {documentValidator?.type === "object" &&
+                  {documentValidator?.type === 'object' &&
                   documentValidator.value[column] ? (
                     <ValidatorTooltip
                       fieldSchema={documentValidator.value[column]}
@@ -160,29 +160,29 @@ export function ViewDocument({
                       onClick={() => {
                         if (!areEditsAuthorized) {
                           if (authorizeEdits) {
-                            setShowAuthorizeEditsModalColumn(column);
+                            setShowAuthorizeEditsModalColumn(column)
                           }
-                          return;
+                          return
                         }
-                        setEditingColumn(column);
+                        setEditingColumn(column)
                       }}
                       tip={
                         isInUnmountedComponent
-                          ? "Cannot edit documents in an unmounted component."
+                          ? 'Cannot edit documents in an unmounted component.'
                           : !canManageTable
-                            ? "You do not have permission to edit data in this deployment."
+                            ? 'You do not have permission to edit data in this deployment.'
                             : undefined
                       }
                       disabled={
                         !canManageTable ||
                         isInUnmountedComponent ||
-                        column.startsWith("_")
+                        column.startsWith('_')
                       }
                     >
                       {value.length === 1 ? (
-                        column === "_creationTime" ? (
+                        column === '_creationTime' ? (
                           <span className="truncate text-xs">
-                            {new Date(value[0] as number).toLocaleString()}{" "}
+                            {new Date(value[0] as number).toLocaleString()}{' '}
                             <span className="font-mono text-content-secondary">
                               ({stringifyValue(value[0])})
                             </span>
@@ -211,9 +211,9 @@ export function ViewDocument({
                   </div>
                 )}
               </div>
-            );
+            )
           })}
       </div>
     </div>
-  );
+  )
 }

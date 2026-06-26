@@ -1,103 +1,100 @@
-import type * as React from "react";
+import type * as React from 'react'
 
-import { type VariantProps, cva } from "class-variance-authority";
+import { type VariantProps, cva } from 'class-variance-authority'
 
-import { cn } from "#/lib/utils.ts";
-import { Image } from "#/lib/img.tsx";
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
-import {
-  Avatar,
-  AvatarFallback,
-} from "#/components/ui/8bit/avatar.tsx";
-import { Badge } from "#/components/ui/8bit/badge.tsx";
-import { Card, CardContent, CardHeader } from "#/components/ui/8bit/card.tsx";
-import HealthBar from "#/components/ui/8bit/health-bar.tsx";
-import ManaBar from "#/components/ui/8bit/mana-bar.tsx";
-import { Progress } from "#/components/ui/8bit/progress.tsx";
-import { Separator } from "#/components/ui/8bit/separator.tsx";
-import "#/components/ui/8bit/styles/retro.css";
+import { Avatar, AvatarFallback } from '#/components/ui/8bit/avatar.tsx'
+import { Badge } from '#/components/ui/8bit/badge.tsx'
+import { Card, CardContent, CardHeader } from '#/components/ui/8bit/card.tsx'
+import HealthBar from '#/components/ui/8bit/health-bar.tsx'
+import ManaBar from '#/components/ui/8bit/mana-bar.tsx'
+import { Progress } from '#/components/ui/8bit/progress.tsx'
+import { Separator } from '#/components/ui/8bit/separator.tsx'
+import '#/components/ui/8bit/styles/retro.css'
 
 export interface PrimaryAttribute {
-  name: string;
-  shortName: string;
-  value: number;
-  max?: number;
-  color?: string;
+  name: string
+  shortName: string
+  value: number
+  max?: number
+  color?: string
 }
 
 export interface SecondaryStat {
-  name: string;
-  value: number;
-  max?: number;
-  isPercentage?: boolean;
-  icon?: React.ReactNode;
-  color?: string;
+  name: string
+  value: number
+  max?: number
+  isPercentage?: boolean
+  icon?: React.ReactNode
+  color?: string
 }
 
 export interface EquipmentItem {
-  slot: string;
-  name: string;
-  rarity?: "common" | "uncommon" | "rare" | "epic" | "legendary";
-  icon?: React.ReactNode;
+  slot: string
+  name: string
+  rarity?: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+  icon?: React.ReactNode
 }
 
 export interface CustomSection {
-  title: string;
-  content: React.ReactNode;
+  title: string
+  content: React.ReactNode
 }
 
-export const characterSheetVariants = cva("", {
+export const characterSheetVariants = cva('', {
   variants: {
     font: {
-      normal: "",
-      retro: "retro",
+      normal: '',
+      retro: 'retro',
     },
   },
   defaultVariants: {
-    font: "retro",
+    font: 'retro',
   },
-});
+})
 
 export interface CharacterSheetProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof characterSheetVariants> {
-  characterName: string;
-  characterClass?: string;
-  characterTitle?: string;
-  characterLevel?: number;
-  avatarSrc?: string;
-  avatarFallback?: string;
+  characterName: string
+  characterClass?: string
+  characterTitle?: string
+  characterLevel?: number
+  avatarSrc?: string
+  avatarFallback?: string
 
-  primaryAttributes?: PrimaryAttribute[];
+  primaryAttributes?: PrimaryAttribute[]
 
-  secondaryStats?: SecondaryStat[];
+  secondaryStats?: SecondaryStat[]
 
-  health?: { current: number; max: number };
-  mana?: { current: number; max: number };
-  experience?: { current: number; max: number };
+  health?: { current: number; max: number }
+  mana?: { current: number; max: number }
+  experience?: { current: number; max: number }
 
-  equipment?: EquipmentItem[];
+  equipment?: EquipmentItem[]
 
-  customSections?: CustomSection[];
+  customSections?: CustomSection[]
 
-  showAvatar?: boolean;
-  showLevel?: boolean;
-  showHealth?: boolean;
-  showMana?: boolean;
-  showExperience?: boolean;
-  showAttributes?: boolean;
-  showSecondaryStats?: boolean;
-  showEquipment?: boolean;
+  showAvatar?: boolean
+  showLevel?: boolean
+  showHealth?: boolean
+  showMana?: boolean
+  showExperience?: boolean
+  showAttributes?: boolean
+  showSecondaryStats?: boolean
+  showEquipment?: boolean
 }
 
 const defaultPrimaryAttributes: PrimaryAttribute[] = [
-  { name: "Strength", shortName: "STR", value: 10 },
-  { name: "Dexterity", shortName: "DEX", value: 10 },
-  { name: "Intelligence", shortName: "INT", value: 10 },
-  { name: "Vitality", shortName: "VIT", value: 10 },
-  { name: "Wisdom", shortName: "WIS", value: 10 },
-  { name: "Charisma", shortName: "CHA", value: 10 },
-];
+  { name: 'Strength', shortName: 'STR', value: 10 },
+  { name: 'Dexterity', shortName: 'DEX', value: 10 },
+  { name: 'Intelligence', shortName: 'INT', value: 10 },
+  { name: 'Vitality', shortName: 'VIT', value: 10 },
+  { name: 'Wisdom', shortName: 'WIS', value: 10 },
+  { name: 'Charisma', shortName: 'CHA', value: 10 },
+]
 
 export function CharacterSheet({
   className,
@@ -125,27 +122,21 @@ export function CharacterSheet({
   showEquipment = true,
   ...props
 }: CharacterSheetProps) {
-  const attributes = primaryAttributes || defaultPrimaryAttributes;
+  const attributes = primaryAttributes || defaultPrimaryAttributes
 
   const healthPercentage = health
     ? Math.round((health.current / health.max) * 100)
-    : 0;
+    : 0
 
-  const manaPercentage = mana
-    ? Math.round((mana.current / mana.max) * 100)
-    : 0;
+  const manaPercentage = mana ? Math.round((mana.current / mana.max) * 100) : 0
 
   const experiencePercentage = experience
     ? Math.round((experience.current / experience.max) * 100)
-    : 0;
+    : 0
 
   return (
     <Card
-      className={cn(
-        "w-full",
-        font !== "normal" && "retro",
-        className
-      )}
+      className={cn('w-full', font !== 'normal' && 'retro', className)}
       {...props}
     >
       {/* Character Header */}
@@ -260,9 +251,7 @@ export function CharacterSheet({
                     key={attr.shortName}
                     className="flex items-center justify-between p-2 bg-muted/30 border-2"
                   >
-                    <span className="text-xs font-bold">
-                      {attr.shortName}
-                    </span>
+                    <span className="text-xs font-bold">{attr.shortName}</span>
                     <span className="text-xs font-bold">{attr.value}</span>
                   </div>
                 ))}
@@ -291,12 +280,12 @@ export function CharacterSheet({
                     </span>
                     <span
                       className={cn(
-                        "text-sm font-bold",
-                        stat.color || "text-foreground"
+                        'text-sm font-bold',
+                        stat.color || 'text-foreground',
                       )}
                     >
                       {stat.value}
-                      {stat.isPercentage && "%"}
+                      {stat.isPercentage && '%'}
                       {stat.max && !stat.isPercentage && `/${stat.max}`}
                     </span>
                   </div>
@@ -349,9 +338,8 @@ export function CharacterSheet({
           ))}
       </CardContent>
     </Card>
-  );
+  )
 }
-
 
 export function CharacterSheetStatRow({
   label,
@@ -360,28 +348,25 @@ export function CharacterSheetStatRow({
   color,
   className,
 }: {
-  label: string;
-  value: string | number;
-  icon?: React.ReactNode;
-  color?: string;
-  className?: string;
+  label: string
+  value: string | number
+  icon?: React.ReactNode
+  color?: string
+  className?: string
 }) {
   return (
     <div
-      className={cn(
-        "flex items-center justify-between py-1.5 px-2",
-        className
-      )}
+      className={cn('flex items-center justify-between py-1.5 px-2', className)}
     >
       <span className="text-xs text-muted-foreground flex items-center gap-1">
         {icon}
         {label}
       </span>
-      <span className={cn("text-sm font-bold", color || "text-foreground")}>
+      <span className={cn('text-sm font-bold', color || 'text-foreground')}>
         {value}
       </span>
     </div>
-  );
+  )
 }
 
 export function CharacterSheetAttributeBox({
@@ -390,26 +375,24 @@ export function CharacterSheetAttributeBox({
   color,
   className,
 }: {
-  shortName: string;
-  value: number;
-  color?: string;
-  className?: string;
+  shortName: string
+  value: number
+  color?: string
+  className?: string
 }) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between p-2 bg-muted/30 border-2",
-        className
+        'flex items-center justify-between p-2 bg-muted/30 border-2',
+        className,
       )}
     >
-      <span
-        className={cn("text-xs font-bold", color || "text-foreground")}
-      >
+      <span className={cn('text-xs font-bold', color || 'text-foreground')}>
         {shortName}
       </span>
       <span className="text-sm font-bold">{value}</span>
     </div>
-  );
+  )
 }
 
-export default CharacterSheet;
+export default CharacterSheet

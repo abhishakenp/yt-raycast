@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * BootcampApplyCta — high-contrast application CTA with a real multi-field
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * career-switch programs encouraging applications.
  */
 export const BootcampApplyCta = defineComponent({
-  name: "BootcampApplyCta",
+  name: 'BootcampApplyCta',
   description:
-    "High-contrast application CTA with a real multi-field form for a coding bootcamp / career-school landing page: centered headline and description over a primary-colored band, above a rounded card containing a functional form (first name, last name, email, program select, current occupation, submit button). Below the form sits a fineprint line and a row of trust chips with check icons. Form submit routes through useNavigate. Use as the closing conversion section for bootcamps, dev academies, or career-switch programs encouraging applications.",
+    'High-contrast application CTA with a real multi-field form for a coding bootcamp / career-school landing page: centered headline and description over a primary-colored band, above a rounded card containing a functional form (first name, last name, email, program select, current occupation, submit button). Below the form sits a fineprint line and a row of trust chips with check icons. Form submit routes through useNavigate. Use as the closing conversion section for bootcamps, dev academies, or career-switch programs encouraging applications.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -36,31 +36,26 @@ export const BootcampApplyCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const applyHeading =
-      props.heading ?? "Ready to start your tech career?"
+    const applyHeading = props.heading ?? 'Ready to start your tech career?'
     const applyDesc =
       props.description ??
-      "Applications are open for our July 14, 2025 cohort. Spots fill quickly — join 2,400+ graduates who transformed their lives."
+      'Applications are open for our July 14, 2025 cohort. Spots fill quickly — join 2,400+ graduates who transformed their lives.'
     const applyPrograms = props.programs?.length
       ? props.programs
-      : ["Full-time (16 weeks)", "Part-time (32 weeks)"]
-    const applySubmit = props.submit ?? "Start Your Application"
+      : ['Full-time (16 weeks)', 'Part-time (32 weeks)']
+    const applySubmit = props.submit ?? 'Start Your Application'
     const applyFineprint =
       props.fineprint ??
       "By applying, you agree to our Terms and Privacy Policy. We'll never spam you."
     const applyTrust = props.trust?.length
       ? props.trust
-      : ["Job guarantee", "1-on-1 mentorship", "Career support"]
+      : ['Job guarantee', '1-on-1 mentorship', 'Career support']
     const submitTarget = props.submitTarget ?? applySubmit
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
+      'w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20'
 
-    const Check = ({
-      className,
-    }: {
-      className?: string
-    }) => (
+    const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="currentColor"
@@ -76,12 +71,7 @@ export const BootcampApplyCta = defineComponent({
     )
 
     return (
-      <section
-        className={cn(
-          "bg-primary py-20 lg:py-32",
-          props.className,
-        )}
-      >
+      <section className={cn('bg-primary py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-3xl font-bold text-primary-foreground sm:text-4xl lg:text-5xl">
             {applyHeading}
@@ -154,7 +144,7 @@ export const BootcampApplyCta = defineComponent({
                 </label>
                 <select
                   id="bootcamp-apply-program"
-                  className={cn(inputCls, "appearance-none")}
+                  className={cn(inputCls, 'appearance-none')}
                 >
                   {applyPrograms.map((p) => (
                     <option key={p} className="bg-background">

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DocsSidebar — persistent left navigation sidebar for a developer
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * props via baked-in StackForge section groups.
  */
 export const DocsSidebar = defineComponent({
-  name: "DocsSidebar",
+  name: 'DocsSidebar',
   description:
-    "Persistent left navigation sidebar for a developer DOCUMENTATION / API-reference site: a sticky, scrollable, right-bordered column (hidden on mobile) with a search box + inline magnifier icon at the top, several grouped link sections (uppercase group title + vertical list of page links, the first highlighted as active — e.g. Overview / Core Concepts / SDKs & Tools / Resources) and a documentation-version select at the bottom. The search submit and every link route through useNavigate. Use as the left rail of a sidebar-driven docs layout, API reference, SDK guide, or knowledge base.",
+    'Persistent left navigation sidebar for a developer DOCUMENTATION / API-reference site: a sticky, scrollable, right-bordered column (hidden on mobile) with a search box + inline magnifier icon at the top, several grouped link sections (uppercase group title + vertical list of page links, the first highlighted as active — e.g. Overview / Core Concepts / SDKs & Tools / Resources) and a documentation-version select at the bottom. The search submit and every link route through useNavigate. Use as the left rail of a sidebar-driven docs layout, API reference, SDK guide, or knowledge base.',
   props: z.object({
     /** Search input placeholder text. */
     searchPlaceholder: z.string().optional(),
@@ -38,37 +38,37 @@ export const DocsSidebar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const searchPlaceholder = props.searchPlaceholder ?? "Search docs..."
+    const searchPlaceholder = props.searchPlaceholder ?? 'Search docs...'
     const groups = props.groups?.length
       ? props.groups
       : [
           {
-            title: "Overview",
-            items: ["Introduction", "Quick Start", "Installation"],
+            title: 'Overview',
+            items: ['Introduction', 'Quick Start', 'Installation'],
           },
           {
-            title: "Core Concepts",
+            title: 'Core Concepts',
             items: [
-              "Authentication",
-              "Endpoints",
-              "Rate Limits",
-              "Error Handling",
-              "Webhooks",
+              'Authentication',
+              'Endpoints',
+              'Rate Limits',
+              'Error Handling',
+              'Webhooks',
             ],
           },
           {
-            title: "SDKs & Tools",
-            items: ["Node.js SDK", "Python SDK", "Go SDK", "CLI Reference"],
+            title: 'SDKs & Tools',
+            items: ['Node.js SDK', 'Python SDK', 'Go SDK', 'CLI Reference'],
           },
           {
-            title: "Resources",
-            items: ["Changelog", "Community", "Support"],
+            title: 'Resources',
+            items: ['Changelog', 'Community', 'Support'],
           },
         ]
     const versions = props.versions?.length
       ? props.versions
-      : ["v3.2 (Latest)", "v3.1", "v3.0", "v2.9"]
-    const searchTarget = props.searchTarget ?? "Getting Started"
+      : ['v3.2 (Latest)', 'v3.1', 'v3.0', 'v2.9']
+    const searchTarget = props.searchTarget ?? 'Getting Started'
 
     const SearchIcon = ({ className }: { className?: string }) => (
       <svg
@@ -90,7 +90,7 @@ export const DocsSidebar = defineComponent({
     return (
       <aside
         className={cn(
-          "hidden w-64 shrink-0 border-r border-border lg:block",
+          'hidden w-64 shrink-0 border-r border-border lg:block',
           props.className,
         )}
       >
@@ -133,10 +133,10 @@ export const DocsSidebar = defineComponent({
                           type="button"
                           onClick={() => go(item)}
                           className={cn(
-                            "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                            'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors',
                             active
-                              ? "bg-muted font-medium text-foreground"
-                              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                              ? 'bg-muted font-medium text-foreground'
+                              : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                           )}
                         >
                           {item}

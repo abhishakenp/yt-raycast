@@ -47,7 +47,11 @@ const richProps = (user: string): string =>
     Object.fromEntries(
       sectionIdsFromPrompt(user).map((id) => [
         id,
-        { heading: `Heading ${id}`, subheading: 'Sub', items: [{ title: 'A' }, { title: 'B' }] },
+        {
+          heading: `Heading ${id}`,
+          subheading: 'Sub',
+          items: [{ title: 'A' }, { title: 'B' }],
+        },
       ]),
     ),
   )
@@ -55,12 +59,17 @@ const richProps = (user: string): string =>
 // Mock reply for the first-pass superagent call: pick the first listed vertical
 // and fill every listed section role with content (mirrors the real response).
 const superagentReply = (user: string): string => {
-  const family = (user.match(/Vertical "([A-Za-z0-9]+)"/) ?? [])[1] ?? 'Marketing'
+  const family =
+    (user.match(/Vertical "([A-Za-z0-9]+)"/) ?? [])[1] ?? 'Marketing'
   const keys = [...user.matchAll(/^\s+([a-z0-9]+):\s/gm)].map((m) => m[1])
   const sections = Object.fromEntries(
     [...new Set(keys)].map((k) => [
       k,
-      { heading: `H ${k}`, subheading: 'S', items: [{ title: 'A' }, { title: 'B' }] },
+      {
+        heading: `H ${k}`,
+        subheading: 'S',
+        items: [{ title: 'A' }, { title: 'B' }],
+      },
     ]),
   )
   return JSON.stringify({ family, sections })
@@ -192,7 +201,12 @@ describe('runV2ComposedGeneration', () => {
       return richProps(user)
     })
     const run = (seed: string) =>
-      runV2ComposedGeneration({ prompt: 'a developer security tool', modelId: 'm', sessionSeed: seed, signal })
+      runV2ComposedGeneration({
+        prompt: 'a developer security tool',
+        modelId: 'm',
+        sessionSeed: seed,
+        signal,
+      })
     const a1 = await run('seedA')
     const a2 = await run('seedA')
     // Same prompt + same seed → byte-identical output.
@@ -203,7 +217,9 @@ describe('runV2ComposedGeneration', () => {
     for (const seed of ['s1', 's2', 's3', 's4', 's5', 's6']) {
       const r = await run(seed)
       expect(r.family).toBe(a1.family) // same vertical across seeds
-      const pageSwitch = (r.source.match(/PageSwitch\([^\]]*\][^\]]*\]/) ?? [''])[0]
+      const pageSwitch = (r.source.match(/PageSwitch\([^\]]*\][^\]]*\]/) ?? [
+        '',
+      ])[0]
       compositions.add(`${r.theme}|${pageSwitch}|${r.source.length}`)
     }
     expect(compositions.size).toBeGreaterThan(1) // composition differs across seeds

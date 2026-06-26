@@ -107,7 +107,9 @@ export const normalizePromptCacheKey = (
   prompt: string,
   preferredLanguage = 'en',
 ): string =>
-  `${normalizeSpaces(preferredLanguage).toLowerCase() || 'en'}:${normalizeSpaces(prompt)
+  `${normalizeSpaces(preferredLanguage).toLowerCase() || 'en'}:${normalizeSpaces(
+    prompt,
+  )
     .toLowerCase()
     .replace(/[^a-z0-9\p{L}\p{N}]+/gu, ' ')
     .trim()}`
@@ -240,7 +242,11 @@ export const parseSessionAdmission = (
   const recentUsed = (usage.recentTimestamps ?? []).filter(
     (timestamp) => now - timestamp < RATE_WINDOW_MS,
   ).length
-  if (!usage.bypassLimits && !disableLimits && recentUsed >= SHORT_WINDOW_LIMIT) {
+  if (
+    !usage.bypassLimits &&
+    !disableLimits &&
+    recentUsed >= SHORT_WINDOW_LIMIT
+  ) {
     return {
       ok: false,
       code: 'RATE_LIMITED',

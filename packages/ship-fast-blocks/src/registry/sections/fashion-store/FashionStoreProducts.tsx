@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FashionStoreProducts — New Arrivals product grid for a minimalist fashion
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * product drop for clothing brands, boutiques, or apparel shops.
  */
 export const FashionStoreProducts = defineComponent({
-  name: "FashionStoreProducts",
+  name: 'FashionStoreProducts',
   description:
     "New Arrivals product grid for a minimalist fashion store: a centered eyebrow + serif heading + description intro above a responsive 2-to-4 column grid of portrait product cards, each with a hover Quick-Add button overlay, optional New/Best Seller/Limited corner badge, product name, price and variant label, closed by an underlined 'View All' link with an arrow. Every card and link routes through useNavigate and all imagery uses the alt-driven Image component. Use to showcase a curated product drop for clothing brands, boutiques, apparel and accessories shops.",
   props: z.object({
@@ -39,79 +39,79 @@ export const FashionStoreProducts = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const productsEyebrow = props.eyebrow ?? "Just Dropped"
-    const productsHeading = props.heading ?? "New Arrivals"
+    const productsEyebrow = props.eyebrow ?? 'Just Dropped'
+    const productsHeading = props.heading ?? 'New Arrivals'
     const productsDesc =
       props.description ??
-      "The latest pieces from our Spring/Summer collection. Fresh silhouettes, timeless materials."
-    const productsViewAll = props.viewAll ?? "View All New Arrivals"
-    const quickAdd = props.quickAdd ?? "Quick Add"
+      'The latest pieces from our Spring/Summer collection. Fresh silhouettes, timeless materials.'
+    const productsViewAll = props.viewAll ?? 'View All New Arrivals'
+    const quickAdd = props.quickAdd ?? 'Quick Add'
     const productItems = props.items?.length
       ? props.items
       : [
           {
-            name: "Oversized Linen Blazer",
-            price: "$485",
-            variant: "Cream · XS–XL",
-            badge: "New",
+            name: 'Oversized Linen Blazer',
+            price: '$485',
+            variant: 'Cream · XS–XL',
+            badge: 'New',
             imageAlt:
               "Cream-colored oversized linen blazer on minimal background, women's tailored outerwear",
           },
           {
-            name: "Structured Wool Coat",
-            price: "$895",
-            variant: "Charcoal · S–XXL",
+            name: 'Structured Wool Coat',
+            price: '$895',
+            variant: 'Charcoal · S–XXL',
             imageAlt:
               "Structured charcoal wool coat with wide lapels, men's winter outerwear",
           },
           {
-            name: "Cashmere Blend Knit",
-            price: "$295",
-            variant: "Oatmeal · XS–XL",
-            badge: "Best Seller",
+            name: 'Cashmere Blend Knit',
+            price: '$295',
+            variant: 'Oatmeal · XS–XL',
+            badge: 'Best Seller',
             imageAlt:
-              "Minimalist beige knit sweater with ribbed texture, unisex everyday essential",
+              'Minimalist beige knit sweater with ribbed texture, unisex everyday essential',
           },
           {
-            name: "Wide-Leg Tailored Trousers",
-            price: "$345",
-            variant: "Stone · 24–32",
+            name: 'Wide-Leg Tailored Trousers',
+            price: '$345',
+            variant: 'Stone · 24–32',
             imageAlt:
               "Wide-leg tailored trousers in soft gray, women's contemporary pants",
           },
           {
-            name: "Relaxed Oxford Shirt",
-            price: "$195",
-            variant: "White · XS–XXL",
+            name: 'Relaxed Oxford Shirt',
+            price: '$195',
+            variant: 'White · XS–XXL',
             imageAlt:
-              "Classic white button-down shirt with relaxed fit, unisex wardrobe essential",
+              'Classic white button-down shirt with relaxed fit, unisex wardrobe essential',
           },
           {
-            name: "Vintage Wash Denim",
-            price: "$245",
-            variant: "Indigo · 24–34",
+            name: 'Vintage Wash Denim',
+            price: '$245',
+            variant: 'Indigo · 24–34',
             imageAlt:
               "High-waisted denim jeans in vintage wash, women's classic blue jeans",
           },
           {
-            name: "Minimal Leather Belt",
-            price: "$425",
-            variant: "Off-White · One Size",
-            badge: "Limited",
+            name: 'Minimal Leather Belt',
+            price: '$425',
+            variant: 'Off-White · One Size',
+            badge: 'Limited',
             imageAlt:
-              "Minimalist leather belt in off-white on a neutral background, unisex accessory",
+              'Minimalist leather belt in off-white on a neutral background, unisex accessory',
           },
           {
-            name: "Silk Midi Slip Dress",
-            price: "$595",
-            variant: "Champagne · XS–XL",
+            name: 'Silk Midi Slip Dress',
+            price: '$595',
+            variant: 'Champagne · XS–XL',
             imageAlt:
               "Silk midi slip dress in champagne color, women's elegant evening wear",
           },
         ]
 
     const eyebrowCls =
-      "text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground"
+      'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -133,11 +133,11 @@ export const FashionStoreProducts = defineComponent({
     return (
       <section
         aria-label="New arrivals"
-        className={cn("py-20 lg:py-32", props.className)}
+        className={cn('py-20 lg:py-32', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
-            <p className={cn(eyebrowCls, "mb-3")}>{productsEyebrow}</p>
+            <p className={cn(eyebrowCls, 'mb-3')}>{productsEyebrow}</p>
             <h2 className="mb-4 font-serif text-4xl font-normal sm:text-5xl lg:text-6xl">
               {productsHeading}
             </h2>
@@ -161,10 +161,10 @@ export const FashionStoreProducts = defineComponent({
                     <div className="absolute left-3 top-3">
                       <span
                         className={cn(
-                          "px-2 py-1 text-xs font-medium",
-                          product.badge === "Best Seller"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-background text-foreground",
+                          'px-2 py-1 text-xs font-medium',
+                          product.badge === 'Best Seller'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background text-foreground',
                         )}
                       >
                         {product.badge}

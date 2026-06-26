@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CorporateContactCta — dark conversion CTA band for an enterprise / corporate
@@ -11,9 +11,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * block on enterprise SaaS, consultancy, and managed services landing pages.
  */
 export const CorporateContactCta = defineComponent({
-  name: "CorporateContactCta",
+  name: 'CorporateContactCta',
   description:
-    "Dark conversion CTA band for an enterprise / corporate B2B site: full-width inverted background with a large centered headline, a lead paragraph, dual pill CTAs (filled primary + bordered secondary), and a response-time note beneath. CTAs route through useNavigate. Use as a pre-footer conversion block on enterprise SaaS, consultancy, and managed services landing pages.",
+    'Dark conversion CTA band for an enterprise / corporate B2B site: full-width inverted background with a large centered headline, a lead paragraph, dual pill CTAs (filled primary + bordered secondary), and a response-time note beneath. CTAs route through useNavigate. Use as a pre-footer conversion block on enterprise SaaS, consultancy, and managed services landing pages.',
   props: z.object({
     /** Headline text. */
     heading: z.string().optional(),
@@ -29,19 +29,17 @@ export const CorporateContactCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading =
-      props.heading ?? "Ready to transform your enterprise?"
+    const heading = props.heading ?? 'Ready to transform your enterprise?'
     const description =
       props.description ??
-      "Join 500+ organizations that trust Nexus for mission-critical infrastructure. Schedule a personalized demo with our solutions team."
-    const primaryCta = props.primaryCta ?? "Schedule a Demo"
-    const secondaryCta = props.secondaryCta ?? "Contact Sales"
+      'Join 500+ organizations that trust Nexus for mission-critical infrastructure. Schedule a personalized demo with our solutions team.'
+    const primaryCta = props.primaryCta ?? 'Schedule a Demo'
+    const secondaryCta = props.secondaryCta ?? 'Contact Sales'
     const note =
-      props.note ??
-      "Average response time: Under 2 hours during business hours"
+      props.note ?? 'Average response time: Under 2 hours during business hours'
 
     return (
-      <section className={cn("bg-foreground py-20 lg:py-32", props.className)}>
+      <section className={cn('bg-foreground py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-3xl font-semibold tracking-tight text-background sm:text-4xl lg:text-5xl">
             {heading}

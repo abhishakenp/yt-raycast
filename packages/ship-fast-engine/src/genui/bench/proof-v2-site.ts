@@ -37,5 +37,8 @@ writeFileSync('/tmp/v2-site.html', html)
 console.log(
   `family=${result.family} brand="${result.brand}" valid=${valid} firstPaint=${firstPaintMs.toFixed(0)}ms total=${totalMs.toFixed(0)}ms srcChars=${result.source.length} htmlChars=${html.length}${err ? ' ERR=' + err : ''}`,
 )
-console.log('pages in PageSwitch:', (result.source.match(/PageSwitch\((\[[^\]]*\])/) || [])[1])
+console.log(
+  'pages in PageSwitch:',
+  (result.source.match(/PageSwitch\((\[[^\]]*\])/) || [])[1],
+)
 console.log('→ /tmp/v2-site.html')

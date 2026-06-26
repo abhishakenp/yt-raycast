@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LinkInBioFeatures — the core link hub of a Linktree / Bento style link-in-bio
@@ -17,7 +17,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * props.
  */
 export const LinkInBioFeatures = defineComponent({
-  name: "LinkInBioFeatures",
+  name: 'LinkInBioFeatures',
   description:
     "Core LINK HUB of a Linktree / Bento style LINK-IN-BIO page — a centered narrow column with a vertical stack of BIG, bold, full-width tappable link buttons (the whole point of the page). An optional small uppercase eyebrow ('My Links') sits on top. Each large link button has a leading rounded icon tile tinted in the primary/brand color (globe | shop | mail | calendar | music | video), a prominent title + supporting subtitle, and a trailing open-link arrow chevron, or a small pill badge (e.g. 'New') when set. Every button routes through useNavigate. Use as the centerpiece / primary call-to-action area of a creator, influencer, musician, or personal 'all my links in one place' landing page, bio-link hub, or social-profile splash. Supply content only — the eyebrow and the links list; the section owns all layout and styling.",
   props: z.object({
@@ -28,7 +28,7 @@ export const LinkInBioFeatures = defineComponent({
       .array(
         z.object({
           /** Icon key: globe | shop | mail | calendar | music | video. */
-          icon: z.enum(["globe", "shop", "mail", "calendar", "music", "video"]),
+          icon: z.enum(['globe', 'shop', 'mail', 'calendar', 'music', 'video']),
           title: z.string(),
           subtitle: z.string(),
           /** Optional pill (e.g. "New") shown instead of the trailing arrow. */
@@ -43,53 +43,53 @@ export const LinkInBioFeatures = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
 
-    const eyebrow = props.eyebrow ?? "My Links"
+    const eyebrow = props.eyebrow ?? 'My Links'
 
     const links = props.links?.length
       ? props.links
       : [
           {
-            icon: "globe" as const,
-            title: "Portfolio",
-            subtitle: "See my latest work",
+            icon: 'globe' as const,
+            title: 'Portfolio',
+            subtitle: 'See my latest work',
           },
           {
-            icon: "shop" as const,
-            title: "Latest Drop",
-            subtitle: "Shop the new collection",
-            badge: "New",
+            icon: 'shop' as const,
+            title: 'Latest Drop',
+            subtitle: 'Shop the new collection',
+            badge: 'New',
           },
           {
-            icon: "mail" as const,
-            title: "Newsletter",
-            subtitle: "Weekly notes to your inbox",
+            icon: 'mail' as const,
+            title: 'Newsletter',
+            subtitle: 'Weekly notes to your inbox',
           },
           {
-            icon: "calendar" as const,
-            title: "Book a Call",
+            icon: 'calendar' as const,
+            title: 'Book a Call',
             subtitle: "30 min — let's chat",
           },
           {
-            icon: "music" as const,
-            title: "Listen on Spotify",
-            subtitle: "New single out now",
+            icon: 'music' as const,
+            title: 'Listen on Spotify',
+            subtitle: 'New single out now',
           },
           {
-            icon: "video" as const,
-            title: "Watch on YouTube",
-            subtitle: "Behind the scenes",
+            icon: 'video' as const,
+            title: 'Watch on YouTube',
+            subtitle: 'Behind the scenes',
           },
         ]
 
     const linkTargets = props.linkTargets?.length
       ? props.linkTargets
       : [
-          "Portfolio",
-          "Latest Drop",
-          "Newsletter",
-          "Book a Call",
-          "Listen on Spotify",
-          "Watch on YouTube",
+          'Portfolio',
+          'Latest Drop',
+          'Newsletter',
+          'Book a Call',
+          'Listen on Spotify',
+          'Watch on YouTube',
         ]
 
     const linkIcons: Record<string, ReactNode> = {
@@ -204,7 +204,7 @@ export const LinkInBioFeatures = defineComponent({
 
     return (
       <section
-        className={cn("mx-auto w-full max-w-md px-6 py-10", props.className)}
+        className={cn('mx-auto w-full max-w-md px-6 py-10', props.className)}
       >
         {eyebrow ? (
           <p className="mb-6 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">

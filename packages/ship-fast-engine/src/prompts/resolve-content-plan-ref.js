@@ -1,5 +1,8 @@
 import { VALID_SITE_TYPES } from '../config.js'
-import { loadContentPlanRef, readContentPlanRefFromWorkspace } from './content-refs.js'
+import {
+  loadContentPlanRef,
+  readContentPlanRefFromWorkspace,
+} from './content-refs.js'
 import {
   DESIGN_REF_ENTRIES,
   GLOBAL_DEFAULT_REF_ID,
@@ -25,9 +28,17 @@ function mergePlanContent(entry, siteType, primaryLoaded) {
   }
 }
 
-function buildResult(entry, contentPlanRef, reason, siteType = null, merge = false) {
+function buildResult(
+  entry,
+  contentPlanRef,
+  reason,
+  siteType = null,
+  merge = false,
+) {
   const merged =
-    merge && siteType && contentPlanRef ? mergePlanContent(entry, siteType, contentPlanRef) : contentPlanRef
+    merge && siteType && contentPlanRef
+      ? mergePlanContent(entry, siteType, contentPlanRef)
+      : contentPlanRef
   return {
     refId: entry.id,
     stashName: contentPlanFileForEntry(entry),
@@ -38,7 +49,8 @@ function buildResult(entry, contentPlanRef, reason, siteType = null, merge = fal
 
 function findMetaByStashName(name) {
   return DESIGN_REF_ENTRIES.find(
-    (e) => contentPlanFileForEntry(e) === name || e.file === name || e.id === name,
+    (e) =>
+      contentPlanFileForEntry(e) === name || e.file === name || e.id === name,
   )
 }
 
@@ -77,7 +89,8 @@ export function resolveContentPlanRef({
     if (hit) {
       const planName = contentPlanFileForEntry(entry)
       const loaded = loadContentPlanRef(planName)
-      if (loaded?.content) return buildResult(entry, loaded, 'keyword', st, true)
+      if (loaded?.content)
+        return buildResult(entry, loaded, 'keyword', st, true)
     }
   }
 
@@ -85,14 +98,16 @@ export function resolveContentPlanRef({
   const baseEntry = DESIGN_REF_ENTRIES.find((e) => e.id === baseId)
   if (baseEntry) {
     const loaded = loadContentPlanRef(contentPlanFileForEntry(baseEntry))
-    if (loaded?.content) return buildResult(baseEntry, loaded, 'site-base', st, false)
+    if (loaded?.content)
+      return buildResult(baseEntry, loaded, 'site-base', st, false)
   }
 
   const fb = DESIGN_REF_ENTRIES.find((e) => e.id === GLOBAL_DEFAULT_REF_ID)
   const fallbackEntry = fb || baseEntry
   if (fallbackEntry) {
     const loaded = loadContentPlanRef(contentPlanFileForEntry(fallbackEntry))
-    if (loaded?.content) return buildResult(fallbackEntry, loaded, 'fallback', st, false)
+    if (loaded?.content)
+      return buildResult(fallbackEntry, loaded, 'fallback', st, false)
   }
 
   const last = loadContentPlanRef('landing-base')

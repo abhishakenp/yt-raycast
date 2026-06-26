@@ -1,6 +1,6 @@
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
-import { SectionHeading } from "./SectionHeading.tsx"
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from './SectionHeading.tsx'
 
 /**
  * GalleryGrid — responsive image gallery (optional heading + N-column grid).
@@ -18,17 +18,17 @@ export function GalleryGrid(props: {
   const columns = props.columns ?? 3
   const colClass =
     columns === 2
-      ? "sm:grid-cols-2"
+      ? 'sm:grid-cols-2'
       : columns === 4
-        ? "sm:grid-cols-2 lg:grid-cols-4"
-        : "sm:grid-cols-2 lg:grid-cols-3"
+        ? 'sm:grid-cols-2 lg:grid-cols-4'
+        : 'sm:grid-cols-2 lg:grid-cols-3'
 
   return (
-    <section className={cn("flex flex-col gap-10", props.className)}>
+    <section className={cn('flex flex-col gap-10', props.className)}>
       {props.heading ? (
         <SectionHeading title={props.heading} subtitle={props.subheading} />
       ) : null}
-      <div className={cn("grid gap-4", "grid-cols-1", colClass)}>
+      <div className={cn('grid gap-4', 'grid-cols-1', colClass)}>
         {props.images.map((img, i) => (
           <figure
             key={i}

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BakeryHero — split, two-column hero band for an artisan-bakery landing page,
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in "Flour & Stone" defaults.
  */
 export const BakeryHero = defineComponent({
-  name: "BakeryHero",
+  name: 'BakeryHero',
   description:
     "Split two-column hero band for an artisan-bakery landing page on a soft muted surface: left column has an uppercase 'Est.' eyebrow, a large display headline, a supporting paragraph, dual CTAs (filled dark primary + outlined secondary), and an open-hours + address chip row with clock/pin icons; right column is a large rounded hero photo with a floating 'Certified Organic' badge card overlapping its corner. Warm, editorial, light and craft-forward; CTAs route through useNavigate and the photo is alt-driven. Use as the opening hero for bakeries, patisseries, sourdough/artisan-bread shops, cafes, or pastry kitchens.",
   props: z.object({
@@ -48,24 +48,24 @@ export const BakeryHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Est. 2018 — Portland, Oregon"
+    const eyebrow = props.eyebrow ?? 'Est. 2018 — Portland, Oregon'
     const heading =
       props.heading ??
-      "Artisan breads & pastries baked daily with stone-milled flour"
+      'Artisan breads & pastries baked daily with stone-milled flour'
     const subheading =
       props.subheading ??
-      "Every loaf tells a story of slow fermentation, organic grains, and time-honored techniques. From our signature sourdough to buttery croissants, we craft each item with intention and care."
-    const primaryCta = props.primaryCta ?? "Order for Pickup"
-    const secondaryCta = props.secondaryCta ?? "Visit Our Bakery"
-    const primaryTarget = props.primaryTarget ?? "Order"
-    const secondaryTarget = props.secondaryTarget ?? "Visit"
-    const hoursChip = props.hoursChip ?? "Open 7am–4pm Daily"
-    const addressChip = props.addressChip ?? "1423 Oak Street"
+      'Every loaf tells a story of slow fermentation, organic grains, and time-honored techniques. From our signature sourdough to buttery croissants, we craft each item with intention and care.'
+    const primaryCta = props.primaryCta ?? 'Order for Pickup'
+    const secondaryCta = props.secondaryCta ?? 'Visit Our Bakery'
+    const primaryTarget = props.primaryTarget ?? 'Order'
+    const secondaryTarget = props.secondaryTarget ?? 'Visit'
+    const hoursChip = props.hoursChip ?? 'Open 7am–4pm Daily'
+    const addressChip = props.addressChip ?? '1423 Oak Street'
     const imageAlt =
       props.imageAlt ??
-      "Golden crusty artisan sourdough bread loaves arranged on a wooden cutting board in a sunlit bakery"
-    const badgeTitle = props.badgeTitle ?? "Certified Organic"
-    const badgeSubtitle = props.badgeSubtitle ?? "Stone-milled grains"
+      'Golden crusty artisan sourdough bread loaves arranged on a wooden cutting board in a sunlit bakery'
+    const badgeTitle = props.badgeTitle ?? 'Certified Organic'
+    const badgeSubtitle = props.badgeSubtitle ?? 'Stone-milled grains'
 
     const ArrowRight = () => (
       <svg
@@ -117,7 +117,7 @@ export const BakeryHero = defineComponent({
     )
 
     return (
-      <section className={cn("relative bg-muted", props.className)}>
+      <section className={cn('relative bg-muted', props.className)}>
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">

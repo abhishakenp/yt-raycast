@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DevToolFeatures — a 6-up product features grid for a developer tool / API
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * technical SaaS.
  */
 export const DevToolFeatures = defineComponent({
-  name: "DevToolFeatures",
+  name: 'DevToolFeatures',
   description:
     "6-up product features grid for a developer tool / API platform: a centered heading + intro paragraph above a responsive 1/2/3-column grid of bordered cards, each with a tinted square icon tile, title, description, and a 'Learn more' chevron link. Built-in developer icon set (auth, database, real-time, serverless, edge, observability) rotates across cards. Card links route through useNavigate. Use to showcase platform capabilities for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
   props: z.object({
@@ -29,43 +29,43 @@ export const DevToolFeatures = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Everything you need to ship"
+    const heading = props.heading ?? 'Everything you need to ship'
     const description =
       props.description ??
-      "One platform for authentication, storage, real-time events, and serverless functions. No more stitching together multiple services."
-    const learnMore = props.learnMore ?? "Learn more"
+      'One platform for authentication, storage, real-time events, and serverless functions. No more stitching together multiple services.'
+    const learnMore = props.learnMore ?? 'Learn more'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Authentication",
+            title: 'Authentication',
             description:
-              "Complete auth with email, OAuth, SSO, and MFA. Support for React, Vue, Svelte, and native mobile SDKs.",
+              'Complete auth with email, OAuth, SSO, and MFA. Support for React, Vue, Svelte, and native mobile SDKs.',
           },
           {
-            title: "Database & Storage",
+            title: 'Database & Storage',
             description:
-              "Auto-scaling PostgreSQL with real-time subscriptions. Key-value store with sub-10ms latency. Object storage with CDN.",
+              'Auto-scaling PostgreSQL with real-time subscriptions. Key-value store with sub-10ms latency. Object storage with CDN.',
           },
           {
-            title: "Real-time Events",
+            title: 'Real-time Events',
             description:
-              "WebSocket-based pub/sub with 99.99% uptime. Broadcast to millions of connections instantly. Presence detection built-in.",
+              'WebSocket-based pub/sub with 99.99% uptime. Broadcast to millions of connections instantly. Presence detection built-in.',
           },
           {
-            title: "Serverless Functions",
+            title: 'Serverless Functions',
             description:
-              "Deploy functions in Node.js, Python, Go, or Rust. Cold starts under 50ms. Automatic scaling from zero to thousands.",
+              'Deploy functions in Node.js, Python, Go, or Rust. Cold starts under 50ms. Automatic scaling from zero to thousands.',
           },
           {
-            title: "Edge Functions",
+            title: 'Edge Functions',
             description:
-              "Run code at 250+ edge locations worldwide. Cache at the edge. Geolocation, bot detection, and A/B testing utilities.",
+              'Run code at 250+ edge locations worldwide. Cache at the edge. Geolocation, bot detection, and A/B testing utilities.',
           },
           {
-            title: "Observability",
+            title: 'Observability',
             description:
-              "Built-in logging, metrics, and tracing. Custom dashboards. Alerts via Slack, PagerDuty, or webhook. 30-day retention.",
+              'Built-in logging, metrics, and tracing. Custom dashboards. Alerts via Slack, PagerDuty, or webhook. 30-day retention.',
           },
         ]
 
@@ -177,7 +177,7 @@ export const DevToolFeatures = defineComponent({
 
     return (
       <section
-        className={cn("py-20 lg:py-28", props.className)}
+        className={cn('py-20 lg:py-28', props.className)}
         aria-labelledby="features-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

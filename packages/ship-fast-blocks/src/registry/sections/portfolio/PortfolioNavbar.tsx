@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * PortfolioNavbar — fixed, blur-backdrop top navigation for a creative-individual
@@ -13,7 +13,7 @@ import { SiteNav } from "#/section-kit/SiteNav.tsx"
  * "Kaelen Vance" defaults.
  */
 export const PortfolioNavbar = defineComponent({
-  name: "PortfolioNavbar",
+  name: 'PortfolioNavbar',
   description:
     "Fixed blur-backdrop site header for a creative-individual portfolio built on the shared SiteNav composite: a bold wordmark brand, horizontal desktop nav links, a 'Get in touch' CTA pill, and a real mobile drawer (Sheet) on small screens. Every link and the CTA route through useNavigate for page-switching. Use as the sticky site header for a 3D artist, motion designer, art director, animator, or visual designer personal site.",
   props: z.object({
@@ -32,15 +32,15 @@ export const PortfolioNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Work", "About", "Services", "Contact"]
+      : ['Work', 'About', 'Services', 'Contact']
     return (
       <SiteNav
-        brand={props.brand ?? "Kaelen Vance"}
+        brand={props.brand ?? 'Kaelen Vance'}
         brandClassName="text-xl font-bold tracking-tight"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Get in touch",
-          target: props.ctaTarget ?? "Contact",
+          label: props.ctaLabel ?? 'Get in touch',
+          target: props.ctaTarget ?? 'Contact',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

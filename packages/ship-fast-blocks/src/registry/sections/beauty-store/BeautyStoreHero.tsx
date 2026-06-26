@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BeautyStoreHero — split editorial hero for a beauty / skincare / cosmetics
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * clean beauty retailers, or premium personal-care DTC storefronts.
  */
 export const BeautyStoreHero = defineComponent({
-  name: "BeautyStoreHero",
+  name: 'BeautyStoreHero',
   description:
-    "Split editorial hero for a beauty / skincare / cosmetics e-commerce storefront: a soft token-gradient background with a two-column layout. Left side has an eyebrow badge, large serif headline with one phrase in the primary accent, supporting paragraph, dual rounded CTAs (filled primary + outlined secondary), and a social-proof strip with overlapping customer avatars, star rating and rating count. Right side has a tall 4:5 product image with a floating cruelty-free badge. CTAs route through useNavigate. Use as the opening hero for beauty stores, skincare shops, cosmetics brands, or premium personal-care DTC storefronts.",
+    'Split editorial hero for a beauty / skincare / cosmetics e-commerce storefront: a soft token-gradient background with a two-column layout. Left side has an eyebrow badge, large serif headline with one phrase in the primary accent, supporting paragraph, dual rounded CTAs (filled primary + outlined secondary), and a social-proof strip with overlapping customer avatars, star rating and rating count. Right side has a tall 4:5 product image with a floating cruelty-free badge. CTAs route through useNavigate. Use as the opening hero for beauty stores, skincare shops, cosmetics brands, or premium personal-care DTC storefronts.',
   props: z.object({
     /** Eyebrow / collection label above the headline. */
     eyebrow: z.string().optional(),
@@ -48,28 +48,28 @@ export const BeautyStoreHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "New Collection"
-    const headingTop = props.headingTop ?? "Radiant Beauty,"
-    const highlight = props.highlight ?? "Naturally Yours"
+    const eyebrow = props.eyebrow ?? 'New Collection'
+    const headingTop = props.headingTop ?? 'Radiant Beauty,'
+    const highlight = props.highlight ?? 'Naturally Yours'
     const subheading =
       props.subheading ??
-      "Discover our curated collection of clean, cruelty-free beauty products. From skincare essentials to makeup must-haves, embrace your natural glow with formulas that care for your skin and the planet."
-    const primaryCta = props.primaryCta ?? "Shop Bestsellers"
-    const secondaryCta = props.secondaryCta ?? "Explore New Arrivals"
-    const ratingCount = props.ratingCount ?? "12,000+ Happy Customers"
-    const ratingValue = props.ratingValue ?? "4.9/5"
+      'Discover our curated collection of clean, cruelty-free beauty products. From skincare essentials to makeup must-haves, embrace your natural glow with formulas that care for your skin and the planet.'
+    const primaryCta = props.primaryCta ?? 'Shop Bestsellers'
+    const secondaryCta = props.secondaryCta ?? 'Explore New Arrivals'
+    const ratingCount = props.ratingCount ?? '12,000+ Happy Customers'
+    const ratingValue = props.ratingValue ?? '4.9/5'
     const imageAlt =
       props.imageAlt ??
-      "arrangement of luxury skincare products including serums creams and face oils on marble surface"
-    const badgeTitle = props.badgeTitle ?? "100% Cruelty-Free"
-    const badgeSubtitle = props.badgeSubtitle ?? "Certified Clean Beauty"
+      'arrangement of luxury skincare products including serums creams and face oils on marble surface'
+    const badgeTitle = props.badgeTitle ?? '100% Cruelty-Free'
+    const badgeSubtitle = props.badgeSubtitle ?? 'Certified Clean Beauty'
     const customerAlts = props.customerAlts?.length
       ? props.customerAlts
       : [
-          "happy customer with clear glowing skin",
-          "young woman with natural makeup smiling",
-          "woman with radiant healthy skin portrait",
-          "beautiful woman with dewy makeup look",
+          'happy customer with clear glowing skin',
+          'young woman with natural makeup smiling',
+          'woman with radiant healthy skin portrait',
+          'beautiful woman with dewy makeup look',
         ]
 
     const Star = ({ className }: { className?: string }) => (
@@ -86,7 +86,7 @@ export const BeautyStoreHero = defineComponent({
     return (
       <section
         className={cn(
-          "relative bg-gradient-to-br from-primary/10 via-background to-muted/40",
+          'relative bg-gradient-to-br from-primary/10 via-background to-muted/40',
           props.className,
         )}
       >
@@ -133,9 +133,7 @@ export const BeautyStoreHero = defineComponent({
                   ))}
                 </div>
                 <div className="text-sm">
-                  <p className="font-semibold text-foreground">
-                    {ratingCount}
-                  </p>
+                  <p className="font-semibold text-foreground">{ratingCount}</p>
                   <div className="flex items-center gap-1 text-primary">
                     {[0, 1, 2, 3, 4].map((i) => (
                       <Star key={i} className="size-4" />

@@ -1,7 +1,10 @@
 import { renderAeoSectionHtml } from '@ship-fast/aeo'
 import { isMixedEnglishIndicCode } from '../config/languages.js'
 import { shouldUseSwiper } from '@ship-fast/engine/lib/swiper-policy.js'
-import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '@ship-fast/engine/marketing.js'
+import {
+  SHIP_FAST_SITE_URL,
+  shipFastFooterLogoMarkup,
+} from '@ship-fast/engine/marketing.js'
 
 /**
  * Returns a Google Fonts <link> tag for the Noto Sans script matching the
@@ -39,13 +42,22 @@ export function escapeHtml(value = '') {
 
 export function routeToHtmlFile(route = '/') {
   if (route === '/' || route === '') return 'index.html'
-  const clean = route.replace(/^\/+/, '').replace(/\/+$/, '').split('/').filter(Boolean).join('-')
+  const clean = route
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '')
+    .split('/')
+    .filter(Boolean)
+    .join('-')
   return `${clean || 'index'}.html`
 }
 
 export function routeToNextSegments(route = '/') {
   if (route === '/' || route === '') return []
-  return route.replace(/^\/+/, '').replace(/\/+$/, '').split('/').filter(Boolean)
+  return route
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '')
+    .split('/')
+    .filter(Boolean)
 }
 
 export function pageComponentName(page) {
@@ -75,7 +87,9 @@ export function slimSiteSpecForBundle(siteSpec) {
 }
 
 export function pageUsesExactClone(page) {
-  return Boolean(page?.renderBlueprint?.exactClone && page?.renderBlueprint?.bodyHtml)
+  return Boolean(
+    page?.renderBlueprint?.exactClone && page?.renderBlueprint?.bodyHtml,
+  )
 }
 
 function readmeProjectName(siteSpec) {
@@ -89,7 +103,9 @@ function readmeRoutes(siteSpec) {
       (siteSpec?.pages || [])
         .map((page) => String(page?.route || '').trim())
         .filter(Boolean)
-        .map((route) => (route === '/' ? '/' : route.startsWith('/') ? route : `/${route}`)),
+        .map((route) =>
+          route === '/' ? '/' : route.startsWith('/') ? route : `/${route}`,
+        ),
     ),
   )
 
@@ -130,7 +146,12 @@ function readmeTargetDetails(target, siteSpec = {}) {
       return {
         label: 'React',
         description: 'Vite + React application',
-        commands: ['bun install', 'bun dev', 'bun run build', 'bun run preview'],
+        commands: [
+          'bun install',
+          'bun dev',
+          'bun run build',
+          'bun run preview',
+        ],
         notes: [
           'Uses Bun (`packageManager` in `package.json`). `bun install` writes `bun.lock` — commit it for faster installs.',
           'App entry: `src/main.jsx`',
@@ -413,7 +434,9 @@ export function renderExactClonePageComponent({ mode }) {
       ? `import { useNavigate } from 'react-router-dom'`
       : `import { useRouter } from 'next/navigation'`
   const routerHook =
-    mode === 'react' ? 'const navigate = useNavigate()' : 'const router = useRouter()'
+    mode === 'react'
+      ? 'const navigate = useNavigate()'
+      : 'const router = useRouter()'
   const navigationCall =
     mode === 'react'
       ? `navigate(url.pathname + url.search + url.hash)`
@@ -508,7 +531,10 @@ ${
 function renderActionLink(action = {}, className = 'button') {
   const href = escapeHtml(action.href || '#')
   const label = escapeHtml(action.label || 'Learn More')
-  const tone = action.style === 'primary' ? `${className} ${className}--primary` : className
+  const tone =
+    action.style === 'primary'
+      ? `${className} ${className}--primary`
+      : className
   return `<a class="${tone}" href="${href}">${label}</a>`
 }
 
@@ -608,15 +634,20 @@ export function renderSectionHtml(section, siteSpec = {}) {
   const aeoHtml = renderAeoSectionHtml(section)
   if (aeoHtml) return aeoHtml
 
-  const headline = section.headline ? `<h2>${escapeHtml(section.headline)}</h2>` : ''
+  const headline = section.headline
+    ? `<h2>${escapeHtml(section.headline)}</h2>`
+    : ''
   const subheadline = section.subheadline
     ? `<p class="eyebrow">${escapeHtml(section.subheadline)}</p>`
     : ''
-  const body = section.body ? `<p class="section-body">${escapeHtml(section.body)}</p>` : ''
+  const body = section.body
+    ? `<p class="section-body">${escapeHtml(section.body)}</p>`
+    : ''
 
   switch (section.type) {
     case 'navbar': {
-      const isStore = String(siteSpec?.siteType || '').toLowerCase() === 'ecommerce'
+      const isStore =
+        String(siteSpec?.siteType || '').toLowerCase() === 'ecommerce'
       const brandLogo = section?.styling?.brandLogo
       const brandLogoMarkup = renderBrandLogoMarkup(brandLogo)
       const promoBar = isStore
@@ -661,7 +692,8 @@ export function renderSectionHtml(section, siteSpec = {}) {
     }
     case 'hero': {
       const heroImg = section.heroImage || section.imageUrl || section.image
-      const storeHero = String(siteSpec?.siteType || '').toLowerCase() === 'ecommerce'
+      const storeHero =
+        String(siteSpec?.siteType || '').toLowerCase() === 'ecommerce'
       const heroFigure = heroImg
         ? `<figure class="hero-figure"><img class="hero-image" src="${escapeHtml(heroImg)}" alt="${escapeHtml(section.imageAlt || '')}" loading="eager" decoding="async" /></figure>`
         : ''
@@ -816,7 +848,9 @@ export function renderSectionHtml(section, siteSpec = {}) {
       const items = section.items || []
       const swiperCarousel = shouldUseSwiper(siteSpec) && items.length > 0
       const cssMarqueeCarousel =
-        !shouldUseSwiper(siteSpec) && siteSpec.siteType === 'ecommerce' && items.length > 0
+        !shouldUseSwiper(siteSpec) &&
+        siteSpec.siteType === 'ecommerce' &&
+        items.length > 0
       const productCardHtml = (item, dup) => `
                   <article class="card product-card product-card--retail product-card--carousel"${dup ? ' aria-hidden="true"' : ''}>
                     ${productFigureHtml(item, { emptyAlt: dup })}
@@ -976,7 +1010,8 @@ export function renderSectionHtml(section, siteSpec = {}) {
 
 export function buildGlobalCss(theme = {}, layout = {}) {
   const isStore =
-    layout.ecommerce === true || String(layout.siteType || '').toLowerCase() === 'ecommerce'
+    layout.ecommerce === true ||
+    String(layout.siteType || '').toLowerCase() === 'ecommerce'
   const colors = theme.colors || {}
   const typography = theme.typography || {}
   const scale = typography.scale || {}
@@ -992,10 +1027,15 @@ export function buildGlobalCss(theme = {}, layout = {}) {
     .map((f) => String(f || '').trim())
     .filter(
       (f) =>
-        f && !/^(system-ui|sans-serif|serif|monospace|inherit|initial|arial|helvetica)$/i.test(f),
+        f &&
+        !/^(system-ui|sans-serif|serif|monospace|inherit|initial|arial|helvetica)$/i.test(
+          f,
+        ),
     )
   const fontImport = googleFontFamilies.length
-    ? `@import url('https://fonts.googleapis.com/css2?${[...new Set(googleFontFamilies)]
+    ? `@import url('https://fonts.googleapis.com/css2?${[
+        ...new Set(googleFontFamilies),
+      ]
         .map((f) => `family=${f.replace(/\s+/g, '+')}:wght@400;500;600;700`)
         .join('&')}&display=swap');\n`
     : ''

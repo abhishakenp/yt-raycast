@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BlogPostStoryGrid — related-articles cards grid for an editorial blog post
@@ -14,7 +14,7 @@ import { Image } from "#/lib/img.tsx"
  * magazines, journals, or editorial reading pages.
  */
 export const BlogPostStoryGrid = defineComponent({
-  name: "BlogPostStoryGrid",
+  name: 'BlogPostStoryGrid',
   description:
     "Related-articles cards grid for an editorial blog post detail page: a muted-background band with a left-aligned 'Related reading' heading above a responsive 1/2/3-column grid of article cards, each with a hover-zoom cover image, category/date meta, a bold title, and a short excerpt. All cards are clickable and route through useNavigate. Use as the 'related reading' / 'more stories' section below the body on blogs, magazines, journals, or editorial reading pages.",
   props: z.object({
@@ -36,43 +36,41 @@ export const BlogPostStoryGrid = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Related reading"
+    const heading = props.heading ?? 'Related reading'
     const items = props.items?.length
       ? props.items
       : [
           {
-            category: "Team Culture",
-            date: "Feb 28, 2024",
-            title: "Building Design Systems That Actually Get Used",
+            category: 'Team Culture',
+            date: 'Feb 28, 2024',
+            title: 'Building Design Systems That Actually Get Used',
             excerpt:
-              "Lessons from rolling out design systems at three different startups—and why adoption is harder than construction.",
+              'Lessons from rolling out design systems at three different startups—and why adoption is harder than construction.',
             imageAlt:
-              "Design team whiteboarding session with colorful sticky notes on glass wall",
+              'Design team whiteboarding session with colorful sticky notes on glass wall',
           },
           {
-            category: "UX Research",
-            date: "Feb 10, 2024",
-            title: "The Lost Art of Sketching Before Pixels",
+            category: 'UX Research',
+            date: 'Feb 10, 2024',
+            title: 'The Lost Art of Sketching Before Pixels',
             excerpt:
-              "Why the best digital designers still start with analog tools—and how paper prototyping catches problems Figma misses.",
+              'Why the best digital designers still start with analog tools—and how paper prototyping catches problems Figma misses.',
             imageAlt:
-              "Close-up of hands sketching wireframes in a notebook with pencil",
+              'Close-up of hands sketching wireframes in a notebook with pencil',
           },
           {
-            category: "Design Process",
-            date: "Jan 22, 2024",
-            title: "Measuring Design Quality: Beyond Vanity Metrics",
+            category: 'Design Process',
+            date: 'Jan 22, 2024',
+            title: 'Measuring Design Quality: Beyond Vanity Metrics',
             excerpt:
-              "A framework for quantifying design excellence using behavioral signals instead of NPS scores and gut feelings.",
+              'A framework for quantifying design excellence using behavioral signals instead of NPS scores and gut feelings.',
             imageAlt:
-              "Laptop screen showing data analytics dashboard with charts and metrics",
+              'Laptop screen showing data analytics dashboard with charts and metrics',
           },
         ]
 
     return (
-      <section
-        className={cn("bg-muted py-16 lg:py-24", props.className)}
-      >
+      <section className={cn('bg-muted py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-5xl px-6 lg:px-8">
           <h2 className="mb-10 text-2xl font-semibold tracking-tight text-foreground">
             {heading}

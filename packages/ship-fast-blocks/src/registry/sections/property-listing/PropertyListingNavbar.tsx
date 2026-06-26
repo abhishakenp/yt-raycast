@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * PropertyListingNavbar — clean top navigation for a property marketplace /
@@ -12,7 +12,7 @@ import { SiteNav } from "#/section-kit/SiteNav.tsx"
  * props via baked defaults.
  */
 export const PropertyListingNavbar = defineComponent({
-  name: "PropertyListingNavbar",
+  name: 'PropertyListingNavbar',
   description:
     "Clean sticky top navigation for a property marketplace / search portal: a logo-tile + wordmark on the left, an inline For Sale / For Rent / New / Agents nav in the middle on desktop, and a filled 'Post Listing' primary CTA on the right. Wordmark, nav items, and CTA route through useNavigate. Use as the site header for property search portals, listing marketplaces, and rental sites.",
   props: z.object({
@@ -27,12 +27,12 @@ export const PropertyListingNavbar = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Nestable"
+    const brand = props.brand ?? 'Nestable'
     const nav = props.links?.length
       ? props.links
-      : ["For Sale", "For Rent", "New", "Agents"]
-    const cta = props.cta ?? "Post Listing"
-    const ctaTarget = props.ctaTarget ?? "Post"
+      : ['For Sale', 'For Rent', 'New', 'Agents']
+    const cta = props.cta ?? 'Post Listing'
+    const ctaTarget = props.ctaTarget ?? 'Post'
 
     return (
       <SiteNav
@@ -40,7 +40,7 @@ export const PropertyListingNavbar = defineComponent({
         nav={nav}
         homeTarget="Home"
         sticky
-        cta={{ label: cta, target: ctaTarget, variant: "primary" }}
+        cta={{ label: cta, target: ctaTarget, variant: 'primary' }}
         className={props.className}
       />
     )

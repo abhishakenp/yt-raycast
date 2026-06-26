@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * WineryBreweryFooter — a rich, multi-column closing footer for a winery or
@@ -35,9 +35,9 @@ const GrapeClusterMark = ({ className }: { className?: string }) => (
 )
 
 export const WineryBreweryFooter = defineComponent({
-  name: "WineryBreweryFooter",
+  name: 'WineryBreweryFooter',
   description:
-    "Rich, multi-column closing footer for a winery or brewery site: a responsive grid with a brand block (serif wordmark + grape-cluster mark + tagline + social row), a Visit column with address plus tappable phone and email, an Hours column of day/time rows, and extra link columns (Explore, Contact, …); a bordered-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through useNavigate. Use as the site-wide footer for wineries, vineyards, cellar doors, breweries, taprooms, or cideries.",
+    'Rich, multi-column closing footer for a winery or brewery site: a responsive grid with a brand block (serif wordmark + grape-cluster mark + tagline + social row), a Visit column with address plus tappable phone and email, an Hours column of day/time rows, and extra link columns (Explore, Contact, …); a bordered-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through useNavigate. Use as the site-wide footer for wineries, vineyards, cellar doors, breweries, taprooms, or cideries.',
   props: z.object({
     /** Winery / brewery brand name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -58,49 +58,49 @@ export const WineryBreweryFooter = defineComponent({
   component: ({ props }) => {
     const social = props.social?.length
       ? props.social
-      : [{ label: "Instagram" }, { label: "Facebook" }, { label: "Untappd" }]
+      : [{ label: 'Instagram' }, { label: 'Facebook' }, { label: 'Untappd' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Visit",
+            title: 'Visit',
             links: [
-              "4200 Vineyard Lane, Sonoma Valley, CA 95476",
-              "(707) 555-0148",
-              "hello@cellarandcask.com",
+              '4200 Vineyard Lane, Sonoma Valley, CA 95476',
+              '(707) 555-0148',
+              'hello@cellarandcask.com',
             ],
           },
           {
-            title: "Hours",
+            title: 'Hours',
             links: [
-              "Thu – Fri · 11am – 6pm",
-              "Sat – Sun · 11am – 7pm",
-              "Mon – Wed · By appointment",
-              "Harvest weeks · Extended hours",
+              'Thu – Fri · 11am – 6pm',
+              'Sat – Sun · 11am – 7pm',
+              'Mon – Wed · By appointment',
+              'Harvest weeks · Extended hours',
             ],
           },
           {
-            title: "Explore",
-            links: ["Wines", "Tastings", "Tours", "Wine Club"],
+            title: 'Explore',
+            links: ['Wines', 'Tastings', 'Tours', 'Wine Club'],
           },
           {
-            title: "Contact",
-            links: ["Plan a Visit", "Private Events", "Press", "Our Story"],
+            title: 'Contact',
+            links: ['Plan a Visit', 'Private Events', 'Press', 'Our Story'],
           },
         ]
 
     return (
       <SiteFooter
-        brand={props.brand ?? "Cellar & Cask"}
+        brand={props.brand ?? 'Cellar & Cask'}
         brandMark={<GrapeClusterMark className="size-8 text-primary" />}
         brandClassName="font-serif text-xl font-medium"
         tagline={
           props.tagline ??
-          "Estate-grown wine and barrel-aged ale from one sun-soaked hillside."
+          'Estate-grown wine and barrel-aged ale from one sun-soaked hillside.'
         }
         social={social}
         columns={columns}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

@@ -1,7 +1,7 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * ContactFaq — two-column FAQ accordion for a contact / support page.
@@ -12,9 +12,9 @@ import { cn } from "#/lib/utils.ts"
  * baked-in defaults.
  */
 export const ContactFaq = defineComponent({
-  name: "ContactFaq",
+  name: 'ContactFaq',
   description:
-    "Two-column FAQ accordion for a contact / support page: a centered heading + description followed by a responsive two-column grid of expandable question cards, each animating its answer open/closed with a chevron rotation. Use to surface common questions before a visitor reaches out on SaaS, agency, or startup contact pages.",
+    'Two-column FAQ accordion for a contact / support page: a centered heading + description followed by a responsive two-column grid of expandable question cards, each animating its answer open/closed with a chevron rotation. Use to surface common questions before a visitor reaches out on SaaS, agency, or startup contact pages.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -29,7 +29,7 @@ export const ContactFaq = defineComponent({
   component: ({ props }) => {
     const [openFaq, setOpenFaq] = useState<number | null>(null)
 
-    const heading = props.heading ?? "Frequently Asked Questions"
+    const heading = props.heading ?? 'Frequently Asked Questions'
     const description =
       props.description ??
       "Everything you need to know before reaching out. Can't find the answer you're looking for? Send us a message."
@@ -37,39 +37,39 @@ export const ContactFaq = defineComponent({
       ? props.items
       : [
           {
-            question: "What is the typical response time?",
+            question: 'What is the typical response time?',
             answer:
-              "We aim to respond to all inquiries within 24 hours during business days. For enterprise support, response times are under 2 hours.",
+              'We aim to respond to all inquiries within 24 hours during business days. For enterprise support, response times are under 2 hours.',
           },
           {
-            question: "Do you offer custom pricing?",
+            question: 'Do you offer custom pricing?',
             answer:
-              "Yes. We tailor packages based on team size, usage volume, and feature requirements. Contact sales for a personalized quote.",
+              'Yes. We tailor packages based on team size, usage volume, and feature requirements. Contact sales for a personalized quote.',
           },
           {
-            question: "Can I schedule a product demo?",
+            question: 'Can I schedule a product demo?',
             answer:
-              "Absolutely. Use the form on this page or email us directly. We offer live demos with screen sharing and Q&A every Tuesday and Thursday.",
+              'Absolutely. Use the form on this page or email us directly. We offer live demos with screen sharing and Q&A every Tuesday and Thursday.',
           },
           {
-            question: "Where are your servers located?",
+            question: 'Where are your servers located?',
             answer:
-              "Our infrastructure runs on a global edge network with core compute in US-East, EU-West, and APAC regions. Data residency options are available.",
+              'Our infrastructure runs on a global edge network with core compute in US-East, EU-West, and APAC regions. Data residency options are available.',
           },
           {
-            question: "Do you provide SLA guarantees?",
+            question: 'Do you provide SLA guarantees?',
             answer:
-              "Yes. Business plans include a 99.99% uptime SLA with credit-backed guarantees. Enterprise plans can negotiate custom SLAs.",
+              'Yes. Business plans include a 99.99% uptime SLA with credit-backed guarantees. Enterprise plans can negotiate custom SLAs.',
           },
           {
-            question: "How do I report a security issue?",
+            question: 'How do I report a security issue?',
             answer:
-              "Please send sensitive reports to security@orbitdigital.co using our PGP key. We participate in responsible disclosure and offer bug bounties.",
+              'Please send sensitive reports to security@orbitdigital.co using our PGP key. We participate in responsible disclosure and offer bug bounties.',
           },
         ]
 
     return (
-      <section className={cn("mt-20 mb-24", props.className)}>
+      <section className={cn('mt-20 mb-24', props.className)}>
         <div className="mb-11 text-center">
           <h2 className="mb-2.5 text-[1.9rem] font-bold text-foreground">
             {heading}
@@ -85,8 +85,8 @@ export const ContactFaq = defineComponent({
               <div
                 key={item.question}
                 className={cn(
-                  "rounded-lg border border-border px-6 py-5 transition-colors hover:border-border/60",
-                  open ? "bg-muted/40" : "bg-card",
+                  'rounded-lg border border-border px-6 py-5 transition-colors hover:border-border/60',
+                  open ? 'bg-muted/40' : 'bg-card',
                 )}
               >
                 <button
@@ -107,8 +107,10 @@ export const ContactFaq = defineComponent({
                     strokeLinejoin="round"
                     aria-hidden="true"
                     className={cn(
-                      "shrink-0 transition-transform",
-                      open ? "rotate-180 text-primary" : "text-muted-foreground",
+                      'shrink-0 transition-transform',
+                      open
+                        ? 'rotate-180 text-primary'
+                        : 'text-muted-foreground',
                     )}
                   >
                     <polyline points="6 9 12 15 18 9" />
@@ -116,10 +118,10 @@ export const ContactFaq = defineComponent({
                 </button>
                 <div
                   className={cn(
-                    "grid overflow-hidden transition-all duration-300",
+                    'grid overflow-hidden transition-all duration-300',
                     open
-                      ? "grid-rows-[1fr] pt-3 opacity-100"
-                      : "grid-rows-[0fr] opacity-0",
+                      ? 'grid-rows-[1fr] pt-3 opacity-100'
+                      : 'grid-rows-[0fr] opacity-0',
                   )}
                 >
                   <p className="min-h-0 text-[0.92rem] leading-[1.7] text-muted-foreground">

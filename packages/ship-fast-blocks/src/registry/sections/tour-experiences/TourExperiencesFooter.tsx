@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /** Inline compass brand mark — adventurous, currentColor → theme token. */
 const CompassMark = ({ className }: { className?: string }) => (
@@ -32,9 +32,9 @@ const CompassMark = ({ className }: { className?: string }) => (
  * fully with no props via baked-in "Wanderwild Tours" defaults.
  */
 export const TourExperiencesFooter = defineComponent({
-  name: "TourExperiencesFooter",
+  name: 'TourExperiencesFooter',
   description:
-    "Closing multi-column footer for an adventure / guided-tour brand. Composes the shared SiteFooter composite with an inline compass brand mark, a tagline, a social row, and four link columns (Tours, Company, Support, Legal), plus an auto-updating copyright note. Every link routes through the shared navigation. Use as the site footer for tour operators, expedition companies, and travel-experience landing pages.",
+    'Closing multi-column footer for an adventure / guided-tour brand. Composes the shared SiteFooter composite with an inline compass brand mark, a tagline, a social row, and four link columns (Tours, Company, Support, Legal), plus an auto-updating copyright note. Every link routes through the shared navigation. Use as the site footer for tour operators, expedition companies, and travel-experience landing pages.',
   props: z.object({
     /** Brand / company name shown with the compass mark. */
     brand: z.string().optional(),
@@ -59,46 +59,56 @@ export const TourExperiencesFooter = defineComponent({
       ? props.columns
       : [
           {
-            title: "Tours",
-            links: ["City Tours", "Food Tours", "Adventure Tours", "Cultural Tours"],
+            title: 'Tours',
+            links: [
+              'City Tours',
+              'Food Tours',
+              'Adventure Tours',
+              'Cultural Tours',
+            ],
           },
           {
-            title: "Company",
-            links: ["About Us", "Our Guides", "Sustainability", "Careers"],
+            title: 'Company',
+            links: ['About Us', 'Our Guides', 'Sustainability', 'Careers'],
           },
           {
-            title: "Support",
-            links: ["Help Center", "Booking & Cancellation", "Travel Insurance", "Contact"],
+            title: 'Support',
+            links: [
+              'Help Center',
+              'Booking & Cancellation',
+              'Travel Insurance',
+              'Contact',
+            ],
           },
           {
-            title: "Legal",
-            links: ["Privacy Policy", "Terms of Service", "Accessibility"],
+            title: 'Legal',
+            links: ['Privacy Policy', 'Terms of Service', 'Accessibility'],
           },
         ]
     const social = props.social?.length
       ? props.social
       : [
-          { label: "Instagram" },
-          { label: "YouTube" },
-          { label: "TikTok" },
-          { label: "Facebook" },
+          { label: 'Instagram' },
+          { label: 'YouTube' },
+          { label: 'TikTok' },
+          { label: 'Facebook' },
         ]
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Cookies"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookies']
 
     return (
       <SiteFooter
-        brand={props.brand ?? "Wanderwild Tours"}
+        brand={props.brand ?? 'Wanderwild Tours'}
         brandMark={<CompassMark className="size-7 text-primary" />}
         tagline={
           props.tagline ??
-          "Small-group adventures led by local guides. Big experiences, light footprints, lifelong memories."
+          'Small-group adventures led by local guides. Big experiences, light footprints, lifelong memories.'
         }
         columns={columns}
         social={social}
         legal={legal}
-        note={props.note ?? "Adventure responsibly."}
+        note={props.note ?? 'Adventure responsibly.'}
         className={props.className}
       />
     )

@@ -44,13 +44,16 @@ export function anchorAvoidsSaasMarketing(dna) {
  */
 export function relaxAuroraAuditForAnchor(verify, dnaOrFlag) {
   if (!verify || verify.ok) return verify
-  const nonAurora = typeof dnaOrFlag === 'boolean' ? dnaOrFlag : anchorAvoidsAurora(dnaOrFlag)
+  const nonAurora =
+    typeof dnaOrFlag === 'boolean' ? dnaOrFlag : anchorAvoidsAurora(dnaOrFlag)
   if (!nonAurora) return verify
 
   const feedback = String(verify.feedback || '')
   if (!feedback) return verify
 
-  const reasonsStr = feedback.replace(/^Quality audit:\s*/i, '').replace(/^Revise [^:]*:\s*/i, '')
+  const reasonsStr = feedback
+    .replace(/^Quality audit:\s*/i, '')
+    .replace(/^Revise [^:]*:\s*/i, '')
 
   const knownAuroraSuffixes = [
     /;\s*combine [^;]*blobs?/i,
@@ -60,7 +63,10 @@ export function relaxAuroraAuditForAnchor(verify, dnaOrFlag) {
   for (const re of knownAuroraSuffixes) {
     normalised = normalised.replace(re, (m) => m.replace(';', ','))
   }
-  const reasons = normalised.split(/\s*;\s*/).map((r) => r.trim()).filter(Boolean)
+  const reasons = normalised
+    .split(/\s*;\s*/)
+    .map((r) => r.trim())
+    .filter(Boolean)
   if (!reasons.length) return verify
 
   const keepRules = [
@@ -71,7 +77,12 @@ export function relaxAuroraAuditForAnchor(verify, dnaOrFlag) {
   ]
   const remaining = reasons.filter((r) => keepRules.some((re) => re.test(r)))
   if (!remaining.length) {
-    return { ok: true, feedback: '', auroraRelaxed: true, originalFeedback: feedback }
+    return {
+      ok: true,
+      feedback: '',
+      auroraRelaxed: true,
+      originalFeedback: feedback,
+    }
   }
   return {
     ok: false,
@@ -110,7 +121,10 @@ export function scoreMobbinCoverage(html, anchor) {
   const markers = []
   const dna = anchor.dna
   if (dna) {
-    if (dna.display) markers.push(...(dna.display.toLowerCase().match(/[a-z][a-z0-9]+/g) || []))
+    if (dna.display)
+      markers.push(
+        ...(dna.display.toLowerCase().match(/[a-z][a-z0-9]+/g) || []),
+      )
     if (dna.layout) {
       const m = dna.layout.toLowerCase().match(/[a-z][a-z0-9-]{4,}/g) || []
       markers.push(...m.slice(0, 6))
@@ -165,7 +179,10 @@ export function detectVerbatimAnchorCopy(html) {
     if (cx.products && cx.products.length >= 3) {
       const clusterHits = cx.products.filter((p) => {
         const word = p.toLowerCase()
-        const re = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
+        const re = new RegExp(
+          `\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
+          'i',
+        )
         return re.test(html)
       })
       if (clusterHits.length >= 3) {

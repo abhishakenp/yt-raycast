@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FilmDirectorNavbar — fixed, backdrop-blurred top navigation bar for a film
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * wanting a clean, editorial, light-canvas aesthetic.
  */
 export const FilmDirectorNavbar = defineComponent({
-  name: "FilmDirectorNavbar",
+  name: 'FilmDirectorNavbar',
   description:
     "Fixed, backdrop-blurred top navigation bar for a film director / cinematographer / DP portfolio: a border-bottomed translucent header with the director's UPPERCASE name on the left, a row of thin minimal text links on the right (desktop), the last nav item rendered as a filled primary pill CTA, and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for filmmakers, directors, cinematographers, DPs, or video production houses wanting a clean, editorial, light-canvas aesthetic.",
   props: z.object({
@@ -26,15 +26,15 @@ export const FilmDirectorNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Marcus Chen"
+    const brand = props.brand ?? 'Marcus Chen'
     const nav = props.nav?.length
       ? props.nav
-      : ["Work", "Services", "About", "Get in Touch"]
+      : ['Work', 'Services', 'About', 'Get in Touch']
 
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-sm",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-sm',
           props.className,
         )}
       >

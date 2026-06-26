@@ -14,7 +14,8 @@ const INLINE_TAG =
 const BRIDGE_MARKUP = `(?:${INLINE_TAG}|<!--[\\s\\S]*?-->)`
 
 const escapeHtml = (str: string): string =>
-  str.replace(/&/g, '&amp;')
+  str
+    .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')

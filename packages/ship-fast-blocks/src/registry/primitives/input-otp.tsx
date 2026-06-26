@@ -1,19 +1,19 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 import {
   InputOTP as UIInputOTP,
   InputOTPGroup,
   InputOTPSlot,
   InputOTPSeparator,
-} from "#/components/ui/input-otp.tsx"
+} from '#/components/ui/input-otp.tsx'
 
 // Compound: flatten OTP input into one node. `length` slots, optional split
 // into two groups around a separator. Renders a static preview with a default
 // value so the slots show characters.
 export const InputOTP = defineComponent({
-  name: "InputOTP",
+  name: 'InputOTP',
   description:
-    "One-time-passcode input with `length` slots. Set `separated` to split into two groups with a divider. Mirrors shadcn InputOTP.",
+    'One-time-passcode input with `length` slots. Set `separated` to split into two groups with a divider. Mirrors shadcn InputOTP.',
   props: z.object({
     length: z.number().optional(),
     defaultValue: z.string().optional(),

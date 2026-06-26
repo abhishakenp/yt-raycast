@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MembershipClubNavbar — sticky, translucent top navigation bar for a private
@@ -16,7 +16,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * baked-in "The Guild" defaults.
  */
 export const MembershipClubNavbar = defineComponent({
-  name: "MembershipClubNavbar",
+  name: 'MembershipClubNavbar',
   description:
     "Sticky translucent top navigation bar for a private membership club / exclusive community site: backdrop-blurred, border-bottomed header pinned to the top with a thin concentric 'compass' club mark + light-weight club name on the left, horizontal nav links centered on desktop, and a solid rounded-pill primary 'Apply Now' CTA on the right. Nav items and CTA route through useNavigate for page switching. Use as the calm, refined, quietly premium site header for members clubs, founders/social clubs, professional networks, curated communities, alumni collectives, coworking/clubhouse memberships or paid community subscriptions.",
   props: z.object({
@@ -32,12 +32,12 @@ export const MembershipClubNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "The Guild"
+    const brand = props.brand ?? 'The Guild'
     const nav = props.nav?.length
       ? props.nav
-      : ["Benefits", "Membership", "About", "FAQ"]
-    const cta = props.cta ?? "Apply Now"
-    const ctaTarget = props.ctaTarget ?? "Apply for Membership"
+      : ['Benefits', 'Membership', 'About', 'FAQ']
+    const cta = props.cta ?? 'Apply Now'
+    const ctaTarget = props.ctaTarget ?? 'Apply for Membership'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -56,7 +56,7 @@ export const MembershipClubNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm",
+          'sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm',
           props.className,
         )}
       >

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * NutritionServices — services / offerings grid for a nutrition-coaching or
@@ -13,9 +13,9 @@ import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
  * programs or healthy-eating apps to lay out what the program includes.
  */
 export const NutritionServices = defineComponent({
-  name: "NutritionServices",
+  name: 'NutritionServices',
   description:
-    "Services / offerings grid for a nutrition-coaching or wellness site, built on the shared FeatureGrid kit composite: an optional heading + subheading above a responsive grid of four service cards (Meal Plans, 1-on-1 Coaching, Progress Tracking, Recipe Library), each with a fresh primary-tinted inline-svg icon tile, title, and description. Use mid-page on nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs or healthy-eating apps to lay out what the program includes.",
+    'Services / offerings grid for a nutrition-coaching or wellness site, built on the shared FeatureGrid kit composite: an optional heading + subheading above a responsive grid of four service cards (Meal Plans, 1-on-1 Coaching, Progress Tracking, Recipe Library), each with a fresh primary-tinted inline-svg icon tile, title, and description. Use mid-page on nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs or healthy-eating apps to lay out what the program includes.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -26,12 +26,12 @@ export const NutritionServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Everything you need to eat well"
+    const heading = props.heading ?? 'Everything you need to eat well'
     const subheading =
       props.subheading ??
-      "A complete toolkit of plans, coaching, and tracking that adapts to your goals and your life."
+      'A complete toolkit of plans, coaching, and tracking that adapts to your goals and your life.'
 
-    const iconClass = "size-6 text-primary"
+    const iconClass = 'size-6 text-primary'
     const icons = [
       // Meal Plans — clipboard / plan
       <svg
@@ -101,24 +101,24 @@ export const NutritionServices = defineComponent({
 
     const defaults = [
       {
-        title: "Meal Plans",
+        title: 'Meal Plans',
         description:
-          "Personalized weekly meal plans built around your tastes, goals, and dietary needs—updated automatically as you progress.",
+          'Personalized weekly meal plans built around your tastes, goals, and dietary needs—updated automatically as you progress.',
       },
       {
-        title: "1-on-1 Coaching",
+        title: '1-on-1 Coaching',
         description:
-          "Direct access to a registered dietitian who answers questions, adjusts your plan, and keeps you accountable every week.",
+          'Direct access to a registered dietitian who answers questions, adjusts your plan, and keeps you accountable every week.',
       },
       {
-        title: "Progress Tracking",
+        title: 'Progress Tracking',
         description:
-          "Log meals, weight, and energy in seconds and watch clear trend charts turn small daily wins into lasting results.",
+          'Log meals, weight, and energy in seconds and watch clear trend charts turn small daily wins into lasting results.',
       },
       {
-        title: "Recipe Library",
+        title: 'Recipe Library',
         description:
-          "Hundreds of fresh, fast, dietitian-approved recipes with macros, prep times, and one-tap swaps for picky eaters.",
+          'Hundreds of fresh, fast, dietitian-approved recipes with macros, prep times, and one-tap swaps for picky eaters.',
       },
     ]
 

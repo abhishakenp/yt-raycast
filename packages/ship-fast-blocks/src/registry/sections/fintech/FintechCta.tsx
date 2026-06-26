@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * FintechCta — full-width closing call-to-action band for a fintech / neobank
@@ -12,7 +12,7 @@ import { CtaBand } from "#/section-kit/CtaBand.tsx"
  * baked-in defaults.
  */
 export const FintechCta = defineComponent({
-  name: "FintechCta",
+  name: 'FintechCta',
   description:
     "Full-width closing call-to-action band for a fintech / neobank landing page built on the shared CtaBand composite (primary tone): an eyebrow, a 'Start banking smarter' title, a supporting subtitle, and a row of routable actions ('Open an Account' primary + 'Talk to sales' outline). Actions route through useNavigate. Use as the conversion band near the end of the page.",
   props: z.object({
@@ -28,26 +28,26 @@ export const FintechCta = defineComponent({
         z.object({
           label: z.string(),
           target: z.string().optional(),
-          variant: z.enum(["primary", "outline", "ghost"]).optional(),
+          variant: z.enum(['primary', 'outline', 'ghost']).optional(),
         }),
       )
       .optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Get started today"
-    const title = props.title ?? "Start banking smarter"
+    const eyebrow = props.eyebrow ?? 'Get started today'
+    const title = props.title ?? 'Start banking smarter'
     const subtitle =
       props.subtitle ??
-      "Open your account in minutes. No paperwork, no minimum balance, no monthly fees. Join millions already moving their money with Vault."
+      'Open your account in minutes. No paperwork, no minimum balance, no monthly fees. Join millions already moving their money with Vault.'
     const actions = props.actions?.length
       ? props.actions
       : [
-          { label: "Open an Account", variant: "primary" as const },
+          { label: 'Open an Account', variant: 'primary' as const },
           {
-            label: "Talk to sales",
-            target: "Contact",
-            variant: "outline" as const,
+            label: 'Talk to sales',
+            target: 'Contact',
+            variant: 'outline' as const,
           },
         ]
 

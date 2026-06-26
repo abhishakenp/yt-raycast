@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MembershipClubFooter — multi-column site footer for a private membership club /
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * subscriptions. Renders fully with no props.
  */
 export const MembershipClubFooter = defineComponent({
-  name: "MembershipClubFooter",
+  name: 'MembershipClubFooter',
   description:
     "Multi-column site footer for a private membership club / exclusive community page: a muted, border-topped band with a wide brand column (thin concentric 'compass' club mark + light club name + an about paragraph) beside link columns of text buttons, then a bottom row with a dynamic-year copyright on the left and inline legal links on the right. Brand mark and every link route through useNavigate. Use as the closing footer for members clubs, founders/social clubs, professional networks, curated communities or paid community subscriptions.",
   props: z.object({
@@ -32,33 +32,32 @@ export const MembershipClubFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "The Guild"
-    const homeTarget = props.homeTarget ?? "Benefits"
+    const brand = props.brand ?? 'The Guild'
+    const homeTarget = props.homeTarget ?? 'Benefits'
     const about =
       props.about ??
-      "A private membership for people who value depth over breadth. Curated connections, intimate events, and spaces designed for genuine relationships."
+      'A private membership for people who value depth over breadth. Curated connections, intimate events, and spaces designed for genuine relationships.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Membership",
+            title: 'Membership',
             links: [
-              "Membership Tiers",
-              "Benefits",
-              "Gift Membership",
-              "Corporate Plans",
+              'Membership Tiers',
+              'Benefits',
+              'Gift Membership',
+              'Corporate Plans',
             ],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Press", "Contact"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Press', 'Contact'],
           },
         ]
-    const copyright =
-      props.copyright ?? "The Guild, Inc. All rights reserved."
+    const copyright = props.copyright ?? 'The Guild, Inc. All rights reserved.'
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy", "Terms", "Code of Conduct"]
+      : ['Privacy', 'Terms', 'Code of Conduct']
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -77,7 +76,7 @@ export const MembershipClubFooter = defineComponent({
     return (
       <footer
         className={cn(
-          "w-full border-t border-border bg-muted",
+          'w-full border-t border-border bg-muted',
           props.className,
         )}
         role="contentinfo"

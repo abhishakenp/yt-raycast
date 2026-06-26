@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * RealEstateTestimonials — client-review wall for a brokerage. A centered serif
@@ -11,9 +11,9 @@ import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
  * props via baked-in defaults.
  */
 export const RealEstateTestimonials = defineComponent({
-  name: "RealEstateTestimonials",
+  name: 'RealEstateTestimonials',
   description:
-    "Client-review wall for a brokerage: a centered serif header above a responsive 1/2/3-column grid of review cards, each with a token-toned star rating row, a quote, and an attribution with an initial avatar chip. Defaults cover three buyer/seller stories. Use to build social proof on a real-estate brokerage or agent site.",
+    'Client-review wall for a brokerage: a centered serif header above a responsive 1/2/3-column grid of review cards, each with a token-toned star rating row, a quote, and an attribution with an initial avatar chip. Defaults cover three buyer/seller stories. Use to build social proof on a real-estate brokerage or agent site.',
   props: z.object({
     /** Section heading (serif, large). */
     heading: z.string().optional(),
@@ -32,7 +32,7 @@ export const RealEstateTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Loved by buyers and sellers"
+    const heading = props.heading ?? 'Loved by buyers and sellers'
     const description =
       props.description ??
       "The relationships outlast the closing. Here's what working with our team feels like."
@@ -42,19 +42,19 @@ export const RealEstateTestimonials = defineComponent({
           {
             quote:
               "They found us a home in a neighborhood we didn't even know to look in — and it was perfect. Negotiated below asking, too.",
-            name: "Dana & Marcus Hill",
+            name: 'Dana & Marcus Hill',
             rating: 5,
           },
           {
             quote:
-              "Sold in nine days, over asking. The staging advice and pricing strategy made all the difference.",
-            name: "Priya Raman",
+              'Sold in nine days, over asking. The staging advice and pricing strategy made all the difference.',
+            name: 'Priya Raman',
             rating: 5,
           },
           {
             quote:
-              "First-time buyers and totally overwhelmed. Our agent explained every step and never once made us feel rushed.",
-            name: "Jordan Webb",
+              'First-time buyers and totally overwhelmed. Our agent explained every step and never once made us feel rushed.',
+            name: 'Jordan Webb',
             rating: 5,
           },
         ]

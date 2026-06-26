@@ -1,9 +1,9 @@
-import { useState } from "react"
+import { useState } from 'react'
 
-import { useAuth, signInWithGoogle, signOut } from "@ship-fast/lakebed/react"
+import { useAuth, signInWithGoogle, signOut } from '@ship-fast/lakebed/react'
 
-import { cn } from "#/lib/utils.ts"
-import { kitActionClasses } from "#/section-kit/types.ts"
+import { cn } from '#/lib/utils.ts'
+import { kitActionClasses } from '#/section-kit/types.ts'
 
 /**
  * A REAL working sign-in button wired to the site's Shoo/lakebed auth.
@@ -18,7 +18,7 @@ import { kitActionClasses } from "#/section-kit/types.ts"
  */
 export function SignInButton(props: {
   label?: string
-  variant?: "primary" | "outline" | "ghost"
+  variant?: 'primary' | 'outline' | 'ghost'
   className?: string
 }) {
   const auth = useAuth()
@@ -27,7 +27,7 @@ export function SignInButton(props: {
   const signedIn = auth.isAuthenticated && !auth.isGuest
 
   const currentRoute = () => {
-    if (typeof window === "undefined") return undefined
+    if (typeof window === 'undefined') return undefined
     return (
       window.location.pathname + window.location.search + window.location.hash
     )
@@ -42,8 +42,8 @@ export function SignInButton(props: {
           void signInWithGoogle({ returnTo: currentRoute() })
         }}
         className={cn(
-          kitActionClasses(props.variant ?? "primary"),
-          "gap-2 disabled:cursor-not-allowed disabled:opacity-60",
+          kitActionClasses(props.variant ?? 'primary'),
+          'gap-2 disabled:cursor-not-allowed disabled:opacity-60',
           props.className,
         )}
       >
@@ -71,17 +71,17 @@ export function SignInButton(props: {
             d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.42 14.97.5 12 .5A11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 6.68 9.14 4.75 12 4.75Z"
           />
         </svg>
-        {props.label ?? "Sign in"}
+        {props.label ?? 'Sign in'}
       </button>
     )
   }
 
-  const name = auth.displayName || auth.email || "Account"
+  const name = auth.displayName || auth.email || 'Account'
   const avatar = auth.picture
-  const initial = (name || "?").trim().charAt(0).toUpperCase() || "?"
+  const initial = (name || '?').trim().charAt(0).toUpperCase() || '?'
 
   return (
-    <div className={cn("relative", props.className)}>
+    <div className={cn('relative', props.className)}>
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}

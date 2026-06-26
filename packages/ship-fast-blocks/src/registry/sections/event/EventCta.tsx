@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * EventCta — a final call-to-action band for a conference or event page. A
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * workshop pages.
  */
 export const EventCta = defineComponent({
-  name: "EventCta",
+  name: 'EventCta',
   description:
-    "Final call-to-action band for a conference or event page: a centered large heading with a supporting paragraph, dual primary/secondary CTAs (get ticket / download brochure), and a closing email line with an inline contact link. All actions route through useNavigate. Use as the closing conversion band before the footer on tech conference, summit, festival, meetup, or workshop pages.",
+    'Final call-to-action band for a conference or event page: a centered large heading with a supporting paragraph, dual primary/secondary CTAs (get ticket / download brochure), and a closing email line with an inline contact link. All actions route through useNavigate. Use as the closing conversion band before the footer on tech conference, summit, festival, meetup, or workshop pages.',
   props: z.object({
     /** Heading text. */
     heading: z.string().optional(),
@@ -32,17 +32,17 @@ export const EventCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to join us in San Francisco?"
+    const heading = props.heading ?? 'Ready to join us in San Francisco?'
     const description =
       props.description ??
-      "Early bird tickets sold out in 48 hours last year. Secure your spot at DesignFront 2024 before prices increase."
-    const primaryCta = props.primaryCta ?? "Get Your Ticket — $649"
-    const secondaryCta = props.secondaryCta ?? "Download Brochure"
-    const emailLabel = props.emailLabel ?? "Questions? Email us at"
-    const email = props.email ?? "hello@designfront.io"
+      'Early bird tickets sold out in 48 hours last year. Secure your spot at DesignFront 2024 before prices increase.'
+    const primaryCta = props.primaryCta ?? 'Get Your Ticket — $649'
+    const secondaryCta = props.secondaryCta ?? 'Download Brochure'
+    const emailLabel = props.emailLabel ?? 'Questions? Email us at'
+    const email = props.email ?? 'hello@designfront.io'
 
     return (
-      <section className={cn("py-20 lg:py-28", props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
             {heading}
@@ -67,7 +67,7 @@ export const EventCta = defineComponent({
             </button>
           </div>
           <p className="mt-8 text-sm text-muted-foreground">
-            {emailLabel}{" "}
+            {emailLabel}{' '}
             <button
               type="button"
               onClick={() => go(email)}

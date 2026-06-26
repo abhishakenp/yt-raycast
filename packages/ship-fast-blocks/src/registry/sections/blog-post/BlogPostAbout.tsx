@@ -1,9 +1,9 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * BlogPostAbout — long-form editorial article body for a blog post detail page.
@@ -17,9 +17,9 @@ import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
  * essays, or editorial reading pages.
  */
 export const BlogPostAbout = defineComponent({
-  name: "BlogPostAbout",
+  name: 'BlogPostAbout',
   description:
-    "Long-form editorial article body with headings + pullquote for a blog post detail page: a centered long-form reading column with lead paragraphs (large, light), intro paragraphs, body sections (each with a SectionHeading and ordered blocks: paragraphs, h3 sub-headings, inline figures with captions, and highlighted bullet callouts), an accented serif pull-quote after the first section, closing paragraphs, tag/topic chips, and an author bio card. All interactive elements route through useNavigate. Use as the main content area for blogs, journals, magazines, essays, or editorial reading pages.",
+    'Long-form editorial article body with headings + pullquote for a blog post detail page: a centered long-form reading column with lead paragraphs (large, light), intro paragraphs, body sections (each with a SectionHeading and ordered blocks: paragraphs, h3 sub-headings, inline figures with captions, and highlighted bullet callouts), an accented serif pull-quote after the first section, closing paragraphs, tag/topic chips, and an author bio card. All interactive elements route through useNavigate. Use as the main content area for blogs, journals, magazines, essays, or editorial reading pages.',
   props: z.object({
     /** Lead paragraphs rendered above the first heading (large, light text). */
     lead: z.array(z.string()).optional(),
@@ -75,24 +75,24 @@ export const BlogPostAbout = defineComponent({
     const lead = props.lead?.length
       ? props.lead
       : [
-          "Last October, I watched a junior designer spend three days perfecting a button hover state. The rest of the team was racing toward a deadline, cranking out screens at breakneck speed. But there was Sarah, adjusting micro-interactions by milliseconds, testing color shifts in different lighting conditions, documenting her rationale in excruciating detail.",
+          'Last October, I watched a junior designer spend three days perfecting a button hover state. The rest of the team was racing toward a deadline, cranking out screens at breakneck speed. But there was Sarah, adjusting micro-interactions by milliseconds, testing color shifts in different lighting conditions, documenting her rationale in excruciating detail.',
         ]
 
     const introParagraphs = props.introParagraphs?.length
       ? props.introParagraphs
       : [
           "On day four, she presented her work. The room went quiet. That button wasn't just functional—it was delightful. Users would feel it before they understood it. The micro-interaction communicated trust, responsiveness, and care. It was a tiny detail that elevated the entire product experience.",
-          "This is the paradox of modern design: we're told to move fast, ship constantly, iterate quickly. Yet the work that endures—the products people truly love—often comes from designers who resist the pressure to rush. They practice what I call \"slow design,\" and it's becoming the competitive advantage nobody talks about.",
+          'This is the paradox of modern design: we\'re told to move fast, ship constantly, iterate quickly. Yet the work that endures—the products people truly love—often comes from designers who resist the pressure to rush. They practice what I call "slow design," and it\'s becoming the competitive advantage nobody talks about.',
         ]
 
     const sections = props.sections?.length
       ? props.sections
       : [
           {
-            heading: "The Speed Trap",
+            heading: 'The Speed Trap',
             blocks: [
               {
-                p: "Silicon Valley has fetishized velocity. We celebrate teams that ship features weekly, designers who produce dozens of screens daily, companies that \"move fast and break things.\" The underlying assumption is that speed equals innovation, that the first to market wins, that iteration beats deliberation.",
+                p: 'Silicon Valley has fetishized velocity. We celebrate teams that ship features weekly, designers who produce dozens of screens daily, companies that "move fast and break things." The underlying assumption is that speed equals innovation, that the first to market wins, that iteration beats deliberation.',
               },
               {
                 p: "But this narrative ignores a crucial truth: most products don't fail because they launched too slowly. They fail because they solve the wrong problem, or solve it poorly, or create more friction than they remove. In my 15 years of designing digital products, I've seen rushed launches kill promising concepts more often than missed deadlines ever have.",
@@ -103,75 +103,75 @@ export const BlogPostAbout = defineComponent({
             ],
           },
           {
-            heading: "What Slow Design Looks Like",
+            heading: 'What Slow Design Looks Like',
             blocks: [
               {
                 p: "Slow design isn't about working less or missing deadlines. It's about allocating time where it matters most. Here's what I've observed in teams that practice it well:",
               },
-              { h3: "1. Extended Problem Immersion" },
+              { h3: '1. Extended Problem Immersion' },
               {
                 p: "Instead of jumping to solutions, slow designers spend disproportionate time understanding the problem space. When Airbnb redesigned their host onboarding in 2021, the team spent six weeks just shadowing hosts, mapping emotional journeys, and identifying moments of anxiety that weren't obvious in analytics. The resulting design increased host activation by 34%—but it required patience that many teams would have bypassed.",
               },
-              { h3: "2. Deliberate Constraint Setting" },
+              { h3: '2. Deliberate Constraint Setting' },
               {
-                p: "Paradoxically, slowing down often means setting stricter constraints. When Figma built their multiplayer editing feature, they deliberately limited the initial scope to text editing only. This constraint allowed the team to perfect the underlying synchronization engine rather than spreading their attention across multiple feature surfaces. The result felt magical because it was polished, not because it was comprehensive.",
+                p: 'Paradoxically, slowing down often means setting stricter constraints. When Figma built their multiplayer editing feature, they deliberately limited the initial scope to text editing only. This constraint allowed the team to perfect the underlying synchronization engine rather than spreading their attention across multiple feature surfaces. The result felt magical because it was polished, not because it was comprehensive.',
               },
               {
                 imageAlt:
-                  "Team of designers collaborating around a large table with sketches and wireframes",
+                  'Team of designers collaborating around a large table with sketches and wireframes',
                 caption:
                   "Team collaboration session at Notion's San Francisco office, 2023",
               },
-              { h3: "3. Maturation Periods" },
+              { h3: '3. Maturation Periods' },
               {
-                p: "Notion's infamous for their approach to features: they often sit on completed designs for months before shipping. CEO Ivan Zhao has explained that this \"maturation period\" allows the team to experience their own product daily, identifying friction points that weren't visible during initial design. The waitlist feature, which drove significant growth in 2022, was built and then shelved for eight months while the team refined the invitation flow.",
+                p: 'Notion\'s infamous for their approach to features: they often sit on completed designs for months before shipping. CEO Ivan Zhao has explained that this "maturation period" allows the team to experience their own product daily, identifying friction points that weren\'t visible during initial design. The waitlist feature, which drove significant growth in 2022, was built and then shelved for eight months while the team refined the invitation flow.',
               },
             ],
           },
           {
-            heading: "The Business Case for Patience",
+            heading: 'The Business Case for Patience',
             blocks: [
               {
-                p: "Skeptics will ask: how do you justify slow design to stakeholders demanding velocity? The answer lies in measuring what matters. Feature velocity is easy to quantify; user satisfaction, retention impact, and brand perception are harder but ultimately more valuable.",
+                p: 'Skeptics will ask: how do you justify slow design to stakeholders demanding velocity? The answer lies in measuring what matters. Feature velocity is easy to quantify; user satisfaction, retention impact, and brand perception are harder but ultimately more valuable.',
               },
               {
-                p: "When Linear built their issue tracking product, they famously rejected VC pressure to scale quickly. The small team spent two years on a product that competitors might have built in six months. But those 18 \"extra\" months produced a tool so refined that it commands a premium price in a crowded market. Linear's annual recurring revenue crossed $20 million in 2023—a testament to the economics of excellence.",
+                p: 'When Linear built their issue tracking product, they famously rejected VC pressure to scale quickly. The small team spent two years on a product that competitors might have built in six months. But those 18 "extra" months produced a tool so refined that it commands a premium price in a crowded market. Linear\'s annual recurring revenue crossed $20 million in 2023—a testament to the economics of excellence.',
               },
               {
-                callout: "Key Research Findings",
+                callout: 'Key Research Findings',
                 items: [
-                  "McKinsey's 2023 design study found that companies with formal \"thinking time\" policies saw 47% higher customer satisfaction scores",
-                  "Teams that conduct 3+ rounds of user testing (vs. 1-2) reduce post-launch bug reports by 62%",
-                  "Products with 6+ month development cycles show 3x higher 2-year retention than those built in under 3 months",
+                  'McKinsey\'s 2023 design study found that companies with formal "thinking time" policies saw 47% higher customer satisfaction scores',
+                  'Teams that conduct 3+ rounds of user testing (vs. 1-2) reduce post-launch bug reports by 62%',
+                  'Products with 6+ month development cycles show 3x higher 2-year retention than those built in under 3 months',
                 ],
               },
             ],
           },
           {
-            heading: "Practical Slow Design",
+            heading: 'Practical Slow Design',
             blocks: [
               {
                 p: "Adopting slow design doesn't require corporate policy changes or executive buy-in. Individual designers and small teams can implement it immediately:",
               },
               {
-                p: "Start with a \"waiting list\" for your own ideas. When you have a design solution, write it down and revisit it in 48 hours. Most initial solutions benefit from this cooling period—you'll spot assumptions, simplifications, and missed opportunities that weren't visible in the moment of creation.",
+                p: 'Start with a "waiting list" for your own ideas. When you have a design solution, write it down and revisit it in 48 hours. Most initial solutions benefit from this cooling period—you\'ll spot assumptions, simplifications, and missed opportunities that weren\'t visible in the moment of creation.',
               },
               {
                 p: "Protect deep work blocks aggressively. Cal Newport's research on deep work applies directly to design. Two hours of uninterrupted focus produces better outcomes than six hours of fragmented attention. Schedule these blocks during your peak cognitive hours and defend them ruthlessly.",
               },
               {
-                p: "Build \"beauty sprints\" into your timeline. After functional completion, allocate 20% of remaining project time purely for refinement. This isn't gold-plating—it's the period when good products become great. Use it for micro-interactions, edge cases, and those details that separate professional work from exceptional work.",
+                p: 'Build "beauty sprints" into your timeline. After functional completion, allocate 20% of remaining project time purely for refinement. This isn\'t gold-plating—it\'s the period when good products become great. Use it for micro-interactions, edge cases, and those details that separate professional work from exceptional work.',
               },
             ],
           },
           {
-            heading: "The Future is Thoughtful",
+            heading: 'The Future is Thoughtful',
             blocks: [
               {
                 p: "As AI tools accelerate the production of mediocre design, human judgment and taste become more valuable, not less. The designers who thrive won't be those who produce the fastest—they'll be those who know when to slow down, when to question defaults, when to let ideas mature.",
               },
               {
-                p: "Sarah, that junior designer obsessing over button states? She was promoted to senior within 18 months. Her work on that micro-interaction became a case study that her current team—a Series B fintech startup—still references. The three days that seemed extravagant were, in retrospect, an investment that paid dividends far beyond the immediate project.",
+                p: 'Sarah, that junior designer obsessing over button states? She was promoted to senior within 18 months. Her work on that micro-interaction became a case study that her current team—a Series B fintech startup—still references. The three days that seemed extravagant were, in retrospect, an investment that paid dividends far beyond the immediate project.',
               },
             ],
           },
@@ -182,7 +182,7 @@ export const BlogPostAbout = defineComponent({
       "Speed is the enemy of nuance. When we rush, we default to patterns we've used before, solutions we've seen work elsewhere. We stop seeing the unique context in front of us."
     const pullQuoteAttribution =
       props.pullQuote?.attribution ??
-      "From a 2022 interview with Jony Ive in The Design Journal"
+      'From a 2022 interview with Jony Ive in The Design Journal'
 
     const closing = props.closing?.length
       ? props.closing
@@ -192,27 +192,22 @@ export const BlogPostAbout = defineComponent({
 
     const tags = props.tags?.length
       ? props.tags
-      : [
-          "Design Process",
-          "Product Strategy",
-          "UX Research",
-          "Team Culture",
-        ]
+      : ['Design Process', 'Product Strategy', 'UX Research', 'Team Culture']
 
-    const authorName = props.author?.name ?? "Elena Martinez"
+    const authorName = props.author?.name ?? 'Elena Martinez'
     const authorBio =
       props.author?.bio ??
-      "Elena is a Design Director with 15 years of experience building products at Stripe, Airbnb, and Notion. She writes about the intersection of craft, strategy, and team culture. Her work has been featured in Communication Arts, Fast Company, and the AIGA Design Journal."
+      'Elena is a Design Director with 15 years of experience building products at Stripe, Airbnb, and Notion. She writes about the intersection of craft, strategy, and team culture. Her work has been featured in Communication Arts, Fast Company, and the AIGA Design Journal.'
     const authorAvatarAlt =
       props.author?.avatarAlt ??
-      "Professional headshot of Elena Martinez, design director and writer"
+      'Professional headshot of Elena Martinez, design director and writer'
     const authorLinks = props.author?.links?.length
       ? props.author.links
-      : ["Twitter", "LinkedIn", "Portfolio"]
+      : ['Twitter', 'LinkedIn', 'Portfolio']
 
     return (
       <article
-        className={cn("mx-auto max-w-3xl px-6 pb-24 lg:px-8", props.className)}
+        className={cn('mx-auto max-w-3xl px-6 pb-24 lg:px-8', props.className)}
       >
         <div className="max-w-none">
           {lead.map((p) => (

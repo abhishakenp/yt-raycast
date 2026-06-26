@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * InteriorDesignPricing — inverted (foreground-surface) services + pricing list
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in defaults.
  */
 export const InteriorDesignPricing = defineComponent({
-  name: "InteriorDesignPricing",
+  name: 'InteriorDesignPricing',
   description:
-    "Inverted (foreground-surface) services + pricing list for an upscale interior-design / architecture studio: a dramatic two-column band on the dark foreground surface with an uppercase eyebrow, light-weight heading, supporting paragraph and a filled inverted CTA on the left, and a divided vertical list of service tiers — each with a title, right-aligned price and short description — on the right. Editorial, refined and high-contrast; the CTA routes through useNavigate. Use to present service packages and pricing for interior designers, design studios or architecture firms.",
+    'Inverted (foreground-surface) services + pricing list for an upscale interior-design / architecture studio: a dramatic two-column band on the dark foreground surface with an uppercase eyebrow, light-weight heading, supporting paragraph and a filled inverted CTA on the left, and a divided vertical list of service tiers — each with a title, right-aligned price and short description — on the right. Editorial, refined and high-contrast; the CTA routes through useNavigate. Use to present service packages and pricing for interior designers, design studios or architecture firms.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -36,45 +36,45 @@ export const InteriorDesignPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Services"
-    const heading = props.heading ?? "Comprehensive design services"
+    const eyebrow = props.eyebrow ?? 'Services'
+    const heading = props.heading ?? 'Comprehensive design services'
     const description =
       props.description ??
-      "From initial concept to final installation, we offer a full spectrum of interior design services tailored to projects of every scale."
-    const cta = props.cta ?? "Request Service Guide"
+      'From initial concept to final installation, we offer a full spectrum of interior design services tailored to projects of every scale.'
+    const cta = props.cta ?? 'Request Service Guide'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Full-Service Design",
-            price: "From $25,000",
+            title: 'Full-Service Design',
+            price: 'From $25,000',
             description:
-              "Complete interior design from concept through installation. Includes space planning, material selection, custom furniture design, and project management.",
+              'Complete interior design from concept through installation. Includes space planning, material selection, custom furniture design, and project management.',
           },
           {
-            title: "Design Consultation",
-            price: "$500/hour",
+            title: 'Design Consultation',
+            price: '$500/hour',
             description:
-              "Professional guidance for DIY projects or renovation planning. Includes detailed recommendations, material suggestions, and vendor referrals.",
+              'Professional guidance for DIY projects or renovation planning. Includes detailed recommendations, material suggestions, and vendor referrals.',
           },
           {
-            title: "Furniture Procurement",
-            price: "Project-based",
+            title: 'Furniture Procurement',
+            price: 'Project-based',
             description:
-              "Access to trade-only furniture and decor with designer discounts. We source, procure, and coordinate delivery and placement.",
+              'Access to trade-only furniture and decor with designer discounts. We source, procure, and coordinate delivery and placement.',
           },
           {
-            title: "Styling & Accessories",
-            price: "From $5,000",
+            title: 'Styling & Accessories',
+            price: 'From $5,000',
             description:
-              "The finishing touches that make a house a home. Art curation, accessory selection, and professional styling for photography or living.",
+              'The finishing touches that make a house a home. Art curation, accessory selection, and professional styling for photography or living.',
           },
         ]
 
     return (
       <section
         className={cn(
-          "bg-foreground px-4 py-20 text-background sm:px-6 md:py-32 lg:px-8",
+          'bg-foreground px-4 py-20 text-background sm:px-6 md:py-32 lg:px-8',
           props.className,
         )}
       >
@@ -104,8 +104,8 @@ export const InteriorDesignPricing = defineComponent({
                 <div
                   key={item.title}
                   className={cn(
-                    "pb-8",
-                    i < items.length - 1 && "border-b border-background/20",
+                    'pb-8',
+                    i < items.length - 1 && 'border-b border-background/20',
                   )}
                 >
                   <div className="mb-4 flex items-start justify-between gap-4">

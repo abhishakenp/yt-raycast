@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CorporateHero — split-layout enterprise hero section for a corporate B2B
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * credibility.
  */
 export const CorporateHero = defineComponent({
-  name: "CorporateHero",
+  name: 'CorporateHero',
   description:
-    "Split-layout enterprise hero section for a corporate B2B marketing page: left side with a live trust badge (pulsing dot), authoritative headline, supporting paragraph, dual CTAs, and SOC 2 / ISO compliance check-marks; right side with a showcase office photo and a floating ROI stat card. Clean, trustworthy, conversion-focused. CTAs route through useNavigate. Use as the opening hero for enterprise software, cloud infrastructure, IT consultancies, or any corporate site.",
+    'Split-layout enterprise hero section for a corporate B2B marketing page: left side with a live trust badge (pulsing dot), authoritative headline, supporting paragraph, dual CTAs, and SOC 2 / ISO compliance check-marks; right side with a showcase office photo and a floating ROI stat card. Clean, trustworthy, conversion-focused. CTAs route through useNavigate. Use as the opening hero for enterprise software, cloud infrastructure, IT consultancies, or any corporate site.',
   props: z.object({
     /** Trust badge text above the headline. */
     badge: z.string().optional(),
@@ -42,22 +42,22 @@ export const CorporateHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroBadge = props.badge ?? "Trusted by 500+ Enterprise Clients"
+    const heroBadge = props.badge ?? 'Trusted by 500+ Enterprise Clients'
     const heroHeading =
-      props.heading ?? "Enterprise infrastructure for the modern economy"
+      props.heading ?? 'Enterprise infrastructure for the modern economy'
     const heroSub =
       props.subheading ??
       "Nexus delivers mission-critical cloud infrastructure, enterprise software, and digital transformation solutions that power the world's most demanding organizations. From Fortune 500 to high-growth startups."
-    const heroPrimary = props.primaryCta ?? "Schedule a Demo"
-    const heroSecondary = props.secondaryCta ?? "Explore Solutions"
+    const heroPrimary = props.primaryCta ?? 'Schedule a Demo'
+    const heroSecondary = props.secondaryCta ?? 'Explore Solutions'
     const heroBadges = props.badges?.length
       ? props.badges
-      : ["SOC 2 Type II Certified", "ISO 27001 Compliant"]
+      : ['SOC 2 Type II Certified', 'ISO 27001 Compliant']
     const heroImageAlt =
       props.imageAlt ??
-      "Modern corporate office interior with glass walls and collaborative workspace"
-    const heroStatLabel = props.statLabel ?? "Average ROI"
-    const heroStatValue = props.statValue ?? "340%"
+      'Modern corporate office interior with glass walls and collaborative workspace'
+    const heroStatLabel = props.statLabel ?? 'Average ROI'
+    const heroStatValue = props.statValue ?? '340%'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -78,10 +78,7 @@ export const CorporateHero = defineComponent({
 
     return (
       <section
-        className={cn(
-          "relative overflow-hidden bg-muted/50",
-          props.className,
-        )}
+        className={cn('relative overflow-hidden bg-muted/50', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">

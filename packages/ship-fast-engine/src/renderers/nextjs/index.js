@@ -34,7 +34,9 @@ function collectThemeGoogleFontFamilies(theme = {}) {
       .trim()
     if (!first) continue
     if (
-      /^(system-ui|sans-serif|serif|monospace|ui-sans-serif|ui-monospace|apple-system)/i.test(first)
+      /^(system-ui|sans-serif|serif|monospace|ui-sans-serif|ui-monospace|apple-system)/i.test(
+        first,
+      )
     )
       continue
     const k = first.toLowerCase()
@@ -61,7 +63,11 @@ function buildNextLayoutFontLinkLines(siteSpec) {
   return `\n${lines.join('\n')}\n`
 }
 
-function renderNextPackageJson(projectName, extraDependencies = {}, extraScripts = {}) {
+function renderNextPackageJson(
+  projectName,
+  extraDependencies = {},
+  extraScripts = {},
+) {
   return JSON.stringify(
     {
       name: projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
@@ -89,8 +95,11 @@ function renderNextPackageJson(projectName, extraDependencies = {}, extraScripts
 
 function renderMedusaExportFiles(session) {
   const backendUrl =
-    String(session?.medusaConfig?.backendUrl || '').trim() || 'http://localhost:9000'
-  const publishableKey = String(session?.medusaConfig?.publishableKey || '').trim()
+    String(session?.medusaConfig?.backendUrl || '').trim() ||
+    'http://localhost:9000'
+  const publishableKey = String(
+    session?.medusaConfig?.publishableKey || '',
+  ).trim()
   const prefilled = Boolean(
     String(session?.medusaConfig?.backendUrl || '').trim() || publishableKey,
   )
@@ -1167,7 +1176,7 @@ function renderSanityNextExportFiles(siteSpec, session) {
     'production'
   const prefilled = Boolean(
     String(session?.sanityConfig?.projectId || '').trim() ||
-    String(session?.sanityConfig?.dataset || '').trim(),
+      String(session?.sanityConfig?.dataset || '').trim(),
   )
 
   return {
@@ -2254,7 +2263,8 @@ export default function GeneratedPage() {
 export function renderNextProject(siteSpec, session) {
   const cmsType = (siteSpec.exportOptions?.cms || '').toLowerCase()
   const cmsSanity = cmsType === 'sanity'
-  const embedSanityStudio = cmsSanity && siteSpec.exportOptions?.embedSanityStudio !== false
+  const embedSanityStudio =
+    cmsSanity && siteSpec.exportOptions?.embedSanityStudio !== false
   const isEcommerce = siteSpec.siteType === 'ecommerce'
   const useSwiper = shouldUseSwiper(siteSpec)
   const cmsDependencies = {
@@ -2279,7 +2289,9 @@ export function renderNextProject(siteSpec, session) {
     ...(isEcommerce ? { '@medusajs/js-sdk': '^2.13.5' } : {}),
     ...(useSwiper ? { swiper: '^12.0.0' } : {}),
   }
-  const sanityScripts = embedSanityStudio ? { studio: 'bun run --cwd studio dev' } : {}
+  const sanityScripts = embedSanityStudio
+    ? { studio: 'bun run --cwd studio dev' }
+    : {}
   const nextConfigMjs = cmsSanity
     ? embedSanityStudio
       ? `/** @type {import('next').NextConfig} */
@@ -2307,12 +2319,17 @@ const nextConfig = {}
 
 export default nextConfig
 `
-  const homePage = (siteSpec.pages || []).find((page) => page.route === '/') || siteSpec.pages?.[0]
+  const homePage =
+    (siteSpec.pages || []).find((page) => page.route === '/') ||
+    siteSpec.pages?.[0]
   const siteSeo = resolvePageSeo(siteSpec, homePage)
   const sitemapEntries = buildSitemapEntries(siteSpec)
   const llmsTxtBody = renderGeneratedSiteLlmsTxt(siteSpec)
   const robotsConfig = siteSeo.siteUrl
-    ? { rules: [{ userAgent: '*', allow: '/' }], sitemap: `${siteSeo.siteUrl}/sitemap.xml` }
+    ? {
+        rules: [{ userAgent: '*', allow: '/' }],
+        sitemap: `${siteSeo.siteUrl}/sitemap.xml`,
+      }
     : { rules: [{ userAgent: '*', allow: '/' }] }
   const fontLines = buildNextLayoutFontLinkLines(siteSpec)
   const llmsTxtLinkLine =
@@ -2328,7 +2345,11 @@ ${fontLines.trim() ? fontLines.replace(/^\n/, '') : ''}      </head>\n`
     ? '<EcommerceClientRoot>{children}</EcommerceClientRoot>'
     : '{children}'
   const files = {
-    'package.json': renderNextPackageJson(siteSpec.projectName, cmsDependencies, sanityScripts),
+    'package.json': renderNextPackageJson(
+      siteSpec.projectName,
+      cmsDependencies,
+      sanityScripts,
+    ),
     'next.config.mjs': nextConfigMjs,
     'app/layout.jsx': `import './globals.css'
 ${layoutEcommerceImport}${
@@ -2497,14 +2518,19 @@ export default function SmartLink({ href = '#', children, ...props }) {
   for (const page of siteSpec.pages || []) {
     const segments = routeToNextSegments(page.route)
     const dir = page.route === '/' ? 'app' : ['app', ...segments].join('/')
-    files[`${dir}/page.jsx`] = renderNextPageModule(siteSpec, page, segments.length)
+    files[`${dir}/page.jsx`] = renderNextPageModule(
+      siteSpec,
+      page,
+      segments.length,
+    )
   }
 
   if (cmsSanity) {
     Object.assign(files, renderSanityNextExportFiles(siteSpec, session))
     if (embedSanityStudio) {
       Object.assign(files, collectShipFastStudioFiles())
-      files['app/studio/[[...tool]]/page.jsx'] = `import { NextStudio } from 'next-sanity/studio'
+      files['app/studio/[[...tool]]/page.jsx'] =
+        `import { NextStudio } from 'next-sanity/studio'
 import config from '../../../studio/sanity.config'
 
 export const dynamic = 'force-static'

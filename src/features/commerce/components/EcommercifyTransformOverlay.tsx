@@ -6,9 +6,15 @@ type EcommercifyTransformOverlayProps = {
   fixed?: boolean
 }
 
-export const EcommercifyTransformOverlay = ({ fixed = false }: EcommercifyTransformOverlayProps) => (
+export const EcommercifyTransformOverlay = ({
+  fixed = false,
+}: EcommercifyTransformOverlayProps) => (
   <div
-    className={fixed ? 'ecommercify-transform ecommercify-transform--fixed' : 'ecommercify-transform'}
+    className={
+      fixed
+        ? 'ecommercify-transform ecommercify-transform--fixed'
+        : 'ecommercify-transform'
+    }
     data-testid="ecommercify-transform"
     role="status"
     aria-live="polite"

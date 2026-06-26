@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CrowdfundingNavbar — sticky, backdrop-blurred top navigation for a
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * campaigns, pre-order launches, fundraisers, or maker/hardware projects.
  */
 export const CrowdfundingNavbar = defineComponent({
-  name: "CrowdfundingNavbar",
+  name: 'CrowdfundingNavbar',
   description:
     "Sticky, backdrop-blurred top navigation for a crowdfunding / campaign landing page: a border-bottomed header pinned to the top with a decorative leaf/sparkle brand mark in an emerald-token tile beside the campaign name on the left, a horizontal set of muted nav links in the center (hidden on mobile), and a primary 'Back This Project' pill CTA on the right. Every link and CTA routes through useNavigate so PageSwitch can swap pages. Use as the sticky site header for Kickstarter / Indiegogo-style campaigns, pre-order launches, fundraisers, or maker/hardware projects.",
   props: z.object({
@@ -32,18 +32,18 @@ export const CrowdfundingNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "EcoBrush"
+    const brand = props.brand ?? 'EcoBrush'
     const nav = props.nav?.length
       ? props.nav
-      : ["Our Story", "Features", "Rewards", "FAQ"]
+      : ['Our Story', 'Features', 'Rewards', 'FAQ']
     const homeTarget = props.homeTarget ?? nav[0]
-    const ctaLabel = props.ctaLabel ?? "Back This Project"
-    const ctaTarget = props.ctaTarget ?? nav[2] ?? "Rewards"
+    const ctaLabel = props.ctaLabel ?? 'Back This Project'
+    const ctaTarget = props.ctaTarget ?? nav[2] ?? 'Rewards'
 
     const LeafMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-full bg-primary text-primary-foreground",
+          'grid place-items-center rounded-full bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -66,7 +66,7 @@ export const CrowdfundingNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur',
           props.className,
         )}
       >

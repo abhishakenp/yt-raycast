@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MentalHealthHero — a split, two-column hero for a therapy / counseling
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * counselors, psychologists, wellness centers, or telehealth practices.
  */
 export const MentalHealthHero = defineComponent({
-  name: "MentalHealthHero",
+  name: 'MentalHealthHero',
   description:
     "Split, two-column hero for a therapy / counseling practice: a large two-line headline (second line in the primary accent color), a reassuring sub-paragraph, dual rounded CTAs (filled primary + outline), and a row of licensed-clinician trust checks on the left; a calming therapy-office photo with a floating 'Next Available' appointment card on the right. Sits on a soft primary-tinted gradient canvas with a calm, warm, sage-and-sand wellness aesthetic. CTAs route through useNavigate. Use as the top hero for therapists, counselors, psychologists, wellness centers, or telehealth practices.",
   props: z.object({
@@ -35,22 +35,22 @@ export const MentalHealthHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const headingTop = props.headingTop ?? "Find your calm."
-    const highlight = props.highlight ?? "Begin healing."
+    const headingTop = props.headingTop ?? 'Find your calm.'
+    const highlight = props.highlight ?? 'Begin healing.'
     const subheading =
       props.subheading ??
       "Professional therapy services in Portland's Pearl District. Licensed clinicians providing evidence-based care for anxiety, depression, relationships, and life transitions. Most insurance accepted."
-    const primaryCta = props.primaryCta ?? "Schedule a Session"
-    const secondaryCta = props.secondaryCta ?? "Explore Services"
+    const primaryCta = props.primaryCta ?? 'Schedule a Session'
+    const secondaryCta = props.secondaryCta ?? 'Explore Services'
     const imageAlt =
       props.imageAlt ??
-      "Serene therapy office with comfortable seating, soft natural lighting, and calming neutral decor"
-    const cardTitle = props.cardTitle ?? "Next Available"
-    const cardSubtitle = props.cardSubtitle ?? "Tomorrow, 10:00 AM"
+      'Serene therapy office with comfortable seating, soft natural lighting, and calming neutral decor'
+    const cardTitle = props.cardTitle ?? 'Next Available'
+    const cardSubtitle = props.cardSubtitle ?? 'Tomorrow, 10:00 AM'
     const trust = props.trust?.length
       ? props.trust
-      : ["Licensed Clinicians", "In-Person & Virtual"]
-    const bookLabel = props.bookLabel ?? "Book Session"
+      : ['Licensed Clinicians', 'In-Person & Virtual']
+    const bookLabel = props.bookLabel ?? 'Book Session'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -72,7 +72,7 @@ export const MentalHealthHero = defineComponent({
     return (
       <section
         className={cn(
-          "relative overflow-hidden py-20 lg:py-28",
+          'relative overflow-hidden py-20 lg:py-28',
           props.className,
         )}
       >

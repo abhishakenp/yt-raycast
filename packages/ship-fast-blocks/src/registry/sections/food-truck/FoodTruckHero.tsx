@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FoodTruckHero — warm, editorial split hero for a gourmet food-truck landing page.
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * chef-driven mobile-food brands.
  */
 export const FoodTruckHero = defineComponent({
-  name: "FoodTruckHero",
+  name: 'FoodTruckHero',
   description:
-    "Warm, editorial split hero for a gourmet food-truck landing page: a two-column layout pairing a now-serving location pill, a large stacked multi-line headline, a chef-story paragraph, dual rounded CTAs (filled primary and outlined secondary), and a star-rating + open-hours row on the left, with a tall rounded dish photo carrying a floating chef-owner card (avatar, name, role) on the right. CTAs route through useNavigate; the photos use the alt-driven Image component. Use as the top hero for food trucks, street-food vendors, taco / burger / bowl concepts, pop-up kitchens or any chef-driven mobile-food brand.",
+    'Warm, editorial split hero for a gourmet food-truck landing page: a two-column layout pairing a now-serving location pill, a large stacked multi-line headline, a chef-story paragraph, dual rounded CTAs (filled primary and outlined secondary), and a star-rating + open-hours row on the left, with a tall rounded dish photo carrying a floating chef-owner card (avatar, name, role) on the right. CTAs route through useNavigate; the photos use the alt-driven Image component. Use as the top hero for food trucks, street-food vendors, taco / burger / bowl concepts, pop-up kitchens or any chef-driven mobile-food brand.',
   props: z.object({
     badge: z.string().optional(),
     /** Heading lines rendered stacked. */
@@ -35,25 +35,25 @@ export const FoodTruckHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroBadge = props.badge ?? "Now serving Los Angeles"
+    const heroBadge = props.badge ?? 'Now serving Los Angeles'
     const heroHeadingLines = props.headingLines?.length
       ? props.headingLines
-      : ["Street food.", "Chef-made.", "Served fresh."]
+      : ['Street food.', 'Chef-made.', 'Served fresh.']
     const heroSub =
       props.subheading ??
-      "Chef Marcus Chen brings 15 years of fine dining experience to the streets. Seasonal ingredients, bold flavors, zero pretension."
+      'Chef Marcus Chen brings 15 years of fine dining experience to the streets. Seasonal ingredients, bold flavors, zero pretension.'
     const heroPrimary = props.primaryCta ?? "View Today's Menu"
-    const heroSecondary = props.secondaryCta ?? "Find Us"
-    const heroRating = props.rating ?? "4.9/5 (2,847 reviews)"
-    const heroHours = props.hours ?? "Open today 11am–8pm"
+    const heroSecondary = props.secondaryCta ?? 'Find Us'
+    const heroRating = props.rating ?? '4.9/5 (2,847 reviews)'
+    const heroHours = props.hours ?? 'Open today 11am–8pm'
     const heroImageAlt =
       props.imageAlt ??
-      "Gourmet tacos being prepared on a food truck griddle with fresh ingredients"
-    const chefName = props.chefName ?? "Chef Marcus Chen"
-    const chefRole = props.chefRole ?? "Executive Chef & Owner"
+      'Gourmet tacos being prepared on a food truck griddle with fresh ingredients'
+    const chefName = props.chefName ?? 'Chef Marcus Chen'
+    const chefRole = props.chefRole ?? 'Executive Chef & Owner'
     const chefAvatarAlt =
       props.chefAvatarAlt ??
-      "Professional headshot of Chef Marcus Chen in his kitchen uniform"
+      'Professional headshot of Chef Marcus Chen in his kitchen uniform'
 
     const Star = ({ className }: { className?: string }) => (
       <svg
@@ -70,7 +70,7 @@ export const FoodTruckHero = defineComponent({
 
     return (
       <section
-        className={cn("px-6 pb-20 pt-32 md:pb-32 md:pt-40", props.className)}
+        className={cn('px-6 pb-20 pt-32 md:pb-32 md:pt-40', props.className)}
       >
         <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2">
           <div className="space-y-6">

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ChurchPathways — a 3-up "next step" pathways grid for a church or faith-community
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * props via baked-in defaults.
  */
 export const ChurchPathways = defineComponent({
-  name: "ChurchPathways",
+  name: 'ChurchPathways',
   description:
-    "3-up next-step pathways grid for a church or faith-community site: heading + description on the left, then a responsive grid of photo-card articles with image, title, description, and a text CTA with arrow. Each image lazily loads and subtly scales on hover. CTAs route through useNavigate. Use for small-groups, kids/youth, serve-together, or any multi-pathway onboarding flow for churches, ministries, or community organizations.",
+    '3-up next-step pathways grid for a church or faith-community site: heading + description on the left, then a responsive grid of photo-card articles with image, title, description, and a text CTA with arrow. Each image lazily loads and subtly scales on hover. CTAs route through useNavigate. Use for small-groups, kids/youth, serve-together, or any multi-pathway onboarding flow for churches, ministries, or community organizations.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -37,7 +37,7 @@ export const ChurchPathways = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Everyone has a next step"
+    const heading = props.heading ?? 'Everyone has a next step'
     const description =
       props.description ??
       "Whether you're taking your first steps in faith or have been walking with Jesus for decades, we have pathways designed to help you grow, connect, and serve."
@@ -45,28 +45,28 @@ export const ChurchPathways = defineComponent({
       ? props.items
       : [
           {
-            title: "Small Groups",
+            title: 'Small Groups',
             description:
-              "Meet weekly in homes across the Portland metro area. Share life, study scripture, and build lasting friendships with 8-12 people.",
-            cta: "Find a group",
+              'Meet weekly in homes across the Portland metro area. Share life, study scripture, and build lasting friendships with 8-12 people.',
+            cta: 'Find a group',
             imageAlt:
-              "Young adults laughing together during a small group Bible study in a cozy living room",
+              'Young adults laughing together during a small group Bible study in a cozy living room',
           },
           {
-            title: "Kids & Youth",
+            title: 'Kids & Youth',
             description:
-              "Nursery through high school programs every Sunday. Safe, fun environments where young people discover faith at their level.",
-            cta: "Learn more",
+              'Nursery through high school programs every Sunday. Safe, fun environments where young people discover faith at their level.',
+            cta: 'Learn more',
             imageAlt:
-              "Children smiling and raising hands during a colorful Sunday school worship session",
+              'Children smiling and raising hands during a colorful Sunday school worship session',
           },
           {
-            title: "Serve Together",
+            title: 'Serve Together',
             description:
               "Join one of 40+ volunteer teams. From greeting guests to global missions, there's a place for your gifts to make a difference.",
-            cta: "Explore teams",
+            cta: 'Explore teams',
             imageAlt:
-              "Volunteers wearing matching t-shirts distributing food at a community outreach event",
+              'Volunteers wearing matching t-shirts distributing food at a community outreach event',
           },
         ]
 
@@ -88,7 +88,7 @@ export const ChurchPathways = defineComponent({
     )
 
     return (
-      <section className={cn("py-24 lg:py-32", props.className)}>
+      <section className={cn('py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mb-20 max-w-3xl">
             <h2 className="mb-6 text-3xl font-medium tracking-tight text-foreground sm:text-4xl">

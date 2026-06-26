@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FitnessCta — bold primary-filled email-capture call-to-action for a gym or fitness
@@ -12,7 +12,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * the footer on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
 export const FitnessCta = defineComponent({
-  name: "FitnessCta",
+  name: 'FitnessCta',
   description:
     "Bold primary-filled email-capture call-to-action for a gym or fitness studio: a centered heading and supporting paragraph over an inline email input + submit button, a 'questions?' line with click-to-call phone and email buttons, and a footer row of a pin-icon location and a clock-icon hours. The form submit and contact links route through useNavigate. Use as the closing free-trial / sign-up conversion banner above the footer on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.",
   props: z.object({
@@ -28,20 +28,20 @@ export const FitnessCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const ctaHeading = props.heading ?? "Start your 7-day free trial"
+    const ctaHeading = props.heading ?? 'Start your 7-day free trial'
     const ctaDesc =
       props.description ??
-      "Experience everything Base has to offer—no commitment, no credit card required. Join 3,200+ members building strength together."
-    const ctaPlaceholder = props.placeholder ?? "Enter your email"
-    const ctaSubmit = props.submit ?? "Get Started"
-    const ctaPhone = props.phone ?? "(415) 555-1234"
-    const ctaEmail = props.email ?? "hello@basefitness.com"
+      'Experience everything Base has to offer—no commitment, no credit card required. Join 3,200+ members building strength together.'
+    const ctaPlaceholder = props.placeholder ?? 'Enter your email'
+    const ctaSubmit = props.submit ?? 'Get Started'
+    const ctaPhone = props.phone ?? '(415) 555-1234'
+    const ctaEmail = props.email ?? 'hello@basefitness.com'
     const ctaLocation =
-      props.location ?? "1240 Mission St, San Francisco, CA 94103"
-    const ctaHours = props.hours ?? "Mon–Fri: 5:30am–10pm, Sat–Sun: 7am–8pm"
+      props.location ?? '1240 Mission St, San Francisco, CA 94103'
+    const ctaHours = props.hours ?? 'Mon–Fri: 5:30am–10pm, Sat–Sun: 7am–8pm'
 
     return (
-      <section className={cn("bg-primary py-20 md:py-32", props.className)}>
+      <section className={cn('bg-primary py-20 md:py-32', props.className)}>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-3xl font-semibold text-primary-foreground md:text-4xl lg:text-5xl">
             {ctaHeading}
@@ -73,15 +73,15 @@ export const FitnessCta = defineComponent({
           </form>
 
           <p className="text-sm text-primary-foreground/60">
-            Questions? Call us at{" "}
+            Questions? Call us at{' '}
             <button
               type="button"
               onClick={() => go(ctaPhone)}
               className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
             >
               {ctaPhone}
-            </button>{" "}
-            or email{" "}
+            </button>{' '}
+            or email{' '}
             <button
               type="button"
               onClick={() => go(ctaEmail)}

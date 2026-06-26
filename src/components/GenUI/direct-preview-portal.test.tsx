@@ -18,9 +18,12 @@ type ReactActGlobal = typeof globalThis & {
 
 describe('DirectPreview portal scope', () => {
   it('mounts shadcn sheet portals inside the preview container', async () => {
-    const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>', {
-      pretendToBeVisual: true,
-    })
+    const dom = new JSDOM(
+      '<!doctype html><html><body><div id="root"></div></body></html>',
+      {
+        pretendToBeVisual: true,
+      },
+    )
     const previousWindow = globalThis.window
     const previousDocument = globalThis.document
     const previousHTMLElement = globalThis.HTMLElement

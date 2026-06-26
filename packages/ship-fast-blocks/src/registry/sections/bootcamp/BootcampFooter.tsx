@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * BootcampFooter — 4-column dark footer for a coding bootcamp / career-school
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * bootcamps, dev academies, or any cohort-based education brand.
  */
 export const BootcampFooter = defineComponent({
-  name: "BootcampFooter",
+  name: 'BootcampFooter',
   description:
-    "4-column dark footer for a coding bootcamp / career-school landing page: full-width footer on a foreground-colored band. Left column shows a brand-initial logo tile + academy name + tagline + social links; remaining columns show titled link lists. Every link and the brand button route through useNavigate. Use as the closing site footer for coding bootcamps, dev academies, or cohort-based education brands.",
+    '4-column dark footer for a coding bootcamp / career-school landing page: full-width footer on a foreground-colored band. Left column shows a brand-initial logo tile + academy name + tagline + social links; remaining columns show titled link lists. Every link and the brand button route through useNavigate. Use as the closing site footer for coding bootcamps, dev academies, or cohort-based education brands.',
   props: z.object({
     /** Brand / academy name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -39,48 +39,38 @@ export const BootcampFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "CodeCraft Academy"
+    const brand = props.brand ?? 'CodeCraft Academy'
     const footerTagline =
       props.tagline ??
-      "Transforming careers through accessible, hands-on coding education since 2019."
+      'Transforming careers through accessible, hands-on coding education since 2019.'
     const footerColumns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Program",
-            links: [
-              "Curriculum",
-              "Mentors",
-              "Pricing",
-              "Schedule a Call",
-            ],
+            title: 'Program',
+            links: ['Curriculum', 'Mentors', 'Pricing', 'Schedule a Call'],
           },
           {
-            title: "Company",
-            links: ["About Us", "Careers", "Blog", "Press"],
+            title: 'Company',
+            links: ['About Us', 'Careers', 'Blog', 'Press'],
           },
           {
-            title: "Support",
-            links: [
-              "FAQ",
-              "Contact",
-              "Student Login",
-              "Employer Partners",
-            ],
+            title: 'Support',
+            links: ['FAQ', 'Contact', 'Student Login', 'Employer Partners'],
           },
         ]
     const footerSocials = props.socials?.length
       ? props.socials
-      : ["Twitter", "GitHub", "LinkedIn"]
+      : ['Twitter', 'GitHub', 'LinkedIn']
     const footerLegal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Policy"]
-    const homeTarget = props.homeTarget ?? "Curriculum"
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
+    const homeTarget = props.homeTarget ?? 'Curriculum'
 
     return (
       <footer
         className={cn(
-          "bg-foreground py-12 text-background/70 lg:py-16",
+          'bg-foreground py-12 text-background/70 lg:py-16',
           props.className,
         )}
       >
@@ -97,9 +87,9 @@ export const BootcampFooter = defineComponent({
                   className="grid size-8 place-items-center rounded-lg bg-background text-sm font-bold text-foreground"
                 >
                   {brand
-                    .split(" ")
+                    .split(' ')
                     .map((w) => w.charAt(0))
-                    .join("")
+                    .join('')
                     .slice(0, 2)
                     .toUpperCase()}
                 </span>

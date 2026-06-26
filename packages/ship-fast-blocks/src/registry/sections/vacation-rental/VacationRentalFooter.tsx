@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * VacationRentalFooter — a multi-column site footer for a vacation-rental listing
@@ -35,9 +35,9 @@ const PalmMark = ({ className }: { className?: string }) => (
 )
 
 export const VacationRentalFooter = defineComponent({
-  name: "VacationRentalFooter",
+  name: 'VacationRentalFooter',
   description:
-    "Multi-column site footer for a vacation-rental listing page built on the shared SiteFooter composite: a palm-and-sun brand mark + wordmark, a warm tagline, a social row, and a responsive grid of link columns (Explore / Amenities / Support / Legal); below, a bordered-top bottom bar with an auto-updating copyright line and legal links. The brand, every column link, and each social link route through useNavigate. Theme-token only. Use as the closing footer for a vacation rental, beach house, cabin, villa, or boutique short-stay site.",
+    'Multi-column site footer for a vacation-rental listing page built on the shared SiteFooter composite: a palm-and-sun brand mark + wordmark, a warm tagline, a social row, and a responsive grid of link columns (Explore / Amenities / Support / Legal); below, a bordered-top bottom bar with an auto-updating copyright line and legal links. The brand, every column link, and each social link route through useNavigate. Theme-token only. Use as the closing footer for a vacation rental, beach house, cabin, villa, or boutique short-stay site.',
   props: z.object({
     /** Property / brand name shown beside the brand mark. */
     brand: z.string().optional(),
@@ -58,33 +58,38 @@ export const VacationRentalFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Azure Cove Retreats"
+    const brand = props.brand ?? 'Azure Cove Retreats'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Explore",
-            links: ["Stays", "Gallery", "The Area", "Availability"],
+            title: 'Explore',
+            links: ['Stays', 'Gallery', 'The Area', 'Availability'],
           },
           {
-            title: "Amenities",
-            links: ["Private Pool", "Full Kitchen", "Fast Wifi", "Pet-Friendly"],
+            title: 'Amenities',
+            links: [
+              'Private Pool',
+              'Full Kitchen',
+              'Fast Wifi',
+              'Pet-Friendly',
+            ],
           },
           {
-            title: "Support",
-            links: ["House Rules", "Check-in Guide", "Contact Host", "FAQ"],
+            title: 'Support',
+            links: ['House Rules', 'Check-in Guide', 'Contact Host', 'FAQ'],
           },
           {
-            title: "Legal",
-            links: ["Privacy", "Terms", "Cancellation Policy"],
+            title: 'Legal',
+            links: ['Privacy', 'Terms', 'Cancellation Policy'],
           },
         ]
     const social = props.social?.length
       ? props.social
-      : [{ label: "Instagram" }, { label: "Facebook" }, { label: "Airbnb" }]
+      : [{ label: 'Instagram' }, { label: 'Facebook' }, { label: 'Airbnb' }]
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Stay"]
+      : ['Privacy Policy', 'Terms of Stay']
 
     return (
       <SiteFooter
@@ -93,12 +98,12 @@ export const VacationRentalFooter = defineComponent({
         brandClassName="text-lg font-semibold"
         tagline={
           props.tagline ??
-          "Bright, breezy homes by the water — thoughtfully designed for unforgettable getaways."
+          'Bright, breezy homes by the water — thoughtfully designed for unforgettable getaways.'
         }
         columns={columns}
         social={social}
         legal={legal}
-        note={props.note ?? "Made for slow mornings and golden evenings."}
+        note={props.note ?? 'Made for slow mornings and golden evenings.'}
         className={props.className}
       />
     )

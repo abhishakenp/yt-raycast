@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * ContactFooter — minimal bottom footer for a contact page.
@@ -10,9 +10,9 @@ import { cn } from "#/lib/utils.ts"
  * baked-in defaults.
  */
 export const ContactFooter = defineComponent({
-  name: "ContactFooter",
+  name: 'ContactFooter',
   description:
-    "Minimal bottom footer for a contact page: a single bordered-top row centered with an auto-updating copyright line. Clean, unobtrusive closing surface on dark or light themes. Use as the site footer for contact, support, or inquiry pages.",
+    'Minimal bottom footer for a contact page: a single bordered-top row centered with an auto-updating copyright line. Clean, unobtrusive closing surface on dark or light themes. Use as the site footer for contact, support, or inquiry pages.',
   props: z.object({
     /** Brand / product name included in the copyright line. */
     brand: z.string().optional(),
@@ -21,7 +21,7 @@ export const ContactFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Orbit Digital"
+    const brand = props.brand ?? 'Orbit Digital'
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
@@ -29,7 +29,7 @@ export const ContactFooter = defineComponent({
     return (
       <footer
         className={cn(
-          "relative z-[1] border-t border-border py-9 text-center text-[0.85rem] text-muted-foreground",
+          'relative z-[1] border-t border-border py-9 text-center text-[0.85rem] text-muted-foreground',
           props.className,
         )}
       >

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { StatGrid } from "#/section-kit/StatGrid.tsx"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * FintechStats — trust-building metrics band for a fintech / neobank landing
@@ -13,9 +13,9 @@ import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
  * padding. Renders fully with no props via baked-in "Vault" defaults.
  */
 export const FintechStats = defineComponent({
-  name: "FintechStats",
+  name: 'FintechStats',
   description:
-    "Trust-building metrics band for a fintech / neobank landing page: a padded section with an optional centered heading above the shared StatGrid composite, surfacing headline numbers (active users, total transactions processed, uptime percentage). Theme-token only; the capsule supplies the section wrapper and container padding around the layout-only grid.",
+    'Trust-building metrics band for a fintech / neobank landing page: a padded section with an optional centered heading above the shared StatGrid composite, surfacing headline numbers (active users, total transactions processed, uptime percentage). Theme-token only; the capsule supplies the section wrapper and container padding around the layout-only grid.',
   props: z.object({
     /** Optional centered section heading. */
     heading: z.string().optional(),
@@ -28,20 +28,20 @@ export const FintechStats = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Trusted by people who move money"
+    const heading = props.heading ?? 'Trusted by people who move money'
     const subheading =
       props.subheading ??
-      "Millions rely on Vault every day to send, save, and spend with confidence."
+      'Millions rely on Vault every day to send, save, and spend with confidence.'
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "3.2M+", label: "Active users" },
-          { value: "$48B", label: "Transactions processed" },
-          { value: "99.99%", label: "Uptime guaranteed" },
+          { value: '3.2M+', label: 'Active users' },
+          { value: '$48B', label: 'Transactions processed' },
+          { value: '99.99%', label: 'Uptime guaranteed' },
         ]
 
     return (
-      <section className={cn("py-20 lg:py-28", props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto flex max-w-7xl flex-col gap-12 px-6 lg:px-8">
           {heading ? (
             <SectionHeading title={heading} subtitle={subheading} />

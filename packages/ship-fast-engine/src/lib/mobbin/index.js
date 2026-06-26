@@ -7,11 +7,30 @@
  * thing it adds on top is the live Mobbin Pro Supabase auth + Playwright
  * palette extraction layer (kept in scripts/ because it's Bun + Playwright-only).
  */
-export { COPY_EXAMPLES, listDnaAppNames, resolveCopyExamples, resolveDna, synthesizeDna } from './dna.js'
-export { mobbinDoctrineBlock, mobbinSessionBlock, resolveAnchor } from './prompt-blocks.js'
-export { anchorAvoidsAurora, anchorAvoidsSaasMarketing, detectVerbatimAnchorCopy, relaxAuroraAuditForAnchor, scoreMobbinCoverage } from './score.js'
+export {
+  COPY_EXAMPLES,
+  listDnaAppNames,
+  resolveCopyExamples,
+  resolveDna,
+  synthesizeDna,
+} from './dna.js'
+export {
+  mobbinDoctrineBlock,
+  mobbinSessionBlock,
+  resolveAnchor,
+} from './prompt-blocks.js'
+export {
+  anchorAvoidsAurora,
+  anchorAvoidsSaasMarketing,
+  detectVerbatimAnchorCopy,
+  relaxAuroraAuditForAnchor,
+  scoreMobbinCoverage,
+} from './score.js'
 export { inferMobbinAnchor, isMobbinEnabled } from './anchor-router.js'
-export { readMobbinAnchorFromWorkspace, writeMobbinAnchorToWorkspace } from './workspace.js'
+export {
+  readMobbinAnchorFromWorkspace,
+  writeMobbinAnchorToWorkspace,
+} from './workspace.js'
 export {
   authFilePath,
   autocompleteMobbinApp,

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * WriterAuthorFooter — a rich, multi-column closing footer for a literary
@@ -32,9 +32,9 @@ const FeatherMark = ({ className }: { className?: string }) => (
 )
 
 export const WriterAuthorFooter = defineComponent({
-  name: "WriterAuthorFooter",
+  name: 'WriterAuthorFooter',
   description:
-    "Rich, multi-column closing footer for a literary author or novelist site: a responsive grid with a brand block (serif wordmark + open-book feather mark + tagline + social row of Instagram, Twitter, Goodreads), plus Books, About, and Connect link columns; a bordered-top bottom bar holds a Privacy/Terms legal row and an auto-updating copyright line. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for author landing pages, book-launch microsites, poets, or essayists.",
+    'Rich, multi-column closing footer for a literary author or novelist site: a responsive grid with a brand block (serif wordmark + open-book feather mark + tagline + social row of Instagram, Twitter, Goodreads), plus Books, About, and Connect link columns; a bordered-top bottom bar holds a Privacy/Terms legal row and an auto-updating copyright line. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for author landing pages, book-launch microsites, poets, or essayists.',
   props: z.object({
     /** Author / brand name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -57,41 +57,41 @@ export const WriterAuthorFooter = defineComponent({
   component: ({ props }) => {
     const social = props.social?.length
       ? props.social
-      : [{ label: "Instagram" }, { label: "Twitter" }, { label: "Goodreads" }]
+      : [{ label: 'Instagram' }, { label: 'Twitter' }, { label: 'Goodreads' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Books",
+            title: 'Books',
             links: [
-              "The Latest Novel",
-              "Backlist",
-              "Signed Editions",
-              "Audiobooks",
+              'The Latest Novel',
+              'Backlist',
+              'Signed Editions',
+              'Audiobooks',
             ],
           },
           {
-            title: "About",
-            links: ["Biography", "Press Kit", "Events", "Contact"],
+            title: 'About',
+            links: ['Biography', 'Press Kit', 'Events', 'Contact'],
           },
           {
-            title: "Connect",
-            links: ["Newsletter", "Book Clubs", "Speaking", "Rights & Agent"],
+            title: 'Connect',
+            links: ['Newsletter', 'Book Clubs', 'Speaking', 'Rights & Agent'],
           },
         ]
 
     return (
       <SiteFooter
-        brand={props.brand ?? "Eleanor Vance"}
+        brand={props.brand ?? 'Eleanor Vance'}
         brandMark={<FeatherMark className="size-8 text-primary" />}
         brandClassName="font-serif text-xl font-medium"
         tagline={
-          props.tagline ?? "Novelist. Storyteller. Letters from the page."
+          props.tagline ?? 'Novelist. Storyteller. Letters from the page.'
         }
         social={social}
         columns={columns}
-        legal={props.legal?.length ? props.legal : ["Privacy", "Terms"]}
-        note={props.note ?? "All rights reserved."}
+        legal={props.legal?.length ? props.legal : ['Privacy', 'Terms']}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

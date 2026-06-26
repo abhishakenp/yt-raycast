@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CryptoNetworkStats — inverted dark data-band for a crypto / DeFi
@@ -11,9 +11,9 @@ import { cn } from "#/lib/utils.ts"
  * building stats band for protocols, chains, bridges, or staking networks.
  */
 export const CryptoNetworkStats = defineComponent({
-  name: "CryptoNetworkStats",
+  name: 'CryptoNetworkStats',
   description:
-    "Inverted dark data-band for a crypto / DeFi infrastructure landing page: bg-foreground section containing KPI counter cells (value + label), a 24h transaction volume mini bar chart with a change badge and update timestamp, and a network health panel with a live pulsing status dot plus metric rows (label/value pairs). Use as a trust-building stats band for protocols, chains, bridges, or staking networks.",
+    'Inverted dark data-band for a crypto / DeFi infrastructure landing page: bg-foreground section containing KPI counter cells (value + label), a 24h transaction volume mini bar chart with a change badge and update timestamp, and a network health panel with a live pulsing status dot plus metric rows (label/value pairs). Use as a trust-building stats band for protocols, chains, bridges, or staking networks.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -40,32 +40,30 @@ export const CryptoNetworkStats = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Network Statistics"
+    const heading = props.heading ?? 'Network Statistics'
     const description =
       props.description ??
-      "Live data from the NexusChain mainnet and bridge infrastructure."
+      'Live data from the NexusChain mainnet and bridge infrastructure.'
     const kpis = props.kpis?.length
       ? props.kpis
       : [
-          { value: "$2.4B", label: "Total Value Locked" },
-          { value: "847K", label: "Daily Transactions" },
-          { value: "156", label: "Validators Active" },
-          { value: "$0.002", label: "Avg. Transaction Fee" },
+          { value: '$2.4B', label: 'Total Value Locked' },
+          { value: '847K', label: 'Daily Transactions' },
+          { value: '156', label: 'Validators Active' },
+          { value: '$0.002', label: 'Avg. Transaction Fee' },
         ]
-    const volumeLabel =
-      props.volumeLabel ?? "Transaction Volume (24h)"
-    const volumeChange = props.volumeChange ?? "+8.3%"
-    const volumeUpdated =
-      props.volumeUpdated ?? "Updated: 2 minutes ago"
-    const healthLabel = props.healthLabel ?? "Network Health"
-    const healthStatus = props.healthStatus ?? "Operational"
+    const volumeLabel = props.volumeLabel ?? 'Transaction Volume (24h)'
+    const volumeChange = props.volumeChange ?? '+8.3%'
+    const volumeUpdated = props.volumeUpdated ?? 'Updated: 2 minutes ago'
+    const healthLabel = props.healthLabel ?? 'Network Health'
+    const healthStatus = props.healthStatus ?? 'Operational'
     const health = props.health?.length
       ? props.health
       : [
-          { label: "Block Time", value: "2.1s avg" },
-          { label: "Finality", value: "~400ms" },
-          { label: "Uptime (30d)", value: "99.97%" },
-          { label: "Active Validators", value: "156 / 156" },
+          { label: 'Block Time', value: '2.1s avg' },
+          { label: 'Finality', value: '~400ms' },
+          { label: 'Uptime (30d)', value: '99.97%' },
+          { label: 'Active Validators', value: '156 / 156' },
         ]
 
     const volumeBars = [45, 60, 55, 70, 65, 80, 75, 90, 100]
@@ -73,7 +71,7 @@ export const CryptoNetworkStats = defineComponent({
     return (
       <section
         className={cn(
-          "bg-foreground py-20 text-background lg:py-32",
+          'bg-foreground py-20 text-background lg:py-32',
           props.className,
         )}
       >
@@ -107,18 +105,16 @@ export const CryptoNetworkStats = defineComponent({
                   <div
                     key={i}
                     className={cn(
-                      "flex-1 rounded-t",
+                      'flex-1 rounded-t',
                       i === volumeBars.length - 1
-                        ? "bg-primary/80"
-                        : "bg-background/40",
+                        ? 'bg-primary/80'
+                        : 'bg-background/40',
                     )}
                     style={{ height: `${h}%` }}
                   />
                 ))}
               </div>
-              <p className="mt-2 text-xs text-background/50">
-                {volumeUpdated}
-              </p>
+              <p className="mt-2 text-xs text-background/50">{volumeUpdated}</p>
             </div>
             <div className="rounded-xl border border-background/20 bg-background/10 p-6">
               <div className="mb-4 flex items-center justify-between">

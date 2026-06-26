@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BarNightclubGallery — masonry-style photo gallery for a cocktail-bar /
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const BarNightclubGallery = defineComponent({
-  name: "BarNightclubGallery",
+  name: 'BarNightclubGallery',
   description:
-    "Masonry-style photo gallery for a cocktail-bar / nightclub page: a split header (eyebrow + light-weight heading on the left, right-aligned lead on the right), then a responsive grid where the first image spans two columns and rows to anchor the composition and the rest tile at a fixed height. All photos use the alt-driven Image component. Moody, editorial and monochrome. Use to show interior atmosphere, bar craft, the dance floor, or ambient details for bars, nightclubs, lounges, or speakeasies.",
+    'Masonry-style photo gallery for a cocktail-bar / nightclub page: a split header (eyebrow + light-weight heading on the left, right-aligned lead on the right), then a responsive grid where the first image spans two columns and rows to anchor the composition and the rest tile at a fixed height. All photos use the alt-driven Image component. Moody, editorial and monochrome. Use to show interior atmosphere, bar craft, the dance floor, or ambient details for bars, nightclubs, lounges, or speakeasies.',
   props: z.object({
     /** Wide letter-spaced uppercase eyebrow. */
     eyebrow: z.string().optional(),
@@ -29,24 +29,24 @@ export const BarNightclubGallery = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Gallery"
-    const heading = props.heading ?? "Inside NOIR"
+    const eyebrow = props.eyebrow ?? 'Gallery'
+    const heading = props.heading ?? 'Inside NOIR'
     const description =
       props.description ??
-      "Intimate booths, ambient lighting, and a carefully curated atmosphere designed for conversation and celebration."
+      'Intimate booths, ambient lighting, and a carefully curated atmosphere designed for conversation and celebration.'
     const images = props.images?.length
       ? props.images
       : [
-          "Bartender crafting cocktail at marble bar counter with warm lighting",
-          "Elegant lounge seating area with velvet booths and ambient lighting",
-          "Close-up of craft cocktail in crystal glass with garnish",
-          "Nightclub dance floor with people dancing under colorful lights",
-          "Backlit bar shelves with premium liquor bottles glowing in amber light",
+          'Bartender crafting cocktail at marble bar counter with warm lighting',
+          'Elegant lounge seating area with velvet booths and ambient lighting',
+          'Close-up of craft cocktail in crystal glass with garnish',
+          'Nightclub dance floor with people dancing under colorful lights',
+          'Backlit bar shelves with premium liquor bottles glowing in amber light',
         ]
 
     return (
       <section
-        className={cn("border-t border-border py-24 lg:py-32", props.className)}
+        className={cn('border-t border-border py-24 lg:py-32', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -67,7 +67,7 @@ export const BarNightclubGallery = defineComponent({
             {images.map((alt, i) => (
               <div
                 key={alt}
-                className={cn(i === 0 && "lg:col-span-2 lg:row-span-2")}
+                className={cn(i === 0 && 'lg:col-span-2 lg:row-span-2')}
               >
                 <Image
                   alt={alt}
@@ -75,10 +75,10 @@ export const BarNightclubGallery = defineComponent({
                   h={i === 0 ? 800 : 300}
                   loading="lazy"
                   className={cn(
-                    "w-full rounded-sm object-cover",
+                    'w-full rounded-sm object-cover',
                     i === 0
-                      ? "min-h-[300px] lg:h-full lg:min-h-full"
-                      : "h-48 lg:h-64",
+                      ? 'min-h-[300px] lg:h-full lg:min-h-full'
+                      : 'h-48 lg:h-64',
                   )}
                 />
               </div>

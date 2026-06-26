@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MentalHealthSteps — a "how it works" / approach flow for a therapy practice.
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * psychologists or wellness centers.
  */
 export const MentalHealthSteps = defineComponent({
-  name: "MentalHealthSteps",
+  name: 'MentalHealthSteps',
   description:
     "'How it works' / approach flow for a therapy practice: a centered eyebrow + heading + intro above a numbered 3-step row (filled primary circular badges with dashed connectors on desktop), then a primary-tinted help band pairing a 'not sure where to start?' prompt with a phone CTA + secondary booking button on the left and a divided pair of help stats on the right. Calm, reassuring wellness aesthetic. CTAs route through useNavigate. Use to explain the onboarding process for therapists, counselors, psychologists or wellness centers.",
   props: z.object({
@@ -37,8 +37,8 @@ export const MentalHealthSteps = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "How It Works"
-    const heading = props.heading ?? "Beginning therapy is simple"
+    const eyebrow = props.eyebrow ?? 'How It Works'
+    const heading = props.heading ?? 'Beginning therapy is simple'
     const description =
       props.description ??
       "We've streamlined our process to make starting therapy as comfortable and straightforward as possible."
@@ -46,34 +46,34 @@ export const MentalHealthSteps = defineComponent({
       ? props.items
       : [
           {
-            title: "Schedule a Consultation",
+            title: 'Schedule a Consultation',
             description:
               "Book a free 15-minute phone consultation through our online calendar. We'll discuss your needs and match you with the best-fit therapist from our team.",
           },
           {
-            title: "Complete Intake Forms",
+            title: 'Complete Intake Forms',
             description:
-              "Fill out our secure online intake forms at your convenience. Insurance verification and payment setup happens automatically through our patient portal.",
+              'Fill out our secure online intake forms at your convenience. Insurance verification and payment setup happens automatically through our patient portal.',
           },
           {
-            title: "Begin Your Sessions",
+            title: 'Begin Your Sessions',
             description:
-              "Attend your first session in-person or via secure video. Your therapist will work with you to establish goals and create a personalized treatment plan.",
+              'Attend your first session in-person or via secure video. Your therapist will work with you to establish goals and create a personalized treatment plan.',
           },
         ]
-    const helpHeading = props.helpHeading ?? "Not sure where to start?"
+    const helpHeading = props.helpHeading ?? 'Not sure where to start?'
     const helpDescription =
       props.helpDescription ??
-      "Our client care team is available Monday through Friday, 8am to 6pm, to answer questions and help you find the right therapist for your specific concerns."
-    const helpPhone = props.helpPhone ?? "(503) 555-0147"
-    const helpCta = props.helpCta ?? "Book Online"
+      'Our client care team is available Monday through Friday, 8am to 6pm, to answer questions and help you find the right therapist for your specific concerns.'
+    const helpPhone = props.helpPhone ?? '(503) 555-0147'
+    const helpCta = props.helpCta ?? 'Book Online'
     const helpStats = props.helpStats?.length
       ? props.helpStats
       : [
-          { value: "48h", label: "Average response time" },
-          { value: "95%", label: "Match satisfaction" },
+          { value: '48h', label: 'Average response time' },
+          { value: '95%', label: 'Match satisfaction' },
         ]
-    const bookLabel = props.bookLabel ?? "Book Session"
+    const bookLabel = props.bookLabel ?? 'Book Session'
 
     const Phone = ({ className }: { className?: string }) => (
       <svg
@@ -93,9 +93,7 @@ export const MentalHealthSteps = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-background py-20 lg:py-28", props.className)}
-      >
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-primary">
@@ -173,9 +171,7 @@ export const MentalHealthSteps = defineComponent({
                       <p className="text-3xl font-semibold text-primary">
                         {s.value}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        {s.label}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{s.label}</p>
                     </div>
                   </div>
                 ))}

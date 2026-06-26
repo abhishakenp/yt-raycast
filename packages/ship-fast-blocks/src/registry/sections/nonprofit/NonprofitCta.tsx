@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * NonprofitCta — a warm, centered donation band for a nonprofit / charity / NGO
@@ -14,7 +14,7 @@ import { CtaBand } from "#/section-kit/CtaBand.tsx"
  * fully with no props via baked-in "Roots of Hope" defaults.
  */
 export const NonprofitCta = defineComponent({
-  name: "NonprofitCta",
+  name: 'NonprofitCta',
   description:
     "Warm, centered donation band for a nonprofit / charity / NGO page built on the shared CtaBand composite at tone='primary': an eyebrow, a strong appeal headline, a short supporting line, and a centered row of two routable pill CTAs — a high-contrast 'Donate Today' button plus an outlined 'Become a Volunteer' button. Both CTAs route through useNavigate. Use near the bottom of a nonprofit, foundation, or humanitarian page to drive donations and volunteer sign-ups.",
   props: z.object({
@@ -35,15 +35,15 @@ export const NonprofitCta = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Be the reason"
-    const headline = props.headline ?? "Your gift changes a life today"
+    const eyebrow = props.eyebrow ?? 'Be the reason'
+    const headline = props.headline ?? 'Your gift changes a life today'
     const subheading =
       props.subheading ??
-      "Every dollar goes further than you think. Give once or give monthly — and watch hope take root in a community that needs it."
-    const primaryCta = props.primaryCta ?? "Donate Today"
-    const primaryTarget = props.primaryTarget ?? "Donate"
-    const secondaryCta = props.secondaryCta ?? "Become a Volunteer"
-    const secondaryTarget = props.secondaryTarget ?? "Volunteer"
+      'Every dollar goes further than you think. Give once or give monthly — and watch hope take root in a community that needs it.'
+    const primaryCta = props.primaryCta ?? 'Donate Today'
+    const primaryTarget = props.primaryTarget ?? 'Donate'
+    const secondaryCta = props.secondaryCta ?? 'Become a Volunteer'
+    const secondaryTarget = props.secondaryTarget ?? 'Volunteer'
 
     return (
       <CtaBand
@@ -52,8 +52,8 @@ export const NonprofitCta = defineComponent({
         title={headline}
         subtitle={subheading}
         actions={[
-          { label: primaryCta, target: primaryTarget, variant: "primary" },
-          { label: secondaryCta, target: secondaryTarget, variant: "outline" },
+          { label: primaryCta, target: primaryTarget, variant: 'primary' },
+          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
         ]}
         className={props.className}
       />

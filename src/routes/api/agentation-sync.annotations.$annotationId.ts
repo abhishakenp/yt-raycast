@@ -5,7 +5,9 @@ import {
   updateAgentationAnnotationResponse,
 } from '@/features/agentation/server/agentation-sync-response'
 
-export const Route = createFileRoute('/api/agentation-sync/annotations/$annotationId')({
+export const Route = createFileRoute(
+  '/api/agentation-sync/annotations/$annotationId',
+)({
   server: {
     handlers: {
       PATCH: async ({ params, request }) =>

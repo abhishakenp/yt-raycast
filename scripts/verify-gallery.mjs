@@ -44,8 +44,13 @@ assert(
   '/api/gallery leaked backend failure text',
 )
 
-const recentPage = await request('/api/sessions/recent?limit=2&page=1&query=site')
-assert(recentPage.status === 200, `/api/sessions/recent returned ${recentPage.status}`)
+const recentPage = await request(
+  '/api/sessions/recent?limit=2&page=1&query=site',
+)
+assert(
+  recentPage.status === 200,
+  `/api/sessions/recent returned ${recentPage.status}`,
+)
 assert(
   recentPage.contentType.includes('application/json'),
   '/api/sessions/recent should return JSON',
@@ -142,7 +147,8 @@ function assert(condition, message) {
 function assertGalleryPayload(payload, label) {
   assert(Array.isArray(payload.items), `${label} must include items array`)
   assert(
-    typeof payload.hasNext === 'boolean' && typeof payload.hasPrev === 'boolean',
+    typeof payload.hasNext === 'boolean' &&
+      typeof payload.hasPrev === 'boolean',
     `${label} must include pagination booleans`,
   )
   assert(

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FoodTruckCatering — a dark, inverted CATERING band with a request-a-quote form. A
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * street-food vendors booking events.
  */
 export const FoodTruckCatering = defineComponent({
-  name: "FoodTruckCatering",
+  name: 'FoodTruckCatering',
   description:
-    "Dark, inverted CATERING band with a request-a-quote form: a foreground-filled section split into a left pitch column (eyebrow, heading, paragraph, a checklist of catering options each with a check-icon tile, and a row of soft event-type chips) and a right elevated card form with name, email, event date, guest-count and event-type selects and a message textarea, ending in a full-width submit. The form submit routes through useNavigate. Use as the catering / private-events lead-capture section for food trucks, caterers, street-food vendors or any mobile-food brand booking corporate lunches, weddings and parties.",
+    'Dark, inverted CATERING band with a request-a-quote form: a foreground-filled section split into a left pitch column (eyebrow, heading, paragraph, a checklist of catering options each with a check-icon tile, and a row of soft event-type chips) and a right elevated card form with name, email, event date, guest-count and event-type selects and a message textarea, ending in a full-width submit. The form submit routes through useNavigate. Use as the catering / private-events lead-capture section for food trucks, caterers, street-food vendors or any mobile-food brand booking corporate lunches, weddings and parties.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -33,55 +33,55 @@ export const FoodTruckCatering = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const cateringEyebrow = props.eyebrow ?? "Private Events"
-    const cateringHeading = props.heading ?? "Catering Services"
+    const cateringEyebrow = props.eyebrow ?? 'Private Events'
+    const cateringHeading = props.heading ?? 'Catering Services'
     const cateringDesc =
       props.description ??
-      "Bring the Curbside Kitchen experience to your event. We handle everything from intimate gatherings to corporate celebrations up to 500 guests."
+      'Bring the Curbside Kitchen experience to your event. We handle everything from intimate gatherings to corporate celebrations up to 500 guests.'
     const cateringOptions = props.options?.length
       ? props.options
       : [
           {
-            title: "Full-Service Truck",
+            title: 'Full-Service Truck',
             description:
-              "We bring the full truck setup, cook fresh on-site, serve your guests",
+              'We bring the full truck setup, cook fresh on-site, serve your guests',
           },
           {
-            title: "Drop-Off Catering",
+            title: 'Drop-Off Catering',
             description:
-              "Pre-packed meals delivered hot, perfect for office lunches",
+              'Pre-packed meals delivered hot, perfect for office lunches',
           },
           {
-            title: "Buffet Setup",
+            title: 'Buffet Setup',
             description:
-              "Self-serve taco bars, bowl stations, full service included",
+              'Self-serve taco bars, bowl stations, full service included',
           },
         ]
     const cateringTags = props.tags?.length
       ? props.tags
-      : ["Corporate Events", "Weddings", "Birthdays", "Festivals"]
-    const cateringFormTitle = props.formTitle ?? "Request a Quote"
+      : ['Corporate Events', 'Weddings', 'Birthdays', 'Festivals']
+    const cateringFormTitle = props.formTitle ?? 'Request a Quote'
     const guestCounts = props.guestCounts?.length
       ? props.guestCounts
-      : ["25-50", "50-100", "100-200", "200-500"]
+      : ['25-50', '50-100', '100-200', '200-500']
     const eventTypes = props.eventTypes?.length
       ? props.eventTypes
       : [
-          "Corporate Lunch",
-          "Wedding",
-          "Birthday Party",
-          "Festival / Public Event",
-          "Other",
+          'Corporate Lunch',
+          'Wedding',
+          'Birthday Party',
+          'Festival / Public Event',
+          'Other',
         ]
-    const cateringSubmit = props.submit ?? "Request Quote"
+    const cateringSubmit = props.submit ?? 'Request Quote'
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-background px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+      'w-full rounded-lg border border-input bg-background px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring'
 
     return (
       <section
         className={cn(
-          "bg-foreground px-6 py-20 text-background",
+          'bg-foreground px-6 py-20 text-background',
           props.className,
         )}
       >
@@ -140,7 +140,9 @@ export const FoodTruckCatering = defineComponent({
             </div>
 
             <div className="rounded-xl bg-card p-8 text-card-foreground">
-              <h3 className="mb-6 text-xl font-semibold">{cateringFormTitle}</h3>
+              <h3 className="mb-6 text-xl font-semibold">
+                {cateringFormTitle}
+              </h3>
               <form
                 className="space-y-4"
                 onSubmit={(e) => {
@@ -201,7 +203,7 @@ export const FoodTruckCatering = defineComponent({
                     </label>
                     <select
                       id="ft-catering-guests"
-                      className={cn(inputCls, "appearance-none")}
+                      className={cn(inputCls, 'appearance-none')}
                     >
                       {guestCounts.map((g) => (
                         <option key={g} className="bg-background">
@@ -220,7 +222,7 @@ export const FoodTruckCatering = defineComponent({
                   </label>
                   <select
                     id="ft-catering-type"
-                    className={cn(inputCls, "appearance-none")}
+                    className={cn(inputCls, 'appearance-none')}
                   >
                     {eventTypes.map((t) => (
                       <option key={t} className="bg-background">
@@ -240,7 +242,7 @@ export const FoodTruckCatering = defineComponent({
                     id="ft-catering-message"
                     rows={3}
                     placeholder="Tell us about your event..."
-                    className={cn(inputCls, "resize-none")}
+                    className={cn(inputCls, 'resize-none')}
                   />
                 </div>
                 <button

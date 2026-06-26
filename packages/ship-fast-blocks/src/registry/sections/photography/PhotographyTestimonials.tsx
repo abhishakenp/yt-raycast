@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * PhotographyTestimonials — client-review wall for a fine-art / wedding
@@ -14,9 +14,9 @@ import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
  * no props via baked-in defaults.
  */
 export const PhotographyTestimonials = defineComponent({
-  name: "PhotographyTestimonials",
+  name: 'PhotographyTestimonials',
   description:
-    "Client-review wall for a fine-art / wedding photographer site built on the shared TestimonialGrid composite: a centered serif heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted testimonial, and an attribution row pairing the couple / client name with their event (wedding, elopement, portrait). Use for social proof on photographers, studios, and elopement shooters.",
+    'Client-review wall for a fine-art / wedding photographer site built on the shared TestimonialGrid composite: a centered serif heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted testimonial, and an attribution row pairing the couple / client name with their event (wedding, elopement, portrait). Use for social proof on photographers, studios, and elopement shooters.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -34,30 +34,30 @@ export const PhotographyTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Loved by the couples we work with"
+    const heading = props.heading ?? 'Loved by the couples we work with'
     const reviews = props.reviews?.length
       ? props.reviews
       : [
           {
             quote:
               "Elena felt like a friend from the first call. She captured the quiet, in-between moments we didn't even notice — our gallery still makes us cry happy tears.",
-            name: "Sofia & James",
+            name: 'Sofia & James',
             rating: 5,
-            event: "Tuscany Wedding",
+            event: 'Tuscany Wedding',
           },
           {
             quote:
-              "We eloped in the mountains and trusted her completely. The photos are raw, emotional, and exactly us. Worth every single mile of travel.",
-            name: "Maya & Theo",
+              'We eloped in the mountains and trusted her completely. The photos are raw, emotional, and exactly us. Worth every single mile of travel.',
+            name: 'Maya & Theo',
             rating: 5,
-            event: "Dolomites Elopement",
+            event: 'Dolomites Elopement',
           },
           {
             quote:
               "Our family portraits are the most natural we've ever had. The kids actually had fun, and the editing is timeless — no trendy filters, just us.",
-            name: "The Bennett Family",
+            name: 'The Bennett Family',
             rating: 5,
-            event: "Portrait Session",
+            event: 'Portrait Session',
           },
         ]
 

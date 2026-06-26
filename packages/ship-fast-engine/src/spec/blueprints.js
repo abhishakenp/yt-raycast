@@ -4,10 +4,16 @@ import { routeToHtmlFile } from '../renderers/shared.js'
 
 function stripEditorArtifacts(source = '') {
   return String(source)
-    .replace(/<script>window\.__SF_PREVIEW_SESSION_ID__=[^<]*<\/script>\s*/gi, '')
+    .replace(
+      /<script>window\.__SF_PREVIEW_SESSION_ID__=[^<]*<\/script>\s*/gi,
+      '',
+    )
     .replace(/<script>window\.__SF_PREVIEW_AI__=[^<]*<\/script>\s*/gi, '')
     .replace(/<script\b[^>]*data-sf-preview-tools="1"[^>]*><\/script>/gi, '')
-    .replace(/<script\b[^>]*data-sf-editor-runtime="1"[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(
+      /<script\b[^>]*data-sf-editor-runtime="1"[^>]*>[\s\S]*?<\/script>/gi,
+      '',
+    )
     .replace(/\sdata-editable="true"/gi, '')
     .replace(/\sdata-editor-kind="[^"]*"/gi, '')
     .replace(/\sdata-editor-file="[^"]*"/gi, '')
@@ -19,7 +25,8 @@ function stripEditorArtifacts(source = '') {
 
 function parseAttributes(fragment = '') {
   const attrs = {}
-  const attrRegex = /([:@a-zA-Z0-9_-]+)(?:\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g
+  const attrRegex =
+    /([:@a-zA-Z0-9_-]+)(?:\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g
   let match
   while ((match = attrRegex.exec(fragment))) {
     const [, key, , dq, sq, bare] = match
@@ -34,7 +41,10 @@ function extractOpeningTagAttributes(html = '', tagName) {
 }
 
 function collectTags(source = '', tagName) {
-  const regex = new RegExp(`<${tagName}\\b([^>]*)>([\\s\\S]*?)<\\/${tagName}>`, 'gi')
+  const regex = new RegExp(
+    `<${tagName}\\b([^>]*)>([\\s\\S]*?)<\\/${tagName}>`,
+    'gi',
+  )
   const items = []
   let match
   while ((match = regex.exec(source))) {
@@ -131,7 +141,9 @@ export function extractRenderBlueprintFromHtml(html = '', fallback = {}) {
   }
 
   const title =
-    sanitizedHtml.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || fallback.title || ''
+    sanitizedHtml.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() ||
+    fallback.title ||
+    ''
   const meta = collectVoidTags(headInner, 'meta').map((entry) => entry.attrs)
   const links = collectVoidTags(headInner, 'link').map((entry) => entry.attrs)
   const styles = collectTags(headInner, 'style').map((entry) => entry.content)

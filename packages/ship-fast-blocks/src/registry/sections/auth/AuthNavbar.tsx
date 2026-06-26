@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * AuthNavbar — sticky site header for Authly, a developer authentication-as-a-service
@@ -28,7 +28,7 @@ const KeyholeMark = ({ className }: { className?: string }) => (
 )
 
 export const AuthNavbar = defineComponent({
-  name: "AuthNavbar",
+  name: 'AuthNavbar',
   description:
     "Sticky developer-auth product header (Authly, an authentication-as-a-service like Clerk / Auth0) built on the shared SiteNav composite: sharp sans wordmark + keyhole/shield mark, centered desktop nav links (Product, Docs, Pricing, Customers), a high-contrast 'Start Free' CTA routing to sign-up, and a real mobile drawer. Use as the header for auth platforms, identity APIs, login SDKs, or any developer-first SaaS landing page.",
   props: z.object({
@@ -47,16 +47,16 @@ export const AuthNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Product", "Docs", "Pricing", "Customers"]
+      : ['Product', 'Docs', 'Pricing', 'Customers']
     return (
       <SiteNav
-        brand={props.brand ?? "Authly"}
+        brand={props.brand ?? 'Authly'}
         brandMark={<KeyholeMark className="size-7 text-primary" />}
         brandClassName="text-xl font-semibold tracking-tight"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Start Free",
-          target: props.ctaTarget ?? "Sign Up",
+          label: props.ctaLabel ?? 'Start Free',
+          target: props.ctaTarget ?? 'Sign Up',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         sticky

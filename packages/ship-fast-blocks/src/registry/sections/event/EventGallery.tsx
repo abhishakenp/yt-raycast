@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * EventGallery — a dark photo highlights gallery for a conference or event page. A
@@ -11,7 +11,7 @@ import { Image } from "#/lib/img.tsx"
  * event photos on tech conference, summit, festival, or meetup pages.
  */
 export const EventGallery = defineComponent({
-  name: "EventGallery",
+  name: 'EventGallery',
   description:
     "Dark photo highlights gallery for a conference or event page: a full-bleed inverted (foreground background, light text) band with a centered heading + description above a responsive 3-up grid of 4:3 alt-driven photos that gently zoom on hover. Use to show last year's highlights, venue atmosphere, networking moments, or past event photos on tech conference, summit, festival, or meetup pages.",
   props: z.object({
@@ -26,22 +26,22 @@ export const EventGallery = defineComponent({
   component: ({ props }) => {
     const heading = props.heading ?? "Last Year's Highlights"
     const description =
-      props.description ?? "A glimpse of what awaits you at DesignFront 2024."
+      props.description ?? 'A glimpse of what awaits you at DesignFront 2024.'
     const items = props.items?.length
       ? props.items
       : [
-          "Conference attendees watching a presentation in a large theater with stage lighting",
-          "Speaker on stage presenting to a large audience at a tech conference",
-          "Conference attendees networking during a coffee break in a modern venue",
-          "Workshop session with participants collaborating around laptops at tables",
-          "Evening social event with attendees mingling under string lights",
-          "Palace of Fine Arts dome architecture in San Francisco venue exterior",
+          'Conference attendees watching a presentation in a large theater with stage lighting',
+          'Speaker on stage presenting to a large audience at a tech conference',
+          'Conference attendees networking during a coffee break in a modern venue',
+          'Workshop session with participants collaborating around laptops at tables',
+          'Evening social event with attendees mingling under string lights',
+          'Palace of Fine Arts dome architecture in San Francisco venue exterior',
         ]
 
     return (
       <section
         className={cn(
-          "bg-foreground py-20 text-background lg:py-28",
+          'bg-foreground py-20 text-background lg:py-28',
           props.className,
         )}
       >

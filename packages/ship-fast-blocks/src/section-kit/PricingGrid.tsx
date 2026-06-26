@@ -1,6 +1,6 @@
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { SectionHeading } from "./SectionHeading.tsx"
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { SectionHeading } from './SectionHeading.tsx'
 
 /**
  * PricingGrid — generic, reusable pricing section (optional heading + responsive
@@ -24,7 +24,7 @@ export function PricingGrid(props: {
 }) {
   const go = useNavigate()
   return (
-    <section className={cn("flex flex-col gap-10", props.className)}>
+    <section className={cn('flex flex-col gap-10', props.className)}>
       {props.heading ? (
         <SectionHeading title={props.heading} subtitle={props.subheading} />
       ) : null}
@@ -33,10 +33,10 @@ export function PricingGrid(props: {
           <div
             key={i}
             className={cn(
-              "relative flex flex-col gap-6 rounded-xl border bg-card p-8",
+              'relative flex flex-col gap-6 rounded-xl border bg-card p-8',
               t.highlighted
-                ? "border-2 border-primary shadow-lg"
-                : "border-border",
+                ? 'border-2 border-primary shadow-lg'
+                : 'border-border',
             )}
           >
             {t.highlighted ? (
@@ -45,7 +45,9 @@ export function PricingGrid(props: {
               </span>
             ) : null}
             <div className="flex flex-col gap-2">
-              <h3 className="text-lg font-semibold text-foreground">{t.name}</h3>
+              <h3 className="text-lg font-semibold text-foreground">
+                {t.name}
+              </h3>
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-bold text-foreground">
                   {t.price}
@@ -84,15 +86,15 @@ export function PricingGrid(props: {
               </ul>
             ) : null}
             <button
-              onClick={() => go(t.ctaTarget ?? t.cta ?? "Pricing")}
+              onClick={() => go(t.ctaTarget ?? t.cta ?? 'Pricing')}
               className={cn(
-                "mt-auto inline-flex w-full items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium transition-colors",
+                'mt-auto inline-flex w-full items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium transition-colors',
                 t.highlighted
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "border border-border bg-background text-foreground hover:bg-muted",
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  : 'border border-border bg-background text-foreground hover:bg-muted',
               )}
             >
-              {t.cta ?? "Get started"}
+              {t.cta ?? 'Get started'}
             </button>
           </div>
         ))}

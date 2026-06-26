@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * MobileAppStats — an inverted, full-bleed big-number stats band on the primary
@@ -12,9 +12,9 @@ import { cn } from "#/lib/utils.ts"
  * defaults.
  */
 export const MobileAppStats = defineComponent({
-  name: "MobileAppStats",
+  name: 'MobileAppStats',
   description:
-    "Inverted full-bleed big-number stats band on the primary brand background: a centered heading + translucent description over a responsive 2-/4-column row of large metric figures, each over a translucent caption label. Use as a high-contrast proof-point / traction band between content sections on a mobile-app, SaaS or consumer-product landing page.",
+    'Inverted full-bleed big-number stats band on the primary brand background: a centered heading + translucent description over a responsive 2-/4-column row of large metric figures, each over a translucent caption label. Use as a high-contrast proof-point / traction band between content sections on a mobile-app, SaaS or consumer-product landing page.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -24,23 +24,23 @@ export const MobileAppStats = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Numbers that speak"
+    const heading = props.heading ?? 'Numbers that speak'
     const description =
       props.description ??
-      "Join thousands of people who are transforming their lives one habit at a time."
+      'Join thousands of people who are transforming their lives one habit at a time.'
     const items = props.items?.length
       ? props.items
       : [
-          { value: "50,000+", label: "Active users building habits" },
-          { value: "2.8M", label: "Habits completed monthly" },
-          { value: "87%", label: "Users report lasting change" },
-          { value: "4.9", label: "App Store rating (12K reviews)" },
+          { value: '50,000+', label: 'Active users building habits' },
+          { value: '2.8M', label: 'Habits completed monthly' },
+          { value: '87%', label: 'Users report lasting change' },
+          { value: '4.9', label: 'App Store rating (12K reviews)' },
         ]
 
     return (
       <section
         className={cn(
-          "bg-primary py-20 text-primary-foreground lg:py-32",
+          'bg-primary py-20 text-primary-foreground lg:py-32',
           props.className,
         )}
         aria-labelledby="mobileapp-stats-heading"
@@ -58,7 +58,9 @@ export const MobileAppStats = defineComponent({
           <div className="grid gap-8 text-center sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
             {items.map((s) => (
               <div key={s.label}>
-                <div className="mb-2 text-4xl font-bold sm:text-5xl">{s.value}</div>
+                <div className="mb-2 text-4xl font-bold sm:text-5xl">
+                  {s.value}
+                </div>
                 <p className="text-primary-foreground/70">{s.label}</p>
               </div>
             ))}

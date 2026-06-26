@@ -1,33 +1,33 @@
 import {
   optimisticallyUpdateValueInPaginatedQuery,
   useMutation,
-} from "convex/react";
-import { GenericId, Value, ConvexError } from "convex/values";
-import { useRouter } from "next/router";
-import udfs from "@common/udfs";
-import { useCallback } from "react";
-import omitBy from "lodash/omitBy";
-import { isFilterValidationError } from "system-udfs/convex/_system/frontend/lib/filters";
-import { UNDEFINED_PLACEHOLDER } from "system-udfs/convex/_system/frontend/lib/values";
-import { useNents } from "@common/lib/useNents";
-import { toast } from "@common/lib/utils";
-import { useInvalidateShapes } from "@common/features/data/lib/api";
+} from 'convex/react'
+import { GenericId, Value, ConvexError } from 'convex/values'
+import { useRouter } from 'next/router'
+import udfs from '@common/udfs'
+import { useCallback } from 'react'
+import omitBy from 'lodash/omitBy'
+import { isFilterValidationError } from 'system-udfs/convex/_system/frontend/lib/filters'
+import { UNDEFINED_PLACEHOLDER } from 'system-udfs/convex/_system/frontend/lib/values'
+import { useNents } from '@common/lib/useNents'
+import { toast } from '@common/lib/utils'
+import { useInvalidateShapes } from '@common/features/data/lib/api'
 
 export function usePatchDocumentField(tableName: string) {
-  const router = useRouter();
-  const { selectedNent } = useNents();
+  const router = useRouter()
+  const { selectedNent } = useNents()
 
   const patchDocument = useMutation(
     udfs.patchDocumentsFields.default,
   ).withOptimisticUpdate((localStore, { ids, fields }) => {
     if (!ids || ids.length !== 1) {
-      throw new Error("Attempted to patch more than one document at a time.");
+      throw new Error('Attempted to patch more than one document at a time.')
     }
     if (Object.keys(fields).length !== 1) {
-      throw new Error("Attempted to patch more than one field at a time.");
+      throw new Error('Attempted to patch more than one field at a time.')
     }
 
-    const documentId = ids[0];
+    const documentId = ids[0]
     optimisticallyUpdateValueInPaginatedQuery(
       localStore,
       udfs.paginatedTableDocuments.default,
@@ -49,13 +49,13 @@ export function usePatchDocumentField(tableName: string) {
               (value, key) => fields[key] === UNDEFINED_PLACEHOLDER,
             ),
             ...omitBy(fields, (value) => value === UNDEFINED_PLACEHOLDER),
-          };
+          }
         }
-        return currentValue;
+        return currentValue
       },
-    );
-  });
-  const invalidateShapes = useInvalidateShapes();
+    )
+  })
+  const invalidateShapes = useInvalidateShapes()
 
   return useCallback(
     async (
@@ -70,16 +70,16 @@ export function usePatchDocumentField(tableName: string) {
           table,
           ids: [id],
           fields: { [field]: value },
-        });
+        })
       } catch (error: any) {
         if (error instanceof ConvexError) {
-          toast("error", error.data, undefined, false);
+          toast('error', error.data, undefined, false)
         } else {
-          throw error;
+          throw error
         }
       }
-      await invalidateShapes();
+      await invalidateShapes()
     },
     [invalidateShapes, patchDocument, selectedNent],
-  );
+  )
 }

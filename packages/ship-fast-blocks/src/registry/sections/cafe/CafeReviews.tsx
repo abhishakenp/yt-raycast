@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CafeReviews — 3-up customer-review wall for a cozy cafe / coffee shop page.
@@ -14,7 +14,7 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const CafeReviews = defineComponent({
-  name: "CafeReviews",
+  name: 'CafeReviews',
   description:
     "3-up customer-review wall for a cozy cafe page: centered cap and serif heading above a responsive card grid. Each card shows a 5-star rating row, a quoted testimonial, and an attribution row with a round avatar, name, and role. Below the grid, a text link with an arrow routes to a 'more reviews' destination via useNavigate. Use for social-proof on cafes, bakeries, tea houses, or local service businesses.",
   props: z.object({
@@ -41,36 +41,36 @@ export const CafeReviews = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const cap = props.cap ?? "What People Say"
-    const heading = props.heading ?? "Loved by the neighborhood"
-    const moreLink = props.moreLink ?? "Read 247 more reviews on Google"
-    const moreTarget = props.moreTarget ?? "Reviews"
+    const cap = props.cap ?? 'What People Say'
+    const heading = props.heading ?? 'Loved by the neighborhood'
+    const moreLink = props.moreLink ?? 'Read 247 more reviews on Google'
+    const moreTarget = props.moreTarget ?? 'Reviews'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
-              "This is my third place. The baristas know my name, my order, and genuinely ask about my day. The Ethiopian pour over is consistently the best in the city.",
-            name: "David Park",
-            role: "Software Engineer, Pearl District",
+              'This is my third place. The baristas know my name, my order, and genuinely ask about my day. The Ethiopian pour over is consistently the best in the city.',
+            name: 'David Park',
+            role: 'Software Engineer, Pearl District',
             avatarAlt:
-              "Professional headshot of David Park, a smiling man with short black hair in a casual button-up shirt",
+              'Professional headshot of David Park, a smiling man with short black hair in a casual button-up shirt',
           },
           {
             quote:
-              "As a pastry chef myself, I can tell you their croissants are the real deal. Proper lamination, French butter, perfect honeycomb structure. Worth every penny.",
-            name: "Maria Gonzalez",
-            role: "Pastry Chef, Le Cordon Bleu Graduate",
+              'As a pastry chef myself, I can tell you their croissants are the real deal. Proper lamination, French butter, perfect honeycomb structure. Worth every penny.',
+            name: 'Maria Gonzalez',
+            role: 'Pastry Chef, Le Cordon Bleu Graduate',
             avatarAlt:
-              "Professional headshot of Maria Gonzalez, a smiling woman with curly brown hair and warm brown eyes",
+              'Professional headshot of Maria Gonzalez, a smiling woman with curly brown hair and warm brown eyes',
           },
           {
             quote:
               "I bring all my out-of-town clients here. The space is beautiful without trying too hard, the coffee is impeccable, and it's quiet enough for actual conversation.",
-            name: "Jennifer Walsh",
-            role: "Real Estate Broker, Compass",
+            name: 'Jennifer Walsh',
+            role: 'Real Estate Broker, Compass',
             avatarAlt:
-              "Professional headshot of Jennifer Walsh, a smiling woman in her 40s wearing a navy blazer",
+              'Professional headshot of Jennifer Walsh, a smiling woman in her 40s wearing a navy blazer',
           },
         ]
 
@@ -86,7 +86,7 @@ export const CafeReviews = defineComponent({
     )
 
     return (
-      <section className={cn("py-20 lg:py-32", props.className)}>
+      <section className={cn('py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <p className="mb-3 text-sm font-medium uppercase tracking-wider text-primary">
@@ -119,9 +119,7 @@ export const CafeReviews = defineComponent({
                     className="size-12 rounded-full object-cover"
                   />
                   <div>
-                    <p className="font-medium text-card-foreground">
-                      {r.name}
-                    </p>
+                    <p className="font-medium text-card-foreground">{r.name}</p>
                     <p className="text-sm text-muted-foreground">{r.role}</p>
                   </div>
                 </div>

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * ResumeCvNavbar — sticky site header for a personal resume / CV / portfolio
@@ -14,7 +14,7 @@ import { SiteNav } from "#/section-kit/SiteNav.tsx"
  * defaults.
  */
 export const ResumeCvNavbar = defineComponent({
-  name: "ResumeCvNavbar",
+  name: 'ResumeCvNavbar',
   description:
     "Sticky personal resume / CV / portfolio site header built on the shared SiteNav composite: a clean sans wordmark of the person's name beside an initials monogram in a token circle, centered desktop nav links (About, Experience, Skills, Projects), a 'Contact Me' pill CTA routing to the contact section, and a real mobile drawer. Use as the header for personal portfolios, online résumés, designer or developer profiles, or any individual's professional landing page.",
   props: z.object({
@@ -35,11 +35,11 @@ export const ResumeCvNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["About", "Experience", "Skills", "Projects"]
-    const initials = props.initials ?? "JA"
+      : ['About', 'Experience', 'Skills', 'Projects']
+    const initials = props.initials ?? 'JA'
     return (
       <SiteNav
-        brand={props.brand ?? "Jordan Avery"}
+        brand={props.brand ?? 'Jordan Avery'}
         brandMark={
           <span
             aria-hidden="true"
@@ -51,8 +51,8 @@ export const ResumeCvNavbar = defineComponent({
         brandClassName="text-lg font-semibold tracking-tight"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Contact Me",
-          target: props.ctaTarget ?? "Contact",
+          label: props.ctaLabel ?? 'Contact Me',
+          target: props.ctaTarget ?? 'Contact',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

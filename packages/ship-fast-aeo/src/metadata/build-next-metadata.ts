@@ -7,7 +7,9 @@ export function buildNextMetadata(seo: ResolvedPageSeo) {
     description: seo.description,
     keywords: seo.keywords,
     alternates: seo.canonicalUrl ? { canonical: seo.canonicalUrl } : undefined,
-    robots: seo.noIndex ? { index: false, follow: false } : { index: true, follow: true },
+    robots: seo.noIndex
+      ? { index: false, follow: false }
+      : { index: true, follow: true },
     openGraph: cleanObject({
       type: 'website',
       locale: seo.locale,

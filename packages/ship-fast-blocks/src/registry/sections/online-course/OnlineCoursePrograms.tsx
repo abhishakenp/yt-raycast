@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * OnlineCoursePrograms — bespoke curriculum-modules band for an online-course
@@ -14,7 +14,7 @@ import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
  * via baked-in defaults.
  */
 export const OnlineCoursePrograms = defineComponent({
-  name: "OnlineCoursePrograms",
+  name: 'OnlineCoursePrograms',
   description:
     "Bespoke curriculum-modules band for an online-course page: a centered SectionHeading ('Course curriculum') above a stacked list of numbered module rows in a single bordered card, each with a rounded primary-tinted number badge, the module title, and a lessons count, divided by token borders, plus a muted summary line totaling modules and lessons. Use to lay out a self-paced course syllabus on an e-learning, bootcamp, or academy landing page.",
   props: z.object({
@@ -39,27 +39,31 @@ export const OnlineCoursePrograms = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Syllabus"
-    const heading = props.heading ?? "Course curriculum"
+    const eyebrow = props.eyebrow ?? 'Syllabus'
+    const heading = props.heading ?? 'Course curriculum'
     const subheading =
       props.subheading ??
-      "Six guided modules take you from fundamentals to shipping production apps — learn by building, at your own pace."
+      'Six guided modules take you from fundamentals to shipping production apps — learn by building, at your own pace.'
     const modules = props.modules?.length
       ? props.modules
       : [
-          { title: "Foundations of React", lessons: "8 lessons" },
-          { title: "Components, Props & State", lessons: "10 lessons" },
-          { title: "Hooks & Side Effects", lessons: "9 lessons" },
-          { title: "Routing & Data Fetching", lessons: "11 lessons" },
-          { title: "Testing & Best Practices", lessons: "7 lessons" },
-          { title: "Capstone: Ship a Real App", lessons: "6 lessons" },
+          { title: 'Foundations of React', lessons: '8 lessons' },
+          { title: 'Components, Props & State', lessons: '10 lessons' },
+          { title: 'Hooks & Side Effects', lessons: '9 lessons' },
+          { title: 'Routing & Data Fetching', lessons: '11 lessons' },
+          { title: 'Testing & Best Practices', lessons: '7 lessons' },
+          { title: 'Capstone: Ship a Real App', lessons: '6 lessons' },
         ]
     const summary =
-      props.summary ?? `${modules.length} modules · 51 lessons · ~24 hours of content`
+      props.summary ??
+      `${modules.length} modules · 51 lessons · ~24 hours of content`
 
     return (
       <section
-        className={cn("bg-background py-20 text-foreground lg:py-28", props.className)}
+        className={cn(
+          'bg-background py-20 text-foreground lg:py-28',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-3xl px-6 lg:px-8">
           <SectionHeading
@@ -72,12 +76,12 @@ export const OnlineCoursePrograms = defineComponent({
               <div
                 key={module.title}
                 className={cn(
-                  "flex items-center gap-4 px-5 py-5 sm:px-6",
-                  i > 0 && "border-t border-border",
+                  'flex items-center gap-4 px-5 py-5 sm:px-6',
+                  i > 0 && 'border-t border-border',
                 )}
               >
                 <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-                  {module.number ?? String(i + 1).padStart(2, "0")}
+                  {module.number ?? String(i + 1).padStart(2, '0')}
                 </span>
                 <span className="flex-1 text-base font-medium text-card-foreground">
                   {module.title}
@@ -88,7 +92,9 @@ export const OnlineCoursePrograms = defineComponent({
               </div>
             ))}
           </div>
-          <p className="mt-6 text-center text-sm text-muted-foreground">{summary}</p>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            {summary}
+          </p>
         </div>
       </section>
     )

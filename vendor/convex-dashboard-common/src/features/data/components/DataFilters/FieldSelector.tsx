@@ -3,10 +3,10 @@ import {
   EyeNoneIcon,
   EyeOpenIcon,
   MagnifyingGlassIcon,
-} from "@radix-ui/react-icons";
-import * as Switch from "@radix-ui/react-switch";
-import { useCallback, useMemo, useState, useRef, useEffect } from "react";
-import fuzzy from "fuzzy";
+} from '@radix-ui/react-icons'
+import * as Switch from '@radix-ui/react-switch'
+import { useCallback, useMemo, useState, useRef, useEffect } from 'react'
+import fuzzy from 'fuzzy'
 import {
   DndContext,
   closestCenter,
@@ -15,21 +15,21 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core'
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { FixedSizeList as List } from "react-window";
-import { Button } from "@ui/Button";
-import { cn } from "@ui/cn";
-import { Popover } from "@ui/Popover";
+} from '@dnd-kit/sortable'
+import { FixedSizeList as List } from 'react-window'
+import { Button } from '@ui/Button'
+import { cn } from '@ui/cn'
+import { Popover } from '@ui/Popover'
 
-const ITEM_SIZE = 24;
-const MAX_VISIBLE_FIELDS = 25;
+const ITEM_SIZE = 24
+const MAX_VISIBLE_FIELDS = 25
 
 export function FieldSelector({
   allFields,
@@ -38,86 +38,86 @@ export function FieldSelector({
   columnOrder,
   setColumnOrder,
 }: {
-  allFields: string[];
-  hiddenColumns: string[];
-  setHiddenColumns: (hiddenColumns: string[]) => void;
-  columnOrder: string[];
-  setColumnOrder: (columnOrder: string[]) => void;
+  allFields: string[]
+  hiddenColumns: string[]
+  setHiddenColumns: (hiddenColumns: string[]) => void
+  columnOrder: string[]
+  setColumnOrder: (columnOrder: string[]) => void
 }) {
-  const [query, setQuery] = useState("");
-  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
-  const listRef = useRef<List>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const popoverButtonRef = useRef<HTMLButtonElement>(null);
-  const lastButtonRef = useRef<HTMLButtonElement>(null);
+  const [query, setQuery] = useState('')
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1)
+  const listRef = useRef<List>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const popoverButtonRef = useRef<HTMLButtonElement>(null)
+  const lastButtonRef = useRef<HTMLButtonElement>(null)
 
   // Filter out special columns like checkbox column and maintain custom order
   const selectableFields = useMemo(() => {
-    const newFields = allFields.filter((field) => field !== "*select");
+    const newFields = allFields.filter((field) => field !== '*select')
 
     // If we have a custom order, use it to order the fields
     if (columnOrder.length > 0) {
-      const orderedFields = [...columnOrder];
+      const orderedFields = [...columnOrder]
       // Add any new fields that aren't in the custom order yet
       const newFieldsNotInOrder = newFields.filter(
         (field) => !columnOrder.includes(field),
-      );
+      )
       return [...orderedFields, ...newFieldsNotInOrder].filter((field) =>
         newFields.includes(field),
-      );
+      )
     }
 
-    return newFields;
-  }, [allFields, columnOrder]);
+    return newFields
+  }, [allFields, columnOrder])
 
   // Filter fields based on search query using fuzzy search
   const filteredFields = useMemo(() => {
-    if (!query) return selectableFields;
-    const results = fuzzy.filter(query, selectableFields);
-    return results.map((result) => result.string);
-  }, [selectableFields, query]);
+    if (!query) return selectableFields
+    const results = fuzzy.filter(query, selectableFields)
+    return results.map((result) => result.string)
+  }, [selectableFields, query])
 
   // Reset focused index when filtered fields change
   useEffect(() => {
-    setFocusedIndex(-1);
-  }, [filteredFields]);
+    setFocusedIndex(-1)
+  }, [filteredFields])
 
-  const hasHiddenFields = hiddenColumns.length > 0;
+  const hasHiddenFields = hiddenColumns.length > 0
 
   const toggleField = useCallback(
     (field: string) => {
       if (hiddenColumns.includes(field)) {
-        setHiddenColumns(hiddenColumns.filter((f) => f !== field));
+        setHiddenColumns(hiddenColumns.filter((f) => f !== field))
       } else {
-        setHiddenColumns([...hiddenColumns, field]);
+        setHiddenColumns([...hiddenColumns, field])
       }
     },
     [hiddenColumns, setHiddenColumns],
-  );
+  )
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      const { active, over } = event;
+      const { active, over } = event
 
       if (!over || active.id === over.id) {
-        return;
+        return
       }
 
       // Get the current order (or use selectableFields as default)
       const currentOrder =
-        columnOrder.length > 0 ? columnOrder : selectableFields;
+        columnOrder.length > 0 ? columnOrder : selectableFields
 
-      const oldIndex = currentOrder.indexOf(active.id as string);
-      const newIndex = currentOrder.indexOf(over.id as string);
+      const oldIndex = currentOrder.indexOf(active.id as string)
+      const newIndex = currentOrder.indexOf(over.id as string)
 
       if (oldIndex !== -1 && newIndex !== -1) {
-        const newOrder = arrayMove(currentOrder, oldIndex, newIndex);
+        const newOrder = arrayMove(currentOrder, oldIndex, newIndex)
         // Ensure *select is never included in the column order
-        setColumnOrder(newOrder.filter((field) => field !== "*select"));
+        setColumnOrder(newOrder.filter((field) => field !== '*select'))
       }
     },
     [selectableFields, columnOrder, setColumnOrder],
-  );
+  )
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -128,68 +128,68 @@ export function FieldSelector({
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
-  );
+  )
 
   const handleHideAll = useCallback(() => {
-    setHiddenColumns(selectableFields);
-  }, [selectableFields, setHiddenColumns]);
+    setHiddenColumns(selectableFields)
+  }, [selectableFields, setHiddenColumns])
 
   const handleShowAll = useCallback(() => {
     if (selectableFields.length > MAX_VISIBLE_FIELDS) {
       // Show only the first MAX_VISIBLE_FIELDS fields
-      const fieldsToShow = selectableFields.slice(0, MAX_VISIBLE_FIELDS);
+      const fieldsToShow = selectableFields.slice(0, MAX_VISIBLE_FIELDS)
       const fieldsToHide = selectableFields.filter(
         (field) => !fieldsToShow.includes(field),
-      );
-      setHiddenColumns(fieldsToHide);
+      )
+      setHiddenColumns(fieldsToHide)
     } else {
-      setHiddenColumns([]);
+      setHiddenColumns([])
     }
-  }, [selectableFields, setHiddenColumns]);
+  }, [selectableFields, setHiddenColumns])
 
-  const hasTooManyFields = selectableFields.length > MAX_VISIBLE_FIELDS;
+  const hasTooManyFields = selectableFields.length > MAX_VISIBLE_FIELDS
 
   // Keyboard navigation handler
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (filteredFields.length === 0) return;
+      if (filteredFields.length === 0) return
 
       switch (e.key) {
-        case "ArrowDown":
-          e.preventDefault();
+        case 'ArrowDown':
+          e.preventDefault()
           setFocusedIndex((prev) => {
-            const next = prev < filteredFields.length - 1 ? prev + 1 : prev;
+            const next = prev < filteredFields.length - 1 ? prev + 1 : prev
             // Scroll to the focused item
             if (listRef.current && next !== prev) {
-              listRef.current.scrollToItem(next, "smart");
+              listRef.current.scrollToItem(next, 'smart')
             }
-            return next;
-          });
-          break;
-        case "ArrowUp":
-          e.preventDefault();
+            return next
+          })
+          break
+        case 'ArrowUp':
+          e.preventDefault()
           setFocusedIndex((prev) => {
-            const next = prev > 0 ? prev - 1 : prev;
+            const next = prev > 0 ? prev - 1 : prev
             // Scroll to the focused item
             if (listRef.current && next !== prev) {
-              listRef.current.scrollToItem(next, "smart");
+              listRef.current.scrollToItem(next, 'smart')
             }
-            return next;
-          });
-          break;
-        case "Enter":
-        case " ":
-          e.preventDefault();
+            return next
+          })
+          break
+        case 'Enter':
+        case ' ':
+          e.preventDefault()
           if (focusedIndex >= 0 && focusedIndex < filteredFields.length) {
-            toggleField(filteredFields[focusedIndex]);
+            toggleField(filteredFields[focusedIndex])
           }
-          break;
+          break
         default:
-          break;
+          break
       }
     },
     [filteredFields, focusedIndex, toggleField],
-  );
+  )
 
   return (
     <Popover
@@ -203,14 +203,14 @@ export function FieldSelector({
           focused={open}
           tip="Toggle visible fields"
           className={cn(
-            "h-[27.5px] w-fit min-w-[27.5px] justify-center rounded-lg p-1 text-xs",
+            'h-[27.5px] w-fit min-w-[27.5px] justify-center rounded-lg p-1 text-xs',
             hasHiddenFields &&
-              "bg-yellow-100/50 hover:bg-yellow-100 dark:bg-yellow-600/20 dark:hover:bg-yellow-600/50",
+              'bg-yellow-100/50 hover:bg-yellow-100 dark:bg-yellow-600/20 dark:hover:bg-yellow-600/50',
           )}
         >
           {hasHiddenFields
-            ? `${hiddenColumns.length} hidden field${hiddenColumns.length > 1 ? "s" : ""}`
-            : ""}
+            ? `${hiddenColumns.length} hidden field${hiddenColumns.length > 1 ? 's' : ''}`
+            : ''}
         </Button>
       )}
       className="max-h-96 w-80"
@@ -299,19 +299,19 @@ export function FieldSelector({
               icon={<EyeOpenIcon />}
               onClick={handleShowAll}
               onKeyDown={(e) => {
-                if (e.key === "Tab" && !e.shiftKey) {
-                  e.preventDefault();
-                  popoverButtonRef.current?.focus();
+                if (e.key === 'Tab' && !e.shiftKey) {
+                  e.preventDefault()
+                  popoverButtonRef.current?.focus()
                 }
               }}
             >
-              {hasTooManyFields ? `Show ${MAX_VISIBLE_FIELDS}` : "Show All"}
+              {hasTooManyFields ? `Show ${MAX_VISIBLE_FIELDS}` : 'Show All'}
             </Button>
           </div>
         </div>
       </DndContext>
     </Popover>
-  );
+  )
 }
 
 // Virtual list row component
@@ -320,18 +320,18 @@ function VirtualRow({
   style,
   data,
 }: {
-  index: number;
-  style: React.CSSProperties;
+  index: number
+  style: React.CSSProperties
   data: {
-    fields: string[];
-    hiddenColumns: string[];
-    toggleField: (field: string) => void;
-    focusedIndex: number;
-    setFocusedIndex: (index: number) => void;
-    handleKeyDown: (e: React.KeyboardEvent) => void;
-  };
+    fields: string[]
+    hiddenColumns: string[]
+    toggleField: (field: string) => void
+    focusedIndex: number
+    setFocusedIndex: (index: number) => void
+    handleKeyDown: (e: React.KeyboardEvent) => void
+  }
 }) {
-  const field = data.fields[index];
+  const field = data.fields[index]
   return (
     <div style={style}>
       <FieldItem
@@ -343,7 +343,7 @@ function VirtualRow({
         handleKeyDown={data.handleKeyDown}
       />
     </div>
-  );
+  )
 }
 
 function FieldItem({
@@ -354,12 +354,12 @@ function FieldItem({
   setFocusedIndex,
   handleKeyDown,
 }: {
-  field: string;
-  isVisible: boolean;
-  onToggle: () => void;
-  index: number;
-  setFocusedIndex: (index: number) => void;
-  handleKeyDown: (e: React.KeyboardEvent) => void;
+  field: string
+  isVisible: boolean
+  onToggle: () => void
+  index: number
+  setFocusedIndex: (index: number) => void
+  handleKeyDown: (e: React.KeyboardEvent) => void
 }) {
   const {
     attributes,
@@ -368,19 +368,19 @@ function FieldItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: field });
+  } = useSortable({ id: field })
 
   // Clamp the transform to prevent overflow
   const clampedTransform = transform
     ? { ...transform, y: Math.max(-350, Math.min(350, transform.y)) }
-    : null;
+    : null
 
   const style = {
     transform: clampedTransform
       ? `translate3d(0, ${clampedTransform.y}px, 0)`
       : undefined,
     transition,
-  };
+  }
 
   return (
     <div
@@ -395,10 +395,10 @@ function FieldItem({
       onFocus={() => setFocusedIndex(index)}
       onKeyDown={handleKeyDown}
       className={cn(
-        "mx-1 flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-xs transition-colors",
-        "hover:bg-background-tertiary",
-        "focus:outline-none focus-visible:bg-background-tertiary focus-visible:ring-2 focus-visible:ring-border-selected",
-        isDragging && "cursor-grabbing opacity-50",
+        'mx-1 flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-xs transition-colors',
+        'hover:bg-background-tertiary',
+        'focus:outline-none focus-visible:bg-background-tertiary focus-visible:ring-2 focus-visible:ring-border-selected',
+        isDragging && 'cursor-grabbing opacity-50',
       )}
     >
       {/* Toggle switch */}
@@ -409,15 +409,15 @@ function FieldItem({
         onPointerDown={(e) => e.stopPropagation()}
         tabIndex={-1}
         className={cn(
-          "relative h-3 w-5 rounded-full transition-colors",
-          "focus:outline-none",
-          isVisible ? "bg-util-accent" : "bg-neutral-4 dark:bg-neutral-7",
+          'relative h-3 w-5 rounded-full transition-colors',
+          'focus:outline-none',
+          isVisible ? 'bg-util-accent' : 'bg-neutral-4 dark:bg-neutral-7',
         )}
       >
         <Switch.Thumb
           className={cn(
-            "my-0.5 block size-2 rounded-full bg-white shadow-sm transition-transform",
-            isVisible ? "translate-x-[10px]" : "translate-x-[2px]",
+            'my-0.5 block size-2 rounded-full bg-white shadow-sm transition-transform',
+            isVisible ? 'translate-x-[10px]' : 'translate-x-[2px]',
           )}
         />
       </Switch.Root>
@@ -428,5 +428,5 @@ function FieldItem({
       {/* Drag handle icon */}
       <DragHandleDots2Icon className="size-4 cursor-grab text-content-secondary active:cursor-grabbing" />
     </div>
-  );
+  )
 }

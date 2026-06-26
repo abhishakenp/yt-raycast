@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * JobBoardJobs — a featured-jobs listings feed for a job-board / careers site. A
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props.
  */
 export const JobBoardJobs = defineComponent({
-  name: "JobBoardJobs",
+  name: 'JobBoardJobs',
   description:
     "Featured-jobs listings feed for a job-board / careers site: a header row pairing a heading + description with a 'view all' arrow link, a row of pill filter chips (first active), then a vertical stack of rich job cards — each with a company logo thumbnail, role title, optional New/Featured badge, company + location line, skill/salary tag pills, a clamped description, a posted-date and an Apply button — closing with a centered 'load more' button. Filters, view-all, apply and load-more route through useNavigate. Use as the primary listings feed on job boards, hiring marketplaces or talent networks.",
   props: z.object({
@@ -50,73 +50,73 @@ export const JobBoardJobs = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Featured jobs"
+    const heading = props.heading ?? 'Featured jobs'
     const description =
-      props.description ?? "Hand-picked opportunities from top companies"
-    const viewAll = props.viewAll ?? "View all 12,483 jobs"
-    const loadMore = props.loadMore ?? "Load more jobs"
-    const applyLabel = props.applyLabel ?? "Apply Now"
+      props.description ?? 'Hand-picked opportunities from top companies'
+    const viewAll = props.viewAll ?? 'View all 12,483 jobs'
+    const loadMore = props.loadMore ?? 'Load more jobs'
+    const applyLabel = props.applyLabel ?? 'Apply Now'
     const filters = props.filters?.length
       ? props.filters
-      : ["All Jobs", "Remote", "Engineering", "Design", "Full-time", "Contract"]
+      : ['All Jobs', 'Remote', 'Engineering', 'Design', 'Full-time', 'Contract']
     const items = props.items?.length
       ? props.items
       : [
           {
-            role: "Senior Frontend Engineer",
-            company: "Stripe — San Francisco, CA or Remote",
-            logoAlt: "Stripe company logo mark",
-            tags: ["React", "TypeScript", "Remote", "$140k–$190k"],
+            role: 'Senior Frontend Engineer',
+            company: 'Stripe — San Francisco, CA or Remote',
+            logoAlt: 'Stripe company logo mark',
+            tags: ['React', 'TypeScript', 'Remote', '$140k–$190k'],
             description:
-              "Join our payments platform team building the future of internet commerce. Work on high-scale systems processing billions in transactions annually.",
-            posted: "2 days ago",
-            badge: "New",
+              'Join our payments platform team building the future of internet commerce. Work on high-scale systems processing billions in transactions annually.',
+            posted: '2 days ago',
+            badge: 'New',
           },
           {
-            role: "Product Designer",
-            company: "Notion — New York, NY (Hybrid)",
-            logoAlt: "Notion productivity app logo mark",
-            tags: ["Figma", "Design Systems", "Hybrid", "$120k–$160k"],
+            role: 'Product Designer',
+            company: 'Notion — New York, NY (Hybrid)',
+            logoAlt: 'Notion productivity app logo mark',
+            tags: ['Figma', 'Design Systems', 'Hybrid', '$120k–$160k'],
             description:
-              "Shape the future of connected workspaces. Design intuitive features that help millions of users organize their work and lives.",
-            posted: "4 days ago",
+              'Shape the future of connected workspaces. Design intuitive features that help millions of users organize their work and lives.',
+            posted: '4 days ago',
           },
           {
-            role: "Engineering Manager",
-            company: "Figma — San Francisco, CA or Remote",
-            logoAlt: "Figma collaborative design tool logo mark",
-            tags: ["Leadership", "TypeScript", "Remote", "$180k–$240k"],
+            role: 'Engineering Manager',
+            company: 'Figma — San Francisco, CA or Remote',
+            logoAlt: 'Figma collaborative design tool logo mark',
+            tags: ['Leadership', 'TypeScript', 'Remote', '$180k–$240k'],
             description:
-              "Lead a team of 8-10 engineers building the multiplayer editing experience. Drive technical strategy and mentorship.",
-            posted: "1 week ago",
+              'Lead a team of 8-10 engineers building the multiplayer editing experience. Drive technical strategy and mentorship.',
+            posted: '1 week ago',
           },
           {
-            role: "Senior Backend Engineer",
-            company: "Shopify — Toronto, ON or Remote",
-            logoAlt: "Shopify e-commerce platform logo mark",
-            tags: ["Ruby on Rails", "MySQL", "Remote", "$130k–$175k"],
+            role: 'Senior Backend Engineer',
+            company: 'Shopify — Toronto, ON or Remote',
+            logoAlt: 'Shopify e-commerce platform logo mark',
+            tags: ['Ruby on Rails', 'MySQL', 'Remote', '$130k–$175k'],
             description:
-              "Build commerce infrastructure used by millions of merchants worldwide. Scale systems handling peak loads during Black Friday and flash sales.",
-            posted: "3 days ago",
-            badge: "Featured",
+              'Build commerce infrastructure used by millions of merchants worldwide. Scale systems handling peak loads during Black Friday and flash sales.',
+            posted: '3 days ago',
+            badge: 'Featured',
           },
           {
-            role: "Full Stack Developer",
-            company: "Linear — Remote (Global)",
-            logoAlt: "Linear project management tool logo mark",
-            tags: ["React", "GraphQL", "Remote", "$150k–$200k"],
+            role: 'Full Stack Developer',
+            company: 'Linear — Remote (Global)',
+            logoAlt: 'Linear project management tool logo mark',
+            tags: ['React', 'GraphQL', 'Remote', '$150k–$200k'],
             description:
-              "Help build the future of issue tracking and project management. Work across the stack to deliver fast, keyboard-first experiences.",
-            posted: "5 days ago",
+              'Help build the future of issue tracking and project management. Work across the stack to deliver fast, keyboard-first experiences.',
+            posted: '5 days ago',
           },
           {
-            role: "Developer Relations Engineer",
-            company: "Vercel — Remote (US)",
-            logoAlt: "Vercel deployment platform logo mark",
-            tags: ["Next.js", "Community", "Remote", "$110k–$150k"],
+            role: 'Developer Relations Engineer',
+            company: 'Vercel — Remote (US)',
+            logoAlt: 'Vercel deployment platform logo mark',
+            tags: ['Next.js', 'Community', 'Remote', '$110k–$150k'],
             description:
-              "Educate and inspire developers building on the Next.js ecosystem. Create content, speak at events, and build meaningful community connections.",
-            posted: "1 week ago",
+              'Educate and inspire developers building on the Next.js ecosystem. Create content, speak at events, and build meaningful community connections.',
+            posted: '1 week ago',
           },
         ]
 
@@ -139,7 +139,7 @@ export const JobBoardJobs = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-20", props.className)}>
+      <section className={cn('bg-background py-20', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -165,10 +165,10 @@ export const JobBoardJobs = defineComponent({
                 type="button"
                 onClick={() => go(filter)}
                 className={cn(
-                  "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                  'rounded-full px-4 py-2 text-sm font-medium transition-colors',
                   i === 0
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                 )}
               >
                 {filter}
@@ -198,10 +198,10 @@ export const JobBoardJobs = defineComponent({
                       {job.badge ? (
                         <span
                           className={cn(
-                            "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                            job.badge === "New"
-                              ? "bg-primary/10 text-primary"
-                              : "bg-secondary text-secondary-foreground",
+                            'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                            job.badge === 'New'
+                              ? 'bg-primary/10 text-primary'
+                              : 'bg-secondary text-secondary-foreground',
                           )}
                         >
                           {job.badge}

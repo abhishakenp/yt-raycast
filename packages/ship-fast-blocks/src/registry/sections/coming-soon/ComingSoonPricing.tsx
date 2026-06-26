@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ComingSoonPricing — three-tier pricing table for a "launching soon" / waitlist
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * with no props via three baked-in default plans.
  */
 export const ComingSoonPricing = defineComponent({
-  name: "ComingSoonPricing",
+  name: 'ComingSoonPricing',
   description:
     "Three-tier pricing table for a 'launching soon' / waitlist pre-launch landing page: centered heading and lead above a responsive 1/3-column grid of plan cards with name, tagline, price + period, feature checklist with check icons, and a CTA button. The featured plan gets a primary-colored background, shadow, and floating badge. CTAs route through useNavigate. Use as the pricing / plans section on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",
   props: z.object({
@@ -41,63 +41,63 @@ export const ComingSoonPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Simple, transparent pricing"
+    const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
-      "Choose the plan that fits your team. All plans include a 14-day free trial."
+      'Choose the plan that fits your team. All plans include a 14-day free trial.'
     const plans = props.plans?.length
       ? props.plans
       : [
           {
-            name: "Starter",
-            tagline: "For small teams getting started",
-            price: "$0",
-            period: "/month",
+            name: 'Starter',
+            tagline: 'For small teams getting started',
+            price: '$0',
+            period: '/month',
             features: [
-              "Up to 5 team members",
-              "10GB storage",
-              "Basic integrations",
-              "Community support",
+              'Up to 5 team members',
+              '10GB storage',
+              'Basic integrations',
+              'Community support',
             ],
-            cta: "Get started free",
+            cta: 'Get started free',
             featured: false,
           },
           {
-            name: "Pro",
-            tagline: "For growing teams",
-            price: "$12",
-            period: "/user/month",
+            name: 'Pro',
+            tagline: 'For growing teams',
+            price: '$12',
+            period: '/user/month',
             features: [
-              "Unlimited team members",
-              "100GB storage",
-              "Advanced integrations",
-              "Priority support",
-              "Analytics dashboard",
+              'Unlimited team members',
+              '100GB storage',
+              'Advanced integrations',
+              'Priority support',
+              'Analytics dashboard',
             ],
-            cta: "Start 14-day trial",
+            cta: 'Start 14-day trial',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Enterprise",
-            tagline: "For large organizations",
-            price: "$49",
-            period: "/user/month",
+            name: 'Enterprise',
+            tagline: 'For large organizations',
+            price: '$49',
+            period: '/user/month',
             features: [
-              "Everything in Pro",
-              "Unlimited storage",
-              "SSO & SCIM",
-              "Custom contracts",
-              "Dedicated success manager",
+              'Everything in Pro',
+              'Unlimited storage',
+              'SSO & SCIM',
+              'Custom contracts',
+              'Dedicated success manager',
             ],
-            cta: "Contact sales",
+            cta: 'Contact sales',
             featured: false,
           },
         ]
 
     const Check = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5 shrink-0", className)}
+        className={cn('size-5 shrink-0', className)}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -115,7 +115,7 @@ export const ComingSoonPricing = defineComponent({
     return (
       <section
         className={cn(
-          "w-full px-4 py-24 sm:px-6 sm:py-32 lg:px-8 xl:px-12",
+          'w-full px-4 py-24 sm:px-6 sm:py-32 lg:px-8 xl:px-12',
           props.className,
         )}
       >
@@ -132,10 +132,10 @@ export const ComingSoonPricing = defineComponent({
               <div
                 key={plan.name}
                 className={cn(
-                  "relative rounded-xl p-8",
+                  'relative rounded-xl p-8',
                   plan.featured
-                    ? "border border-primary bg-primary text-primary-foreground shadow-lg"
-                    : "border border-border bg-card text-card-foreground shadow-sm",
+                    ? 'border border-primary bg-primary text-primary-foreground shadow-lg'
+                    : 'border border-border bg-card text-card-foreground shadow-sm',
                 )}
               >
                 {plan.featured && plan.badge ? (
@@ -147,20 +147,20 @@ export const ComingSoonPricing = defineComponent({
                 ) : null}
                 <h3
                   className={cn(
-                    "mb-2 text-lg font-medium",
+                    'mb-2 text-lg font-medium',
                     plan.featured
-                      ? "text-primary-foreground"
-                      : "text-card-foreground",
+                      ? 'text-primary-foreground'
+                      : 'text-card-foreground',
                   )}
                 >
                   {plan.name}
                 </h3>
                 <p
                   className={cn(
-                    "mb-6 text-sm",
+                    'mb-6 text-sm',
                     plan.featured
-                      ? "text-primary-foreground/70"
-                      : "text-muted-foreground",
+                      ? 'text-primary-foreground/70'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {plan.tagline}
@@ -168,10 +168,10 @@ export const ComingSoonPricing = defineComponent({
                 <div className="mb-6">
                   <span
                     className={cn(
-                      "text-4xl font-light",
+                      'text-4xl font-light',
                       plan.featured
-                        ? "text-primary-foreground"
-                        : "text-card-foreground",
+                        ? 'text-primary-foreground'
+                        : 'text-card-foreground',
                     )}
                   >
                     {plan.price}
@@ -179,8 +179,8 @@ export const ComingSoonPricing = defineComponent({
                   <span
                     className={cn(
                       plan.featured
-                        ? "text-primary-foreground/70"
-                        : "text-muted-foreground",
+                        ? 'text-primary-foreground/70'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {plan.period}
@@ -191,18 +191,18 @@ export const ComingSoonPricing = defineComponent({
                     <li
                       key={f}
                       className={cn(
-                        "flex items-start gap-3 text-sm",
+                        'flex items-start gap-3 text-sm',
                         plan.featured
-                          ? "text-primary-foreground/80"
-                          : "text-muted-foreground",
+                          ? 'text-primary-foreground/80'
+                          : 'text-muted-foreground',
                       )}
                     >
                       <Check
                         className={cn(
-                          "mt-0.5",
+                          'mt-0.5',
                           plan.featured
-                            ? "text-primary-foreground/70"
-                            : "text-muted-foreground/60",
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground/60',
                         )}
                       />
                       {f}
@@ -213,10 +213,10 @@ export const ComingSoonPricing = defineComponent({
                   type="button"
                   onClick={() => go(plan.cta)}
                   className={cn(
-                    "w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                    'w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                     plan.featured
-                      ? "bg-card text-card-foreground hover:bg-muted"
-                      : "border border-input text-muted-foreground hover:border-foreground hover:text-foreground",
+                      ? 'bg-card text-card-foreground hover:bg-muted'
+                      : 'border border-input text-muted-foreground hover:border-foreground hover:text-foreground',
                   )}
                 >
                   {plan.cta}

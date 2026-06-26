@@ -1,7 +1,12 @@
 const FLUFF =
   /\b(modern|clean|fast|scalable|minimal|simple|beautiful|elegant|professional|sleek|intuitive|responsive|ai-?powered|next-?gen|cutting-?edge|innovative|seamless|powerful|robust)\b/gi
 
-const EXCLUDED_SITE_TYPES = new Set(['ecommerce', 'dashboard', 'game', 'institutional'])
+const EXCLUDED_SITE_TYPES = new Set([
+  'ecommerce',
+  'dashboard',
+  'game',
+  'institutional',
+])
 
 export const isVagueMarketingPrompt = (prompt) => {
   const s = String(prompt || '').trim()
@@ -10,7 +15,11 @@ export const isVagueMarketingPrompt = (prompt) => {
   const words = s.split(/\s+/).filter(Boolean)
   if (words.length > 52) return false
   if (/\d/.test(s) && s.length > 90) return false
-  if (/\b(soc2|soc 2|gdpr|hipaa|kubernetes|terraform|postgres|snowflake|salesforce|hubspot|stripe|oauth|api\b|vs\.?|integrat|compliance|dashboard|playbook|series [a-z]|icp)\b/i.test(s))
+  if (
+    /\b(soc2|soc 2|gdpr|hipaa|kubernetes|terraform|postgres|snowflake|salesforce|hubspot|stripe|oauth|api\b|vs\.?|integrat|compliance|dashboard|playbook|series [a-z]|icp)\b/i.test(
+      s,
+    )
+  )
     return false
   const fluffHits = (s.match(FLUFF) || []).length
   if (s.length < 100) return true
@@ -23,8 +32,20 @@ export const shouldExpandVagueMarketing = (prompt, siteType) => {
   if (!isVagueMarketingPrompt(prompt)) return false
   const st = String(siteType || '').toLowerCase()
   if (st && EXCLUDED_SITE_TYPES.has(st)) return false
-  if (!st || st === 'landing' || st === 'saas' || st === 'blog' || st === 'portfolio' || st === 'docs') return true
-  if (/\b(saas|b2b|software|app|platform|product|tool|startup)\b/i.test(String(prompt || '')))
+  if (
+    !st ||
+    st === 'landing' ||
+    st === 'saas' ||
+    st === 'blog' ||
+    st === 'portfolio' ||
+    st === 'docs'
+  )
+    return true
+  if (
+    /\b(saas|b2b|software|app|platform|product|tool|startup)\b/i.test(
+      String(prompt || ''),
+    )
+  )
     return true
   return false
 }

@@ -1,1 +1,4 @@
-export { auditSiteSpecAeo as auditGeneratedSiteAeo, siteSpecPassesAeoAudit } from '@ship-fast/aeo'
+export {
+  auditSiteSpecAeo as auditGeneratedSiteAeo,
+  siteSpecPassesAeoAudit,
+} from '@ship-fast/aeo'

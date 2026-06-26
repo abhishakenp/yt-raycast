@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LogisticsLogos — a slim client trust strip for a global-logistics / freight-
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * establish credibility. Renders fully with no props.
  */
 export const LogisticsLogos = defineComponent({
-  name: "LogisticsLogos",
+  name: 'LogisticsLogos',
   description:
     "Slim client trust strip for a global-logistics / freight-forwarding company: a border-bottomed band with a centered uppercase caption above a faded, responsive grid of wordmark logos (2 → 3 → 6 columns) at reduced opacity for an understated 'trusted by' feel. Clean and corporate on a light surface; each logo routes through useNavigate. Use directly beneath the hero of a logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport site to establish credibility.",
   props: z.object({
@@ -23,15 +23,13 @@ export const LogisticsLogos = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Trusted by industry leaders"
+    const heading = props.heading ?? 'Trusted by industry leaders'
     const items = props.items?.length
       ? props.items
-      : ["TechFlow", "Globex", "Acme Corp", "Stark Ind", "Wayne Ent", "Oscorp"]
+      : ['TechFlow', 'Globex', 'Acme Corp', 'Stark Ind', 'Wayne Ent', 'Oscorp']
 
     return (
-      <section
-        className={cn("border-b border-border py-12", props.className)}
-      >
+      <section className={cn('border-b border-border py-12', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {heading}

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * PhotographyHero — full-bleed, image-overlay hero for a fine-art / wedding
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * defaults.
  */
 export const PhotographyHero = defineComponent({
-  name: "PhotographyHero",
+  name: 'PhotographyHero',
   description:
-    "Full-bleed image-overlay hero for a fine-art / wedding photographer portfolio: a full-height section with an edge-to-edge background photo under a soft dark scrim, bottom-anchored content with an uppercase tracked kicker, a large serif display headline, a supporting paragraph, dual CTAs (solid light button + outlined ghost button), and an animated scroll cue. Both CTAs route through useNavigate. Use as the opening hero for wedding photographers, portrait studios, elopement shooters, or gallery-first visual creatives.",
+    'Full-bleed image-overlay hero for a fine-art / wedding photographer portfolio: a full-height section with an edge-to-edge background photo under a soft dark scrim, bottom-anchored content with an uppercase tracked kicker, a large serif display headline, a supporting paragraph, dual CTAs (solid light button + outlined ghost button), and an animated scroll cue. Both CTAs route through useNavigate. Use as the opening hero for wedding photographers, portrait studios, elopement shooters, or gallery-first visual creatives.',
   props: z.object({
     /** Uppercase tracked kicker above the headline. */
     kicker: z.string().optional(),
@@ -36,22 +36,22 @@ export const PhotographyHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const kicker = props.kicker ?? "Fine Art Photography"
+    const kicker = props.kicker ?? 'Fine Art Photography'
     const heading =
-      props.heading ?? "Capturing authentic moments that last forever"
+      props.heading ?? 'Capturing authentic moments that last forever'
     const subheading =
       props.subheading ??
-      "Documentary wedding and portrait photography for couples who value emotion over perfection. Based in Portland, available worldwide."
-    const primaryCta = props.primaryCta ?? "View Portfolio"
-    const secondaryCta = props.secondaryCta ?? "Book a Session"
+      'Documentary wedding and portrait photography for couples who value emotion over perfection. Based in Portland, available worldwide.'
+    const primaryCta = props.primaryCta ?? 'View Portfolio'
+    const secondaryCta = props.secondaryCta ?? 'Book a Session'
     const imageAlt =
       props.imageAlt ??
-      "Dramatic mountain landscape at golden hour with photographer silhouette"
+      'Dramatic mountain landscape at golden hour with photographer silhouette'
 
     return (
       <section
         className={cn(
-          "relative h-screen w-full overflow-hidden",
+          'relative h-screen w-full overflow-hidden',
           props.className,
         )}
         aria-label="Hero"

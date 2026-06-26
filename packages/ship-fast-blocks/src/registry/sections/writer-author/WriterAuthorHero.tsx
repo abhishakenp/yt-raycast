@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * WriterAuthorHero — elegant two-column author hero for a literary author site.
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * props via baked-in defaults.
  */
 export const WriterAuthorHero = defineComponent({
-  name: "WriterAuthorHero",
+  name: 'WriterAuthorHero',
   description:
     "Elegant two-column author hero for a literary author landing page. The left column composes a small uppercase serif eyebrow, a large serif headline, an author/book intro paragraph, and dual CTAs (filled 'Buy Now' + outlined 'Read Excerpt'). The right column overlaps two images — a large author headshot portrait with a smaller latest-book cover floating over its lower-left corner, separated with rounded corners, a token border, and a soft shadow. CTAs route through useNavigate. Use as the opening hero for novelists, poets, essayists, memoirists, and literary author sites where a serif, book-forward introduction is wanted.",
   props: z.object({
@@ -42,21 +42,23 @@ export const WriterAuthorHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroEyebrow = props.eyebrow ?? "New Novel"
-    const heroHeading = props.heading ?? "The Lantern Keeper"
+    const heroEyebrow = props.eyebrow ?? 'New Novel'
+    const heroHeading = props.heading ?? 'The Lantern Keeper'
     const heroIntro =
       props.intro ??
-      "Eleanor Vance returns with a luminous tale of memory, exile, and the small lights we tend against the dark. Praised for her unhurried prose and unforgettable characters, her latest novel is her most haunting work yet."
-    const heroPrimary = props.primaryCta ?? "Buy Now"
-    const heroPrimaryTarget = props.primaryTarget ?? "Books"
-    const heroSecondary = props.secondaryCta ?? "Read Excerpt"
-    const heroSecondaryTarget = props.secondaryTarget ?? "Excerpt"
+      'Eleanor Vance returns with a luminous tale of memory, exile, and the small lights we tend against the dark. Praised for her unhurried prose and unforgettable characters, her latest novel is her most haunting work yet.'
+    const heroPrimary = props.primaryCta ?? 'Buy Now'
+    const heroPrimaryTarget = props.primaryTarget ?? 'Books'
+    const heroSecondary = props.secondaryCta ?? 'Read Excerpt'
+    const heroSecondaryTarget = props.secondaryTarget ?? 'Excerpt'
     const heroPortraitAlt =
-      props.portraitAlt ?? "professional author headshot portrait"
-    const heroCoverAlt = props.coverAlt ?? "literary novel book cover"
+      props.portraitAlt ?? 'professional author headshot portrait'
+    const heroCoverAlt = props.coverAlt ?? 'literary novel book cover'
 
     return (
-      <section className={cn("bg-background py-24 sm:py-28 lg:py-32", props.className)}>
+      <section
+        className={cn('bg-background py-24 sm:py-28 lg:py-32', props.className)}
+      >
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 lg:grid-cols-2 lg:items-center lg:px-8">
           <div>
             <p className="font-serif text-sm font-medium tracking-[0.2em] text-accent uppercase">

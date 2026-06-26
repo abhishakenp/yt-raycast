@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * EventVenue — a venue-spotlight split for a conference or event page. A muted
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * conference, summit, festival, or workshop pages.
  */
 export const EventVenue = defineComponent({
-  name: "EventVenue",
+  name: 'EventVenue',
   description:
-    "Venue-spotlight split for a conference or event page: a muted band with a two-column layout — on the left a heading, description, and a list of detail rows (address, getting there, hotels) each with a bordered icon tile; on the right a large 16:10 hero photo above a 3-up square photo collage, all alt-driven via the Image component. Use to highlight the location, directions, and lodging for tech conference, summit, festival, meetup, or workshop pages.",
+    'Venue-spotlight split for a conference or event page: a muted band with a two-column layout — on the left a heading, description, and a list of detail rows (address, getting there, hotels) each with a bordered icon tile; on the right a large 16:10 hero photo above a 3-up square photo collage, all alt-driven via the Image component. Use to highlight the location, directions, and lodging for tech conference, summit, festival, meetup, or workshop pages.',
   props: z.object({
     /** Section heading (venue name). */
     heading: z.string().optional(),
@@ -32,47 +32,80 @@ export const EventVenue = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Palace of Fine Arts"
+    const heading = props.heading ?? 'Palace of Fine Arts'
     const description =
       props.description ??
       "Join us at one of San Francisco's most iconic venues. The Palace of Fine Arts offers stunning Beaux-Arts architecture, beautiful grounds for networking breaks, and world-class facilities for our technical sessions."
     const imageAlt =
       props.imageAlt ??
-      "Palace of Fine Arts dome and columns with reflecting pond in San Francisco"
+      'Palace of Fine Arts dome and columns with reflecting pond in San Francisco'
     const collage = props.collage?.length
       ? props.collage
       : [
-          "Interior of Palace of Fine Arts theater with ornate architecture",
-          "Outdoor courtyard at Palace of Fine Arts with columns and gardens",
-          "San Francisco marina view near the conference venue at golden hour",
+          'Interior of Palace of Fine Arts theater with ornate architecture',
+          'Outdoor courtyard at Palace of Fine Arts with columns and gardens',
+          'San Francisco marina view near the conference venue at golden hour',
         ]
     const details = props.details?.length
       ? props.details
       : [
           {
-            title: "Address",
-            text: "3601 Lyon Street, San Francisco, CA 94123",
+            title: 'Address',
+            text: '3601 Lyon Street, San Francisco, CA 94123',
           },
           {
-            title: "Getting There",
-            text: "Free shuttle from Embarcadero BART. Parking available on-site.",
+            title: 'Getting There',
+            text: 'Free shuttle from Embarcadero BART. Parking available on-site.',
           },
           {
-            title: "Hotels",
-            text: "Special rates at nearby hotels. Details sent with ticket confirmation.",
+            title: 'Hotels',
+            text: 'Special rates at nearby hotels. Details sent with ticket confirmation.',
           },
         ]
 
     const venueIcons: ReactNode[] = [
-      <svg key="pin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="pin"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
         <circle cx="12" cy="10" r="3" />
       </svg>,
-      <svg key="clock" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="clock"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />
       </svg>,
-      <svg key="bed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="bed"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M2 4v16" />
         <path d="M2 8h18a2 2 0 0 1 2 2v10" />
         <path d="M2 17h20" />
@@ -81,7 +114,7 @@ export const EventVenue = defineComponent({
     ]
 
     return (
-      <section className={cn("bg-muted py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * NewsletterTestimonials — reader testimonials band for an editorial newsletter.
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * baked-in defaults.
  */
 export const NewsletterTestimonials = defineComponent({
-  name: "NewsletterTestimonials",
+  name: 'NewsletterTestimonials',
   description:
-    "Reader testimonials band for an editorial newsletter on a subtle muted band bordered top and bottom: a centered serif heading + lede, a 3-up grid of rounded card quotes (round avatar + name + role, then an italic pull-quote), and below it a 2-up / 4-up row of short serif mini-quotes with an em-dash author line. Warm, calm, literary mood. Avatars use the alt-driven Image component. Use to surface social proof for newsletters, publications, blogs, essayists, or content creators.",
+    'Reader testimonials band for an editorial newsletter on a subtle muted band bordered top and bottom: a centered serif heading + lede, a 3-up grid of rounded card quotes (round avatar + name + role, then an italic pull-quote), and below it a 2-up / 4-up row of short serif mini-quotes with an em-dash author line. Warm, calm, literary mood. Avatars use the alt-driven Image component. Use to surface social proof for newsletters, publications, blogs, essayists, or content creators.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -40,51 +40,51 @@ export const NewsletterTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "What Readers Say"
+    const heading = props.heading ?? 'What Readers Say'
     const description =
       props.description ??
-      "Join thousands of readers who make The Quiet Observer part of their Sunday ritual."
+      'Join thousands of readers who make The Quiet Observer part of their Sunday ritual.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            name: "Sarah Chen",
-            role: "Product Lead, Notion",
+            name: 'Sarah Chen',
+            role: 'Product Lead, Notion',
             quote:
-              "The only newsletter I read start to finish every week. Sarah has this rare ability to find the signal in the noise of tech discourse.",
+              'The only newsletter I read start to finish every week. Sarah has this rare ability to find the signal in the noise of tech discourse.',
             avatarAlt:
-              "professional headshot of a smiling woman with shoulder-length dark hair",
+              'professional headshot of a smiling woman with shoulder-length dark hair',
           },
           {
-            name: "Marcus Rivera",
-            role: "Engineering Manager, Stripe",
+            name: 'Marcus Rivera',
+            role: 'Engineering Manager, Stripe',
             quote:
               "I've been reading since issue #12. It's become essential context for my work—thoughtful, well-researched, and genuinely original.",
             avatarAlt:
-              "professional headshot of a smiling man with short dark hair and glasses",
+              'professional headshot of a smiling man with short dark hair and glasses',
           },
           {
-            name: "Emily Watson",
-            role: "Design Director, Figma",
+            name: 'Emily Watson',
+            role: 'Design Director, Figma',
             quote:
               "Every Sunday, this is my first read with coffee. It's thoughtful, human, and consistently surfaces ideas that stay with me all week.",
             avatarAlt:
-              "professional headshot of a woman with blonde hair pulled back wearing minimal jewelry",
+              'professional headshot of a woman with blonde hair pulled back wearing minimal jewelry',
           },
         ]
     const mini = props.mini?.length
       ? props.mini
       : [
-          { quote: "My favorite read", author: "David Park, Vercel" },
-          { quote: "Essential context", author: "Lisa Thompson, Linear" },
-          { quote: "Worth every minute", author: "James Chen, GitHub" },
-          { quote: "Brilliant analysis", author: "Maria Garcia, Apple" },
+          { quote: 'My favorite read', author: 'David Park, Vercel' },
+          { quote: 'Essential context', author: 'Lisa Thompson, Linear' },
+          { quote: 'Worth every minute', author: 'James Chen, GitHub' },
+          { quote: 'Brilliant analysis', author: 'Maria Garcia, Apple' },
         ]
 
     return (
       <section
         className={cn(
-          "border-y border-border bg-muted/40 py-16 md:py-24",
+          'border-y border-border bg-muted/40 py-16 md:py-24',
           props.className,
         )}
       >

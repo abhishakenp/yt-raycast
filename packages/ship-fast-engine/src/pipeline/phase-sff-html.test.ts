@@ -18,7 +18,9 @@ const htmlFixture = `<!DOCTYPE html>
 
 describe('phase-sff-html', () => {
   it('sanitizes fenced model output down to a complete document', () => {
-    const html = sanitizeSffHtml(`Here is the file:\n\`\`\`html\n${htmlFixture}\n\`\`\`\nextra`)
+    const html = sanitizeSffHtml(
+      `Here is the file:\n\`\`\`html\n${htmlFixture}\n\`\`\`\nextra`,
+    )
 
     expect(html).toBe(htmlFixture)
     expect(isCompleteSffHtml(html)).toBe(true)
@@ -59,7 +61,9 @@ describe('phase-sff-html', () => {
     expect(prompt).toContain('Home, Pricing')
     expect(prompt).toContain('fr')
     expect(prompt).toContain('Verified Pexels media')
-    expect(prompt).toContain('https://images.pexels.com/photos/123/pexels-photo-123.jpeg')
+    expect(prompt).toContain(
+      'https://images.pexels.com/photos/123/pexels-photo-123.jpeg',
+    )
     expect(prompt).toContain('VERIFIED BRAND PROFILE')
     expect(prompt).toContain('https://cdn.brandfetch.io/launch/logo.svg')
   })
@@ -68,8 +72,12 @@ describe('phase-sff-html', () => {
     expect(SFF_HTML_SYSTEM_PROMPT).toContain('verified Pexels media')
     expect(SFF_HTML_SYSTEM_PROMPT).toContain('Brandfetch/brand-profile')
     expect(SFF_HTML_SYSTEM_PROMPT).toContain('Lucide placeholders')
-    expect(SFF_HTML_SYSTEM_PROMPT).toContain('do not generate long inline SVG pictogram sets')
-    expect(SFF_HTML_SYSTEM_PROMPT).not.toContain('images.unsplash.com or picsum.photos')
+    expect(SFF_HTML_SYSTEM_PROMPT).toContain(
+      'do not generate long inline SVG pictogram sets',
+    )
+    expect(SFF_HTML_SYSTEM_PROMPT).not.toContain(
+      'images.unsplash.com or picsum.photos',
+    )
   })
 
   it('writes index.html and the persisted module source as raw SFF HTML', async () => {
@@ -88,8 +96,12 @@ describe('phase-sff-html', () => {
       },
     })
 
-    expect(readFileSync(join(workspace, 'index.html'), 'utf8')).toBe(htmlFixture)
-    expect(readFileSync(join(workspace, 'home.openui'), 'utf8')).toBe(htmlFixture)
+    expect(readFileSync(join(workspace, 'index.html'), 'utf8')).toBe(
+      htmlFixture,
+    )
+    expect(readFileSync(join(workspace, 'home.openui'), 'utf8')).toBe(
+      htmlFixture,
+    )
     expect(stats).toEqual({ chars: htmlFixture.length, cost: 0.001 })
     expect(events).toHaveLength(2)
   })

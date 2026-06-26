@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * FlightSimulatorNavbar — sticky site header for a consumer flight simulator
@@ -31,7 +31,7 @@ const WingMark = ({ className }: { className?: string }) => (
 )
 
 export const FlightSimulatorNavbar = defineComponent({
-  name: "FlightSimulatorNavbar",
+  name: 'FlightSimulatorNavbar',
   description:
     "Sticky flight-simulator site header built on the shared SiteNav composite: a bold wordmark + inline winged-plane line mark, centered desktop nav links (Features, Editions, Gallery, Community), and a prominent 'Get the Sim' CTA routing to the buy page, plus a real mobile drawer. Use as the header for flight simulators, combat / airliner sims, aviation training titles, or any immersive aircraft game.",
   props: z.object({
@@ -50,16 +50,16 @@ export const FlightSimulatorNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Editions", "Gallery", "Community"]
+      : ['Features', 'Editions', 'Gallery', 'Community']
     return (
       <SiteNav
-        brand={props.brand ?? "SkyForge Sim"}
+        brand={props.brand ?? 'SkyForge Sim'}
         brandMark={<WingMark className="size-8 text-primary" />}
         brandClassName="text-xl font-bold tracking-tight"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Get the Sim",
-          target: props.ctaTarget ?? "Buy",
+          label: props.ctaLabel ?? 'Get the Sim',
+          target: props.ctaTarget ?? 'Buy',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

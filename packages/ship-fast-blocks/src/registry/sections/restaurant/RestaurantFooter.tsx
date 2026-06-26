@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * RestaurantFooter — a rich, multi-column closing footer for a restaurant or
@@ -32,9 +32,9 @@ const ForkKnifeMark = ({ className }: { className?: string }) => (
 )
 
 export const RestaurantFooter = defineComponent({
-  name: "RestaurantFooter",
+  name: 'RestaurantFooter',
   description:
-    "Rich, multi-column closing footer for a restaurant or dining site: a responsive grid with a brand block (serif wordmark + tagline + social row), an Hours column of day/time rows, a Visit column with address plus tappable phone and email, and extra link columns (Explore, About, …); a bordered-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through useNavigate. Use as the site-wide footer for restaurants, cafés, bistros, bars, or any hospitality landing page.",
+    'Rich, multi-column closing footer for a restaurant or dining site: a responsive grid with a brand block (serif wordmark + tagline + social row), an Hours column of day/time rows, a Visit column with address plus tappable phone and email, and extra link columns (Explore, About, …); a bordered-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through useNavigate. Use as the site-wide footer for restaurants, cafés, bistros, bars, or any hospitality landing page.',
   props: z.object({
     /** Restaurant / brand name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -55,49 +55,49 @@ export const RestaurantFooter = defineComponent({
   component: ({ props }) => {
     const social = props.social?.length
       ? props.social
-      : [{ label: "Instagram" }, { label: "Facebook" }, { label: "TikTok" }]
+      : [{ label: 'Instagram' }, { label: 'Facebook' }, { label: 'TikTok' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Hours",
+            title: 'Hours',
             links: [
-              "Tue – Thu · 5pm – 10pm",
-              "Fri – Sat · 5pm – 11pm",
-              "Sunday · 4pm – 9pm",
-              "Monday · Closed",
+              'Tue – Thu · 5pm – 10pm',
+              'Fri – Sat · 5pm – 11pm',
+              'Sunday · 4pm – 9pm',
+              'Monday · Closed',
             ],
           },
           {
-            title: "Visit",
+            title: 'Visit',
             links: [
-              "123 Market Street, San Francisco, CA 94103",
-              "(415) 555-0182",
-              "hello@saffronandsage.com",
+              '123 Market Street, San Francisco, CA 94103',
+              '(415) 555-0182',
+              'hello@saffronandsage.com',
             ],
           },
           {
-            title: "Explore",
-            links: ["Menu", "Reservations", "Private Events", "Gift Cards"],
+            title: 'Explore',
+            links: ['Menu', 'Reservations', 'Private Events', 'Gift Cards'],
           },
           {
-            title: "About",
-            links: ["Our Story", "Press", "Careers", "Contact"],
+            title: 'About',
+            links: ['Our Story', 'Press', 'Careers', 'Contact'],
           },
         ]
 
     return (
       <SiteFooter
-        brand={props.brand ?? "Saffron & Sage"}
+        brand={props.brand ?? 'Saffron & Sage'}
         brandMark={<ForkKnifeMark className="size-8 text-primary" />}
         brandClassName="font-serif text-xl font-medium"
         tagline={
           props.tagline ??
-          "Seasonal Californian dining in the heart of the city."
+          'Seasonal Californian dining in the heart of the city.'
         }
         social={social}
         columns={columns}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

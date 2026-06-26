@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ChurchGive — generosity / give split section for a church or faith-community site.
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const ChurchGive = defineComponent({
-  name: "ChurchGive",
+  name: 'ChurchGive',
   description:
-    "Generosity / give split section for a church or faith-community site: left column with eyebrow, heading, description, icon-accented giving-method list, and dual pill CTAs; right column with a staggered 2-column photo collage and two stat cards (one on muted bg, one on primary bg). Warm, mission-focused, and action-oriented. CTAs route through useNavigate. Use as the giving / donate section for churches, worship centers, ministries, or religious nonprofits.",
+    'Generosity / give split section for a church or faith-community site: left column with eyebrow, heading, description, icon-accented giving-method list, and dual pill CTAs; right column with a staggered 2-column photo collage and two stat cards (one on muted bg, one on primary bg). Warm, mission-focused, and action-oriented. CTAs route through useNavigate. Use as the giving / donate section for churches, worship centers, ministries, or religious nonprofits.',
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -44,42 +44,42 @@ export const ChurchGive = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Generosity"
-    const heading = props.heading ?? "Give with purpose"
+    const eyebrow = props.eyebrow ?? 'Generosity'
+    const heading = props.heading ?? 'Give with purpose'
     const description =
       props.description ??
-      "Your generosity fuels our mission to love God and serve our city. Every dollar given supports community outreach, global missions, youth programs, and caring for those in need."
+      'Your generosity fuels our mission to love God and serve our city. Every dollar given supports community outreach, global missions, youth programs, and caring for those in need.'
     const points = props.points?.length
       ? props.points
       : [
           {
-            title: "Secure online giving",
-            detail: "One-time or recurring. Bank transfer has no fees.",
+            title: 'Secure online giving',
+            detail: 'One-time or recurring. Bank transfer has no fees.',
           },
           {
-            title: "Year-end statements",
-            detail: "Tax receipts emailed automatically in January.",
+            title: 'Year-end statements',
+            detail: 'Tax receipts emailed automatically in January.',
           },
           {
-            title: "Other ways to give",
-            detail: "Text, mail, or stock transfer available.",
+            title: 'Other ways to give',
+            detail: 'Text, mail, or stock transfer available.',
           },
         ]
-    const primaryCta = props.primaryCta ?? "Give Online"
-    const secondaryCta = props.secondaryCta ?? "Text to Give"
+    const primaryCta = props.primaryCta ?? 'Give Online'
+    const secondaryCta = props.secondaryCta ?? 'Text to Give'
     const imageAltOne =
       props.imageAltOne ??
-      "Volunteers helping distribute supplies at a homeless outreach event"
+      'Volunteers helping distribute supplies at a homeless outreach event'
     const imageAltTwo =
       props.imageAltTwo ??
-      "Mission team building a school classroom in a rural community"
+      'Mission team building a school classroom in a rural community'
     const statOne = props.statOne ?? {
-      value: "$1.2M",
-      label: "Given to local outreach in 2024",
+      value: '$1.2M',
+      label: 'Given to local outreach in 2024',
     }
     const statTwo = props.statTwo ?? {
-      value: "12",
-      label: "Global mission partners supported",
+      value: '12',
+      label: 'Global mission partners supported',
     }
 
     const giveIcons = [
@@ -125,7 +125,7 @@ export const ChurchGive = defineComponent({
     ]
 
     return (
-      <section className={cn("py-24 lg:py-32", props.className)}>
+      <section className={cn('py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
@@ -194,9 +194,7 @@ export const ChurchGive = defineComponent({
               </div>
               <div className="space-y-4 pt-8">
                 <div className="rounded-xl bg-primary p-6 text-primary-foreground">
-                  <p className="mb-1 text-3xl font-medium">
-                    {statTwo.value}
-                  </p>
+                  <p className="mb-1 text-3xl font-medium">{statTwo.value}</p>
                   <p className="text-sm text-primary-foreground/80">
                     {statTwo.label}
                   </p>

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * WriterAuthorNavbar — sticky site header for a literary author or novelist
@@ -32,7 +32,7 @@ const FeatherMark = ({ className }: { className?: string }) => (
 )
 
 export const WriterAuthorNavbar = defineComponent({
-  name: "WriterAuthorNavbar",
+  name: 'WriterAuthorNavbar',
   description:
     "Sticky author / novelist site header with a serif, letterpress feel, built on the shared SiteNav composite: serif wordmark + an open-book feather mark, centered desktop nav links, an optional press phone number, a 'Get the Book' CTA routing to the Books page, and a real mobile drawer. Use as the header for author landing pages, book-launch microsites, poets, essayists, or any writer's personal brand.",
   props: z.object({
@@ -53,17 +53,17 @@ export const WriterAuthorNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Books", "About", "Reviews", "Newsletter"]
+      : ['Books', 'About', 'Reviews', 'Newsletter']
     return (
       <SiteNav
-        brand={props.brand ?? "Eleanor Vance"}
+        brand={props.brand ?? 'Eleanor Vance'}
         brandMark={<FeatherMark className="size-8 text-primary" />}
         brandClassName="font-serif text-xl font-medium"
         nav={nav}
-        phone={props.phone ?? "(212) 555-0148"}
+        phone={props.phone ?? '(212) 555-0148'}
         cta={{
-          label: props.ctaLabel ?? "Get the Book",
-          target: props.ctaTarget ?? "Books",
+          label: props.ctaLabel ?? 'Get the Book',
+          target: props.ctaTarget ?? 'Books',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

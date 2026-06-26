@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NoCodePricing — 3-tier pricing table on a subtle muted band. A centered header
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * subscription product. Renders fully with no props.
  */
 export const NoCodePricing = defineComponent({
-  name: "NoCodePricing",
+  name: 'NoCodePricing',
   description:
     "3-tier pricing table on a subtle muted band: a centered header (eyebrow, heading, paragraph) above a monthly/yearly toggle switch with a 'save' badge, then a 1-to-3 column grid of plan cards where the featured plan renders on the inverse foreground surface with a floating 'Most Popular' badge; each card has a name, tagline, big price + period, a full-width CTA, and a checkmarked feature list. CTAs and the toggle route through useNavigate. Use as the pricing section for a no-code / app-builder SaaS or any subscription product.",
   props: z.object({
@@ -49,58 +49,58 @@ export const NoCodePricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Pricing"
-    const heading = props.heading ?? "Simple, transparent pricing"
+    const eyebrow = props.eyebrow ?? 'Pricing'
+    const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
-      "Start free, scale as you grow. No hidden fees, no surprises."
-    const monthlyLabel = props.monthlyLabel ?? "Monthly"
-    const yearlyLabel = props.yearlyLabel ?? "Yearly"
-    const saveBadge = props.saveBadge ?? "Save 20%"
+      'Start free, scale as you grow. No hidden fees, no surprises.'
+    const monthlyLabel = props.monthlyLabel ?? 'Monthly'
+    const yearlyLabel = props.yearlyLabel ?? 'Yearly'
+    const saveBadge = props.saveBadge ?? 'Save 20%'
     const plans = props.plans?.length
       ? props.plans
       : [
           {
-            name: "Starter",
-            tagline: "Perfect for side projects",
-            price: "$0",
-            period: "/month",
-            cta: "Start building free",
+            name: 'Starter',
+            tagline: 'Perfect for side projects',
+            price: '$0',
+            period: '/month',
+            cta: 'Start building free',
             features: [
-              "3 projects",
-              "50+ templates",
-              "Buildr subdomain",
-              "Community support",
+              '3 projects',
+              '50+ templates',
+              'Buildr subdomain',
+              'Community support',
             ],
           },
           {
-            name: "Pro",
-            tagline: "For serious creators",
-            price: "$29",
-            period: "/month",
-            cta: "Start 14-day trial",
+            name: 'Pro',
+            tagline: 'For serious creators',
+            price: '$29',
+            period: '/month',
+            cta: 'Start 14-day trial',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
             features: [
-              "Unlimited projects",
-              "200+ templates",
-              "Custom domain",
-              "10 team members",
-              "Priority support",
-              "Analytics dashboard",
+              'Unlimited projects',
+              '200+ templates',
+              'Custom domain',
+              '10 team members',
+              'Priority support',
+              'Analytics dashboard',
             ],
           },
           {
-            name: "Enterprise",
-            tagline: "For large organizations",
-            price: "Custom",
-            cta: "Contact sales",
+            name: 'Enterprise',
+            tagline: 'For large organizations',
+            price: 'Custom',
+            cta: 'Contact sales',
             features: [
-              "Everything in Pro",
-              "Unlimited team members",
-              "SSO & advanced security",
-              "Dedicated account manager",
-              "Custom SLA",
+              'Everything in Pro',
+              'Unlimited team members',
+              'SSO & advanced security',
+              'Dedicated account manager',
+              'Custom SLA',
             ],
           },
         ]
@@ -124,7 +124,7 @@ export const NoCodePricing = defineComponent({
 
     return (
       <section
-        className={cn("bg-muted/40 py-24", props.className)}
+        className={cn('bg-muted/40 py-24', props.className)}
         aria-labelledby="nc-pricing"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -168,10 +168,10 @@ export const NoCodePricing = defineComponent({
                 <div
                   key={plan.name}
                   className={cn(
-                    "relative rounded-2xl p-8 shadow-sm",
+                    'relative rounded-2xl p-8 shadow-sm',
                     featured
-                      ? "border border-foreground bg-foreground text-background shadow-xl"
-                      : "border border-border bg-card",
+                      ? 'border border-foreground bg-foreground text-background shadow-xl'
+                      : 'border border-border bg-card',
                   )}
                 >
                   {plan.badge && (
@@ -184,18 +184,18 @@ export const NoCodePricing = defineComponent({
                   <div className="mb-6">
                     <h3
                       className={cn(
-                        "mb-1 text-lg font-semibold",
-                        featured ? "text-background" : "text-card-foreground",
+                        'mb-1 text-lg font-semibold',
+                        featured ? 'text-background' : 'text-card-foreground',
                       )}
                     >
                       {plan.name}
                     </h3>
                     <p
                       className={cn(
-                        "text-sm",
+                        'text-sm',
                         featured
-                          ? "text-background/60"
-                          : "text-muted-foreground",
+                          ? 'text-background/60'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {plan.tagline}
@@ -204,8 +204,8 @@ export const NoCodePricing = defineComponent({
                   <div className="mb-6">
                     <span
                       className={cn(
-                        "text-4xl font-bold",
-                        featured ? "text-background" : "text-card-foreground",
+                        'text-4xl font-bold',
+                        featured ? 'text-background' : 'text-card-foreground',
                       )}
                     >
                       {plan.price}
@@ -214,8 +214,8 @@ export const NoCodePricing = defineComponent({
                       <span
                         className={
                           featured
-                            ? "text-background/60"
-                            : "text-muted-foreground"
+                            ? 'text-background/60'
+                            : 'text-muted-foreground'
                         }
                       >
                         {plan.period}
@@ -226,10 +226,10 @@ export const NoCodePricing = defineComponent({
                     type="button"
                     onClick={() => go(plan.cta)}
                     className={cn(
-                      "mb-6 block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors",
+                      'mb-6 block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors',
                       featured
-                        ? "bg-background text-foreground hover:bg-background/90"
-                        : "border border-border text-card-foreground hover:bg-accent",
+                        ? 'bg-background text-foreground hover:bg-background/90'
+                        : 'border border-border text-card-foreground hover:bg-accent',
                     )}
                   >
                     {plan.cta}
@@ -239,16 +239,16 @@ export const NoCodePricing = defineComponent({
                       <li key={feat} className="flex items-start gap-3">
                         <Check
                           className={cn(
-                            "mt-0.5 size-5 shrink-0",
-                            featured ? "text-background" : "text-chart-2",
+                            'mt-0.5 size-5 shrink-0',
+                            featured ? 'text-background' : 'text-chart-2',
                           )}
                         />
                         <span
                           className={cn(
-                            "text-sm",
+                            'text-sm',
                             featured
-                              ? "text-background/80"
-                              : "text-muted-foreground",
+                              ? 'text-background/80'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {feat}

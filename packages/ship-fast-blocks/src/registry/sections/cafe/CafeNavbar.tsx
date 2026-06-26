@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CafeNavbar — fixed, translucent top navigation bar for a cozy neighborhood
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in "Little Owl Coffee" defaults.
  */
 export const CafeNavbar = defineComponent({
-  name: "CafeNavbar",
+  name: 'CafeNavbar',
   description:
-    "Fixed translucent top navigation bar for a cozy cafe / coffee shop: backdrop-blurred header with an inline owl brand mark + cafe name on the left, horizontal nav links in the center (desktop), a pill-shaped primary CTA and a hamburger menu on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink landing pages.",
+    'Fixed translucent top navigation bar for a cozy cafe / coffee shop: backdrop-blurred header with an inline owl brand mark + cafe name on the left, horizontal nav links in the center (desktop), a pill-shaped primary CTA and a hamburger menu on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink landing pages.',
   props: z.object({
     /** Cafe / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -32,13 +32,13 @@ export const CafeNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Little Owl Coffee"
+    const brand = props.brand ?? 'Little Owl Coffee'
     const nav = props.nav?.length
       ? props.nav
-      : ["Menu", "Our Story", "Location", "Reviews"]
+      : ['Menu', 'Our Story', 'Location', 'Reviews']
     const homeTarget = props.homeTarget ?? nav[0]
-    const ctaLabel = props.ctaLabel ?? "Visit Us"
-    const ctaTarget = props.ctaTarget ?? "Location"
+    const ctaLabel = props.ctaLabel ?? 'Visit Us'
+    const ctaTarget = props.ctaTarget ?? 'Location'
 
     const OwlMark = ({ className }: { className?: string }) => (
       <svg
@@ -54,7 +54,7 @@ export const CafeNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

@@ -1,9 +1,9 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MarketplaceHero — a split, two-column marketplace hero. The left column stacks
@@ -18,7 +18,7 @@ import { Image } from "#/lib/img.tsx"
  * maker/artisan platforms, and shopping destinations.
  */
 export const MarketplaceHero = defineComponent({
-  name: "MarketplaceHero",
+  name: 'MarketplaceHero',
   description:
     "Split, two-column marketplace hero: the left column stacks a live 'products added this week' status pill with a pulsing dot, a large tracking-tight headline with a muted-color highlight phrase, a supporting paragraph, dual CTAs (filled Explore-Products + outlined Start-Selling), and a trust row (secure-payments / fast-shipping / buyer-protection with inline icons); the right column is a staggered 4-image product collage in rounded tiles with a floating 'Verified Seller' badge card. Clean, neutral, light e-commerce aesthetic. CTAs route through useNavigate; the collage uses the alt-driven Image component. Use as the top hero for online marketplaces, multi-vendor or maker/artisan platforms, and shopping destinations.",
   props: z.object({
@@ -42,32 +42,32 @@ export const MarketplaceHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroBadge = props.badge ?? "12,847 products added this week"
-    const headingLead = props.headingLead ?? "Discover unique products from"
-    const heroHighlight = props.highlight ?? "verified sellers"
-    const headingTail = props.headingTail ?? "worldwide"
+    const heroBadge = props.badge ?? '12,847 products added this week'
+    const headingLead = props.headingLead ?? 'Discover unique products from'
+    const heroHighlight = props.highlight ?? 'verified sellers'
+    const headingTail = props.headingTail ?? 'worldwide'
     const heroSub =
       props.subheading ??
-      "Join over 2 million shoppers buying directly from independent artisans, designers, and small businesses. Quality goods, fair prices, no middlemen."
-    const heroPrimary = props.primaryCta ?? "Explore Products"
-    const heroSecondary = props.secondaryCta ?? "Start Selling"
+      'Join over 2 million shoppers buying directly from independent artisans, designers, and small businesses. Quality goods, fair prices, no middlemen.'
+    const heroPrimary = props.primaryCta ?? 'Explore Products'
+    const heroSecondary = props.secondaryCta ?? 'Start Selling'
     const heroTrust = props.trust?.length
       ? props.trust
-      : ["Secure payments", "Fast shipping", "Buyer protection"]
+      : ['Secure payments', 'Fast shipping', 'Buyer protection']
     const heroGallery = props.gallery?.length
       ? props.gallery
       : [
-          "Modern minimalist watch with leather strap on white surface",
-          "Premium wireless headphones with sleek design on gray background",
-          "Vibrant red running shoe with white sole on white background",
-          "Classic sunglasses with black frames and dark lenses",
+          'Modern minimalist watch with leather strap on white surface',
+          'Premium wireless headphones with sleek design on gray background',
+          'Vibrant red running shoe with white sole on white background',
+          'Classic sunglasses with black frames and dark lenses',
         ]
-    const heroBadgeTitle = props.badgeTitle ?? "Verified Seller"
-    const heroBadgeSubtitle = props.badgeSubtitle ?? "Artisan Collective"
+    const heroBadgeTitle = props.badgeTitle ?? 'Verified Seller'
+    const heroBadgeSubtitle = props.badgeSubtitle ?? 'Artisan Collective'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
-        className={className ?? "size-4"}
+        className={className ?? 'size-4'}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -137,11 +137,16 @@ export const MarketplaceHero = defineComponent({
       </svg>,
     ]
 
-    const galleryAspect = ["aspect-[4/5]", "aspect-square", "aspect-square", "aspect-[4/5]"]
+    const galleryAspect = [
+      'aspect-[4/5]',
+      'aspect-square',
+      'aspect-square',
+      'aspect-[4/5]',
+    ]
 
     return (
       <section
-        className={cn("border-b border-border bg-background", props.className)}
+        className={cn('border-b border-border bg-background', props.className)}
         aria-labelledby="hero-heading"
       >
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
@@ -155,8 +160,8 @@ export const MarketplaceHero = defineComponent({
                 id="hero-heading"
                 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl"
               >
-                {headingLead}{" "}
-                <span className="text-muted-foreground">{heroHighlight}</span>{" "}
+                {headingLead}{' '}
+                <span className="text-muted-foreground">{heroHighlight}</span>{' '}
                 {headingTail}
               </h1>
               <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
@@ -196,12 +201,12 @@ export const MarketplaceHero = defineComponent({
                     <div
                       key={idx}
                       className={cn(
-                        "overflow-hidden rounded-2xl bg-muted",
+                        'overflow-hidden rounded-2xl bg-muted',
                         galleryAspect[idx],
                       )}
                     >
                       <Image
-                        alt={heroGallery[idx] ?? "Featured marketplace product"}
+                        alt={heroGallery[idx] ?? 'Featured marketplace product'}
                         w={600}
                         h={idx === 0 ? 750 : 600}
                         className="size-full object-cover transition-transform duration-500 hover:scale-105"
@@ -214,12 +219,12 @@ export const MarketplaceHero = defineComponent({
                     <div
                       key={idx}
                       className={cn(
-                        "overflow-hidden rounded-2xl bg-muted",
+                        'overflow-hidden rounded-2xl bg-muted',
                         galleryAspect[idx],
                       )}
                     >
                       <Image
-                        alt={heroGallery[idx] ?? "Featured marketplace product"}
+                        alt={heroGallery[idx] ?? 'Featured marketplace product'}
                         w={600}
                         h={idx === 3 ? 750 : 600}
                         className="size-full object-cover transition-transform duration-500 hover:scale-105"

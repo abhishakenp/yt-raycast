@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FurnitureStoreDesign — a dark, primary-background design-service band. A
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * "Haven & Home" defaults.
  */
 export const FurnitureStoreDesign = defineComponent({
-  name: "FurnitureStoreDesign",
+  name: 'FurnitureStoreDesign',
   description:
-    "Dark primary-background design-service band: a two-column section (stacks on mobile) with a left copy column (eyebrow, heading, paragraph, numbered 3-step process list of circular index chip + title + caption, and an inverted CTA button) beside a right column with a tall image and a floating corner card showing a stat callout (label, big value, caption); CTA routes through useNavigate. Use to promote a complimentary or paid interior-design / consultation service for furniture, home-decor, or interiors brands.",
+    'Dark primary-background design-service band: a two-column section (stacks on mobile) with a left copy column (eyebrow, heading, paragraph, numbered 3-step process list of circular index chip + title + caption, and an inverted CTA button) beside a right column with a tall image and a floating corner card showing a stat callout (label, big value, caption); CTA routes through useNavigate. Use to promote a complimentary or paid interior-design / consultation service for furniture, home-decor, or interiors brands.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -35,37 +35,37 @@ export const FurnitureStoreDesign = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Complimentary Design Service"
+    const eyebrow = props.eyebrow ?? 'Complimentary Design Service'
     const heading = props.heading ?? "Not sure where to start? We'll help."
     const description =
       props.description ??
       "Our design experts will work with you to create a space you'll love. From mood boards to floor plans, we're with you every step of the way—completely free."
-    const cta = props.cta ?? "Book free consultation"
+    const cta = props.cta ?? 'Book free consultation'
     const imageAlt =
       props.imageAlt ??
-      "Interior designer consulting with clients in a bright modern showroom with furniture samples"
+      'Interior designer consulting with clients in a bright modern showroom with furniture samples'
     const steps = props.steps?.length
       ? props.steps
       : [
           {
-            title: "Book a free consultation",
+            title: 'Book a free consultation',
             description:
-              "Schedule a 30-minute video call with one of our design experts.",
+              'Schedule a 30-minute video call with one of our design experts.',
           },
           {
-            title: "Share your space",
+            title: 'Share your space',
             description:
-              "Upload photos and measurements. Tell us about your lifestyle and budget.",
+              'Upload photos and measurements. Tell us about your lifestyle and budget.',
           },
           {
-            title: "Get your custom plan",
+            title: 'Get your custom plan',
             description:
-              "Receive a personalized design board, floor plan, and curated product list.",
+              'Receive a personalized design board, floor plan, and curated product list.',
           },
         ]
-    const statLabel = props.statLabel ?? "Designer consultations"
-    const statValue = props.statValue ?? "12,000+"
-    const statCaption = props.statCaption ?? "Completed this year"
+    const statLabel = props.statLabel ?? 'Designer consultations'
+    const statValue = props.statValue ?? '12,000+'
+    const statCaption = props.statCaption ?? 'Completed this year'
 
     const ArrowLong = ({ className }: { className?: string }) => (
       <svg
@@ -87,7 +87,7 @@ export const FurnitureStoreDesign = defineComponent({
     return (
       <section
         className={cn(
-          "bg-primary py-16 text-primary-foreground lg:py-24",
+          'bg-primary py-16 text-primary-foreground lg:py-24',
           props.className,
         )}
         aria-labelledby="furniture-design-heading"

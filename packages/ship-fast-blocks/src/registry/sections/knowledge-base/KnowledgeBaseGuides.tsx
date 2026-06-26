@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * KnowledgeBaseGuides — featured step-by-step guides gallery for a help center.
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * or docs site. Renders fully with no props via baked-in defaults.
  */
 export const KnowledgeBaseGuides = defineComponent({
-  name: "KnowledgeBaseGuides",
+  name: 'KnowledgeBaseGuides',
   description:
     "Featured step-by-step guides gallery for a help center: a heading + description with a bordered 'view all' button on one side, above a responsive 1/2/3-up grid of card buttons — each with a wide cover image plus an overlaid token-colored difficulty badge (Beginner/Intermediate/Advanced), a title, a description and read-time + step-count meta with icons; cards lift on hover and the image zooms. Calm, light, editorial; guide cards and the 'view all' button route through useNavigate and covers use the alt-driven Image component. Use to spotlight walkthroughs on a knowledge base, support portal or docs site.",
   props: z.object({
@@ -39,52 +39,52 @@ export const KnowledgeBaseGuides = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Featured Guides"
+    const heading = props.heading ?? 'Featured Guides'
     const description =
       props.description ??
-      "Step-by-step walkthroughs for common workflows and setups."
-    const viewAll = props.viewAll ?? "View all guides"
+      'Step-by-step walkthroughs for common workflows and setups.'
+    const viewAll = props.viewAll ?? 'View all guides'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Complete Setup Guide for New Teams",
+            title: 'Complete Setup Guide for New Teams',
             description:
-              "Get your team up and running in under 30 minutes with workspaces, projects, and initial configurations.",
-            level: "Beginner",
-            readTime: "25 min read",
-            steps: "12 steps",
+              'Get your team up and running in under 30 minutes with workspaces, projects, and initial configurations.',
+            level: 'Beginner',
+            readTime: '25 min read',
+            steps: '12 steps',
             imageAlt:
-              "Modern laptop displaying analytics dashboard with charts on a clean desk",
+              'Modern laptop displaying analytics dashboard with charts on a clean desk',
           },
           {
-            title: "Building Custom Reports & Dashboards",
+            title: 'Building Custom Reports & Dashboards',
             description:
-              "Learn to create, schedule, and share custom reports with filters, grouping, and visualization options.",
-            level: "Intermediate",
-            readTime: "40 min read",
-            steps: "18 steps",
+              'Learn to create, schedule, and share custom reports with filters, grouping, and visualization options.',
+            level: 'Intermediate',
+            readTime: '40 min read',
+            steps: '18 steps',
             imageAlt:
-              "Data visualization dashboard showing colorful analytics charts and metrics",
+              'Data visualization dashboard showing colorful analytics charts and metrics',
           },
           {
-            title: "Advanced API Integration Patterns",
+            title: 'Advanced API Integration Patterns',
             description:
-              "Deep dive into webhooks, batch operations, error handling, and building resilient integrations.",
-            level: "Advanced",
-            readTime: "55 min read",
-            steps: "24 steps",
+              'Deep dive into webhooks, batch operations, error handling, and building resilient integrations.',
+            level: 'Advanced',
+            readTime: '55 min read',
+            steps: '24 steps',
             imageAlt:
-              "Software developer writing code on multiple monitors showing programming interfaces",
+              'Software developer writing code on multiple monitors showing programming interfaces',
           },
         ]
 
     const levelTone = (level: string) => {
       const l = level.toLowerCase()
-      if (l.includes("begin")) return "bg-chart-2/15 text-chart-2"
-      if (l.includes("inter")) return "bg-chart-4/15 text-chart-4"
-      if (l.includes("adv")) return "bg-destructive/15 text-destructive"
-      return "bg-secondary text-secondary-foreground"
+      if (l.includes('begin')) return 'bg-chart-2/15 text-chart-2'
+      if (l.includes('inter')) return 'bg-chart-4/15 text-chart-4'
+      if (l.includes('adv')) return 'bg-destructive/15 text-destructive'
+      return 'bg-secondary text-secondary-foreground'
     }
 
     const ChevronRight = ({ className }: { className?: string }) => (
@@ -139,7 +139,7 @@ export const KnowledgeBaseGuides = defineComponent({
 
     return (
       <section
-        className={cn("bg-background py-16 sm:py-20", props.className)}
+        className={cn('bg-background py-16 sm:py-20', props.className)}
         aria-labelledby="kb-guides-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -181,7 +181,7 @@ export const KnowledgeBaseGuides = defineComponent({
                   <span className="absolute left-3 top-3">
                     <span
                       className={cn(
-                        "rounded px-2 py-1 text-xs font-medium",
+                        'rounded px-2 py-1 text-xs font-medium',
                         levelTone(guide.level),
                       )}
                     >

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * SaasFooter — a multi-column site footer for a SaaS / AI-product landing page.
@@ -22,9 +22,9 @@ const BrandTile = ({ brand }: { brand: string }) => (
 )
 
 export const SaasFooter = defineComponent({
-  name: "SaasFooter",
+  name: 'SaasFooter',
   description:
-    "Multi-column site footer for a SaaS / AI-product landing page built on the shared SiteFooter composite: a gradient brand-initial logo tile + wordmark, a tagline, a social row, and a responsive grid of link columns (Product / Company / Resources / Legal); below, a bordered-top bottom bar with an auto-updating copyright line. The brand, every column link, and each social link route through useNavigate. Use as the closing footer for SaaS, API, or B2B product sites.",
+    'Multi-column site footer for a SaaS / AI-product landing page built on the shared SiteFooter composite: a gradient brand-initial logo tile + wordmark, a tagline, a social row, and a responsive grid of link columns (Product / Company / Resources / Legal); below, a bordered-top bottom bar with an auto-updating copyright line. The brand, every column link, and each social link route through useNavigate. Use as the closing footer for SaaS, API, or B2B product sites.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -48,30 +48,30 @@ export const SaasFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Chronos AI"
+    const brand = props.brand ?? 'Chronos AI'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Integrations", "Pricing", "Changelog"],
+            title: 'Product',
+            links: ['Features', 'Integrations', 'Pricing', 'Changelog'],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Blog", "Contact"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Blog', 'Contact'],
           },
           {
-            title: "Resources",
-            links: ["Documentation", "API Reference", "Community", "Support"],
+            title: 'Resources',
+            links: ['Documentation', 'API Reference', 'Community', 'Support'],
           },
           {
-            title: "Legal",
-            links: ["Privacy", "Terms", "Security", "Cookies"],
+            title: 'Legal',
+            links: ['Privacy', 'Terms', 'Security', 'Cookies'],
           },
         ]
     const social = props.social?.length
       ? props.social
-      : [{ label: "Twitter" }, { label: "LinkedIn" }, { label: "GitHub" }]
+      : [{ label: 'Twitter' }, { label: 'LinkedIn' }, { label: 'GitHub' }]
 
     return (
       <SiteFooter
@@ -80,11 +80,11 @@ export const SaasFooter = defineComponent({
         brandClassName="text-lg font-bold"
         tagline={
           props.tagline ??
-          "AI-powered scheduling that gives you back your time. Smart, secure, and built for teams that move fast."
+          'AI-powered scheduling that gives you back your time. Smart, secure, and built for teams that move fast.'
         }
         columns={columns}
         social={social}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

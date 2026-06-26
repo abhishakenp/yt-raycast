@@ -7,7 +7,7 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from "react";
+} from 'react'
 import {
   useFloating,
   autoUpdate,
@@ -33,41 +33,41 @@ import {
   safePolygon,
   useClick,
   useMergeRefs,
-} from "@floating-ui/react";
-import classNames from "classnames";
-import { ChevronDownIcon, ChevronRightIcon } from "@radix-ui/react-icons";
-import { Cross2Icon } from "@radix-ui/react-icons";
-import { UrlObject } from "url";
-import { Button } from "@ui/Button";
-import { TooltipSide } from "@ui/Tooltip";
-import { Key, KeyboardShortcut } from "@ui/KeyboardShortcut";
-import { useWindowSize } from "react-use";
+} from '@floating-ui/react'
+import classNames from 'classnames'
+import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons'
+import { Cross2Icon } from '@radix-ui/react-icons'
+import { UrlObject } from 'url'
+import { Button } from '@ui/Button'
+import { TooltipSide } from '@ui/Tooltip'
+import { Key, KeyboardShortcut } from '@ui/KeyboardShortcut'
+import { useWindowSize } from 'react-use'
 
 function useIsMobile() {
-  const { width } = useWindowSize();
-  return width < 640;
+  const { width } = useWindowSize()
+  return width < 640
 }
 
 const ContextMenuContext = React.createContext<{
   getItemProps: (
     userProps?: React.HTMLProps<HTMLElement>,
-  ) => Record<string, unknown>;
-  activeIndex: number | null;
-  setActiveIndex: React.Dispatch<React.SetStateAction<number | null>>;
-  isOpen: boolean;
+  ) => Record<string, unknown>
+  activeIndex: number | null
+  setActiveIndex: React.Dispatch<React.SetStateAction<number | null>>
+  isOpen: boolean
 }>({
   getItemProps: () => ({}),
   activeIndex: null,
   setActiveIndex: () => {},
   isOpen: false,
-});
+})
 
-export type Target = { x: number; y: number };
+export type Target = { x: number; y: number }
 
 type ContextMenuProps = React.PropsWithChildren<{
-  target: Target | null;
-  onClose: () => void;
-}>;
+  target: Target | null
+  onClose: () => void
+}>
 
 // Based on https://codesandbox.io/s/trusting-rui-2duieo
 // and https://codesandbox.io/s/admiring-lamport-5wt3yg
@@ -76,20 +76,20 @@ export function ContextMenu(props: ContextMenuProps) {
     <FloatingTree>
       <ContextMenuInner {...props} />
     </FloatingTree>
-  );
+  )
 }
 
 function ContextMenuInner({ target, onClose, children }: ContextMenuProps) {
-  const isMobile = useIsMobile();
-  const isOpen = target !== null;
+  const isMobile = useIsMobile()
+  const isOpen = target !== null
   const onOpenChange = useCallback(
     (newIsOpen: boolean) => {
       if (!newIsOpen) {
-        onClose();
+        onClose()
       }
     },
     [onClose],
-  );
+  )
 
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
@@ -97,50 +97,50 @@ function ContextMenuInner({ target, onClose, children }: ContextMenuProps) {
     middleware: [
       offset({ mainAxis: 5, alignmentAxis: 4 }),
       flip({
-        fallbackPlacements: ["left-start"],
+        fallbackPlacements: ['left-start'],
       }),
       shift({ padding: 10 }),
     ],
-    placement: "right-start",
-    strategy: "fixed",
+    placement: 'right-start',
+    strategy: 'fixed',
     whileElementsMounted: autoUpdate,
-  });
+  })
 
   // Interactions
-  const role = useRole(context, { role: "menu" });
+  const role = useRole(context, { role: 'menu' })
 
-  const dismiss = useDismiss(context);
+  const dismiss = useDismiss(context)
 
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const listItemsRef = useRef<Array<HTMLButtonElement | null>>([]);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const listItemsRef = useRef<Array<HTMLButtonElement | null>>([])
   const listNavigation = useListNavigation(context, {
     listRef: listItemsRef,
     onNavigate: setActiveIndex,
     activeIndex,
-  });
+  })
 
-  const listContentRef = useRef<Array<string | null>>([]);
+  const listContentRef = useRef<Array<string | null>>([])
   const typeahead = useTypeahead(context, {
     enabled: isOpen,
     listRef: listContentRef,
     onMatch: setActiveIndex,
     activeIndex,
-  });
+  })
 
   const { getFloatingProps, getItemProps } = useInteractions([
     role,
     dismiss,
     listNavigation,
     typeahead,
-  ]);
+  ])
 
   // Position relative to the target
   useLayoutEffect(() => {
     if (!target) {
-      refs.setPositionReference(null);
-      return;
+      refs.setPositionReference(null)
+      return
     }
-    const { x, y } = target;
+    const { x, y } = target
     refs.setPositionReference({
       getBoundingClientRect() {
         return {
@@ -152,24 +152,24 @@ function ContextMenuInner({ target, onClose, children }: ContextMenuProps) {
           right: x,
           bottom: y,
           left: x,
-        };
+        }
       },
-    });
-  }, [refs, target]);
+    })
+  }, [refs, target])
 
   // Tree events
-  const tree = useFloatingTree();
-  const nodeId = useFloatingNodeId();
+  const tree = useFloatingTree()
+  const nodeId = useFloatingNodeId()
   useEffect(() => {
-    if (!tree) return;
+    if (!tree) return
 
     function handleTreeClick() {
-      onClose();
+      onClose()
     }
 
-    tree.events.on("click", handleTreeClick);
-    return () => tree.events.off("click", handleTreeClick);
-  }, [tree, onClose]);
+    tree.events.on('click', handleTreeClick)
+    return () => tree.events.off('click', handleTreeClick)
+  }, [tree, onClose])
 
   const contextValue = useMemo(
     () => ({
@@ -179,7 +179,7 @@ function ContextMenuInner({ target, onClose, children }: ContextMenuProps) {
       isOpen,
     }),
     [activeIndex, setActiveIndex, getItemProps, isOpen],
-  );
+  )
 
   if (isMobile) {
     return (
@@ -228,7 +228,7 @@ function ContextMenuInner({ target, onClose, children }: ContextMenuProps) {
           </FloatingList>
         </ContextMenuContext.Provider>
       </FloatingNode>
-    );
+    )
   }
 
   return (
@@ -258,7 +258,7 @@ function ContextMenuInner({ target, onClose, children }: ContextMenuProps) {
         </FloatingList>
       </ContextMenuContext.Provider>
     </FloatingNode>
-  );
+  )
 }
 
 function ContextMenuItem({
@@ -272,74 +272,74 @@ function ContextMenuItem({
   tipSide,
   blankTarget = true,
 }: {
-  icon?: ReactNode;
-  label: ReactNode;
-  action: (() => void) | UrlObject | string;
-  disabled?: boolean;
-  variant?: "neutral" | "danger";
-  shortcut?: Key[];
-  tip?: ReactNode;
-  tipSide?: TooltipSide;
-  blankTarget?: boolean;
+  icon?: ReactNode
+  label: ReactNode
+  action: (() => void) | UrlObject | string
+  disabled?: boolean
+  variant?: 'neutral' | 'danger'
+  shortcut?: Key[]
+  tip?: ReactNode
+  tipSide?: TooltipSide
+  blankTarget?: boolean
 }) {
-  const isMobile = useIsMobile();
-  const menu = useContext(ContextMenuContext);
-  const { itemRef: labelRef, itemText: labelText } = useTextContent();
-  const item = useListItem({ label: disabled ? null : labelText });
-  const tree = useFloatingTree();
-  const isActive = item.index === menu.activeIndex;
+  const isMobile = useIsMobile()
+  const menu = useContext(ContextMenuContext)
+  const { itemRef: labelRef, itemText: labelText } = useTextContent()
+  const item = useListItem({ label: disabled ? null : labelText })
+  const tree = useFloatingTree()
+  const isActive = item.index === menu.activeIndex
 
   return (
     <Button
       variant="unstyled"
       className={classNames(
-        "w-full flex gap-2 items-center px-3 py-1.5 text-left",
-        !isMobile && "max-w-xs",
-        "active:bg-background-tertiary disabled:active:bg-background-secondary focus:bg-background-tertiary disabled:focus:bg-background-secondary outline-hidden",
+        'w-full flex gap-2 items-center px-3 py-1.5 text-left',
+        !isMobile && 'max-w-xs',
+        'active:bg-background-tertiary disabled:active:bg-background-secondary focus:bg-background-tertiary disabled:focus:bg-background-secondary outline-hidden',
         disabled
-          ? "cursor-not-allowed fill-content-tertiary text-content-tertiary"
-          : variant === "danger"
-            ? "text-content-errorSecondary"
+          ? 'cursor-not-allowed fill-content-tertiary text-content-tertiary'
+          : variant === 'danger'
+            ? 'text-content-errorSecondary'
             : ' "text-content-primary"',
       )}
       disabled={disabled}
       ref={item.ref}
       tabIndex={isActive ? 0 : -1}
-      href={typeof action !== "function" ? action : undefined}
+      href={typeof action !== 'function' ? action : undefined}
       target={
-        typeof action !== "function"
+        typeof action !== 'function'
           ? blankTarget
-            ? "_blank"
+            ? '_blank'
             : undefined
           : undefined
       }
       {...menu.getItemProps({
         onClick: () => {
-          if (typeof action === "function") {
-            action();
+          if (typeof action === 'function') {
+            action()
           }
           setTimeout(() => {
-            tree?.events.emit("click");
-          }, 0);
+            tree?.events.emit('click')
+          }, 0)
         },
         onKeyDown: (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            if (typeof action === "function") {
-              action();
+          if (e.key === 'Enter' || e.key === ' ') {
+            if (typeof action === 'function') {
+              action()
             } else {
-              e.currentTarget.click();
+              e.currentTarget.click()
             }
             setTimeout(() => {
-              tree?.events.emit("click");
-            }, 0);
+              tree?.events.emit('click')
+            }, 0)
           }
         },
       })}
       onClickOfAnchorLink={(e) => {
-        e.stopPropagation();
+        e.stopPropagation()
         setTimeout(() => {
-          tree?.events.emit("click");
-        }, 0);
+          tree?.events.emit('click')
+        }, 0)
       }}
       tip={tip}
       tipSide={tipSide}
@@ -355,16 +355,16 @@ function ContextMenuItem({
         />
       )}
     </Button>
-  );
+  )
 }
-ContextMenu.Item = ContextMenuItem;
+ContextMenu.Item = ContextMenuItem
 
 type ContextMenuSubmenuProps = React.PropsWithChildren<{
-  icon?: ReactNode;
-  label: ReactNode;
-  action?: () => void;
-  disabled?: boolean;
-}>;
+  icon?: ReactNode
+  label: ReactNode
+  action?: () => void
+  disabled?: boolean
+}>
 
 function ContextMenuSubmenu({
   icon,
@@ -373,97 +373,97 @@ function ContextMenuSubmenu({
   action,
   disabled = false,
 }: ContextMenuSubmenuProps) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile()
   // Item in the parent menu
-  const parent = useContext(ContextMenuContext);
-  const { itemRef: labelRef, itemText: labelText } = useTextContent();
-  const item = useListItem({ label: labelText });
-  const tree = useFloatingTree();
-  const nodeId = useFloatingNodeId();
-  const parentId = useFloatingParentNodeId();
+  const parent = useContext(ContextMenuContext)
+  const { itemRef: labelRef, itemText: labelText } = useTextContent()
+  const item = useListItem({ label: labelText })
+  const tree = useFloatingTree()
+  const nodeId = useFloatingNodeId()
+  const parentId = useFloatingParentNodeId()
 
   // Submenu
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const elementsRef = useRef<Array<HTMLButtonElement | null>>([]);
-  const labelsRef = useRef<Array<string | null>>([]);
+  const [isOpen, setIsOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const elementsRef = useRef<Array<HTMLButtonElement | null>>([])
+  const labelsRef = useRef<Array<string | null>>([])
 
   const { floatingStyles, refs, context } = useFloating<HTMLButtonElement>({
     nodeId,
     open: isOpen,
     onOpenChange: setIsOpen,
-    placement: "right-start",
+    placement: 'right-start',
     middleware: [
       offset({ mainAxis: 0, alignmentAxis: 0 }),
       flip(),
       shift({ padding: 10 }),
     ],
     whileElementsMounted: autoUpdate,
-  });
+  })
 
   // Interactions
   const hover = useHover(context, {
     enabled: !isMobile,
     delay: { open: 75 },
     handleClose: safePolygon({ blockPointerEvents: true }),
-  });
+  })
   const click = useClick(context, {
-    event: "mousedown",
+    event: 'mousedown',
     toggle: isMobile,
     ignoreMouse: !isMobile,
-  });
-  const role = useRole(context, { role: "menu" });
-  const dismiss = useDismiss(context, { bubbles: true });
+  })
+  const role = useRole(context, { role: 'menu' })
+  const dismiss = useDismiss(context, { bubbles: true })
   const listNavigation = useListNavigation(context, {
     listRef: elementsRef,
     activeIndex,
     nested: true,
     onNavigate: setActiveIndex,
-  });
+  })
   const typeahead = useTypeahead(context, {
     listRef: labelsRef,
     onMatch: isOpen ? setActiveIndex : undefined,
     activeIndex,
-  });
+  })
   const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions(
     [hover, click, role, dismiss, listNavigation, typeahead],
-  );
+  )
 
   // Tree events
   useEffect(() => {
-    if (!tree) return;
+    if (!tree) return
 
     function handleTreeClick() {
-      setIsOpen(false);
+      setIsOpen(false)
     }
 
     function onSubMenuOpen(event: { nodeId: string; parentId: string }) {
       if (event.nodeId !== nodeId && event.parentId === parentId) {
-        setIsOpen(false);
+        setIsOpen(false)
       }
     }
 
-    tree.events.on("click", handleTreeClick);
-    tree.events.on("menuopen", onSubMenuOpen);
+    tree.events.on('click', handleTreeClick)
+    tree.events.on('menuopen', onSubMenuOpen)
 
     return () => {
-      tree.events.off("click", handleTreeClick);
-      tree.events.off("menuopen", onSubMenuOpen);
-    };
-  }, [tree, nodeId, parentId]);
+      tree.events.off('click', handleTreeClick)
+      tree.events.off('menuopen', onSubMenuOpen)
+    }
+  }, [tree, nodeId, parentId])
 
   useEffect(() => {
     if (isOpen && tree) {
-      tree.events.emit("menuopen", { parentId, nodeId });
+      tree.events.emit('menuopen', { parentId, nodeId })
     }
-  }, [tree, isOpen, nodeId, parentId]);
+  }, [tree, isOpen, nodeId, parentId])
 
   const contextValue = useMemo(
     () => ({ activeIndex, setActiveIndex, getItemProps, isOpen }),
     [activeIndex, setActiveIndex, getItemProps, isOpen],
-  );
+  )
 
-  const isClickable = action !== undefined;
+  const isClickable = action !== undefined
 
   return (
     <FloatingNode id={nodeId}>
@@ -472,12 +472,12 @@ function ContextMenuSubmenu({
         ref={useMergeRefs([refs.setReference, item.ref])}
         variant="unstyled"
         className={classNames(
-          "w-full flex gap-2 items-center px-3 py-1.5 text-left",
-          !isMobile && "max-w-xs",
-          "outline-hidden text-content-primary",
-          "active:bg-background-tertiary focus:bg-background-tertiary",
-          !isClickable && "cursor-default hover:bg-background-tertiary",
-          "disabled:text-content-tertiary disabled:hover:bg-background-secondary disabled:cursor-not-allowed",
+          'w-full flex gap-2 items-center px-3 py-1.5 text-left',
+          !isMobile && 'max-w-xs',
+          'outline-hidden text-content-primary',
+          'active:bg-background-tertiary focus:bg-background-tertiary',
+          !isClickable && 'cursor-default hover:bg-background-tertiary',
+          'disabled:text-content-tertiary disabled:hover:bg-background-secondary disabled:cursor-not-allowed',
         )}
         disabled={disabled}
         tabIndex={item.index === parent.activeIndex ? 0 : -1}
@@ -485,8 +485,8 @@ function ContextMenuSubmenu({
         onClick={
           isClickable && !isMobile
             ? () => {
-                action?.();
-                tree?.events.emit("click");
+                action?.()
+                tree?.events.emit('click')
               }
             : undefined
         }
@@ -534,24 +534,24 @@ function ContextMenuSubmenu({
         </FloatingList>
       </ContextMenuContext.Provider>
     </FloatingNode>
-  );
+  )
 }
-ContextMenuSubmenu.displayName = "ContextMenuSubmenu";
-ContextMenu.Submenu = ContextMenuSubmenu;
+ContextMenuSubmenu.displayName = 'ContextMenuSubmenu'
+ContextMenu.Submenu = ContextMenuSubmenu
 
 function useTextContent(): {
-  itemRef: (element: HTMLElement) => void;
-  itemText: string | undefined;
+  itemRef: (element: HTMLElement) => void
+  itemText: string | undefined
 } {
-  const [itemText, setItemText] = useState<string | undefined>(undefined);
+  const [itemText, setItemText] = useState<string | undefined>(undefined)
   const itemRef = useCallback(
     (element: HTMLElement) =>
       setItemText(element ? element.innerText : undefined),
     [],
-  );
+  )
 
   return {
     itemRef,
     itemText,
-  };
+  }
 }

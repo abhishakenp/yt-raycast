@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * KnowledgeBasePopular — popular-articles list beside a sticky-style support
@@ -16,7 +16,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * defaults.
  */
 export const KnowledgeBasePopular = defineComponent({
-  name: "KnowledgeBasePopular",
+  name: 'KnowledgeBasePopular',
   description:
     "Popular-articles list beside a support sidebar for a help center: a two-thirds column lists the most-viewed articles as full-width row buttons (eye-icon tile, title, description, view-count + updated meta, trailing chevron) under a heading + description with a 'view all' link; a one-third aside stacks a muted 'Trending Topics' panel (title + percent-change rows) and a bordered 'Need more help?' card of chat/contact links. Calm, light, editorial; every article, trending row and help link routes through useNavigate. Use as the browse-popular section of a knowledge base, support portal or docs site.",
   props: z.object({
@@ -43,68 +43,68 @@ export const KnowledgeBasePopular = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Popular Articles"
+    const heading = props.heading ?? 'Popular Articles'
     const description =
       props.description ??
-      "The most viewed help articles from the past 30 days."
-    const viewAll = props.viewAll ?? "View all 234 articles"
+      'The most viewed help articles from the past 30 days.'
+    const viewAll = props.viewAll ?? 'View all 234 articles'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "How to set up two-factor authentication (2FA)",
+            title: 'How to set up two-factor authentication (2FA)',
             description:
-              "Secure your account with an authenticator app or SMS verification",
-            views: "12.4k views",
-            updated: "Updated 3 days ago",
+              'Secure your account with an authenticator app or SMS verification',
+            views: '12.4k views',
+            updated: 'Updated 3 days ago',
           },
           {
-            title: "Understanding your monthly invoice and charges",
+            title: 'Understanding your monthly invoice and charges',
             description:
-              "Breakdown of usage-based pricing, overages, and discounts",
-            views: "9.8k views",
-            updated: "Updated 1 week ago",
+              'Breakdown of usage-based pricing, overages, and discounts',
+            views: '9.8k views',
+            updated: 'Updated 1 week ago',
           },
           {
-            title: "Getting started with the REST API",
+            title: 'Getting started with the REST API',
             description:
-              "Authentication, rate limits, and your first API request",
-            views: "8.2k views",
-            updated: "Updated 2 days ago",
+              'Authentication, rate limits, and your first API request',
+            views: '8.2k views',
+            updated: 'Updated 2 days ago',
           },
           {
-            title: "Connecting Slack for team notifications",
-            description: "Configure webhooks and customize alert channels",
-            views: "7.5k views",
-            updated: "Updated 5 days ago",
+            title: 'Connecting Slack for team notifications',
+            description: 'Configure webhooks and customize alert channels',
+            views: '7.5k views',
+            updated: 'Updated 5 days ago',
           },
           {
-            title: "Managing team members and permissions",
-            description: "Invite users, assign roles, and set access levels",
-            views: "6.9k views",
-            updated: "Updated 1 day ago",
+            title: 'Managing team members and permissions',
+            description: 'Invite users, assign roles, and set access levels',
+            views: '6.9k views',
+            updated: 'Updated 1 day ago',
           },
           {
-            title: "How to migrate data from your old platform",
-            description: "Step-by-step import guide with CSV templates",
-            views: "6.3k views",
-            updated: "Updated 2 weeks ago",
+            title: 'How to migrate data from your old platform',
+            description: 'Step-by-step import guide with CSV templates',
+            views: '6.3k views',
+            updated: 'Updated 2 weeks ago',
           },
         ]
-    const trendingHeading = props.trendingHeading ?? "Trending Topics"
+    const trendingHeading = props.trendingHeading ?? 'Trending Topics'
     const trending = props.trending?.length
       ? props.trending
       : [
-          { title: "Webhook configuration errors", change: "+340% this week" },
-          { title: "SSO setup with Okta", change: "+215% this week" },
-          { title: "Exporting data to PDF", change: "+178% this week" },
-          { title: "Custom domain SSL issues", change: "+142% this week" },
-          { title: "API rate limit increases", change: "+98% this week" },
+          { title: 'Webhook configuration errors', change: '+340% this week' },
+          { title: 'SSO setup with Okta', change: '+215% this week' },
+          { title: 'Exporting data to PDF', change: '+178% this week' },
+          { title: 'Custom domain SSL issues', change: '+142% this week' },
+          { title: 'API rate limit increases', change: '+98% this week' },
         ]
-    const helpHeading = props.helpHeading ?? "Need More Help?"
+    const helpHeading = props.helpHeading ?? 'Need More Help?'
     const helpLinks = props.helpLinks?.length
       ? props.helpLinks
-      : ["Start live chat", "Email support", "Documentation", "Community forum"]
+      : ['Start live chat', 'Email support', 'Documentation', 'Community forum']
 
     const EyeIcon = () => (
       <svg
@@ -178,7 +178,7 @@ export const KnowledgeBasePopular = defineComponent({
     return (
       <section
         className={cn(
-          "border-b border-border bg-card py-16 sm:py-20",
+          'border-b border-border bg-card py-16 sm:py-20',
           props.className,
         )}
         aria-labelledby="kb-popular-heading"

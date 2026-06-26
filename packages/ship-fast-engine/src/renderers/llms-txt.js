@@ -20,9 +20,14 @@ function llmsLine(name, url, note) {
   return n ? `- [${name}](${url}): ${n}` : `- [${name}](${url})`
 }
 
-export function renderShipFastLlmsTxt({ siteUrl, includeBlog = false, includeInstitutional = false }) {
+export function renderShipFastLlmsTxt({
+  siteUrl,
+  includeBlog = false,
+  includeInstitutional = false,
+}) {
   const base = normalizeSiteUrl(siteUrl || '')
-  const link = (path, name, note) => llmsLine(name, base ? joinUrl(base, path) : path, note)
+  const link = (path, name, note) =>
+    llmsLine(name, base ? joinUrl(base, path) : path, note)
 
   const lines = [
     '# Ship Fast',
@@ -35,7 +40,11 @@ export function renderShipFastLlmsTxt({ siteUrl, includeBlog = false, includeIns
     link('/', 'Home', 'Prompt UI, generation, and gallery.'),
     link('/pricing', 'Pricing', 'Plans and limits.'),
     link('/privacy', 'Privacy', 'Data handling and contact.'),
-    link('/terms', 'Terms', 'Product policies, billing terms, and usage rules.'),
+    link(
+      '/terms',
+      'Terms',
+      'Product policies, billing terms, and usage rules.',
+    ),
     '',
     '## Capabilities',
     '- Generate marketing websites, landing pages, ecommerce storefronts, and product sites from prompts.',
@@ -61,7 +70,9 @@ export function renderShipFastLlmsTxt({ siteUrl, includeBlog = false, includeIns
 }
 
 export function renderGeneratedSiteLlmsTxt(siteSpec) {
-  const siteName = String(siteSpec?.seo?.siteName || siteSpec?.projectName || 'Site').trim() || 'Site'
+  const siteName =
+    String(siteSpec?.seo?.siteName || siteSpec?.projectName || 'Site').trim() ||
+    'Site'
   const siteUrl = normalizeSiteUrl(siteSpec?.seo?.siteUrl || '')
   const desc = String(siteSpec?.seo?.description || '').trim()
   const pages = (siteSpec?.pages || []).filter((p) => p?.seo?.noIndex !== true)
@@ -78,16 +89,26 @@ export function renderGeneratedSiteLlmsTxt(siteSpec) {
     const aeoBits = [
       page?.aeo?.objective,
       page?.aeo?.targetIntent ? `Intent: ${page.aeo.targetIntent}` : '',
-      Array.isArray(page?.aeo?.suggestedQueries) && page.aeo.suggestedQueries.length
+      Array.isArray(page?.aeo?.suggestedQueries) &&
+      page.aeo.suggestedQueries.length
         ? `Queries: ${page.aeo.suggestedQueries.slice(0, 4).join('; ')}`
         : '',
     ].filter(Boolean)
-    const note = [seo.description || page.description || page.title || '', ...aeoBits]
+    const note = [
+      seo.description || page.description || page.title || '',
+      ...aeoBits,
+    ]
       .filter(Boolean)
       .join(' ')
       .trim()
       .slice(0, 320)
-    section.push(llmsLine(String(page.name || page.title || route).trim() || 'Page', href, note))
+    section.push(
+      llmsLine(
+        String(page.name || page.title || route).trim() || 'Page',
+        href,
+        note,
+      ),
+    )
   }
 
   if (pages.length === 0) {

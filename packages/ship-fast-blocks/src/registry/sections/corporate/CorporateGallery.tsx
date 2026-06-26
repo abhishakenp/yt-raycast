@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CorporateGallery — global office / presence gallery for an enterprise /
@@ -12,9 +12,9 @@ import { Image } from "#/lib/img.tsx"
  * presence, workspace culture, or location hubs for large organizations.
  */
 export const CorporateGallery = defineComponent({
-  name: "CorporateGallery",
+  name: 'CorporateGallery',
   description:
-    "Global office / presence gallery for an enterprise / corporate B2B site: centered heading above a responsive 2/3-column grid of image cards with gradient-caption overlays, hover scale effect, and clickable buttons via useNavigate. Use to showcase global presence, workspace culture, or location hubs for large organizations.",
+    'Global office / presence gallery for an enterprise / corporate B2B site: centered heading above a responsive 2/3-column grid of image cards with gradient-caption overlays, hover scale effect, and clickable buttons via useNavigate. Use to showcase global presence, workspace culture, or location hubs for large organizations.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -34,51 +34,50 @@ export const CorporateGallery = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading =
-      props.heading ?? "Global presence, local expertise"
+    const heading = props.heading ?? 'Global presence, local expertise'
     const description =
       props.description ??
-      "14 offices across 6 continents, serving clients in 47 countries with round-the-clock support."
+      '14 offices across 6 continents, serving clients in 47 countries with round-the-clock support.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "New York Headquarters",
-            caption: "Global HQ & Innovation Center",
+            title: 'New York Headquarters',
+            caption: 'Global HQ & Innovation Center',
             imageAlt:
-              "Modern glass skyscraper corporate headquarters at sunset",
+              'Modern glass skyscraper corporate headquarters at sunset',
           },
           {
-            title: "London Office",
-            caption: "EMEA Regional Hub",
+            title: 'London Office',
+            caption: 'EMEA Regional Hub',
             imageAlt:
-              "Tower Bridge and modern city skyline in London at golden hour",
+              'Tower Bridge and modern city skyline in London at golden hour',
           },
           {
-            title: "Tokyo Office",
-            caption: "APAC Operations Center",
-            imageAlt: "Tokyo cityscape with illuminated skyscrapers at night",
+            title: 'Tokyo Office',
+            caption: 'APAC Operations Center',
+            imageAlt: 'Tokyo cityscape with illuminated skyscrapers at night',
           },
           {
-            title: "Sydney Office",
-            caption: "ANZ Regional Office",
-            imageAlt: "Sydney Opera House and harbor waterfront panorama",
+            title: 'Sydney Office',
+            caption: 'ANZ Regional Office',
+            imageAlt: 'Sydney Opera House and harbor waterfront panorama',
           },
           {
-            title: "Singapore Office",
-            caption: "Southeast Asia Hub",
-            imageAlt: "Singapore Marina Bay skyline with modern architecture",
+            title: 'Singapore Office',
+            caption: 'Southeast Asia Hub',
+            imageAlt: 'Singapore Marina Bay skyline with modern architecture',
           },
           {
-            title: "Berlin Office",
-            caption: "European Development Center",
+            title: 'Berlin Office',
+            caption: 'European Development Center',
             imageAlt:
-              "Modern corporate building in Berlin with contemporary architecture",
+              'Modern corporate building in Berlin with contemporary architecture',
           },
         ]
 
     return (
-      <section className={cn("bg-background py-20 lg:py-32", props.className)}>
+      <section className={cn('bg-background py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

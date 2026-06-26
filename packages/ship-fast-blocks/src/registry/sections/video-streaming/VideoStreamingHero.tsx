@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * VideoStreamingHero — full-bleed, cinematic dark hero for a video-streaming
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * apps, and on-demand video platforms. Renders fully with no props.
  */
 export const VideoStreamingHero = defineComponent({
-  name: "VideoStreamingHero",
+  name: 'VideoStreamingHero',
   description:
     "Full-bleed cinematic dark hero for a video-streaming landing page: one dramatic show backdrop fills the band edge to edge under layered token-based dark overlays so light text stays readable. Content has a small 'Featured' eyebrow, a huge show title, a short logline, dual CTAs (filled 'Start Free Trial' + outlined 'Browse'), and a divider-separated metadata strip (genre · rating · seasons). CTAs route through useNavigate. Use as the opening hero for streaming services, OTT apps, and on-demand video platforms.",
   props: z.object({
@@ -41,25 +41,25 @@ export const VideoStreamingHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroEyebrow = props.eyebrow ?? "Featured · New Season"
-    const heroHeading = props.heading ?? "Midnight Echo"
+    const heroEyebrow = props.eyebrow ?? 'Featured · New Season'
+    const heroHeading = props.heading ?? 'Midnight Echo'
     const heroSub =
       props.subheading ??
       "When a rogue signal pulls a deep-space crew into a derelict station, the line between memory and machine begins to dissolve. Stream the season everyone's talking about."
-    const heroPrimary = props.primaryCta ?? "Start Free Trial"
-    const heroPrimaryTarget = props.primaryTarget ?? "Pricing"
-    const heroSecondary = props.secondaryCta ?? "Browse"
-    const heroSecondaryTarget = props.secondaryTarget ?? "Browse"
+    const heroPrimary = props.primaryCta ?? 'Start Free Trial'
+    const heroPrimaryTarget = props.primaryTarget ?? 'Pricing'
+    const heroSecondary = props.secondaryCta ?? 'Browse'
+    const heroSecondaryTarget = props.secondaryTarget ?? 'Browse'
     const heroImageAlt =
       props.imageAlt ??
-      "cinematic sci-fi show backdrop, lone figure silhouetted in a neon-lit derelict space station corridor, moody teal and amber lighting, dramatic widescreen still"
+      'cinematic sci-fi show backdrop, lone figure silhouetted in a neon-lit derelict space station corridor, moody teal and amber lighting, dramatic widescreen still'
     const meta = props.meta?.length
       ? props.meta
-      : ["Sci-Fi Thriller", "TV-MA", "3 Seasons", "4K Ultra HD"]
+      : ['Sci-Fi Thriller', 'TV-MA', '3 Seasons', '4K Ultra HD']
 
     return (
       <section
-        className={cn("relative isolate overflow-hidden", props.className)}
+        className={cn('relative isolate overflow-hidden', props.className)}
       >
         <Image
           alt={heroImageAlt}

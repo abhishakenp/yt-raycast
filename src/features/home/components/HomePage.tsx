@@ -419,8 +419,9 @@ export const HomePage = () => {
       void (async () => {
         const currentPrompt = prompt.trim()
         if (currentPrompt.length < PROMPT_LANG_DETECT_MIN_CHARS) return
-        const { detectSnippetLanguageBcp47 } =
-          await import('@/lib/home/prompt-language-core')
+        const { detectSnippetLanguageBcp47 } = await import(
+          '@/lib/home/prompt-language-core'
+        )
         const detectedLanguage = await detectSnippetLanguageBcp47(
           currentPrompt.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX),
         )

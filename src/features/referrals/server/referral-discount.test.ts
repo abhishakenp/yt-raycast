@@ -58,9 +58,7 @@ describe('ensureStripeReferralCoupon', () => {
   })
 
   it('returns null without a Stripe key', async () => {
-    expect(
-      await ensureStripeReferralCoupon({} as NodeJS.ProcessEnv),
-    ).toBeNull()
+    expect(await ensureStripeReferralCoupon({} as NodeJS.ProcessEnv)).toBeNull()
   })
 })
 
@@ -144,10 +142,9 @@ describe('applyReferralDiscountForUser', () => {
     const fetchMock = vi.fn(async (url: unknown) => {
       const u = String(url)
       if (u.endsWith('/coupons')) {
-        return new Response(
-          JSON.stringify({ id: 'shipfast_ref_50_forever' }),
-          { status: 200 },
-        )
+        return new Response(JSON.stringify({ id: 'shipfast_ref_50_forever' }), {
+          status: 200,
+        })
       }
       // subscription update
       expect(u).toContain('/subscriptions/sub_1')
@@ -167,7 +164,11 @@ describe('applyReferralDiscountForUser', () => {
       mutation: vi.fn(async () => ({ ok: true })),
     }
 
-    const result = await applyReferralDiscountForUser(stripeEnv, 'user1', client)
+    const result = await applyReferralDiscountForUser(
+      stripeEnv,
+      'user1',
+      client,
+    )
     expect(result).toEqual({ applied: true, reason: 'ok' })
     expect(client.mutation).toHaveBeenCalledOnce()
     const markArgs = (client.mutation.mock.calls[0] as unknown[])[1] as {
@@ -197,7 +198,11 @@ describe('applyReferralDiscountForUser', () => {
       })),
       mutation: vi.fn(),
     }
-    const result = await applyReferralDiscountForUser(stripeEnv, 'user1', client)
+    const result = await applyReferralDiscountForUser(
+      stripeEnv,
+      'user1',
+      client,
+    )
     expect(result.reason).toBe('provider_rejected')
     expect(client.mutation).not.toHaveBeenCalled()
   })

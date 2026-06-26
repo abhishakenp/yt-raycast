@@ -27,7 +27,8 @@ const DOG_PROMPT_RE =
 const CAT_PROMPT_RE = /\b(cat|cats|kitten|kittens|feline|kitty)\b/i
 const FASHION_PROMPT_RE =
   /\b(fashion|ethnic wear|ethnic|saree|sari|lehenga|bridal|bride|wedding|boutique|couture|silk|embroidery|occasion wear|festive wear|designer wear)\b/i
-const SOUTH_INDIAN_FASHION_RE = /\b(kerala|south indian|south india|kasavu|muhurtham|silks?)\b/i
+const SOUTH_INDIAN_FASHION_RE =
+  /\b(kerala|south indian|south india|kasavu|muhurtham|silks?)\b/i
 
 const DAIRY_PROMPT_RE =
   /\b(amul|dairy|milk|butter|cheese|paneer|curd|yogurt|lassi|ice cream|icecream|chocolate|beverage|sweets?|dessert|recipe)\b/i
@@ -42,8 +43,8 @@ const TRAVEL_PROMPT_RE =
   /\b(travel|trip|trips|adventure|cinematic|destination|vacation|tour|tourism|safari|backpack|wander|explorer|getaway|itinerary|traveler|booking funnel|exotic|landing page)\b/i
 
 const TRAVEL_PHOTO_PEXELS_IDS = [
-  4640881, 4074420, 9951672, 2901209, 3250612, 2387861, 3601422, 1320684, 2487979, 3155667,
-  2166553, 457882, 1450360, 2666218, 346885,
+  4640881, 4074420, 9951672, 2901209, 3250612, 2387861, 3601422, 1320684,
+  2487979, 3155667, 2166553, 457882, 1450360, 2666218, 346885,
 ]
 
 const TRAVEL_VIDEO_FALLBACK = {
@@ -186,7 +187,16 @@ const MATCH_ALIASES = {
   sari: ['sari', 'saree'],
   jewelry: ['jewelry', 'jewellery', 'gold'],
   jewellery: ['jewellery', 'jewelry', 'gold'],
-  dairy: ['dairy', 'milk', 'paneer', 'curd', 'yogurt', 'lassi', 'butter', 'cheese'],
+  dairy: [
+    'dairy',
+    'milk',
+    'paneer',
+    'curd',
+    'yogurt',
+    'lassi',
+    'butter',
+    'cheese',
+  ],
   milk: ['milk', 'dairy'],
   butter: ['butter', 'dairy'],
   cheese: ['cheese', 'dairy'],
@@ -224,7 +234,11 @@ function escapeRegex(value = '') {
 }
 
 function uniqueValues(values = []) {
-  return [...new Set(values.filter((value) => value).map((value) => normalizeText(value)))].filter(
+  return [
+    ...new Set(
+      values.filter((value) => value).map((value) => normalizeText(value)),
+    ),
+  ].filter(
     (value) => value !== 'undefined' && value !== 'null' && value.length > 0,
   )
 }
@@ -353,9 +367,19 @@ function relevanceScore(photo) {
   const tokenOverlap = overlapCount(tokens, matchText)
   const providerBias = photo?.provider === 'pexels' ? 0.4 : 0.2
   const rankBias = Math.max(0, 3 - (Number(photo?.sourceRank) || 0)) * 0.1
-  const metadataPenalty = matchText ? 0 : photo?.provider === 'unsplash' ? -3 : -1
+  const metadataPenalty = matchText
+    ? 0
+    : photo?.provider === 'unsplash'
+      ? -3
+      : -1
 
-  return coreOverlap * 10 + tokenOverlap * 4 + providerBias + rankBias + metadataPenalty
+  return (
+    coreOverlap * 10 +
+    tokenOverlap * 4 +
+    providerBias +
+    rankBias +
+    metadataPenalty
+  )
 }
 
 function labelRelevanceScore(photo, label = '', usageCount = 0) {
@@ -363,7 +387,9 @@ function labelRelevanceScore(photo, label = '', usageCount = 0) {
   if (!labelText) return -Infinity
 
   const matchText = normalizeText(
-    [photo?.query || '', photo?.alt || '', photo?.matchText || ''].filter(Boolean).join(' '),
+    [photo?.query || '', photo?.alt || '', photo?.matchText || '']
+      .filter(Boolean)
+      .join(' '),
   )
   const { tokens, core } = queryMatchTokens(labelText)
   const coreOverlap = overlapCount(core, matchText)
@@ -382,12 +408,20 @@ function labelRelevanceScore(photo, label = '', usageCount = 0) {
         : 0
   const reusePenalty = usageCount * 0.35
 
-  return coreOverlap * 10 + tokenOverlap * 4 + productBoost + lifestyleBoost - reusePenalty
+  return (
+    coreOverlap * 10 +
+    tokenOverlap * 4 +
+    productBoost +
+    lifestyleBoost -
+    reusePenalty
+  )
 }
 
 function phraseFromPrompt(prompt, maxWords = 5) {
   const raw = normalizeText(prompt).replace(/[^a-z0-9\s-]/g, ' ')
-  const parts = raw.split(/\s+/).filter((w) => w.length > 1 && !STOP_WORDS.has(w))
+  const parts = raw
+    .split(/\s+/)
+    .filter((w) => w.length > 1 && !STOP_WORDS.has(w))
   if (!parts.length) return ''
   return parts.slice(0, maxWords).join(' ')
 }
@@ -402,7 +436,9 @@ function extractSalientPhrases(prompt, max = 4) {
       .replace(/\s+and\s+(appointment|booking|sections?|cta)[\s\S]+$/i, '')
       .trim()
 
-  const mFor = raw.match(/\b(?:for|about)\s+(?:a|an|the)\s+([a-z0-9][a-z0-9\s,'-]{10,100})/i)
+  const mFor = raw.match(
+    /\b(?:for|about)\s+(?:a|an|the)\s+([a-z0-9][a-z0-9\s,'-]{10,100})/i,
+  )
   if (mFor?.[1]) {
     const chunk = stripTail(mFor[1]).slice(0, 96)
     if (chunk.length > 10) out.push(chunk)
@@ -416,7 +452,10 @@ function extractSalientPhrases(prompt, max = 4) {
   const words = raw
     .replace(/[^a-z0-9\s-]/g, ' ')
     .split(/\s+/)
-    .filter((w) => w.length > 2 && !STOP_WORDS.has(w) && !LOW_SIGNAL_QUERY_WORDS.has(w))
+    .filter(
+      (w) =>
+        w.length > 2 && !STOP_WORDS.has(w) && !LOW_SIGNAL_QUERY_WORDS.has(w),
+    )
   if (words.length >= 5) {
     out.push(words.slice(0, 9).join(' '))
   }
@@ -462,11 +501,16 @@ function isVisualPhrase(phrase = '') {
 }
 
 function extractVisualPhrases(prompt = '') {
-  const lines = String(prompt).split('\n').map(cleanupPromptLine).filter(Boolean)
+  const lines = String(prompt)
+    .split('\n')
+    .map(cleanupPromptLine)
+    .filter(Boolean)
 
   const hits = []
   for (const line of lines) {
-    const content = line.includes(':') ? line.split(':').slice(1).join(':') : line
+    const content = line.includes(':')
+      ? line.split(':').slice(1).join(':')
+      : line
     const parts = content
       .split(/,|\/|\band\b/gi)
       .map(stripLeadPhrase)
@@ -484,14 +528,23 @@ function extractVisualPhrases(prompt = '') {
 
 function inferVisualSiteType(prompt = '', ctx = null, siteSpec = null) {
   const explicit = String(
-    ctx?.site_type || ctx?.siteType || siteSpec?.siteType || siteSpec?.metadata?.siteType || '',
+    ctx?.site_type ||
+      ctx?.siteType ||
+      siteSpec?.siteType ||
+      siteSpec?.metadata?.siteType ||
+      '',
   ).toLowerCase()
   if (explicit && explicit !== 'saas') return explicit
 
   const p = normalizeText(prompt)
-  if (/\b(ecommerce|shop|store|boutique|catalog|collection|buy|products?)\b/.test(p))
+  if (
+    /\b(ecommerce|shop|store|boutique|catalog|collection|buy|products?)\b/.test(
+      p,
+    )
+  )
     return 'ecommerce'
-  if (/\b(portfolio|case study|selected work|gallery)\b/.test(p)) return 'portfolio'
+  if (/\b(portfolio|case study|selected work|gallery)\b/.test(p))
+    return 'portfolio'
   if (/\b(blog|article|story|stories|editorial)\b/.test(p)) return 'blog'
   return explicit || 'landing'
 }
@@ -500,26 +553,50 @@ function queriesForVisualPhrase(phrase, typed = 'landing', prompt = '') {
   const p = normalizeText(phrase)
   const source = `${normalizeText(prompt)} ${p}`
 
-  if (/\b(hospital|multispeciality|multi-speciality|clinic|diagnostics|pathology)\b/.test(p)) {
-    return ['modern hospital interior corridor healthcare', 'doctor patient consultation clinic']
+  if (
+    /\b(hospital|multispeciality|multi-speciality|clinic|diagnostics|pathology)\b/.test(
+      p,
+    )
+  ) {
+    return [
+      'modern hospital interior corridor healthcare',
+      'doctor patient consultation clinic',
+    ]
   }
   if (/\b(pharmacy|medicine distributor|ethical pharma)\b/.test(p)) {
     return ['pharmacy shelves medicine', 'pharmacist consultation counter']
   }
   if (/\b(solar|photovoltaic|rooftop\s+solar|epc\s+renewable)\b/.test(p)) {
-    return ['residential rooftop solar panels blue sky', 'solar panel installation technician roof']
+    return [
+      'residential rooftop solar panels blue sky',
+      'solar panel installation technician roof',
+    ]
   }
-  if (/\b(logistics|warehouse|3pl|freight|cold\s+storage|cold\s+chain)\b/.test(p)) {
-    return ['warehouse pallets logistics interior', 'shipping container port logistics truck']
+  if (
+    /\b(logistics|warehouse|3pl|freight|cold\s+storage|cold\s+chain)\b/.test(p)
+  ) {
+    return [
+      'warehouse pallets logistics interior',
+      'shipping container port logistics truck',
+    ]
   }
   if (/\b(coaching|jee|neet|upsc|academy|tuition)\b/.test(p)) {
-    return ['students studying classroom exam preparation', 'library books study desk']
+    return [
+      'students studying classroom exam preparation',
+      'library books study desk',
+    ]
   }
   if (/\b(temple|trust|darshan|donation\s+portal)\b/.test(p)) {
-    return ['indian temple architecture exterior', 'temple lamp prayer ceremony']
+    return [
+      'indian temple architecture exterior',
+      'temple lamp prayer ceremony',
+    ]
   }
   if (/\b(nbfc|gold\s+loan|mutual\s+fund|insurance|fintech|upi)\b/.test(p)) {
-    return ['financial planning desk calculator', 'mobile banking smartphone secure']
+    return [
+      'financial planning desk calculator',
+      'mobile banking smartphone secure',
+    ]
   }
   if (
     /\b(bharatanatyam|kathak|odissi|kuchipudi|kathakali|mohiniyattam|manipuri|sattriya|arangetram|classical dance|nritya|natya)\b/.test(
@@ -533,14 +610,22 @@ function queriesForVisualPhrase(phrase, typed = 'landing', prompt = '') {
       'odissi dance pose temple sculpture aesthetic',
     ]
   }
-  if (/\b(garba|dandiya|navratri|bhangra|lavani|bihu|ghoomar|folk dance)\b/.test(p)) {
+  if (
+    /\b(garba|dandiya|navratri|bhangra|lavani|bihu|ghoomar|folk dance)\b/.test(
+      p,
+    )
+  ) {
     return [
       'indian folk dance festival colorful attire',
       'garba dancers traditional celebration',
       'bhangra dance celebration punjab',
     ]
   }
-  if (/\b(handloom|khadi|madhubani|warli|handicraft|weaving|loom|block print)\b/.test(p)) {
+  if (
+    /\b(handloom|khadi|madhubani|warli|handicraft|weaving|loom|block print)\b/.test(
+      p,
+    )
+  ) {
     return [
       'handloom weaving textile india artisan',
       'madhubani folk art painting india',
@@ -554,7 +639,11 @@ function queriesForVisualPhrase(phrase, typed = 'landing', prompt = '') {
       'sitar musician traditional instrument',
     ]
   }
-  if (/\b(museum|heritage walk|cultural centre|cultural center|monument tour)\b/.test(p)) {
+  if (
+    /\b(museum|heritage walk|cultural centre|cultural center|monument tour)\b/.test(
+      p,
+    )
+  ) {
     return [
       'india museum heritage gallery exhibition',
       'historical monument india tourism architecture',
@@ -590,7 +679,10 @@ function queriesForVisualPhrase(phrase, typed = 'landing', prompt = '') {
     return ['protein bar healthy snack product', 'healthy protein snack pack']
   }
   if (/\b(millet snacks?|millet)\b/.test(p)) {
-    return ['millet crackers healthy snack product', 'millet snack pack close up']
+    return [
+      'millet crackers healthy snack product',
+      'millet snack pack close up',
+    ]
   }
   if (/\b(baked snacks?|chips)\b/.test(p)) {
     return ['baked chips healthy snack product', 'veggie chips snack pack']
@@ -619,7 +711,10 @@ function queriesForVisualPhrase(phrase, typed = 'landing', prompt = '') {
   if (/\b(snacks?|wellness)\b/.test(p)) {
     return ['healthy packaged snack product', 'friends sharing healthy snacks']
   }
-  if (/\b(store|showroom|boutique)\b/.test(p) && FASHION_PROMPT_RE.test(source)) {
+  if (
+    /\b(store|showroom|boutique)\b/.test(p) &&
+    FASHION_PROMPT_RE.test(source)
+  ) {
     return ['indian fashion boutique interior', 'luxury boutique showroom']
   }
   if (/\b(saree|silk)\b/.test(p)) {
@@ -632,7 +727,10 @@ function queriesForVisualPhrase(phrase, typed = 'landing', prompt = '') {
     return ['indian lehenga model portrait', 'bridal lehenga fashion editorial']
   }
   if (/\b(salwar|kurta|ethnic wear|traditional outfits?)\b/.test(p)) {
-    return ['indian ethnic wear fashion model', 'traditional outfit editorial portrait']
+    return [
+      'indian ethnic wear fashion model',
+      'traditional outfit editorial portrait',
+    ]
   }
   if (/\b(men.?s ethnic wear|sherwani)\b/.test(p)) {
     return ['indian man sherwani portrait', 'mens ethnic wear fashion']
@@ -705,7 +803,10 @@ function themedQueries(prompt) {
     ]
 
     if (/\b(bridal|bride|wedding)\b/.test(p)) {
-      queries.unshift('indian bridal fashion model', 'south indian bridal saree jewelry')
+      queries.unshift(
+        'indian bridal fashion model',
+        'south indian bridal saree jewelry',
+      )
     }
 
     if (/\b(saree|sari|silk)\b/.test(p)) {
@@ -764,7 +865,11 @@ function themedQueries(prompt) {
       'beach sunset travel vacation',
     ]).slice(0, MAX_REQUESTS)
   }
-  if (/\b(hospital|multispeciality|multi-speciality|clinic|diagnostics|pathology)\b/.test(p)) {
+  if (
+    /\b(hospital|multispeciality|multi-speciality|clinic|diagnostics|pathology)\b/.test(
+      p,
+    )
+  ) {
     return uniqueValues([
       'modern hospital building healthcare',
       'doctor patient consultation clinic room',
@@ -789,7 +894,9 @@ function themedQueries(prompt) {
       'industrial solar panel array field',
     ]).slice(0, MAX_REQUESTS)
   }
-  if (/\b(logistics|warehouse|3pl|freight|fulfillment|cold storage)\b/.test(p)) {
+  if (
+    /\b(logistics|warehouse|3pl|freight|fulfillment|cold storage)\b/.test(p)
+  ) {
     return uniqueValues([
       'warehouse interior pallets forklift',
       'shipping container port crane',
@@ -797,7 +904,9 @@ function themedQueries(prompt) {
       'logistics hub distribution center',
     ]).slice(0, MAX_REQUESTS)
   }
-  if (/\b(coaching|jee|neet|upsc|psc|academy|tuition|school|college)\b/.test(p)) {
+  if (
+    /\b(coaching|jee|neet|upsc|psc|academy|tuition|school|college)\b/.test(p)
+  ) {
     return uniqueValues([
       'students classroom studying india',
       'library books exam preparation',
@@ -840,7 +949,11 @@ function themedQueries(prompt) {
       'luxury living room interior design',
     ]).slice(0, MAX_REQUESTS)
   }
-  if (/\b(nbfc|gold loan|lending|mutual fund|insurance|fintech|upi|wealth)\b/.test(p)) {
+  if (
+    /\b(nbfc|gold loan|lending|mutual fund|insurance|fintech|upi|wealth)\b/.test(
+      p,
+    )
+  ) {
     return uniqueValues([
       'financial planning documents desk',
       'mobile banking app smartphone hand',
@@ -868,7 +981,11 @@ function themedQueries(prompt) {
       'traditional indian dance stage lighting',
     ]).slice(0, MAX_REQUESTS)
   }
-  if (/\b(garba|dandiya|navratri|bhangra|lavani|bihu|ghoomar|folk dance)\b/.test(p)) {
+  if (
+    /\b(garba|dandiya|navratri|bhangra|lavani|bihu|ghoomar|folk dance)\b/.test(
+      p,
+    )
+  ) {
     return uniqueValues([
       'garba night traditional dress india',
       'dandiya sticks dance festival',
@@ -910,7 +1027,9 @@ function buildQueries({ prompt, ctx, siteSpec, maxQueries }) {
   const subjectFirst = themedQueries(prompt || '')
   const typed = inferVisualSiteType(prompt || '', ctx, siteSpec)
   const salientRaw = extractSalientPhrases(prompt || '', 3)
-  const salientQueries = salientRaw.flatMap((phrase) => salientSearchQueries(phrase, typed, prompt))
+  const salientQueries = salientRaw.flatMap((phrase) =>
+    salientSearchQueries(phrase, typed, prompt),
+  )
 
   const core = phraseFromPrompt(prompt || '', 6)
   const extracted = extractVisualPhrases(prompt || '')
@@ -931,7 +1050,8 @@ function buildQueries({ prompt, ctx, siteSpec, maxQueries }) {
   const pn = ctx?.project_name
   if (pn && String(pn).trim()) {
     const n = normalizeText(pn)
-    if (isVisualPhrase(n)) fromProject.push(...queriesForVisualPhrase(n, typed, prompt))
+    if (isVisualPhrase(n))
+      fromProject.push(...queriesForVisualPhrase(n, typed, prompt))
     else fromProject.push(`${n.slice(0, 48)} brand photography`)
   }
   if (ctx?.tagline) {
@@ -946,14 +1066,22 @@ function buildQueries({ prompt, ctx, siteSpec, maxQueries }) {
     Array.isArray(siteSpec?.pages) && siteSpec.pages.length
       ? siteSpec.pages
           .slice(0, 4)
-          .map((page) => [page?.title, page?.name, page?.description].filter(Boolean).join(' '))
+          .map((page) =>
+            [page?.title, page?.name, page?.description]
+              .filter(Boolean)
+              .join(' '),
+          )
           .filter(Boolean)
           .flatMap((line) =>
-            extractVisualPhrases(line).flatMap((ph) => queriesForVisualPhrase(ph, typed, prompt)),
+            extractVisualPhrases(line).flatMap((ph) =>
+              queriesForVisualPhrase(ph, typed, prompt),
+            ),
           )
       : []
 
-  const extras = isVisualPhrase(core) ? queriesForVisualPhrase(core, typed, prompt) : []
+  const extras = isVisualPhrase(core)
+    ? queriesForVisualPhrase(core, typed, prompt)
+    : []
   if (typed === 'ecommerce') extras.push('product on white background minimal')
   if (typed === 'portfolio') extras.push('creative work detail close up')
 
@@ -1023,7 +1151,11 @@ async function fetchPexelsPhotos(
         alt: alt || query,
         matchText,
       }
-      if (!isUsablePhoto(candidate, subjectKey) || !hasRelevantQueryMatch(candidate)) continue
+      if (
+        !isUsablePhoto(candidate, subjectKey) ||
+        !hasRelevantQueryMatch(candidate)
+      )
+        continue
       out.push(candidate)
       if (out.length >= keep) break
     }
@@ -1065,12 +1197,16 @@ async function fetchUnsplashPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
       const id = String(photo?.id || '').trim()
       if (!id) continue
 
-      const alt = String(photo?.alt_description || photo?.description || '').trim()
+      const alt = String(
+        photo?.alt_description || photo?.description || '',
+      ).trim()
       const slug = String(photo?.slug || '')
         .trim()
         .replace(/-/g, ' ')
       const matchText = [alt, slug].filter(Boolean).join(' ').trim()
-      const regularUrl = formatUnsplashUrl(photo?.urls?.regular || photo?.urls?.raw)
+      const regularUrl = formatUnsplashUrl(
+        photo?.urls?.regular || photo?.urls?.raw,
+      )
       const rawUrl = formatUnsplashUrl(photo?.urls?.raw || photo?.urls?.regular)
       if (!regularUrl) continue
 
@@ -1085,7 +1221,11 @@ async function fetchUnsplashPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
         matchText,
       }
 
-      if (!isUsablePhoto(candidate, subjectKey) || !hasRelevantQueryMatch(candidate)) continue
+      if (
+        !isUsablePhoto(candidate, subjectKey) ||
+        !hasRelevantQueryMatch(candidate)
+      )
+        continue
       out.push(candidate)
       if (out.length >= keep) break
     }
@@ -1098,7 +1238,12 @@ async function fetchUnsplashPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
   }
 }
 
-async function fetchPhotos(query, subjectKey, keep = KEEP_PER_QUERY, orientation = 'landscape') {
+async function fetchPhotos(
+  query,
+  subjectKey,
+  keep = KEEP_PER_QUERY,
+  orientation = 'landscape',
+) {
   if (!query || keep <= 0) return []
 
   const [pexels, unsplash] = await Promise.all([
@@ -1121,7 +1266,9 @@ async function fetchPhotos(query, subjectKey, keep = KEEP_PER_QUERY, orientation
 
 function pickBestVideoFile(files) {
   if (!Array.isArray(files) || !files.length) return null
-  const mp4 = files.filter((f) => String(f?.file_type || '').includes('mp4') && f?.link)
+  const mp4 = files.filter(
+    (f) => String(f?.file_type || '').includes('mp4') && f?.link,
+  )
   if (!mp4.length) return null
   const landscape = mp4.filter((f) => Number(f.width) >= Number(f.height))
   const pool = landscape.length ? landscape : mp4
@@ -1130,7 +1277,11 @@ function pickBestVideoFile(files) {
   return [...tier].sort((a, b) => Number(b.width) - Number(a.width))[0] || null
 }
 
-async function fetchPexelsVideos(query, subjectKey, keep = KEEP_VIDEOS_PER_QUERY) {
+async function fetchPexelsVideos(
+  query,
+  subjectKey,
+  keep = KEEP_VIDEOS_PER_QUERY,
+) {
   if (!query || !PEXELS_API_KEY || keep <= 0) return []
   const url = new URL(PEXELS_VIDEOS_API_URL)
   url.searchParams.set('query', query)
@@ -1169,7 +1320,11 @@ async function fetchPexelsVideos(query, subjectKey, keep = KEEP_VIDEOS_PER_QUERY
         alt: query,
         matchText: query,
       }
-      if (!isUsablePhoto(candidate, subjectKey) || !hasRelevantQueryMatch(candidate)) continue
+      if (
+        !isUsablePhoto(candidate, subjectKey) ||
+        !hasRelevantQueryMatch(candidate)
+      )
+        continue
       out.push(candidate)
       if (out.length >= keep) break
     }
@@ -1240,15 +1395,30 @@ export function mergeImageHintLists(primary, secondary) {
     if (!a.length) {
       const vOnly = mergeVideosLists(va, [])
       return vOnly.length
-        ? { photos: [], videos: vOnly, promptBlock: toMediaPromptBlock([], vOnly), ...meta }
+        ? {
+            photos: [],
+            videos: vOnly,
+            promptBlock: toMediaPromptBlock([], vOnly),
+            ...meta,
+          }
         : { photos: [], videos: [], promptBlock: '', ...meta }
     }
     const vm = mergeVideosLists(va, [])
-    return { photos: a, videos: vm, promptBlock: toMediaPromptBlock(a, vm), ...meta }
+    return {
+      photos: a,
+      videos: vm,
+      promptBlock: toMediaPromptBlock(a, vm),
+      ...meta,
+    }
   }
   if (!a.length) {
     const vm = mergeVideosLists([], vb)
-    return { photos: b, videos: vm, promptBlock: toMediaPromptBlock(b, vm), ...meta }
+    return {
+      photos: b,
+      videos: vm,
+      promptBlock: toMediaPromptBlock(b, vm),
+      ...meta,
+    }
   }
   const seen = new Set()
   const merged = []
@@ -1259,7 +1429,12 @@ export function mergeImageHintLists(primary, secondary) {
     if (merged.length >= 18) break
   }
   const vm = mergeVideosLists(va, vb)
-  return { photos: merged, videos: vm, promptBlock: toMediaPromptBlock(merged, vm), ...meta }
+  return {
+    photos: merged,
+    videos: vm,
+    promptBlock: toMediaPromptBlock(merged, vm),
+    ...meta,
+  }
 }
 
 function chooseBestPhotoForLabel(label, photos, usage) {
@@ -1339,7 +1514,8 @@ function isKnownStockCdnUrl(url) {
 function responseLooksLikeImage(res, url) {
   const ct = String(res.headers.get('content-type') || '').toLowerCase()
   if (ct.includes('image/')) return true
-  if (ct.includes('application/octet-stream') && isKnownStockCdnUrl(url)) return true
+  if (ct.includes('application/octet-stream') && isKnownStockCdnUrl(url))
+    return true
   return false
 }
 
@@ -1347,7 +1523,11 @@ async function fetchUrlProbe(u, init) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 5000)
   try {
-    return await fetch(u, { ...init, signal: controller.signal, redirect: 'follow' })
+    return await fetch(u, {
+      ...init,
+      signal: controller.signal,
+      redirect: 'follow',
+    })
   } finally {
     clearTimeout(timeout)
   }
@@ -1360,7 +1540,8 @@ async function isImageUrlHealthy(url, { attempt = 0 } = {}) {
 
   const probes = [
     () => fetchUrlProbe(u, { method: 'HEAD' }),
-    () => fetchUrlProbe(u, { method: 'GET', headers: { Range: 'bytes=0-2047' } }),
+    () =>
+      fetchUrlProbe(u, { method: 'GET', headers: { Range: 'bytes=0-2047' } }),
     () => fetchUrlProbe(u, { method: 'GET', headers: { Range: 'bytes=0-0' } }),
   ]
 
@@ -1428,14 +1609,20 @@ function replaceVideoMp4Url(block, url) {
       tag.replace(/\bsrc\s*=\s*["'][^"']*["']/i, `src="${url}"`),
     )
   }
-  return next.replace(/^<video\b[^>]*>/i, (tag) => `${tag}<source src="${url}" type="video/mp4">`)
+  return next.replace(
+    /^<video\b[^>]*>/i,
+    (tag) => `${tag}<source src="${url}" type="video/mp4">`,
+  )
 }
 
 function applyVideoPoster(block, posterUrl) {
   if (!posterUrl) return block
   const open = block.match(/^<video\b[^>]*/i)?.[0] || ''
   if (/\bposter\s*=/i.test(open)) {
-    return block.replace(/\bposter\s*=\s*["'][^"']*["']/i, `poster="${posterUrl}"`)
+    return block.replace(
+      /\bposter\s*=\s*["'][^"']*["']/i,
+      `poster="${posterUrl}"`,
+    )
   }
   return block.replace(/^<video\b/i, `<video poster="${posterUrl}"`)
 }
@@ -1510,7 +1697,8 @@ export const normalizeStockImageMatchKey = (src) => {
       const id = path.match(/\/photos\/(\d+)\//)?.[1]
       if (id) return `pexels:${id}`
     }
-    if (h === 'images.unsplash.com' || h.endsWith('.unsplash.com')) return path.toLowerCase()
+    if (h === 'images.unsplash.com' || h.endsWith('.unsplash.com'))
+      return path.toLowerCase()
     if (looksLikeTrustedStockImageUrl(s)) return path.toLowerCase()
     return ''
   } catch {
@@ -1523,7 +1711,10 @@ function injectDataSfStockSrc(tag, url) {
   if (!key) return tag
   const esc = escapeHtmlAttribute(key)
   if (/\bdata-sf-stock-src\s*=/i.test(tag)) {
-    return tag.replace(/\bdata-sf-stock-src\s*=\s*["'][^"']*["']/i, `data-sf-stock-src="${esc}"`)
+    return tag.replace(
+      /\bdata-sf-stock-src\s*=\s*["'][^"']*["']/i,
+      `data-sf-stock-src="${esc}"`,
+    )
   }
   return tag.replace(/<img\b/i, `<img data-sf-stock-src="${esc}" `)
 }
@@ -1531,7 +1722,10 @@ function injectDataSfStockSrc(tag, url) {
 function isLikelyLogoTag(tag) {
   const cls = extractAttribute(tag, 'class')
   const alt = extractAttribute(tag, 'alt')
-  if (/\blogo\b/i.test(alt) || /\blogo\b|brand-mark|navbar-brand|site-logo|footer-brand/i.test(cls))
+  if (
+    /\blogo\b/i.test(alt) ||
+    /\blogo\b|brand-mark|navbar-brand|site-logo|footer-brand/i.test(cls)
+  )
     return true
   const w = extractAttribute(tag, 'width')
   const h = extractAttribute(tag, 'height')
@@ -1578,13 +1772,16 @@ function realignObjectImageUrls(html, photos, usage) {
   const pattern =
     /((?:"?(?:name|title)"?)\s*:\s*["'`])([^"'`]+)(["'`][\s\S]{0,240}?(?:"?image"?)\s*:\s*["'`])([^"'`]+)(["'`])/gi
 
-  return html.replace(pattern, (match, prefix, label, middle, currentUrl, suffix) => {
-    const best = pickPhotoForImg(label, photos, usage)
-    if (!best || best.url === currentUrl) return match
+  return html.replace(
+    pattern,
+    (match, prefix, label, middle, currentUrl, suffix) => {
+      const best = pickPhotoForImg(label, photos, usage)
+      if (!best || best.url === currentUrl) return match
 
-    usage.set(best.url, (usage.get(best.url) || 0) + 1)
-    return `${prefix}${label}${middle}${best.url}${suffix}`
-  })
+      usage.set(best.url, (usage.get(best.url) || 0) + 1)
+      return `${prefix}${label}${middle}${best.url}${suffix}`
+    },
+  )
 }
 
 export async function alignGeneratedImagesToContext(html, imageHints = null) {
@@ -1611,13 +1808,14 @@ export async function alignGeneratedImagesToContext(html, imageHints = null) {
 }
 
 const VERIFIED_FALLBACK_PEXELS_IDS = [
-  1152077, 1034812, 1446292, 1628239, 1670770, 1755386, 1855765, 2149475, 2036646, 3760772, 298863,
-  267320, 2983464,
+  1152077, 1034812, 1446292, 1628239, 1670770, 1755386, 1855765, 2149475,
+  2036646, 3760772, 298863, 267320, 2983464,
 ]
 
 const TEA_BEVERAGE_PEXELS_IDS = [
-  5946964, 5946965, 5946966, 5946967, 5946968, 5946969, 5946970, 5946971, 5946972, 5946973, 5946974,
-  5946975, 5946976, 5946977, 5946978, 5946979, 5946980, 5946981, 5946982, 5946983, 5946985,
+  5946964, 5946965, 5946966, 5946967, 5946968, 5946969, 5946970, 5946971,
+  5946972, 5946973, 5946974, 5946975, 5946976, 5946977, 5946978, 5946979,
+  5946980, 5946981, 5946982, 5946983, 5946985,
 ]
 
 const HYDRATION_MATCH_BLOB = {
@@ -1638,8 +1836,14 @@ function detectHydrationRetailCategory(prompt = '') {
     )
   )
     return 'tea'
-  if (/\b(coffee|espresso|latte|cappuccino|roast|arabica|coffee beans?)\b/i.test(p)) return 'coffee'
-  if (/\b(leather|wallet|tote|handbag|satchel|accessories)\b/i.test(p)) return 'leather'
+  if (
+    /\b(coffee|espresso|latte|cappuccino|roast|arabica|coffee beans?)\b/i.test(
+      p,
+    )
+  )
+    return 'coffee'
+  if (/\b(leather|wallet|tote|handbag|satchel|accessories)\b/i.test(p))
+    return 'leather'
   if (TRAVEL_PROMPT_RE.test(p)) return 'travel'
   return 'generic'
 }
@@ -1674,7 +1878,10 @@ function buildSyntheticFallbackPhotos(category) {
 }
 
 function escapeHtmlAttribute(value = '') {
-  return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
 }
 
 function stockPhotosForHydration(imageHints = null) {
@@ -1684,12 +1891,18 @@ function stockPhotosForHydration(imageHints = null) {
   if (Array.isArray(fromApi) && fromApi.length) {
     if (cat === 'travel' && fromApi.length < 6) {
       return [...fromApi, ...buildSyntheticFallbackPhotos('travel')].filter(
-        (photo, index, list) => list.findIndex((item) => item.url === photo.url) === index,
+        (photo, index, list) =>
+          list.findIndex((item) => item.url === photo.url) === index,
       )
     }
     return fromApi
   }
-  if (cat === 'tea' || cat === 'coffee' || cat === 'leather' || cat === 'travel') {
+  if (
+    cat === 'tea' ||
+    cat === 'coffee' ||
+    cat === 'leather' ||
+    cat === 'travel'
+  ) {
     return buildSyntheticFallbackPhotos(cat)
   }
   return buildSyntheticFallbackPhotos(cat)
@@ -1698,10 +1911,16 @@ function stockPhotosForHydration(imageHints = null) {
 function repairMalformedTailwindClasses(html) {
   if (!html || typeof html !== 'string') return html
   let next = html.replace(/\bclassrelative\b/g, 'class="relative"')
-  next = next.replace(/\bclass\s*=\s*(["'])([^"']*)\1/g, (full, quote, classes) => {
-    const fixed = classes.replace(/\s+\/\d+\b/g, '').replace(/\s{2,}/g, ' ').trim()
-    return fixed === classes ? full : `class=${quote}${fixed}${quote}`
-  })
+  next = next.replace(
+    /\bclass\s*=\s*(["'])([^"']*)\1/g,
+    (full, quote, classes) => {
+      const fixed = classes
+        .replace(/\s+\/\d+\b/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim()
+      return fixed === classes ? full : `class=${quote}${fixed}${quote}`
+    },
+  )
   return next
 }
 
@@ -1712,13 +1931,18 @@ function isDecorativeGradientBlob(attrs = '', inner = '') {
   const cls = attrs.match(/\bclass\s*=\s*["']([^"']*)["']/i)?.[1] || ''
   if (!/\bbg-gradient-to/i.test(cls)) return false
   if (DECORATIVE_GRADIENT_CLASS_RE.test(cls)) return true
-  if (/\bblur-3xl\b/.test(cls) && !/<h[1-4]\b/i.test(inner) && inner.replace(/<[^>]+>/g, '').trim().length < 24)
+  if (
+    /\bblur-3xl\b/.test(cls) &&
+    !/<h[1-4]\b/i.test(inner) &&
+    inner.replace(/<[^>]+>/g, '').trim().length < 24
+  )
     return true
   return false
 }
 
 function stripDecorativeGradientMedia(html) {
-  if (!html || typeof html !== 'string' || !/\bbg-gradient-to/i.test(html)) return html
+  if (!html || typeof html !== 'string' || !/\bbg-gradient-to/i.test(html))
+    return html
   return html.replace(
     /(<(?:div|article)\b([^>]*\bbg-gradient-to[^>]*)>)([\s\S]*?)(<\/(?:div|article)>)/gi,
     (full, open, attrs, inner, close) => {
@@ -1739,7 +1963,8 @@ function sectionHasVisibleHeroMedia(body = '') {
   let m
   while ((m = imgRe.exec(body)) !== null) {
     const before = body.slice(Math.max(0, m.index - 420), m.index)
-    if (!/\b(?:h-1|h-px|h-0\b|blur-3xl|blur-2xl)\b[^>]{0,220}$/i.test(before)) return true
+    if (!/\b(?:h-1|h-px|h-0\b|blur-3xl|blur-2xl)\b[^>]{0,220}$/i.test(before))
+      return true
   }
   return false
 }
@@ -1766,11 +1991,19 @@ function sanitizeStockImageTags(html) {
       )
       .join(' ')
       .trim()
-    const withCover = /\bobject-cover\b/i.test(cleaned) ? cleaned : `${cleaned} object-cover block`.trim()
+    const withCover = /\bobject-cover\b/i.test(cleaned)
+      ? cleaned
+      : `${cleaned} object-cover block`.trim()
     if (withCover !== cls) {
-      next = next.replace(/\bclass\s*=\s*["'][^"']*["']/i, `class="${withCover}"`)
+      next = next.replace(
+        /\bclass\s*=\s*["'][^"']*["']/i,
+        `class="${withCover}"`,
+      )
     } else if (!/\bobject-cover\b/i.test(cls)) {
-      next = next.replace(/\bclass\s*=\s*(["'])/i, (m, q) => `class=${q}object-cover block `)
+      next = next.replace(
+        /\bclass\s*=\s*(["'])/i,
+        (m, q) => `class=${q}object-cover block `,
+      )
     }
     const src = extractAttribute(next, 'src')
     if (src && /^pexels:\d+$/i.test(src.trim())) {
@@ -1785,7 +2018,9 @@ function ensureHeroSectionMedia(html, imageHints = null) {
   if (!html || !/\bmin-h-(?:screen|\[)/i.test(html)) return html
   const photos = stockPhotosForHydration(imageHints)
   if (!photos.length) return html
-  const prompt = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? 'hero editorial')
+  const prompt = String(
+    imageHints?.hydrationPrompt ?? imageHints?.prompt ?? 'hero editorial',
+  )
   const usage = new Map()
 
   return html.replace(
@@ -1796,10 +2031,15 @@ function ensureHeroSectionMedia(html, imageHints = null) {
       const heroUrl = pick?.url
       if (!heroUrl) return full
       usage.set(heroUrl, (usage.get(heroUrl) || 0) + 1)
-      const alt = escapeHtmlAttribute(pick.alt || extractPromptVisualCore(prompt, 5) || 'Hero image')
+      const alt = escapeHtmlAttribute(
+        pick.alt || extractPromptVisualCore(prompt, 5) || 'Hero image',
+      )
       const media = `<div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-2xl"><img src="${heroUrl}" alt="${alt}" class="w-full h-full object-cover" loading="eager" decoding="async" /></div>`
 
-      if (/<(?:pre|code)\b/i.test(body) || /overflow-auto\s+max-h/i.test(body)) {
+      if (
+        /<(?:pre|code)\b/i.test(body) ||
+        /overflow-auto\s+max-h/i.test(body)
+      ) {
         const replaced = body.replace(
           /<div class="[^"]*(?:overflow-auto|max-h-\d+|font-mono)[^"]*"[\s\S]*?<\/div>/i,
           media,
@@ -1820,7 +2060,8 @@ function isEmptyArtSurfaceInner(inner) {
   return !stripped || !/<(?:img|video|picture|svg|iframe)\b/i.test(stripped)
 }
 
-const ART_SURFACE_OPEN_RE = /<div\b([^>]*\bdata-visual=["']art-surface["'][^>]*)>/gi
+const ART_SURFACE_OPEN_RE =
+  /<div\b([^>]*\bdata-visual=["']art-surface["'][^>]*)>/gi
 
 function replaceArtSurfaceDivBlocks(html, onMatch) {
   const openRe = new RegExp(ART_SURFACE_OPEN_RE.source, 'gi')
@@ -1864,14 +2105,21 @@ function replaceArtSurfaceDivBlocks(html, onMatch) {
 }
 
 function hydrateArtSurfaceSlots(html, imageHints = null) {
-  if (!html || typeof html !== 'string' || !/\bdata-visual=["']art-surface["']/i.test(html)) return html
+  if (
+    !html ||
+    typeof html !== 'string' ||
+    !/\bdata-visual=["']art-surface["']/i.test(html)
+  )
+    return html
   const photos = stockPhotosForHydration(imageHints)
   const videos = Array.isArray(imageHints?.videos) ? imageHints.videos : []
   const usage = new Map()
 
   return replaceArtSurfaceDivBlocks(html, (attrs, inner) => {
     if (!isEmptyArtSurfaceInner(inner)) return `<div${attrs}>${inner}</div>`
-    const kind = attrs.match(/\bdata-visual-kind=["']([^"']+)["']/i)?.[1] || 'editorial-spread'
+    const kind =
+      attrs.match(/\bdata-visual-kind=["']([^"']+)["']/i)?.[1] ||
+      'editorial-spread'
     if (/video|destination|cinematic|hero/i.test(kind)) {
       const video = videos[0] || TRAVEL_VIDEO_FALLBACK
       const poster = video.posterUrl ? ` poster="${video.posterUrl}"` : ''
@@ -1887,11 +2135,16 @@ function hydrateArtSurfaceSlots(html, imageHints = null) {
 }
 
 function hydrateHeroGradientBackgrounds(html, imageHints = null) {
-  if (!html || typeof html !== 'string' || !/\bbg-gradient-to/i.test(html)) return html
+  if (!html || typeof html !== 'string' || !/\bbg-gradient-to/i.test(html))
+    return html
   const photos = stockPhotosForHydration(imageHints)
   if (!photos.length) return html
   const usage = new Map()
-  const prompt = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? 'travel hero cinematic')
+  const prompt = String(
+    imageHints?.hydrationPrompt ??
+      imageHints?.prompt ??
+      'travel hero cinematic',
+  )
   const heroUrl = pickPhotoForImg(prompt, photos, usage)?.url ?? photos[0].url
 
   return html.replace(
@@ -1911,7 +2164,8 @@ function hydrateHeroGradientBackgrounds(html, imageHints = null) {
 }
 
 function hydrateGradientCardMedia(html, imageHints = null) {
-  if (!html || typeof html !== 'string' || !/\bbg-gradient-to/i.test(html)) return html
+  if (!html || typeof html !== 'string' || !/\bbg-gradient-to/i.test(html))
+    return html
   const photos = stockPhotosForHydration(imageHints)
   if (!photos.length) return html
   const usage = new Map()
@@ -1924,11 +2178,18 @@ function hydrateGradientCardMedia(html, imageHints = null) {
     /<(div|article)\b([^>]*\bbg-gradient-to[^>]*)>([\s\S]*?)<\/\1>/gi,
     (full, tag, attrs, inner) => {
       if (/<img\b/i.test(full)) return full
-      if (/footer-branding|data-sf-|sr-only|intro-media/i.test(full)) return full
+      if (/footer-branding|data-sf-|sr-only|intro-media/i.test(full))
+        return full
       if (isDecorativeGradientBlob(attrs, inner)) return full
       const label =
-        inner.match(/<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/i)?.[1]?.replace(/<[^>]+>/g, ' ').trim() ||
-        inner.match(/<p[^>]*>([\s\S]*?)<\/p>/i)?.[1]?.replace(/<[^>]+>/g, ' ').trim() ||
+        inner
+          .match(/<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/i)?.[1]
+          ?.replace(/<[^>]+>/g, ' ')
+          .trim() ||
+        inner
+          .match(/<p[^>]*>([\s\S]*?)<\/p>/i)?.[1]
+          ?.replace(/<[^>]+>/g, ' ')
+          .trim() ||
         promptFallback ||
         'featured image'
       const pick = pickPhotoForImg(label, photos, usage)
@@ -1937,7 +2198,9 @@ function hydrateGradientCardMedia(html, imageHints = null) {
       const alt = escapeHtmlAttribute(label.slice(0, 80) || 'Destination')
       const relAttrs = /\bclass\s*=/.test(attrs)
         ? attrs.replace(/\bclass\s*=\s*(["'])([^"']*)\1/, (_, q, cls) => {
-            const nextCls = cls.includes('relative') ? cls : `relative overflow-hidden ${cls}`
+            const nextCls = cls.includes('relative')
+              ? cls
+              : `relative overflow-hidden ${cls}`
             return `class=${q}${nextCls}${q}`
           })
         : `${attrs} class="relative overflow-hidden"`
@@ -1961,7 +2224,11 @@ function dedupeRedundantHeroSections(html) {
     if (/min-h-screen/i.test(block)) score += 3
     if (/<video\b/i.test(block)) score += 2
     if (/<img\b/i.test(block)) score += 1
-    if (/\bdata-visual=["']art-surface["']/i.test(block) && !/<(?:video|img)\b/i.test(block)) score -= 2
+    if (
+      /\bdata-visual=["']art-surface["']/i.test(block) &&
+      !/<(?:video|img)\b/i.test(block)
+    )
+      score -= 2
     if (score > bestScore) {
       bestScore = score
       keepIndex = i
@@ -1972,7 +2239,9 @@ function dedupeRedundantHeroSections(html) {
   for (let i = heroes.length - 1; i >= 0; i--) {
     if (i === keepIndex) continue
     const block = heroes[i][0]
-    next = next.slice(0, heroes[i].index) + next.slice(heroes[i].index + block.length)
+    next =
+      next.slice(0, heroes[i].index) +
+      next.slice(heroes[i].index + block.length)
   }
   return next
 }
@@ -2064,21 +2333,29 @@ const DATA_IMG_INTENT_TOKENS = new Set([
 
 const PORTRAIT_MATCH_RE =
   /\b(portrait|headshot|face|person|people|businessman|businesswoman|professional|executive|model|smiling)\b/i
-const LOGO_MATCH_RE = /\b(logo|brand|symbol|icon|typography|minimal|abstract|monogram)\b/i
+const LOGO_MATCH_RE =
+  /\b(logo|brand|symbol|icon|typography|minimal|abstract|monogram)\b/i
 const UI_MATCH_RE =
   /\b(dashboard|screen|interface|analytics|software|ui|app|data visualization|chart|monitor|workspace)\b/i
 const TECH_DESK_RE =
   /\b(laptop|macbook|computer|coding|programmer|developer|office desk|keyboard|monitor display)\b/i
-const MEDIA_MATCH_RE = /\b(magazine|award|trophy|badge|certificate|media|publication|newspaper|editorial)\b/i
+const MEDIA_MATCH_RE =
+  /\b(magazine|award|trophy|badge|certificate|media|publication|newspaper|editorial)\b/i
 
 function extractPromptVisualCore(promptCtx = '', maxWords = 5) {
-  const words = tokenizeForMatch(promptCtx).filter((w) => !LOW_SIGNAL_QUERY_WORDS.has(w))
+  const words = tokenizeForMatch(promptCtx).filter(
+    (w) => !LOW_SIGNAL_QUERY_WORDS.has(w),
+  )
   return words.slice(0, maxWords).join(' ')
 }
 
 function inferDomainTermsFromPrompt(prompt = '') {
   const p = normalizeText(prompt)
-  if (/\b(ai|artificial intelligence|machine learning|ml|llm|neural|cognitive)\b/.test(p)) {
+  if (
+    /\b(ai|artificial intelligence|machine learning|ml|llm|neural|cognitive)\b/.test(
+      p,
+    )
+  ) {
     return 'artificial intelligence technology innovation'
   }
   if (/\b(startup|saas|software|platform|cloud|api|tech)\b/.test(p)) {
@@ -2099,26 +2376,46 @@ function inferDomainTermsFromPrompt(prompt = '') {
 function semanticDataImgTokens(subject = '') {
   const tokens = tokenizeForMatch(String(subject).replace(/-/g, ' '))
   return tokens.filter(
-    (t) => DATA_IMG_INTENT_TOKENS.has(t) || (t.length > 4 && !FAKE_NAME_TOKENS.has(t)),
+    (t) =>
+      DATA_IMG_INTENT_TOKENS.has(t) ||
+      (t.length > 4 && !FAKE_NAME_TOKENS.has(t)),
   )
 }
 
 function parseDataImgIntent(subject = '', classes = '') {
   const s = normalizeText(String(subject).replace(/-/g, ' '))
   const cls = normalizeText(classes)
-  const smallSquare = /\bw-(?:8|10|12|16|20|24)\b/.test(cls) && /\bh-(?:8|10|12|16|20|24)\b/.test(cls)
+  const smallSquare =
+    /\bw-(?:8|10|12|16|20|24)\b/.test(cls) &&
+    /\bh-(?:8|10|12|16|20|24)\b/.test(cls)
   const isRound = /\brounded-full\b/.test(cls)
 
   if (
-    /\b(headshot|portrait|avatar|profile|team member|founder|ceo|testimonial|investor)\b/.test(s) ||
+    /\b(headshot|portrait|avatar|profile|team member|founder|ceo|testimonial|investor)\b/.test(
+      s,
+    ) ||
     (smallSquare && isRound)
   )
     return 'headshot'
-  if (/\b(logo|brand mark|wordmark|icon)\b/.test(s) || (smallSquare && !isRound)) return 'logo'
-  if (/\b(press|techcrunch|forbes|wired|nytimes|bloomberg|guardian|media outlet)\b/.test(s))
+  if (
+    /\b(logo|brand mark|wordmark|icon)\b/.test(s) ||
+    (smallSquare && !isRound)
+  )
+    return 'logo'
+  if (
+    /\b(press|techcrunch|forbes|wired|nytimes|bloomberg|guardian|media outlet)\b/.test(
+      s,
+    )
+  )
     return 'press'
-  if (/\b(award|badge|trophy|certified|gartner|fast company)\b/.test(s)) return 'award'
-  if (/\b(dashboard|interface|ui|screen|analytics|software|platform|app|saas)\b/.test(s)) return 'ui'
+  if (/\b(award|badge|trophy|certified|gartner|fast company)\b/.test(s))
+    return 'award'
+  if (
+    /\b(dashboard|interface|ui|screen|analytics|software|platform|app|saas)\b/.test(
+      s,
+    )
+  )
+    return 'ui'
   if (
     /\b(hero|banner|cover|background)\b/.test(s) ||
     /\b(?:aspect-\[21|aspect-video|min-h-\[)/.test(cls)
@@ -2150,9 +2447,12 @@ function buildDataImgSearchQuery(subject, intent, promptCtx) {
     case 'logo':
       return `minimal ${core || subjectPhrase || 'technology'} brand logo abstract`.trim()
     case 'press':
-      if (/\btechcrunch\b/.test(subject)) return `technology startup news media ${core}`.trim()
-      if (/\bforbes\b/.test(subject)) return 'business finance magazine publication logo'
-      if (/\bwired\b/.test(subject)) return 'technology magazine editorial media'
+      if (/\btechcrunch\b/.test(subject))
+        return `technology startup news media ${core}`.trim()
+      if (/\bforbes\b/.test(subject))
+        return 'business finance magazine publication logo'
+      if (/\bwired\b/.test(subject))
+        return 'technology magazine editorial media'
       if (/\bnytimes\b/.test(subject)) return 'newspaper news media editorial'
       return `business media publication ${core}`.trim()
     case 'award':
@@ -2164,34 +2464,54 @@ function buildDataImgSearchQuery(subject, intent, promptCtx) {
     case 'product':
       return `${subjectPhrase || core} product photography commercial`.trim()
     default:
-      return `${subjectPhrase} ${core} professional photography editorial`.trim().slice(0, 96)
+      return `${subjectPhrase} ${core} professional photography editorial`
+        .trim()
+        .slice(0, 96)
   }
 }
 
 function dataImgRelevanceScore(photo, label, intent, usageCount = 0) {
   let score = labelRelevanceScore(photo, label, usageCount)
   const matchText = normalizeText(
-    [photo?.query || '', photo?.alt || '', photo?.matchText || ''].filter(Boolean).join(' '),
+    [photo?.query || '', photo?.alt || '', photo?.matchText || '']
+      .filter(Boolean)
+      .join(' '),
   )
   const photoQuery = normalizeText(photo?.query || '')
   const labelCore = extractPromptVisualCore(label, 8)
-  if (photoQuery && overlapCount(queryMatchTokens(labelCore).core, photoQuery) > 0) score += 10
+  if (
+    photoQuery &&
+    overlapCount(queryMatchTokens(labelCore).core, photoQuery) > 0
+  )
+    score += 10
 
   if (intent === 'headshot') {
     if (PORTRAIT_MATCH_RE.test(matchText)) score += 18
-    if (TECH_DESK_RE.test(matchText) && !PORTRAIT_MATCH_RE.test(matchText)) score -= 24
-    if (PRODUCT_PHOTO_RE.test(matchText) && !PORTRAIT_MATCH_RE.test(matchText)) score -= 10
+    if (TECH_DESK_RE.test(matchText) && !PORTRAIT_MATCH_RE.test(matchText))
+      score -= 24
+    if (PRODUCT_PHOTO_RE.test(matchText) && !PORTRAIT_MATCH_RE.test(matchText))
+      score -= 10
   } else if (intent === 'logo') {
     if (LOGO_MATCH_RE.test(matchText)) score += 14
-    if (LIFESTYLE_PHOTO_RE.test(matchText) && !LOGO_MATCH_RE.test(matchText)) score -= 12
+    if (LIFESTYLE_PHOTO_RE.test(matchText) && !LOGO_MATCH_RE.test(matchText))
+      score -= 12
   } else if (intent === 'ui') {
     if (UI_MATCH_RE.test(matchText)) score += 18
-    if (/\b(nature|landscape|food|restaurant|beach|mountain|flower)\b/.test(matchText)) score -= 18
+    if (
+      /\b(nature|landscape|food|restaurant|beach|mountain|flower)\b/.test(
+        matchText,
+      )
+    )
+      score -= 18
   } else if (intent === 'press' || intent === 'award') {
     if (MEDIA_MATCH_RE.test(matchText)) score += 14
     if (PORTRAIT_MATCH_RE.test(matchText) && intent === 'award') score -= 8
   } else if (intent === 'hero') {
-    if (/\b(office|team|technology|innovation|startup|modern|workspace|city)\b/.test(matchText))
+    if (
+      /\b(office|team|technology|innovation|startup|modern|workspace|city)\b/.test(
+        matchText,
+      )
+    )
       score += 10
   } else if (intent === 'product') {
     if (PRODUCT_PHOTO_RE.test(matchText)) score += 12
@@ -2229,7 +2549,12 @@ async function prefetchDataImgPhotoCache(slots, promptCtx, subjectKey) {
   const entries = [...planned.values()].slice(0, MAX_DATA_IMG_FETCHES)
   await Promise.all(
     entries.map(async ({ query, orient }) => {
-      const list = await fetchPhotos(query, subjectKey, DATA_IMG_FETCH_KEEP, orient)
+      const list = await fetchPhotos(
+        query,
+        subjectKey,
+        DATA_IMG_FETCH_KEEP,
+        orient,
+      )
       if (list.length) cache.set(query, list)
     }),
   )
@@ -2254,10 +2579,20 @@ function mergePhotoPool(basePhotos = [], queryCache = new Map()) {
   return merged
 }
 
-function pickPhotoForDataImg(subject, intent, promptCtx, photos, queryCache, usage) {
+function pickPhotoForDataImg(
+  subject,
+  intent,
+  promptCtx,
+  photos,
+  queryCache,
+  usage,
+) {
   if (!photos.length) return null
   const query = buildDataImgSearchQuery(subject, intent, promptCtx)
-  const label = [semanticDataImgTokens(subject).join(' '), inferDomainTermsFromPrompt(promptCtx)]
+  const label = [
+    semanticDataImgTokens(subject).join(' '),
+    inferDomainTermsFromPrompt(promptCtx),
+  ]
     .filter(Boolean)
     .join(' ')
   const dedicated = queryCache.get(query) || []
@@ -2273,7 +2608,12 @@ function pickPhotoForDataImg(subject, intent, promptCtx, photos, queryCache, usa
   let best = null
   let bestScore = -Infinity
   for (const photo of deduped) {
-    const score = dataImgRelevanceScore(photo, label, intent, usage.get(photo.url) || 0)
+    const score = dataImgRelevanceScore(
+      photo,
+      label,
+      intent,
+      usage.get(photo.url) || 0,
+    )
     if (score > bestScore) {
       bestScore = score
       best = photo
@@ -2285,7 +2625,12 @@ function pickPhotoForDataImg(subject, intent, promptCtx, photos, queryCache, usa
     let dedicatedBest = dedicated[0]
     let dedicatedScore = -Infinity
     for (const photo of dedicated) {
-      const score = dataImgRelevanceScore(photo, label, intent, usage.get(photo.url) || 0)
+      const score = dataImgRelevanceScore(
+        photo,
+        label,
+        intent,
+        usage.get(photo.url) || 0,
+      )
       if (score > dedicatedScore) {
         dedicatedScore = score
         dedicatedBest = photo
@@ -2307,7 +2652,8 @@ function dataImgClassesForPhoto(rawClasses = '') {
     .trim()
   if (!cls) cls = 'w-full aspect-[4/3]'
   if (!/\bobject-cover\b/.test(cls)) cls = `${cls} object-cover`.trim()
-  if (!/\bblock\b/.test(cls) && !/\binline\b/.test(cls)) cls = `${cls} block`.trim()
+  if (!/\bblock\b/.test(cls) && !/\binline\b/.test(cls))
+    cls = `${cls} block`.trim()
   return cls
 }
 
@@ -2364,7 +2710,9 @@ export async function hydrateDataImgSlots(html, imageHints = null) {
   if (!/\bdata-img\s*=/.test(html)) return html
 
   const basePhotos = stockPhotosForHydration(imageHints)
-  const promptCtx = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '')
+  const promptCtx = String(
+    imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '',
+  )
   const subjectKey = subjectKeyFromPrompt(promptCtx)
   const slots = extractDataImgSlots(html, promptCtx)
   const queryCache = slots.length
@@ -2379,26 +2727,43 @@ export async function hydrateDataImgSlots(html, imageHints = null) {
     const classMatch = attrs.match(/\bclass\s*=\s*["']([^"']*)["']/i)
     const classes = dataImgClassesForPhoto(classMatch?.[1])
     const intent = parseDataImgIntent(subject, classMatch?.[1] ?? '', promptCtx)
-    const pick = pickPhotoForDataImg(subject, intent, promptCtx, photos, queryCache, usage)
+    const pick = pickPhotoForDataImg(
+      subject,
+      intent,
+      promptCtx,
+      photos,
+      queryCache,
+      usage,
+    )
     const url = pick?.url ?? photos[0].url
     usage.set(url, (usage.get(url) || 0) + 1)
-    const alt = escapeHtmlAttribute(String(subject).replace(/-/g, ' ').trim() || 'Photo')
+    const alt = escapeHtmlAttribute(
+      String(subject).replace(/-/g, ' ').trim() || 'Photo',
+    )
     const pexelsId = url.match(/\/photos\/(\d+)\//)?.[1]
     const stockAttr = pexelsId ? ` data-sf-stock-src="pexels:${pexelsId}"` : ''
-    const isHero = /\b(?:min-h-\[|h-\[|aspect-\[21|aspect-video|hero)\b/i.test(classes)
+    const isHero = /\b(?:min-h-\[|h-\[|aspect-\[21|aspect-video|hero)\b/i.test(
+      classes,
+    )
     const loading = isHero || intent === 'headshot' ? 'eager' : 'lazy'
     return `<img src="${url}" alt="${alt}" class="${escapeHtmlAttribute(classes)}" loading="${loading}" decoding="async"${stockAttr} />`
   })
 
   if (next !== html) {
-    next = next.replace(/<style[^>]*>[\s\S]*?\[data-img\][\s\S]*?<\/style>\s*/gi, '')
+    next = next.replace(
+      /<style[^>]*>[\s\S]*?\[data-img\][\s\S]*?<\/style>\s*/gi,
+      '',
+    )
   }
   return next
 }
 
 function injectStockHydrationCss(html) {
   if (!html || typeof html !== 'string') return html
-  const h = html.replace(/<style[^>]*\sdata-sf-stock-hydration[^>]*>[\s\S]*?<\/style>\s*/gi, '')
+  const h = html.replace(
+    /<style[^>]*\sdata-sf-stock-hydration[^>]*>[\s\S]*?<\/style>\s*/gi,
+    '',
+  )
   const block = `<style data-sf-stock-hydration>
 .hero-visual{background:transparent !important}
 .hero-visual img{width:100%;height:100%;min-height:260px;object-fit:cover;display:block;border-radius:inherit}
@@ -2425,32 +2790,38 @@ export function hydrateStorefrontGradientSlots(html, imageHints = null) {
   const usage = new Map()
   let next = html
 
-  next = next.replace(/<article\s+class="product-card"[^>]*>([\s\S]*?)<\/article>/gi, (block) => {
-    const h = block.match(/<h3[^>]*>([^<]*)</i)
-    const title = (h?.[1] ?? 'Product').trim()
-    const desc =
-      block.match(/class\s*=\s*["'][^"']*desc[^"']*["'][^>]*>([^<]*)</i)?.[1] ??
-      block.match(/<p[^>]*class\s*=\s*["'][^"']*desc[^"']*["'][^>]*>([^<]*)</i)?.[1] ??
-      ''
-    const label = [title, String(desc).trim()].filter(Boolean).join(' ')
-    const pick = pickPhotoForImg(label, photos, usage)
-    const url = pick?.url ?? photos[0].url
-    usage.set(url, (usage.get(url) || 0) + 1)
-    return block.replace(
-      /<div\s+class="img"[^>]*>\s*<\/div>/i,
-      `<img class="img" src="${url}" alt="${escapeHtmlAttribute(title)}" loading="lazy" decoding="async" width="800" height="600" />`,
-    )
-  })
+  next = next.replace(
+    /<article\s+class="product-card"[^>]*>([\s\S]*?)<\/article>/gi,
+    (block) => {
+      const h = block.match(/<h3[^>]*>([^<]*)</i)
+      const title = (h?.[1] ?? 'Product').trim()
+      const desc =
+        block.match(
+          /class\s*=\s*["'][^"']*desc[^"']*["'][^>]*>([^<]*)</i,
+        )?.[1] ??
+        block.match(
+          /<p[^>]*class\s*=\s*["'][^"']*desc[^"']*["'][^>]*>([^<]*)</i,
+        )?.[1] ??
+        ''
+      const label = [title, String(desc).trim()].filter(Boolean).join(' ')
+      const pick = pickPhotoForImg(label, photos, usage)
+      const url = pick?.url ?? photos[0].url
+      usage.set(url, (usage.get(url) || 0) + 1)
+      return block.replace(
+        /<div\s+class="img"[^>]*>\s*<\/div>/i,
+        `<img class="img" src="${url}" alt="${escapeHtmlAttribute(title)}" loading="lazy" decoding="async" width="800" height="600" />`,
+      )
+    },
+  )
 
   next = next.replace(
     /<article\s+class="collection-card"[^>]*>([\s\S]*?)<\/article>/gi,
     (block) => {
       const lab = block.match(/class="label"[^>]*>([^<]*)</i)
       const title = (lab?.[1] ?? 'Collection').trim()
-      const promptCtx = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(
-        0,
-        160,
-      )
+      const promptCtx = String(
+        imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '',
+      ).slice(0, 160)
       const label = [title, promptCtx].filter(Boolean).join(' ')
       const pick = pickPhotoForImg(label, photos, usage)
       const url = pick?.url ?? photos[0].url
@@ -2463,8 +2834,14 @@ export function hydrateStorefrontGradientSlots(html, imageHints = null) {
   )
 
   next = next.replace(/<div\s+class="hero-visual"[^>]*>\s*<\/div>/i, () => {
-    const hp = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(0, 220)
-    const pick = pickPhotoForImg(hp || 'hero product lifestyle editorial retail', photos, usage)
+    const hp = String(
+      imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '',
+    ).slice(0, 220)
+    const pick = pickPhotoForImg(
+      hp || 'hero product lifestyle editorial retail',
+      photos,
+      usage,
+    )
     const url = pick?.url ?? photos[0].url
     usage.set(url, (usage.get(url) || 0) + 1)
     return `<div class="hero-visual"><img src="${url}" alt="${escapeHtmlAttribute('Featured product')}" loading="eager" decoding="async" width="1200" height="900" /></div>`
@@ -2474,9 +2851,13 @@ export function hydrateStorefrontGradientSlots(html, imageHints = null) {
     /(<section[^>]*class="[^"]*materials[^"]*"[^>]*>)([\s\S]*?)(<\/section>)/i,
     (full, open, inner, close) => {
       if (!/<div\s+class="visual"[^>]*>\s*<\/div>/i.test(inner)) return full
-      const mp = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(0, 200)
+      const mp = String(
+        imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '',
+      ).slice(0, 200)
       const pick = pickPhotoForImg(
-        mp ? `${mp} materials craft ingredients story` : 'materials craft ingredients product',
+        mp
+          ? `${mp} materials craft ingredients story`
+          : 'materials craft ingredients product',
         photos,
         usage,
       )
@@ -2492,13 +2873,20 @@ export function hydrateStorefrontGradientSlots(html, imageHints = null) {
 
   if (photos.length) {
     let cvIdx = 0
-    next = next.replace(/<div\s+class="curated-visual"[^>]*>\s*<\/div>/gi, () => {
-      cvIdx += 1
-      const pick = pickPhotoForImg(`editorial lifestyle panel ${cvIdx} craft story`, photos, usage)
-      const url = pick?.url ?? photos[0].url
-      usage.set(url, (usage.get(url) || 0) + 1)
-      return `<div class="curated-visual"><img src="${url}" alt="" loading="eager" decoding="async" width="1200" height="800" /></div>`
-    })
+    next = next.replace(
+      /<div\s+class="curated-visual"[^>]*>\s*<\/div>/gi,
+      () => {
+        cvIdx += 1
+        const pick = pickPhotoForImg(
+          `editorial lifestyle panel ${cvIdx} craft story`,
+          photos,
+          usage,
+        )
+        const url = pick?.url ?? photos[0].url
+        usage.set(url, (usage.get(url) || 0) + 1)
+        return `<div class="curated-visual"><img src="${url}" alt="" loading="eager" decoding="async" width="1200" height="800" /></div>`
+      },
+    )
   }
 
   if (next !== html) next = injectStockHydrationCss(next)
@@ -2528,7 +2916,10 @@ function markTrustedStockImagesEager(html) {
 export function injectEcommerceHeroResponsiveCss(html) {
   if (!html || typeof html !== 'string') return html
   if (!/\bhero-left\b|class\s*=\s*["'][^"']*\bhero\b/i.test(html)) return html
-  const h = html.replace(/<style[^>]*\sdata-sf-hero-responsive[^>]*>[\s\S]*?<\/style>\s*/gi, '')
+  const h = html.replace(
+    /<style[^>]*\sdata-sf-hero-responsive[^>]*>[\s\S]*?<\/style>\s*/gi,
+    '',
+  )
   const block = `<style data-sf-hero-responsive>
 @media (max-width:900px){
 section.hero,.hero{align-items:center!important;text-align:center!important}
@@ -2574,8 +2965,12 @@ function mergeVideosFromOrderedSlots(slots) {
   return videos
 }
 
-export async function resolvePexelsImageHints(hintsInput = null, options = null) {
-  const onProgress = typeof options?.onProgress === 'function' ? options.onProgress : null
+export async function resolvePexelsImageHints(
+  hintsInput = null,
+  options = null,
+) {
+  const onProgress =
+    typeof options?.onProgress === 'function' ? options.onProgress : null
   const prompt = hintsInput?.prompt ?? ''
   const meta = {
     prompt,
@@ -2598,14 +2993,17 @@ export async function resolvePexelsImageHints(hintsInput = null, options = null)
     siteSpec: hintsInput?.siteSpec,
     maxQueries,
   })
-  if (!queries.length) return { photos: [], videos: [], promptBlock: '', ...meta }
+  if (!queries.length)
+    return { photos: [], videos: [], promptBlock: '', ...meta }
 
   const subjectKey = subjectKeyFromPrompt(prompt)
 
   const videoQueries = queries.slice(0, MAX_VIDEO_QUERIES)
   const photoSlots = new Array(queries.length).fill(null)
   const videoSlots =
-    PEXELS_API_KEY && videoQueries.length ? new Array(videoQueries.length).fill(null) : []
+    PEXELS_API_KEY && videoQueries.length
+      ? new Array(videoQueries.length).fill(null)
+      : []
 
   const emitProgressPartial = () => {
     if (!onProgress) return
@@ -2626,10 +3024,12 @@ export async function resolvePexelsImageHints(hintsInput = null, options = null)
   const videoTasks =
     PEXELS_API_KEY && videoQueries.length
       ? videoQueries.map((query, i) =>
-          fetchPexelsVideos(query, subjectKey, KEEP_VIDEOS_PER_QUERY).then((list) => {
-            videoSlots[i] = list || []
-            emitProgressPartial()
-          }),
+          fetchPexelsVideos(query, subjectKey, KEEP_VIDEOS_PER_QUERY).then(
+            (list) => {
+              videoSlots[i] = list || []
+              emitProgressPartial()
+            },
+          ),
         )
       : []
 

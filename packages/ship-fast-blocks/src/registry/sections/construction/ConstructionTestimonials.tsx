@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ConstructionTestimonials — star-rated client testimonials grid for a
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * props via baked-in defaults.
  */
 export const ConstructionTestimonials = defineComponent({
-  name: "ConstructionTestimonials",
+  name: 'ConstructionTestimonials',
   description:
-    "Star-rated client testimonials grid for a construction / general contractor page: a centered section heading above a responsive grid of quote cards, each with five star icons, a quote, an alt-driven avatar, and an attribution name+role. Use as a social-proof reviews section for construction firms, contractors, builders, or any service business.",
+    'Star-rated client testimonials grid for a construction / general contractor page: a centered section heading above a responsive grid of quote cards, each with five star icons, a quote, an alt-driven avatar, and an attribution name+role. Use as a social-proof reviews section for construction firms, contractors, builders, or any service business.',
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -37,8 +37,8 @@ export const ConstructionTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Testimonials"
-    const heading = props.heading ?? "What our clients say"
+    const eyebrow = props.eyebrow ?? 'Testimonials'
+    const heading = props.heading ?? 'What our clients say'
     const description =
       props.description ??
       "Don't just take our word for it. Here's feedback from clients we've had the privilege to work with."
@@ -47,43 +47,43 @@ export const ConstructionTestimonials = defineComponent({
       : [
           {
             quote:
-              "BuiltRight transformed our outdated office into a modern workspace that our team loves. They completed the project two weeks ahead of schedule and $15K under budget. Exceptional work.",
-            name: "David Chen",
-            role: "CEO, Pacific Tech Solutions",
+              'BuiltRight transformed our outdated office into a modern workspace that our team loves. They completed the project two weeks ahead of schedule and $15K under budget. Exceptional work.',
+            name: 'David Chen',
+            role: 'CEO, Pacific Tech Solutions',
             avatarAlt:
-              "Professional headshot of a smiling businessman in a navy suit",
+              'Professional headshot of a smiling businessman in a navy suit',
           },
           {
             quote:
-              "From the first meeting to the final walkthrough, BuiltRight exceeded our expectations. Our custom home is everything we dreamed of and more. The craftsmanship is outstanding.",
-            name: "Sarah Mitchell",
-            role: "Homeowner, Bainbridge Island",
+              'From the first meeting to the final walkthrough, BuiltRight exceeded our expectations. Our custom home is everything we dreamed of and more. The craftsmanship is outstanding.',
+            name: 'Sarah Mitchell',
+            role: 'Homeowner, Bainbridge Island',
             avatarAlt:
-              "Professional headshot of a smiling woman architect with dark hair",
+              'Professional headshot of a smiling woman architect with dark hair',
           },
           {
             quote:
-              "We hired BuiltRight for our restaurant renovation and they delivered a space that has completely transformed our business. Sales are up 40% since reopening. Worth every penny.",
-            name: "Marcus Rodriguez",
-            role: "Owner, Harvest Kitchen",
+              'We hired BuiltRight for our restaurant renovation and they delivered a space that has completely transformed our business. Sales are up 40% since reopening. Worth every penny.',
+            name: 'Marcus Rodriguez',
+            role: 'Owner, Harvest Kitchen',
             avatarAlt:
-              "Professional headshot of a smiling man chef with a beard wearing a white coat",
+              'Professional headshot of a smiling man chef with a beard wearing a white coat',
           },
           {
             quote:
-              "BuiltRight constructed our 48-unit apartment complex with zero safety incidents and impeccable quality. Their project management kept everything on track for our tight deadline.",
-            name: "Jennifer Walsh",
-            role: "Development Director, Walsh Properties",
+              'BuiltRight constructed our 48-unit apartment complex with zero safety incidents and impeccable quality. Their project management kept everything on track for our tight deadline.',
+            name: 'Jennifer Walsh',
+            role: 'Development Director, Walsh Properties',
             avatarAlt:
-              "Professional headshot of a smiling businesswoman with blonde hair wearing a blazer",
+              'Professional headshot of a smiling businesswoman with blonde hair wearing a blazer',
           },
           {
             quote:
-              "After a bad experience with another contractor, BuiltRight restored our faith in the construction industry. Honest, transparent, and delivered exactly what they promised.",
-            name: "Robert Thompson",
-            role: "Homeowner, Seattle",
+              'After a bad experience with another contractor, BuiltRight restored our faith in the construction industry. Honest, transparent, and delivered exactly what they promised.',
+            name: 'Robert Thompson',
+            role: 'Homeowner, Seattle',
             avatarAlt:
-              "Professional headshot of a smiling middle-aged man with glasses and gray hair",
+              'Professional headshot of a smiling middle-aged man with glasses and gray hair',
           },
         ]
 
@@ -101,7 +101,7 @@ export const ConstructionTestimonials = defineComponent({
     )
 
     return (
-      <section className={cn("bg-card py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -110,17 +110,12 @@ export const ConstructionTestimonials = defineComponent({
             <h2 className="mb-4 mt-3 text-3xl font-bold text-foreground sm:text-4xl">
               {heading}
             </h2>
-            <p className="text-lg text-muted-foreground">
-              {description}
-            </p>
+            <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((t) => (
-              <blockquote
-                key={t.name}
-                className="rounded-xl bg-muted p-8"
-              >
+              <blockquote key={t.name} className="rounded-xl bg-muted p-8">
                 <div className="mb-4 flex gap-1 text-primary">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} />

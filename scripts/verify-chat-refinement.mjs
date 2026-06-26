@@ -34,12 +34,16 @@ const session = convexRun('sessions:create', {
   anonymousClientId: `anon-verify-chat-${stamp}`,
 })
 const sessionId = session.sessionId
-assert(typeof sessionId === 'string', 'sessions:create did not return sessionId')
+assert(
+  typeof sessionId === 'string',
+  'sessions:create did not return sessionId',
+)
 
 convexRun('internal.sessions.completeGeneration', {
   sessionId,
   html: `<html><body><main><h1>Old headline</h1><a href="/start">Start now</a></main></body></html>`,
-  openUiSource: '$page = "Home"\nroot = Text("Old headline")\ncta = Button("Start now")',
+  openUiSource:
+    '$page = "Home"\nroot = Text("Old headline")\ncta = Button("Start now")',
   siteSpecJson: JSON.stringify({
     brand: 'Chat verifier',
     hero: { headline: 'Old headline', ctaLabel: 'Start now' },
@@ -61,7 +65,10 @@ const response = await requestJson(`/api/sessions/${sessionId}/chat`, {
   }),
 })
 assert(response.status === 200, `chat route returned ${response.status}`)
-assert(response.json.previewVersion === 2, 'chat route did not create preview version 2')
+assert(
+  response.json.previewVersion === 2,
+  'chat route did not create preview version 2',
+)
 if (expectAiPlan) {
   assert(response.json.usedAiPlan === true, 'chat route did not use an AI plan')
 } else {
@@ -72,9 +79,18 @@ if (expectAiPlan) {
 }
 
 const preview = convexRun('sessions:getPublicPreview', { lookup: sessionId })
-assert(preview.previewVersion === 2, 'public preview did not advance to version 2')
-assert(preview.html.includes(requestedHeadline), 'public preview did not include refined headline')
-assert(!preview.html.includes('Old headline'), 'public preview still included old headline')
+assert(
+  preview.previewVersion === 2,
+  'public preview did not advance to version 2',
+)
+assert(
+  preview.html.includes(requestedHeadline),
+  'public preview did not include refined headline',
+)
+assert(
+  !preview.html.includes('Old headline'),
+  'public preview still included old headline',
+)
 
 const view = convexRun('sessions:getGenerationView', { lookup: sessionId })
 assert(
@@ -92,9 +108,18 @@ assert(
 
 const messages = convexRun('sessions:listChatMessages', { sessionId })
 assert(Array.isArray(messages), 'chat messages response was not an array')
-assert(messages.length >= 2, 'chat route did not persist user and assistant messages')
-assert(messages.some((message) => message.role === 'user'), 'chat messages missing user row')
-assert(messages.some((message) => message.role === 'assistant'), 'chat messages missing assistant row')
+assert(
+  messages.length >= 2,
+  'chat route did not persist user and assistant messages',
+)
+assert(
+  messages.some((message) => message.role === 'user'),
+  'chat messages missing user row',
+)
+assert(
+  messages.some((message) => message.role === 'assistant'),
+  'chat messages missing assistant row',
+)
 
 console.log(
   JSON.stringify(
@@ -114,11 +139,15 @@ console.log(
 )
 
 function convexRun(functionName, payload) {
-  const output = execFileSync('bunx', ['convex', 'run', functionName, JSON.stringify(payload)], {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-    timeout: timeoutMs,
-  }).trim()
+  const output = execFileSync(
+    'bunx',
+    ['convex', 'run', functionName, JSON.stringify(payload)],
+    {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: timeoutMs,
+    },
+  ).trim()
   return parseJson(output || 'null', `Convex ${functionName}`)
 }
 

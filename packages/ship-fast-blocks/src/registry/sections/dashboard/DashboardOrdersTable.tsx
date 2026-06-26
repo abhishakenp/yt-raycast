@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DashboardOrdersTable — a recent-orders data table card for a SaaS admin
@@ -16,7 +16,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * records. Renders fully with no props via baked-in default orders.
  */
 export const DashboardOrdersTable = defineComponent({
-  name: "DashboardOrdersTable",
+  name: 'DashboardOrdersTable',
   description:
     "A recent-orders data table card for a SaaS admin dashboard: a bordered card with a header (title + subtitle and toolbar buttons whose icon is chosen from the label — download for Export, funnel otherwise), a responsive table (order id, customer cell with a gradient initial avatar, product, date, amount, a colored status pill with a matching dot, and a row-actions kebab) and a pagination footer (summary text + Prev / numbered / Next buttons, '1' active, 'Prev' disabled). Toolbar buttons, row actions and pagination route through useNavigate. Use below the KPI / chart band to list latest transactions, orders, invoices or any recent records.",
   props: z.object({
@@ -45,7 +45,7 @@ export const DashboardOrdersTable = defineComponent({
           amount: z.string().optional(),
           priority: z.string().optional(),
           status: z.string().optional(),
-          statusTone: z.enum(["emerald", "sky", "amber", "red"]).optional(),
+          statusTone: z.enum(['emerald', 'sky', 'amber', 'red']).optional(),
         }),
       )
       .optional(),
@@ -57,88 +57,91 @@ export const DashboardOrdersTable = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const title = props.title ?? "Recent Orders"
-    const subtitle = props.subtitle ?? "Latest transactions from your store"
-    const actions = props.actions?.length ? props.actions : ["Filter", "Export"]
+    const title = props.title ?? 'Recent Orders'
+    const subtitle = props.subtitle ?? 'Latest transactions from your store'
+    const actions = props.actions?.length ? props.actions : ['Filter', 'Export']
     const columns = props.columns?.length
       ? props.columns
-      : ["Order ID", "Customer", "Product", "Date", "Amount", "Status", ""]
-    const rowTarget = props.rowTarget ?? "Orders"
+      : ['Order ID', 'Customer', 'Product', 'Date', 'Amount', 'Status', '']
+    const rowTarget = props.rowTarget ?? 'Orders'
     const rows = props.rows?.length
       ? props.rows
       : [
           {
-            id: "#4921",
-            customer: "Sarah Chen",
-            product: "Wireless Headphones Pro",
-            date: "May 31, 2026",
-            amount: "$249.00",
-            status: "Completed",
-            statusTone: "emerald" as const,
+            id: '#4921',
+            customer: 'Sarah Chen',
+            product: 'Wireless Headphones Pro',
+            date: 'May 31, 2026',
+            amount: '$249.00',
+            status: 'Completed',
+            statusTone: 'emerald' as const,
           },
           {
-            id: "#4920",
-            customer: "James Wilson",
-            product: "Mechanical Keyboard",
-            date: "May 31, 2026",
-            amount: "$189.50",
-            status: "Shipped",
-            statusTone: "sky" as const,
+            id: '#4920',
+            customer: 'James Wilson',
+            product: 'Mechanical Keyboard',
+            date: 'May 31, 2026',
+            amount: '$189.50',
+            status: 'Shipped',
+            statusTone: 'sky' as const,
           },
           {
-            id: "#4919",
-            customer: "Priya Patel",
-            product: "USB-C Docking Station",
-            date: "May 30, 2026",
-            amount: "$129.99",
-            status: "Processing",
-            statusTone: "amber" as const,
+            id: '#4919',
+            customer: 'Priya Patel',
+            product: 'USB-C Docking Station',
+            date: 'May 30, 2026',
+            amount: '$129.99',
+            status: 'Processing',
+            statusTone: 'amber' as const,
           },
           {
-            id: "#4918",
-            customer: "Marcus Johnson",
+            id: '#4918',
+            customer: 'Marcus Johnson',
             product: ' 4K Monitor 27"',
-            date: "May 30, 2026",
-            amount: "$449.00",
-            status: "Shipped",
-            statusTone: "sky" as const,
+            date: 'May 30, 2026',
+            amount: '$449.00',
+            status: 'Shipped',
+            statusTone: 'sky' as const,
           },
           {
-            id: "#4917",
-            customer: "Emma Davis",
-            product: "Ergonomic Chair",
-            date: "May 29, 2026",
-            amount: "$349.00",
-            status: "Completed",
-            statusTone: "emerald" as const,
+            id: '#4917',
+            customer: 'Emma Davis',
+            product: 'Ergonomic Chair',
+            date: 'May 29, 2026',
+            amount: '$349.00',
+            status: 'Completed',
+            statusTone: 'emerald' as const,
           },
           {
-            id: "#4916",
-            customer: "Li Wei",
-            product: "Webcam 4K Pro",
-            date: "May 29, 2026",
-            amount: "$199.00",
-            status: "Cancelled",
-            statusTone: "red" as const,
+            id: '#4916',
+            customer: 'Li Wei',
+            product: 'Webcam 4K Pro',
+            date: 'May 29, 2026',
+            amount: '$199.00',
+            status: 'Cancelled',
+            statusTone: 'red' as const,
           },
         ]
-    const summary = props.summary ?? "Showing 1–6 of 1,247 orders"
+    const summary = props.summary ?? 'Showing 1–6 of 1,247 orders'
     const pages = props.pages?.length
       ? props.pages
-      : ["Prev", "1", "2", "3", "Next"]
+      : ['Prev', '1', '2', '3', 'Next']
 
     // ── Status pill tints. ──
     const statusTones: Record<string, { pill: string; dot: string }> = {
-      emerald: { pill: "bg-chart-1/10 text-chart-1", dot: "bg-chart-1" },
-      sky: { pill: "bg-chart-2/10 text-chart-2", dot: "bg-chart-2" },
-      amber: { pill: "bg-chart-4/15 text-chart-4", dot: "bg-chart-4" },
-      red: { pill: "bg-destructive/10 text-destructive", dot: "bg-destructive" },
+      emerald: { pill: 'bg-chart-1/10 text-chart-1', dot: 'bg-chart-1' },
+      sky: { pill: 'bg-chart-2/10 text-chart-2', dot: 'bg-chart-2' },
+      amber: { pill: 'bg-chart-4/15 text-chart-4', dot: 'bg-chart-4' },
+      red: {
+        pill: 'bg-destructive/10 text-destructive',
+        dot: 'bg-destructive',
+      },
     }
 
     return (
       <div
         className={cn(
-          "overflow-hidden rounded-xl border border-border bg-card",
+          'overflow-hidden rounded-xl border border-border bg-card',
           props.className,
         )}
       >
@@ -166,8 +169,8 @@ export const DashboardOrdersTable = defineComponent({
                   strokeLinejoin="round"
                   aria-hidden="true"
                 >
-                  {action.toLowerCase().includes("export") ||
-                  action.toLowerCase().includes("download") ? (
+                  {action.toLowerCase().includes('export') ||
+                  action.toLowerCase().includes('download') ? (
                     <>
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                       <polyline points="7 10 12 15 17 10" />
@@ -190,8 +193,8 @@ export const DashboardOrdersTable = defineComponent({
                   <th
                     key={i}
                     className={cn(
-                      "px-5 py-3 font-semibold",
-                      col === "" && "text-right",
+                      'px-5 py-3 font-semibold',
+                      col === '' && 'text-right',
                     )}
                   >
                     {col}
@@ -202,18 +205,25 @@ export const DashboardOrdersTable = defineComponent({
             <tbody className="divide-y divide-border/60">
               {rows.map((row, index) => {
                 const id = row.id ?? `R-${index + 1}`
-                const customer = row.customer ?? row.robot ?? row.location ?? row.destination ?? "Record"
-                const product = row.product ?? row.task ?? row.destination ?? row.priority ?? "Task"
-                const date = row.date ?? row.eta ?? ""
-                const amount = row.amount ?? row.priority ?? ""
-                const status = row.status ?? "Active"
-                const tone = statusTones[row.statusTone ?? "sky"]
+                const customer =
+                  row.customer ??
+                  row.robot ??
+                  row.location ??
+                  row.destination ??
+                  'Record'
+                const product =
+                  row.product ??
+                  row.task ??
+                  row.destination ??
+                  row.priority ??
+                  'Task'
+                const date = row.date ?? row.eta ?? ''
+                const amount = row.amount ?? row.priority ?? ''
+                const status = row.status ?? 'Active'
+                const tone = statusTones[row.statusTone ?? 'sky']
                 const initial = customer.charAt(0).toUpperCase()
                 return (
-                  <tr
-                    key={id}
-                    className="transition-colors hover:bg-muted/60"
-                  >
+                  <tr key={id} className="transition-colors hover:bg-muted/60">
                     <td className="px-5 py-3.5 font-medium text-foreground">
                       {id}
                     </td>
@@ -222,9 +232,7 @@ export const DashboardOrdersTable = defineComponent({
                         <span className="grid size-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary/70 to-primary text-[0.625rem] font-bold text-primary-foreground">
                           {initial}
                         </span>
-                        <span className="text-foreground/80">
-                          {customer}
-                        </span>
+                        <span className="text-foreground/80">{customer}</span>
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-muted-foreground">
@@ -239,13 +247,13 @@ export const DashboardOrdersTable = defineComponent({
                     <td className="px-5 py-3.5">
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium",
+                          'inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium',
                           tone.pill,
                         )}
                       >
                         <span
                           className={cn(
-                            "inline-block size-2 rounded-full",
+                            'inline-block size-2 rounded-full',
                             tone.dot,
                           )}
                         />
@@ -286,8 +294,8 @@ export const DashboardOrdersTable = defineComponent({
           <p className="text-xs text-muted-foreground">{summary}</p>
           <div className="flex gap-1">
             {pages.map((label) => {
-              const isActive = label === "1"
-              const disabled = label.toLowerCase() === "prev"
+              const isActive = label === '1'
+              const disabled = label.toLowerCase() === 'prev'
               return (
                 <button
                   key={label}
@@ -295,12 +303,12 @@ export const DashboardOrdersTable = defineComponent({
                   disabled={disabled}
                   onClick={() => go(rowTarget)}
                   className={cn(
-                    "rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
+                    'rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors',
                     isActive
-                      ? "border-primary/20 bg-primary/10 text-primary"
+                      ? 'border-primary/20 bg-primary/10 text-primary'
                       : disabled
-                        ? "cursor-not-allowed border-border bg-card text-muted-foreground/50"
-                        : "border-border bg-card text-muted-foreground hover:bg-muted",
+                        ? 'cursor-not-allowed border-border bg-card text-muted-foreground/50'
+                        : 'border-border bg-card text-muted-foreground hover:bg-muted',
                   )}
                 >
                   {label}

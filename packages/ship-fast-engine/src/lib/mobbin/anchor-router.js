@@ -17,7 +17,8 @@ const ECOMMERCE_BRIEF_RE =
   /\b(ecommerce|e-commerce|online store|web store|shop|storefront|retail|boutique|catalog|merchandise|product grid|add to cart|shopping cart|gadget|gadgets|early adopter|consumer tech|tech store|buy now|shop now|free shipping|wishlist|pdp|sku)\b/i
 
 const FINTECH_ANCHOR_RE = /^(Stripe|Mercury|Plaid)$/i
-const GENERIC_SAAS_ANCHOR_RE = /^(Linear|Vercel|Notion|Sentry|Posthog|HubSpot|Cloudflare|Supabase)$/i
+const GENERIC_SAAS_ANCHOR_RE =
+  /^(Linear|Vercel|Notion|Sentry|Posthog|HubSpot|Cloudflare|Supabase)$/i
 
 function normalizeBriefText(brief = '', projectContext = {}) {
   return [
@@ -41,12 +42,22 @@ export function anchorMatchesBrief(brief, projectContext = {}, app = '') {
   if (!name) return false
   const text = normalizeBriefText(brief, projectContext)
   const ecommerce =
-    ECOMMERCE_BRIEF_RE.test(text) || String(projectContext.site_type || '').toLowerCase() === 'ecommerce'
+    ECOMMERCE_BRIEF_RE.test(text) ||
+    String(projectContext.site_type || '').toLowerCase() === 'ecommerce'
 
-  if (ecommerce && (FINTECH_ANCHOR_RE.test(name) || GENERIC_SAAS_ANCHOR_RE.test(name))) return false
+  if (
+    ecommerce &&
+    (FINTECH_ANCHOR_RE.test(name) || GENERIC_SAAS_ANCHOR_RE.test(name))
+  )
+    return false
 
-  if (/\b(gadget|gadgets|consumer tech|tech store|product comparison|interactive demo)\b/i.test(text)) {
-    if (FINTECH_ANCHOR_RE.test(name) || GENERIC_SAAS_ANCHOR_RE.test(name)) return false
+  if (
+    /\b(gadget|gadgets|consumer tech|tech store|product comparison|interactive demo)\b/i.test(
+      text,
+    )
+  ) {
+    if (FINTECH_ANCHOR_RE.test(name) || GENERIC_SAAS_ANCHOR_RE.test(name))
+      return false
   }
 
   return true
@@ -84,9 +95,11 @@ Warm-accent anchors carry saturated orange / coral / red / amber / pink brand co
 function categoryOf(app) {
   const norm = app.toLowerCase()
   if (/airbnb|hopper/.test(norm)) return 'Travel & Hospitality'
-  if (/patagonia|nike|allbirds|glossier|lululemon|apple/.test(norm)) return 'Consumer & Retail'
+  if (/patagonia|nike|allbirds|glossier|lululemon|apple/.test(norm))
+    return 'Consumer & Retail'
   if (/headspace|calm/.test(norm)) return 'Wellness'
-  if (/spotify|masterclass|substack|nyt|vogue/.test(norm)) return 'Media & Editorial'
+  if (/spotify|masterclass|substack|nyt|vogue/.test(norm))
+    return 'Media & Editorial'
   if (/linear|vercel|github|cursor|sentry/.test(norm)) return 'Developer Tools'
   if (/openai|anthropic|elevenlabs/.test(norm)) return 'AI'
   if (/notion|loom/.test(norm)) return 'Productivity'
@@ -106,18 +119,24 @@ function categoryOf(app) {
  */
 export async function inferMobbinAnchor({ brief, projectContext = {} } = {}) {
   if (!SHIPFAST_MOBBIN) return null
-  if (!brief || typeof brief !== 'string' || brief.trim().length < 8) return null
+  if (!brief || typeof brief !== 'string' || brief.trim().length < 8)
+    return null
 
   const appNames = listDnaAppNames()
   if (!appNames.length) return null
 
   const ctxParts = []
-  if (projectContext.project_name) ctxParts.push(`project_name: ${projectContext.project_name}`)
-  if (projectContext.tagline) ctxParts.push(`tagline: ${projectContext.tagline}`)
-  if (projectContext.site_type) ctxParts.push(`site_type: ${projectContext.site_type}`)
+  if (projectContext.project_name)
+    ctxParts.push(`project_name: ${projectContext.project_name}`)
+  if (projectContext.tagline)
+    ctxParts.push(`tagline: ${projectContext.tagline}`)
+  if (projectContext.site_type)
+    ctxParts.push(`site_type: ${projectContext.site_type}`)
   if (projectContext.mood) ctxParts.push(`mood: ${projectContext.mood}`)
-  if (projectContext.style_keywords) ctxParts.push(`style_keywords: ${projectContext.style_keywords}`)
-  if (projectContext.color_direction) ctxParts.push(`color_direction: ${projectContext.color_direction}`)
+  if (projectContext.style_keywords)
+    ctxParts.push(`style_keywords: ${projectContext.style_keywords}`)
+  if (projectContext.color_direction)
+    ctxParts.push(`color_direction: ${projectContext.color_direction}`)
 
   const userPrompt = `BRIEF: ${brief.trim()}
 
@@ -157,7 +176,9 @@ Return JSON only.`
   if (!dna) return null
 
   const copyExamples = resolveCopyExamples(parsed.app)
-  const accents = Array.isArray(dna.accents) ? dna.accents.filter((h) => /^#[0-9a-f]{6}$/i.test(h)) : []
+  const accents = Array.isArray(dna.accents)
+    ? dna.accents.filter((h) => /^#[0-9a-f]{6}$/i.test(h))
+    : []
 
   return {
     app: dna._bankApp || parsed.app,

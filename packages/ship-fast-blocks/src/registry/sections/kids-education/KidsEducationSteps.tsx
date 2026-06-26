@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * KidsEducationSteps — playful "how it works" flow for a kids / family learning
@@ -14,7 +14,7 @@ import { Image } from "#/lib/img.tsx"
  * defaults.
  */
 export const KidsEducationSteps = defineComponent({
-  name: "KidsEducationSteps",
+  name: 'KidsEducationSteps',
   description:
     "Playful 'how it works' flow for a kids / family learning platform: a centered eyebrow + heading + description intro above a 3-up grid of rounded white step cards on a muted band; each card has a rotating soft-tint numbered badge, a title, a description, and a photo, with large connector arrows between cards on desktop. Use to explain onboarding / get-started flows for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
   props: z.object({
@@ -37,40 +37,41 @@ export const KidsEducationSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "How It Works"
-    const heading = props.heading ?? "Learning Made Simple"
+    const eyebrow = props.eyebrow ?? 'How It Works'
+    const heading = props.heading ?? 'Learning Made Simple'
     const description =
       props.description ??
-      "Get started in minutes. Our guided approach ensures every child finds activities matched to their interests and level."
+      'Get started in minutes. Our guided approach ensures every child finds activities matched to their interests and level.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Create a Profile",
+            title: 'Create a Profile',
             description:
-              "Set up personalized profiles for each child. Tell us their age, interests, and learning goals.",
-            imageAlt: "Parent and child creating a learning profile on a tablet together",
+              'Set up personalized profiles for each child. Tell us their age, interests, and learning goals.',
+            imageAlt:
+              'Parent and child creating a learning profile on a tablet together',
           },
           {
-            title: "Get Recommendations",
+            title: 'Get Recommendations',
             description:
               "Our smart system suggests activities tailored to your child's age, skills, and interests.",
             imageAlt:
-              "Tablet screen showing colorful learning app interface with activity recommendations",
+              'Tablet screen showing colorful learning app interface with activity recommendations',
           },
           {
-            title: "Learn & Track Progress",
+            title: 'Learn & Track Progress',
             description:
-              "Complete activities, earn badges, and watch skills grow. Parents get detailed progress reports.",
+              'Complete activities, earn badges, and watch skills grow. Parents get detailed progress reports.',
             imageAlt:
-              "Child proudly showing completed artwork with achievement badges displayed on screen",
+              'Child proudly showing completed artwork with achievement badges displayed on screen',
           },
         ]
 
     const stepTints = [
-      "bg-primary/15 text-primary",
-      "bg-secondary/15 text-secondary-foreground",
-      "bg-accent/15 text-accent-foreground",
+      'bg-primary/15 text-primary',
+      'bg-secondary/15 text-secondary-foreground',
+      'bg-accent/15 text-accent-foreground',
     ]
 
     const ArrowRight = ({ className }: { className?: string }) => (
@@ -91,7 +92,7 @@ export const KidsEducationSteps = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted/40 py-24", props.className)}>
+      <section className={cn('bg-muted/40 py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-secondary">
@@ -109,7 +110,7 @@ export const KidsEducationSteps = defineComponent({
                 <div className="rounded-3xl bg-card p-8 shadow-sm transition-shadow hover:shadow-lg">
                   <div
                     className={cn(
-                      "mb-6 grid size-16 place-items-center rounded-2xl",
+                      'mb-6 grid size-16 place-items-center rounded-2xl',
                       stepTints[i % stepTints.length],
                     )}
                   >
@@ -118,7 +119,9 @@ export const KidsEducationSteps = defineComponent({
                   <h3 className="mb-3 text-xl font-bold text-card-foreground">
                     {step.title}
                   </h3>
-                  <p className="mb-6 text-muted-foreground">{step.description}</p>
+                  <p className="mb-6 text-muted-foreground">
+                    {step.description}
+                  </p>
                   <div className="overflow-hidden rounded-2xl">
                     <Image
                       alt={step.imageAlt}

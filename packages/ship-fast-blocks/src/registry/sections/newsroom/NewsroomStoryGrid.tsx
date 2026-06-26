@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NewsroomStoryGrid — a dense editorial "Latest Stories" grid for a digital
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * magazine homepage. Renders fully with no props.
  */
 export const NewsroomStoryGrid = defineComponent({
-  name: "NewsroomStoryGrid",
+  name: 'NewsroomStoryGrid',
   description:
     "Dense editorial 'Latest Stories' grid for a digital newsroom or online magazine: a section header row with a serif heading and a 'View all' link on the right above a hairline rule, then a responsive 1/2/3-up grid of magazine story cards. Each card has a 16:9 cover image, a small colored category tag, a serif headline, a 1-2 line excerpt and a meta line (author • date • read time); cards route through useNavigate. Use for the main feed of a news site, publication, blog index, or magazine homepage.",
   props: z.object({
@@ -41,96 +41,98 @@ export const NewsroomStoryGrid = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Latest Stories"
-    const viewAllCta = props.viewAllCta ?? "View all"
+    const heading = props.heading ?? 'Latest Stories'
+    const viewAllCta = props.viewAllCta ?? 'View all'
     const stories = props.stories?.length
       ? props.stories
       : [
           {
-            tag: "Politics",
-            title: "Senate Passes Landmark Infrastructure Bill After Late Vote",
+            tag: 'Politics',
+            title: 'Senate Passes Landmark Infrastructure Bill After Late Vote',
             excerpt:
-              "The sweeping package directs trillions toward roads, broadband, and clean energy in a rare show of bipartisan agreement.",
-            author: "Marcus Reed",
-            date: "Jun 22",
-            readTime: "6 min read",
-            imageAlt: "Capitol building at dusk with lit dome",
+              'The sweeping package directs trillions toward roads, broadband, and clean energy in a rare show of bipartisan agreement.',
+            author: 'Marcus Reed',
+            date: 'Jun 22',
+            readTime: '6 min read',
+            imageAlt: 'Capitol building at dusk with lit dome',
           },
           {
-            tag: "Technology",
-            title: "Inside the Quiet Race to Build Smaller, Smarter AI Models",
+            tag: 'Technology',
+            title: 'Inside the Quiet Race to Build Smaller, Smarter AI Models',
             excerpt:
-              "Startups are betting that lean, on-device models will outpace the giants on cost, privacy, and speed.",
-            author: "Priya Nair",
-            date: "Jun 22",
-            readTime: "8 min read",
-            imageAlt: "Close-up of a glowing computer chip on a circuit board",
+              'Startups are betting that lean, on-device models will outpace the giants on cost, privacy, and speed.',
+            author: 'Priya Nair',
+            date: 'Jun 22',
+            readTime: '8 min read',
+            imageAlt: 'Close-up of a glowing computer chip on a circuit board',
           },
           {
-            tag: "Business",
-            title: "Markets Rally as Central Bank Signals a Pause on Rate Hikes",
+            tag: 'Business',
+            title:
+              'Markets Rally as Central Bank Signals a Pause on Rate Hikes',
             excerpt:
-              "Investors cheered the shift, sending major indexes to fresh highs in afternoon trading.",
-            author: "Daniel Cho",
-            date: "Jun 21",
-            readTime: "4 min read",
-            imageAlt: "Stock exchange trading floor with rising charts",
+              'Investors cheered the shift, sending major indexes to fresh highs in afternoon trading.',
+            author: 'Daniel Cho',
+            date: 'Jun 21',
+            readTime: '4 min read',
+            imageAlt: 'Stock exchange trading floor with rising charts',
           },
           {
-            tag: "Culture",
+            tag: 'Culture',
             title: "How a Small Theater Troupe Became the Season's Biggest Hit",
             excerpt:
-              "Word-of-mouth and a fearless adaptation turned a 90-seat venue into the most coveted ticket in town.",
-            author: "Sofia Marchetti",
-            date: "Jun 21",
-            readTime: "5 min read",
-            imageAlt: "Stage performers under warm spotlights",
+              'Word-of-mouth and a fearless adaptation turned a 90-seat venue into the most coveted ticket in town.',
+            author: 'Sofia Marchetti',
+            date: 'Jun 21',
+            readTime: '5 min read',
+            imageAlt: 'Stage performers under warm spotlights',
           },
           {
-            tag: "Science",
-            title: "Astronomers Capture the Sharpest Image Yet of a Distant Galaxy",
+            tag: 'Science',
+            title:
+              'Astronomers Capture the Sharpest Image Yet of a Distant Galaxy',
             excerpt:
-              "The new survey reveals star-forming regions in detail once thought impossible from the ground.",
-            author: "Dr. Lena Osei",
-            date: "Jun 20",
-            readTime: "7 min read",
-            imageAlt: "Spiral galaxy against a deep field of stars",
+              'The new survey reveals star-forming regions in detail once thought impossible from the ground.',
+            author: 'Dr. Lena Osei',
+            date: 'Jun 20',
+            readTime: '7 min read',
+            imageAlt: 'Spiral galaxy against a deep field of stars',
           },
           {
-            tag: "Climate",
-            title: "Coastal Cities Test Floating Parks to Beat the Rising Tide",
+            tag: 'Climate',
+            title: 'Coastal Cities Test Floating Parks to Beat the Rising Tide',
             excerpt:
-              "From Rotterdam to Lagos, engineers are reimagining the waterfront as climate pressure mounts.",
-            author: "Tomas Andersson",
-            date: "Jun 20",
-            readTime: "9 min read",
-            imageAlt: "Floating green park platform on a city harbor",
+              'From Rotterdam to Lagos, engineers are reimagining the waterfront as climate pressure mounts.',
+            author: 'Tomas Andersson',
+            date: 'Jun 20',
+            readTime: '9 min read',
+            imageAlt: 'Floating green park platform on a city harbor',
           },
           {
-            tag: "Health",
-            title: "A New Approach to Sleep Could Rewrite Workplace Schedules",
+            tag: 'Health',
+            title: 'A New Approach to Sleep Could Rewrite Workplace Schedules',
             excerpt:
-              "Researchers say aligning shifts with our internal clocks improves focus and cuts burnout.",
-            author: "Aisha Bello",
-            date: "Jun 19",
-            readTime: "6 min read",
-            imageAlt: "Sunrise over a quiet bedroom window",
+              'Researchers say aligning shifts with our internal clocks improves focus and cuts burnout.',
+            author: 'Aisha Bello',
+            date: 'Jun 19',
+            readTime: '6 min read',
+            imageAlt: 'Sunrise over a quiet bedroom window',
           },
           {
-            tag: "Sports",
-            title: "Underdog Side Stuns Champions in Extra-Time Thriller",
+            tag: 'Sports',
+            title: 'Underdog Side Stuns Champions in Extra-Time Thriller',
             excerpt:
-              "A last-gasp goal sealed one of the most dramatic upsets the league has seen in years.",
-            author: "Jordan Hayes",
-            date: "Jun 19",
-            readTime: "3 min read",
-            imageAlt: "Footballers celebrating a goal under floodlights",
+              'A last-gasp goal sealed one of the most dramatic upsets the league has seen in years.',
+            author: 'Jordan Hayes',
+            date: 'Jun 19',
+            readTime: '3 min read',
+            imageAlt: 'Footballers celebrating a goal under floodlights',
           },
         ]
 
     return (
       <section
-        className={cn("bg-background py-16 lg:py-24", props.className)}
+        className={cn('bg-background py-16 lg:py-24', props.className)}
         aria-labelledby="newsroom-grid-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -186,9 +188,9 @@ export const NewsroomStoryGrid = defineComponent({
                     <span className="font-medium text-foreground">
                       {story.author}
                     </span>
-                    {" · "}
+                    {' · '}
                     {story.date}
-                    {" · "}
+                    {' · '}
                     {story.readTime}
                   </p>
                 </div>

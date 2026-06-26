@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ContactNavbar — glassy sticky top navigation bar for a contact / support page.
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * baked-in "Orbit Digital" defaults.
  */
 export const ContactNavbar = defineComponent({
-  name: "ContactNavbar",
+  name: 'ContactNavbar',
   description:
-    "Glassy sticky top navigation bar for a contact / support page: a blurred, border-bottomed header with a gradient orbit-glyph logo tile + brand name on the left, horizontal nav links in the center (desktop), and a rounded primary CTA on the right. Every link and the CTA route through useNavigate. Use as the sticky site header for SaaS, agency, or startup contact pages.",
+    'Glassy sticky top navigation bar for a contact / support page: a blurred, border-bottomed header with a gradient orbit-glyph logo tile + brand name on the left, horizontal nav links in the center (desktop), and a rounded primary CTA on the right. Every link and the CTA route through useNavigate. Use as the sticky site header for SaaS, agency, or startup contact pages.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -31,18 +31,18 @@ export const ContactNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Orbit Digital"
+    const brand = props.brand ?? 'Orbit Digital'
     const nav = props.nav?.length
       ? props.nav
-      : ["Home", "Features", "Pricing", "About", "Contact"]
-    const homeTarget = props.homeTarget ?? nav[0] ?? "Home"
-    const ctaLabel = props.ctaLabel ?? "Get Started"
-    const ctaTarget = props.ctaTarget ?? "Contact"
+      : ['Home', 'Features', 'Pricing', 'About', 'Contact']
+    const homeTarget = props.homeTarget ?? nav[0] ?? 'Home'
+    const ctaLabel = props.ctaLabel ?? 'Get Started'
+    const ctaTarget = props.ctaTarget ?? 'Contact'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.4)]",
+          'grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.4)]',
           className,
         )}
         aria-hidden="true"
@@ -66,7 +66,7 @@ export const ContactNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >

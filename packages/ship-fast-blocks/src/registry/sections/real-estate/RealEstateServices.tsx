@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * RealEstateServices — a clean services grid for a brokerage covering the core
@@ -11,9 +11,9 @@ import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
  * offers. Renders fully with no props via baked-in defaults.
  */
 export const RealEstateServices = defineComponent({
-  name: "RealEstateServices",
+  name: 'RealEstateServices',
   description:
-    "Clean services grid for a brokerage: a centered serif header above a responsive 1/2/4-column grid of cards, each with a numbered token-tinted index chip, a title, and a short description. Defaults cover Buy / Sell / Rent / Invest. Use to summarize what a real-estate brokerage or agent team offers.",
+    'Clean services grid for a brokerage: a centered serif header above a responsive 1/2/4-column grid of cards, each with a numbered token-tinted index chip, a title, and a short description. Defaults cover Buy / Sell / Rent / Invest. Use to summarize what a real-estate brokerage or agent team offers.',
   props: z.object({
     /** Section heading (serif, large). */
     heading: z.string().optional(),
@@ -26,7 +26,7 @@ export const RealEstateServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "How we help you move"
+    const heading = props.heading ?? 'How we help you move'
     const description =
       props.description ??
       "Whether you're buying your first place, selling to upgrade, renting flexibly, or building a portfolio — we have a dedicated team for it."
@@ -34,24 +34,24 @@ export const RealEstateServices = defineComponent({
       ? props.services
       : [
           {
-            title: "Buy",
+            title: 'Buy',
             description:
-              "Tour homes that match your wishlist, get pre-approved with trusted lenders, and negotiate with an agent who knows the block.",
+              'Tour homes that match your wishlist, get pre-approved with trusted lenders, and negotiate with an agent who knows the block.',
           },
           {
-            title: "Sell",
+            title: 'Sell',
             description:
-              "Price right, stage well, and market everywhere — we sell faster and for more, backed by local comps and a sharp pricing strategy.",
+              'Price right, stage well, and market everywhere — we sell faster and for more, backed by local comps and a sharp pricing strategy.',
           },
           {
-            title: "Rent",
+            title: 'Rent',
             description:
-              "Find the right lease or fill your vacancy fast with screened tenants, smooth paperwork, and on-call support.",
+              'Find the right lease or fill your vacancy fast with screened tenants, smooth paperwork, and on-call support.',
           },
           {
-            title: "Invest",
+            title: 'Invest',
             description:
-              "Build long-term wealth with cash-flow analysis, neighborhood forecasts, and off-market deals before they go public.",
+              'Build long-term wealth with cash-flow analysis, neighborhood forecasts, and off-market deals before they go public.',
           },
         ]
 

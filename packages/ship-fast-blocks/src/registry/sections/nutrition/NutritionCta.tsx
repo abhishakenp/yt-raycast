@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * NutritionCta — full-width primary call-to-action band for a nutrition-coaching
@@ -13,7 +13,7 @@ import { CtaBand } from "#/section-kit/CtaBand.tsx"
  * programs or healthy-eating apps.
  */
 export const NutritionCta = defineComponent({
-  name: "NutritionCta",
+  name: 'NutritionCta',
   description:
     "Full-width primary call-to-action band for a nutrition-coaching or wellness site, built on the shared CtaBand kit composite: an optional eyebrow, a bold 'Start your plan' title, a motivating subtitle, and a row of two routable pill actions (filled primary 'Start Now' + outlined 'See Plans') against a fresh primary background. Use as the closing conversion band on nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs or healthy-eating apps.",
   props: z.object({
@@ -27,15 +27,15 @@ export const NutritionCta = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Your fresh start"
-    const headline = props.headline ?? "Start your plan"
+    const eyebrow = props.eyebrow ?? 'Your fresh start'
+    const headline = props.headline ?? 'Start your plan'
     const subheading =
       props.subheading ??
-      "Join 50,000+ people eating better without dieting. Get your personalized plan in minutes—cancel anytime."
-    const primaryCta = props.primaryCta ?? "Start Now"
-    const primaryTarget = props.primaryTarget ?? "Pricing"
-    const secondaryCta = props.secondaryCta ?? "See Plans"
-    const secondaryTarget = props.secondaryTarget ?? "Plans"
+      'Join 50,000+ people eating better without dieting. Get your personalized plan in minutes—cancel anytime.'
+    const primaryCta = props.primaryCta ?? 'Start Now'
+    const primaryTarget = props.primaryTarget ?? 'Pricing'
+    const secondaryCta = props.secondaryCta ?? 'See Plans'
+    const secondaryTarget = props.secondaryTarget ?? 'Plans'
 
     return (
       <CtaBand
@@ -44,8 +44,8 @@ export const NutritionCta = defineComponent({
         title={headline}
         subtitle={subheading}
         actions={[
-          { label: primaryCta, target: primaryTarget, variant: "primary" },
-          { label: secondaryCta, target: secondaryTarget, variant: "outline" },
+          { label: primaryCta, target: primaryTarget, variant: 'primary' },
+          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
         ]}
         className={props.className}
       />

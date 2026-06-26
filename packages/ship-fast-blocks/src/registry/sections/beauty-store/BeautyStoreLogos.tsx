@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * BeautyStoreLogos — trusted-by beauty-brand logo strip for a cosmetics / skincare
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * storefront wanting to display partner / stocked brand credibility.
  */
 export const BeautyStoreLogos = defineComponent({
-  name: "BeautyStoreLogos",
+  name: 'BeautyStoreLogos',
   description:
-    "Trusted-by beauty-brand logo strip for a cosmetics / skincare storefront: a centered uppercase eyebrow above a responsive 2/3/6-column grid of clickable brand-name buttons rendered in muted serif text. Every brand routes through useNavigate. Use as a social-proof logo bar for beauty stores, skincare shops, cosmetics brands, or premium personal-care DTC storefronts wanting to display partner / stocked brand credibility.",
+    'Trusted-by beauty-brand logo strip for a cosmetics / skincare storefront: a centered uppercase eyebrow above a responsive 2/3/6-column grid of clickable brand-name buttons rendered in muted serif text. Every brand routes through useNavigate. Use as a social-proof logo bar for beauty stores, skincare shops, cosmetics brands, or premium personal-care DTC storefronts wanting to display partner / stocked brand credibility.',
   props: z.object({
     /** Section eyebrow / label text. */
     heading: z.string().optional(),
@@ -24,22 +24,20 @@ export const BeautyStoreLogos = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Trusted by Leading Beauty Brands"
+    const heading = props.heading ?? 'Trusted by Leading Beauty Brands'
     const brands = props.brands?.length
       ? props.brands
       : [
-          "Glow Recipe",
-          "Fenty Beauty",
-          "Rare Beauty",
-          "Summer Fridays",
-          "Tower 28",
-          "Kosas",
+          'Glow Recipe',
+          'Fenty Beauty',
+          'Rare Beauty',
+          'Summer Fridays',
+          'Tower 28',
+          'Kosas',
         ]
 
     return (
-      <section
-        className={cn("border-b border-border py-16", props.className)}
-      >
+      <section className={cn('border-b border-border py-16', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="mb-10 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
             {heading}

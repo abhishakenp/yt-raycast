@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * KnowledgeBaseFooter — five-column site footer for a help center on the page
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Help Center" defaults.
  */
 export const KnowledgeBaseFooter = defineComponent({
-  name: "KnowledgeBaseFooter",
+  name: 'KnowledgeBaseFooter',
   description:
-    "Five-column site footer for a help center on the page surface with a top border: a wide brand column (solid rounded book-glyph tile + wordmark, a tagline paragraph and inline social text buttons) beside product/resources/company link columns, above a bordered-top bar pairing an auto-updating copyright line with legal links. Calm, light, editorial; the brand button, socials and every link route through useNavigate. Use as the closing footer for a knowledge base, support portal, docs site or FAQ hub.",
+    'Five-column site footer for a help center on the page surface with a top border: a wide brand column (solid rounded book-glyph tile + wordmark, a tagline paragraph and inline social text buttons) beside product/resources/company link columns, above a bordered-top bar pairing an auto-updating copyright line with legal links. Calm, light, editorial; the brand button, socials and every link route through useNavigate. Use as the closing footer for a knowledge base, support portal, docs site or FAQ hub.',
   props: z.object({
     /** Brand / help-center name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -33,41 +33,41 @@ export const KnowledgeBaseFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Help Center"
+    const brand = props.brand ?? 'Help Center'
     const tagline =
       props.tagline ??
-      "Comprehensive documentation, guides, and support to help you get the most out of our platform."
+      'Comprehensive documentation, guides, and support to help you get the most out of our platform.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "Integrations", "API", "Security"],
+            title: 'Product',
+            links: ['Features', 'Pricing', 'Integrations', 'API', 'Security'],
           },
           {
-            title: "Resources",
-            links: ["Documentation", "Guides", "Blog", "Community", "Status"],
+            title: 'Resources',
+            links: ['Documentation', 'Guides', 'Blog', 'Community', 'Status'],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Contact", "Privacy", "Terms"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Contact', 'Privacy', 'Terms'],
           },
         ]
     const socials = props.socials?.length
       ? props.socials
-      : ["Twitter", "LinkedIn", "GitHub", "YouTube"]
+      : ['Twitter', 'LinkedIn', 'GitHub', 'YouTube']
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
-    const homeTarget = props.homeTarget ?? "Categories"
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
+    const homeTarget = props.homeTarget ?? 'Categories'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -89,10 +89,7 @@ export const KnowledgeBaseFooter = defineComponent({
 
     return (
       <footer
-        className={cn(
-          "border-t border-border bg-background",
-          props.className,
-        )}
+        className={cn('border-t border-border bg-background', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">

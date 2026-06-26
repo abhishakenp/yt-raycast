@@ -1,4 +1,4 @@
-import { cn } from "#/lib/utils.ts"
+import { cn } from '#/lib/utils.ts'
 
 /**
  * SectionHeading — generic, reusable section header (eyebrow pill + title +
@@ -10,17 +10,17 @@ export function SectionHeading(props: {
   eyebrow?: string
   title: string
   subtitle?: string
-  align?: "center" | "left"
+  align?: 'center' | 'left'
   titleClassName?: string
   className?: string
 }) {
-  const align = props.align ?? "center"
-  const centered = align === "center"
+  const align = props.align ?? 'center'
+  const centered = align === 'center'
   return (
     <div
       className={cn(
-        "flex flex-col gap-3",
-        centered ? "mx-auto max-w-2xl text-center" : "text-left",
+        'flex flex-col gap-3',
+        centered ? 'mx-auto max-w-2xl text-center' : 'text-left',
         props.className,
       )}
     >
@@ -31,7 +31,7 @@ export function SectionHeading(props: {
       ) : null}
       <h2
         className={cn(
-          "text-3xl font-semibold text-foreground md:text-4xl",
+          'text-3xl font-semibold text-foreground md:text-4xl',
           props.titleClassName,
         )}
       >

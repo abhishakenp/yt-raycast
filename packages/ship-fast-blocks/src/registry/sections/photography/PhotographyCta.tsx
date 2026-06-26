@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * PhotographyCta — a warm, centered booking band for a fine-art / wedding
@@ -14,7 +14,7 @@ import { CtaBand } from "#/section-kit/CtaBand.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const PhotographyCta = defineComponent({
-  name: "PhotographyCta",
+  name: 'PhotographyCta',
   description:
     "Warm, centered booking band for a fine-art / wedding photographer site built on the shared CtaBand composite at tone='primary': an availability eyebrow, a serif headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Book your session' button plus an outlined 'View Pricing' button). Both CTAs route through useNavigate. Use near the bottom of a photographer, studio, or elopement page to drive session bookings.",
   props: z.object({
@@ -35,16 +35,15 @@ export const PhotographyCta = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const headline =
-      props.headline ?? "Let's tell your story, beautifully"
+    const headline = props.headline ?? "Let's tell your story, beautifully"
     const subheading =
       props.subheading ??
-      "Dates book up fast for the season — reach out to check availability and reserve your shoot before the calendar fills."
-    const primaryCta = props.primaryCta ?? "Book your session"
-    const primaryTarget = props.primaryTarget ?? "Contact"
-    const secondaryCta = props.secondaryCta ?? "View Pricing"
-    const secondaryTarget = props.secondaryTarget ?? "Services"
-    const availability = props.availability ?? "Now booking 2025 & 2026"
+      'Dates book up fast for the season — reach out to check availability and reserve your shoot before the calendar fills.'
+    const primaryCta = props.primaryCta ?? 'Book your session'
+    const primaryTarget = props.primaryTarget ?? 'Contact'
+    const secondaryCta = props.secondaryCta ?? 'View Pricing'
+    const secondaryTarget = props.secondaryTarget ?? 'Services'
+    const availability = props.availability ?? 'Now booking 2025 & 2026'
 
     return (
       <CtaBand
@@ -53,8 +52,8 @@ export const PhotographyCta = defineComponent({
         title={headline}
         subtitle={subheading}
         actions={[
-          { label: primaryCta, target: primaryTarget, variant: "primary" },
-          { label: secondaryCta, target: secondaryTarget, variant: "outline" },
+          { label: primaryCta, target: primaryTarget, variant: 'primary' },
+          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
         ]}
         className={props.className}
       />

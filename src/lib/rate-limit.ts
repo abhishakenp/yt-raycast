@@ -29,7 +29,10 @@ export function checkRateLimit(
   return true
 }
 
-export function refundRateLimit(key: string, hitsMap: Map<string, number[]>): void {
+export function refundRateLimit(
+  key: string,
+  hitsMap: Map<string, number[]>,
+): void {
   const hits = hitsMap.get(key)
   if (hits?.length) hits.pop()
 }

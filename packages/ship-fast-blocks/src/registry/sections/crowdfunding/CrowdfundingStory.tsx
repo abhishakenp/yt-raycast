@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CrowdfundingStory — a long-form founder STORY section for a crowdfunding /
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * problem-and-solution story with supporting stats and a founder quote.
  */
 export const CrowdfundingStory = defineComponent({
-  name: "CrowdfundingStory",
+  name: 'CrowdfundingStory',
   description:
     "A long-form founder STORY section for a crowdfunding / campaign landing page on a muted band: a centered eyebrow + heading + intro, a two-up grid of image-over-paragraph story blocks, a primary-bordered pull-quote with attribution, a raised card panel holding a 'problem' heading over a three-up stat trio (big destructive-toned numbers + captions), and a 'solution' heading followed by body paragraphs. Imagery uses the alt-driven Image component. Use to tell the origin / mission narrative on a product launch, fundraiser, maker project, or any campaign page that needs a problem-and-solution story with supporting stats and a founder quote.",
   props: z.object({
@@ -36,49 +36,54 @@ export const CrowdfundingStory = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const storyEyebrow = props.eyebrow ?? "Our Story"
-    const storyHeading = props.heading ?? "Why We Created EcoBrush"
+    const storyEyebrow = props.eyebrow ?? 'Our Story'
+    const storyHeading = props.heading ?? 'Why We Created EcoBrush'
     const storyIntro =
       props.intro ??
-      "Every year, 4.7 billion plastic toothbrushes end up in landfills and oceans. We knew there had to be a better way."
+      'Every year, 4.7 billion plastic toothbrushes end up in landfills and oceans. We knew there had to be a better way.'
     const storyBlocks = props.blocks?.length
       ? props.blocks
       : [
           {
             imageAlt:
-              "Team of designers working at wooden desk reviewing bamboo material samples",
-            body: "It started with a simple question: Why does every electric toothbrush on the market have a plastic body that will outlive us by 500 years? Dr. Sarah Chen, a dental researcher, and Marcus Okafor, a sustainable materials engineer, met at a conference in Copenhagen in 2022 and discovered they had been asking themselves the same question.",
+              'Team of designers working at wooden desk reviewing bamboo material samples',
+            body: 'It started with a simple question: Why does every electric toothbrush on the market have a plastic body that will outlive us by 500 years? Dr. Sarah Chen, a dental researcher, and Marcus Okafor, a sustainable materials engineer, met at a conference in Copenhagen in 2022 and discovered they had been asking themselves the same question.',
           },
           {
             imageAlt:
-              "Dense bamboo forest with morning sunlight filtering through tall green stalks",
-            body: "After two years of research and 47 prototype iterations, we developed a proprietary bamboo composite that is 98% biodegradable, naturally antimicrobial, and durable enough for daily use. Our Moso bamboo is sourced from FSC-certified forests in Zhejiang Province, China, and every handle is hand-finished by skilled craftspeople.",
+              'Dense bamboo forest with morning sunlight filtering through tall green stalks',
+            body: 'After two years of research and 47 prototype iterations, we developed a proprietary bamboo composite that is 98% biodegradable, naturally antimicrobial, and durable enough for daily use. Our Moso bamboo is sourced from FSC-certified forests in Zhejiang Province, China, and every handle is hand-finished by skilled craftspeople.',
           },
         ]
     const storyQuote =
       props.quote ??
       "We didn't want to compromise on performance. EcoBrush had to clean as well as the best electric brushes on the market—while leaving zero trace when its job is done."
     const storyQuoteAuthor =
-      props.quoteAuthor ?? "Dr. Sarah Chen, Co-founder & Chief Dental Officer"
-    const problemHeading =
-      props.problemHeading ?? "The Problem We're Solving"
+      props.quoteAuthor ?? 'Dr. Sarah Chen, Co-founder & Chief Dental Officer'
+    const problemHeading = props.problemHeading ?? "The Problem We're Solving"
     const problemStats = props.problemStats?.length
       ? props.problemStats
       : [
-          { value: "4.7B", label: "Plastic toothbrushes discarded annually worldwide" },
-          { value: "500", label: "Years for a plastic brush to decompose" },
-          { value: "50M", label: "Pounds of toothbrush waste added to oceans each year" },
+          {
+            value: '4.7B',
+            label: 'Plastic toothbrushes discarded annually worldwide',
+          },
+          { value: '500', label: 'Years for a plastic brush to decompose' },
+          {
+            value: '50M',
+            label: 'Pounds of toothbrush waste added to oceans each year',
+          },
         ]
-    const solutionHeading = props.solutionHeading ?? "Our Solution"
+    const solutionHeading = props.solutionHeading ?? 'Our Solution'
     const solutionParagraphs = props.solutionParagraphs?.length
       ? props.solutionParagraphs
       : [
-          "EcoBrush combines sustainable materials with premium engineering. The handle is crafted from compressed bamboo fibers bonded with a plant-based resin. At the end of its life, you simply separate the small metal motor assembly (which we take back for recycling through our Take-Back Program) and compost the bamboo body. It returns to the earth in 4-6 months, not centuries.",
-          "The sonic motor delivers 40,000 vibrations per minute—matching the performance of premium plastic alternatives. Three smart modes (Clean, Whiten, Sensitive) adapt to your needs, and the 30-day battery life means less charging, less energy consumption.",
+          'EcoBrush combines sustainable materials with premium engineering. The handle is crafted from compressed bamboo fibers bonded with a plant-based resin. At the end of its life, you simply separate the small metal motor assembly (which we take back for recycling through our Take-Back Program) and compost the bamboo body. It returns to the earth in 4-6 months, not centuries.',
+          'The sonic motor delivers 40,000 vibrations per minute—matching the performance of premium plastic alternatives. Three smart modes (Clean, Whiten, Sensitive) adapt to your needs, and the 30-day battery life means less charging, less energy consumption.',
         ]
 
     return (
-      <section className={cn("bg-muted py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-primary">

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * InteriorDesignNavbar — fixed, translucent top navigation bar for an upscale
@@ -16,9 +16,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * "Atelier Studio" defaults.
  */
 export const InteriorDesignNavbar = defineComponent({
-  name: "InteriorDesignNavbar",
+  name: 'InteriorDesignNavbar',
   description:
-    "Fixed translucent top navigation bar for an upscale interior-design / architecture studio site: backdrop-blurred, border-bottomed header pinned to the top with a light-weight two-tone wordmark (bold mark + faded suffix) on the left, horizontal nav links in the center, and an outlined square primary CTA on the right (desktop), plus a hamburger menu on mobile. Links and CTA route through useNavigate for page-switching. Editorial, refined and gallery-like. Use as the sticky site header for interior designers, design studios, architecture firms, home staging or renovation businesses.",
+    'Fixed translucent top navigation bar for an upscale interior-design / architecture studio site: backdrop-blurred, border-bottomed header pinned to the top with a light-weight two-tone wordmark (bold mark + faded suffix) on the left, horizontal nav links in the center, and an outlined square primary CTA on the right (desktop), plus a hamburger menu on mobile. Links and CTA route through useNavigate for page-switching. Editorial, refined and gallery-like. Use as the sticky site header for interior designers, design studios, architecture firms, home staging or renovation businesses.',
   props: z.object({
     /** Brand / studio name; split into bold mark + faded suffix on a space. */
     brand: z.string().optional(),
@@ -32,21 +32,22 @@ export const InteriorDesignNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Atelier Studio"
+    const brand = props.brand ?? 'Atelier Studio'
     const nav = props.nav?.length
       ? props.nav
-      : ["Projects", "Services", "Process", "About", "Contact"]
-    const cta = props.cta ?? "Book Consultation"
-    const contactTarget = props.contactTarget ?? nav[nav.length - 1] ?? "Contact"
+      : ['Projects', 'Services', 'Process', 'About', 'Contact']
+    const cta = props.cta ?? 'Book Consultation'
+    const contactTarget =
+      props.contactTarget ?? nav[nav.length - 1] ?? 'Contact'
 
-    const brandParts = brand.split(" ")
+    const brandParts = brand.split(' ')
     const brandMark = brandParts[0]
-    const brandSuffix = brandParts.slice(1).join(" ")
+    const brandSuffix = brandParts.slice(1).join(' ')
 
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

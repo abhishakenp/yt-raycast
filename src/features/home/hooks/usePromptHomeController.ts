@@ -147,6 +147,9 @@ export const usePromptHomeController = () => {
     setIsSubmitting(true)
 
     const { isClone, seedUrls, brief } = parseClonePrompt(runtimePrompt)
+    const explicitCloneUrl = opts?.cloneUrl?.trim() || ''
+    const targetCloneUrl = isClone ? seedUrls[0] : explicitCloneUrl
+    const targetCloneBrief = isClone ? brief : runtimePrompt
 
     try {
       const canUseVerifiedReadyCache =
@@ -203,8 +206,8 @@ export const usePromptHomeController = () => {
           workspace,
           designReferenceUrls: opts?.designReferenceUrls,
           designReferenceNotes: opts?.designReferenceNotes,
-          cloneUrl: isClone ? seedUrls[0] : opts?.cloneUrl,
-          engineVersion: opts?.engineVersion,
+          cloneUrl: targetCloneUrl,
+          engineVersion: targetCloneUrl ? 'v1' : opts?.engineVersion,
         }),
       )
       const sessionId = result.sessionId
@@ -230,7 +233,7 @@ export const usePromptHomeController = () => {
         })
       }
 
-      if (isClone && seedUrls.length > 0) {
+      if (targetCloneUrl) {
         const headers: Record<string, string> = {
           'content-type': 'application/json',
         }
@@ -244,8 +247,8 @@ export const usePromptHomeController = () => {
           body: JSON.stringify({
             sessionId,
             anonymousOwnerSecret,
-            seedUrl: seedUrls[0],
-            brief,
+            seedUrl: targetCloneUrl,
+            brief: targetCloneBrief,
           }),
         }).catch(() => {})
       }

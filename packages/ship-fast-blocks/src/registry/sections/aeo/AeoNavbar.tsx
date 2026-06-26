@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * AeoNavbar — sticky site header for an Answer-Engine-Optimization (AEO) SaaS.
@@ -34,7 +34,7 @@ const BrandMark = () => (
 )
 
 export const AeoNavbar = defineComponent({
-  name: "AeoNavbar",
+  name: 'AeoNavbar',
   description:
     "Sticky site header for an Answer-Engine-Optimization (AEO) SaaS built on the shared SiteNav composite: a citation-spark brand mark beside the product name, centered desktop nav links (Features, How it works, Pricing, FAQ), and a single 'Start Free' pill CTA that routes to pricing, plus a real mobile drawer. All links route through useNavigate. Use as the sticky header for AEO platforms, generative-search visibility tools, or brand-citation analytics products.",
   props: z.object({
@@ -51,10 +51,10 @@ export const AeoNavbar = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Citeable"
+    const brand = props.brand ?? 'Citeable'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "How it works", "Pricing", "FAQ"]
+      : ['Features', 'How it works', 'Pricing', 'FAQ']
     return (
       <SiteNav
         brand={brand}
@@ -62,8 +62,8 @@ export const AeoNavbar = defineComponent({
         brandClassName="text-lg font-semibold"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Start Free",
-          target: props.ctaTarget ?? "Pricing",
+          label: props.ctaLabel ?? 'Start Free',
+          target: props.ctaTarget ?? 'Pricing',
         }}
         homeTarget={props.homeTarget ?? brand}
         className={props.className}

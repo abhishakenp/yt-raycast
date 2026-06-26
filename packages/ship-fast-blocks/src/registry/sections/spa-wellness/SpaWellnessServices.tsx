@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * SpaWellnessServices — treatment-menu grid for a day-spa / wellness page. A
@@ -11,7 +11,7 @@ import { cn } from "#/lib/utils.ts"
  * with no props via baked-in defaults.
  */
 export const SpaWellnessServices = defineComponent({
-  name: "SpaWellnessServices",
+  name: 'SpaWellnessServices',
   description:
     "Treatment-menu grid for a day-spa / wellness page: a calm band with a centered serif heading + intro above a responsive grid of treatment cards, each showing the treatment name, a duration + price row, and a short blurb. Use to present a spa's menu of services — massages, facials, body treatments, and rituals.",
   props: z.object({
@@ -33,60 +33,60 @@ export const SpaWellnessServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Our treatment menu"
+    const heading = props.heading ?? 'Our treatment menu'
     const subheading =
       props.subheading ??
-      "Thoughtfully designed therapies to ease tension, refresh skin, and restore balance."
+      'Thoughtfully designed therapies to ease tension, refresh skin, and restore balance.'
     const services = props.services?.length
       ? props.services
       : [
           {
-            name: "Signature Deep-Tissue Massage",
-            duration: "60 min",
-            price: "$120",
+            name: 'Signature Deep-Tissue Massage',
+            duration: '60 min',
+            price: '$120',
             description:
-              "Firm, targeted pressure to release chronic knots and melt away built-up tension.",
+              'Firm, targeted pressure to release chronic knots and melt away built-up tension.',
           },
           {
-            name: "Hot Stone Ritual",
-            duration: "75 min",
-            price: "$145",
+            name: 'Hot Stone Ritual',
+            duration: '75 min',
+            price: '$145',
             description:
-              "Warm basalt stones glide along the body to soothe sore muscles and quiet the mind.",
+              'Warm basalt stones glide along the body to soothe sore muscles and quiet the mind.',
           },
           {
-            name: "Brightening Facial",
-            duration: "50 min",
-            price: "$110",
+            name: 'Brightening Facial',
+            duration: '50 min',
+            price: '$110',
             description:
-              "A gentle resurfacing facial that leaves skin luminous, hydrated, and refreshed.",
+              'A gentle resurfacing facial that leaves skin luminous, hydrated, and refreshed.',
           },
           {
-            name: "Aromatherapy Body Wrap",
-            duration: "90 min",
-            price: "$165",
+            name: 'Aromatherapy Body Wrap',
+            duration: '90 min',
+            price: '$165',
             description:
-              "A nourishing botanical wrap paired with essential-oil therapy for full-body calm.",
+              'A nourishing botanical wrap paired with essential-oil therapy for full-body calm.',
           },
           {
-            name: "Couples Retreat",
-            duration: "60 min",
-            price: "$240",
+            name: 'Couples Retreat',
+            duration: '60 min',
+            price: '$240',
             description:
-              "Side-by-side massages in a private suite, finished with tea and quiet relaxation.",
+              'Side-by-side massages in a private suite, finished with tea and quiet relaxation.',
           },
           {
-            name: "Reflexology Session",
-            duration: "45 min",
-            price: "$85",
+            name: 'Reflexology Session',
+            duration: '45 min',
+            price: '$85',
             description:
-              "Pressure-point work on the feet to restore energy flow and deep, grounding ease.",
+              'Pressure-point work on the feet to restore energy flow and deep, grounding ease.',
           },
         ]
 
     return (
       <section
-        className={cn("bg-muted/40 py-20 lg:py-28", props.className)}
+        className={cn('bg-muted/40 py-20 lg:py-28', props.className)}
         aria-labelledby="spa-services-heading"
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FlightSimulatorHero — full-bleed, cinematic hero for a flight simulator
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * fully with no props via baked-in defaults.
  */
 export const FlightSimulatorHero = defineComponent({
-  name: "FlightSimulatorHero",
+  name: 'FlightSimulatorHero',
   description:
     "Full-bleed cinematic hero for a flight-simulator landing page: one immersive cockpit-above-the-clouds photo fills the band edge to edge under a token-based dark overlay so light text stays readable. Centered content has an uppercase eyebrow pill, a large headline, a supporting paragraph, dual CTAs (filled 'Buy Now' + outlined translucent 'Watch Trailer'), and a divider-separated spec strip (aircraft count, scenery, platforms). CTAs route through useNavigate. Use as the opening hero for flight simulators, airliner / combat sims, and immersive aviation titles.",
   props: z.object({
@@ -46,27 +46,27 @@ export const FlightSimulatorHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroEyebrow = props.eyebrow ?? "Next-generation flight simulation"
-    const heroHeading = props.heading ?? "Take to the skies like never before"
+    const heroEyebrow = props.eyebrow ?? 'Next-generation flight simulation'
+    const heroHeading = props.heading ?? 'Take to the skies like never before'
     const heroSub =
       props.subheading ??
-      "Fly the entire planet in stunning photoreal detail with true-to-life aircraft, live real-world weather, and the most accurate flight model ever built. From bush strips to international hubs, every journey is yours to fly."
-    const heroPrimary = props.primaryCta ?? "Buy Now"
-    const heroPrimaryTarget = props.primaryTarget ?? "Buy"
-    const heroSecondary = props.secondaryCta ?? "Watch Trailer"
-    const heroSecondaryTarget = props.secondaryTarget ?? "Trailer"
+      'Fly the entire planet in stunning photoreal detail with true-to-life aircraft, live real-world weather, and the most accurate flight model ever built. From bush strips to international hubs, every journey is yours to fly.'
+    const heroPrimary = props.primaryCta ?? 'Buy Now'
+    const heroPrimaryTarget = props.primaryTarget ?? 'Buy'
+    const heroSecondary = props.secondaryCta ?? 'Watch Trailer'
+    const heroSecondaryTarget = props.secondaryTarget ?? 'Trailer'
     const heroImageAlt =
       props.imageAlt ??
-      "airliner cockpit view above a sea of clouds at golden hour with the horizon glowing orange"
-    const heroAircraft = props.aircraft ?? "200+ aircraft"
-    const heroScenery = props.scenery ?? "Global photoreal scenery"
-    const heroPlatforms = props.platforms ?? "PC · Xbox · VR"
+      'airliner cockpit view above a sea of clouds at golden hour with the horizon glowing orange'
+    const heroAircraft = props.aircraft ?? '200+ aircraft'
+    const heroScenery = props.scenery ?? 'Global photoreal scenery'
+    const heroPlatforms = props.platforms ?? 'PC · Xbox · VR'
 
     const specItems = [heroAircraft, heroScenery, heroPlatforms].filter(Boolean)
 
     return (
       <section
-        className={cn("relative isolate overflow-hidden", props.className)}
+        className={cn('relative isolate overflow-hidden', props.className)}
       >
         <Image
           alt={heroImageAlt}

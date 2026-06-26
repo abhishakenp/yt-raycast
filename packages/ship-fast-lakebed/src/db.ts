@@ -1,8 +1,4 @@
-import type {
-  Field,
-  LogContext,
-  TableDefinition,
-} from 'lakebed/server'
+import type { Field, LogContext, TableDefinition } from 'lakebed/server'
 
 import type { JsonRecord, LakebedSessionSchema } from './server.ts'
 
@@ -181,9 +177,9 @@ class ObjectQueryBuilder<TRow extends LakebedBaseRow & JsonRecord> {
   }
 }
 
-class ObjectTableApi<TRow extends LakebedBaseRow & JsonRecord>
-  extends ObjectQueryBuilder<TRow>
-{
+class ObjectTableApi<
+  TRow extends LakebedBaseRow & JsonRecord,
+> extends ObjectQueryBuilder<TRow> {
   private readonly definition: TableDefinition | undefined
 
   constructor(

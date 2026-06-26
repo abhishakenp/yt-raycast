@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * MarketplaceFooter — rich, multi-column closing footer for a multi-vendor
@@ -16,9 +16,9 @@ import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
  * "MarketHub" defaults.
  */
 export const MarketplaceFooter = defineComponent({
-  name: "MarketplaceFooter",
+  name: 'MarketplaceFooter',
   description:
-    "Rich, multi-column closing footer for a multi-vendor marketplace / e-commerce site built on the shared SiteFooter composite: a brand-square logo tile beside the marketplace name, a marketplace-flavored tagline, a social row, and a responsive grid of link columns (Shop, Sell, Company, Support); a bordered-top bottom bar carries an auto-updating copyright line plus legal links. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for online marketplaces, multi-vendor or maker/artisan platforms, handmade/craft stores, and retail aggregators.",
+    'Rich, multi-column closing footer for a multi-vendor marketplace / e-commerce site built on the shared SiteFooter composite: a brand-square logo tile beside the marketplace name, a marketplace-flavored tagline, a social row, and a responsive grid of link columns (Shop, Sell, Company, Support); a bordered-top bottom bar carries an auto-updating copyright line plus legal links. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for online marketplaces, multi-vendor or maker/artisan platforms, handmade/craft stores, and retail aggregators.',
   props: z.object({
     /** Brand / marketplace name shown as the wordmark. */
     brand: z.string().optional(),
@@ -39,43 +39,43 @@ export const MarketplaceFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "MarketHub"
+    const brand = props.brand ?? 'MarketHub'
     const social = props.social?.length
       ? props.social
-      : [{ label: "Instagram" }, { label: "Twitter" }, { label: "Pinterest" }]
+      : [{ label: 'Instagram' }, { label: 'Twitter' }, { label: 'Pinterest' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Shop",
-            links: ["Categories", "Trending", "New Arrivals", "Gift Cards"],
+            title: 'Shop',
+            links: ['Categories', 'Trending', 'New Arrivals', 'Gift Cards'],
           },
           {
-            title: "Sell",
+            title: 'Sell',
             links: [
-              "Start Selling",
-              "Seller Handbook",
-              "Pricing & Fees",
-              "Seller Stories",
+              'Start Selling',
+              'Seller Handbook',
+              'Pricing & Fees',
+              'Seller Stories',
             ],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Press", "Blog"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Press', 'Blog'],
           },
           {
-            title: "Support",
-            links: ["Help Center", "Buyer Protection", "Shipping", "Contact"],
+            title: 'Support',
+            links: ['Help Center', 'Buyer Protection', 'Shipping', 'Contact'],
           },
         ]
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy", "Terms", "Cookies"]
+      : ['Privacy', 'Terms', 'Cookies']
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -90,12 +90,12 @@ export const MarketplaceFooter = defineComponent({
         brandMark={<LogoMark className="size-8 text-sm" />}
         tagline={
           props.tagline ??
-          "The marketplace where independent sellers and curious buyers meet — millions of unique products, one trusted checkout."
+          'The marketplace where independent sellers and curious buyers meet — millions of unique products, one trusted checkout.'
         }
         social={social}
         columns={columns}
         legal={legal}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import type { ReactNode } from "react"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import type { ReactNode } from 'react'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const ICONS: ReactNode[] = [
   <>
@@ -47,41 +47,41 @@ const FeatureIcon = ({ glyph }: { glyph: ReactNode }) => (
 
 const DEFAULT_FEATURES: { title: string; description: string }[] = [
   {
-    title: "Answer tracking",
+    title: 'Answer tracking',
     description:
-      "Monitor exactly how ChatGPT, Perplexity, and Google AI Overviews answer the prompts that matter — and whether your brand is cited.",
+      'Monitor exactly how ChatGPT, Perplexity, and Google AI Overviews answer the prompts that matter — and whether your brand is cited.',
   },
   {
-    title: "Citation optimization",
+    title: 'Citation optimization',
     description:
-      "Get concrete, prompt-level recommendations to restructure content so answer engines pull and attribute your pages.",
+      'Get concrete, prompt-level recommendations to restructure content so answer engines pull and attribute your pages.',
   },
   {
-    title: "Share-of-voice monitoring",
+    title: 'Share-of-voice monitoring',
     description:
       "See your brand's share of AI answers against competitors over time, broken down by engine, topic, and intent.",
   },
   {
-    title: "Source & sentiment reporting",
+    title: 'Source & sentiment reporting',
     description:
-      "Know which sources engines trust, what they say about you, and where sentiment drifts — with weekly executive reports.",
+      'Know which sources engines trust, what they say about you, and where sentiment drifts — with weekly executive reports.',
   },
   {
-    title: "Prompt opportunity finder",
+    title: 'Prompt opportunity finder',
     description:
-      "Surface high-value, low-coverage prompts where you can realistically win the cited answer first.",
+      'Surface high-value, low-coverage prompts where you can realistically win the cited answer first.',
   },
   {
-    title: "Alerts & change detection",
+    title: 'Alerts & change detection',
     description:
-      "Get notified the moment an engine changes how it answers a tracked query or drops your citation.",
+      'Get notified the moment an engine changes how it answers a tracked query or drops your citation.',
   },
 ]
 
 export const AeoFeatures = defineComponent({
-  name: "AeoFeatures",
+  name: 'AeoFeatures',
   description:
-    "Feature grid for an Answer-Engine-Optimization (AEO) SaaS, composing the shared FeatureGrid composite into a set of capability cards — answer tracking, citation optimization, share-of-voice monitoring, source & sentiment reporting, prompt opportunity finding, and change alerts. Each card pairs a line icon with a benefit-led description. Use to communicate product value on AEO, generative-search visibility, or brand-citation analytics landing pages.",
+    'Feature grid for an Answer-Engine-Optimization (AEO) SaaS, composing the shared FeatureGrid composite into a set of capability cards — answer tracking, citation optimization, share-of-voice monitoring, source & sentiment reporting, prompt opportunity finding, and change alerts. Each card pairs a line icon with a benefit-led description. Use to communicate product value on AEO, generative-search visibility, or brand-citation analytics landing pages.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -97,10 +97,10 @@ export const AeoFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Everything you need to win the AI answer"
+    const heading = props.heading ?? 'Everything you need to win the AI answer'
     const subheading =
       props.subheading ??
-      "One platform to track, optimize, and prove your visibility across every answer engine."
+      'One platform to track, optimize, and prove your visibility across every answer engine.'
     const source = props.features?.length ? props.features : DEFAULT_FEATURES
     const features = source.map((f, i) => ({
       title: f.title,
@@ -109,7 +109,12 @@ export const AeoFeatures = defineComponent({
     }))
 
     return (
-      <section className={"bg-background py-20 lg:py-28" + (props.className ? " " + props.className : "")}>
+      <section
+        className={
+          'bg-background py-20 lg:py-28' +
+          (props.className ? ' ' + props.className : '')
+        }
+      >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <FeatureGrid
             heading={heading}

@@ -14,9 +14,13 @@ export function brandProfilePromptBlock(brandProfile = null) {
     'VERIFIED BRAND PROFILE (web-grounded, use as source of truth):',
     `- Requested brand name: ${brandProfile.requestedName || brandProfile.officialName || 'Unknown brand'}`,
     `- Official brand name: ${brandProfile.officialName || brandProfile.requestedName || 'Unknown brand'}`,
-    brandProfile.officialUrl ? `- Official website: ${brandProfile.officialUrl}` : '',
+    brandProfile.officialUrl
+      ? `- Official website: ${brandProfile.officialUrl}`
+      : '',
     brandProfile.logoUrl ? `- Official logo URL: ${brandProfile.logoUrl}` : '',
-    brandProfile.description ? `- Brand summary: ${brandProfile.description}` : '',
+    brandProfile.description
+      ? `- Brand summary: ${brandProfile.description}`
+      : '',
     listLine('Email', (brandProfile.emails || []).slice(0, 3)),
     listLine('Phone', (brandProfile.phones || []).slice(0, 3)),
     listLine('Address', (brandProfile.addresses || []).slice(0, 2)),

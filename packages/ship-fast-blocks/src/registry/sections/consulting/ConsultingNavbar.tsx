@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ConsultingNavbar — sticky top navigation bar for a management-consulting
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Nexus Strategy Partners" defaults.
  */
 export const ConsultingNavbar = defineComponent({
-  name: "ConsultingNavbar",
+  name: 'ConsultingNavbar',
   description:
-    "Sticky top navigation bar for a management-consulting firm landing page: a border-bottomed, backdrop-blurred header with a solid brand-initial logo tile + firm name on the left, horizontal nav links in the center (desktop), a primary CTA button and a hamburger menu icon on the right. Every link and the logo route through useNavigate for page-switching. Use as the site header for consulting firms, professional-services groups, corporate advisories, or B2B service businesses.",
+    'Sticky top navigation bar for a management-consulting firm landing page: a border-bottomed, backdrop-blurred header with a solid brand-initial logo tile + firm name on the left, horizontal nav links in the center (desktop), a primary CTA button and a hamburger menu icon on the right. Every link and the logo route through useNavigate for page-switching. Use as the site header for consulting firms, professional-services groups, corporate advisories, or B2B service businesses.',
   props: z.object({
     /** Firm / brand name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -32,18 +32,18 @@ export const ConsultingNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Nexus Strategy Partners"
+    const brand = props.brand ?? 'Nexus Strategy Partners'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Insights", "Industries", "About", "Careers"]
-    const ctaLabel = props.ctaLabel ?? "Contact Us"
-    const ctaTarget = props.ctaTarget ?? "View Case Studies"
+      : ['Services', 'Insights', 'Industries', 'About', 'Careers']
+    const ctaLabel = props.ctaLabel ?? 'Contact Us'
+    const ctaTarget = props.ctaTarget ?? 'View Case Studies'
     const homeTarget = props.homeTarget ?? nav[0]
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-sm bg-primary font-bold text-primary-foreground",
+          'grid place-items-center rounded-sm bg-primary font-bold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -55,7 +55,7 @@ export const ConsultingNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

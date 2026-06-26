@@ -11,8 +11,8 @@ describe('getFallbackPromptSuggestions', () => {
       'utf8',
     )
 
-    expect(source).not.toContain("import { GROQ_API_KEY }")
-    expect(source).not.toContain("import { groq }")
+    expect(source).not.toContain('import { GROQ_API_KEY }')
+    expect(source).not.toContain('import { groq }')
     expect(source).toContain("import('@ship-fast/engine/llm/groq.js')")
   })
 

@@ -1,17 +1,17 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 import {
   Collapsible as UICollapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "#/components/ui/collapsible.tsx"
+} from '#/components/ui/collapsible.tsx'
 
 // Flatten Collapsible/Trigger/Content into label + children. Open by default
 // so the content is visible in a static preview.
 export const Collapsible = defineComponent({
-  name: "Collapsible",
+  name: 'Collapsible',
   description:
-    "Single show/hide region with a clickable trigger label. Open by default. children is the collapsible body.",
+    'Single show/hide region with a clickable trigger label. Open by default. children is the collapsible body.',
   props: z.object({
     label: z.string(),
     children: z.array(z.any()).optional(),

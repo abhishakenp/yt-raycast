@@ -43,11 +43,17 @@ vi.mock('./groq.js', () => ({
               qualityScoreCalls <= 2
                 ? 'CTA is literal and not premium enough.'
                 : 'The rewrite reaches the premium local copy bar.',
-            weakIds: qualityScoreCalls <= 2 ? payload.items.map((item) => item.id) : [],
+            weakIds:
+              qualityScoreCalls <= 2
+                ? payload.items.map((item) => item.id)
+                : [],
             translations:
               qualityScoreCalls === 1
                 ? Object.fromEntries(
-                    payload.items.map((item) => [item.id, `${item.draft} judge polished`]),
+                    payload.items.map((item) => [
+                      item.id,
+                      `${item.draft} judge polished`,
+                    ]),
                   )
                 : undefined,
           }),
@@ -64,7 +70,9 @@ vi.mock('./groq.js', () => ({
       }
       return {
         content: JSON.stringify({
-          translations: Object.fromEntries(payload.items.map((item) => [item.id, item.draft])),
+          translations: Object.fromEntries(
+            payload.items.map((item) => [item.id, item.draft]),
+          ),
         }),
       }
     }
@@ -93,7 +101,9 @@ describe('translateHtml', () => {
 
     expect(groqCalls[0].opts.model).toBe('llama-3.3-70b-versatile')
     expect(result.content).toContain('<h1>Bonjour</h1>')
-    expect(result.content).toContain('<a href="/start">Commencer maintenant</a>')
+    expect(result.content).toContain(
+      '<a href="/start">Commencer maintenant</a>',
+    )
     expect(result.content).toContain('<script>Hello</script>')
     expect(result.translatedCount).toBe(2)
   })
@@ -101,7 +111,12 @@ describe('translateHtml', () => {
   it('does not retranslate HTML that is already in the target script', async () => {
     const result = await translateHtml(
       '<main><h1>വ്യക്തമായ മാർക്കറ്റിംഗ് വഴി വളരുക</h1><a href="/contact">കോൾ ബുക്ക് ചെയ്യൂ</a></main>',
-      { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം', script: 'Malayalam' },
+      {
+        code: 'ml',
+        name: 'Malayalam',
+        nativeName: 'മലയാളം',
+        script: 'Malayalam',
+      },
     )
 
     expect(groqCalls).toHaveLength(0)
@@ -112,12 +127,21 @@ describe('translateHtml', () => {
   it('does localize mixed target-language and English HTML instead of skipping the whole page', async () => {
     await translateHtml(
       '<main><h1>മാർക്കറ്റിംഗ് പരിഹാരങ്ങൾ for small business growth</h1><a href="/start">Get started</a></main>',
-      { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം', script: 'Malayalam' },
+      {
+        code: 'ml',
+        name: 'Malayalam',
+        nativeName: 'മലയാളം',
+        script: 'Malayalam',
+      },
     )
 
     expect(groqCalls.length).toBeGreaterThan(0)
-    expect(JSON.parse(groqCalls[0].prompt).sourceTexts[0].text).toContain('small business growth')
-    expect(groqCalls[0].opts.system).toContain('English, target-language, or mixed')
+    expect(JSON.parse(groqCalls[0].prompt).sourceTexts[0].text).toContain(
+      'small business growth',
+    )
+    expect(groqCalls[0].opts.system).toContain(
+      'English, target-language, or mixed',
+    )
   })
 
   it('asks for persuasive in-market website localization with page context', async () => {
@@ -156,7 +180,8 @@ describe('translateHtml', () => {
       code: 'ml',
       name: 'Malayalam',
       nativeName: 'മലയാളം',
-      prompt: 'Build a marketing company website for small business owners with a sleek professional tone.',
+      prompt:
+        'Build a marketing company website for small business owners with a sleek professional tone.',
     })
 
     expect(JSON.parse(groqCalls[0].prompt).projectBrief).toContain(
@@ -181,8 +206,16 @@ describe('translateHtml', () => {
     expect(groqCalls[1].opts.system).toContain('11/10')
     expect(groqCalls[1].opts.system).toContain('rewrite awkward')
     expect(JSON.parse(groqCalls[1].prompt).items).toEqual([
-      { id: 't0', source: 'Grow faster with clear marketing', draft: 'Bonjour' },
-      { id: 't1', source: 'Book a strategy call', draft: 'Commencer maintenant' },
+      {
+        id: 't0',
+        source: 'Grow faster with clear marketing',
+        draft: 'Bonjour',
+      },
+      {
+        id: 't1',
+        source: 'Book a strategy call',
+        draft: 'Commencer maintenant',
+      },
     ])
   })
 
@@ -193,10 +226,16 @@ describe('translateHtml', () => {
     )
 
     expect(groqCalls).toHaveLength(6)
-    expect(groqCalls[2].opts.system).toContain('ruthless translation quality judge')
+    expect(groqCalls[2].opts.system).toContain(
+      'ruthless translation quality judge',
+    )
     expect(groqCalls[2].opts.system).toContain('11/10')
-    expect(groqCalls[2].opts.system).toContain('practical insights means actionable guidance')
-    expect(groqCalls[2].opts.system).toContain('strategy call means consultation')
+    expect(groqCalls[2].opts.system).toContain(
+      'practical insights means actionable guidance',
+    )
+    expect(groqCalls[2].opts.system).toContain(
+      'strategy call means consultation',
+    )
     expect(groqCalls[2].opts.system).toContain('Do not award 11')
     expect(groqCalls[2].opts.system).toContain('Do not nitpick')
     expect(groqCalls[2].opts.system).toContain('award 11')
@@ -207,17 +246,29 @@ describe('translateHtml', () => {
     expect(groqCalls[2].opts.system).toContain('If score is below 11')
     expect(groqCalls[2].opts.system).toContain('"translations"')
     expect(JSON.parse(groqCalls[2].prompt).items).toHaveLength(2)
-    expect(groqCalls[3].opts.system).toContain('ruthless translation quality judge')
-    expect(groqCalls[4].opts.system).toContain('rewrite only the weak translations')
-    expect(groqCalls[4].opts.system).toContain('natural contemporary website language')
+    expect(groqCalls[3].opts.system).toContain(
+      'ruthless translation quality judge',
+    )
+    expect(groqCalls[4].opts.system).toContain(
+      'rewrite only the weak translations',
+    )
+    expect(groqCalls[4].opts.system).toContain(
+      'natural contemporary website language',
+    )
     expect(groqCalls[4].opts.system).toContain('accepted English loanwords')
-    expect(groqCalls[4].opts.system).toContain('strategy, marketing, call, booking')
+    expect(groqCalls[4].opts.system).toContain(
+      'strategy, marketing, call, booking',
+    )
     expect(groqCalls[4].opts.system).toContain('conversational professional')
     expect(groqCalls[4].opts.system).toContain('digital-marketing register')
     expect(groqCalls[4].opts.system).toContain('Do not repeat wording')
-    expect(groqCalls[5].opts.system).toContain('ruthless translation quality judge')
+    expect(groqCalls[5].opts.system).toContain(
+      'ruthless translation quality judge',
+    )
     expect(result.qualityScore).toBe(11)
     expect(result.content).toContain('Bonjour judge polished polished')
-    expect(result.content).toContain('Commencer maintenant judge polished polished')
+    expect(result.content).toContain(
+      'Commencer maintenant judge polished polished',
+    )
   })
 })

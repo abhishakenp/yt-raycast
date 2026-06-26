@@ -5,49 +5,49 @@ import {
   ExclamationTriangleIcon,
   PlusIcon,
   QuestionMarkCircledIcon,
-} from "@radix-ui/react-icons";
-import { GenericDocument } from "convex/server";
+} from '@radix-ui/react-icons'
+import { GenericDocument } from 'convex/server'
 import {
   DatabaseIndexFilterClause,
   Filter,
   FilterExpression,
   FilterValidationError,
   SearchIndexFilterClause,
-} from "system-udfs/convex/_system/frontend/lib/filters";
+} from 'system-udfs/convex/_system/frontend/lib/filters'
 import {
   FilterEditor,
   FilterState,
-} from "@common/features/data/components/FilterEditor/FilterEditor";
-import { SchemaJson } from "@common/lib/format";
-import { Button } from "@ui/Button";
-import { Tooltip } from "@ui/Tooltip";
-import { HelpTooltip } from "@ui/HelpTooltip";
+} from '@common/features/data/components/FilterEditor/FilterEditor'
+import { SchemaJson } from '@common/lib/format'
+import { Button } from '@ui/Button'
+import { Tooltip } from '@ui/Tooltip'
+import { HelpTooltip } from '@ui/HelpTooltip'
 import {
   FilterButton,
   filterMenuId,
-} from "@common/features/data/components/DataFilters/FilterButton";
-import { ValidatorJSON, convexToJson } from "convex/values";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useMap } from "react-use";
-import isEqual from "lodash/isEqual";
-import cloneDeep from "lodash/cloneDeep";
+} from '@common/features/data/components/DataFilters/FilterButton'
+import { ValidatorJSON, convexToJson } from 'convex/values'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useMap } from 'react-use'
+import isEqual from 'lodash/isEqual'
+import cloneDeep from 'lodash/cloneDeep'
 import {
   documentValidatorForTable,
   validatorForColumn,
-} from "@common/features/data/components/Table/utils/validators";
+} from '@common/features/data/components/Table/utils/validators'
 import {
   useFilterHistory,
   useTableFilters,
-} from "@common/features/data/lib/useTableFilters";
-import { cn } from "@ui/cn";
-import { DeploymentInfoContext } from "@common/lib/deploymentContext";
-import { useNents } from "@common/lib/useNents";
-import { useQuery } from "convex/react";
-import { api } from "system-udfs/convex/_generated/api";
-import { Index } from "@common/features/data/lib/api";
-import { IndexFilters, getDefaultIndex } from "./IndexFilters";
-import { clearFilters } from "./clearFilters";
-import { FieldSelector } from "./FieldSelector";
+} from '@common/features/data/lib/useTableFilters'
+import { cn } from '@ui/cn'
+import { DeploymentInfoContext } from '@common/lib/deploymentContext'
+import { useNents } from '@common/lib/useNents'
+import { useQuery } from 'convex/react'
+import { api } from 'system-udfs/convex/_generated/api'
+import { Index } from '@common/features/data/lib/api'
+import { IndexFilters, getDefaultIndex } from './IndexFilters'
+import { clearFilters } from './clearFilters'
+import { FieldSelector } from './FieldSelector'
 
 export function DataFilters({
   defaultDocument,
@@ -71,33 +71,33 @@ export function DataFilters({
   columnOrder,
   setColumnOrder,
 }: {
-  defaultDocument: GenericDocument;
-  tableName: string;
-  tableFields: string[];
-  componentId: string | null;
-  filters?: FilterExpression;
-  onFiltersChange(next: FilterExpression): void;
-  dataFetchErrors?: FilterValidationError[];
-  draftFilters?: FilterExpression;
-  setDraftFilters(next: FilterExpression): void;
-  activeSchema: SchemaJson | null;
-  numRows?: number;
-  numRowsLoaded: number;
-  hasFilters: boolean;
-  showFilters: boolean;
-  setShowFilters: React.Dispatch<React.SetStateAction<boolean>>;
-  allFields: string[];
-  hiddenColumns: string[];
-  setHiddenColumns: (hiddenColumns: string[]) => void;
-  columnOrder: string[];
-  setColumnOrder: (columnOrder: string[]) => void;
+  defaultDocument: GenericDocument
+  tableName: string
+  tableFields: string[]
+  componentId: string | null
+  filters?: FilterExpression
+  onFiltersChange(next: FilterExpression): void
+  dataFetchErrors?: FilterValidationError[]
+  draftFilters?: FilterExpression
+  setDraftFilters(next: FilterExpression): void
+  activeSchema: SchemaJson | null
+  numRows?: number
+  numRowsLoaded: number
+  hasFilters: boolean
+  showFilters: boolean
+  setShowFilters: React.Dispatch<React.SetStateAction<boolean>>
+  allFields: string[]
+  hiddenColumns: string[]
+  setHiddenColumns: (hiddenColumns: string[]) => void
+  columnOrder: string[]
+  setColumnOrder: (columnOrder: string[]) => void
 }) {
-  const { selectedNent } = useNents();
+  const { selectedNent } = useNents()
   const indexes =
     (useQuery(api._system.frontend.indexes.default, {
       tableName,
       tableNamespace: selectedNent?.id ?? null,
-    }) satisfies undefined | null | Index[]) ?? undefined;
+    }) satisfies undefined | null | Index[]) ?? undefined
   const {
     isDirty,
     hasInvalidFilters,
@@ -122,19 +122,19 @@ export function DataFilters({
     draftFilters,
     setDraftFilters,
     activeSchema,
-  });
+  })
 
-  const numRowsWeKnowOf = hasFilters ? numRowsLoaded : numRows;
+  const numRowsWeKnowOf = hasFilters ? numRowsLoaded : numRows
 
-  const { useLogDeploymentEvent } = useContext(DeploymentInfoContext);
-  const log = useLogDeploymentEvent();
+  const { useLogDeploymentEvent } = useContext(DeploymentInfoContext)
+  const log = useLogDeploymentEvent()
 
   const onIndexError = useCallback(
-    (idx: number, errors: string[]) => onError("index", idx, errors),
+    (idx: number, errors: string[]) => onError('index', idx, errors),
     [onError],
-  );
+  )
 
-  const isSearchIndex = shownFilters.index && "search" in shownFilters.index;
+  const isSearchIndex = shownFilters.index && 'search' in shownFilters.index
 
   return (
     <form
@@ -142,23 +142,23 @@ export function DataFilters({
       id={filterMenuId}
       data-testid="filterMenu"
       onSubmit={(e) => {
-        e.preventDefault();
+        e.preventDefault()
         if (hasInvalidFilters) {
-          return;
+          return
         }
-        log("apply filters", {
+        log('apply filters', {
           hasIndexFilters:
             (shownFilters.index?.clauses || []).filter((c) => c.enabled)
               .length > 0,
           hasOtherFilters:
             shownFilters.clauses.filter((c) => c.enabled !== false).length > 0,
-        });
+        })
         onFiltersChange(
           draftFilters || {
             clauses: [],
             index: undefined,
           },
-        );
+        )
       }}
       key={currentIdx}
     >
@@ -167,8 +167,8 @@ export function DataFilters({
           <div className="flex items-center gap-2">
             <div
               className={cn(
-                "flex w-full min-w-fit overflow-hidden rounded-lg border bg-background-secondary",
-                showFilters && "rounded-b-none border-b-0",
+                'flex w-full min-w-fit overflow-hidden rounded-lg border bg-background-secondary',
+                showFilters && 'rounded-b-none border-b-0',
               )}
             >
               <div className="flex items-center">
@@ -176,39 +176,39 @@ export function DataFilters({
                   size="xs"
                   variant="neutral"
                   className={cn(
-                    "rounded-r-none border-0 border-border-transparent dark:border-border-transparent",
+                    'rounded-r-none border-0 border-border-transparent dark:border-border-transparent',
                   )}
                   icon={<ArrowLeftIcon className="my-px" />}
                   inline
                   tip="Previous Filters"
                   disabled={currentIdx + 1 >= filterHistory.length}
                   onClick={() => {
-                    setShowFilters(true);
-                    setCurrentIdx(currentIdx + 1);
-                    setDraftFilters(filterHistory[currentIdx + 1]);
+                    setShowFilters(true)
+                    setCurrentIdx(currentIdx + 1)
+                    setDraftFilters(filterHistory[currentIdx + 1])
                   }}
                 />
                 <Button
                   size="xs"
                   variant="neutral"
                   className={cn(
-                    "rounded-none border-0 dark:border-border-transparent",
+                    'rounded-none border-0 dark:border-border-transparent',
                   )}
                   icon={<ArrowRightIcon className="my-px" />}
                   tip="Next Filters"
                   inline
                   disabled={currentIdx <= 0}
                   onClick={() => {
-                    setShowFilters(true);
-                    setCurrentIdx(currentIdx - 1);
-                    setDraftFilters(filterHistory[currentIdx - 1]);
+                    setShowFilters(true)
+                    setCurrentIdx(currentIdx - 1)
+                    setDraftFilters(filterHistory[currentIdx - 1])
                   }}
                 />
               </div>
               <FilterButton
                 filters={filters}
                 onClick={() => {
-                  setShowFilters(!showFilters);
+                  setShowFilters(!showFilters)
                 }}
                 open={showFilters}
               />
@@ -225,14 +225,14 @@ export function DataFilters({
             {numRowsWeKnowOf !== undefined && (
               <div
                 className={cn(
-                  "flex items-center gap-1",
-                  "text-xs whitespace-nowrap",
+                  'flex items-center gap-1',
+                  'text-xs whitespace-nowrap',
                 )}
               >
                 <span className="font-semibold">
-                  {numRowsWeKnowOf.toLocaleString()}{" "}
+                  {numRowsWeKnowOf.toLocaleString()}{' '}
                 </span>
-                {numRowsWeKnowOf === 1 ? "document" : "documents"}{" "}
+                {numRowsWeKnowOf === 1 ? 'document' : 'documents'}{' '}
                 {hasFilters && (
                   <>
                     {numRowsWeKnowOf !== numRows && `loaded`}
@@ -270,14 +270,14 @@ export function DataFilters({
               {shownFilters.clauses.length > 0 && (
                 <div className="mt-2 flex flex-col gap-2">
                   <div className="flex items-center gap-1">
-                    <hr className="w-2" />{" "}
+                    <hr className="w-2" />{' '}
                     <p className="flex items-center gap-1 text-xs text-content-secondary">
                       Other Filters
                       <HelpTooltip tipSide="right">
                         Other filters are not indexed and are applied after the
                         indexed filters. These filters are less efficient.
                       </HelpTooltip>
-                    </p>{" "}
+                    </p>{' '}
                     <hr className="grow" />
                   </div>
                   {shownFilters.clauses.map((clause, idx) => (
@@ -291,9 +291,9 @@ export function DataFilters({
                       onDeleteFilter={onDeleteFilter}
                       onApplyFilters={() => {
                         if (hasInvalidFilters) {
-                          return;
+                          return
                         }
-                        log("apply filters", {
+                        log('apply filters', {
                           hasIndexFilters:
                             (shownFilters.index?.clauses || []).filter(
                               (c) => c.enabled,
@@ -302,10 +302,10 @@ export function DataFilters({
                             shownFilters.clauses.filter(
                               (c) => c.enabled !== false,
                             ).length > 0,
-                        });
-                        onFiltersChange(shownFilters);
+                        })
+                        onFiltersChange(shownFilters)
                       }}
-                      onError={(...args) => onError("filter", ...args)}
+                      onError={(...args) => onError('filter', ...args)}
                       error={
                         clause.enabled !== false
                           ? dataFetchErrors?.find((e) => e.filter === idx)
@@ -332,8 +332,8 @@ export function DataFilters({
                     className="text-xs"
                     icon={<PlusIcon />}
                     onClick={() => {
-                      onAddFilter(shownFilters.clauses.length);
-                      log("add filter");
+                      onAddFilter(shownFilters.clauses.length)
+                      log('add filter')
                     }}
                   >
                     Add filter
@@ -344,7 +344,7 @@ export function DataFilters({
                     type="submit"
                     tip={
                       hasInvalidFilters
-                        ? "Fix the errors above to apply your filters."
+                        ? 'Fix the errors above to apply your filters.'
                         : undefined
                     }
                     disabled={hasInvalidFilters}
@@ -366,7 +366,7 @@ export function DataFilters({
                         variant="neutral"
                         className="ml-auto text-xs"
                         onClick={() => {
-                          onFiltersChange(clearFilters(shownFilters));
+                          onFiltersChange(clearFilters(shownFilters))
                         }}
                       >
                         Clear filters
@@ -388,7 +388,7 @@ export function DataFilters({
         )}
       </div>
     </form>
-  );
+  )
 }
 
 function FilterItem({
@@ -405,18 +405,18 @@ function FilterItem({
   documentValidator,
   shouldSurfaceValidatorErrors,
 }: {
-  idx: number;
-  fields: string[];
-  defaultDocument: GenericDocument;
-  clause: Filter;
-  onChangeFilter(filter: FilterState, idx: number): void;
-  onDeleteFilter(idx: number): void;
-  onApplyFilters(): void;
-  onError(idx: number, errors: string[]): void;
-  error?: string;
-  autoFocusValueEditor?: boolean;
-  documentValidator?: ValidatorJSON;
-  shouldSurfaceValidatorErrors?: boolean;
+  idx: number
+  fields: string[]
+  defaultDocument: GenericDocument
+  clause: Filter
+  onChangeFilter(filter: FilterState, idx: number): void
+  onDeleteFilter(idx: number): void
+  onApplyFilters(): void
+  onError(idx: number, errors: string[]): void
+  error?: string
+  autoFocusValueEditor?: boolean
+  documentValidator?: ValidatorJSON
+  shouldSurfaceValidatorErrors?: boolean
 }) {
   return (
     <div className="flex items-start gap-2" key={idx}>
@@ -441,7 +441,7 @@ function FilterItem({
         </Tooltip>
       )}
     </div>
-  );
+  )
 }
 
 function generateNewFilter(): Filter {
@@ -449,29 +449,29 @@ function generateNewFilter(): Filter {
     // Allocate an ID for the new clause on the client side
     // To be used for the key prop in the FilterEditor
     id: Math.random().toString(),
-    field: "_id",
-    op: "eq",
-    value: "",
+    field: '_id',
+    op: 'eq',
+    value: '',
     enabled: true,
-  };
+  }
 }
 
 function validatorForFilterField(
-  documentValidator: SchemaJson["tables"][0]["documentType"],
+  documentValidator: SchemaJson['tables'][0]['documentType'],
   tableName: string,
   fieldName?: string,
 ): ValidatorJSON | undefined {
   if (!documentValidator || fieldName === undefined) {
-    return undefined;
+    return undefined
   }
 
   switch (fieldName) {
-    case "_id":
-      return { type: "id", tableName };
-    case "_creationTime":
-      return { type: "number" };
+    case '_id':
+      return { type: 'id', tableName }
+    case '_creationTime':
+      return { type: 'number' }
     default:
-      return validatorForColumn(documentValidator, fieldName);
+      return validatorForColumn(documentValidator, fieldName)
   }
 }
 
@@ -484,32 +484,32 @@ function useDataFilters({
   setDraftFilters,
   activeSchema,
 }: {
-  tableName: string;
-  componentId: string | null;
-  filters?: FilterExpression;
-  onFiltersChange(next: FilterExpression): void;
-  draftFilters?: FilterExpression;
-  setDraftFilters(next: FilterExpression): void;
-  activeSchema: SchemaJson | null;
+  tableName: string
+  componentId: string | null
+  filters?: FilterExpression
+  onFiltersChange(next: FilterExpression): void
+  draftFilters?: FilterExpression
+  setDraftFilters(next: FilterExpression): void
+  activeSchema: SchemaJson | null
 }) {
-  const { useLogDeploymentEvent } = useContext(DeploymentInfoContext);
-  const log = useLogDeploymentEvent();
-  const [invalidFilters, { set: setInvalidFilters }] = useMap();
+  const { useLogDeploymentEvent } = useContext(DeploymentInfoContext)
+  const log = useLogDeploymentEvent()
+  const [invalidFilters, { set: setInvalidFilters }] = useMap()
 
-  const isDirty = !isEqual(filters, draftFilters);
+  const isDirty = !isEqual(filters, draftFilters)
   const hasInvalidFilters =
     Object.entries(invalidFilters).filter(([k, v]) => {
       if (v === undefined) {
-        return false;
+        return false
       }
 
-      const [namespace, idx] = k.split("/");
+      const [namespace, idx] = k.split('/')
       const clauses =
-        namespace === "filter"
+        namespace === 'filter'
           ? draftFilters?.clauses
-          : draftFilters?.index?.clauses;
-      return clauses?.[Number(idx)]?.enabled;
-    }).length > 0;
+          : draftFilters?.index?.clauses
+      return clauses?.[Number(idx)]?.enabled
+    }).length > 0
 
   const shownFilters = useMemo(
     () =>
@@ -519,21 +519,21 @@ function useDataFilters({
         index: getDefaultIndex(),
       } satisfies FilterExpression),
     [draftFilters],
-  );
+  )
 
   const onChangeFilter = useCallback(
     (filter: FilterState, idx: number) => {
-      const newFilters = cloneDeep(shownFilters);
-      const oldFilter = newFilters.clauses[idx];
+      const newFilters = cloneDeep(shownFilters)
+      const oldFilter = newFilters.clauses[idx]
 
       // Convert the FilterState to a Filter
-      let newFilter: Filter;
-      if (filter.op === "type" || filter.op === "notype") {
+      let newFilter: Filter
+      if (filter.op === 'type' || filter.op === 'notype') {
         // Type filters are special because they have a value that is not a JSONValue.
-        newFilter = filter;
-      } else if (filter.op === "anyOf" || filter.op === "noneOf") {
+        newFilter = filter
+      } else if (filter.op === 'anyOf' || filter.op === 'noneOf') {
         // Return an incomplete filter for either of these operators
-        newFilter = { op: "eq" };
+        newFilter = { op: 'eq' }
       } else {
         newFilter = {
           op: filter.op,
@@ -544,83 +544,83 @@ function useDataFilters({
               ? convexToJson(filter.value)
               : filter.value,
           enabled: filter.enabled,
-        };
+        }
       }
 
       // Log filter changes
       if (oldFilter) {
         if (oldFilter.enabled !== filter.enabled) {
-          log("filter toggle", {
+          log('filter toggle', {
             enabled: filter.enabled,
-            filterType: "regular",
+            filterType: 'regular',
             filterIndex: idx,
-          });
+          })
         } else if (oldFilter.op !== filter.op) {
-          log("filter operator change", {
+          log('filter operator change', {
             oldOperator: oldFilter.op,
             newOperator: filter.op,
-            filterType: "regular",
+            filterType: 'regular',
             filterIndex: idx,
-          });
+          })
         } else if (oldFilter.field !== filter.field) {
-          log("filter field change", {
-            filterType: "regular",
+          log('filter field change', {
+            filterType: 'regular',
             filterIndex: idx,
-          });
+          })
         }
       }
 
-      newFilters.clauses[idx] = newFilter;
-      setDraftFilters(newFilters);
+      newFilters.clauses[idx] = newFilter
+      setDraftFilters(newFilters)
     },
     [shownFilters, setDraftFilters, log],
-  );
+  )
 
   const onChangeIndexFilter = useCallback(
     (
       filter: DatabaseIndexFilterClause | SearchIndexFilterClause,
       idx: number,
     ) => {
-      const newFilters = cloneDeep(shownFilters);
+      const newFilters = cloneDeep(shownFilters)
       if (!newFilters.index) {
-        throw new Error("Index not found");
+        throw new Error('Index not found')
       }
-      const oldFilter = newFilters.index.clauses[idx];
+      const oldFilter = newFilters.index.clauses[idx]
 
       // Log index filter changes
       if (oldFilter) {
         if (oldFilter.enabled !== filter.enabled) {
-          log("filter toggle", {
+          log('filter toggle', {
             enabled: filter.enabled,
-            filterType: "index",
+            filterType: 'index',
             filterIndex: idx,
-          });
+          })
         } else if (
-          "type" in oldFilter &&
-          "type" in filter &&
+          'type' in oldFilter &&
+          'type' in filter &&
           oldFilter.type !== filter.type
         ) {
-          log("index filter type change", {
+          log('index filter type change', {
             oldType: oldFilter.type,
             newType: filter.type,
             filterIndex: idx,
-          });
+          })
         }
       }
 
-      newFilters.index.clauses[idx] = filter;
-      setDraftFilters(newFilters);
+      newFilters.index.clauses[idx] = filter
+      setDraftFilters(newFilters)
     },
     [shownFilters, setDraftFilters, log],
-  );
+  )
 
   const onDeleteFilter = useCallback(
     (idx: number) => {
-      log("filter delete", {
-        filterType: "regular",
+      log('filter delete', {
+        filterType: 'regular',
         filterIndex: idx,
-      });
-      setInvalidFilters(idx, undefined);
+      })
+      setInvalidFilters(idx, undefined)
       const newFilters = {
         ...shownFilters,
         clauses: [
@@ -628,18 +628,18 @@ function useDataFilters({
           ...shownFilters.clauses.slice(idx + 1),
         ],
         index: shownFilters.index || getDefaultIndex(),
-      } satisfies FilterExpression;
-      setDraftFilters(newFilters);
+      } satisfies FilterExpression
+      setDraftFilters(newFilters)
     },
     [shownFilters, setDraftFilters, setInvalidFilters, log],
-  );
+  )
 
   const onAddFilter = useCallback(
     (idx: number) => {
-      log("filter add", {
-        filterType: "regular",
+      log('filter add', {
+        filterType: 'regular',
         filterIndex: idx,
-      });
+      })
       const newFilters = {
         ...shownFilters,
         clauses: [
@@ -648,32 +648,32 @@ function useDataFilters({
           ...shownFilters.clauses.slice(idx),
         ],
         index: shownFilters.index || getDefaultIndex(),
-      } satisfies FilterExpression;
-      setDraftFilters(newFilters);
+      } satisfies FilterExpression
+      setDraftFilters(newFilters)
     },
     [shownFilters, setDraftFilters, log],
-  );
+  )
 
   const onError = useCallback(
-    (namespace: "filter" | "index", idx: number, errors: string[]) => {
+    (namespace: 'filter' | 'index', idx: number, errors: string[]) => {
       setInvalidFilters(
         `${namespace}/${idx}`,
         errors.length ? errors[0] : undefined,
-      );
+      )
     },
     [setInvalidFilters],
-  );
+  )
 
-  const { filterHistory } = useFilterHistory(tableName, componentId);
-  const { applyFiltersWithHistory } = useTableFilters(tableName, componentId);
-  const [currentIdx, setCurrentIdx] = useState(0);
+  const { filterHistory } = useFilterHistory(tableName, componentId)
+  const { applyFiltersWithHistory } = useTableFilters(tableName, componentId)
+  const [currentIdx, setCurrentIdx] = useState(0)
   useEffect(() => {
-    setCurrentIdx(0);
-  }, [filterHistory]);
+    setCurrentIdx(0)
+  }, [filterHistory])
 
   const documentValidator = activeSchema
     ? documentValidatorForTable(activeSchema, tableName)
-    : undefined;
+    : undefined
 
   const getValidatorForField = useCallback(
     (fieldName?: string) =>
@@ -681,14 +681,14 @@ function useDataFilters({
         ? validatorForFilterField(documentValidator, tableName, fieldName)
         : undefined,
     [documentValidator, tableName],
-  );
+  )
 
   const onChangeOrder = useCallback(
-    (newOrder: "asc" | "desc") => {
-      log("filter order change", {
+    (newOrder: 'asc' | 'desc') => {
+      log('filter order change', {
         oldOrder: shownFilters.order,
         newOrder,
-      });
+      })
       const newFilters = {
         ...shownFilters,
         clauses: shownFilters.clauses.map((filter, idx) => ({
@@ -696,12 +696,12 @@ function useDataFilters({
           enabled: invalidFilters[`filter/${idx}`] ? false : filter.enabled,
         })),
         order: newOrder,
-      };
-      setDraftFilters(newFilters);
-      onFiltersChange(newFilters);
+      }
+      setDraftFilters(newFilters)
+      onFiltersChange(newFilters)
     },
     [shownFilters, setDraftFilters, onFiltersChange, invalidFilters, log],
-  );
+  )
 
   return {
     isDirty,
@@ -719,5 +719,5 @@ function useDataFilters({
     getValidatorForField,
     onChangeIndexFilter,
     applyFiltersWithHistory,
-  };
+  }
 }

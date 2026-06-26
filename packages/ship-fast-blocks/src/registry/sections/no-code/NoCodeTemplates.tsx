@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * NoCodeTemplates — filterable templates GALLERY on a bright canvas. A centered
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * marketplace. Renders fully with no props.
  */
 export const NoCodeTemplates = defineComponent({
-  name: "NoCodeTemplates",
+  name: 'NoCodeTemplates',
   description:
     "Filterable templates GALLERY on a bright canvas: a centered header (eyebrow, heading, paragraph) above a row of pill filter chips (first active), then a 1-to-3 column grid of 4:3 thumbnail cards with hover-zoom images and a gradient overlay revealing a tinted category tag, title, and description on hover, finished by a 'view all' text link with arrow. Chips, cards, and link route through useNavigate. Use as the template marketplace / gallery section for a no-code / website-builder product or theme marketplace.",
   props: z.object({
@@ -44,70 +44,70 @@ export const NoCodeTemplates = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Templates Gallery"
-    const heading = props.heading ?? "Start with a proven design"
+    const eyebrow = props.eyebrow ?? 'Templates Gallery'
+    const heading = props.heading ?? 'Start with a proven design'
     const description =
       props.description ??
-      "Browse our collection of 200+ templates designed by industry experts. Each one is fully customizable and ready to make your own."
+      'Browse our collection of 200+ templates designed by industry experts. Each one is fully customizable and ready to make your own.'
     const filters = props.filters?.length
       ? props.filters
       : [
-          "All Templates",
-          "SaaS",
-          "E-commerce",
-          "Portfolio",
-          "Blog",
-          "Landing Page",
+          'All Templates',
+          'SaaS',
+          'E-commerce',
+          'Portfolio',
+          'Blog',
+          'Landing Page',
         ]
-    const viewAll = props.viewAll ?? "View all 200+ templates"
+    const viewAll = props.viewAll ?? 'View all 200+ templates'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Analytics Dashboard",
-            tag: "SaaS",
-            description: "Perfect for data-driven apps",
-            imageAlt: "Modern SaaS dashboard template with analytics charts",
+            title: 'Analytics Dashboard',
+            tag: 'SaaS',
+            description: 'Perfect for data-driven apps',
+            imageAlt: 'Modern SaaS dashboard template with analytics charts',
           },
           {
-            title: "Modern Shop",
-            tag: "E-commerce",
-            description: "Sell products with style",
-            imageAlt: "E-commerce store template with product grid",
+            title: 'Modern Shop',
+            tag: 'E-commerce',
+            description: 'Sell products with style',
+            imageAlt: 'E-commerce store template with product grid',
           },
           {
-            title: "Creative Portfolio",
-            tag: "Portfolio",
-            description: "Showcase your best work",
-            imageAlt: "Creative portfolio template for designers",
+            title: 'Creative Portfolio',
+            tag: 'Portfolio',
+            description: 'Showcase your best work',
+            imageAlt: 'Creative portfolio template for designers',
           },
           {
-            title: "Minimal Blog",
-            tag: "Blog",
-            description: "Content-first design",
-            imageAlt: "Minimal blog template with clean typography",
+            title: 'Minimal Blog',
+            tag: 'Blog',
+            description: 'Content-first design',
+            imageAlt: 'Minimal blog template with clean typography',
           },
           {
-            title: "Startup Launch",
-            tag: "Landing Page",
-            description: "Convert visitors to users",
-            imageAlt: "Startup landing page template",
+            title: 'Startup Launch',
+            tag: 'Landing Page',
+            description: 'Convert visitors to users',
+            imageAlt: 'Startup landing page template',
           },
           {
-            title: "Event Registration",
-            tag: "Events",
-            description: "Manage events seamlessly",
-            imageAlt: "Event registration template with calendar",
+            title: 'Event Registration',
+            tag: 'Events',
+            description: 'Manage events seamlessly',
+            imageAlt: 'Event registration template with calendar',
           },
         ]
 
     const tagTints = [
-      "bg-chart-1 text-background",
-      "bg-chart-2 text-background",
-      "bg-chart-3 text-background",
-      "bg-chart-4 text-background",
-      "bg-primary text-primary-foreground",
-      "bg-chart-5 text-background",
+      'bg-chart-1 text-background',
+      'bg-chart-2 text-background',
+      'bg-chart-3 text-background',
+      'bg-chart-4 text-background',
+      'bg-primary text-primary-foreground',
+      'bg-chart-5 text-background',
     ]
 
     const ArrowRight = ({ className }: { className?: string }) => (
@@ -130,7 +130,7 @@ export const NoCodeTemplates = defineComponent({
 
     return (
       <section
-        className={cn("bg-background py-24", props.className)}
+        className={cn('bg-background py-24', props.className)}
         aria-labelledby="nc-templates"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -152,10 +152,10 @@ export const NoCodeTemplates = defineComponent({
                   type="button"
                   onClick={() => go(f)}
                   className={cn(
-                    "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                    'rounded-full px-4 py-2 text-sm font-medium transition-colors',
                     i === 0
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                   )}
                 >
                   {f}
@@ -184,7 +184,7 @@ export const NoCodeTemplates = defineComponent({
                 <div className="absolute inset-x-0 bottom-0 translate-y-4 p-6 text-background transition-transform group-hover:translate-y-0">
                   <span
                     className={cn(
-                      "mb-2 inline-block rounded px-2 py-1 text-xs font-medium",
+                      'mb-2 inline-block rounded px-2 py-1 text-xs font-medium',
                       tagTints[i % tagTints.length],
                     )}
                   >

@@ -3,7 +3,9 @@ import { escapeHtml } from '../utils.ts'
 import { sectionBody, sectionHeadline, sectionSubheadline } from './helpers.ts'
 
 export function renderDirectAnswerSection(section: SectionLike): string {
-  const whoFor = String(section.items?.[0]?.body || section.items?.[0]?.title || '').trim()
+  const whoFor = String(
+    section.items?.[0]?.body || section.items?.[0]?.title || '',
+  ).trim()
   const headline = sectionHeadline(section)
   const headlineMarkup = headline ? `<h2>${escapeHtml(headline)}</h2>` : ''
 

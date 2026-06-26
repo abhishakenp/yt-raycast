@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AnalyticsBento — bespoke asymmetric capability bento for an analytics product.
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * on any analytics, BI, or data-product site. Renders fully with no props.
  */
 export const AnalyticsBento = defineComponent({
-  name: "AnalyticsBento",
+  name: 'AnalyticsBento',
   description:
-    "Bespoke asymmetric capability bento for an analytics product. A padded section with an optional centered SectionHeading above a responsive grid of token-styled card tiles: one large hero tile spanning two columns and two rows that frames a product screenshot, plus four smaller supporting tiles each carrying a heading and a short description. Sharp, data-forward and marketing-grade. Use to showcase a mix of headline and supporting capabilities on any analytics, BI, or data-product site.",
+    'Bespoke asymmetric capability bento for an analytics product. A padded section with an optional centered SectionHeading above a responsive grid of token-styled card tiles: one large hero tile spanning two columns and two rows that frames a product screenshot, plus four smaller supporting tiles each carrying a heading and a short description. Sharp, data-forward and marketing-grade. Use to showcase a mix of headline and supporting capabilities on any analytics, BI, or data-product site.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -32,42 +32,42 @@ export const AnalyticsBento = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Built for depth"
-    const heading = props.heading ?? "Go from question to answer in seconds"
+    const eyebrow = props.eyebrow ?? 'Built for depth'
+    const heading = props.heading ?? 'Go from question to answer in seconds'
     const subheading =
       props.subheading ??
-      "Every surface is designed to keep you in flow — explore, drill in, and share without breaking your train of thought."
-    const heroTitle = props.heroTitle ?? "Explore any metric, instantly"
+      'Every surface is designed to keep you in flow — explore, drill in, and share without breaking your train of thought.'
+    const heroTitle = props.heroTitle ?? 'Explore any metric, instantly'
     const heroDescription =
       props.heroDescription ??
-      "Slice by cohort, device, or campaign and watch the chart redraw in real time across billions of rows."
+      'Slice by cohort, device, or campaign and watch the chart redraw in real time across billions of rows.'
     const tiles = props.tiles?.length
       ? props.tiles
       : [
           {
-            title: "Funnels",
+            title: 'Funnels',
             description:
-              "Pinpoint exactly where users drop and recover step-by-step conversion in one view.",
+              'Pinpoint exactly where users drop and recover step-by-step conversion in one view.',
           },
           {
-            title: "Retention",
+            title: 'Retention',
             description:
-              "Cohort grids reveal who comes back — and the features that keep them.",
+              'Cohort grids reveal who comes back — and the features that keep them.',
           },
           {
-            title: "SQL & API",
+            title: 'SQL & API',
             description:
               "Drop to raw SQL or query programmatically when the UI isn't enough.",
           },
           {
-            title: "Governance",
+            title: 'Governance',
             description:
-              "Roles, audit logs, and PII controls keep every team safely on the same data.",
+              'Roles, audit logs, and PII controls keep every team safely on the same data.',
           },
         ]
 
     return (
-      <section className={cn("bg-background py-20 sm:py-24", props.className)}>
+      <section className={cn('bg-background py-20 sm:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <SectionHeading
             eyebrow={eyebrow}

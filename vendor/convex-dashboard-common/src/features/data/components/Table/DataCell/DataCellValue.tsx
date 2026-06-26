@@ -1,19 +1,19 @@
-import { forwardRef } from "react";
-import { isInCommonUTCTimestampRange } from "@common/features/data/lib/helpers";
-import { Tooltip } from "@ui/Tooltip";
+import { forwardRef } from 'react'
+import { isInCommonUTCTimestampRange } from '@common/features/data/lib/helpers'
+import { Tooltip } from '@ui/Tooltip'
 
 // We only render the first bit of a string inside of cells for performance.
-const MAX_CHARS_TO_RENDER = 150;
+const MAX_CHARS_TO_RENDER = 150
 
 type DataCellValueProps = {
-  isDateField: boolean;
-  inferIsDate: boolean;
-  value: any;
-  isHovered: boolean;
-  isReference: boolean;
-  detailHeader: string;
-  stringValue: string;
-};
+  isDateField: boolean
+  inferIsDate: boolean
+  value: any
+  isHovered: boolean
+  isReference: boolean
+  detailHeader: string
+  stringValue: string
+}
 
 export const DataCellValue = forwardRef<HTMLSpanElement, DataCellValueProps>(
   function DataCellValue(
@@ -32,7 +32,7 @@ export const DataCellValue = forwardRef<HTMLSpanElement, DataCellValueProps>(
       <span ref={ref} className="flex-1 truncate">
         {isDateField ||
         (inferIsDate &&
-          typeof value === "number" &&
+          typeof value === 'number' &&
           isInCommonUTCTimestampRange(value)) ? (
           // This tooltip is cheating, it really should be around the whole
           // cell, but that doesn't render correctly, at least with the
@@ -47,11 +47,11 @@ export const DataCellValue = forwardRef<HTMLSpanElement, DataCellValueProps>(
           ) : (
             <span>{new Date(value).toLocaleString()}</span>
           )
-        ) : isReference || detailHeader === "_id" ? (
+        ) : isReference || detailHeader === '_id' ? (
           <span className="font-semibold" aria-label="Document ID">
             {value.toString()}
           </span>
-        ) : typeof value === "string" ? (
+        ) : typeof value === 'string' ? (
           <span
             className={`before:text-content-secondary before:content-['"'] after:text-content-secondary after:content-['"']`}
           >
@@ -63,6 +63,6 @@ export const DataCellValue = forwardRef<HTMLSpanElement, DataCellValueProps>(
           <span>{stringValue.slice(0, MAX_CHARS_TO_RENDER)}</span>
         )}
       </span>
-    );
+    )
   },
-);
+)

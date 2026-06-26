@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * RestaurantHero — full-bleed, image-forward hero for a restaurant landing page.
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const RestaurantHero = defineComponent({
-  name: "RestaurantHero",
+  name: 'RestaurantHero',
   description:
     "Full-bleed image-forward hero for a restaurant landing page: one appetizing food / dining-room photo fills the band edge to edge under a token-based dark overlay so light serif text stays readable. Centered content has an uppercase eyebrow pill, a large serif headline, a supporting paragraph, dual CTAs (filled 'Reserve a Table' + outlined translucent 'View Menu'), and a divider-separated hours / location / phone strip. CTAs route through useNavigate. Use as the opening hero for casual or upscale restaurants, bistros, eateries, fine-dining rooms, and chef-driven venues.",
   props: z.object({
@@ -46,27 +46,28 @@ export const RestaurantHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroEyebrow = props.eyebrow ?? "Farm-to-table · Est. 2014"
-    const heroHeading = props.heading ?? "Seasonal plates, unforgettable evenings"
+    const heroEyebrow = props.eyebrow ?? 'Farm-to-table · Est. 2014'
+    const heroHeading =
+      props.heading ?? 'Seasonal plates, unforgettable evenings'
     const heroSub =
       props.subheading ??
       "A neighborhood kitchen serving wood-fired dishes, natural wines, and warm hospitality. Reserve your table for an evening built around the day's freshest market finds."
-    const heroPrimary = props.primaryCta ?? "Reserve a Table"
-    const heroPrimaryTarget = props.primaryTarget ?? "Reservations"
-    const heroSecondary = props.secondaryCta ?? "View Menu"
-    const heroSecondaryTarget = props.secondaryTarget ?? "Menu"
+    const heroPrimary = props.primaryCta ?? 'Reserve a Table'
+    const heroPrimaryTarget = props.primaryTarget ?? 'Reservations'
+    const heroSecondary = props.secondaryCta ?? 'View Menu'
+    const heroSecondaryTarget = props.secondaryTarget ?? 'Menu'
     const heroImageAlt =
       props.imageAlt ??
-      "beautifully plated seasonal dish on a rustic wooden table in a warm candlelit dining room"
-    const heroHours = props.hours ?? "Open Tue–Sun · 5pm–11pm"
-    const heroLocation = props.location ?? "123 Market St, San Francisco"
-    const heroPhone = props.phone ?? "(415) 555-0182"
+      'beautifully plated seasonal dish on a rustic wooden table in a warm candlelit dining room'
+    const heroHours = props.hours ?? 'Open Tue–Sun · 5pm–11pm'
+    const heroLocation = props.location ?? '123 Market St, San Francisco'
+    const heroPhone = props.phone ?? '(415) 555-0182'
 
     const infoItems = [heroHours, heroLocation, heroPhone].filter(Boolean)
 
     return (
       <section
-        className={cn("relative isolate overflow-hidden", props.className)}
+        className={cn('relative isolate overflow-hidden', props.className)}
       >
         <Image
           alt={heroImageAlt}

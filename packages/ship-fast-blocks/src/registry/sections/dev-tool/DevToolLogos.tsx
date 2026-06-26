@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DevToolLogos — a slim "trusted by" social-proof logo strip for a developer
@@ -12,7 +12,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * developer tools, API platforms, or technical SaaS.
  */
 export const DevToolLogos = defineComponent({
-  name: "DevToolLogos",
+  name: 'DevToolLogos',
   description:
     "Slim 'trusted by' social-proof logo strip for a developer tool / API platform: a bordered band with a centered uppercase caption above a responsive 3-up (mobile) / 6-up (desktop) grid of wordmark company names as muted text buttons that brighten on hover. Each routes through useNavigate. Use beneath a hero to establish credibility for developer tools, API platforms, or technical SaaS.",
   props: z.object({
@@ -22,14 +22,14 @@ export const DevToolLogos = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const label = props.label ?? "Trusted by engineering teams at"
+    const label = props.label ?? 'Trusted by engineering teams at'
     const companies = props.companies?.length
       ? props.companies
-      : ["Stripe", "Notion", "Linear", "Vercel", "Shopify", "Slack"]
+      : ['Stripe', 'Notion', 'Linear', 'Vercel', 'Shopify', 'Slack']
 
     return (
       <section
-        className={cn("border-b border-border py-12", props.className)}
+        className={cn('border-b border-border py-12', props.className)}
         aria-label="Trusted companies"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

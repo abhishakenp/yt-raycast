@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * AeoSteps — bespoke three-step "how it works" band for an Answer-Engine-
@@ -12,7 +12,7 @@ import { cn } from "#/lib/utils.ts"
  * landing pages to explain the workflow. Renders fully with no props.
  */
 export const AeoSteps = defineComponent({
-  name: "AeoSteps",
+  name: 'AeoSteps',
   description:
     "Bespoke three-step 'how it works' section for an Answer-Engine-Optimization (AEO) product: a centered heading block above a connected, numbered three-column timeline (connect your content, optimize for answer engines, track citations and win), each step with a gradient numbered badge, a title, and a short description, joined by a horizontal accent line on desktop. Use to explain the AEO workflow on landing or how-it-works pages.",
   props: z.object({
@@ -30,33 +30,33 @@ export const AeoSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "How it works"
-    const heading = props.heading ?? "From invisible to cited in three steps"
+    const eyebrow = props.eyebrow ?? 'How it works'
+    const heading = props.heading ?? 'From invisible to cited in three steps'
     const intro =
       props.intro ??
-      "No agency, no guesswork — connect your content and let Citeable guide every optimization."
+      'No agency, no guesswork — connect your content and let Citeable guide every optimization.'
     const steps = props.steps?.length
       ? props.steps
       : [
           {
-            title: "Connect your content",
+            title: 'Connect your content',
             description:
-              "Add your domain and key pages. Citeable maps your topics and benchmarks how AI engines currently describe you.",
+              'Add your domain and key pages. Citeable maps your topics and benchmarks how AI engines currently describe you.',
           },
           {
-            title: "Optimize for answer engines",
+            title: 'Optimize for answer engines',
             description:
-              "Get prompt-level recommendations and content rewrites engineered so engines extract and attribute your pages.",
+              'Get prompt-level recommendations and content rewrites engineered so engines extract and attribute your pages.',
           },
           {
-            title: "Track citations & win",
+            title: 'Track citations & win',
             description:
-              "Watch your share of AI answers climb, get alerts on changes, and prove the uplift with executive-ready reports.",
+              'Watch your share of AI answers climb, get alerts on changes, and prove the uplift with executive-ready reports.',
           },
         ]
 
     return (
-      <section className={cn("bg-background py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-6 lg:px-8">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <span className="text-sm font-medium uppercase tracking-wide text-accent">
@@ -65,7 +65,9 @@ export const AeoSteps = defineComponent({
             <h2 className="mt-3 text-3xl font-semibold text-foreground md:text-4xl">
               {heading}
             </h2>
-            <p className="mt-4 text-base text-muted-foreground md:text-lg">{intro}</p>
+            <p className="mt-4 text-base text-muted-foreground md:text-lg">
+              {intro}
+            </p>
           </div>
           <ol className="relative grid gap-10 md:grid-cols-3 md:gap-8">
             <span

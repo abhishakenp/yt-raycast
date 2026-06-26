@@ -19,7 +19,9 @@ describe('trimInlineAiText', () => {
     expect(trimInlineAiText("'hello world'")).toBe('hello world')
   })
   it('strips code fences', () => {
-    expect(trimInlineAiText('```js\nconsole.log(1)\n```')).toBe('console.log(1)')
+    expect(trimInlineAiText('```js\nconsole.log(1)\n```')).toBe(
+      'console.log(1)',
+    )
   })
   it('handles empty string', () => {
     expect(trimInlineAiText('')).toBe('')
@@ -55,7 +57,8 @@ describe('stripFences', () => {
 
 describe('stripGroqReasoningLeak', () => {
   it('removes think/redacted blocks', () => {
-    const input = '<think>internal reasoning</redacted_thinking>\n<html>ok</html>'
+    const input =
+      '<think>internal reasoning</redacted_thinking>\n<html>ok</html>'
     expect(stripGroqReasoningLeak(input)).toBe('<html>ok</html>')
   })
   it('returns original if no leak', () => {
@@ -79,15 +82,27 @@ describe('calculateCost', () => {
 
 describe('formatTps', () => {
   it('formats with tps and tokens', () => {
-    const result = formatTps({ outputTokens: 100, inputTokens: 50, tps: 42, model: 'llama3-8b-8192' })
+    const result = formatTps({
+      outputTokens: 100,
+      inputTokens: 50,
+      tps: 42,
+      model: 'llama3-8b-8192',
+    })
     expect(result).toContain('42 tps')
     expect(result).toContain('100 out')
   })
   it('falls back when tps is 0', () => {
-    const result = formatTps({ outputTokens: 100, inputTokens: 50, tps: 0, model: '' })
+    const result = formatTps({
+      outputTokens: 100,
+      inputTokens: 50,
+      tps: 0,
+      model: '',
+    })
     expect(result).toContain('100 out')
   })
   it('returns empty string when no tokens', () => {
-    expect(formatTps({ outputTokens: 0, inputTokens: 0, tps: 0, model: '' })).toBe('')
+    expect(
+      formatTps({ outputTokens: 0, inputTokens: 0, tps: 0, model: '' }),
+    ).toBe('')
   })
 })

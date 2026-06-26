@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ContactOfficeMap — split office information and photo section for a contact page.
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * no props via baked-in defaults.
  */
 export const ContactOfficeMap = defineComponent({
-  name: "ContactOfficeMap",
+  name: 'ContactOfficeMap',
   description:
-    "Split office information and photo section for a contact page: a two-column card with a heading, description, and icon-prefixed meta rows (transit, parking, accessibility) on the left; a large cover photo with gradient overlay and a floating map-pin glyph on the right. Use to present physical location details on agency, SaaS, or startup contact pages.",
+    'Split office information and photo section for a contact page: a two-column card with a heading, description, and icon-prefixed meta rows (transit, parking, accessibility) on the left; a large cover photo with gradient overlay and a floating map-pin glyph on the right. Use to present physical location details on agency, SaaS, or startup contact pages.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -28,19 +28,18 @@ export const ContactOfficeMap = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Visit our HQ"
+    const heading = props.heading ?? 'Visit our HQ'
     const description =
       props.description ??
-      "Our headquarters are located in the heart of San Francisco. We are always happy to welcome partners, clients, and friends for a coffee and a chat."
+      'Our headquarters are located in the heart of San Francisco. We are always happy to welcome partners, clients, and friends for a coffee and a chat.'
     const meta = props.meta?.length
       ? props.meta
       : [
-          "12 min walk from Montgomery BART",
-          "Parking available on-site",
-          "Wheelchair accessible entrance",
+          '12 min walk from Montgomery BART',
+          'Parking available on-site',
+          'Wheelchair accessible entrance',
         ]
-    const imageAlt =
-      props.imageAlt ?? "San Francisco downtown office building"
+    const imageAlt = props.imageAlt ?? 'San Francisco downtown office building'
 
     const metaIcons: ReactNode[] = [
       <svg
@@ -95,7 +94,7 @@ export const ContactOfficeMap = defineComponent({
     return (
       <section
         className={cn(
-          "mt-16 grid overflow-hidden rounded-2xl border border-border shadow-[0_24px_64px_rgba(0,0,0,0.45)] md:grid-cols-[1fr_1.3fr]",
+          'mt-16 grid overflow-hidden rounded-2xl border border-border shadow-[0_24px_64px_rgba(0,0,0,0.45)] md:grid-cols-[1fr_1.3fr]',
           props.className,
         )}
       >

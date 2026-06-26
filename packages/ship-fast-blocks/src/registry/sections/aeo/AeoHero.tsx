@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AeoHero — centered, data-forward landing hero for an Answer-Engine-Optimization
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * brand-citation analytics products.
  */
 export const AeoHero = defineComponent({
-  name: "AeoHero",
+  name: 'AeoHero',
   description:
     "Centered, modern-SaaS landing hero for an Answer-Engine-Optimization (AEO) product: an eyebrow pill, a large multi-line headline about winning the AI answer and getting cited across ChatGPT, Perplexity and Google AI Overviews, a supporting paragraph, dual pill CTAs (filled 'Start Free' + outlined 'Book demo'), a row of supported answer engines, and a large rounded dashboard screenshot below the copy. CTAs route through useNavigate and the screenshot uses the alt-driven Image component. Use as the opening section for AEO platforms, generative-search visibility tools, or brand-citation analytics products.",
   props: z.object({
@@ -39,29 +39,29 @@ export const AeoHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Answer Engine Optimization"
-    const headingLead = props.headingLead ?? "Get cited by AI answers,"
-    const headingAccent = props.headingAccent ?? "win the AI answer"
+    const eyebrow = props.eyebrow ?? 'Answer Engine Optimization'
+    const headingLead = props.headingLead ?? 'Get cited by AI answers,'
+    const headingAccent = props.headingAccent ?? 'win the AI answer'
     const subheading =
       props.subheading ??
-      "Citeable tracks how AI engines describe your brand, finds the prompts you should own, and optimizes your content so ChatGPT, Perplexity, and Google AI Overviews cite you — not your competitors."
-    const primaryCta = props.primaryCta ?? "Start Free"
-    const secondaryCta = props.secondaryCta ?? "Book demo"
+      'Citeable tracks how AI engines describe your brand, finds the prompts you should own, and optimizes your content so ChatGPT, Perplexity, and Google AI Overviews cite you — not your competitors.'
+    const primaryCta = props.primaryCta ?? 'Start Free'
+    const secondaryCta = props.secondaryCta ?? 'Book demo'
     const engines = props.engines?.length
       ? props.engines
-      : ["ChatGPT", "Perplexity", "Google AI Overviews", "Gemini", "Claude"]
+      : ['ChatGPT', 'Perplexity', 'Google AI Overviews', 'Gemini', 'Claude']
     const imageAlt =
       props.imageAlt ??
-      "Analytics dashboard showing AI answer citations, share-of-voice charts, and tracked prompts"
+      'Analytics dashboard showing AI answer citations, share-of-voice charts, and tracked prompts'
 
     return (
-      <section className={cn("bg-background", props.className)}>
+      <section className={cn('bg-background', props.className)}>
         <div className="mx-auto max-w-4xl px-4 pb-16 pt-20 text-center sm:px-6 sm:pb-20 sm:pt-28 lg:px-8">
           <span className="inline-flex items-center rounded-full border border-border bg-muted px-4 py-1.5 text-xs font-medium text-muted-foreground">
             {eyebrow}
           </span>
           <h1 className="mt-6 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            {headingLead}{" "}
+            {headingLead}{' '}
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               {headingAccent}
             </span>

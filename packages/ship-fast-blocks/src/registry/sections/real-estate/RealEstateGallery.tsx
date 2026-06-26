@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * RealEstateGallery — featured-listings grid for a premium brokerage. A
@@ -14,7 +14,7 @@ import { Image } from "#/lib/img.tsx"
  * with no props via baked-in defaults (six listings).
  */
 export const RealEstateGallery = defineComponent({
-  name: "RealEstateGallery",
+  name: 'RealEstateGallery',
   description:
     "Featured-listings grid for a premium brokerage: a centered serif header above a responsive 1/2/3-column grid of property cards. Each card has an alt-driven photo with an optional corner badge, a bold price, a beds / baths / sqft spec row, the address, and a 'View' link that routes through useNavigate. Use to showcase featured or recently listed homes on a brokerage or agent site.",
   props: z.object({
@@ -41,63 +41,63 @@ export const RealEstateGallery = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Featured listings"
+    const heading = props.heading ?? 'Featured listings'
     const description =
       props.description ??
-      "A handpicked selection of homes just hitting the market across our most sought-after neighborhoods."
-    const viewLabel = props.viewLabel ?? "View"
+      'A handpicked selection of homes just hitting the market across our most sought-after neighborhoods.'
+    const viewLabel = props.viewLabel ?? 'View'
     const listings = props.listings?.length
       ? props.listings
       : [
           {
-            price: "$1,250,000",
-            beds: "4",
-            baths: "3",
-            sqft: "2,840",
-            address: "812 Linden Avenue, Oak Park",
-            badge: "New",
+            price: '$1,250,000',
+            beds: '4',
+            baths: '3',
+            sqft: '2,840',
+            address: '812 Linden Avenue, Oak Park',
+            badge: 'New',
           },
           {
-            price: "$865,000",
-            beds: "3",
-            baths: "2",
-            sqft: "1,920",
-            address: "47 Crestview Terrace, Hillcrest",
-            badge: "Open House",
+            price: '$865,000',
+            beds: '3',
+            baths: '2',
+            sqft: '1,920',
+            address: '47 Crestview Terrace, Hillcrest',
+            badge: 'Open House',
           },
           {
-            price: "$2,100,000",
-            beds: "5",
-            baths: "4",
-            sqft: "3,650",
-            address: "1900 Harborline Drive, Bayshore",
+            price: '$2,100,000',
+            beds: '5',
+            baths: '4',
+            sqft: '3,650',
+            address: '1900 Harborline Drive, Bayshore',
           },
           {
-            price: "$540,000",
-            beds: "2",
-            baths: "2",
-            sqft: "1,150",
-            address: "305 Mill Street #4B, Riverside",
-            badge: "New",
+            price: '$540,000',
+            beds: '2',
+            baths: '2',
+            sqft: '1,150',
+            address: '305 Mill Street #4B, Riverside',
+            badge: 'New',
           },
           {
-            price: "$1,475,000",
-            beds: "4",
-            baths: "3",
-            sqft: "2,980",
-            address: "62 Magnolia Court, Westfield",
+            price: '$1,475,000',
+            beds: '4',
+            baths: '3',
+            sqft: '2,980',
+            address: '62 Magnolia Court, Westfield',
           },
           {
-            price: "$725,000",
-            beds: "3",
-            baths: "2",
-            sqft: "1,740",
-            address: "118 Sutter Lane, Greenwood",
+            price: '$725,000',
+            beds: '3',
+            baths: '2',
+            sqft: '1,740',
+            address: '118 Sutter Lane, Greenwood',
           },
         ]
 
     return (
-      <section className={cn("bg-background py-20 lg:py-32", props.className)}>
+      <section className={cn('bg-background py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl">
@@ -146,7 +146,7 @@ export const RealEstateGallery = defineComponent({
                   </p>
                   <button
                     type="button"
-                    onClick={() => go("Listing")}
+                    onClick={() => go('Listing')}
                     className="mt-5 inline-flex w-fit items-center justify-center rounded-full border border-border px-5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                   >
                     {viewLabel}

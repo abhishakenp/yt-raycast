@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * LawFirmHero — split, two-column hero for a corporate / trial law firm. On the
@@ -18,9 +18,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const LawFirmHero = defineComponent({
-  name: "LawFirmHero",
+  name: 'LawFirmHero',
   description:
-    "Split two-column hero for a corporate / trial law firm: left column has a tracked-uppercase eyebrow, a large serif headline with an italic muted highlight on the second line, a lead paragraph, dual CTAs (solid primary + bordered secondary) and a phone / office-address contact row with line icons; right column shows a tall office photo with a floating success-rate stat card overlapping its lower-left corner. Refined, authoritative, serif-driven editorial aesthetic on a warm neutral canvas with sharp squared corners. CTAs and contact links route through useNavigate; imagery uses the alt-driven Image component. Use as the opening hero for law firms, attorneys, legal practices, corporate counsel, litigation boutiques, estate-planning or tax practices, or any premium professional-services landing page.",
+    'Split two-column hero for a corporate / trial law firm: left column has a tracked-uppercase eyebrow, a large serif headline with an italic muted highlight on the second line, a lead paragraph, dual CTAs (solid primary + bordered secondary) and a phone / office-address contact row with line icons; right column shows a tall office photo with a floating success-rate stat card overlapping its lower-left corner. Refined, authoritative, serif-driven editorial aesthetic on a warm neutral canvas with sharp squared corners. CTAs and contact links route through useNavigate; imagery uses the alt-driven Image component. Use as the opening hero for law firms, attorneys, legal practices, corporate counsel, litigation boutiques, estate-planning or tax practices, or any premium professional-services landing page.',
   props: z.object({
     eyebrow: z.string().optional(),
     headingTop: z.string().optional(),
@@ -38,23 +38,23 @@ export const LawFirmHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Corporate & Trial Law Since 1987"
-    const headingTop = props.headingTop ?? "Strategic Counsel."
-    const highlight = props.highlight ?? "Decisive Results."
+    const eyebrow = props.eyebrow ?? 'Corporate & Trial Law Since 1987'
+    const headingTop = props.headingTop ?? 'Strategic Counsel.'
+    const highlight = props.highlight ?? 'Decisive Results.'
     const subheading =
       props.subheading ??
-      "Reinhart & Associates provides sophisticated legal representation to Fortune 500 companies, emerging enterprises, and private clients. Our 34 attorneys deliver measurable outcomes in corporate transactions, complex litigation, and regulatory matters."
-    const primaryCta = props.primaryCta ?? "Schedule Consultation"
-    const secondaryCta = props.secondaryCta ?? "Explore Services"
-    const phone = props.phone ?? "(212) 555-0147"
-    const address = props.address ?? "450 Lexington Ave, New York, NY"
+      'Reinhart & Associates provides sophisticated legal representation to Fortune 500 companies, emerging enterprises, and private clients. Our 34 attorneys deliver measurable outcomes in corporate transactions, complex litigation, and regulatory matters.'
+    const primaryCta = props.primaryCta ?? 'Schedule Consultation'
+    const secondaryCta = props.secondaryCta ?? 'Explore Services'
+    const phone = props.phone ?? '(212) 555-0147'
+    const address = props.address ?? '450 Lexington Ave, New York, NY'
     const imageAlt =
       props.imageAlt ??
-      "Modern executive law office with floor-to-ceiling windows overlooking Manhattan skyline"
-    const statValue = props.statValue ?? "94%"
+      'Modern executive law office with floor-to-ceiling windows overlooking Manhattan skyline'
+    const statValue = props.statValue ?? '94%'
     const statLabel =
       props.statLabel ??
-      "Success rate in commercial litigation matters resolved since 2020"
+      'Success rate in commercial litigation matters resolved since 2020'
 
     const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
@@ -92,9 +92,7 @@ export const LawFirmHero = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-background py-24 lg:py-32", props.className)}
-      >
+      <section className={cn('bg-background py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>

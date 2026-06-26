@@ -1,55 +1,55 @@
-import groupBy from "lodash/groupBy";
-import { Link } from "@ui/Link";
+import groupBy from 'lodash/groupBy'
+import { Link } from '@ui/Link'
 import {
   MagnifyingGlassIcon,
   QuestionMarkCircledIcon,
   ArrowTopRightIcon,
-} from "@radix-ui/react-icons";
-import { FingerPrintIcon } from "@heroicons/react/24/outline";
-import { Index } from "@common/features/data/lib/api";
-import { useNents } from "@common/lib/useNents";
-import { Loading } from "@ui/Loading";
-import { Spinner } from "@ui/Spinner";
-import { useQuery } from "convex/react";
-import { api } from "system-udfs/convex/_generated/api";
-import { Fragment } from "react";
-import { ProgressBarWithPercent } from "@ui/ProgressBar";
-import { Tooltip } from "@ui/Tooltip";
-import { HelpTooltip } from "@ui/HelpTooltip";
-import { cn } from "@ui/cn";
-import { Callout } from "@ui/Callout";
+} from '@radix-ui/react-icons'
+import { FingerPrintIcon } from '@heroicons/react/24/outline'
+import { Index } from '@common/features/data/lib/api'
+import { useNents } from '@common/lib/useNents'
+import { Loading } from '@ui/Loading'
+import { Spinner } from '@ui/Spinner'
+import { useQuery } from 'convex/react'
+import { api } from 'system-udfs/convex/_generated/api'
+import { Fragment } from 'react'
+import { ProgressBarWithPercent } from '@ui/ProgressBar'
+import { Tooltip } from '@ui/Tooltip'
+import { HelpTooltip } from '@ui/HelpTooltip'
+import { cn } from '@ui/cn'
+import { Callout } from '@ui/Callout'
 
 export function IndexList({ tableName }: { tableName: string }) {
-  const { selectedNent } = useNents();
+  const { selectedNent } = useNents()
   const indexes =
     useQuery(api._system.frontend.indexes.default, {
       tableName,
       tableNamespace: selectedNent?.id ?? null,
-    }) ?? undefined;
+    }) ?? undefined
 
-  return <IndexesList tableName={tableName} indexes={indexes} />;
+  return <IndexesList tableName={tableName} indexes={indexes} />
 }
 
 export function IndexesList({
   tableName,
   indexes,
 }: {
-  tableName: string;
-  indexes: Index[] | undefined;
+  tableName: string
+  indexes: Index[] | undefined
 }) {
   if (indexes === undefined) {
-    return <Loading />;
+    return <Loading />
   }
 
   const recommendStagedIndexes = (indexes ?? []).some(
     (index) =>
-      index.backfill.state === "backfilling" &&
+      index.backfill.state === 'backfilling' &&
       !index.staged &&
       index.backfill.stats?.totalDocs &&
       index.backfill.stats.totalDocs > 10_000,
-  );
+  )
 
-  const groupedIndexes = groupBy(indexes, getIndexType);
+  const groupedIndexes = groupBy(indexes, getIndexType)
 
   return (
     <div className="flex flex-col gap-6">
@@ -57,14 +57,14 @@ export function IndexesList({
         <Callout variant="hint">
           <p>
             <strong className="font-semibold">Hint</strong>: When adding an
-            index to a large table, consider using a{" "}
+            index to a large table, consider using a{' '}
             <Link
               href="https://docs.convex.dev/database/reading-data/indexes/#staged-indexes"
               target="_blank"
               rel="noreferrer"
             >
               staged index
-            </Link>{" "}
+            </Link>{' '}
             to avoid blocking deploy.
           </p>
         </Callout>
@@ -96,7 +96,7 @@ export function IndexesList({
         />
       </div>
     </div>
-  );
+  )
 }
 
 function IndexListSection({
@@ -107,14 +107,14 @@ function IndexListSection({
   icon: Icon,
   tableName,
 }: {
-  title: string;
-  description: string;
-  learnMoreUrl: string;
-  indexes: Index[];
-  icon: React.FC<{ className?: string }>;
-  tableName: string;
+  title: string
+  description: string
+  learnMoreUrl: string
+  indexes: Index[]
+  icon: React.FC<{ className?: string }>
+  tableName: string
 }) {
-  const indexesByName = groupBy(indexes, "name");
+  const indexesByName = groupBy(indexes, 'name')
 
   return (
     <section aria-label={title} className="flex flex-col gap-3">
@@ -123,7 +123,7 @@ function IndexListSection({
         <h5 className="text-base font-medium">{title}</h5>
         <HelpTooltip>
           <p>
-            {description}{" "}
+            {description}{' '}
             <Link href={learnMoreUrl} target="_blank" rel="noopener noreferrer">
               Learn more
             </Link>
@@ -145,12 +145,12 @@ function IndexListSection({
         </div>
       )}
     </section>
-  );
+  )
 }
 
 function IndexListRow({ index }: { index: Index }) {
-  const { fields } = index;
-  const isStaged = index.staged === true;
+  const { fields } = index
+  const isStaged = index.staged === true
 
   return (
     <article className="flex flex-col gap-2 text-sm text-content-secondary">
@@ -167,10 +167,10 @@ function IndexListRow({ index }: { index: Index }) {
                 <div className="text-sm">
                   <p className="mb-2">
                     Staged indexes are not queryable. To enable this index,
-                    remove{" "}
+                    remove{' '}
                     <code className="whitespace-nowrap">
-                      {"{ staged: true }"}
-                    </code>{" "}
+                      {'{ staged: true }'}
+                    </code>{' '}
                     in your <code>schema.ts</code> file.
                   </p>
                 </div>
@@ -184,7 +184,7 @@ function IndexListRow({ index }: { index: Index }) {
           )}
         </div>
         <div
-          className={cn("ml-1 grow border-b", isStaged && "border-dashed")}
+          className={cn('ml-1 grow border-b', isStaged && 'border-dashed')}
         />
       </header>
 
@@ -195,32 +195,32 @@ function IndexListRow({ index }: { index: Index }) {
           </IndexAttribute>
         )}
 
-        {"searchField" in fields && (
+        {'searchField' in fields && (
           <IndexAttribute title="Search field">
             <code>{fields.searchField}</code>
           </IndexAttribute>
         )}
 
-        {"vectorField" in fields && (
+        {'vectorField' in fields && (
           <IndexAttribute title="Vector field">
             <code>{fields.vectorField}</code>
           </IndexAttribute>
         )}
 
-        {"filterFields" in fields && fields.filterFields.length > 0 && (
+        {'filterFields' in fields && fields.filterFields.length > 0 && (
           <IndexAttribute title="Filter fields">
             <FieldList fields={fields.filterFields} />
           </IndexAttribute>
         )}
 
-        {"dimensions" in fields && (
+        {'dimensions' in fields && (
           <IndexAttribute title="Dimensions">
             {fields.dimensions}
           </IndexAttribute>
         )}
       </div>
 
-      {index.backfill.state === "backfilling" && (
+      {index.backfill.state === 'backfilling' && (
         <div className="flex flex-col gap-1 pl-2">
           <div className="flex items-center gap-2">
             {!(
@@ -248,7 +248,7 @@ function IndexListRow({ index }: { index: Index }) {
           )}
         </div>
       )}
-      {index.backfill.state === "backfilled" && (
+      {index.backfill.state === 'backfilled' && (
         <div className="flex flex-col gap-1 pl-2">
           Backfill completed
           <ProgressBarWithPercent
@@ -259,7 +259,7 @@ function IndexListRow({ index }: { index: Index }) {
         </div>
       )}
     </article>
-  );
+  )
 }
 
 function IndexAttribute({
@@ -273,7 +273,7 @@ function IndexAttribute({
       </span>
       <div>{children}</div>
     </div>
-  );
+  )
 }
 
 function FieldList({ fields }: { fields: string[] }) {
@@ -288,24 +288,24 @@ function FieldList({ fields }: { fields: string[] }) {
         </Fragment>
       ))}
     </>
-  );
+  )
 }
 
 function getIndexType(
   index: Index,
-): "database" | "search" | "vector" | "unknown" {
+): 'database' | 'search' | 'vector' | 'unknown' {
   if (Array.isArray(index.fields)) {
-    return "database";
+    return 'database'
   }
 
-  if ("searchField" in index.fields) {
-    return "search";
+  if ('searchField' in index.fields) {
+    return 'search'
   }
 
-  if ("vectorField" in index.fields) {
-    return "vector";
+  if ('vectorField' in index.fields) {
+    return 'vector'
   }
 
-  index.fields satisfies never;
-  return "unknown";
+  index.fields satisfies never
+  return 'unknown'
 }

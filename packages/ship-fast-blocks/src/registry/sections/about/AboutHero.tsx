@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AboutHero — mission hero band for a modern company / ABOUT page. A spacious
@@ -16,9 +16,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * props via baked-in "Kinetic Labs" defaults.
  */
 export const AboutHero = defineComponent({
-  name: "AboutHero",
+  name: 'AboutHero',
   description:
-    "Mission hero band for a modern company / ABOUT page: a spacious section over soft blurred ambient glow orbs (primary + accent), an indigo soft-chip eyebrow pill with a sparkle icon, a huge multi-line headline with one phrase in an indigo-to-violet gradient highlight, a supporting paragraph, and dual CTAs (filled primary pill with a chevron + outlined card secondary). Premium, mission-led and conversion-focused; CTAs route through useNavigate. Use as the opening hero for an about/company/mission page of startups, product studios, agencies, or SaaS brands.",
+    'Mission hero band for a modern company / ABOUT page: a spacious section over soft blurred ambient glow orbs (primary + accent), an indigo soft-chip eyebrow pill with a sparkle icon, a huge multi-line headline with one phrase in an indigo-to-violet gradient highlight, a supporting paragraph, and dual CTAs (filled primary pill with a chevron + outlined card secondary). Premium, mission-led and conversion-focused; CTAs route through useNavigate. Use as the opening hero for an about/company/mission page of startups, product studios, agencies, or SaaS brands.',
   props: z.object({
     /** Eyebrow pill text above the headline. */
     eyebrow: z.string().optional(),
@@ -36,14 +36,14 @@ export const AboutHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "About Kinetic Labs"
-    const heading = props.heading ?? "We build products that"
-    const highlight = props.highlight ?? "move the world forward"
+    const eyebrow = props.eyebrow ?? 'About Kinetic Labs'
+    const heading = props.heading ?? 'We build products that'
+    const highlight = props.highlight ?? 'move the world forward'
     const subheading =
       props.subheading ??
-      "Kinetic Labs is a product studio focused on clarity, craft, and impact. We partner with ambitious teams to design and ship modern software that people love to use."
-    const primaryCta = props.primaryCta ?? "Read our story"
-    const secondaryCta = props.secondaryCta ?? "Get in touch"
+      'Kinetic Labs is a product studio focused on clarity, craft, and impact. We partner with ambitious teams to design and ship modern software that people love to use.'
+    const primaryCta = props.primaryCta ?? 'Read our story'
+    const secondaryCta = props.secondaryCta ?? 'Get in touch'
 
     // Reusable eyebrow pill — indigo soft chip with optional icon.
     const Eyebrow = ({
@@ -78,18 +78,21 @@ export const AboutHero = defineComponent({
     return (
       <section
         className={cn(
-          "relative overflow-hidden py-20 sm:py-24 lg:py-32",
+          'relative overflow-hidden py-20 sm:py-24 lg:py-32',
           props.className,
         )}
       >
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+        >
           <div className="absolute -top-32 -right-32 size-[520px] rounded-full bg-primary/25 blur-3xl" />
           <div className="absolute -bottom-28 -left-24 size-[380px] rounded-full bg-accent/40 blur-3xl" />
         </div>
         <div className="relative mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
           <Eyebrow icon={<SparkleIcon />}>{eyebrow}</Eyebrow>
           <h1 className="mt-6 max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            {heading}{" "}
+            {heading}{' '}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               {highlight}
             </span>

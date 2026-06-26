@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NoCodeFooter — rich multi-column footer on a card surface with a top border.
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * builder, SaaS, or product landing page. Renders fully with no props.
  */
 export const NoCodeFooter = defineComponent({
-  name: "NoCodeFooter",
+  name: 'NoCodeFooter',
   description:
-    "Rich multi-column footer on a card surface with a top border: a 2-to-5 column grid with a wide brand column (inverse cube-glyph logo tile + brand name, a short description, and round social-initial buttons) beside several link columns, then a bordered bottom row with an auto-updating copyright line and a set of legal links. The brand button and every link route through useNavigate. Use as the closing site footer for a no-code / app-builder SaaS or product landing page.",
+    'Rich multi-column footer on a card surface with a top border: a 2-to-5 column grid with a wide brand column (inverse cube-glyph logo tile + brand name, a short description, and round social-initial buttons) beside several link columns, then a bordered bottom row with an auto-updating copyright line and a set of legal links. The brand button and every link route through useNavigate. Use as the closing site footer for a no-code / app-builder SaaS or product landing page.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -37,53 +37,53 @@ export const NoCodeFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Buildr"
+    const brand = props.brand ?? 'Buildr'
     const description =
       props.description ??
-      "The no-code platform that empowers anyone to build beautiful, functional apps without writing code."
+      'The no-code platform that empowers anyone to build beautiful, functional apps without writing code.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Product",
+            title: 'Product',
             links: [
-              "Features",
-              "Templates",
-              "Pricing",
-              "Integrations",
-              "Changelog",
+              'Features',
+              'Templates',
+              'Pricing',
+              'Integrations',
+              'Changelog',
             ],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Press", "Partners"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Press', 'Partners'],
           },
           {
-            title: "Resources",
+            title: 'Resources',
             links: [
-              "Documentation",
-              "Help Center",
-              "Community",
-              "Contact",
-              "Status",
+              'Documentation',
+              'Help Center',
+              'Community',
+              'Contact',
+              'Status',
             ],
           },
         ]
     const socials = props.socials?.length
       ? props.socials
-      : ["Twitter", "GitHub", "LinkedIn"]
+      : ['Twitter', 'GitHub', 'LinkedIn']
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Cookies"]
-    const homeTarget = props.homeTarget ?? "Features"
+      : ['Privacy Policy', 'Terms of Service', 'Cookies']
+    const homeTarget = props.homeTarget ?? 'Features'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-foreground text-background",
+          'grid place-items-center rounded-lg bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -105,7 +105,7 @@ export const NoCodeFooter = defineComponent({
 
     return (
       <footer
-        className={cn("border-t border-border bg-card py-16", props.className)}
+        className={cn('border-t border-border bg-card py-16', props.className)}
         role="contentinfo"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

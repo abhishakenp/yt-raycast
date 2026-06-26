@@ -1,16 +1,16 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 import {
   Tabs as UITabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "#/components/ui/tabs.tsx"
+} from '#/components/ui/tabs.tsx'
 
 // Compound: flatten Tabs/List/Trigger/Content into items:[{value,label,content}].
 // First tab active by default so a panel is visible statically.
 export const Tabs = defineComponent({
-  name: "Tabs",
+  name: 'Tabs',
   description:
     "Tabbed panels. items:[{value,label,content?}]. First tab active by default. variant 'line' for underlined tabs.",
   props: z.object({
@@ -21,7 +21,7 @@ export const Tabs = defineComponent({
         content: z.array(z.any()).optional(),
       }),
     ),
-    variant: z.enum(["default", "line"]).optional(),
+    variant: z.enum(['default', 'line']).optional(),
     className: z.string().optional(),
   }),
   component: ({ props, renderNode }) => {

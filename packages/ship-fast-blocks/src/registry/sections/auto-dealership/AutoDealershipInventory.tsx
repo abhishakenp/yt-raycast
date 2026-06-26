@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AutoDealershipInventory — featured-inventory card grid for an auto dealership
@@ -17,9 +17,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const AutoDealershipInventory = defineComponent({
-  name: "AutoDealershipInventory",
+  name: 'AutoDealershipInventory',
   description:
-    "Featured-inventory card grid for an auto dealership / used-car page: a centered heading and lead over a responsive 3-up grid of vehicle cards (zoom-on-hover photo with a Certified/Electric/Hybrid corner badge, year-make-model title, mileage / transmission / drivetrain spec line, feature chips like Leather/Navigation/Autopilot, and a price + View Details footer), plus a centered View-All button below. Cards and the View-All button route through useNavigate and photos use the alt-driven Image component. Use as the primary listings / browse-inventory section for dealerships, used-car lots, or EV/hybrid lots.",
+    'Featured-inventory card grid for an auto dealership / used-car page: a centered heading and lead over a responsive 3-up grid of vehicle cards (zoom-on-hover photo with a Certified/Electric/Hybrid corner badge, year-make-model title, mileage / transmission / drivetrain spec line, feature chips like Leather/Navigation/Autopilot, and a price + View Details footer), plus a centered View-All button below. Cards and the View-All button route through useNavigate and photos use the alt-driven Image component. Use as the primary listings / browse-inventory section for dealerships, used-car lots, or EV/hybrid lots.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -45,68 +45,71 @@ export const AutoDealershipInventory = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Featured Inventory"
+    const heading = props.heading ?? 'Featured Inventory'
     const description =
       props.description ??
-      "Browse our hand-picked selection of certified pre-owned vehicles. Every car passes a 150-point inspection."
-    const viewAll = props.viewAll ?? "View All 200+ Vehicles"
+      'Browse our hand-picked selection of certified pre-owned vehicles. Every car passes a 150-point inspection.'
+    const viewAll = props.viewAll ?? 'View All 200+ Vehicles'
     const items = props.items?.length
       ? props.items
       : [
           {
-            name: "2022 BMW 330i",
-            specs: "28,450 miles · Automatic · RWD",
-            price: "$38,995",
-            badge: "Certified",
-            features: ["Leather", "Navigation", "Sunroof"],
-            imageAlt: "Black BMW 3 Series sedan front three-quarter view",
+            name: '2022 BMW 330i',
+            specs: '28,450 miles · Automatic · RWD',
+            price: '$38,995',
+            badge: 'Certified',
+            features: ['Leather', 'Navigation', 'Sunroof'],
+            imageAlt: 'Black BMW 3 Series sedan front three-quarter view',
           },
           {
-            name: "2021 Mercedes C300",
-            specs: "35,200 miles · Automatic · AWD",
-            price: "$41,500",
-            badge: "Certified",
-            features: ["Premium Audio", "Heated Seats", "Blind Spot"],
-            imageAlt: "White Mercedes-Benz C-Class luxury sedan in showroom lighting",
+            name: '2021 Mercedes C300',
+            specs: '35,200 miles · Automatic · AWD',
+            price: '$41,500',
+            badge: 'Certified',
+            features: ['Premium Audio', 'Heated Seats', 'Blind Spot'],
+            imageAlt:
+              'White Mercedes-Benz C-Class luxury sedan in showroom lighting',
           },
           {
-            name: "2023 Tesla Model 3",
-            specs: "12,800 miles · Auto · Long Range",
-            price: "$42,995",
-            badge: "Electric",
+            name: '2023 Tesla Model 3',
+            specs: '12,800 miles · Auto · Long Range',
+            price: '$42,995',
+            badge: 'Electric',
             electric: true,
-            features: ["Autopilot", "Glass Roof", "358 mi Range"],
-            imageAlt: "Tesla Model 3 electric vehicle in pearl white exterior finish",
+            features: ['Autopilot', 'Glass Roof', '358 mi Range'],
+            imageAlt:
+              'Tesla Model 3 electric vehicle in pearl white exterior finish',
           },
           {
-            name: "2022 Lexus RX 350",
-            specs: "41,000 miles · Automatic · AWD",
-            price: "$45,750",
-            badge: "Certified",
-            features: ["Mark Levinson", "Panoramic Roof", "Safety+"],
-            imageAlt: "Lexus RX SUV in silver metallic paint on paved driveway",
+            name: '2022 Lexus RX 350',
+            specs: '41,000 miles · Automatic · AWD',
+            price: '$45,750',
+            badge: 'Certified',
+            features: ['Mark Levinson', 'Panoramic Roof', 'Safety+'],
+            imageAlt: 'Lexus RX SUV in silver metallic paint on paved driveway',
           },
           {
-            name: "2021 Audi A4 Premium",
-            specs: "32,600 miles · Automatic · AWD",
-            price: "$36,995",
-            badge: "Certified",
-            features: ["Virtual Cockpit", "LED Lights", "Quattro"],
-            imageAlt: "Audi A4 sedan in dark blue exterior color profile view",
+            name: '2021 Audi A4 Premium',
+            specs: '32,600 miles · Automatic · AWD',
+            price: '$36,995',
+            badge: 'Certified',
+            features: ['Virtual Cockpit', 'LED Lights', 'Quattro'],
+            imageAlt: 'Audi A4 sedan in dark blue exterior color profile view',
           },
           {
-            name: "2023 Toyota RAV4 Hybrid",
-            specs: "18,900 miles · CVT · AWD",
-            price: "$34,250",
-            badge: "Hybrid",
+            name: '2023 Toyota RAV4 Hybrid',
+            specs: '18,900 miles · CVT · AWD',
+            price: '$34,250',
+            badge: 'Hybrid',
             electric: true,
-            features: ["40 MPG", "CarPlay", "Adaptive Cruise"],
-            imageAlt: "Toyota RAV4 hybrid compact SUV in white with black roof rails",
+            features: ['40 MPG', 'CarPlay', 'Adaptive Cruise'],
+            imageAlt:
+              'Toyota RAV4 hybrid compact SUV in white with black roof rails',
           },
         ]
 
     return (
-      <section className={cn("bg-card py-16 lg:py-24", props.className)}>
+      <section className={cn('bg-card py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -131,10 +134,10 @@ export const AutoDealershipInventory = defineComponent({
                   />
                   <span
                     className={cn(
-                      "absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium",
+                      'absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium',
                       v.electric
-                        ? "bg-chart-2 text-primary-foreground"
-                        : "bg-primary text-primary-foreground",
+                        ? 'bg-chart-2 text-primary-foreground'
+                        : 'bg-primary text-primary-foreground',
                     )}
                   >
                     {v.badge}

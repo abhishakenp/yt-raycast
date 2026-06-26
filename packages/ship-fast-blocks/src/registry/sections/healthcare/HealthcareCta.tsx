@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * HealthcareCta — full-bleed accent call-to-action band for a medical-clinic
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Vitality Health Partners" defaults.
  */
 export const HealthcareCta = defineComponent({
-  name: "HealthcareCta",
+  name: 'HealthcareCta',
   description:
     "Full-bleed accent call-to-action band for a medical-clinic page: a solid primary-colored strip with a centered large heading, a supporting paragraph, two CTAs (a light 'book' button + an outlined phone-number button with a phone icon), and a small reassurance note beneath. Both CTAs route through useNavigate. Use as the closing conversion band before the footer of a doctors' office, primary-care practice or telehealth clinic.",
   props: z.object({
@@ -31,15 +31,14 @@ export const HealthcareCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to prioritize your health?"
+    const heading = props.heading ?? 'Ready to prioritize your health?'
     const description =
       props.description ??
-      "Join thousands of San Francisco families who trust Vitality Health Partners for their primary care. Same-day appointments available."
-    const primaryCta = props.primaryCta ?? "Book Your First Visit"
-    const phone = props.phone ?? "(415) 555-1234"
+      'Join thousands of San Francisco families who trust Vitality Health Partners for their primary care. Same-day appointments available.'
+    const primaryCta = props.primaryCta ?? 'Book Your First Visit'
+    const phone = props.phone ?? '(415) 555-1234'
     const note =
-      props.note ??
-      "No-commitment consultation. Most insurance plans accepted."
+      props.note ?? 'No-commitment consultation. Most insurance plans accepted.'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -60,7 +59,7 @@ export const HealthcareCta = defineComponent({
 
     return (
       <section
-        className={cn("bg-primary py-20 lg:py-28", props.className)}
+        className={cn('bg-primary py-20 lg:py-28', props.className)}
         aria-labelledby="cta-heading"
       >
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">

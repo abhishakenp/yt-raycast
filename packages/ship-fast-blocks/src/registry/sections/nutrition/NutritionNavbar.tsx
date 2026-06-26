@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * NutritionNavbar — sticky top navigation header for a nutrition-coaching /
@@ -13,9 +13,9 @@ import { SiteNav } from "#/section-kit/SiteNav.tsx"
  * weight-loss or healthy-eating services and fitness-nutrition apps.
  */
 export const NutritionNavbar = defineComponent({
-  name: "NutritionNavbar",
+  name: 'NutritionNavbar',
   description:
-    "Sticky top navigation header for a nutrition-coaching / wellness site, built on the shared SiteNav kit composite: a fresh leaf brand mark + wordmark on the left, prop-driven desktop nav links, and a filled primary pill CTA on the right, with a real mobile drawer on small screens. All links and the CTA route through useNavigate. Use as the sticky site header for nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs, weight-loss or healthy-eating services and fitness-nutrition apps.",
+    'Sticky top navigation header for a nutrition-coaching / wellness site, built on the shared SiteNav kit composite: a fresh leaf brand mark + wordmark on the left, prop-driven desktop nav links, and a filled primary pill CTA on the right, with a real mobile drawer on small screens. All links and the CTA route through useNavigate. Use as the sticky site header for nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs, weight-loss or healthy-eating services and fitness-nutrition apps.',
   props: z.object({
     /** Brand name shown beside the leaf mark. */
     brand: z.string().optional(),
@@ -32,12 +32,12 @@ export const NutritionNavbar = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Nourish"
+    const brand = props.brand ?? 'Nourish'
     const nav = props.nav?.length
       ? props.nav
-      : ["Approach", "Plans", "Stories", "FAQ"]
-    const ctaLabel = props.ctaLabel ?? "Start Now"
-    const ctaTarget = props.ctaTarget ?? "Pricing"
+      : ['Approach', 'Plans', 'Stories', 'FAQ']
+    const ctaLabel = props.ctaLabel ?? 'Start Now'
+    const ctaTarget = props.ctaTarget ?? 'Pricing'
 
     const LeafMark = (
       <svg

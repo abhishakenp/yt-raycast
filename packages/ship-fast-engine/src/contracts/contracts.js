@@ -1,4 +1,7 @@
-import { SITE_SPEC_VERSION, SUPPORTED_EXPORT_TARGETS } from '../spec/defaults.js'
+import {
+  SITE_SPEC_VERSION,
+  SUPPORTED_EXPORT_TARGETS,
+} from '../spec/defaults.js'
 import { normalizeSiteSpec } from '../spec/normalize.js'
 import { validateSiteSpec } from '../spec/validate.js'
 
@@ -22,13 +25,17 @@ function toSet(value = []) {
 }
 
 function toStringArray(value = []) {
-  return Array.isArray(value) ? value.map((entry) => String(entry)).filter(Boolean) : []
+  return Array.isArray(value)
+    ? value.map((entry) => String(entry)).filter(Boolean)
+    : []
 }
 
 function parseVersion(value) {
   if (!value || typeof value !== 'string') return [1, 0, 0]
   const normalized = String(value).trim()
-  const [major, minor, patch] = normalized.split('.').map((value) => Number.parseInt(value, 10))
+  const [major, minor, patch] = normalized
+    .split('.')
+    .map((value) => Number.parseInt(value, 10))
   return [
     Number.isInteger(major) ? major : 1,
     Number.isInteger(minor) ? minor : 0,
@@ -85,7 +92,11 @@ export function sanitizeSiteSpec(raw = {}, context = {}, options = {}) {
     }
   }
 
-  if (options.fallbackOnInvalid && typeof options.fallback === 'object' && options.fallback) {
+  if (
+    options.fallbackOnInvalid &&
+    typeof options.fallback === 'object' &&
+    options.fallback
+  ) {
     const fallback = normalizeSiteSpec(options.fallback, context)
     fallback.version = CURRENT_SITE_SPEC_VERSION
     return {
@@ -113,7 +124,8 @@ export function normalizeSession(input = {}, options = {}) {
         status: CURRENT_TASK_STATUS.includes(toString(task.status, 'PENDING'))
           ? task.status
           : 'PENDING',
-        filename: task.filename === undefined ? undefined : toString(task.filename, ''),
+        filename:
+          task.filename === undefined ? undefined : toString(task.filename, ''),
         description: toString(task.description, ''),
         dependsOn: toStringArray(task.dependsOn),
         files: toStringArray(task.files),
@@ -126,7 +138,8 @@ export function normalizeSession(input = {}, options = {}) {
     workspace: toString(input.workspace, ''),
     prompt: toString(input.prompt, '').trim(),
     userId: input.userId ?? null,
-    createdAt: toNumber(input.createdAt, options.now || Date.now()) ?? Date.now(),
+    createdAt:
+      toNumber(input.createdAt, options.now || Date.now()) ?? Date.now(),
     tasks,
     homepageReady: toBoolean(input.homepageReady),
     siteSpecReady: toBoolean(input.siteSpecReady),
@@ -151,6 +164,7 @@ export function validateSession(session) {
   const errors = []
   if (!session?.id) errors.push('id is required.')
   if (!session?.workspace) errors.push('workspace is required.')
-  if (typeof session?.prompt !== 'string') errors.push('prompt must be a string.')
+  if (typeof session?.prompt !== 'string')
+    errors.push('prompt must be a string.')
   return { valid: errors.length === 0, errors }
 }

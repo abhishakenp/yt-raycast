@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * AnalyticsKpis — a 4-up KPI metric-card grid for a SaaS analytics dashboard. A
@@ -14,9 +14,9 @@ import { cn } from "#/lib/utils.ts"
  * default KPIs.
  */
 export const AnalyticsKpis = defineComponent({
-  name: "AnalyticsKpis",
+  name: 'AnalyticsKpis',
   description:
-    "A 4-up KPI metric-card grid for a SaaS analytics dashboard: a responsive 1/2/4-column grid of bordered cards, each with a label, large value, an up/down trend delta (positive chart styling, negative destructive) with a directional arrow, a rotating icon chip, and a caption. Tokens-only, no links. Use as the top summary row of a dashboard — total revenue, active users, conversion rate, average session, or any headline-metric scorecard band.",
+    'A 4-up KPI metric-card grid for a SaaS analytics dashboard: a responsive 1/2/4-column grid of bordered cards, each with a label, large value, an up/down trend delta (positive chart styling, negative destructive) with a directional arrow, a rotating icon chip, and a caption. Tokens-only, no links. Use as the top summary row of a dashboard — total revenue, active users, conversion rate, average session, or any headline-metric scorecard band.',
   props: z.object({
     /** KPI metric cards. `trend` "up" renders positive (chart) styling, "down" negative. */
     kpis: z
@@ -25,7 +25,7 @@ export const AnalyticsKpis = defineComponent({
           label: z.string(),
           value: z.string(),
           delta: z.string(),
-          trend: z.enum(["up", "down"]),
+          trend: z.enum(['up', 'down']),
           caption: z.string(),
         }),
       )
@@ -37,32 +37,32 @@ export const AnalyticsKpis = defineComponent({
       ? props.kpis
       : ([
           {
-            label: "Total Revenue",
-            value: "$124,592",
-            delta: "+12.5%",
-            trend: "up",
-            caption: "vs last month",
+            label: 'Total Revenue',
+            value: '$124,592',
+            delta: '+12.5%',
+            trend: 'up',
+            caption: 'vs last month',
           },
           {
-            label: "Active Users",
-            value: "8,429",
-            delta: "+8.2%",
-            trend: "up",
-            caption: "vs last month",
+            label: 'Active Users',
+            value: '8,429',
+            delta: '+8.2%',
+            trend: 'up',
+            caption: 'vs last month',
           },
           {
-            label: "Conversion Rate",
-            value: "3.24%",
-            delta: "+2.1%",
-            trend: "up",
-            caption: "vs last month",
+            label: 'Conversion Rate',
+            value: '3.24%',
+            delta: '+2.1%',
+            trend: 'up',
+            caption: 'vs last month',
           },
           {
-            label: "Avg. Session",
-            value: "4m 32s",
-            delta: "-1.4%",
-            trend: "down",
-            caption: "vs last month",
+            label: 'Avg. Session',
+            value: '4m 32s',
+            delta: '-1.4%',
+            trend: 'down',
+            caption: 'vs last month',
           },
         ] as const)
 
@@ -70,13 +70,13 @@ export const AnalyticsKpis = defineComponent({
     const iconProps = {
       width: 20,
       height: 20,
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      stroke: 'currentColor',
       strokeWidth: 2,
-      strokeLinecap: "round" as const,
-      strokeLinejoin: "round" as const,
-      "aria-hidden": true,
+      strokeLinecap: 'round' as const,
+      strokeLinejoin: 'round' as const,
+      'aria-hidden': true,
     }
 
     const kpiIcons: ReactNode[] = [
@@ -130,11 +130,11 @@ export const AnalyticsKpis = defineComponent({
                   </p>
                   <div
                     className={cn(
-                      "mt-2 flex items-center gap-1",
-                      kpi.trend === "up" ? "text-chart-1" : "text-destructive",
+                      'mt-2 flex items-center gap-1',
+                      kpi.trend === 'up' ? 'text-chart-1' : 'text-destructive',
                     )}
                   >
-                    {kpi.trend === "up" ? <TrendUp /> : <TrendDown />}
+                    {kpi.trend === 'up' ? <TrendUp /> : <TrendDown />}
                     <span className="text-sm font-medium">{kpi.delta}</span>
                   </div>
                 </div>

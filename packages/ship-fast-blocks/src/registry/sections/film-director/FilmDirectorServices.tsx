@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * FilmDirectorServices — a services / capabilities grid for a film director or
@@ -14,9 +14,9 @@ import { cn } from "#/lib/utils.ts"
  * directors, DPs, or video production houses.
  */
 export const FilmDirectorServices = defineComponent({
-  name: "FilmDirectorServices",
+  name: 'FilmDirectorServices',
   description:
-    "Services / capabilities grid for a film director or cinematographer: a left-aligned section header (thin heading + muted lede) above a responsive 1/2/3-column grid of bordered cards, each with a rounded muted icon tile (rotating line-art film, camera, lightbulb, clapper, music, and sliders glyphs), a title, and a short muted description. Use to present production offerings such as commercial direction, cinematography, creative development, documentary, music videos, and post production for filmmakers, directors, DPs, or video production houses.",
+    'Services / capabilities grid for a film director or cinematographer: a left-aligned section header (thin heading + muted lede) above a responsive 1/2/3-column grid of bordered cards, each with a rounded muted icon tile (rotating line-art film, camera, lightbulb, clapper, music, and sliders glyphs), a title, and a short muted description. Use to present production offerings such as commercial direction, cinematography, creative development, documentary, music videos, and post production for filmmakers, directors, DPs, or video production houses.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -26,42 +26,42 @@ export const FilmDirectorServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const servicesHeading = props.heading ?? "Services"
+    const servicesHeading = props.heading ?? 'Services'
     const servicesDesc =
       props.description ??
-      "Full-service video production from concept development through post-production, tailored for commercial, narrative, and documentary projects."
+      'Full-service video production from concept development through post-production, tailored for commercial, narrative, and documentary projects.'
     const serviceItems = props.items?.length
       ? props.items
       : [
           {
-            title: "Commercial Direction",
+            title: 'Commercial Direction',
             description:
-              "Brand films, product launches, and advertising campaigns that connect with audiences and drive results.",
+              'Brand films, product launches, and advertising campaigns that connect with audiences and drive results.',
           },
           {
-            title: "Cinematography",
+            title: 'Cinematography',
             description:
-              "Award-winning DP work for features, shorts, music videos, and high-end commercial productions.",
+              'Award-winning DP work for features, shorts, music videos, and high-end commercial productions.',
           },
           {
-            title: "Creative Development",
+            title: 'Creative Development',
             description:
-              "Storyboarding, visual treatment design, and creative consulting from pre-production through delivery.",
+              'Storyboarding, visual treatment design, and creative consulting from pre-production through delivery.',
           },
           {
-            title: "Documentary",
+            title: 'Documentary',
             description:
-              "Long and short-form documentary production with journalistic integrity and cinematic vision.",
+              'Long and short-form documentary production with journalistic integrity and cinematic vision.',
           },
           {
-            title: "Music Videos",
+            title: 'Music Videos',
             description:
-              "Visual storytelling for artists and labels, from intimate performance pieces to high-concept narratives.",
+              'Visual storytelling for artists and labels, from intimate performance pieces to high-concept narratives.',
           },
           {
-            title: "Post Production",
+            title: 'Post Production',
             description:
-              "Color grading, editing supervision, and delivery for broadcast, theatrical, and digital platforms.",
+              'Color grading, editing supervision, and delivery for broadcast, theatrical, and digital platforms.',
           },
         ]
 
@@ -148,7 +148,7 @@ export const FilmDirectorServices = defineComponent({
     ]
 
     return (
-      <section className={cn("py-20 md:py-32", props.className)}>
+      <section className={cn('py-20 md:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 max-w-2xl">
             <h2 className="mb-4 text-3xl font-light md:text-4xl">

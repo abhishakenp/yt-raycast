@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * InteriorDesignServices — left-aligned three-up design-services grid for an
@@ -14,9 +14,9 @@ import { cn } from "#/lib/utils.ts"
  * architecture firms. Renders fully with no props via baked-in defaults.
  */
 export const InteriorDesignServices = defineComponent({
-  name: "InteriorDesignServices",
+  name: 'InteriorDesignServices',
   description:
-    "Left-aligned three-up design-services grid for an upscale interior-design / architecture studio: a light-weight section heading with a supporting paragraph above a responsive three-column grid of services, each with a circular muted icon tile (rotating home / briefcase / sofa line icons), a medium title and a relaxed description. Editorial and airy. Use to present core offerings such as residential design, commercial spaces and furniture curation for interior designers, design studios or architecture firms.",
+    'Left-aligned three-up design-services grid for an upscale interior-design / architecture studio: a light-weight section heading with a supporting paragraph above a responsive three-column grid of services, each with a circular muted icon tile (rotating home / briefcase / sofa line icons), a medium title and a relaxed description. Editorial and airy. Use to present core offerings such as residential design, commercial spaces and furniture curation for interior designers, design studios or architecture firms.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -26,27 +26,27 @@ export const InteriorDesignServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Design excellence in every detail"
+    const heading = props.heading ?? 'Design excellence in every detail'
     const description =
       props.description ??
-      "We believe that exceptional design lies in the thoughtful curation of space, light, and material. Our approach combines architectural integrity with personalized aesthetics."
+      'We believe that exceptional design lies in the thoughtful curation of space, light, and material. Our approach combines architectural integrity with personalized aesthetics.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Residential Design",
+            title: 'Residential Design',
             description:
-              "Complete home transformations from single rooms to full estates. We create living spaces that reflect your lifestyle while maximizing comfort and functionality.",
+              'Complete home transformations from single rooms to full estates. We create living spaces that reflect your lifestyle while maximizing comfort and functionality.',
           },
           {
-            title: "Commercial Spaces",
+            title: 'Commercial Spaces',
             description:
-              "Offices, retail, and hospitality environments designed to enhance productivity and brand identity. Strategic layouts that inspire teams and impress clients.",
+              'Offices, retail, and hospitality environments designed to enhance productivity and brand identity. Strategic layouts that inspire teams and impress clients.',
           },
           {
-            title: "Furniture Curation",
+            title: 'Furniture Curation',
             description:
-              "Bespoke furniture selection and custom piece design. From vintage finds to contemporary maker collaborations, every piece tells a story in your space.",
+              'Bespoke furniture selection and custom piece design. From vintage finds to contemporary maker collaborations, every piece tells a story in your space.',
           },
         ]
 
@@ -97,10 +97,7 @@ export const InteriorDesignServices = defineComponent({
 
     return (
       <section
-        className={cn(
-          "px-4 py-20 sm:px-6 md:py-32 lg:px-8",
-          props.className,
-        )}
+        className={cn('px-4 py-20 sm:px-6 md:py-32 lg:px-8', props.className)}
       >
         <div className="mx-auto max-w-7xl">
           <div className="mb-16 max-w-2xl md:mb-24">

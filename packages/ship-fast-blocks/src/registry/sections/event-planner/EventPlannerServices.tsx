@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * EventPlannerServices — airy services grid for an event-planning agency. A
@@ -13,7 +13,7 @@ import { Image } from "#/lib/img.tsx"
  * hospitality services.
  */
 export const EventPlannerServices = defineComponent({
-  name: "EventPlannerServices",
+  name: 'EventPlannerServices',
   description:
     "Airy services grid for an event-planning agency: a centered intro block (uppercase eyebrow, thin light heading, supporting lede) above a responsive 2-up/3-up grid of service cards, each with a rounded 4:3 photo that scales gently on hover, a medium-weight title, a relaxed description, and a muted 'starting at' price line. All imagery is alt-driven. Use to present the service menu (wedding planning, corporate events, private celebrations, galas, destination events, day-of coordination) for wedding/event planners, gala organizers, or premium hospitality services.",
   props: z.object({
@@ -33,67 +33,67 @@ export const EventPlannerServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const servicesEyebrow = props.eyebrow ?? "Our Services"
-    const servicesHeading = props.heading ?? "Comprehensive Event Solutions"
+    const servicesEyebrow = props.eyebrow ?? 'Our Services'
+    const servicesHeading = props.heading ?? 'Comprehensive Event Solutions'
     const servicesDesc =
       props.description ??
-      "From conception to celebration, we handle every aspect of your event with precision and creativity."
+      'From conception to celebration, we handle every aspect of your event with precision and creativity.'
     const serviceItems = props.items?.length
       ? props.items
       : [
           {
-            title: "Wedding Planning",
+            title: 'Wedding Planning',
             description:
               'Full-service wedding coordination from engagement to "I do." We manage venues, vendors, timelines, and every detail that makes your day uniquely yours.',
-            price: "Starting at $8,500",
+            price: 'Starting at $8,500',
             imageAlt:
-              "Elegant wedding ceremony with white floral arch and guests seated on manicured lawn",
+              'Elegant wedding ceremony with white floral arch and guests seated on manicured lawn',
           },
           {
-            title: "Corporate Events",
+            title: 'Corporate Events',
             description:
               "Professional galas, product launches, and executive retreats that reflect your brand's sophistication and leave lasting impressions on clients and partners.",
-            price: "Starting at $12,000",
+            price: 'Starting at $12,000',
             imageAlt:
-              "Modern corporate conference with attendees networking in contemporary venue space",
+              'Modern corporate conference with attendees networking in contemporary venue space',
           },
           {
-            title: "Private Celebrations",
+            title: 'Private Celebrations',
             description:
               "Milestone birthdays, anniversary dinners, and intimate gatherings crafted with personal touches that honor life's precious moments.",
-            price: "Starting at $3,500",
+            price: 'Starting at $3,500',
             imageAlt:
-              "Intimate private dinner party with elegant table setting and soft ambient lighting",
+              'Intimate private dinner party with elegant table setting and soft ambient lighting',
           },
           {
-            title: "Non-Profit Galas",
+            title: 'Non-Profit Galas',
             description:
-              "Fundraising events that inspire generosity and community engagement. We understand the unique needs of charitable organizations and donor cultivation.",
-            price: "Starting at $6,000",
+              'Fundraising events that inspire generosity and community engagement. We understand the unique needs of charitable organizations and donor cultivation.',
+            price: 'Starting at $6,000',
             imageAlt:
-              "Elegant charity gala with formal dinner setup and stage for presentations",
+              'Elegant charity gala with formal dinner setup and stage for presentations',
           },
           {
-            title: "Destination Events",
+            title: 'Destination Events',
             description:
-              "Napa wine country weddings, tropical celebrations, and European villa gatherings. We coordinate travel, accommodations, and local vendor relationships.",
-            price: "Starting at $15,000",
+              'Napa wine country weddings, tropical celebrations, and European villa gatherings. We coordinate travel, accommodations, and local vendor relationships.',
+            price: 'Starting at $15,000',
             imageAlt:
-              "Elegant outdoor garden party with string lights and beautifully decorated tables",
+              'Elegant outdoor garden party with string lights and beautifully decorated tables',
           },
           {
-            title: "Day-Of Coordination",
+            title: 'Day-Of Coordination',
             description:
-              "Already planned your event? Our day-of coordination ensures flawless execution. We manage the timeline, vendors, and any unexpected situations.",
-            price: "Starting at $2,500",
+              'Already planned your event? Our day-of coordination ensures flawless execution. We manage the timeline, vendors, and any unexpected situations.',
+            price: 'Starting at $2,500',
             imageAlt:
-              "Sophisticated cocktail party with elegant bar setup and professional bartenders",
+              'Sophisticated cocktail party with elegant bar setup and professional bartenders',
           },
         ]
 
     return (
       <section
-        className={cn("px-4 py-20 sm:px-6 lg:px-8 lg:py-32", props.className)}
+        className={cn('px-4 py-20 sm:px-6 lg:px-8 lg:py-32', props.className)}
       >
         <div className="mx-auto max-w-7xl">
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">

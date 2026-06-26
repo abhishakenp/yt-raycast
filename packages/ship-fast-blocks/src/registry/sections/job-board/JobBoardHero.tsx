@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * JobBoardHero — centered, conversion-focused hero for a job-board / careers
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props.
  */
 export const JobBoardHero = defineComponent({
-  name: "JobBoardHero",
+  name: 'JobBoardHero',
   description:
     "Centered, conversion-focused hero for a job-board / careers marketplace: a soft border-bottomed band with a jobs-available pill, large headline, supporting paragraph, and a real dual-field search box (a card holding a role/keyword input with a search icon and a location input with a pin icon plus a solid primary search button) above a row of popular-search chips. The search form and chips route through useNavigate. Use as the top hero for job boards, hiring marketplaces, talent networks or 'find a job' products where prominent search is wanted.",
   props: z.object({
@@ -39,29 +39,28 @@ export const JobBoardHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Over 12,000 jobs available this week"
-    const heading =
-      props.heading ?? "Find work that moves your career forward"
+    const badge = props.badge ?? 'Over 12,000 jobs available this week'
+    const heading = props.heading ?? 'Find work that moves your career forward'
     const subheading =
       props.subheading ??
-      "Connect with top employers hiring remote, hybrid, and on-site roles. From startups to Fortune 500s, discover opportunities that match your skills and aspirations."
+      'Connect with top employers hiring remote, hybrid, and on-site roles. From startups to Fortune 500s, discover opportunities that match your skills and aspirations.'
     const searchPlaceholder =
-      props.searchPlaceholder ?? "Job title, keywords, or company"
+      props.searchPlaceholder ?? 'Job title, keywords, or company'
     const locationPlaceholder =
-      props.locationPlaceholder ?? "City, state, or remote"
-    const searchCta = props.searchCta ?? "Search Jobs"
-    const popularLabel = props.popularLabel ?? "Popular:"
+      props.locationPlaceholder ?? 'City, state, or remote'
+    const searchCta = props.searchCta ?? 'Search Jobs'
+    const popularLabel = props.popularLabel ?? 'Popular:'
     const popular = props.popular?.length
       ? props.popular
-      : ["Remote", "Engineering", "Design", "Marketing", "Product"]
+      : ['Remote', 'Engineering', 'Design', 'Marketing', 'Product']
 
     const inputCls =
-      "w-full rounded-xl border border-input bg-background py-3 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+      'w-full rounded-xl border border-input bg-background py-3 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
 
     return (
       <section
         className={cn(
-          "relative border-b border-border bg-background",
+          'relative border-b border-border bg-background',
           props.className,
         )}
       >

@@ -1,8 +1,8 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DashboardChartActivity — a two-column analytics band for a SaaS admin
@@ -17,7 +17,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * defaults.
  */
 export const DashboardChartActivity = defineComponent({
-  name: "DashboardChartActivity",
+  name: 'DashboardChartActivity',
   description:
     "A two-column analytics band for a SaaS admin dashboard: on the left (2/3 width) a revenue panel with title/subtitle, range-toggle buttons and a smooth inline SVG area chart (indigo gradient fill, gridlines, end-point marker, axis-label strip); on the right a recent-activity feed card with a 'View all' link and tone-tinted round-icon items (sentence + optional bold phrase + timestamp). Range toggles are interactive; 'View all' routes through useNavigate. Use below the KPI row to pair a trend chart with a live activity stream.",
   props: z.object({
@@ -47,7 +47,7 @@ export const DashboardChartActivity = defineComponent({
               emphasis: z.string().optional(),
               time: z.string(),
               tone: z
-                .enum(["emerald", "sky", "orange", "primary", "violet"])
+                .enum(['emerald', 'sky', 'orange', 'primary', 'violet'])
                 .optional(),
             }),
           )
@@ -59,26 +59,26 @@ export const DashboardChartActivity = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
 
-    const chartTitle = props.chart?.title ?? "Revenue Overview"
-    const chartSubtitle = props.chart?.subtitle ?? "Monthly revenue performance"
+    const chartTitle = props.chart?.title ?? 'Revenue Overview'
+    const chartSubtitle = props.chart?.subtitle ?? 'Monthly revenue performance'
     const chartRanges = props.chart?.ranges?.length
       ? props.chart.ranges
-      : ["12 Months", "30 Days"]
+      : ['12 Months', '30 Days']
     const chartLabels = props.chart?.labels?.length
       ? props.chart.labels
       : [
-          "Jun",
-          "Jul",
-          "Aug",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dec",
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
         ]
     const chartData = props.chart?.data?.length
       ? props.chart.data
@@ -87,40 +87,40 @@ export const DashboardChartActivity = defineComponent({
           46000, 48294,
         ]
 
-    const activityTitle = props.activity?.title ?? "Recent Activity"
-    const activityViewAll = props.activity?.viewAll ?? "View all"
+    const activityTitle = props.activity?.title ?? 'Recent Activity'
+    const activityViewAll = props.activity?.viewAll ?? 'View all'
     const activityItems = props.activity?.items?.length
       ? props.activity.items
       : [
           {
-            text: "Order #4921 completed",
-            emphasis: "Order #4921",
-            time: "2 minutes ago",
-            tone: "emerald" as const,
+            text: 'Order #4921 completed',
+            emphasis: 'Order #4921',
+            time: '2 minutes ago',
+            tone: 'emerald' as const,
           },
           {
-            text: "New customer Sarah Chen",
-            emphasis: "Sarah Chen",
-            time: "15 minutes ago",
-            tone: "sky" as const,
+            text: 'New customer Sarah Chen',
+            emphasis: 'Sarah Chen',
+            time: '15 minutes ago',
+            tone: 'sky' as const,
           },
           {
-            text: "Low stock: Wireless Headphones",
-            emphasis: "Wireless Headphones",
-            time: "32 minutes ago",
-            tone: "orange" as const,
+            text: 'Low stock: Wireless Headphones',
+            emphasis: 'Wireless Headphones',
+            time: '32 minutes ago',
+            tone: 'orange' as const,
           },
           {
-            text: "New review from James Wilson",
-            emphasis: "James Wilson",
-            time: "1 hour ago",
-            tone: "primary" as const,
+            text: 'New review from James Wilson',
+            emphasis: 'James Wilson',
+            time: '1 hour ago',
+            tone: 'primary' as const,
           },
           {
-            text: "Order #4918 shipped",
-            emphasis: "Order #4918",
-            time: "2 hours ago",
-            tone: "violet" as const,
+            text: 'Order #4918 shipped',
+            emphasis: 'Order #4918',
+            time: '2 hours ago',
+            tone: 'violet' as const,
           },
         ]
 
@@ -129,7 +129,7 @@ export const DashboardChartActivity = defineComponent({
     // ── Activity feed tints + glyphs. ──
     const activityTones: Record<string, { wrap: string; icon: ReactNode }> = {
       emerald: {
-        wrap: "bg-chart-1/10 text-chart-1",
+        wrap: 'bg-chart-1/10 text-chart-1',
         icon: (
           <>
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -138,7 +138,7 @@ export const DashboardChartActivity = defineComponent({
         ),
       },
       sky: {
-        wrap: "bg-chart-2/10 text-chart-2",
+        wrap: 'bg-chart-2/10 text-chart-2',
         icon: (
           <>
             <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -149,7 +149,7 @@ export const DashboardChartActivity = defineComponent({
         ),
       },
       orange: {
-        wrap: "bg-chart-3/10 text-chart-3",
+        wrap: 'bg-chart-3/10 text-chart-3',
         icon: (
           <>
             <circle cx="12" cy="12" r="10" />
@@ -159,13 +159,13 @@ export const DashboardChartActivity = defineComponent({
         ),
       },
       primary: {
-        wrap: "bg-primary/10 text-primary",
+        wrap: 'bg-primary/10 text-primary',
         icon: (
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         ),
       },
       violet: {
-        wrap: "bg-chart-5/10 text-chart-5",
+        wrap: 'bg-chart-5/10 text-chart-5',
         icon: (
           <>
             <rect x="1" y="3" width="15" height="13" rx="1" />
@@ -203,21 +203,18 @@ export const DashboardChartActivity = defineComponent({
         const cx = (prev.x + p.x) / 2
         return `C ${cx} ${prev.y} ${cx} ${p.y} ${p.x} ${p.y}`
       })
-      .join(" ")
+      .join(' ')
     const areaPath =
       points.length > 0
         ? `${linePath} L ${points[points.length - 1].x} ${padTop + innerH} L ${points[0].x} ${padTop + innerH} Z`
-        : ""
+        : ''
     const gridLines = [0, 0.25, 0.5, 0.75, 1].map(
       (t) => padTop + innerH - t * innerH,
     )
 
     return (
       <div
-        className={cn(
-          "grid grid-cols-1 gap-6 lg:grid-cols-3",
-          props.className,
-        )}
+        className={cn('grid grid-cols-1 gap-6 lg:grid-cols-3', props.className)}
       >
         {/* Revenue chart */}
         <div className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
@@ -239,10 +236,10 @@ export const DashboardChartActivity = defineComponent({
                     type="button"
                     onClick={() => setActiveRange(range)}
                     className={cn(
-                      "rounded-md border px-3 py-1.5 text-xs font-medium transition-colors",
+                      'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
                       active
-                        ? "border-primary/20 bg-primary/10 text-primary"
-                        : "border-border bg-card text-muted-foreground hover:bg-muted",
+                        ? 'border-primary/20 bg-primary/10 text-primary'
+                        : 'border-border bg-card text-muted-foreground hover:bg-muted',
                     )}
                   >
                     {range}
@@ -339,11 +336,11 @@ export const DashboardChartActivity = defineComponent({
           </div>
           <div className="space-y-4">
             {activityItems.map((item, i) => {
-              const tone = activityTones[item.tone ?? "primary"]
+              const tone = activityTones[item.tone ?? 'primary']
               const emph = item.emphasis
               let before = item.text
-              let bold = ""
-              let after = ""
+              let bold = ''
+              let after = ''
               if (emph && item.text.includes(emph)) {
                 const idx = item.text.indexOf(emph)
                 before = item.text.slice(0, idx)
@@ -354,7 +351,7 @@ export const DashboardChartActivity = defineComponent({
                 <div key={i} className="flex gap-3">
                   <span
                     className={cn(
-                      "mt-0.5 grid size-8 shrink-0 place-items-center rounded-full",
+                      'mt-0.5 grid size-8 shrink-0 place-items-center rounded-full',
                       tone.wrap,
                     )}
                   >

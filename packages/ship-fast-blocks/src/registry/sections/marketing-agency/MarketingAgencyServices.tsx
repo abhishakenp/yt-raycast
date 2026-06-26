@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * MarketingAgencyServices — a 6-up services / capabilities grid. A centered
@@ -14,9 +14,9 @@ import { cn } from "#/lib/utils.ts"
  * Renders fully with no props.
  */
 export const MarketingAgencyServices = defineComponent({
-  name: "MarketingAgencyServices",
+  name: 'MarketingAgencyServices',
   description:
-    "6-up services / capabilities grid: a centered eyebrow + heading + description above a responsive grid of muted rounded cards (1/2/3 columns), each with a filled primary icon tile, a service title, a short description, and a bulleted capability list with dot markers; cards lift to an accent surface on hover. Icons rotate through a built-in set (chart, search, mail, pie, users, document). Use to present marketing-agency service lines such as performance marketing, SEO & content, email, CRO, social, and analytics.",
+    '6-up services / capabilities grid: a centered eyebrow + heading + description above a responsive grid of muted rounded cards (1/2/3 columns), each with a filled primary icon tile, a service title, a short description, and a bulleted capability list with dot markers; cards lift to an accent surface on hover. Icons rotate through a built-in set (chart, search, mail, pie, users, document). Use to present marketing-agency service lines such as performance marketing, SEO & content, email, CRO, social, and analytics.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -33,60 +33,64 @@ export const MarketingAgencyServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Our Services"
-    const heading = props.heading ?? "Growth Strategies That Work"
+    const eyebrow = props.eyebrow ?? 'Our Services'
+    const heading = props.heading ?? 'Growth Strategies That Work'
     const description =
       props.description ??
-      "We combine data science with creative excellence to deliver measurable results across every channel."
+      'We combine data science with creative excellence to deliver measurable results across every channel.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Performance Marketing",
+            title: 'Performance Marketing',
             description:
-              "Google Ads, Meta, LinkedIn, and TikTok campaigns optimized for ROAS. We manage $2M+ in monthly ad spend with an average 4.2x return.",
+              'Google Ads, Meta, LinkedIn, and TikTok campaigns optimized for ROAS. We manage $2M+ in monthly ad spend with an average 4.2x return.',
             points: [
-              "Audience segmentation",
-              "Creative A/B testing",
-              "Conversion tracking",
+              'Audience segmentation',
+              'Creative A/B testing',
+              'Conversion tracking',
             ],
           },
           {
-            title: "SEO & Content",
+            title: 'SEO & Content',
             description:
               "Technical SEO audits, content strategy, and link building. We've helped clients rank #1 for 5,000+ competitive keywords.",
-            points: ["Technical audits", "Content clusters", "Authority building"],
-          },
-          {
-            title: "Email Marketing",
-            description:
-              "Automated sequences, newsletters, and retention campaigns. Our clients see 35%+ open rates and $45 average revenue per email.",
-            points: ["Lifecycle automation", "Segmentation", "A/B testing"],
-          },
-          {
-            title: "Conversion Optimization",
-            description:
-              "CRO audits, user research, and landing page optimization. Average 23% lift in conversion rates within 60 days.",
-            points: ["Heatmap analysis", "User testing", "Landing page design"],
-          },
-          {
-            title: "Social Media",
-            description:
-              "Organic strategy, content creation, and community management. We grew client followings by 2M+ across platforms last year.",
             points: [
-              "Content calendars",
-              "Video production",
-              "Influencer outreach",
+              'Technical audits',
+              'Content clusters',
+              'Authority building',
             ],
           },
           {
-            title: "Analytics & Reporting",
+            title: 'Email Marketing',
             description:
-              "Custom dashboards, attribution modeling, and actionable insights. Know exactly which campaigns drive revenue.",
+              'Automated sequences, newsletters, and retention campaigns. Our clients see 35%+ open rates and $45 average revenue per email.',
+            points: ['Lifecycle automation', 'Segmentation', 'A/B testing'],
+          },
+          {
+            title: 'Conversion Optimization',
+            description:
+              'CRO audits, user research, and landing page optimization. Average 23% lift in conversion rates within 60 days.',
+            points: ['Heatmap analysis', 'User testing', 'Landing page design'],
+          },
+          {
+            title: 'Social Media',
+            description:
+              'Organic strategy, content creation, and community management. We grew client followings by 2M+ across platforms last year.',
             points: [
-              "Custom dashboards",
-              "Attribution modeling",
-              "Weekly reports",
+              'Content calendars',
+              'Video production',
+              'Influencer outreach',
+            ],
+          },
+          {
+            title: 'Analytics & Reporting',
+            description:
+              'Custom dashboards, attribution modeling, and actionable insights. Know exactly which campaigns drive revenue.',
+            points: [
+              'Custom dashboards',
+              'Attribution modeling',
+              'Weekly reports',
             ],
           },
         ]
@@ -174,7 +178,7 @@ export const MarketingAgencyServices = defineComponent({
     ]
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <p className="mb-3 text-sm font-medium text-muted-foreground">

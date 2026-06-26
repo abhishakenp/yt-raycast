@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * BarNightclubFeatures — 3-up centered features strip for a cocktail-bar /
@@ -13,7 +13,7 @@ import { cn } from "#/lib/utils.ts"
  * speakeasy pages. Renders fully with no props via baked-in defaults.
  */
 export const BarNightclubFeatures = defineComponent({
-  name: "BarNightclubFeatures",
+  name: 'BarNightclubFeatures',
   description:
     "3-up centered features strip for a cocktail-bar / nightclub page: a responsive row of equal columns, each with a thin circle-bordered line icon (building / music / clock, rotated by index), a medium title, and a muted description paragraph. Quiet, editorial and monochrome, used to summarize the venue's three pillars such as craft cocktails, live DJ sets, and late night. Use directly under the hero on bar, nightclub, lounge, or speakeasy pages.",
   props: z.object({
@@ -28,19 +28,19 @@ export const BarNightclubFeatures = defineComponent({
       ? props.items
       : [
           {
-            title: "Craft Cocktails",
+            title: 'Craft Cocktails',
             description:
-              "Award-winning mixologists creating signature drinks with house-made syrups, rare spirits, and precision technique.",
+              'Award-winning mixologists creating signature drinks with house-made syrups, rare spirits, and precision technique.',
           },
           {
-            title: "Live DJ Sets",
+            title: 'Live DJ Sets',
             description:
-              "Resident and guest DJs spinning deep house, techno, and disco every Thursday through Saturday until 4 AM.",
+              'Resident and guest DJs spinning deep house, techno, and disco every Thursday through Saturday until 4 AM.',
           },
           {
-            title: "Late Night",
+            title: 'Late Night',
             description:
-              "Open until 4 AM on weekends. Private booths, VIP sections, and bottle service available all night.",
+              'Open until 4 AM on weekends. Private booths, VIP sections, and bottle service available all night.',
           },
         ]
 
@@ -90,7 +90,7 @@ export const BarNightclubFeatures = defineComponent({
     ]
 
     return (
-      <section className={cn("py-24 lg:py-32", props.className)}>
+      <section className={cn('py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 md:grid-cols-3 lg:gap-16">
             {items.map((f, i) => (

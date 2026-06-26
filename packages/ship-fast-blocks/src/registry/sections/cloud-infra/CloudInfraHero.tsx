@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CloudInfraHero — two-column hero section for a cloud-infrastructure / developer-
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully on zero arguments via baked-in defaults.
  */
 export const CloudInfraHero = defineComponent({
-  name: "CloudInfraHero",
+  name: 'CloudInfraHero',
   description:
-    "Two-column hero section for a cloud-infrastructure / developer-platform SaaS landing page: a status pill with a chart-2 dot, a bold headline, supporting paragraph, dual pill CTAs (filled primary with arrow and outlined secondary), trust checkmark row, a 4:3 alt-driven image on the right with a floating stat card overlaid at the bottom-left. CTAs route through useNavigate. Use as the primary hero for cloud hosting, IaaS/PaaS, serverless, container, DevOps, or developer-tooling sites.",
+    'Two-column hero section for a cloud-infrastructure / developer-platform SaaS landing page: a status pill with a chart-2 dot, a bold headline, supporting paragraph, dual pill CTAs (filled primary with arrow and outlined secondary), trust checkmark row, a 4:3 alt-driven image on the right with a floating stat card overlaid at the bottom-left. CTAs route through useNavigate. Use as the primary hero for cloud hosting, IaaS/PaaS, serverless, container, DevOps, or developer-tooling sites.',
   props: z.object({
     /** Status pill text before the headline. */
     badge: z.string().optional(),
@@ -40,22 +40,21 @@ export const CloudInfraHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Now with GPU instances"
-    const heading =
-      props.heading ?? "Cloud infrastructure that scales with you"
+    const badge = props.badge ?? 'Now with GPU instances'
+    const heading = props.heading ?? 'Cloud infrastructure that scales with you'
     const subheading =
       props.subheading ??
-      "Deploy containers, virtual machines, and serverless functions in seconds. Pay only for the compute you actually use—down to the millisecond."
-    const primaryCta = props.primaryCta ?? "Start free trial"
-    const secondaryCta = props.secondaryCta ?? "View pricing"
+      'Deploy containers, virtual machines, and serverless functions in seconds. Pay only for the compute you actually use—down to the millisecond.'
+    const primaryCta = props.primaryCta ?? 'Start free trial'
+    const secondaryCta = props.secondaryCta ?? 'View pricing'
     const trust = props.trust?.length
       ? props.trust
-      : ["No credit card required", "$500 free credits"]
+      : ['No credit card required', '$500 free credits']
     const imageAlt =
       props.imageAlt ??
-      "Abstract visualization of global cloud network infrastructure with interconnected nodes"
-    const statLabel = props.statLabel ?? "Avg. deployment time"
-    const statValue = props.statValue ?? "12 seconds"
+      'Abstract visualization of global cloud network infrastructure with interconnected nodes'
+    const statLabel = props.statLabel ?? 'Avg. deployment time'
+    const statValue = props.statValue ?? '12 seconds'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -91,7 +90,7 @@ export const CloudInfraHero = defineComponent({
 
     return (
       <section
-        className={cn("relative overflow-hidden bg-muted/40", props.className)}
+        className={cn('relative overflow-hidden bg-muted/40', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -161,9 +160,7 @@ export const CloudInfraHero = defineComponent({
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">
-                      {statLabel}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{statLabel}</p>
                     <p className="text-lg font-semibold text-card-foreground">
                       {statValue}
                     </p>

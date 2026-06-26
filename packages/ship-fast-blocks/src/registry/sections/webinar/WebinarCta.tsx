@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * WebinarCta — a bold, centered registration band for a webinar landing page.
@@ -13,7 +13,7 @@ import { CtaBand } from "#/section-kit/CtaBand.tsx"
  * event page to drive registrations. Renders fully with no props.
  */
 export const WebinarCta = defineComponent({
-  name: "WebinarCta",
+  name: 'WebinarCta',
   description:
     "Bold, centered registration band for a webinar landing page built on the shared CtaBand composite at tone='primary': a date-and-seats urgency eyebrow, a strong 'Reserve your spot — free' headline, a short reassuring subheading, and a centered row of two pill CTAs (a high-contrast 'Save my seat' button plus an outlined 'Add to calendar' button). Both CTAs route through useNavigate. Use near the bottom of a webinar, summit, or virtual-event page to drive registrations.",
   props: z.object({
@@ -34,15 +34,16 @@ export const WebinarCta = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "July 17 · 11:00 AM PT — only 87 seats left"
-    const headline = props.headline ?? "Reserve your spot — free"
+    const eyebrow =
+      props.eyebrow ?? 'July 17 · 11:00 AM PT — only 87 seats left'
+    const headline = props.headline ?? 'Reserve your spot — free'
     const subheading =
       props.subheading ??
       "Register in seconds. We'll send you the join link, calendar invite, and the recording afterward."
-    const primaryCta = props.primaryCta ?? "Save my seat"
-    const primaryTarget = props.primaryTarget ?? "Register"
-    const secondaryCta = props.secondaryCta ?? "Add to calendar"
-    const secondaryTarget = props.secondaryTarget ?? "Register"
+    const primaryCta = props.primaryCta ?? 'Save my seat'
+    const primaryTarget = props.primaryTarget ?? 'Register'
+    const secondaryCta = props.secondaryCta ?? 'Add to calendar'
+    const secondaryTarget = props.secondaryTarget ?? 'Register'
 
     return (
       <CtaBand
@@ -51,8 +52,8 @@ export const WebinarCta = defineComponent({
         title={headline}
         subtitle={subheading}
         actions={[
-          { label: primaryCta, target: primaryTarget, variant: "primary" },
-          { label: secondaryCta, target: secondaryTarget, variant: "outline" },
+          { label: primaryCta, target: primaryTarget, variant: 'primary' },
+          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
         ]}
         className={props.className}
       />

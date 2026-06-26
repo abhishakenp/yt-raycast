@@ -8,11 +8,7 @@ import {
 } from '@ship-fast/aeo'
 import { cleanObject, joinUrl, normalizePath } from '@ship-fast/aeo'
 
-export {
-  normalizeSiteUrl,
-  resolveAssetUrl,
-  serializeStructuredData,
-}
+export { normalizeSiteUrl, resolveAssetUrl, serializeStructuredData }
 
 export function resolvePageSeo(siteSpec, page) {
   return resolvePageSeoFromAeo(siteSpec, page)

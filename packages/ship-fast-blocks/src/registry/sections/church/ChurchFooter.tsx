@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ChurchFooter — rich dark multi-column footer for a church or faith-community site.
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * no props via baked-in defaults.
  */
 export const ChurchFooter = defineComponent({
-  name: "ChurchFooter",
+  name: 'ChurchFooter',
   description:
-    "Rich dark multi-column footer for a church or faith-community site: a foreground-background reversed footer with four columns (brand + about + social icons, quick links, resources, and contact info with office hours), plus a bottom row with auto-updating copyright and legal links. Every link and the brand button route through useNavigate. Use as the closing site footer for churches, parishes, worship centers, ministries, or religious nonprofits.",
+    'Rich dark multi-column footer for a church or faith-community site: a foreground-background reversed footer with four columns (brand + about + social icons, quick links, resources, and contact info with office hours), plus a bottom row with auto-updating copyright and legal links. Every link and the brand button route through useNavigate. Use as the closing site footer for churches, parishes, worship centers, ministries, or religious nonprofits.',
   props: z.object({
     /** Church / community name shown beside the star mark. */
     brand: z.string().optional(),
@@ -52,44 +52,46 @@ export const ChurchFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Grace Community"
-    const homeTarget = props.homeTarget ?? "Services"
+    const brand = props.brand ?? 'Grace Community'
+    const homeTarget = props.homeTarget ?? 'Services'
     const about =
       props.about ??
-      "A place to belong, believe, and become. Join us Sundays at 9 & 11 AM."
+      'A place to belong, believe, and become. Join us Sundays at 9 & 11 AM.'
     const socials = props.socials?.length
       ? props.socials
-      : ["Instagram", "YouTube", "Facebook"]
-    const quickLinksTitle = props.quickLinksTitle ?? "Quick Links"
+      : ['Instagram', 'YouTube', 'Facebook']
+    const quickLinksTitle = props.quickLinksTitle ?? 'Quick Links'
     const quickLinks = props.quickLinks?.length
       ? props.quickLinks
       : [
-          "Service Times",
-          "Upcoming Events",
-          "Small Groups",
-          "Give Online",
-          "Watch Sermons",
-          "Care & Prayer",
+          'Service Times',
+          'Upcoming Events',
+          'Small Groups',
+          'Give Online',
+          'Watch Sermons',
+          'Care & Prayer',
         ]
-    const resourcesTitle = props.resourcesTitle ?? "Resources"
+    const resourcesTitle = props.resourcesTitle ?? 'Resources'
     const resources = props.resources?.length
       ? props.resources
       : [
-          "Sermon Archive",
-          "Bible Reading Plan",
-          "Devotionals",
-          "New Here Guide",
-          "Statement of Faith",
-          "Leadership Team",
+          'Sermon Archive',
+          'Bible Reading Plan',
+          'Devotionals',
+          'New Here Guide',
+          'Statement of Faith',
+          'Leadership Team',
         ]
-    const contactTitle = props.contactTitle ?? "Contact"
-    const address = props.address ?? "4521 NE Glisan Street, Portland, OR 97213"
-    const phone = props.phone ?? "(503) 555-0147"
-    const email = props.email ?? "hello@gracecommunity.church"
-    const hours = props.hours ?? "Mon–Thu: 9 AM – 5 PM"
+    const contactTitle = props.contactTitle ?? 'Contact'
+    const address = props.address ?? '4521 NE Glisan Street, Portland, OR 97213'
+    const phone = props.phone ?? '(503) 555-0147'
+    const email = props.email ?? 'hello@gracecommunity.church'
+    const hours = props.hours ?? 'Mon–Thu: 9 AM – 5 PM'
     const copyright =
-      props.copyright ?? "Grace Community Church. All rights reserved."
-    const legal = props.legal?.length ? props.legal : ["Privacy", "Terms", "Accessibility"]
+      props.copyright ?? 'Grace Community Church. All rights reserved.'
+    const legal = props.legal?.length
+      ? props.legal
+      : ['Privacy', 'Terms', 'Accessibility']
 
     const socialIcons: Record<string, ReactNode> = {
       Instagram: (
@@ -127,7 +129,7 @@ export const ChurchFooter = defineComponent({
     return (
       <footer
         className={cn(
-          "bg-foreground py-16 text-background lg:py-20",
+          'bg-foreground py-16 text-background lg:py-20',
           props.className,
         )}
       >
@@ -146,9 +148,7 @@ export const ChurchFooter = defineComponent({
                   {brand}
                 </span>
               </button>
-              <p className="mb-6 leading-relaxed text-background/70">
-                {about}
-              </p>
+              <p className="mb-6 leading-relaxed text-background/70">{about}</p>
               <div className="flex items-center gap-4">
                 {socials.map((social) => (
                   <button

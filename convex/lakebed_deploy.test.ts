@@ -27,7 +27,9 @@ describe('lakebed_deploy action logging', () => {
     ).toBeGreaterThan(source.indexOf("if (sourceKind === 'html')"))
     expect(source).toContain("'project-build:start'")
     expect(source).toContain('sourceKind')
-    expect(source).toContain("logLakebedDeploy(prepared.sessionId, 'record:start')")
+    expect(source).toContain(
+      "logLakebedDeploy(prepared.sessionId, 'record:start')",
+    )
     expect(source).toContain(
       "logLakebedDeploy(prepared?.sessionId ?? args.sessionId, 'failed'",
     )

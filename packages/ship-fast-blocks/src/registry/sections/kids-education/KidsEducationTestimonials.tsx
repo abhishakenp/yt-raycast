@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * KidsEducationTestimonials — parent & teacher testimonial grid for a kids /
@@ -13,7 +13,7 @@ import { Image } from "#/lib/img.tsx"
  * baked-in defaults.
  */
 export const KidsEducationTestimonials = defineComponent({
-  name: "KidsEducationTestimonials",
+  name: 'KidsEducationTestimonials',
   description:
     "Parent & teacher testimonial grid for a kids / family learning platform: a centered eyebrow + heading + description intro on a muted band above a responsive 3-up grid of rounded white quote cards; each card has a 5-star rating row, a quote, and a headshot avatar with name + role. Use as social proof for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
   props: z.object({
@@ -37,34 +37,37 @@ export const KidsEducationTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Testimonials"
-    const heading = props.heading ?? "Loved by Families"
+    const eyebrow = props.eyebrow ?? 'Testimonials'
+    const heading = props.heading ?? 'Loved by Families'
     const description =
       props.description ??
-      "See what parents and teachers are saying about their WonderLearn experience."
+      'See what parents and teachers are saying about their WonderLearn experience.'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
               "WonderLearn has completely transformed our afternoon routine. My daughter used to beg for screen time, now she begs for 'learning time.' The science experiments are her absolute favorite!",
-            name: "Sarah Mitchell",
-            role: "Mother of two, Austin TX",
-            avatarAlt: "Professional headshot of Sarah Mitchell, a smiling mother of two",
+            name: 'Sarah Mitchell',
+            role: 'Mother of two, Austin TX',
+            avatarAlt:
+              'Professional headshot of Sarah Mitchell, a smiling mother of two',
           },
           {
             quote:
               "As a 2nd grade teacher, I've tried many platforms. WonderLearn is the first one that truly engages every student. The progress reports help me identify who needs extra support in specific areas.",
-            name: "David Chen",
-            role: "2nd Grade Teacher, Seattle WA",
-            avatarAlt: "Professional headshot of David Chen, an elementary school teacher",
+            name: 'David Chen',
+            role: '2nd Grade Teacher, Seattle WA',
+            avatarAlt:
+              'Professional headshot of David Chen, an elementary school teacher',
           },
           {
             quote:
-              "My twins are 6 and have very different interests—one loves art, the other math. WonderLearn somehow engages both of them equally. The progress they made in 3 months is incredible!",
-            name: "Maria Gonzalez",
-            role: "Parent of twins, Chicago IL",
-            avatarAlt: "Professional headshot of Maria Gonzalez, a mother of twins",
+              'My twins are 6 and have very different interests—one loves art, the other math. WonderLearn somehow engages both of them equally. The progress they made in 3 months is incredible!',
+            name: 'Maria Gonzalez',
+            role: 'Parent of twins, Chicago IL',
+            avatarAlt:
+              'Professional headshot of Maria Gonzalez, a mother of twins',
           },
         ]
 
@@ -80,7 +83,7 @@ export const KidsEducationTestimonials = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted/40 py-24", props.className)}>
+      <section className={cn('bg-muted/40 py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-secondary">
@@ -100,7 +103,9 @@ export const KidsEducationTestimonials = defineComponent({
                     <Star key={n} />
                   ))}
                 </div>
-                <p className="mb-6 leading-relaxed text-card-foreground">&ldquo;{t.quote}&rdquo;</p>
+                <p className="mb-6 leading-relaxed text-card-foreground">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
                 <div className="flex items-center gap-4">
                   <Image
                     alt={t.avatarAlt}
@@ -110,7 +115,9 @@ export const KidsEducationTestimonials = defineComponent({
                     className="size-12 rounded-full object-cover"
                   />
                   <div>
-                    <p className="font-semibold text-card-foreground">{t.name}</p>
+                    <p className="font-semibold text-card-foreground">
+                      {t.name}
+                    </p>
                     <p className="text-sm text-muted-foreground">{t.role}</p>
                   </div>
                 </div>

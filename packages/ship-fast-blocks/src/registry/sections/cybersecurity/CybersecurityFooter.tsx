@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CybersecurityFooter — dark, full-bleed 5-column mega-footer. A brand-surface
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * "SentinelGuard" defaults.
  */
 export const CybersecurityFooter = defineComponent({
-  name: "CybersecurityFooter",
+  name: 'CybersecurityFooter',
   description:
-    "Dark full-bleed 5-column mega-footer on the brand surface: a wide brand column (shield logo + name, tagline, social links) beside several link-list columns, then a bordered-top bottom row with an auto-updating copyright line and legal links. The brand button, column links, social links and legal links route through useNavigate. Use as the closing site footer for cybersecurity vendors, SOC/MDR providers, or any enterprise B2B security SaaS.",
+    'Dark full-bleed 5-column mega-footer on the brand surface: a wide brand column (shield logo + name, tagline, social links) beside several link-list columns, then a bordered-top bottom row with an auto-updating copyright line and legal links. The brand button, column links, social links and legal links route through useNavigate. Use as the closing site footer for cybersecurity vendors, SOC/MDR providers, or any enterprise B2B security SaaS.',
   props: z.object({
     /** Brand / product name shown beside the shield logo. */
     brand: z.string().optional(),
@@ -38,56 +38,56 @@ export const CybersecurityFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "SentinelGuard"
+    const brand = props.brand ?? 'SentinelGuard'
     const tagline =
       props.tagline ??
-      "AI-powered cybersecurity platform protecting enterprises worldwide since 2018."
-    const note = props.note ?? "All rights reserved."
+      'AI-powered cybersecurity platform protecting enterprises worldwide since 2018.'
+    const note = props.note ?? 'All rights reserved.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Platform",
+            title: 'Platform',
             links: [
-              "Threat Detection",
-              "Cloud Security",
-              "Zero Trust",
-              "Compliance",
-              "API Security",
+              'Threat Detection',
+              'Cloud Security',
+              'Zero Trust',
+              'Compliance',
+              'API Security',
             ],
           },
           {
-            title: "Solutions",
+            title: 'Solutions',
             links: [
-              "Enterprise",
-              "Financial Services",
-              "Healthcare",
-              "Retail",
-              "Government",
+              'Enterprise',
+              'Financial Services',
+              'Healthcare',
+              'Retail',
+              'Government',
             ],
           },
           {
-            title: "Company",
-            links: ["About Us", "Careers", "Press", "Blog", "Contact"],
+            title: 'Company',
+            links: ['About Us', 'Careers', 'Press', 'Blog', 'Contact'],
           },
           {
-            title: "Resources",
+            title: 'Resources',
             links: [
-              "Documentation",
-              "API Reference",
-              "System Status",
-              "Security",
-              "Privacy Policy",
+              'Documentation',
+              'API Reference',
+              'System Status',
+              'Security',
+              'Privacy Policy',
             ],
           },
         ]
     const legal = props.legal?.length
       ? props.legal
-      : ["Terms of Service", "Privacy Policy", "Cookie Settings"]
+      : ['Terms of Service', 'Privacy Policy', 'Cookie Settings']
     const social = props.social?.length
       ? props.social
-      : ["Twitter", "LinkedIn", "GitHub"]
-    const homeTarget = props.homeTarget ?? "Platform"
+      : ['Twitter', 'LinkedIn', 'GitHub']
+    const homeTarget = props.homeTarget ?? 'Platform'
 
     const ShieldMark = ({ className }: { className?: string }) => (
       <svg
@@ -106,7 +106,10 @@ export const CybersecurityFooter = defineComponent({
 
     return (
       <footer
-        className={cn("bg-foreground py-16 text-background/60", props.className)}
+        className={cn(
+          'bg-foreground py-16 text-background/60',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 lg:gap-12">

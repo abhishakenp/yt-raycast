@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * EventPlannerGallery — portfolio gallery of past events. A centered intro
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * planners or hospitality brands.
  */
 export const EventPlannerGallery = defineComponent({
-  name: "EventPlannerGallery",
+  name: 'EventPlannerGallery',
   description:
-    "Portfolio gallery of past events: a centered intro (uppercase eyebrow, thin light heading, lede) above a masonry-style grid where alternating tiles vary in height for visual rhythm, followed by a second wide 3-up row (the last tile spanning two columns on mobile). Every tile is a clickable, hover-zoom rounded photo routed through useNavigate; all imagery is alt-driven. Use to showcase recent weddings, galas and celebrations for event/wedding planners or premium hospitality brands.",
+    'Portfolio gallery of past events: a centered intro (uppercase eyebrow, thin light heading, lede) above a masonry-style grid where alternating tiles vary in height for visual rhythm, followed by a second wide 3-up row (the last tile spanning two columns on mobile). Every tile is a clickable, hover-zoom rounded photo routed through useNavigate; all imagery is alt-driven. Use to showcase recent weddings, galas and celebrations for event/wedding planners or premium hospitality brands.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -27,34 +27,34 @@ export const EventPlannerGallery = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const galleryEyebrow = props.eyebrow ?? "Portfolio"
-    const galleryHeading = props.heading ?? "Recent Events"
+    const galleryEyebrow = props.eyebrow ?? 'Portfolio'
+    const galleryHeading = props.heading ?? 'Recent Events'
     const galleryDesc =
       props.description ??
       "A glimpse into celebrations we've crafted for clients who trusted us with their most important moments."
     const galleryImages = props.images?.length
       ? props.images
       : [
-          "Garden wedding ceremony with white rose arch and guests seated on lawn at sunset",
-          "Elegant place setting with gold flatware and white linen at formal dinner",
-          "Luxury corporate gala with dramatic uplighting and decorated tables",
-          "Intimate candlelit dinner party with elegant floral centerpieces",
-          "Beach wedding ceremony with ocean backdrop and flowing white fabric arch",
-          "Beautiful wedding cake with white frosting and fresh flowers on decorated table",
-          "Outdoor reception tent with elegant lighting and decorated tables at twilight",
-          "Elegant ballroom wedding reception with crystal chandeliers and long dining tables",
+          'Garden wedding ceremony with white rose arch and guests seated on lawn at sunset',
+          'Elegant place setting with gold flatware and white linen at formal dinner',
+          'Luxury corporate gala with dramatic uplighting and decorated tables',
+          'Intimate candlelit dinner party with elegant floral centerpieces',
+          'Beach wedding ceremony with ocean backdrop and flowing white fabric arch',
+          'Beautiful wedding cake with white frosting and fresh flowers on decorated table',
+          'Outdoor reception tent with elegant lighting and decorated tables at twilight',
+          'Elegant ballroom wedding reception with crystal chandeliers and long dining tables',
         ]
     const galleryWide = props.wideImages?.length
       ? props.wideImages
       : [
-          "Live band performing at elegant wedding reception with dancing guests",
-          "Rustic barn wedding reception with string lights and wooden tables",
-          "Champagne tower celebration at luxury corporate event",
+          'Live band performing at elegant wedding reception with dancing guests',
+          'Rustic barn wedding reception with string lights and wooden tables',
+          'Champagne tower celebration at luxury corporate event',
         ]
 
     return (
       <section
-        className={cn("px-4 py-20 sm:px-6 lg:px-8 lg:py-32", props.className)}
+        className={cn('px-4 py-20 sm:px-6 lg:px-8 lg:py-32', props.className)}
       >
         <div className="mx-auto max-w-7xl">
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
@@ -80,8 +80,8 @@ export const EventPlannerGallery = defineComponent({
                   h={i % 2 === 0 ? 600 : 400}
                   loading="lazy"
                   className={cn(
-                    "w-full object-cover transition-transform duration-500 hover:scale-105",
-                    i % 2 === 0 ? "h-64 lg:h-80" : "h-48 lg:h-56",
+                    'w-full object-cover transition-transform duration-500 hover:scale-105',
+                    i % 2 === 0 ? 'h-64 lg:h-80' : 'h-48 lg:h-56',
                   )}
                 />
               </button>
@@ -94,8 +94,8 @@ export const EventPlannerGallery = defineComponent({
                 type="button"
                 onClick={() => go(galleryHeading)}
                 className={cn(
-                  "overflow-hidden rounded-xl",
-                  i === 2 && "col-span-2 lg:col-span-1",
+                  'overflow-hidden rounded-xl',
+                  i === 2 && 'col-span-2 lg:col-span-1',
                 )}
               >
                 <Image

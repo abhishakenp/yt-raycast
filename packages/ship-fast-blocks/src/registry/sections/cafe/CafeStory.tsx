@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CafeStory — split founder / origin story section for a cozy cafe / coffee
@@ -12,7 +12,7 @@ import { Image } from "#/lib/img.tsx"
  * fully with no props via baked-in "Little Owl Coffee" defaults.
  */
 export const CafeStory = defineComponent({
-  name: "CafeStory",
+  name: 'CafeStory',
   description:
     "Split founder / origin story section for a cozy cafe page: left side shows two vertically offset 3:4 photos in a 2-column grid; right side has an eyebrow cap, serif heading, multiple narrative paragraphs, and a founder attribution row with a round avatar, name, and role. No links. Use to present a cafe's origin, values, or team story.",
   props: z.object({
@@ -35,30 +35,29 @@ export const CafeStory = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const cap = props.cap ?? "Our Story"
-    const heading =
-      props.heading ?? "From a dream to your daily ritual"
+    const cap = props.cap ?? 'Our Story'
+    const heading = props.heading ?? 'From a dream to your daily ritual'
     const paragraphs = props.paragraphs?.length
       ? props.paragraphs
       : [
           "Little Owl Coffee began in 2018 when Marcus Chen and Elena Rodriguez left their corporate jobs to pursue a shared obsession: creating a space where exceptional coffee meets genuine community. They spent six months remodeling a forgotten storefront in Portland's Pearl District, hand-pouring the concrete floors and building the communal tables themselves.",
           'The name "Little Owl" came from the Western Screech-Owl pair that nested in the oak tree outside their first apartment together. Like those owls, we believe in being quietly present, observant, and creating warmth in unexpected places.',
-          "Today, we source our beans through direct trade relationships with small farms in Ethiopia, Colombia, and Guatemala. We visit at least two farms each year, building relationships that go beyond transactional. Our head roaster, James, develops profiles that honor the unique characteristics of each origin while making them approachable for everyday enjoyment.",
+          'Today, we source our beans through direct trade relationships with small farms in Ethiopia, Colombia, and Guatemala. We visit at least two farms each year, building relationships that go beyond transactional. Our head roaster, James, develops profiles that honor the unique characteristics of each origin while making them approachable for everyday enjoyment.',
         ]
-    const founderName = props.founderName ?? "Marcus & Elena"
-    const founderRole = props.founderRole ?? "Founders & Co-owners"
+    const founderName = props.founderName ?? 'Marcus & Elena'
+    const founderRole = props.founderRole ?? 'Founders & Co-owners'
     const founderAvatarAlt =
       props.founderAvatarAlt ??
-      "Professional headshot of Marcus Chen, co-owner, a smiling man with glasses and a beard"
+      'Professional headshot of Marcus Chen, co-owner, a smiling man with glasses and a beard'
     const imageAlt1 =
       props.imageAlt1 ??
-      "Portrait of cafe owners in the coffee shop kitchen, smiling while preparing pastries"
+      'Portrait of cafe owners in the coffee shop kitchen, smiling while preparing pastries'
     const imageAlt2 =
       props.imageAlt2 ??
-      "Coffee shop interior during golden hour, showing warm lighting, potted plants, and communal seating"
+      'Coffee shop interior during golden hour, showing warm lighting, potted plants, and communal seating'
 
     return (
-      <section className={cn("py-20 lg:py-32", props.className)}>
+      <section className={cn('py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="order-2 lg:order-1">
@@ -104,12 +103,8 @@ export const CafeStory = defineComponent({
                   className="size-14 rounded-full object-cover"
                 />
                 <div>
-                  <p className="font-medium text-foreground">
-                    {founderName}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {founderRole}
-                  </p>
+                  <p className="font-medium text-foreground">{founderName}</p>
+                  <p className="text-sm text-muted-foreground">{founderRole}</p>
                 </div>
               </div>
             </div>

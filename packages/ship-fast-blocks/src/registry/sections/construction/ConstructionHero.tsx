@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ConstructionHero — full-bleed dark hero section for a construction / general
@@ -14,7 +14,7 @@ import { Image } from "#/lib/img.tsx"
  * firms. Renders fully with no props via baked-in defaults.
  */
 export const ConstructionHero = defineComponent({
-  name: "ConstructionHero",
+  name: 'ConstructionHero',
   description:
     "Full-bleed dark hero section for a construction / general contractor landing page: a large left-aligned headline over a faded jobsite photo with a left-to-right scrim, a pulsing 'now booking' status pill, dual CTAs (primary filled + secondary outlined), and a trust strip with check badges beneath. CTAs route through useNavigate. Use as the opening hero for construction firms, contractors, builders, or design-build firms.",
   props: z.object({
@@ -38,20 +38,20 @@ export const ConstructionHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Now booking projects for Q3 2026"
-    const headingTop = props.headingTop ?? "Building excellence"
-    const headingBottom = props.headingBottom ?? "since 1987"
+    const badge = props.badge ?? 'Now booking projects for Q3 2026'
+    const headingTop = props.headingTop ?? 'Building excellence'
+    const headingBottom = props.headingBottom ?? 'since 1987'
     const subheading =
       props.subheading ??
-      "Commercial and residential construction across the Pacific Northwest. Licensed, bonded, and trusted by 500+ clients for projects from $50K to $50M."
-    const primaryCta = props.primaryCta ?? "Request Free Estimate"
-    const secondaryCta = props.secondaryCta ?? "View Our Projects"
+      'Commercial and residential construction across the Pacific Northwest. Licensed, bonded, and trusted by 500+ clients for projects from $50K to $50M.'
+    const primaryCta = props.primaryCta ?? 'Request Free Estimate'
+    const secondaryCta = props.secondaryCta ?? 'View Our Projects'
     const imageAlt =
       props.imageAlt ??
-      "Construction crane and steel framework at a commercial building site during golden hour"
+      'Construction crane and steel framework at a commercial building site during golden hour'
     const trust = props.trust?.length
       ? props.trust
-      : ["Licensed & Insured", "38 Years Experience", "A+ BBB Rating"]
+      : ['Licensed & Insured', '38 Years Experience', 'A+ BBB Rating']
 
     const CheckCircle = ({ className }: { className?: string }) => (
       <svg
@@ -89,7 +89,10 @@ export const ConstructionHero = defineComponent({
 
     return (
       <section
-        className={cn("relative overflow-hidden bg-foreground", props.className)}
+        className={cn(
+          'relative overflow-hidden bg-foreground',
+          props.className,
+        )}
       >
         <div aria-hidden="true" className="absolute inset-0">
           <Image

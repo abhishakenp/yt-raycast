@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * ResumeCvServices — a skills / expertise grid for a personal resume / CV /
@@ -13,7 +13,7 @@ import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
  * fully with no props via baked-in defaults.
  */
 export const ResumeCvServices = defineComponent({
-  name: "ResumeCvServices",
+  name: 'ResumeCvServices',
   description:
     "Skills / expertise grid for a personal resume / CV / portfolio site, built on the shared FeatureGrid composite: a 'Skills' heading with a short subheading and a responsive three-column grid of token cards, each pairing an expertise-area title (Product Design, Design Systems, User Research, Prototyping, Frontend, Strategy) with a concise description of what that skill covers. Use on a personal portfolio, online résumé, or professional profile page to summarize core competencies.",
   props: z.object({
@@ -34,41 +34,41 @@ export const ResumeCvServices = defineComponent({
       ? props.skills
       : [
           {
-            title: "Product Design",
+            title: 'Product Design',
             description:
-              "End-to-end design of digital products, from problem framing and flows to polished, shippable interfaces.",
+              'End-to-end design of digital products, from problem framing and flows to polished, shippable interfaces.',
           },
           {
-            title: "Design Systems",
+            title: 'Design Systems',
             description:
-              "Scalable component libraries, tokens, and documentation that keep teams consistent and fast.",
+              'Scalable component libraries, tokens, and documentation that keep teams consistent and fast.',
           },
           {
-            title: "User Research",
+            title: 'User Research',
             description:
-              "Interviews, usability testing, and synthesis that ground decisions in real user behavior.",
+              'Interviews, usability testing, and synthesis that ground decisions in real user behavior.',
           },
           {
-            title: "Prototyping",
+            title: 'Prototyping',
             description:
-              "High-fidelity interactive prototypes for testing ideas and aligning stakeholders quickly.",
+              'High-fidelity interactive prototypes for testing ideas and aligning stakeholders quickly.',
           },
           {
-            title: "Frontend",
+            title: 'Frontend',
             description:
-              "Comfortable in React and modern CSS, shipping accessible UI and pairing closely with engineers.",
+              'Comfortable in React and modern CSS, shipping accessible UI and pairing closely with engineers.',
           },
           {
-            title: "Strategy",
+            title: 'Strategy',
             description:
-              "Roadmapping, prioritization, and design leadership that connect craft to business outcomes.",
+              'Roadmapping, prioritization, and design leadership that connect craft to business outcomes.',
           },
         ]
 
     return (
       <FeatureGrid
-        heading={props.heading ?? "Skills"}
-        subheading={props.subheading ?? "What I do"}
+        heading={props.heading ?? 'Skills'}
+        subheading={props.subheading ?? 'What I do'}
         features={skills}
         columns={props.columns ?? 3}
         className={props.className}

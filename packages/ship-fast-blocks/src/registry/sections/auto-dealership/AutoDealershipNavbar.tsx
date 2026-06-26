@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AutoDealershipNavbar — sticky, blurred top navigation bar for an auto
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * "Meridian Motors" defaults.
  */
 export const AutoDealershipNavbar = defineComponent({
-  name: "AutoDealershipNavbar",
+  name: 'AutoDealershipNavbar',
   description:
     "Sticky backdrop-blurred top navigation bar for an auto dealership / used-car site: a border-bottomed header pinned to the top with a wordmark brand button on the left, horizontal nav links in the center (desktop), and a phone-number link plus a solid primary 'Book Test Drive' CTA on the right. Nav links, phone, and CTA route through useNavigate for page-switching. Use as the sticky site header for car dealerships, used-car lots, certified pre-owned sellers, auto sales groups, or EV/hybrid showrooms.",
   props: z.object({
@@ -31,17 +31,17 @@ export const AutoDealershipNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Meridian Motors"
+    const brand = props.brand ?? 'Meridian Motors'
     const nav = props.nav?.length
       ? props.nav
-      : ["Inventory", "Financing", "About", "Reviews", "FAQ"]
-    const phone = props.phone ?? "(555) 0127-456"
-    const cta = props.cta ?? "Book Test Drive"
+      : ['Inventory', 'Financing', 'About', 'Reviews', 'FAQ']
+    const phone = props.phone ?? '(555) 0127-456'
+    const cta = props.cta ?? 'Book Test Drive'
 
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

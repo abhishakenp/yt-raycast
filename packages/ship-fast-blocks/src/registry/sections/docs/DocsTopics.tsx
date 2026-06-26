@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * DocsTopics — documentation category grid for a developer-docs or product-docs
@@ -16,9 +16,9 @@ import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
  * defaults.
  */
 export const DocsTopics = defineComponent({
-  name: "DocsTopics",
+  name: 'DocsTopics',
   description:
-    "Documentation category grid for a developer-docs or product-docs landing page built on the shared FeatureGrid composite: a centered heading block above a responsive grid of doc-category cards, each with an inline line-icon tile (book, code brackets, graduation cap, document), a short title, and a one-line description routing the reader toward the right path (guides, API reference, tutorials, concept reference). Use as the primary navigation surface on a docs home, help center, or knowledge-base landing page to route readers from first steps to deep API reference. Clean developer-docs aesthetic using theme tokens only. Renders fully with no props.",
+    'Documentation category grid for a developer-docs or product-docs landing page built on the shared FeatureGrid composite: a centered heading block above a responsive grid of doc-category cards, each with an inline line-icon tile (book, code brackets, graduation cap, document), a short title, and a one-line description routing the reader toward the right path (guides, API reference, tutorials, concept reference). Use as the primary navigation surface on a docs home, help center, or knowledge-base landing page to route readers from first steps to deep API reference. Clean developer-docs aesthetic using theme tokens only. Renders fully with no props.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -102,20 +102,20 @@ export const DocsTopics = defineComponent({
 
     const defaults = [
       {
-        title: "Guides",
-        description: "Step-by-step walkthroughs for common tasks.",
+        title: 'Guides',
+        description: 'Step-by-step walkthroughs for common tasks.',
       },
       {
-        title: "API Reference",
-        description: "Complete endpoint and parameter reference.",
+        title: 'API Reference',
+        description: 'Complete endpoint and parameter reference.',
       },
       {
-        title: "Tutorials",
-        description: "End-to-end projects you can build along.",
+        title: 'Tutorials',
+        description: 'End-to-end projects you can build along.',
       },
       {
-        title: "Reference",
-        description: "Config, CLI, and concept deep-dives.",
+        title: 'Reference',
+        description: 'Config, CLI, and concept deep-dives.',
       },
     ]
 
@@ -123,10 +123,10 @@ export const DocsTopics = defineComponent({
 
     return (
       <FeatureGrid
-        heading={props.heading ?? "Browse the docs"}
+        heading={props.heading ?? 'Browse the docs'}
         subheading={
           props.subheading ??
-          "Find the right path — from first steps to deep API reference."
+          'Find the right path — from first steps to deep API reference.'
         }
         columns={props.columns ?? 4}
         features={topics.map((t, i) => ({

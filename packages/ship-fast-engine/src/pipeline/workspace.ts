@@ -36,6 +36,10 @@ export function readFile(workspace: string, file: string): string | null {
   return existsSync(p) ? readFileSync(p, 'utf-8') : null
 }
 
-export function writeFile(workspace: string, file: string, content: string): void {
+export function writeFile(
+  workspace: string,
+  file: string,
+  content: string,
+): void {
   writeFileSync(join(workspace, file), content)
 }

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * HotelResortTestimonials — guest testimonials grid for a luxury hotel /
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * baked-in guest defaults.
  */
 export const HotelResortTestimonials = defineComponent({
-  name: "HotelResortTestimonials",
+  name: 'HotelResortTestimonials',
   description:
-    "Guest testimonials grid for a luxury hotel / resort & spa site: a muted-surface section with a centered uppercase eyebrow + thin heading + paragraph, then a 3-up grid of cards each with a 5-star rating row in the primary color, a quote, and an avatar beside the guest name and location/date meta. Warm and reassuring; avatars use the alt-driven Image component. Use to surface reviews and social proof for hotels, resorts, spa retreats, inns, or wellness destinations.",
+    'Guest testimonials grid for a luxury hotel / resort & spa site: a muted-surface section with a centered uppercase eyebrow + thin heading + paragraph, then a 3-up grid of cards each with a 5-star rating row in the primary color, a quote, and an avatar beside the guest name and location/date meta. Warm and reassuring; avatars use the alt-driven Image component. Use to surface reviews and social proof for hotels, resorts, spa retreats, inns, or wellness destinations.',
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -38,37 +38,37 @@ export const HotelResortTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Guest Experiences"
-    const heading = props.heading ?? "What our guests say"
+    const eyebrow = props.eyebrow ?? 'Guest Experiences'
+    const heading = props.heading ?? 'What our guests say'
     const description =
       props.description ??
-      "Rated 4.9/5 across 2,400+ reviews on TripAdvisor, Google, and Booking.com"
+      'Rated 4.9/5 across 2,400+ reviews on TripAdvisor, Google, and Booking.com'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
-              "We celebrated our anniversary here and it exceeded every expectation. The Azure Suite was magnificent, the staff anticipated our needs before we even asked. Already planning our return.",
-            name: "Margaret Chen",
-            meta: "San Francisco, CA • March 2026",
+              'We celebrated our anniversary here and it exceeded every expectation. The Azure Suite was magnificent, the staff anticipated our needs before we even asked. Already planning our return.',
+            name: 'Margaret Chen',
+            meta: 'San Francisco, CA • March 2026',
             avatarAlt:
-              "Professional headshot of a smiling woman with shoulder-length brown hair",
+              'Professional headshot of a smiling woman with shoulder-length brown hair',
           },
           {
             quote:
               "The spa experience alone is worth the trip. I've visited wellness retreats worldwide and Azure's treatments are simply world-class. The heated pool at sunrise is pure magic.",
-            name: "Robert Mitchell",
-            meta: "London, UK • February 2026",
+            name: 'Robert Mitchell',
+            meta: 'London, UK • February 2026',
             avatarAlt:
-              "Professional headshot of a smiling middle-aged man with short gray hair",
+              'Professional headshot of a smiling middle-aged man with short gray hair',
           },
           {
             quote:
-              "We hosted our company retreat here and the service was impeccable. From the private dining setup to the team-building activities, everything was flawlessly executed.",
-            name: "Sarah Johnson",
-            meta: "Austin, TX • January 2026",
+              'We hosted our company retreat here and the service was impeccable. From the private dining setup to the team-building activities, everything was flawlessly executed.',
+            name: 'Sarah Johnson',
+            meta: 'Austin, TX • January 2026',
             avatarAlt:
-              "Professional headshot of a confident woman with blonde hair and warm smile",
+              'Professional headshot of a confident woman with blonde hair and warm smile',
           },
         ]
 
@@ -86,7 +86,7 @@ export const HotelResortTestimonials = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted py-24 lg:py-32", props.className)}>
+      <section className={cn('bg-muted py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <p className="mb-3 text-sm uppercase tracking-widest text-muted-foreground">

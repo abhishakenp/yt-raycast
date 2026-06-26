@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ConstructionNavbar — sticky top navigation bar for a construction / general
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * trades businesses. Renders fully with no props via baked-in defaults.
  */
 export const ConstructionNavbar = defineComponent({
-  name: "ConstructionNavbar",
+  name: 'ConstructionNavbar',
   description:
     "Sticky top navigation bar for a construction / general contractor site: backdrop-blurred, border-bottomed header with a hard-hat logo tile + brand name on the left, horizontal nav links in the center, and a phone link plus a 'Get a Quote' CTA on the right (desktop). Links and CTA route through useNavigate for page-switching. Use as the sticky site header for construction firms, contractors, builders, or trades businesses.",
   props: z.object({
@@ -30,26 +30,26 @@ export const ConstructionNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "BuiltRight"
+    const brand = props.brand ?? 'BuiltRight'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Projects", "Process", "Pricing", "Reviews", "FAQ"]
-    const phone = props.phone ?? "(206) 555-1234"
-    const ctaLabel = props.ctaLabel ?? "Get a Quote"
+      : ['Services', 'Projects', 'Process', 'Pricing', 'Reviews', 'FAQ']
+    const phone = props.phone ?? '(206) 555-1234'
+    const ctaLabel = props.ctaLabel ?? 'Get a Quote'
 
     const LogoMark = ({
       className,
-      tone = "primary",
+      tone = 'primary',
     }: {
       className?: string
-      tone?: "primary" | "foreground"
+      tone?: 'primary' | 'foreground'
     }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-md",
-          tone === "primary"
-            ? "bg-primary text-primary-foreground"
-            : "bg-foreground text-background",
+          'grid place-items-center rounded-md',
+          tone === 'primary'
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -72,7 +72,7 @@ export const ConstructionNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

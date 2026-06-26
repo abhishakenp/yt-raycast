@@ -12,7 +12,9 @@ const randomPrompts = FALLBACK_PROMPTS
 
 function resolveNodeEnv(): string {
   if (typeof process === 'undefined') return 'development'
-  return process.env?.NEXT_PUBLIC_NODE_ENV ?? process.env?.NODE_ENV ?? 'development'
+  return (
+    process.env?.NEXT_PUBLIC_NODE_ENV ?? process.env?.NODE_ENV ?? 'development'
+  )
 }
 
 function withNodeEnvPrefill(prompt: string): string {

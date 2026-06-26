@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NewsroomSubscribe — editorial subscription / membership band for a digital
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * no props.
  */
 export const NewsroomSubscribe = defineComponent({
-  name: "NewsroomSubscribe",
+  name: 'NewsroomSubscribe',
   description:
-    "Editorial subscription / membership band for a digital newsroom or magazine: a bold centered intro with a serif heading and a muted supporting paragraph, a short benefits checklist, a styled non-functional email-capture row with a Subscribe button, and a responsive 3-up grid of tiered membership plan cards where the featured middle plan inverts to a filled primary surface with a Most-Popular badge, closing with a fine-print trust footnote. Combines newsletter sign-up and tiered paid subscription plans; all CTAs route through useNavigate. Use to convert readers into paying subscribers or newsletter members for a news, magazine or publication site. Renders fully with no props.",
+    'Editorial subscription / membership band for a digital newsroom or magazine: a bold centered intro with a serif heading and a muted supporting paragraph, a short benefits checklist, a styled non-functional email-capture row with a Subscribe button, and a responsive 3-up grid of tiered membership plan cards where the featured middle plan inverts to a filled primary surface with a Most-Popular badge, closing with a fine-print trust footnote. Combines newsletter sign-up and tiered paid subscription plans; all CTAs route through useNavigate. Use to convert readers into paying subscribers or newsletter members for a news, magazine or publication site. Renders fully with no props.',
   props: z.object({
     /** Serif section heading. */
     heading: z.string().optional(),
@@ -48,60 +48,60 @@ export const NewsroomSubscribe = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Join 250,000 informed readers"
+    const heading = props.heading ?? 'Join 250,000 informed readers'
     const subheading =
       props.subheading ??
-      "Independent journalism that holds power to account. Become a member and get unlimited access to every story, investigation and newsletter we publish."
+      'Independent journalism that holds power to account. Become a member and get unlimited access to every story, investigation and newsletter we publish.'
     const benefits = props.benefits?.length
       ? props.benefits
       : [
-          "Unlimited articles",
-          "Ad-free reading",
-          "The daily briefing newsletter",
-          "Exclusive investigations",
+          'Unlimited articles',
+          'Ad-free reading',
+          'The daily briefing newsletter',
+          'Exclusive investigations',
         ]
-    const emailPlaceholder = props.emailPlaceholder ?? "you@example.com"
-    const submitCta = props.submitCta ?? "Subscribe"
+    const emailPlaceholder = props.emailPlaceholder ?? 'you@example.com'
+    const submitCta = props.submitCta ?? 'Subscribe'
     const plans = props.plans?.length
       ? props.plans
       : [
           {
-            name: "Digital",
-            price: "$8",
-            period: "/month",
+            name: 'Digital',
+            price: '$8',
+            period: '/month',
             features: [
-              "Unlimited articles",
-              "Ad-free reading",
-              "Mobile app access",
+              'Unlimited articles',
+              'Ad-free reading',
+              'Mobile app access',
             ],
-            cta: "Choose Digital",
+            cta: 'Choose Digital',
           },
           {
-            name: "Premium",
-            price: "$14",
-            period: "/month",
+            name: 'Premium',
+            price: '$14',
+            period: '/month',
             features: [
-              "Everything in Digital",
-              "Exclusive investigations",
-              "The daily briefing newsletter",
-              "Subscriber-only events",
+              'Everything in Digital',
+              'Exclusive investigations',
+              'The daily briefing newsletter',
+              'Subscriber-only events',
             ],
-            cta: "Choose Premium",
+            cta: 'Choose Premium',
             featured: true,
           },
           {
-            name: "Print + Digital",
-            price: "$22",
-            period: "/month",
+            name: 'Print + Digital',
+            price: '$22',
+            period: '/month',
             features: [
-              "Everything in Premium",
-              "Weekly print edition",
-              "Gift subscription included",
+              'Everything in Premium',
+              'Weekly print edition',
+              'Gift subscription included',
             ],
-            cta: "Choose Print + Digital",
+            cta: 'Choose Print + Digital',
           },
         ]
-    const footnote = props.footnote ?? "Cancel anytime. No questions asked."
+    const footnote = props.footnote ?? 'Cancel anytime. No questions asked.'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -119,7 +119,7 @@ export const NewsroomSubscribe = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-20 lg:py-32", props.className)}>
+      <section className={cn('bg-background py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-12 max-w-3xl text-center">
             <h2 className="mb-4 font-serif text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
@@ -163,10 +163,10 @@ export const NewsroomSubscribe = defineComponent({
               <div
                 key={plan.name}
                 className={cn(
-                  "relative rounded-xl p-8 shadow-sm",
+                  'relative rounded-xl p-8 shadow-sm',
                   plan.featured
-                    ? "border border-primary bg-primary text-primary-foreground shadow-xl"
-                    : "border border-border bg-card",
+                    ? 'border border-primary bg-primary text-primary-foreground shadow-xl'
+                    : 'border border-border bg-card',
                 )}
               >
                 {plan.featured ? (
@@ -178,10 +178,10 @@ export const NewsroomSubscribe = defineComponent({
                 ) : null}
                 <h3
                   className={cn(
-                    "mb-4 font-serif text-xl font-semibold",
+                    'mb-4 font-serif text-xl font-semibold',
                     plan.featured
-                      ? "text-primary-foreground"
-                      : "text-card-foreground",
+                      ? 'text-primary-foreground'
+                      : 'text-card-foreground',
                   )}
                 >
                   {plan.name}
@@ -189,10 +189,10 @@ export const NewsroomSubscribe = defineComponent({
                 <div className="mb-6">
                   <span
                     className={cn(
-                      "text-4xl font-bold",
+                      'text-4xl font-bold',
                       plan.featured
-                        ? "text-primary-foreground"
-                        : "text-card-foreground",
+                        ? 'text-primary-foreground'
+                        : 'text-card-foreground',
                     )}
                   >
                     {plan.price}
@@ -200,8 +200,8 @@ export const NewsroomSubscribe = defineComponent({
                   <span
                     className={cn(
                       plan.featured
-                        ? "text-primary-foreground/60"
-                        : "text-muted-foreground",
+                        ? 'text-primary-foreground/60'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {plan.period}
@@ -212,17 +212,17 @@ export const NewsroomSubscribe = defineComponent({
                     <li key={feat} className="flex items-start gap-3">
                       <Check
                         className={cn(
-                          "mt-0.5 size-5 shrink-0",
+                          'mt-0.5 size-5 shrink-0',
                           plan.featured
-                            ? "text-primary-foreground/80"
-                            : "text-accent",
+                            ? 'text-primary-foreground/80'
+                            : 'text-accent',
                         )}
                       />
                       <span
                         className={cn(
                           plan.featured
-                            ? "text-primary-foreground/90"
-                            : "text-foreground/80",
+                            ? 'text-primary-foreground/90'
+                            : 'text-foreground/80',
                         )}
                       >
                         {feat}
@@ -234,10 +234,10 @@ export const NewsroomSubscribe = defineComponent({
                   type="button"
                   onClick={() => go(plan.cta)}
                   className={cn(
-                    "w-full rounded-lg py-3 font-semibold transition-colors",
+                    'w-full rounded-lg py-3 font-semibold transition-colors',
                     plan.featured
-                      ? "bg-background text-foreground hover:bg-muted"
-                      : "border border-border text-foreground hover:bg-muted",
+                      ? 'bg-background text-foreground hover:bg-muted'
+                      : 'border border-border text-foreground hover:bg-muted',
                   )}
                 >
                   {plan.cta}

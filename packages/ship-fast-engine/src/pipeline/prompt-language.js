@@ -55,7 +55,8 @@ export const resolvePipelineLanguage = async ({
   preferredLanguage,
   workspace,
 } = {}) => {
-  const workspacePreferred = preferredLanguage || getWorkspacePreferredLanguage(workspace)
+  const workspacePreferred =
+    preferredLanguage || getWorkspacePreferredLanguage(workspace)
   const languageMode = await detectLanguage(prompt, workspacePreferred)
   return {
     ...languageMode,

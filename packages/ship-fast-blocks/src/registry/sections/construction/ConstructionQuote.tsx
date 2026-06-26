@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ConstructionQuote — dark "request a free estimate" lead-capture form for a
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * baked-in defaults.
  */
 export const ConstructionQuote = defineComponent({
-  name: "ConstructionQuote",
+  name: 'ConstructionQuote',
   description:
     "Dark 'request a free estimate' lead-capture form for a construction / general contractor page: a centered heading on a dark band above a functional multi-field form (name, email, phone, project type, budget, timeline, project details) with a submit button that routes through useNavigate, plus a privacy disclaimer. Use as the closing conversion section for construction firms, contractors, builders, or any service business collecting project inquiries.",
   props: z.object({
@@ -36,52 +36,52 @@ export const ConstructionQuote = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to start your project?"
+    const heading = props.heading ?? 'Ready to start your project?'
     const description =
       props.description ??
       "Get a free, no-obligation estimate. We'll respond within 24 hours."
-    const submitLabel = props.submit ?? "Request Free Estimate"
+    const submitLabel = props.submit ?? 'Request Free Estimate'
     const disclaimer =
       props.disclaimer ??
       "By submitting, you agree to our privacy policy. We'll never share your information."
     const projectTypes = props.projectTypes?.length
       ? props.projectTypes
       : [
-          "Select a project type",
-          "Kitchen Remodel",
-          "Bathroom Remodel",
-          "Home Addition",
-          "Custom Home",
-          "Commercial Building",
-          "Whole Home Renovation",
-          "Other",
+          'Select a project type',
+          'Kitchen Remodel',
+          'Bathroom Remodel',
+          'Home Addition',
+          'Custom Home',
+          'Commercial Building',
+          'Whole Home Renovation',
+          'Other',
         ]
     const budgets = props.budgets?.length
       ? props.budgets
       : [
-          "Select budget range",
-          "$50,000 - $100,000",
-          "$100,000 - $250,000",
-          "$250,000 - $500,000",
-          "$500,000 - $1,000,000",
-          "$1,000,000+",
+          'Select budget range',
+          '$50,000 - $100,000',
+          '$100,000 - $250,000',
+          '$250,000 - $500,000',
+          '$500,000 - $1,000,000',
+          '$1,000,000+',
         ]
     const timelines = props.timelines?.length
       ? props.timelines
       : [
-          "Select timeline",
-          "ASAP",
-          "Within 3 months",
-          "Within 6 months",
-          "Within 1 year",
-          "Just planning",
+          'Select timeline',
+          'ASAP',
+          'Within 3 months',
+          'Within 6 months',
+          'Within 1 year',
+          'Just planning',
         ]
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/30"
+      'w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/30'
 
     return (
-      <section className={cn("bg-foreground py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-foreground py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-background sm:text-4xl">
@@ -156,7 +156,7 @@ export const ConstructionQuote = defineComponent({
                 <select
                   id="con-quote-type"
                   required
-                  className={cn(inputCls, "appearance-none")}
+                  className={cn(inputCls, 'appearance-none')}
                 >
                   {projectTypes.map((opt) => (
                     <option key={opt} className="bg-background">
@@ -178,7 +178,7 @@ export const ConstructionQuote = defineComponent({
                 <select
                   id="con-quote-budget"
                   required
-                  className={cn(inputCls, "appearance-none")}
+                  className={cn(inputCls, 'appearance-none')}
                 >
                   {budgets.map((opt) => (
                     <option key={opt} className="bg-background">
@@ -197,7 +197,7 @@ export const ConstructionQuote = defineComponent({
                 <select
                   id="con-quote-timeline"
                   required
-                  className={cn(inputCls, "appearance-none")}
+                  className={cn(inputCls, 'appearance-none')}
                 >
                   {timelines.map((opt) => (
                     <option key={opt} className="bg-background">
@@ -219,7 +219,7 @@ export const ConstructionQuote = defineComponent({
                 id="con-quote-message"
                 rows={4}
                 placeholder="Tell us about your project, goals, and any specific requirements..."
-                className={cn(inputCls, "resize-none")}
+                className={cn(inputCls, 'resize-none')}
               />
             </div>
 

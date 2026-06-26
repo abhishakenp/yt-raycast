@@ -1,13 +1,13 @@
-import { ReactNode } from "react";
-import { ClosePanelButton } from "@ui/ClosePanelButton";
-import { Panel } from "react-resizable-panels";
-import { ResizeHandle } from "@common/layouts/SidebarDetailLayout";
+import { ReactNode } from 'react'
+import { ClosePanelButton } from '@ui/ClosePanelButton'
+import { Panel } from 'react-resizable-panels'
+import { ResizeHandle } from '@common/layouts/SidebarDetailLayout'
 
 export interface DataPanelProps {
-  title: ReactNode;
-  onClose: () => void;
-  children: ReactNode;
-  "data-testid"?: string;
+  title: ReactNode
+  onClose: () => void
+  children: ReactNode
+  'data-testid'?: string
 }
 
 export function DataPanel({
@@ -39,5 +39,5 @@ export function DataPanel({
         </div>
       </Panel>
     </>
-  );
+  )
 }

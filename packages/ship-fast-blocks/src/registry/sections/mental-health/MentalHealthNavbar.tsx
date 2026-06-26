@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MentalHealthNavbar — a sticky, backdrop-blurred top navigation bar for a
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * wellness centers, telehealth or behavioral-health practices.
  */
 export const MentalHealthNavbar = defineComponent({
-  name: "MentalHealthNavbar",
+  name: 'MentalHealthNavbar',
   description:
     "Sticky, backdrop-blurred top navigation bar for a therapy / counseling / mental-health practice site: a border-bottomed header with a calming 'sun/wellness' brand mark + practice name on the left, horizontal nav links on the right (desktop), a filled primary 'Book Session' CTA, and a mobile hamburger toggle. Calm, warm, sage-and-sand wellness aesthetic. All links and CTAs route through useNavigate. Use as the sticky site header for therapists, counselors, psychologists, psychiatrists, wellness centers, telehealth or behavioral-health practices.",
   props: z.object({
@@ -30,12 +30,12 @@ export const MentalHealthNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Stillpoint"
+    const brand = props.brand ?? 'Stillpoint'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Approach", "Team", "Pricing", "FAQ", "Book Session"]
-    const homeTarget = props.homeTarget ?? nav[0] ?? "Services"
-    const bookLabel = props.bookLabel ?? nav[nav.length - 1] ?? "Book Session"
+      : ['Services', 'Approach', 'Team', 'Pricing', 'FAQ', 'Book Session']
+    const homeTarget = props.homeTarget ?? nav[0] ?? 'Services'
+    const bookLabel = props.bookLabel ?? nav[nav.length - 1] ?? 'Book Session'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -57,7 +57,7 @@ export const MentalHealthNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >

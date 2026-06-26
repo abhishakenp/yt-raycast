@@ -1,57 +1,54 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 const PodcastFeaturedStoryProps = z.object({
-  eyebrow: z.string().optional().describe("Section eyebrow above the heading"),
-  heading: z.string().optional().describe("Section title under the eyebrow"),
+  eyebrow: z.string().optional().describe('Section eyebrow above the heading'),
+  heading: z.string().optional().describe('Section title under the eyebrow'),
   episodeLabel: z
     .string()
     .optional()
-    .describe("Accent episode label, e.g. Episode 42"),
-  title: z.string().optional().describe("Episode title"),
-  duration: z.string().optional().describe("Episode duration, e.g. 48 min"),
-  date: z.string().optional().describe("Publish date"),
-  showNotes: z
-    .string()
-    .optional()
-    .describe("Short show-notes paragraph"),
-  ctaLabel: z.string().optional().describe("Play button label"),
-  ctaTarget: z.string().optional().describe("Play button route label"),
-  imageAlt: z.string().optional().describe("Episode image search query"),
+    .describe('Accent episode label, e.g. Episode 42'),
+  title: z.string().optional().describe('Episode title'),
+  duration: z.string().optional().describe('Episode duration, e.g. 48 min'),
+  date: z.string().optional().describe('Publish date'),
+  showNotes: z.string().optional().describe('Short show-notes paragraph'),
+  ctaLabel: z.string().optional().describe('Play button label'),
+  ctaTarget: z.string().optional().describe('Play button route label'),
+  imageAlt: z.string().optional().describe('Episode image search query'),
   className: z.string().optional(),
 })
 
 export const PodcastFeaturedStory = defineComponent({
-  name: "PodcastFeaturedStory",
+  name: 'PodcastFeaturedStory',
   description:
-    "A latest-episode feature section that spotlights one podcast episode inside a prominent two-column card. The left side shows a warm studio cover image while the right side stacks an episode-number eyebrow, a bold title, a duration and publish-date meta row, short show notes, and a rounded Play episode button. Best used directly below a podcast hero to surface the freshest release.",
+    'A latest-episode feature section that spotlights one podcast episode inside a prominent two-column card. The left side shows a warm studio cover image while the right side stacks an episode-number eyebrow, a bold title, a duration and publish-date meta row, short show notes, and a rounded Play episode button. Best used directly below a podcast hero to surface the freshest release.',
   props: PodcastFeaturedStoryProps,
   component: ({ props }) => {
     const go = useNavigate()
 
-    const eyebrow = props.eyebrow ?? "Latest episode"
-    const heading = props.heading ?? "Fresh from the booth"
-    const episodeLabel = props.episodeLabel ?? "Episode 42"
-    const title = props.title ?? "The Sound of Silence"
-    const duration = props.duration ?? "48 min"
-    const date = props.date ?? "June 12, 2026"
+    const eyebrow = props.eyebrow ?? 'Latest episode'
+    const heading = props.heading ?? 'Fresh from the booth'
+    const episodeLabel = props.episodeLabel ?? 'Episode 42'
+    const title = props.title ?? 'The Sound of Silence'
+    const duration = props.duration ?? '48 min'
+    const date = props.date ?? 'June 12, 2026'
     const showNotes =
       props.showNotes ??
-      "We sit down to unpack the quiet spaces between words and why the best stories breathe. From field recordings to studio hush, we trace how silence shapes a listen. Stay through the end for a few favorite tape moments."
-    const ctaLabel = props.ctaLabel ?? "Play episode"
-    const ctaTarget = props.ctaTarget ?? "Episodes"
+      'We sit down to unpack the quiet spaces between words and why the best stories breathe. From field recordings to studio hush, we trace how silence shapes a listen. Stay through the end for a few favorite tape moments.'
+    const ctaLabel = props.ctaLabel ?? 'Play episode'
+    const ctaTarget = props.ctaTarget ?? 'Episodes'
     const imageAlt =
       props.imageAlt ??
-      "podcast recording studio with warm lighting, microphone and headphones on a wooden desk"
+      'podcast recording studio with warm lighting, microphone and headphones on a wooden desk'
 
     return (
       <section
         className={cn(
-          "bg-background py-20 text-foreground lg:py-28",
+          'bg-background py-20 text-foreground lg:py-28',
           props.className,
         )}
       >

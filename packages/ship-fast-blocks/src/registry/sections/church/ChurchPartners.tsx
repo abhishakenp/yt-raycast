@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * ChurchPartners — muted logo-band section for a church or faith-community site
@@ -12,9 +12,9 @@ import { cn } from "#/lib/utils.ts"
  * defaults.
  */
 export const ChurchPartners = defineComponent({
-  name: "ChurchPartners",
+  name: 'ChurchPartners',
   description:
-    "Muted partner-ministries logo-band for a church or faith-community site: a top-and-bottom bordered band with a soft muted background, a small centered label, and a flex-wrapped row of plain-text partner names at reduced opacity. Use between the hero and content sections for churches, nonprofits, ministries, or community organizations wanting to show alliance credibility.",
+    'Muted partner-ministries logo-band for a church or faith-community site: a top-and-bottom bordered band with a soft muted background, a small centered label, and a flex-wrapped row of plain-text partner names at reduced opacity. Use between the hero and content sections for churches, nonprofits, ministries, or community organizations wanting to show alliance credibility.',
   props: z.object({
     /** Small label above the partner names. */
     label: z.string().optional(),
@@ -23,21 +23,21 @@ export const ChurchPartners = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const label = props.label ?? "Partner ministries & affiliated organizations"
+    const label = props.label ?? 'Partner ministries & affiliated organizations'
     const items = props.items?.length
       ? props.items
       : [
-          "Portland Rescue Mission",
-          "World Vision",
-          "Compassion International",
+          'Portland Rescue Mission',
+          'World Vision',
+          'Compassion International',
           "Samaritan's Purse",
-          "Youth With A Mission",
+          'Youth With A Mission',
         ]
 
     return (
       <section
         className={cn(
-          "border-y border-border bg-muted/50 py-16",
+          'border-y border-border bg-muted/50 py-16',
           props.className,
         )}
       >

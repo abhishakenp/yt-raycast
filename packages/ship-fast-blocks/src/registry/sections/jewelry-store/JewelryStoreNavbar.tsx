@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * JewelryStoreNavbar — fixed, translucent top navigation bar for a luxury
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Maison Noir" defaults.
  */
 export const JewelryStoreNavbar = defineComponent({
-  name: "JewelryStoreNavbar",
+  name: 'JewelryStoreNavbar',
   description:
-    "Fixed translucent top navigation bar for a luxury fine-jewelry boutique on a near-black canvas: backdrop-blurred bordered header with a serif gold maison wordmark on the left, wide letter-spaced uppercase nav links in the center (desktop), and search + wishlist icons plus an underlined Book Appointment CTA on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.",
+    'Fixed translucent top navigation bar for a luxury fine-jewelry boutique on a near-black canvas: backdrop-blurred bordered header with a serif gold maison wordmark on the left, wide letter-spaced uppercase nav links in the center (desktop), and search + wishlist icons plus an underlined Book Appointment CTA on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.',
   props: z.object({
     /** Maison / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -35,19 +35,19 @@ export const JewelryStoreNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Maison Noir"
+    const brand = props.brand ?? 'Maison Noir'
     const nav = props.nav?.length
       ? props.nav
-      : ["Collections", "Pieces", "Craftsmanship", "Heritage"]
+      : ['Collections', 'Pieces', 'Craftsmanship', 'Heritage']
     const homeTarget = props.homeTarget ?? nav[0]
     const wishlistTarget = props.wishlistTarget ?? nav[1] ?? nav[0]
-    const ctaLabel = props.ctaLabel ?? "Book Appointment"
-    const ctaTarget = props.ctaTarget ?? "Book Private Appointment"
+    const ctaLabel = props.ctaLabel ?? 'Book Appointment'
+    const ctaTarget = props.ctaTarget ?? 'Book Private Appointment'
 
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md',
           props.className,
         )}
       >

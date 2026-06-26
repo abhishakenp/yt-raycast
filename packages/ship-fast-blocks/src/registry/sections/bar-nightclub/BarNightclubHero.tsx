@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BarNightclubHero — full-bleed atmospheric hero band for a cocktail-bar /
@@ -17,9 +17,9 @@ import { Image } from "#/lib/img.tsx"
  * props via baked-in "NOIR" defaults.
  */
 export const BarNightclubHero = defineComponent({
-  name: "BarNightclubHero",
+  name: 'BarNightclubHero',
   description:
-    "Full-bleed atmospheric hero band for a cocktail-bar / nightclub landing page: near-full-viewport centered section over a dimmed object-cover ambient bar photo with a bottom-up token gradient scrim, a wide letter-spaced uppercase established-year eyebrow, a huge two-line light-weight editorial headline, a supporting paragraph, dual CTAs (filled reserve + outlined view-menu), and a bouncing scroll cue pinned to the bottom. Moody, upscale and after-dark; CTAs route through useNavigate and the backdrop photo uses the alt-driven Image component. Use as the opening hero for cocktail bars, nightclubs, lounges, speakeasies, or live-music venues.",
+    'Full-bleed atmospheric hero band for a cocktail-bar / nightclub landing page: near-full-viewport centered section over a dimmed object-cover ambient bar photo with a bottom-up token gradient scrim, a wide letter-spaced uppercase established-year eyebrow, a huge two-line light-weight editorial headline, a supporting paragraph, dual CTAs (filled reserve + outlined view-menu), and a bouncing scroll cue pinned to the bottom. Moody, upscale and after-dark; CTAs route through useNavigate and the backdrop photo uses the alt-driven Image component. Use as the opening hero for cocktail bars, nightclubs, lounges, speakeasies, or live-music venues.',
   props: z.object({
     /** Wide letter-spaced uppercase eyebrow (e.g. established year + city). */
     eyebrow: z.string().optional(),
@@ -41,23 +41,23 @@ export const BarNightclubHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Est. 2019 — Downtown Chicago"
-    const headingTop = props.headingTop ?? "Where Night"
-    const headingBottom = props.headingBottom ?? "Comes Alive"
+    const eyebrow = props.eyebrow ?? 'Est. 2019 — Downtown Chicago'
+    const headingTop = props.headingTop ?? 'Where Night'
+    const headingBottom = props.headingBottom ?? 'Comes Alive'
     const subheading =
       props.subheading ??
-      "Craft cocktails, world-class DJs, and intimate vibes. NOIR is your destination for unforgettable evenings."
-    const primaryCta = props.primaryCta ?? "Reserve a Table"
-    const secondaryCta = props.secondaryCta ?? "View Menu"
+      'Craft cocktails, world-class DJs, and intimate vibes. NOIR is your destination for unforgettable evenings.'
+    const primaryCta = props.primaryCta ?? 'Reserve a Table'
+    const secondaryCta = props.secondaryCta ?? 'View Menu'
     const imageAlt =
       props.imageAlt ??
-      "Elegant bar interior with ambient lighting and bottles on shelves"
-    const scroll = props.scroll ?? "Scroll"
+      'Elegant bar interior with ambient lighting and bottles on shelves'
+    const scroll = props.scroll ?? 'Scroll'
 
     return (
       <section
         className={cn(
-          "relative flex min-h-screen items-center justify-center pt-20",
+          'relative flex min-h-screen items-center justify-center pt-20',
           props.className,
         )}
       >

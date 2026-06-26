@@ -121,7 +121,11 @@ describe('session admission policy', () => {
           prompt:
             'A website for a regional bakery with catering menus and wedding cake galleries',
         },
-        { anonymousDailyTimestamps: [1, 2], recentTimestamps: [1, 2, 3, 4, 5], now: 6 },
+        {
+          anonymousDailyTimestamps: [1, 2],
+          recentTimestamps: [1, 2, 3, 4, 5],
+          now: 6,
+        },
       ),
     ).toMatchObject({ ok: true })
   })

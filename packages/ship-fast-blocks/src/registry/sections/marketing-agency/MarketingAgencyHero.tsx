@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MarketingAgencyHero — split, conversion-focused hero for a growth / marketing
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * agencies, SEO / paid-ads shops, or B2B SaaS growth firms. Renders with no props.
  */
 export const MarketingAgencyHero = defineComponent({
-  name: "MarketingAgencyHero",
+  name: 'MarketingAgencyHero',
   description:
-    "Split, conversion-focused hero for a growth / marketing agency: a two-column layout on a light neutral canvas with a small eyebrow, a large semibold headline featuring a muted-highlight phrase, a supporting paragraph, dual rounded-pill CTAs (filled primary with arrow + outlined secondary), and inline trust checkmarks on the left; a rounded team photo with a floating ROI stat card overlapping its lower-left corner on the right. Links route through useNavigate. Use as the top hero for marketing / growth agencies, SEO / paid-ads shops, lead-gen consultancies, or B2B SaaS growth firms.",
+    'Split, conversion-focused hero for a growth / marketing agency: a two-column layout on a light neutral canvas with a small eyebrow, a large semibold headline featuring a muted-highlight phrase, a supporting paragraph, dual rounded-pill CTAs (filled primary with arrow + outlined secondary), and inline trust checkmarks on the left; a rounded team photo with a floating ROI stat card overlapping its lower-left corner on the right. Links route through useNavigate. Use as the top hero for marketing / growth agencies, SEO / paid-ads shops, lead-gen consultancies, or B2B SaaS growth firms.',
   props: z.object({
     eyebrow: z.string().optional(),
     headingBefore: z.string().optional(),
@@ -36,22 +36,22 @@ export const MarketingAgencyHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Growth Marketing Agency"
-    const headingBefore = props.headingBefore ?? "Turn Visitors Into"
-    const highlight = props.highlight ?? "Loyal Customers"
+    const eyebrow = props.eyebrow ?? 'Growth Marketing Agency'
+    const headingBefore = props.headingBefore ?? 'Turn Visitors Into'
+    const highlight = props.highlight ?? 'Loyal Customers'
     const subheading =
       props.subheading ??
       "We help B2B SaaS and e-commerce brands scale with data-driven marketing strategies. From SEO to paid acquisition, we've generated $47M+ in revenue for our clients since 2019."
-    const primaryCta = props.primaryCta ?? "Book a Free Strategy Call"
-    const secondaryCta = props.secondaryCta ?? "View Case Studies"
+    const primaryCta = props.primaryCta ?? 'Book a Free Strategy Call'
+    const secondaryCta = props.secondaryCta ?? 'View Case Studies'
     const trust = props.trust?.length
       ? props.trust
-      : ["No long-term contracts", "Results in 90 days"]
+      : ['No long-term contracts', 'Results in 90 days']
     const imageAlt =
       props.imageAlt ??
-      "Marketing team collaborating in modern office workspace with laptops and analytics dashboards"
-    const statValue = props.statValue ?? "340%"
-    const statLabel = props.statLabel ?? "Avg. ROI Increase"
+      'Marketing team collaborating in modern office workspace with laptops and analytics dashboards'
+    const statValue = props.statValue ?? '340%'
+    const statLabel = props.statLabel ?? 'Avg. ROI Increase'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -86,7 +86,7 @@ export const MarketingAgencyHero = defineComponent({
     return (
       <section
         className={cn(
-          "relative overflow-hidden bg-background text-foreground",
+          'relative overflow-hidden bg-background text-foreground',
           props.className,
         )}
       >
@@ -97,7 +97,7 @@ export const MarketingAgencyHero = defineComponent({
                 {eyebrow}
               </p>
               <h1 className="mb-6 text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                {headingBefore}{" "}
+                {headingBefore}{' '}
                 <span className="text-muted-foreground">{highlight}</span>
               </h1>
               <p className="mb-8 text-lg leading-relaxed text-muted-foreground">

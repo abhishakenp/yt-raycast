@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CrmNavbar — sticky, translucent top navigation bar for a CRM / sales-platform
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * pages. Renders fully with no props via baked-in "Pipeline Pro" defaults.
  */
 export const CrmNavbar = defineComponent({
-  name: "CrmNavbar",
+  name: 'CrmNavbar',
   description:
-    "Sticky translucent top navigation bar for a CRM / sales-platform SaaS site: backdrop-blurred, border-bottomed header pinned to the top with a bar-chart brand glyph + product name on the left, horizontal nav links in the center (desktop), and a Sign In text link plus a rounded primary Start-Free-Trial CTA on the right. Links route through useNavigate for page-switching. Use as the site header for CRM products, sales-pipeline tools, sales-enablement or B2B SaaS marketing pages. Renders fully with no props.",
+    'Sticky translucent top navigation bar for a CRM / sales-platform SaaS site: backdrop-blurred, border-bottomed header pinned to the top with a bar-chart brand glyph + product name on the left, horizontal nav links in the center (desktop), and a Sign In text link plus a rounded primary Start-Free-Trial CTA on the right. Links route through useNavigate for page-switching. Use as the site header for CRM products, sales-pipeline tools, sales-enablement or B2B SaaS marketing pages. Renders fully with no props.',
   props: z.object({
     /** Brand / product name shown beside the logo glyph. */
     brand: z.string().optional(),
@@ -32,12 +32,12 @@ export const CrmNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Pipeline Pro"
+    const brand = props.brand ?? 'Pipeline Pro'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Pricing", "Integrations", "Customers"]
-    const signInLabel = props.signInLabel ?? "Sign In"
-    const cta = props.cta ?? "Start Free Trial"
+      : ['Features', 'Pricing', 'Integrations', 'Customers']
+    const signInLabel = props.signInLabel ?? 'Sign In'
+    const cta = props.cta ?? 'Start Free Trial'
     const homeTarget = props.homeTarget ?? nav[0]
 
     const LogoMark = ({ className }: { className?: string }) => (
@@ -58,7 +58,7 @@ export const CrmNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >

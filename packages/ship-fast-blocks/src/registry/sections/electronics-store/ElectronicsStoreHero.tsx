@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ElectronicsStoreHero — split storefront hero for a premium electronics /
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
 export const ElectronicsStoreHero = defineComponent({
-  name: "ElectronicsStoreHero",
+  name: 'ElectronicsStoreHero',
   description:
-    "Split storefront hero for a premium electronics / gadgets shop on a soft muted band: a two-column layout where the left carries a pill badge, large headline, supporting paragraph, dual CTAs (filled primary Shop Now with an arrow + outlined View Deals) and a bordered inline KPI strip (e.g. 50K+ Happy Customers / 2-Day Free Shipping / 30-Day Easy Returns); the right shows a square product image with a floating best-seller product card (star icon + product title + rating meta). CTAs route through useNavigate; imagery is alt-driven. Use as the opening hero for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, or camera/drone storefronts.",
+    'Split storefront hero for a premium electronics / gadgets shop on a soft muted band: a two-column layout where the left carries a pill badge, large headline, supporting paragraph, dual CTAs (filled primary Shop Now with an arrow + outlined View Deals) and a bordered inline KPI strip (e.g. 50K+ Happy Customers / 2-Day Free Shipping / 30-Day Easy Returns); the right shows a square product image with a floating best-seller product card (star icon + product title + rating meta). CTAs route through useNavigate; imagery is alt-driven. Use as the opening hero for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, or camera/drone storefronts.',
   props: z.object({
     /** Pill badge above the headline. */
     badge: z.string().optional(),
@@ -43,25 +43,25 @@ export const ElectronicsStoreHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "New Collection 2025"
+    const badge = props.badge ?? 'New Collection 2025'
     const heading =
-      props.heading ?? "Premium Audio & Tech for the Modern Lifestyle"
+      props.heading ?? 'Premium Audio & Tech for the Modern Lifestyle'
     const subheading =
       props.subheading ??
-      "Discover our curated selection of high-performance headphones, smartwatches, and cutting-edge gadgets designed to elevate your everyday experience."
-    const primaryCta = props.primaryCta ?? "Shop Now"
-    const secondaryCta = props.secondaryCta ?? "View Deals"
+      'Discover our curated selection of high-performance headphones, smartwatches, and cutting-edge gadgets designed to elevate your everyday experience.'
+    const primaryCta = props.primaryCta ?? 'Shop Now'
+    const secondaryCta = props.secondaryCta ?? 'View Deals'
     const imageAlt =
       props.imageAlt ??
-      "Premium over-ear wireless headphones with sleek matte black finish on minimal background"
-    const floatTitle = props.floatTitle ?? "Sony WH-1000XM5"
-    const floatMeta = props.floatMeta ?? "Best Seller • 4.9 (2,847 reviews)"
+      'Premium over-ear wireless headphones with sleek matte black finish on minimal background'
+    const floatTitle = props.floatTitle ?? 'Sony WH-1000XM5'
+    const floatMeta = props.floatMeta ?? 'Best Seller • 4.9 (2,847 reviews)'
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "50K+", label: "Happy Customers" },
-          { value: "2-Day", label: "Free Shipping" },
-          { value: "30-Day", label: "Easy Returns" },
+          { value: '50K+', label: 'Happy Customers' },
+          { value: '2-Day', label: 'Free Shipping' },
+          { value: '30-Day', label: 'Easy Returns' },
         ]
 
     const ArrowRight = () => (
@@ -81,7 +81,7 @@ export const ElectronicsStoreHero = defineComponent({
 
     const Star = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4", className)}
+        className={cn('size-4', className)}
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -92,10 +92,7 @@ export const ElectronicsStoreHero = defineComponent({
 
     return (
       <section
-        className={cn(
-          "relative overflow-hidden bg-muted/40",
-          props.className,
-        )}
+        className={cn('relative overflow-hidden bg-muted/40', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2">

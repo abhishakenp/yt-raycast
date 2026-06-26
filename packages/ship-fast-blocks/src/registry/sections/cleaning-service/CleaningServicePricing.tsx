@@ -1,13 +1,13 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CleaningServicePricing — a 3-tier transparent pricing table for a home-cleaning / maid-service landing page. A muted-band background with a centered heading + lead paragraph above a responsive 3-column grid of pricing cards: the middle "Most Popular" plan is elevated, highlighted with the primary brand color and a badge pill; side plans sit on card surfaces with secondary CTAs. A footnote row with a phone-icon link sits below the grid. Every CTA and the footnote link route through useNavigate. Use for service-pricing / plan-selection blocks for residential cleaning companies, maid services, or any local home-service business. Renders fully with no props via three baked-in default plans.
  */
 export const CleaningServicePricing = defineComponent({
-  name: "CleaningServicePricing",
+  name: 'CleaningServicePricing',
   description:
     "A 3-tier transparent pricing table for a home-cleaning / maid-service landing page: muted-band background with centered heading + lead above a responsive 3-column grid of pricing cards. Middle 'Most Popular' plan is brand-colored, elevated, and badged; side plans sit on card surfaces with secondary CTAs. Footnote row with phone-icon link below. CTAs and footnote link route through useNavigate. Use for service-pricing / plan-selection blocks for residential cleaning, maid services, or local home-service businesses.",
   props: z.object({
@@ -38,62 +38,61 @@ export const CleaningServicePricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading =
-      props.heading ?? "Transparent pricing, no surprises"
+    const heading = props.heading ?? 'Transparent pricing, no surprises'
     const description =
       props.description ??
-      "Choose the plan that fits your home and budget. All plans include our satisfaction guarantee."
+      'Choose the plan that fits your home and budget. All plans include our satisfaction guarantee.'
     const plans = props.plans?.length
       ? props.plans
       : [
           {
-            name: "Studio / 1 Bedroom",
-            blurb: "Perfect for apartments and small spaces",
-            price: "$129",
-            period: "/visit",
+            name: 'Studio / 1 Bedroom',
+            blurb: 'Perfect for apartments and small spaces',
+            price: '$129',
+            period: '/visit',
             features: [
-              "2-3 hours of cleaning",
-              "Up to 800 sq ft",
-              "1 bathroom",
-              "All cleaning supplies",
+              '2-3 hours of cleaning',
+              'Up to 800 sq ft',
+              '1 bathroom',
+              'All cleaning supplies',
             ],
-            cta: "Book This Plan",
+            cta: 'Book This Plan',
           },
           {
-            name: "2-3 Bedroom Home",
-            blurb: "Ideal for families and medium homes",
-            price: "$189",
-            period: "/visit",
+            name: '2-3 Bedroom Home',
+            blurb: 'Ideal for families and medium homes',
+            price: '$189',
+            period: '/visit',
             features: [
-              "3-4 hours of cleaning",
-              "Up to 2,000 sq ft",
-              "Up to 2 bathrooms",
-              "Inside refrigerator",
-              "All cleaning supplies",
+              '3-4 hours of cleaning',
+              'Up to 2,000 sq ft',
+              'Up to 2 bathrooms',
+              'Inside refrigerator',
+              'All cleaning supplies',
             ],
-            cta: "Book This Plan",
+            cta: 'Book This Plan',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "4+ Bedroom Home",
-            blurb: "For larger homes and estates",
-            price: "$279",
-            period: "/visit",
+            name: '4+ Bedroom Home',
+            blurb: 'For larger homes and estates',
+            price: '$279',
+            period: '/visit',
             features: [
-              "4-6 hours of cleaning",
-              "Up to 4,000 sq ft",
-              "Up to 4 bathrooms",
-              "2-person cleaning team",
+              '4-6 hours of cleaning',
+              'Up to 4,000 sq ft',
+              'Up to 4 bathrooms',
+              '2-person cleaning team',
             ],
-            cta: "Book This Plan",
+            cta: 'Book This Plan',
           },
         ]
     const footnote =
       props.footnote ??
-      "Need a custom quote for a larger space or commercial property?"
+      'Need a custom quote for a larger space or commercial property?'
     const footnoteCta =
-      props.footnoteCta ?? "Call for custom pricing: (555) 123-4567"
+      props.footnoteCta ?? 'Call for custom pricing: (555) 123-4567'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -130,7 +129,7 @@ export const CleaningServicePricing = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted/40 py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">

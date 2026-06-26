@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MusicFestivalCta — a dark closing call-to-action band for a music / arts
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * festivals, concert series, or any multi-day ticketed event.
  */
 export const MusicFestivalCta = defineComponent({
-  name: "MusicFestivalCta",
+  name: 'MusicFestivalCta',
   description:
-    "Dark closing call-to-action band for a music / arts festival landing page: a full-bleed inverted (foreground background, light text) centered section with a large headline, a supporting paragraph, dual pill CTAs (get tickets / join mailing list), and a small contact note beneath. Both CTAs route through useNavigate. Use as the final conversion push before the footer on music festivals, arts festivals, concert series, raves, or any multi-day ticketed event.",
+    'Dark closing call-to-action band for a music / arts festival landing page: a full-bleed inverted (foreground background, light text) centered section with a large headline, a supporting paragraph, dual pill CTAs (get tickets / join mailing list), and a small contact note beneath. Both CTAs route through useNavigate. Use as the final conversion push before the footer on music festivals, arts festivals, concert series, raves, or any multi-day ticketed event.',
   props: z.object({
     /** Headline. */
     heading: z.string().optional(),
@@ -30,17 +30,27 @@ export const MusicFestivalCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Your horizon awaits"
+    const heading = props.heading ?? 'Your horizon awaits'
     const description =
       props.description ??
-      "Join us August 15-17 for three days that will stay with you forever. Early bird pricing ends soon."
-    const primaryCta = props.primaryCta ?? "Get Tickets"
-    const secondaryCta = props.secondaryCta ?? "Join Mailing List"
+      'Join us August 15-17 for three days that will stay with you forever. Early bird pricing ends soon.'
+    const primaryCta = props.primaryCta ?? 'Get Tickets'
+    const secondaryCta = props.secondaryCta ?? 'Join Mailing List'
     const note =
-      props.note ?? "Questions? Email us at hello@horizonfestival.com"
+      props.note ?? 'Questions? Email us at hello@horizonfestival.com'
 
     const ArrowRight = () => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
       </svg>
     )
@@ -48,7 +58,7 @@ export const MusicFestivalCta = defineComponent({
     return (
       <section
         className={cn(
-          "bg-foreground py-24 text-background lg:py-32",
+          'bg-foreground py-24 text-background lg:py-32',
           props.className,
         )}
       >

@@ -42,11 +42,7 @@ export function runCodemodeProgram(code: string): CodemodeResult {
     out.pages.push({ id, label, component, props: props ?? {} })
   }
   // Restricted: only `home`/`page` are passed in. (Benchmark-grade isolation.)
-  const fn = new Function(
-    'home',
-    'page',
-    `"use strict";\n${stripFences(code)}`,
-  )
+  const fn = new Function('home', 'page', `"use strict";\n${stripFences(code)}`)
   fn(home, page)
   return out
 }

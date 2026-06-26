@@ -1,16 +1,16 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CleaningServiceHero — split-layout hero section for a home-cleaning / maid-service landing page. A muted-band background with a left text column (trust pill with checkmark icon, bold multi-line headline with an accent-colored highlight phrase, supporting paragraph, dual pill CTAs, and three trust badges with checkmarks) and a right image column (showcase photo with a floating star-rating card that overlaps the image edge, showing stacked avatars + a star icon + rating value + review count). Every CTA routes through useNavigate. Use as the primary above-the-fold hero for residential cleaning companies, maid services, housekeeping platforms, or local home-service brands. Renders fully with no props via baked-in "PureSpace" defaults.
  */
 export const CleaningServiceHero = defineComponent({
-  name: "CleaningServiceHero",
+  name: 'CleaningServiceHero',
   description:
-    "Split-layout hero section for a home-cleaning / maid-service landing page: muted-band background with left text column (trust pill with checkmark, bold multi-line headline with accent-colored highlight, supporting paragraph, dual pill CTAs, three trust badges) and right image column (showcase photo with floating star-rating card showing stacked avatars, star icon, and review count). CTAs route through useNavigate. Use as the primary hero for residential cleaning, maid services, housekeeping, or local home-service brands.",
+    'Split-layout hero section for a home-cleaning / maid-service landing page: muted-band background with left text column (trust pill with checkmark, bold multi-line headline with accent-colored highlight, supporting paragraph, dual pill CTAs, three trust badges) and right image column (showcase photo with floating star-rating card showing stacked avatars, star icon, and review count). CTAs route through useNavigate. Use as the primary hero for residential cleaning, maid services, housekeeping, or local home-service brands.',
   props: z.object({
     /** Trust-pill text above the headline. */
     badge: z.string().optional(),
@@ -36,22 +36,22 @@ export const CleaningServiceHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Trusted by 10,000+ homes in Seattle"
-    const headingTop = props.headingTop ?? "A cleaner home,"
-    const highlight = props.highlight ?? "without the stress."
+    const badge = props.badge ?? 'Trusted by 10,000+ homes in Seattle'
+    const headingTop = props.headingTop ?? 'A cleaner home,'
+    const highlight = props.highlight ?? 'without the stress.'
     const subheading =
       props.subheading ??
-      "Professional cleaning services tailored to your schedule. From deep cleans to weekly maintenance, our vetted, insured cleaners bring sparkle to every room."
-    const primaryCta = props.primaryCta ?? "Book Your Cleaning"
-    const secondaryCta = props.secondaryCta ?? "View Pricing"
+      'Professional cleaning services tailored to your schedule. From deep cleans to weekly maintenance, our vetted, insured cleaners bring sparkle to every room.'
+    const primaryCta = props.primaryCta ?? 'Book Your Cleaning'
+    const secondaryCta = props.secondaryCta ?? 'View Pricing'
     const imageAlt =
       props.imageAlt ??
-      "Professional cleaner in apron wiping kitchen counter with spray bottle in bright modern home"
-    const rating = props.rating ?? "4.9"
-    const ratingNote = props.ratingNote ?? "From 2,847 reviews"
+      'Professional cleaner in apron wiping kitchen counter with spray bottle in bright modern home'
+    const rating = props.rating ?? '4.9'
+    const ratingNote = props.ratingNote ?? 'From 2,847 reviews'
     const trustBadges = props.trustBadges?.length
       ? props.trustBadges
-      : ["Vetted Cleaners", "Insured & Bonded", "Satisfaction Guarantee"]
+      : ['Vetted Cleaners', 'Insured & Bonded', 'Satisfaction Guarantee']
 
     const CheckCircle = () => (
       <svg
@@ -100,9 +100,7 @@ export const CleaningServiceHero = defineComponent({
     )
 
     return (
-      <section
-        className={cn("relative bg-muted/40", props.className)}
-      >
+      <section className={cn('relative bg-muted/40', props.className)}>
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">

@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * InsuranceCoverage — 4-up coverage product grid for an insurance page. A
@@ -14,7 +14,7 @@ import { cn } from "#/lib/utils.ts"
  * with no props via baked-in defaults.
  */
 export const InsuranceCoverage = defineComponent({
-  name: "InsuranceCoverage",
+  name: 'InsuranceCoverage',
   description:
     "4-up coverage product grid for an insurance page: a centered eyebrow chip + heading + lede above a responsive grid of coverage cards (e.g. Home / Auto / Life / Health), each with a tinted line-icon tile, a title, a description with a starting price, and a per-card feature checklist with check bullets. Cards lift and brighten on hover; icons rotate through a small token-colored set. Use as the main 'what we cover' section for insurance carriers, insurtech startups, brokers, or financial-protection products.",
   props: z.object({
@@ -37,52 +37,52 @@ export const InsuranceCoverage = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Comprehensive Protection"
-    const heading = props.heading ?? "Coverage designed for modern life"
+    const eyebrow = props.eyebrow ?? 'Comprehensive Protection'
+    const heading = props.heading ?? 'Coverage designed for modern life'
     const description =
       props.description ??
-      "From your first car to your forever home, we have you covered with flexible plans that grow with you."
+      'From your first car to your forever home, we have you covered with flexible plans that grow with you.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Home Insurance",
+            title: 'Home Insurance',
             description:
-              "Protect your home and belongings from fire, theft, and natural disasters. Coverage starts at just $42/month.",
+              'Protect your home and belongings from fire, theft, and natural disasters. Coverage starts at just $42/month.',
             features: [
-              "Dwelling coverage up to $2M",
-              "Personal property protection",
-              "Liability coverage included",
+              'Dwelling coverage up to $2M',
+              'Personal property protection',
+              'Liability coverage included',
             ],
           },
           {
-            title: "Auto Insurance",
+            title: 'Auto Insurance',
             description:
-              "Complete protection for every drive. From liability to comprehensive, we cover what matters on the road.",
+              'Complete protection for every drive. From liability to comprehensive, we cover what matters on the road.',
             features: [
-              "Collision & comprehensive",
-              "Roadside assistance 24/7",
-              "Uninsured motorist coverage",
+              'Collision & comprehensive',
+              'Roadside assistance 24/7',
+              'Uninsured motorist coverage',
             ],
           },
           {
-            title: "Life Insurance",
+            title: 'Life Insurance',
             description:
               "Secure your family's financial future. Term and whole life options with guaranteed rates.",
             features: [
-              "Term: 10-30 year options",
-              "Whole life cash value",
-              "No medical exam options",
+              'Term: 10-30 year options',
+              'Whole life cash value',
+              'No medical exam options',
             ],
           },
           {
-            title: "Health Insurance",
+            title: 'Health Insurance',
             description:
-              "Quality healthcare coverage that fits your budget. Individual, family, and supplemental plans available.",
+              'Quality healthcare coverage that fits your budget. Individual, family, and supplemental plans available.',
             features: [
-              "$0 preventive care visits",
-              "Prescription coverage",
-              "Mental health benefits",
+              '$0 preventive care visits',
+              'Prescription coverage',
+              'Mental health benefits',
             ],
           },
         ]
@@ -165,7 +165,7 @@ export const InsuranceCoverage = defineComponent({
     ]
 
     return (
-      <section className={cn("bg-background py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground">

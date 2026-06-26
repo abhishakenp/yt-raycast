@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * LandscapingGallery — a centered-header selected-projects portfolio grid for a
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * companies. Renders fully with no props via baked-in six-project defaults.
  */
 export const LandscapingGallery = defineComponent({
-  name: "LandscapingGallery",
+  name: 'LandscapingGallery',
   description:
-    "Centered-header selected-projects portfolio grid for a landscaping / outdoor-design company: a heading + description introduce a responsive 1/2/3-column grid of rounded image tiles; each tile zooms its photo on hover and reveals a bottom gradient overlay with a location eyebrow and a project title, with a centered outlined pill CTA closing the section. Tiles and the CTA route through useNavigate and imagery uses the alt-driven Image component. Calm, organic and premium on the card surface. Use to showcase completed work for landscapers, garden designers, hardscaping contractors or grounds-keeping companies.",
+    'Centered-header selected-projects portfolio grid for a landscaping / outdoor-design company: a heading + description introduce a responsive 1/2/3-column grid of rounded image tiles; each tile zooms its photo on hover and reveals a bottom gradient overlay with a location eyebrow and a project title, with a centered outlined pill CTA closing the section. Tiles and the CTA route through useNavigate and imagery uses the alt-driven Image component. Calm, organic and premium on the card surface. Use to showcase completed work for landscapers, garden designers, hardscaping contractors or grounds-keeping companies.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -36,54 +36,54 @@ export const LandscapingGallery = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Selected projects"
+    const heading = props.heading ?? 'Selected projects'
     const description =
       props.description ??
       "A portfolio of residential and commercial transformations across Portland's most distinctive neighborhoods."
-    const cta = props.cta ?? "Start Your Project"
+    const cta = props.cta ?? 'Start Your Project'
     const items = props.items?.length
       ? props.items
       : [
           {
-            location: "Laurelhurst Residence",
-            title: "Mediterranean Courtyard",
+            location: 'Laurelhurst Residence',
+            title: 'Mediterranean Courtyard',
             imageAlt:
-              "Backyard patio with natural stone pavers, outdoor dining furniture, and perennial garden beds",
+              'Backyard patio with natural stone pavers, outdoor dining furniture, and perennial garden beds',
           },
           {
-            location: "Pearl District Condo",
-            title: "Urban Rooftop Garden",
+            location: 'Pearl District Condo',
+            title: 'Urban Rooftop Garden',
             imageAlt:
-              "Modern front yard with ornamental grasses, Japanese maple, and gravel pathways",
+              'Modern front yard with ornamental grasses, Japanese maple, and gravel pathways',
           },
           {
-            location: "Lake Oswego Estate",
-            title: "Formal English Garden",
+            location: 'Lake Oswego Estate',
+            title: 'Formal English Garden',
             imageAlt:
-              "Lush green lawn with curved garden beds filled with hydrangeas and hostas",
+              'Lush green lawn with curved garden beds filled with hydrangeas and hostas',
           },
           {
-            location: "Alberta Arts District",
-            title: "Mixed-Use Plaza",
+            location: 'Alberta Arts District',
+            title: 'Mixed-Use Plaza',
             imageAlt:
-              "Commercial plaza with raised planters, bench seating, and native Pacific Northwest plants",
+              'Commercial plaza with raised planters, bench seating, and native Pacific Northwest plants',
           },
           {
-            location: "Sellwood Family Home",
-            title: "Entertainment Oasis",
+            location: 'Sellwood Family Home',
+            title: 'Entertainment Oasis',
             imageAlt:
-              "Backyard fire pit area with Adirondack chairs, crushed stone base, and privacy hedges",
+              'Backyard fire pit area with Adirondack chairs, crushed stone base, and privacy hedges',
           },
           {
-            location: "Forest Park Property",
-            title: "Native Meadow Restoration",
+            location: 'Forest Park Property',
+            title: 'Native Meadow Restoration',
             imageAlt:
-              "Native wildflower meadow with walking path, tall grasses, and pollinator-friendly blooms",
+              'Native wildflower meadow with walking path, tall grasses, and pollinator-friendly blooms',
           },
         ]
 
     return (
-      <section className={cn("bg-card py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl">

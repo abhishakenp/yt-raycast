@@ -1,12 +1,12 @@
-import { ValidatorJSON, Value, convexToJson } from "convex/values";
-import React, { useCallback } from "react";
-import { Checkbox } from "@ui/Checkbox";
-import { DateTimePicker } from "@common/features/data/components/FilterEditor/DateTimePicker";
-import { cn } from "@ui/cn";
-import { Tooltip } from "@ui/Tooltip";
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
-import { SearchIndexFilterClause } from "system-udfs/convex/_system/frontend/lib/filters";
-import { ObjectEditorWithPlaceholder } from "./ObjectEditorWithPlaceholder";
+import { ValidatorJSON, Value, convexToJson } from 'convex/values'
+import React, { useCallback } from 'react'
+import { Checkbox } from '@ui/Checkbox'
+import { DateTimePicker } from '@common/features/data/components/FilterEditor/DateTimePicker'
+import { cn } from '@ui/cn'
+import { Tooltip } from '@ui/Tooltip'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { SearchIndexFilterClause } from 'system-udfs/convex/_system/frontend/lib/filters'
+import { ObjectEditorWithPlaceholder } from './ObjectEditorWithPlaceholder'
 
 export function SearchIndexFilterEditor({
   idx,
@@ -20,29 +20,29 @@ export function SearchIndexFilterEditor({
   documentValidator,
   shouldSurfaceValidatorErrors,
 }: {
-  idx: number;
-  field: string;
-  error: string | undefined;
-  onChange(filter: SearchIndexFilterClause, idx: number): void;
-  onApplyFilters(): void;
-  onError(idx: number, errors: string[]): void;
-  filter: SearchIndexFilterClause;
-  autoFocusValueEditor?: boolean;
-  documentValidator?: ValidatorJSON;
-  shouldSurfaceValidatorErrors?: boolean;
+  idx: number
+  field: string
+  error: string | undefined
+  onChange(filter: SearchIndexFilterClause, idx: number): void
+  onApplyFilters(): void
+  onError(idx: number, errors: string[]): void
+  filter: SearchIndexFilterClause
+  autoFocusValueEditor?: boolean
+  documentValidator?: ValidatorJSON
+  shouldSurfaceValidatorErrors?: boolean
 }) {
   // Check if this is a _creationTime field
-  const isCreationTimeField = field === "_creationTime";
+  const isCreationTimeField = field === '_creationTime'
 
   // Handle changes to the filter's enabled state
   const handleEnabledChange = useCallback(
     (event: React.SyntheticEvent<HTMLInputElement>) => {
-      const enabled = (event.target as HTMLInputElement).checked;
+      const enabled = (event.target as HTMLInputElement).checked
 
-      onChange({ ...filter, enabled }, idx);
+      onChange({ ...filter, enabled }, idx)
     },
     [filter, idx, onChange],
-  );
+  )
 
   // Handle changes to the filter's value
   const handleValueChange = useCallback(
@@ -53,35 +53,35 @@ export function SearchIndexFilterEditor({
           value: value === undefined ? undefined : convexToJson(value),
         },
         idx,
-      );
+      )
     },
     [filter, idx, onChange],
-  );
+  )
 
   // Handle date change for _creationTime
   const handleDateChange = useCallback(
     (date: Date) => {
-      const timestamp = date.getTime();
-      onChange({ ...filter, value: timestamp }, idx);
+      const timestamp = date.getTime()
+      onChange({ ...filter, value: timestamp }, idx)
     },
     [filter, idx, onChange],
-  );
+  )
 
   // Handle errors from ObjectEditor
   const handleError = useCallback(
     (newErrors: string[]) => {
-      onError(idx, newErrors);
+      onError(idx, newErrors)
     },
     [idx, onError],
-  );
+  )
 
   // Helper to get timestamp value or default to current time
   const getTimestampValue = (value: any): Date => {
-    if (typeof value === "number") {
-      return new Date(value);
+    if (typeof value === 'number') {
+      return new Date(value)
     }
-    return new Date();
-  };
+    return new Date()
+  }
 
   return (
     <div className="flex min-w-0 items-center gap-2">
@@ -99,16 +99,16 @@ export function SearchIndexFilterEditor({
         <Tooltip
           tip={
             filter.enabled
-              ? "You cannot edit this field because it is a part of the definition of the selected index."
+              ? 'You cannot edit this field because it is a part of the definition of the selected index.'
               : undefined
           }
         >
           <div
             className={cn(
-              "flex h-full max-w-48 min-w-4 cursor-not-allowed items-center truncate rounded-l border bg-background-secondary px-2 py-1 text-xs",
+              'flex h-full max-w-48 min-w-4 cursor-not-allowed items-center truncate rounded-l border bg-background-secondary px-2 py-1 text-xs',
               filter.enabled
-                ? "bg-background-secondary"
-                : "bg-background-tertiary text-content-secondary",
+                ? 'bg-background-secondary'
+                : 'bg-background-tertiary text-content-secondary',
             )}
           >
             {field}
@@ -118,15 +118,15 @@ export function SearchIndexFilterEditor({
         <Tooltip
           tip={
             filter.enabled &&
-            "In an search index filter, index filters only support equality expressions."
+            'In an search index filter, index filters only support equality expressions.'
           }
         >
           <div
             className={cn(
-              "-ml-px flex w-fit cursor-not-allowed items-center border px-1.5 py-1 text-xs",
+              '-ml-px flex w-fit cursor-not-allowed items-center border px-1.5 py-1 text-xs',
               filter.enabled
-                ? "bg-background-secondary"
-                : "bg-background-tertiary text-content-secondary",
+                ? 'bg-background-secondary'
+                : 'bg-background-tertiary text-content-secondary',
             )}
           >
             equals
@@ -167,5 +167,5 @@ export function SearchIndexFilterEditor({
         )}
       </div>
     </div>
-  );
+  )
 }

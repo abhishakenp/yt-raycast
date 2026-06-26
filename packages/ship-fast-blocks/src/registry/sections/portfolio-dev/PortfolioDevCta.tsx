@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * PortfolioDevCta — a bold, centered availability band for a modern developer
@@ -15,7 +15,7 @@ import { CtaBand } from "#/section-kit/CtaBand.tsx"
  * baked-in defaults.
  */
 export const PortfolioDevCta = defineComponent({
-  name: "PortfolioDevCta",
+  name: 'PortfolioDevCta',
   description:
     "Bold, centered availability band for a modern developer portfolio: a full-width primary-colored band with a mono-style availability eyebrow, a strong headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Start a Project' button plus an outlined 'View Work' button). Both CTAs route through useNavigate. Use near the bottom of a freelance engineer or studio portfolio to drive contact and new engagements.",
   props: z.object({
@@ -36,15 +36,15 @@ export const PortfolioDevCta = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "// open to work"
+    const eyebrow = props.eyebrow ?? '// open to work'
     const title = props.title ?? "Let's build something"
     const subtitle =
       props.subtitle ??
       "Have a project in mind? I'm currently taking on new freelance and contract work."
-    const primaryCta = props.primaryCta ?? "Start a Project"
-    const primaryTarget = props.primaryTarget ?? "Contact"
-    const secondaryCta = props.secondaryCta ?? "View Work"
-    const secondaryTarget = props.secondaryTarget ?? "Work"
+    const primaryCta = props.primaryCta ?? 'Start a Project'
+    const primaryTarget = props.primaryTarget ?? 'Contact'
+    const secondaryCta = props.secondaryCta ?? 'View Work'
+    const secondaryTarget = props.secondaryTarget ?? 'Work'
 
     return (
       <CtaBand
@@ -53,8 +53,8 @@ export const PortfolioDevCta = defineComponent({
         title={title}
         subtitle={subtitle}
         actions={[
-          { label: primaryCta, target: primaryTarget, variant: "primary" },
-          { label: secondaryCta, target: secondaryTarget, variant: "outline" },
+          { label: primaryCta, target: primaryTarget, variant: 'primary' },
+          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
         ]}
         className={props.className}
       />

@@ -39,7 +39,8 @@ export async function generateSiteSpec({
   let normalized = null
   let validation = { valid: false, errors: [] }
 
-  const hasUserDesignReferences = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
+  const hasUserDesignReferences =
+    readDesignReferenceUrlsFromWorkspace(workspace).length > 0
   for (let attempt = 0; attempt < 2; attempt++) {
     const promptBlock = siteSpecPrompt({
       prompt,
@@ -60,13 +61,21 @@ export async function generateSiteSpec({
 
     const cleaned = cleanJsonContent(result.content)
     parsed = parseJson(cleaned)
-    normalized = normalizeSiteSpec(parsed, { prompt, ctx, designBrief, siteType })
+    normalized = normalizeSiteSpec(parsed, {
+      prompt,
+      ctx,
+      designBrief,
+      siteType,
+    })
     validation = validateSiteSpec(normalized)
 
     if (parsed && validation.valid) break
-    log(`  site-spec: attempt ${attempt + 1} returned invalid structured output`)
+    log(
+      `  site-spec: attempt ${attempt + 1} returned invalid structured output`,
+    )
     if (result.error) log(`  site-spec: model error — ${result.error}`)
-    if (!parsed) log(`  site-spec: JSON parsing failed on attempt ${attempt + 1}`)
+    if (!parsed)
+      log(`  site-spec: JSON parsing failed on attempt ${attempt + 1}`)
     logValidation(log, 'site-spec validation', validation.errors)
   }
 
@@ -78,17 +87,22 @@ export async function generateSiteSpec({
       { projectName: 'Project', prompt },
       {
         fallbackOnInvalid: true,
-        fallback: normalizeSiteSpec(fallback, { prompt, ctx, designBrief, siteType }),
+        fallback: normalizeSiteSpec(fallback, {
+          prompt,
+          ctx,
+          designBrief,
+          siteType,
+        }),
       },
-    ).spec || normalizeSiteSpec(fallback, { prompt, ctx, designBrief, siteType })
+    ).spec ||
+    normalizeSiteSpec(fallback, { prompt, ctx, designBrief, siteType })
 
-  const finalSpec =
-    finalSpecSanitized?.theme
-      ? {
-          ...finalSpecSanitized,
-          theme: repairThemeColors({ ...finalSpecSanitized.theme }, fallback),
-        }
-      : finalSpecSanitized
+  const finalSpec = finalSpecSanitized?.theme
+    ? {
+        ...finalSpecSanitized,
+        theme: repairThemeColors({ ...finalSpecSanitized.theme }, fallback),
+      }
+    : finalSpecSanitized
 
   if (!validation.valid) {
     log('  site-spec: falling back to normalized default site spec')
@@ -107,8 +121,12 @@ export async function generateSiteSpec({
     { inputTokens: 0, outputTokens: 0, cost: 0 },
   )
 
-  const tpsStr = formatTps(attempts.at(-1)) ? ` | ${formatTps(attempts.at(-1))}` : ''
-  log(`  site-spec.json: ${finalSpec.pages.length} pages, ${finalSpec.forms.length} forms${tpsStr}`)
+  const tpsStr = formatTps(attempts.at(-1))
+    ? ` | ${formatTps(attempts.at(-1))}`
+    : ''
+  log(
+    `  site-spec.json: ${finalSpec.pages.length} pages, ${finalSpec.forms.length} forms${tpsStr}`,
+  )
 
   return {
     siteSpec: finalSpec,
@@ -116,9 +134,15 @@ export async function generateSiteSpec({
   }
 }
 
-export async function updateSiteSpecFromPrompt({ prompt, currentSpec, workspace, log }) {
+export async function updateSiteSpecFromPrompt({
+  prompt,
+  currentSpec,
+  workspace,
+  log,
+}) {
   const baseSpec = currentSpec || buildFallbackSiteSpec({ prompt })
-  const hasUserDesignReferences = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
+  const hasUserDesignReferences =
+    readDesignReferenceUrlsFromWorkspace(workspace).length > 0
   const promptBlock = siteSpecPrompt({
     prompt: `Update the existing site spec using this edit request:\n${prompt}\n\nCurrent site spec:\n${JSON.stringify(baseSpec, null, 2)}`,
     ctx: {
@@ -163,7 +187,9 @@ export async function updateSiteSpecFromPrompt({ prompt, currentSpec, workspace,
     log(`  site-spec edit validation failed: ${validation.errors.join(' | ')}`)
   }
 
-  const baseInputSpec = validation.valid ? normalized : normalizeSiteSpec(baseSpec, { prompt })
+  const baseInputSpec = validation.valid
+    ? normalized
+    : normalizeSiteSpec(baseSpec, { prompt })
   const finalSpecSanitized =
     sanitizeSiteSpec(
       baseInputSpec,
@@ -173,13 +199,12 @@ export async function updateSiteSpecFromPrompt({ prompt, currentSpec, workspace,
         fallback: baseSpec,
       },
     ).spec || normalizeSiteSpec(baseSpec, { prompt })
-  const finalSpec =
-    finalSpecSanitized?.theme
-      ? {
-          ...finalSpecSanitized,
-          theme: repairThemeColors({ ...finalSpecSanitized.theme }, baseSpec),
-        }
-      : finalSpecSanitized
+  const finalSpec = finalSpecSanitized?.theme
+    ? {
+        ...finalSpecSanitized,
+        theme: repairThemeColors({ ...finalSpecSanitized.theme }, baseSpec),
+      }
+    : finalSpecSanitized
   saveSiteSpec(workspace, finalSpec)
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''
   log(`  site-spec edit: ${finalSpec.pages.length} pages restructured${tpsStr}`)

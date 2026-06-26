@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AccountingFirmHero — split, editorial hero band for a CPA / accounting-firm
@@ -17,9 +17,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in "Northridge" defaults.
  */
 export const AccountingFirmHero = defineComponent({
-  name: "AccountingFirmHero",
+  name: 'AccountingFirmHero',
   description:
-    "Split editorial hero band for a CPA / accounting-firm landing page: two-column section on a card surface with an uppercase Est.-year eyebrow, a large two-line headline, a supporting paragraph, dual CTAs (filled primary + secondary), and an inline check-marked trust-badge row on the left; a 4:3 photo with a floating tax-savings stat card pinned to its lower-left corner on the right. Calm, trustworthy professional-services look; CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the opening hero for accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, or financial advisory practices.",
+    'Split editorial hero band for a CPA / accounting-firm landing page: two-column section on a card surface with an uppercase Est.-year eyebrow, a large two-line headline, a supporting paragraph, dual CTAs (filled primary + secondary), and an inline check-marked trust-badge row on the left; a 4:3 photo with a floating tax-savings stat card pinned to its lower-left corner on the right. Calm, trustworthy professional-services look; CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the opening hero for accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, or financial advisory practices.',
   props: z.object({
     /** Uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -46,24 +46,23 @@ export const AccountingFirmHero = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
     const eyebrow =
-      props.eyebrow ?? "Est. 1987 • Chartered Professional Accountants"
-    const headingTop = props.headingTop ?? "Clarity in every number."
-    const headingBottom =
-      props.headingBottom ?? "Confidence in every decision."
+      props.eyebrow ?? 'Est. 1987 • Chartered Professional Accountants'
+    const headingTop = props.headingTop ?? 'Clarity in every number.'
+    const headingBottom = props.headingBottom ?? 'Confidence in every decision.'
     const subheading =
       props.subheading ??
-      "Northridge Financial Partners provides comprehensive accounting, tax, and advisory services for growing businesses and individuals. Trusted by 800+ clients across the Pacific Northwest."
-    const primaryCta = props.primaryCta ?? "Book Free Consultation"
-    const secondaryCta = props.secondaryCta ?? "Explore Services"
+      'Northridge Financial Partners provides comprehensive accounting, tax, and advisory services for growing businesses and individuals. Trusted by 800+ clients across the Pacific Northwest.'
+    const primaryCta = props.primaryCta ?? 'Book Free Consultation'
+    const secondaryCta = props.secondaryCta ?? 'Explore Services'
     const imageAlt =
       props.imageAlt ??
-      "professional accountant reviewing financial documents with laptop and calculator in modern office"
-    const statValue = props.statValue ?? "$47M+"
+      'professional accountant reviewing financial documents with laptop and calculator in modern office'
+    const statValue = props.statValue ?? '$47M+'
     const statLabel =
-      props.statLabel ?? "Tax savings secured for clients in 2024"
+      props.statLabel ?? 'Tax savings secured for clients in 2024'
     const badges = props.badges?.length
       ? props.badges
-      : ["CPA Certified", "A+ BBB Rating", "37 Years Experience"]
+      : ['CPA Certified', 'A+ BBB Rating', '37 Years Experience']
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -82,7 +81,10 @@ export const AccountingFirmHero = defineComponent({
 
     return (
       <section
-        className={cn("relative border-b border-border bg-card", props.className)}
+        className={cn(
+          'relative border-b border-border bg-card',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -132,7 +134,9 @@ export const AccountingFirmHero = defineComponent({
                 className="aspect-[4/3] w-full rounded-lg object-cover shadow-xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden rounded-lg border border-border bg-card p-4 shadow-lg sm:block">
-                <p className="text-3xl font-bold text-foreground">{statValue}</p>
+                <p className="text-3xl font-bold text-foreground">
+                  {statValue}
+                </p>
                 <p className="text-sm text-muted-foreground">{statLabel}</p>
               </div>
             </div>

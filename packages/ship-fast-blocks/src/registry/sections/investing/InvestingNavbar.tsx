@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * InvestingNavbar — sticky, blurred top navigation bar for a modern investing /
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Vestora" defaults.
  */
 export const InvestingNavbar = defineComponent({
-  name: "InvestingNavbar",
+  name: 'InvestingNavbar',
   description:
     "Sticky backdrop-blurred top navigation bar for a modern investing / fintech brokerage site: a trend-line brand glyph tile + platform name on the left, horizontal nav links in the center (desktop), and a subtle 'Sign in' link plus a filled 'Get started' primary button on the right. Links and CTAs route through useNavigate for page-switching. Use as the sticky site header for stock brokerages, trading apps, robo-advisors, crypto exchanges or wealth-management products.",
   props: z.object({
@@ -31,17 +31,17 @@ export const InvestingNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Vestora"
+    const brand = props.brand ?? 'Vestora'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Pricing", "Markets", "Reviews", "FAQ"]
-    const signIn = props.signIn ?? "Sign in"
-    const getStarted = props.getStarted ?? "Get started"
+      : ['Features', 'Pricing', 'Markets', 'Reviews', 'FAQ']
+    const signIn = props.signIn ?? 'Sign in'
+    const getStarted = props.getStarted ?? 'Get started'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -63,11 +63,14 @@ export const InvestingNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >
-        <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
+        <nav
+          className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
+          aria-label="Main navigation"
+        >
           <div className="flex h-16 items-center justify-between">
             <button
               type="button"
@@ -75,7 +78,9 @@ export const InvestingNavbar = defineComponent({
               className="flex items-center gap-2"
             >
               <LogoMark className="size-8" />
-              <span className="text-xl font-semibold tracking-tight">{brand}</span>
+              <span className="text-xl font-semibold tracking-tight">
+                {brand}
+              </span>
             </button>
             <div className="hidden items-center gap-8 md:flex">
               {nav.map((label) => (

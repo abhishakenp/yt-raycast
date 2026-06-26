@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * InteriorDesignProcess — numbered process band on a muted surface for an
@@ -13,9 +13,9 @@ import { cn } from "#/lib/utils.ts"
  * Renders fully with no props via baked-in defaults.
  */
 export const InteriorDesignProcess = defineComponent({
-  name: "InteriorDesignProcess",
+  name: 'InteriorDesignProcess',
   description:
-    "Numbered process band on a muted surface for an upscale interior-design / architecture studio: a centered uppercase eyebrow + light-weight heading + supporting paragraph above a responsive four-column row of steps, each prefixed with a large faded two-digit ordinal (01–04) over a medium title and a short description. Editorial, airy and timeless. Use to explain a working methodology such as discovery, concept, development and delivery for interior designers, design studios, architecture or renovation firms.",
+    'Numbered process band on a muted surface for an upscale interior-design / architecture studio: a centered uppercase eyebrow + light-weight heading + supporting paragraph above a responsive four-column row of steps, each prefixed with a large faded two-digit ordinal (01–04) over a medium title and a short description. Editorial, airy and timeless. Use to explain a working methodology such as discovery, concept, development and delivery for interior designers, design studios, architecture or renovation firms.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -26,40 +26,40 @@ export const InteriorDesignProcess = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Our Process"
-    const heading = props.heading ?? "How we work"
+    const eyebrow = props.eyebrow ?? 'Our Process'
+    const heading = props.heading ?? 'How we work'
     const description =
       props.description ??
-      "A refined approach to interior design that ensures every project receives the attention and expertise it deserves."
+      'A refined approach to interior design that ensures every project receives the attention and expertise it deserves.'
     const steps = props.steps?.length
       ? props.steps
       : [
           {
-            title: "Discovery",
+            title: 'Discovery',
             description:
-              "In-depth consultation to understand your vision, lifestyle, and spatial needs. We visit your site and assess every dimension.",
+              'In-depth consultation to understand your vision, lifestyle, and spatial needs. We visit your site and assess every dimension.',
           },
           {
-            title: "Concept",
+            title: 'Concept',
             description:
-              "Mood boards, material palettes, and spatial layouts. We present 2-3 distinct design directions for your consideration.",
+              'Mood boards, material palettes, and spatial layouts. We present 2-3 distinct design directions for your consideration.',
           },
           {
-            title: "Development",
+            title: 'Development',
             description:
-              "Detailed drawings, 3D renderings, and furniture specifications. Every element is meticulously planned and documented.",
+              'Detailed drawings, 3D renderings, and furniture specifications. Every element is meticulously planned and documented.',
           },
           {
-            title: "Delivery",
+            title: 'Delivery',
             description:
-              "Project management through installation and final styling. We ensure flawless execution down to the last accessory.",
+              'Project management through installation and final styling. We ensure flawless execution down to the last accessory.',
           },
         ]
 
     return (
       <section
         className={cn(
-          "bg-muted px-4 py-20 sm:px-6 md:py-32 lg:px-8",
+          'bg-muted px-4 py-20 sm:px-6 md:py-32 lg:px-8',
           props.className,
         )}
       >
@@ -79,7 +79,7 @@ export const InteriorDesignProcess = defineComponent({
             {steps.map((step, i) => (
               <div key={step.title} className="relative">
                 <span className="absolute -left-2 -top-4 text-5xl font-extralight text-muted-foreground/40">
-                  {String(i + 1).padStart(2, "0")}
+                  {String(i + 1).padStart(2, '0')}
                 </span>
                 <div className="pt-12">
                   <h3 className="mb-3 text-lg font-medium text-foreground">

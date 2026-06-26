@@ -19,7 +19,9 @@ export const ActionSchema = z.object({
   id: z.string(),
   label: z.string(),
   href: z.string().default('#'),
-  style: z.enum(['primary', 'secondary', 'ghost', 'outline']).default('secondary'),
+  style: z
+    .enum(['primary', 'secondary', 'ghost', 'outline'])
+    .default('secondary'),
 })
 
 export const SectionItemSchema = z.object({
@@ -67,7 +69,9 @@ export const SiteSpecSchema = z.object({
   slug: z.string(),
   siteType: z.string(),
   exportableFrameworks: z
-    .array(z.enum(/** @type {[string, ...string[]]} */ (SUPPORTED_EXPORT_TARGETS)))
+    .array(
+      z.enum(/** @type {[string, ...string[]]} */ (SUPPORTED_EXPORT_TARGETS)),
+    )
     .min(1),
   theme: ThemeSchema,
   pages: z.array(PageSchema).min(1),

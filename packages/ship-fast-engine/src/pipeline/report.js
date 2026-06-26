@@ -25,7 +25,9 @@ export function formatRunAllReport(timings, stats) {
       ? `Groq (${indiaMode.name})   `
       : 'Groq              '
   const ms = (a, b) =>
-    timings[b] && timings[a] ? ((timings[b] - timings[a]) / 1000).toFixed(1) : '\u2014'
+    timings[b] && timings[a]
+      ? ((timings[b] - timings[a]) / 1000).toFixed(1)
+      : '\u2014'
   const tokFmt = (t) => (t > 0 ? t.toLocaleString() : '\u2014')
 
   const totalInput =
@@ -81,7 +83,14 @@ export function formatRunAllReport(timings, stats) {
   \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518`
 }
 
-export function formatEditReport(done, total, elapsed, totalInput, totalOutput, totalCost) {
+export function formatEditReport(
+  done,
+  total,
+  elapsed,
+  totalInput,
+  totalOutput,
+  totalCost,
+) {
   return `
   \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
   \u2502                    SHIP-FAST EDIT REPORT                        \u2502

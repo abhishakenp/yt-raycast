@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LandscapingNavbar — sticky, translucent top navigation bar for a landscaping /
@@ -16,9 +16,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in "Earth & Edge" defaults.
  */
 export const LandscapingNavbar = defineComponent({
-  name: "LandscapingNavbar",
+  name: 'LandscapingNavbar',
   description:
-    "Sticky translucent top navigation bar for a landscaping / outdoor-design company: backdrop-blurred, border-bottomed header pinned to the top with a layered-diamond brand mark + wordmark on the left, horizontal nav links in the center, and a pill-shaped primary CTA on the right (desktop), plus a hamburger menu on mobile. Calm, organic and premium on a warm stone canvas with a sage-green accent. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for landscapers, lawn-care and yard-maintenance services, garden designers, hardscaping/patio contractors, irrigation specialists or grounds-keeping companies.",
+    'Sticky translucent top navigation bar for a landscaping / outdoor-design company: backdrop-blurred, border-bottomed header pinned to the top with a layered-diamond brand mark + wordmark on the left, horizontal nav links in the center, and a pill-shaped primary CTA on the right (desktop), plus a hamburger menu on mobile. Calm, organic and premium on a warm stone canvas with a sage-green accent. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for landscapers, lawn-care and yard-maintenance services, garden designers, hardscaping/patio contractors, irrigation specialists or grounds-keeping companies.',
   props: z.object({
     /** Brand / company name shown beside the mark. */
     brand: z.string().optional(),
@@ -34,13 +34,14 @@ export const LandscapingNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Earth & Edge"
+    const brand = props.brand ?? 'Earth & Edge'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Portfolio", "Pricing", "About", "Get a Quote"]
-    const cta = props.cta ?? nav[nav.length - 1] ?? "Get a Quote"
-    const contactTarget = props.contactTarget ?? nav[nav.length - 1] ?? "Get a Quote"
-    const homeTarget = props.homeTarget ?? nav[0] ?? "Services"
+      : ['Services', 'Portfolio', 'Pricing', 'About', 'Get a Quote']
+    const cta = props.cta ?? nav[nav.length - 1] ?? 'Get a Quote'
+    const contactTarget =
+      props.contactTarget ?? nav[nav.length - 1] ?? 'Get a Quote'
+    const homeTarget = props.homeTarget ?? nav[0] ?? 'Services'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -50,7 +51,7 @@ export const LandscapingNavbar = defineComponent({
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={cn("text-primary", className)}
+        className={cn('text-primary', className)}
         aria-hidden="true"
       >
         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
@@ -60,7 +61,7 @@ export const LandscapingNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md',
           props.className,
         )}
       >

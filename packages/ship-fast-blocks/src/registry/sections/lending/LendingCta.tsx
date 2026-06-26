@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LendingCta — a dark, full-width "ready to check your rate?" CTA band for a
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * props via baked-in defaults.
  */
 export const LendingCta = defineComponent({
-  name: "LendingCta",
+  name: 'LendingCta',
   description:
     "Dark full-width 'ready to check your rate?' CTA band for a lending or fintech marketing page: near-ink (foreground-toned) section with a centered large heading, supporting paragraph, dual buttons (solid inverted-background primary with arrow + bordered ghost phone button) and a row of check-marked security badges below. Buttons route through useNavigate. Use as the closing conversion push near the page bottom on personal-loan, debt-consolidation, or financing pages.",
   props: z.object({
@@ -27,15 +27,15 @@ export const LendingCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const ctaHeading = props.heading ?? "Ready to check your rate?"
+    const ctaHeading = props.heading ?? 'Ready to check your rate?'
     const ctaDesc =
       props.description ??
       "It takes 2 minutes, won't affect your credit score, and could save you thousands compared to credit cards."
-    const ctaPrimary = props.primary ?? "Check My Rate"
-    const ctaPhone = props.phone ?? "Call (800) 555-1234"
+    const ctaPrimary = props.primary ?? 'Check My Rate'
+    const ctaPhone = props.phone ?? 'Call (800) 555-1234'
     const ctaBadges = props.badges?.length
       ? props.badges
-      : ["256-bit SSL encryption", "Bank-level security", "No spam, ever"]
+      : ['256-bit SSL encryption', 'Bank-level security', 'No spam, ever']
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -68,9 +68,7 @@ export const LendingCta = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-foreground py-24 lg:py-32", props.className)}
-      >
+      <section className={cn('bg-foreground py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-3xl font-semibold tracking-tight text-background sm:text-4xl lg:text-5xl">
             {ctaHeading}

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * InteriorDesignFooter — rich inverted footer on the foreground surface for an
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Atelier Studio" defaults.
  */
 export const InteriorDesignFooter = defineComponent({
-  name: "InteriorDesignFooter",
+  name: 'InteriorDesignFooter',
   description:
-    "Rich inverted footer on the foreground surface for an upscale interior-design / architecture studio: a four-column band with a wide brand column (two-tone wordmark + about paragraph + round social initial buttons) and two link columns (services, company), above a bordered-top bar with an auto-updating copyright line and legal links. Editorial, refined and high-contrast; the brand button, socials and every link route through useNavigate. Use as the closing site footer for interior designers, design studios, architecture firms or renovation businesses.",
+    'Rich inverted footer on the foreground surface for an upscale interior-design / architecture studio: a four-column band with a wide brand column (two-tone wordmark + about paragraph + round social initial buttons) and two link columns (services, company), above a bordered-top bar with an auto-updating copyright line and legal links. Editorial, refined and high-contrast; the brand button, socials and every link route through useNavigate. Use as the closing site footer for interior designers, design studios, architecture firms or renovation businesses.',
   props: z.object({
     /** Brand / studio name; split into bold mark + faded suffix on a space. */
     brand: z.string().optional(),
@@ -35,41 +35,41 @@ export const InteriorDesignFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Atelier Studio"
+    const brand = props.brand ?? 'Atelier Studio'
     const about =
       props.about ??
-      "Award-winning interior design studio based in San Francisco. Creating timeless, elegant spaces since 2014."
+      'Award-winning interior design studio based in San Francisco. Creating timeless, elegant spaces since 2014.'
     const socials = props.socials?.length
       ? props.socials
-      : ["Instagram", "Pinterest", "LinkedIn"]
-    const servicesTitle = props.servicesTitle ?? "Services"
+      : ['Instagram', 'Pinterest', 'LinkedIn']
+    const servicesTitle = props.servicesTitle ?? 'Services'
     const servicesLinks = props.servicesLinks?.length
       ? props.servicesLinks
       : [
-          "Residential Design",
-          "Commercial Spaces",
-          "Hospitality",
-          "Furniture Curation",
-          "Design Consultation",
+          'Residential Design',
+          'Commercial Spaces',
+          'Hospitality',
+          'Furniture Curation',
+          'Design Consultation',
         ]
-    const companyTitle = props.companyTitle ?? "Company"
+    const companyTitle = props.companyTitle ?? 'Company'
     const companyLinks = props.companyLinks?.length
       ? props.companyLinks
-      : ["About Us", "Portfolio", "Press", "Careers", "Contact"]
-    const copyright = props.copyright ?? "All rights reserved."
+      : ['About Us', 'Portfolio', 'Press', 'Careers', 'Contact']
+    const copyright = props.copyright ?? 'All rights reserved.'
     const legalLinks = props.legalLinks?.length
       ? props.legalLinks
-      : ["Privacy Policy", "Terms of Service"]
-    const homeTarget = props.homeTarget ?? "Projects"
+      : ['Privacy Policy', 'Terms of Service']
+    const homeTarget = props.homeTarget ?? 'Projects'
 
-    const brandParts = brand.split(" ")
+    const brandParts = brand.split(' ')
     const brandMark = brandParts[0]
-    const brandSuffix = brandParts.slice(1).join(" ")
+    const brandSuffix = brandParts.slice(1).join(' ')
 
     return (
       <footer
         className={cn(
-          "bg-foreground px-4 py-16 text-background sm:px-6 lg:px-8",
+          'bg-foreground px-4 py-16 text-background sm:px-6 lg:px-8',
           props.className,
         )}
       >

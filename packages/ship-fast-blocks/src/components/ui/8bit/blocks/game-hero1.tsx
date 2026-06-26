@@ -1,45 +1,43 @@
-import { cn } from "#/lib/utils.ts";
+import { cn } from '#/lib/utils.ts'
 
-import { Badge } from "#/components/ui/8bit/badge.tsx";
-import { Button } from "#/components/ui/8bit/button.tsx";
-import { Progress } from "#/components/ui/8bit/progress.tsx";
+import { Badge } from '#/components/ui/8bit/badge.tsx'
+import { Button } from '#/components/ui/8bit/button.tsx'
+import { Progress } from '#/components/ui/8bit/progress.tsx'
 
-import "#/components/ui/8bit/styles/retro.css";
+import '#/components/ui/8bit/styles/retro.css'
 
 interface GameHero1Props {
   actions?: Array<{
-    href?: string;
-    label: string;
-    variant?: "default" | "destructive" | "ghost" | "outline" | "secondary";
-  }>;
-  className?: string;
-  description?: string;
-  xpLabel?: string;
-  xpValue?: number;
-  subtitle?: string;
-  title: string;
+    href?: string
+    label: string
+    variant?: 'default' | 'destructive' | 'ghost' | 'outline' | 'secondary'
+  }>
+  className?: string
+  description?: string
+  xpLabel?: string
+  xpValue?: number
+  subtitle?: string
+  title: string
 }
 
 export default function GameHero1({
-  title = "LAUNCH SEQUENCE INITIATED",
-  subtitle = "v2.0 — Now Live",
-  description = "Your product is ready for battle. Ship it before the competition respawns.",
+  title = 'LAUNCH SEQUENCE INITIATED',
+  subtitle = 'v2.0 — Now Live',
+  description = 'Your product is ready for battle. Ship it before the competition respawns.',
   actions = [
-    { label: "DEPLOY NOW", variant: "default", href: "/docs" },
-    { label: "VIEW ARSENAL", variant: "outline", href: "/v2" },
+    { label: 'DEPLOY NOW', variant: 'default', href: '/docs' },
+    { label: 'VIEW ARSENAL', variant: 'outline', href: '/v2' },
   ],
-  xpLabel = "XP to Next Level",
+  xpLabel = 'XP to Next Level',
   xpValue = 72,
   className,
 }: GameHero1Props) {
   return (
-    <section
-      className={cn("relative w-full px-4 py-16 md:py-24", className)}
-    >
+    <section className={cn('relative w-full px-4 py-16 md:py-24', className)}>
       <div className="mx-auto max-w-2xl text-center">
         {subtitle && (
           <div className="mb-6">
-            <Badge >{subtitle}</Badge>
+            <Badge>{subtitle}</Badge>
           </div>
         )}
 
@@ -79,5 +77,5 @@ export default function GameHero1({
         </div>
       </div>
     </section>
-  );
+  )
 }

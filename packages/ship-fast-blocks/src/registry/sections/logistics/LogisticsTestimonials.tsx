@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * LogisticsTestimonials — a three-up customer testimonials grid for a global-
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via alt-driven avatars.
  */
 export const LogisticsTestimonials = defineComponent({
-  name: "LogisticsTestimonials",
+  name: 'LogisticsTestimonials',
   description:
-    "Three-up customer testimonials grid for a global-logistics / freight-forwarding company on a subtle muted band: a centered heading + lede over a 1 → 2 → 3 column grid of bordered cards, each showing a five-star row, a quoted paragraph, and an avatar photo beside a name + role. Clean and corporate on a light surface. Use as social proof for logistics, freight-forwarding, shipping, courier, warehousing, supply-chain or cargo/transport companies.",
+    'Three-up customer testimonials grid for a global-logistics / freight-forwarding company on a subtle muted band: a centered heading + lede over a 1 → 2 → 3 column grid of bordered cards, each showing a five-star row, a quoted paragraph, and an avatar photo beside a name + role. Clean and corporate on a light surface. Use as social proof for logistics, freight-forwarding, shipping, courier, warehousing, supply-chain or cargo/transport companies.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -32,42 +32,42 @@ export const LogisticsTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Trusted by shippers worldwide"
+    const heading = props.heading ?? 'Trusted by shippers worldwide'
     const description =
       props.description ??
-      "What our customers say about working with SwiftFreight."
+      'What our customers say about working with SwiftFreight.'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
               "SwiftFreight has been our logistics partner for 6 years. Their real-time tracking and proactive communication have eliminated the 'where's my shipment?' anxiety completely.",
-            name: "Sarah Chen",
-            role: "VP Operations, TechFlow Inc.",
+            name: 'Sarah Chen',
+            role: 'VP Operations, TechFlow Inc.',
             avatarAlt:
-              "Professional headshot of a smiling businesswoman in a navy blazer",
+              'Professional headshot of a smiling businesswoman in a navy blazer',
           },
           {
             quote:
               "When we needed to move 40 containers from Ningbo to Rotterdam in 48 hours, SwiftFreight chartered a vessel. That level of responsiveness is why we've tripled our volume with them.",
-            name: "Marcus Weber",
-            role: "Director of Logistics, Globex Trading",
+            name: 'Marcus Weber',
+            role: 'Director of Logistics, Globex Trading',
             avatarAlt:
-              "Professional headshot of a middle-aged businessman with glasses and a confident smile",
+              'Professional headshot of a middle-aged businessman with glasses and a confident smile',
           },
           {
             quote:
               "Their customs brokerage team saved us from a $15,000 duty miscalculation. They caught the HS code error before the shipment left Shanghai. That's partnership.",
-            name: "Elena Rodriguez",
-            role: "Import Manager, Acme Corporation",
+            name: 'Elena Rodriguez',
+            role: 'Import Manager, Acme Corporation',
             avatarAlt:
-              "Professional headshot of a young woman with dark hair wearing a white blouse",
+              'Professional headshot of a young woman with dark hair wearing a white blouse',
           },
         ]
 
     const Star = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn('size-5', className)}
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -77,9 +77,7 @@ export const LogisticsTestimonials = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-muted/50 py-16 lg:py-24", props.className)}
-      >
+      <section className={cn('bg-muted/50 py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight lg:text-4xl">

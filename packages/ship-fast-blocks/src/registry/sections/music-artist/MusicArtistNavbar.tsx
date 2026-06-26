@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MusicArtistNavbar — fixed, backdrop-blurred top navigation for a music
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * site. Renders fully with no props via baked-in defaults.
  */
 export const MusicArtistNavbar = defineComponent({
-  name: "MusicArtistNavbar",
+  name: 'MusicArtistNavbar',
   description:
-    "Fixed, backdrop-blurred top navigation bar for a music artist / band site: a thin-weight brand wordmark on the left, centered horizontal nav links on desktop, and a hamburger menu button on mobile, on a translucent border-bottomed header pinned to the top of the viewport. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. The brand and every nav link route through useNavigate for page-switching. Use as the sticky site header for musicians, singers, bands, indie/folk/Americana acts, or any artist EPK/press site.",
+    'Fixed, backdrop-blurred top navigation bar for a music artist / band site: a thin-weight brand wordmark on the left, centered horizontal nav links on desktop, and a hamburger menu button on mobile, on a translucent border-bottomed header pinned to the top of the viewport. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. The brand and every nav link route through useNavigate for page-switching. Use as the sticky site header for musicians, singers, bands, indie/folk/Americana acts, or any artist EPK/press site.',
   props: z.object({
     /** Artist / band name shown as the brand wordmark. */
     brand: z.string().optional(),
@@ -28,16 +28,16 @@ export const MusicArtistNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Velvet Echo"
+    const brand = props.brand ?? 'Velvet Echo'
     const nav = props.nav?.length
       ? props.nav
-      : ["Music", "Tour", "About", "Contact"]
-    const homeTarget = props.homeTarget ?? "Music"
+      : ['Music', 'Tour', 'About', 'Contact']
+    const homeTarget = props.homeTarget ?? 'Music'
 
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-sm",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-sm',
           props.className,
         )}
       >

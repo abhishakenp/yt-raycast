@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MentalHealthFaq — a centered FAQ accordion for a therapy practice. A narrow
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * counselors, psychologists or wellness centers.
  */
 export const MentalHealthFaq = defineComponent({
-  name: "MentalHealthFaq",
+  name: 'MentalHealthFaq',
   description:
     "Centered FAQ accordion for a therapy practice: a narrow eyebrow + heading + intro above a stack of native details rows on a muted surface, each with a rotating chevron toggle, then a centered 'still have questions?' prompt and a rounded phone CTA. Calm, reassuring wellness aesthetic. The CTA routes through useNavigate. Use to answer common questions (insurance, session length, virtual vs in-person, cancellation) for therapists, counselors, psychologists or wellness centers.",
   props: z.object({
@@ -33,9 +33,9 @@ export const MentalHealthFaq = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Stillpoint"
-    const eyebrow = props.eyebrow ?? "FAQ"
-    const heading = props.heading ?? "Common questions"
+    const brand = props.brand ?? 'Stillpoint'
+    const eyebrow = props.eyebrow ?? 'FAQ'
+    const heading = props.heading ?? 'Common questions'
     const description =
       props.description ??
       `Everything you need to know about starting therapy at ${brand}.`
@@ -43,24 +43,24 @@ export const MentalHealthFaq = defineComponent({
       ? props.items
       : [
           {
-            question: "Do you accept insurance?",
+            question: 'Do you accept insurance?',
             answer:
               "Yes, we accept most major insurance plans including BlueCross BlueShield, Aetna, United Healthcare, Cigna, Kaiser, and Providence. We also offer out-of-network billing for PPO plans. Contact us with your specific plan details and we'll verify your coverage before your first session.",
           },
           {
             question: "What's the difference between therapy and psychiatry?",
             answer:
-              "Therapists (psychologists, counselors, social workers) provide talk therapy to help you process emotions, develop coping skills, and change patterns. Psychiatrists are medical doctors who can prescribe and manage medications for conditions like depression, anxiety, and ADHD. Many clients benefit from working with both.",
+              'Therapists (psychologists, counselors, social workers) provide talk therapy to help you process emotions, develop coping skills, and change patterns. Psychiatrists are medical doctors who can prescribe and manage medications for conditions like depression, anxiety, and ADHD. Many clients benefit from working with both.',
           },
           {
-            question: "How long are therapy sessions?",
+            question: 'How long are therapy sessions?',
             answer:
-              "Individual therapy sessions are 50 minutes. Couples and family sessions are typically 80 minutes to allow adequate time for all parties to participate. Psychiatry initial evaluations are 60 minutes, with follow-up medication management appointments at 30 minutes.",
+              'Individual therapy sessions are 50 minutes. Couples and family sessions are typically 80 minutes to allow adequate time for all parties to participate. Psychiatry initial evaluations are 60 minutes, with follow-up medication management appointments at 30 minutes.',
           },
           {
-            question: "Is virtual therapy as effective as in-person?",
+            question: 'Is virtual therapy as effective as in-person?',
             answer:
-              "Research consistently shows that teletherapy can be just as effective as in-person sessions for many conditions, including anxiety and depression. We use HIPAA-compliant video platforms and many clients appreciate the convenience. Some clients prefer to start in-person and transition to virtual, or mix both formats.",
+              'Research consistently shows that teletherapy can be just as effective as in-person sessions for many conditions, including anxiety and depression. We use HIPAA-compliant video platforms and many clients appreciate the convenience. Some clients prefer to start in-person and transition to virtual, or mix both formats.',
           },
           {
             question: "What if I don't connect with my therapist?",
@@ -68,14 +68,14 @@ export const MentalHealthFaq = defineComponent({
               "The therapeutic relationship is crucial for success. If after 2-3 sessions you feel your therapist isn't the right fit, we'll happily transfer you to another clinician in our practice at no additional cost. Your comfort and progress are our priority.",
           },
           {
-            question: "What are your cancellation policies?",
+            question: 'What are your cancellation policies?',
             answer:
-              "We require 24 hours notice for cancellations or rescheduling. Sessions cancelled with less than 24 hours notice are charged at the full session rate, as that time has been reserved specifically for you. We understand emergencies happen and handle those case-by-case.",
+              'We require 24 hours notice for cancellations or rescheduling. Sessions cancelled with less than 24 hours notice are charged at the full session rate, as that time has been reserved specifically for you. We understand emergencies happen and handle those case-by-case.',
           },
         ]
-    const footerNote = props.footerNote ?? "Still have questions?"
-    const footerCta = props.footerCta ?? "Call us at (503) 555-0147"
-    const bookLabel = props.bookLabel ?? "Book Session"
+    const footerNote = props.footerNote ?? 'Still have questions?'
+    const footerCta = props.footerCta ?? 'Call us at (503) 555-0147'
+    const bookLabel = props.bookLabel ?? 'Book Session'
 
     const Phone = ({ className }: { className?: string }) => (
       <svg
@@ -95,9 +95,7 @@ export const MentalHealthFaq = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-background py-20 lg:py-28", props.className)}
-      >
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-primary">

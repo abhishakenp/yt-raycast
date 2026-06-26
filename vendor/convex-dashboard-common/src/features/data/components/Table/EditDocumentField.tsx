@@ -1,12 +1,12 @@
-import { useMutation } from "convex/react";
-import { GenericDocument } from "convex/server";
-import { useId, useState } from "react";
-import udfs from "@common/udfs";
-import { ValidatorJSON, Value } from "convex/values";
-import isEqual from "lodash/isEqual";
-import { UNDEFINED_PLACEHOLDER } from "system-udfs/convex/_system/frontend/lib/values";
-import { ObjectEditor } from "@common/elements/ObjectEditor/ObjectEditor";
-import { Button } from "@ui/Button";
+import { useMutation } from 'convex/react'
+import { GenericDocument } from 'convex/server'
+import { useId, useState } from 'react'
+import udfs from '@common/udfs'
+import { ValidatorJSON, Value } from 'convex/values'
+import isEqual from 'lodash/isEqual'
+import { UNDEFINED_PLACEHOLDER } from 'system-udfs/convex/_system/frontend/lib/values'
+import { ObjectEditor } from '@common/elements/ObjectEditor/ObjectEditor'
+import { Button } from '@ui/Button'
 
 export function EditDocumentField({
   column,
@@ -19,29 +19,29 @@ export function EditDocumentField({
   shouldSurfaceValidatorErrors,
   allowTopLevelUndefined,
 }: {
-  column: string;
-  rows: GenericDocument[];
-  close: () => void;
-  value: Value[];
-  tableName: string;
-  componentId: string | null;
-  validator?: ValidatorJSON;
-  shouldSurfaceValidatorErrors?: boolean;
-  allowTopLevelUndefined?: boolean;
+  column: string
+  rows: GenericDocument[]
+  close: () => void
+  value: Value[]
+  tableName: string
+  componentId: string | null
+  validator?: ValidatorJSON
+  shouldSurfaceValidatorErrors?: boolean
+  allowTopLevelUndefined?: boolean
 }) {
   const [editedValue, setEditedValue] = useState<Value | undefined>(
     value.length === 1 ? value[0] : UNDEFINED_PLACEHOLDER,
-  );
-  const [editError, setEditError] = useState<string | undefined>(undefined);
-  const patchDocumentsFields = useMutation(udfs.patchDocumentsFields.default);
-  const [innerText, setInnerText] = useState<string | undefined>(undefined);
+  )
+  const [editError, setEditError] = useState<string | undefined>(undefined)
+  const patchDocumentsFields = useMutation(udfs.patchDocumentsFields.default)
+  const [innerText, setInnerText] = useState<string | undefined>(undefined)
   const disabled =
     !!editError ||
-    (value.length === 1 ? isEqual(editedValue, value[0]) : !innerText);
+    (value.length === 1 ? isEqual(editedValue, value[0]) : !innerText)
 
   const save = async () => {
     if (disabled) {
-      return;
+      return
     }
     try {
       await patchDocumentsFields({
@@ -49,37 +49,37 @@ export function EditDocumentField({
         fields: { [column]: editedValue },
         table: tableName,
         componentId,
-      });
-      setEditError(undefined);
-      setEditedValue(undefined);
-      close();
+      })
+      setEditError(undefined)
+      setEditedValue(undefined)
+      close()
     } catch (e: any) {
-      setEditError(e.message);
+      setEditError(e.message)
     }
-  };
+  }
   return (
     <form
       className="relative flex w-full flex-col gap-1"
       onSubmit={(e) => {
-        e.preventDefault();
-        void save();
+        e.preventDefault()
+        void save()
       }}
     >
       {/* Monaco editor cannot show a placeholder, so render our own. */}
       {!innerText && editedValue === UNDEFINED_PLACEHOLDER && (
         <div className="absolute top-2.5 left-2.5 z-50 font-mono text-xs text-content-secondary italic select-none">
-          {value.length > 1 ? "enter a value to save" : "unset"}
+          {value.length > 1 ? 'enter a value to save' : 'unset'}
         </div>
       )}
       <ObjectEditor
         saveAction={save}
         autoFocus
         defaultValue={value.length === 1 ? value[0] : undefined}
-        path={`fieldEditor-${column}-${useId().replace(":", "_")}`}
+        path={`fieldEditor-${column}-${useId().replace(':', '_')}`}
         onChange={setEditedValue}
         onChangeInnerText={setInnerText}
         onError={(errors) => {
-          setEditError(errors.length > 0 ? errors[0] : undefined);
+          setEditError(errors.length > 0 ? errors[0] : undefined)
         }}
         disableFolding
         className="border-border-selected bg-background-secondary px-2"
@@ -106,7 +106,7 @@ export function EditDocumentField({
           <Button
             size="xs"
             onClick={() => {
-              close();
+              close()
             }}
             variant="neutral"
           >
@@ -116,12 +116,12 @@ export function EditDocumentField({
             size="xs"
             type="submit"
             disabled={disabled}
-            tip={editError ? "Fix the errors above to continue" : undefined}
+            tip={editError ? 'Fix the errors above to continue' : undefined}
           >
             Save
           </Button>
         </div>
       </div>
     </form>
-  );
+  )
 }

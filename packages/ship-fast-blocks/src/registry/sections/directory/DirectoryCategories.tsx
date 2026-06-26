@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DirectoryCategories — browse-by-category tile grid for a local-business
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * browse listing categories on local directories, marketplaces, or city guides.
  */
 export const DirectoryCategories = defineComponent({
-  name: "DirectoryCategories",
+  name: 'DirectoryCategories',
   description:
-    "Browse-by-category tile grid for a local-business DIRECTORY: a card-surface section with a centered heading and description, a responsive 2-to-4-column grid of clickable category tiles (each a rounded bordered card with a tinted rounded icon badge that scales on hover, a title, and a listing-count caption), and a centered View All link with a chevron. Icon badge tints rotate through chart-1..5 plus primary/accent/secondary tokens. Every tile and the view-all link route through useNavigate. Use to let users browse listing categories on local directories, business-listing marketplaces, find-a-service platforms, or city guides.",
+    'Browse-by-category tile grid for a local-business DIRECTORY: a card-surface section with a centered heading and description, a responsive 2-to-4-column grid of clickable category tiles (each a rounded bordered card with a tinted rounded icon badge that scales on hover, a title, and a listing-count caption), and a centered View All link with a chevron. Icon badge tints rotate through chart-1..5 plus primary/accent/secondary tokens. Every tile and the view-all link route through useNavigate. Use to let users browse listing categories on local directories, business-listing marketplaces, find-a-service platforms, or city guides.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -33,22 +33,22 @@ export const DirectoryCategories = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Browse by Category"
+    const heading = props.heading ?? 'Browse by Category'
     const description =
       props.description ??
       "Find exactly what you're looking for across dozens of local business categories"
-    const viewAll = props.viewAll ?? "View All 24 Categories"
+    const viewAll = props.viewAll ?? 'View All 24 Categories'
     const items = props.items?.length
       ? props.items
       : [
-          { title: "Restaurants", count: "2,340 listings" },
-          { title: "Home Services", count: "1,850 listings" },
-          { title: "Beauty & Spas", count: "980 listings" },
-          { title: "Health & Medical", count: "1,240 listings" },
-          { title: "Real Estate", count: "670 listings" },
-          { title: "Automotive", count: "890 listings" },
-          { title: "Education", count: "520 listings" },
-          { title: "Retail", count: "2,100 listings" },
+          { title: 'Restaurants', count: '2,340 listings' },
+          { title: 'Home Services', count: '1,850 listings' },
+          { title: 'Beauty & Spas', count: '980 listings' },
+          { title: 'Health & Medical', count: '1,240 listings' },
+          { title: 'Real Estate', count: '670 listings' },
+          { title: 'Automotive', count: '890 listings' },
+          { title: 'Education', count: '520 listings' },
+          { title: 'Retail', count: '2,100 listings' },
         ]
 
     const ChevronRight = ({ className }: { className?: string }) => (
@@ -166,18 +166,18 @@ export const DirectoryCategories = defineComponent({
     ]
 
     const categoryTints = [
-      "bg-chart-1/15 text-chart-1",
-      "bg-chart-2/15 text-chart-2",
-      "bg-chart-3/15 text-chart-3",
-      "bg-chart-4/15 text-chart-4",
-      "bg-chart-5/15 text-chart-5",
-      "bg-primary/10 text-primary",
-      "bg-accent text-accent-foreground",
-      "bg-secondary text-secondary-foreground",
+      'bg-chart-1/15 text-chart-1',
+      'bg-chart-2/15 text-chart-2',
+      'bg-chart-3/15 text-chart-3',
+      'bg-chart-4/15 text-chart-4',
+      'bg-chart-5/15 text-chart-5',
+      'bg-primary/10 text-primary',
+      'bg-accent text-accent-foreground',
+      'bg-secondary text-secondary-foreground',
     ]
 
     return (
-      <section className={cn("bg-card py-16 lg:py-24", props.className)}>
+      <section className={cn('bg-card py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center lg:mb-16">
             <h2 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl">
@@ -198,7 +198,7 @@ export const DirectoryCategories = defineComponent({
               >
                 <div
                   className={cn(
-                    "mb-4 flex size-12 items-center justify-center rounded-lg transition-transform group-hover:scale-110",
+                    'mb-4 flex size-12 items-center justify-center rounded-lg transition-transform group-hover:scale-110',
                     categoryTints[i % categoryTints.length],
                   )}
                 >

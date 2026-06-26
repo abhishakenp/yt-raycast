@@ -126,7 +126,12 @@ const promptFrenchScore = (text: string) => {
   for (const word of words) {
     if (PROMPT_FRENCH_LEXICON.has(word)) hits += 1
   }
-  return { score: words.length ? hits / words.length : 0, hits, words: words.length, accented }
+  return {
+    score: words.length ? hits / words.length : 0,
+    hits,
+    words: words.length,
+    accented,
+  }
 }
 
 const preferFrenchCode3ForPrompt = (snippet: string, code3: string) => {
@@ -147,7 +152,10 @@ const resolveFrancCode3ForPrompt = (snippet: string, code3: string) => {
   return code3
 }
 
-const resolveFrancCode3HinglishPreference = (snippet: string, code3: string) => {
+const resolveFrancCode3HinglishPreference = (
+  snippet: string,
+  code3: string,
+) => {
   if (!code3 || code3 === 'und') return code3
   if (code3 === 'urd') return code3
   if (PROMPT_DETECT_INDIAN_FRANC.has(code3) && code3 !== 'hin') return code3
@@ -156,7 +164,10 @@ const resolveFrancCode3HinglishPreference = (snippet: string, code3: string) => 
   const hasKeLiye = /\bke\s+liye\b/.test(lower)
   const hasBanao = /\bbanao\b/.test(lower)
   const hinglishStrong =
-    hasKeLiye || hi >= 2 || (hi >= 1 && hasBanao) || (n >= 6 && hi >= 2 && hi >= en * 0.35)
+    hasKeLiye ||
+    hi >= 2 ||
+    (hi >= 1 && hasBanao) ||
+    (n >= 6 && hi >= 2 && hi >= en * 0.35)
   if (hinglishStrong) return 'hinglish'
   if (code3 === 'hin') return 'hin'
   return code3
@@ -174,7 +185,9 @@ const detectExplicitLanguageKeyword = (text: string) => {
     for (const keyword of keywords) {
       const value = keyword.toLowerCase()
       if (/^[a-z0-9-]+$/.test(value)) {
-        const pattern = new RegExp(`(^|\\b)${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\b|$)`)
+        const pattern = new RegExp(
+          `(^|\\b)${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\b|$)`,
+        )
         if (pattern.test(lower)) return language.code
       } else if (lower.includes(value)) {
         return language.code
@@ -185,7 +198,10 @@ const detectExplicitLanguageKeyword = (text: string) => {
 }
 
 export const detectSnippetLanguageBcp47 = async (fullText: string) => {
-  const snippet = String(fullText || '').slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
+  const snippet = String(fullText || '').slice(
+    0,
+    PROMPT_LANG_DETECT_SNIPPET_MAX,
+  )
   const frenchFirst = preferFrenchCode3ForPrompt(snippet, 'und')
   if (frenchFirst === 'fra') return 'fr'
   const fromRomanizedHint = preferRomanizedBcp47FromSnippet(fullText)

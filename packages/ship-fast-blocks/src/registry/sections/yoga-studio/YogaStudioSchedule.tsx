@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * YogaStudioSchedule — weekly class-schedule grid for a yoga-studio page. A
@@ -10,7 +10,7 @@ import { cn } from "#/lib/utils.ts"
  * routine. Renders fully with no props via baked-in defaults.
  */
 export const YogaStudioSchedule = defineComponent({
-  name: "YogaStudioSchedule",
+  name: 'YogaStudioSchedule',
   description:
     "Weekly class-schedule grid for a yoga-studio page: a clean band with a centered heading + intro above a responsive set of day columns, each listing its classes with name, time, and teacher. Use to show a studio's weekly timetable so visitors can find a class that fits their routine.",
   props: z.object({
@@ -36,62 +36,62 @@ export const YogaStudioSchedule = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "This week at the studio"
+    const heading = props.heading ?? 'This week at the studio'
     const subheading =
       props.subheading ??
-      "Drop in to any class on the schedule — no experience required."
+      'Drop in to any class on the schedule — no experience required.'
     const days = props.days?.length
       ? props.days
       : [
           {
-            day: "Monday",
+            day: 'Monday',
             classes: [
-              { name: "Slow Flow", time: "7:00 AM", teacher: "Ava" },
-              { name: "Vinyasa Flow", time: "12:00 PM", teacher: "Noah" },
-              { name: "Restorative", time: "6:30 PM", teacher: "Mia" },
+              { name: 'Slow Flow', time: '7:00 AM', teacher: 'Ava' },
+              { name: 'Vinyasa Flow', time: '12:00 PM', teacher: 'Noah' },
+              { name: 'Restorative', time: '6:30 PM', teacher: 'Mia' },
             ],
           },
           {
-            day: "Tuesday",
+            day: 'Tuesday',
             classes: [
-              { name: "Hot Power", time: "6:30 AM", teacher: "Leo" },
-              { name: "Yin & Stretch", time: "5:30 PM", teacher: "Ava" },
+              { name: 'Hot Power', time: '6:30 AM', teacher: 'Leo' },
+              { name: 'Yin & Stretch', time: '5:30 PM', teacher: 'Ava' },
             ],
           },
           {
-            day: "Wednesday",
+            day: 'Wednesday',
             classes: [
-              { name: "Vinyasa Flow", time: "8:00 AM", teacher: "Noah" },
-              { name: "Meditation", time: "12:15 PM", teacher: "Mia" },
-              { name: "Slow Flow", time: "6:00 PM", teacher: "Ava" },
+              { name: 'Vinyasa Flow', time: '8:00 AM', teacher: 'Noah' },
+              { name: 'Meditation', time: '12:15 PM', teacher: 'Mia' },
+              { name: 'Slow Flow', time: '6:00 PM', teacher: 'Ava' },
             ],
           },
           {
-            day: "Thursday",
+            day: 'Thursday',
             classes: [
-              { name: "Hot Power", time: "6:30 AM", teacher: "Leo" },
-              { name: "Restorative", time: "7:00 PM", teacher: "Mia" },
+              { name: 'Hot Power', time: '6:30 AM', teacher: 'Leo' },
+              { name: 'Restorative', time: '7:00 PM', teacher: 'Mia' },
             ],
           },
           {
-            day: "Friday",
+            day: 'Friday',
             classes: [
-              { name: "Vinyasa Flow", time: "7:30 AM", teacher: "Noah" },
-              { name: "Yin & Stretch", time: "5:30 PM", teacher: "Ava" },
+              { name: 'Vinyasa Flow', time: '7:30 AM', teacher: 'Noah' },
+              { name: 'Yin & Stretch', time: '5:30 PM', teacher: 'Ava' },
             ],
           },
           {
-            day: "Saturday",
+            day: 'Saturday',
             classes: [
-              { name: "Community Flow", time: "9:00 AM", teacher: "Leo" },
-              { name: "Slow Flow", time: "11:00 AM", teacher: "Mia" },
+              { name: 'Community Flow', time: '9:00 AM', teacher: 'Leo' },
+              { name: 'Slow Flow', time: '11:00 AM', teacher: 'Mia' },
             ],
           },
         ]
 
     return (
       <section
-        className={cn("bg-background py-20 lg:py-28", props.className)}
+        className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="yoga-schedule-heading"
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">

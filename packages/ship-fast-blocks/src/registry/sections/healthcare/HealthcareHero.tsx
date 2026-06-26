@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * HealthcareHero — split hero for a primary-care / medical-clinic landing page.
@@ -17,7 +17,7 @@ import { Image } from "#/lib/img.tsx"
  * props via baked-in "Vitality Health Partners" defaults.
  */
 export const HealthcareHero = defineComponent({
-  name: "HealthcareHero",
+  name: 'HealthcareHero',
   description:
     "Split hero for a primary-care / medical-clinic landing page: a two-column layout with a pulsing 'now accepting patients' pill, a large headline with one accent-colored word, a supporting paragraph, dual CTAs (solid primary + outlined secondary) and a check-marked trust row on the left, and a 4:3 alt-driven exam-room photo with a floating 'Open Today' hours card and a patient-count card with stacked avatars on the right. Clean, trustworthy, light clinical aesthetic. Use as the top hero for doctors' offices, family medicine, pediatric, women's-health, telehealth or urgent-care clinics.",
   props: z.object({
@@ -49,23 +49,23 @@ export const HealthcareHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Now accepting new patients"
-    const headingBefore = props.headingBefore ?? "Healthcare that puts "
-    const highlight = props.highlight ?? "you"
-    const headingAfter = props.headingAfter ?? " first"
+    const badge = props.badge ?? 'Now accepting new patients'
+    const headingBefore = props.headingBefore ?? 'Healthcare that puts '
+    const highlight = props.highlight ?? 'you'
+    const headingAfter = props.headingAfter ?? ' first'
     const subheading =
       props.subheading ??
-      "Experience modern primary care with same-day appointments, transparent pricing, and a team that truly listens. Serving San Francisco families since 2015."
-    const primaryCta = props.primaryCta ?? "Schedule Your Visit"
-    const secondaryCta = props.secondaryCta ?? "Explore Services"
+      'Experience modern primary care with same-day appointments, transparent pricing, and a team that truly listens. Serving San Francisco families since 2015.'
+    const primaryCta = props.primaryCta ?? 'Schedule Your Visit'
+    const secondaryCta = props.secondaryCta ?? 'Explore Services'
     const trust = props.trust?.length
       ? props.trust
-      : ["Insurance accepted", "Same-day visits", "Virtual care"]
+      : ['Insurance accepted', 'Same-day visits', 'Virtual care']
     const imageAlt =
-      props.imageAlt ?? "Modern medical examination room with natural light"
-    const hoursLabel = props.hoursLabel ?? "Open Today"
-    const hoursValue = props.hoursValue ?? "7:00 AM - 7:00 PM"
-    const patientCount = props.patientCount ?? "4,900+ patients"
+      props.imageAlt ?? 'Modern medical examination room with natural light'
+    const hoursLabel = props.hoursLabel ?? 'Open Today'
+    const hoursValue = props.hoursValue ?? '7:00 AM - 7:00 PM'
+    const patientCount = props.patientCount ?? '4,900+ patients'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -104,7 +104,7 @@ export const HealthcareHero = defineComponent({
     return (
       <section
         className={cn(
-          "relative overflow-hidden bg-background",
+          'relative overflow-hidden bg-background',
           props.className,
         )}
         aria-labelledby="hero-heading"
@@ -196,7 +196,7 @@ export const HealthcareHero = defineComponent({
               <div className="absolute -right-4 -top-4 rounded-xl border border-border bg-card p-4 shadow-xl">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2" aria-hidden="true">
-                    {["a", "b", "c"].map((k) => (
+                    {['a', 'b', 'c'].map((k) => (
                       <span
                         key={k}
                         className="size-8 rounded-full border-2 border-card bg-secondary"

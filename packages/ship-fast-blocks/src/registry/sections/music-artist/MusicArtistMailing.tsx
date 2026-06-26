@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MusicArtistMailing — dark, centered mailing-list CTA for a music artist /
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * artist promo pages. Renders fully with no props via baked-in defaults.
  */
 export const MusicArtistMailing = defineComponent({
-  name: "MusicArtistMailing",
+  name: 'MusicArtistMailing',
   description:
-    "Dark, centered mailing-list CTA for a music artist / band page on a foreground-colored band: a thin heading, a lead paragraph, a real inline email-subscribe form (rounded email input + pill submit button), and a small reassurance note. The form submit routes through useNavigate. Warm editorial indie-folk aesthetic inverted to a dark band for contrast. Use as the email-capture / newsletter conversion section for musicians, singers, bands, or artist promo pages.",
+    'Dark, centered mailing-list CTA for a music artist / band page on a foreground-colored band: a thin heading, a lead paragraph, a real inline email-subscribe form (rounded email input + pill submit button), and a small reassurance note. The form submit routes through useNavigate. Warm editorial indie-folk aesthetic inverted to a dark band for contrast. Use as the email-capture / newsletter conversion section for musicians, singers, bands, or artist promo pages.',
   props: z.object({
     /** Thin-weight section heading. */
     heading: z.string().optional(),
@@ -31,18 +31,18 @@ export const MusicArtistMailing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Join the Mailing List"
+    const heading = props.heading ?? 'Join the Mailing List'
     const description =
       props.description ??
-      "Get early access to tickets, behind-the-scenes updates, and exclusive acoustic sessions delivered to your inbox."
-    const placeholder = props.placeholder ?? "Enter your email"
-    const submit = props.submit ?? "Subscribe"
-    const note = props.note ?? "No spam. Unsubscribe anytime."
+      'Get early access to tickets, behind-the-scenes updates, and exclusive acoustic sessions delivered to your inbox.'
+    const placeholder = props.placeholder ?? 'Enter your email'
+    const submit = props.submit ?? 'Subscribe'
+    const note = props.note ?? 'No spam. Unsubscribe anytime.'
 
     return (
       <section
         className={cn(
-          "bg-foreground px-6 py-20 text-background lg:px-8 lg:py-32",
+          'bg-foreground px-6 py-20 text-background lg:px-8 lg:py-32',
           props.className,
         )}
       >

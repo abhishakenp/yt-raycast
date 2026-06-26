@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MarketingAgencyFooter — a 4-column site footer. A bordered footer on the page
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props.
  */
 export const MarketingAgencyFooter = defineComponent({
-  name: "MarketingAgencyFooter",
+  name: 'MarketingAgencyFooter',
   description:
-    "4-column site footer: a bordered footer on the page surface with a brand column (layered-diamond glyph + name + short about blurb) beside three titled link-list columns, plus a divider rule above a bottom bar holding an auto-year copyright line and a row of legal links. Every link routes through useNavigate; the brand returns to the home target. Use as the closing footer for a marketing / growth agency, SaaS, or B2B services site.",
+    '4-column site footer: a bordered footer on the page surface with a brand column (layered-diamond glyph + name + short about blurb) beside three titled link-list columns, plus a divider rule above a bottom bar holding an auto-year copyright line and a row of legal links. Every link routes through useNavigate; the brand returns to the home target. Use as the closing footer for a marketing / growth agency, SaaS, or B2B services site.',
   props: z.object({
     /** Agency / brand name shown beside the logo glyph. */
     brand: z.string().optional(),
@@ -31,36 +31,36 @@ export const MarketingAgencyFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Nexus Growth"
-    const homeTarget = props.homeTarget ?? "Services"
+    const brand = props.brand ?? 'Nexus Growth'
+    const homeTarget = props.homeTarget ?? 'Services'
     const about =
       props.about ??
-      "Data-driven marketing for ambitious brands. Based in San Francisco, working with clients globally."
+      'Data-driven marketing for ambitious brands. Based in San Francisco, working with clients globally.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Services",
+            title: 'Services',
             links: [
-              "Performance Marketing",
-              "SEO & Content",
-              "Email Marketing",
-              "CRO",
+              'Performance Marketing',
+              'SEO & Content',
+              'Email Marketing',
+              'CRO',
             ],
           },
           {
-            title: "Company",
-            links: ["About", "Case Studies", "Careers", "Contact"],
+            title: 'Company',
+            links: ['About', 'Case Studies', 'Careers', 'Contact'],
           },
           {
-            title: "Connect",
-            links: ["Twitter", "LinkedIn", "YouTube", "Newsletter"],
+            title: 'Connect',
+            links: ['Twitter', 'LinkedIn', 'YouTube', 'Newsletter'],
           },
         ]
-    const copyright = props.copyright ?? "All rights reserved."
+    const copyright = props.copyright ?? 'All rights reserved.'
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Policy"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -80,7 +80,7 @@ export const MarketingAgencyFooter = defineComponent({
     return (
       <footer
         className={cn(
-          "border-t border-border bg-background py-16",
+          'border-t border-border bg-background py-16',
           props.className,
         )}
       >

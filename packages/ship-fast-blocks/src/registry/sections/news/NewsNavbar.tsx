@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * NewsNavbar — sticky masthead header for a news / editorial publication. Thin
@@ -28,7 +28,7 @@ const Masthead = ({ className }: { className?: string }) => (
 )
 
 export const NewsNavbar = defineComponent({
-  name: "NewsNavbar",
+  name: 'NewsNavbar',
   description:
     "Sticky news masthead header built on the shared SiteNav composite: a bold wordmark + inline newspaper-glyph mark, a horizontal row of section links on desktop, a 'Subscribe' CTA on the right, and a real mobile drawer. Use as the sticky site header for newspapers, magazines, online publications, media brands or article-heavy blog indexes where a Subscribe action matters.",
   props: z.object({
@@ -45,16 +45,16 @@ export const NewsNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["News", "Politics", "Business", "Tech", "Culture", "Science", "Health"]
+      : ['News', 'Politics', 'Business', 'Tech', 'Culture', 'Science', 'Health']
     return (
       <SiteNav
-        brand={props.brand ?? "The Chronicle"}
+        brand={props.brand ?? 'The Chronicle'}
         brandMark={<Masthead className="size-8 text-primary" />}
         brandClassName="text-xl font-bold tracking-tight"
         nav={nav}
         cta={{
-          label: props.subscribeCta ?? "Subscribe",
-          target: "Subscribe",
+          label: props.subscribeCta ?? 'Subscribe',
+          target: 'Subscribe',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

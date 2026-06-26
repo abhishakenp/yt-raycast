@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * KidsEducationCta — dark closing call-to-action band for a kids / family
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in defaults.
  */
 export const KidsEducationCta = defineComponent({
-  name: "KidsEducationCta",
+  name: 'KidsEducationCta',
   description:
     "Dark closing call-to-action band for a kids / family learning platform: a full-width dark (foreground) section with soft gradient wash and blurred glow orbs behind a centered headline, supporting paragraph, dual rounded CTAs (filled primary with arrow + outlined play-icon secondary), and a small reassurance note. CTAs route through useNavigate. Use as the final conversion band before the footer for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
   props: z.object({
@@ -32,13 +32,14 @@ export const KidsEducationCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to Start the Adventure?"
+    const heading = props.heading ?? 'Ready to Start the Adventure?'
     const description =
       props.description ??
-      "Join 50,000+ families who have made learning a joyful daily ritual. Start your free 14-day trial today—no credit card required."
-    const primaryCta = props.primaryCta ?? "Start Free Trial"
-    const secondaryCta = props.secondaryCta ?? "Watch Demo"
-    const note = props.note ?? "Used by families in 35+ countries. Cancel anytime."
+      'Join 50,000+ families who have made learning a joyful daily ritual. Start your free 14-day trial today—no credit card required.'
+    const primaryCta = props.primaryCta ?? 'Start Free Trial'
+    const secondaryCta = props.secondaryCta ?? 'Watch Demo'
+    const note =
+      props.note ?? 'Used by families in 35+ countries. Cancel anytime.'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -77,7 +78,7 @@ export const KidsEducationCta = defineComponent({
     return (
       <section
         className={cn(
-          "relative overflow-hidden bg-foreground py-24 text-background",
+          'relative overflow-hidden bg-foreground py-24 text-background',
           props.className,
         )}
       >
@@ -95,8 +96,12 @@ export const KidsEducationCta = defineComponent({
         />
 
         <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">{heading}</h2>
-          <p className="mx-auto mb-10 max-w-2xl text-xl text-background/70">{description}</p>
+          <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">
+            {heading}
+          </h2>
+          <p className="mx-auto mb-10 max-w-2xl text-xl text-background/70">
+            {description}
+          </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <button
               type="button"

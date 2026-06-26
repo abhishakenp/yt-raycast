@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { createGalleryApiResponse, parseGalleryPagination } from './gallery-api-response'
+import {
+  createGalleryApiResponse,
+  parseGalleryPagination,
+} from './gallery-api-response'
 
 describe('Gallery API Response', () => {
   describe('parseGalleryPagination', () => {
@@ -65,7 +68,9 @@ describe('Gallery API Response', () => {
 
       expect(response.status).toBe(200)
       expect(response.headers.get('content-type')).toContain('application/json')
-      expect(response.headers.get('cache-control')).toContain('stale-while-revalidate')
+      expect(response.headers.get('cache-control')).toContain(
+        'stale-while-revalidate',
+      )
       expect(data).toHaveProperty('items')
       expect(data).toHaveProperty('page')
       expect(data).toHaveProperty('limit')
@@ -88,7 +93,9 @@ describe('Gallery API Response', () => {
           availableCategories: [],
         }),
       }
-      const request = new Request('http://localhost/api/sessions/recent?query=portfolio')
+      const request = new Request(
+        'http://localhost/api/sessions/recent?query=portfolio',
+      )
 
       const response = await createGalleryApiResponse(request, mockClient)
 
@@ -115,7 +122,16 @@ describe('Gallery API Response', () => {
       const mockClient = {
         query: async (_fn: any, args: any) => {
           expect(args.page).toBe(2)
-          return { items: [], page: 2, limit: 12, total: 0, totalPages: 0, hasNext: false, hasPrev: false, availableCategories: [] }
+          return {
+            items: [],
+            page: 2,
+            limit: 12,
+            total: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrev: false,
+            availableCategories: [],
+          }
         },
       }
       const request = new Request('http://localhost/api/gallery?page=2')
@@ -128,7 +144,16 @@ describe('Gallery API Response', () => {
       const mockClient = {
         query: async (_fn: any, args: any) => {
           expect(args.limit).toBe(6)
-          return { items: [], page: 1, limit: 6, total: 0, totalPages: 0, hasNext: false, hasPrev: false, availableCategories: [] }
+          return {
+            items: [],
+            page: 1,
+            limit: 6,
+            total: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrev: false,
+            availableCategories: [],
+          }
         },
       }
       const request = new Request('http://localhost/api/gallery?limit=6')
@@ -141,10 +166,21 @@ describe('Gallery API Response', () => {
       const mockClient = {
         query: async (_fn: any, args: any) => {
           expect(args.search).toBe('analytics')
-          return { items: [], page: 1, limit: 12, total: 0, totalPages: 0, hasNext: false, hasPrev: false, availableCategories: [] }
+          return {
+            items: [],
+            page: 1,
+            limit: 12,
+            total: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrev: false,
+            availableCategories: [],
+          }
         },
       }
-      const request = new Request('http://localhost/api/gallery?search=analytics')
+      const request = new Request(
+        'http://localhost/api/gallery?search=analytics',
+      )
 
       const response = await createGalleryApiResponse(request, mockClient)
       expect(response.status).toBe(200)
@@ -154,7 +190,16 @@ describe('Gallery API Response', () => {
       const mockClient = {
         query: async (_fn: any, args: any) => {
           expect(args.category).toBe('saas')
-          return { items: [], page: 1, limit: 12, total: 0, totalPages: 0, hasNext: false, hasPrev: false, availableCategories: [] }
+          return {
+            items: [],
+            page: 1,
+            limit: 12,
+            total: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrev: false,
+            availableCategories: [],
+          }
         },
       }
       const request = new Request('http://localhost/api/gallery?category=saas')

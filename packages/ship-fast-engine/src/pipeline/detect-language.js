@@ -49,7 +49,14 @@ function buildLanguageMode(code, name, nativeName, script, knownEntry) {
     isIndian,
     // Backward compat: mirrors old indiaMode.language shape
     language: isIndian
-      ? { code, name, nativeName, fontFamily, skipFullTranslation, keywords: knownEntry?.keywords || [] }
+      ? {
+          code,
+          name,
+          nativeName,
+          fontFamily,
+          skipFullTranslation,
+          keywords: knownEntry?.keywords || [],
+        }
       : null,
   }
   return mode
@@ -63,17 +70,31 @@ function buildLanguageMode(code, name, nativeName, script, knownEntry) {
  * indiaMode shape (isIndian, language properties preserved).
  */
 export function resolveLanguageModeFromPreference(preferredLanguage) {
-  const requested = String(preferredLanguage || '').trim().toLowerCase()
+  const requested = String(preferredLanguage || '')
+    .trim()
+    .toLowerCase()
   if (requested && requested !== 'en') {
     if (isRomanizedIndicCode(requested)) {
       const romanized = lookupKnownLanguage(requested)
       if (romanized) {
-        return buildLanguageMode(romanized.code, romanized.name, romanized.nativeName, 'Latin', romanized)
+        return buildLanguageMode(
+          romanized.code,
+          romanized.name,
+          romanized.nativeName,
+          'Latin',
+          romanized,
+        )
       }
     }
     const known = KNOWN_LANGUAGES.find((l) => l.code === requested)
     if (known) {
-      return buildLanguageMode(known.code, known.name, known.nativeName, guessScript(known.fontFamily), known)
+      return buildLanguageMode(
+        known.code,
+        known.name,
+        known.nativeName,
+        guessScript(known.fontFamily),
+        known,
+      )
     }
     return buildLanguageMode(requested, requested, requested, 'Latin', null)
   }
@@ -110,7 +131,13 @@ export async function detectLanguage(prompt, preferredLanguage) {
   if (mixHint) {
     const m = lookupKnownLanguage(mixHint)
     if (m) {
-      return buildLanguageMode(m.code, m.name, m.nativeName, guessScript(m.fontFamily), m)
+      return buildLanguageMode(
+        m.code,
+        m.name,
+        m.nativeName,
+        guessScript(m.fontFamily),
+        m,
+      )
     }
   }
 
@@ -118,7 +145,13 @@ export async function detectLanguage(prompt, preferredLanguage) {
   if (romanizedPromptHint) {
     const r = lookupKnownLanguage(romanizedPromptHint)
     if (r) {
-      return buildLanguageMode(r.code, r.name, r.nativeName, guessScript(r.fontFamily), r)
+      return buildLanguageMode(
+        r.code,
+        r.name,
+        r.nativeName,
+        guessScript(r.fontFamily),
+        r,
+      )
     }
   }
 
@@ -128,7 +161,9 @@ export async function detectLanguage(prompt, preferredLanguage) {
       keywordLanguage.code,
       keywordLanguage.name,
       keywordLanguage.nativeName,
-      isRomanizedIndicCode(keywordLanguage.code) ? 'Latin' : guessScript(keywordLanguage.fontFamily),
+      isRomanizedIndicCode(keywordLanguage.code)
+        ? 'Latin'
+        : guessScript(keywordLanguage.fontFamily),
       keywordLanguage,
     )
   }
@@ -185,13 +220,21 @@ Examples:
     if (!jsonMatch) return ENGLISH_MODE
 
     const parsed = JSON.parse(jsonMatch[0])
-    const code = String(parsed.code || 'en').trim().toLowerCase()
+    const code = String(parsed.code || 'en')
+      .trim()
+      .toLowerCase()
     if (code === 'en') return ENGLISH_MODE
 
     if (isRomanizedIndicCode(code)) {
       const romanized = lookupKnownLanguage(code)
       if (romanized) {
-        return buildLanguageMode(romanized.code, romanized.name, romanized.nativeName, 'Latin', romanized)
+        return buildLanguageMode(
+          romanized.code,
+          romanized.name,
+          romanized.nativeName,
+          'Latin',
+          romanized,
+        )
       }
     }
 

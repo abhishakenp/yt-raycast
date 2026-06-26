@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * NonprofitNavbar — sticky site header for a nonprofit / charity / NGO landing
@@ -31,7 +31,7 @@ const SproutMark = ({ className }: { className?: string }) => (
 )
 
 export const NonprofitNavbar = defineComponent({
-  name: "NonprofitNavbar",
+  name: 'NonprofitNavbar',
   description:
     "Sticky nonprofit / charity / NGO site header built on the shared SiteNav composite: a layered sprout-glyph logo mark + organization name on the left, desktop nav links, a pill-shaped primary 'Donate' CTA on the right, and a real mobile drawer. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for nonprofits, charities, NGOs, foundations, humanitarian or community organizations.",
   props: z.object({
@@ -50,16 +50,16 @@ export const NonprofitNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Mission", "Impact", "Programs", "Stories"]
+      : ['Mission', 'Impact', 'Programs', 'Stories']
     return (
       <SiteNav
-        brand={props.brand ?? "Roots of Hope"}
+        brand={props.brand ?? 'Roots of Hope'}
         brandMark={<SproutMark className="size-8 text-primary" />}
         brandClassName="text-xl font-semibold tracking-tight"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Donate",
-          target: props.ctaTarget ?? "Donate",
+          label: props.ctaLabel ?? 'Donate',
+          target: props.ctaTarget ?? 'Donate',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FurnitureStoreProducts — a best-sellers product grid. A header row (eyebrow +
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * fully with no props via baked-in "Haven & Home" defaults.
  */
 export const FurnitureStoreProducts = defineComponent({
-  name: "FurnitureStoreProducts",
+  name: 'FurnitureStoreProducts',
   description:
     "Best-sellers product grid: a header row (eyebrow + heading left, arrow 'shop all' link right) above a responsive 1/2/4-column grid of product cards; each card has a square image that zooms on hover, an optional corner badge (Sale tinted destructive, else primary), a hover-revealed add-to-cart button, a product name link, a variant subtitle, and a price line showing a struck-through original price when on sale. Card links, add-to-cart, and view-all route through useNavigate. Use as the product / shop grid for furniture, home-decor, or any retail store.",
   props: z.object({
@@ -40,55 +40,55 @@ export const FurnitureStoreProducts = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Best Sellers"
-    const heading = props.heading ?? "Customer favorites"
-    const viewAll = props.viewAll ?? "Shop all furniture"
+    const eyebrow = props.eyebrow ?? 'Best Sellers'
+    const heading = props.heading ?? 'Customer favorites'
+    const viewAll = props.viewAll ?? 'Shop all furniture'
     const items = props.items?.length
       ? props.items
       : [
           {
-            name: "The Cloud Sofa",
-            variant: "3-Seater / Cream Linen",
-            price: "$2,849",
-            badge: "Bestseller",
+            name: 'The Cloud Sofa',
+            variant: '3-Seater / Cream Linen',
+            price: '$2,849',
+            badge: 'Bestseller',
           },
           {
-            name: "Oakwood Dining Table",
+            name: 'Oakwood Dining Table',
             variant: 'Natural Oak / 72"',
-            price: "$1,899",
+            price: '$1,899',
           },
           {
-            name: "Velvet Accent Chair",
-            variant: "Dusty Rose / Brass Legs",
-            price: "$649",
-            oldPrice: "$849",
-            badge: "Sale",
+            name: 'Velvet Accent Chair',
+            variant: 'Dusty Rose / Brass Legs',
+            price: '$649',
+            oldPrice: '$849',
+            badge: 'Sale',
           },
           {
-            name: "Walnut Bed Frame",
-            variant: "Queen / Natural Linen",
-            price: "$2,299",
+            name: 'Walnut Bed Frame',
+            variant: 'Queen / Natural Linen',
+            price: '$2,299',
           },
           {
-            name: "Terrazzo Coffee Table",
-            variant: "Cream Terrazzo / Ash Base",
-            price: "$749",
+            name: 'Terrazzo Coffee Table',
+            variant: 'Cream Terrazzo / Ash Base',
+            price: '$749',
           },
           {
-            name: "Linen Armchair",
-            variant: "Oatmeal / Walnut Legs",
-            price: "$1,249",
+            name: 'Linen Armchair',
+            variant: 'Oatmeal / Walnut Legs',
+            price: '$1,249',
           },
           {
-            name: "Floating TV Console",
+            name: 'Floating TV Console',
             variant: 'White Oak / 60"',
-            price: "$899",
-            badge: "New",
+            price: '$899',
+            badge: 'New',
           },
           {
-            name: "Rattan Pendant Light",
-            variant: "Natural Rattan / Brass",
-            price: "$349",
+            name: 'Rattan Pendant Light',
+            variant: 'Natural Rattan / Brass',
+            price: '$349',
           },
         ]
 
@@ -111,7 +111,7 @@ export const FurnitureStoreProducts = defineComponent({
 
     return (
       <section
-        className={cn("py-16 lg:py-24", props.className)}
+        className={cn('py-16 lg:py-24', props.className)}
         aria-labelledby="furniture-bestsellers-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -158,10 +158,10 @@ export const FurnitureStoreProducts = defineComponent({
                   {product.badge ? (
                     <span
                       className={cn(
-                        "absolute left-3 top-3 rounded-sm px-2 py-1 text-xs font-medium",
-                        product.badge.toLowerCase() === "sale"
-                          ? "bg-destructive text-destructive-foreground"
-                          : "bg-primary text-primary-foreground",
+                        'absolute left-3 top-3 rounded-sm px-2 py-1 text-xs font-medium',
+                        product.badge.toLowerCase() === 'sale'
+                          ? 'bg-destructive text-destructive-foreground'
+                          : 'bg-primary text-primary-foreground',
                       )}
                     >
                       {product.badge}

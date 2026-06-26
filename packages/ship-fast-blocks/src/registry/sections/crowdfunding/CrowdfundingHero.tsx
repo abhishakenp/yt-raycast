@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CrowdfundingHero — a 2-column campaign hero for a crowdfunding / pre-order
@@ -18,7 +18,7 @@ import { Image } from "#/lib/img.tsx"
  * a hard deadline must lead.
  */
 export const CrowdfundingHero = defineComponent({
-  name: "CrowdfundingHero",
+  name: 'CrowdfundingHero',
   description:
     "A 2-column campaign hero for a crowdfunding / pre-order landing page with a clean, warm eco aesthetic on a card surface: on one side a large product image with a 4-up thumbnail strip, on the other a funding card showing a live badge + category, headline + subhead, the amount raised vs goal, an animated progress bar, a percent-funded / stretch-goals-unlocked banner with a check glyph, a three-up backers / early-bird / days-left stat trio, a big 'Back This Project' CTA and an all-or-nothing deadline note. Links route through useNavigate; imagery uses the alt-driven Image component. Use as the opening hero for Kickstarter/Indiegogo-style raises, product launches, fundraisers, or maker/hardware campaigns where funding progress and a hard deadline must lead.",
   props: z.object({
@@ -45,50 +45,50 @@ export const CrowdfundingHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroCategory = props.category ?? "Design & Technology"
-    const heroLiveBadge = props.liveBadge ?? "Live Project"
+    const heroCategory = props.category ?? 'Design & Technology'
+    const heroLiveBadge = props.liveBadge ?? 'Live Project'
     const heroHeading =
       props.heading ??
-      "EcoBrush: The Bamboo Electric Toothbrush That Returns to Earth"
+      'EcoBrush: The Bamboo Electric Toothbrush That Returns to Earth'
     const heroSub =
       props.subheading ??
-      "98% biodegradable. Zero plastic. Powerful sonic cleaning. The first electric toothbrush designed to gracefully return to nature at the end of its life."
+      '98% biodegradable. Zero plastic. Powerful sonic cleaning. The first electric toothbrush designed to gracefully return to nature at the end of its life.'
     const heroMainImageAlt =
       props.mainImageAlt ??
-      "Elegant bamboo electric toothbrush displayed on marble countertop with natural morning light"
+      'Elegant bamboo electric toothbrush displayed on marble countertop with natural morning light'
     const heroThumbAlts = props.thumbAlts?.length
       ? props.thumbAlts
       : [
-          "Close-up view of bamboo toothbrush handle texture showing natural grain",
-          "Electric toothbrush brush head detail showing biodegradable bristles",
-          "EcoBrush packaging showing sustainable recycled cardboard box",
-          "Family bathroom counter with EcoBrush charging base and accessories",
+          'Close-up view of bamboo toothbrush handle texture showing natural grain',
+          'Electric toothbrush brush head detail showing biodegradable bristles',
+          'EcoBrush packaging showing sustainable recycled cardboard box',
+          'Family bathroom counter with EcoBrush charging base and accessories',
         ]
-    const heroRaised = props.raisedAmount ?? "$487,293"
-    const heroGoalLabel = props.goalLabel ?? "raised of $75,000 goal"
+    const heroRaised = props.raisedAmount ?? '$487,293'
+    const heroGoalLabel = props.goalLabel ?? 'raised of $75,000 goal'
     const heroProgress = Math.min(
       100,
       Math.max(0, props.progressPercent ?? 100),
     )
     const heroFundedBanner =
-      props.fundedBanner ?? "649% funded — Stretch goals unlocked!"
+      props.fundedBanner ?? '649% funded — Stretch goals unlocked!'
     const heroStats = props.stats?.length
       ? props.stats
       : [
-          { value: "12,847", label: "backers" },
-          { value: "$49", label: "early bird" },
-          { value: "18", label: "days left" },
+          { value: '12,847', label: 'backers' },
+          { value: '$49', label: 'early bird' },
+          { value: '18', label: 'days left' },
         ]
     const heroPrimary =
-      props.primaryCta ?? "Back This Project — Starting at $49"
+      props.primaryCta ?? 'Back This Project — Starting at $49'
     const heroDeadlineNote =
       props.deadlineNote ??
-      "This project will only be funded if it reaches its goal by March 15, 2026 at 11:59 PM EST."
-    const galleryTarget = props.galleryTarget ?? "Our Story"
-    const rewardsTarget = props.rewardsTarget ?? "Rewards"
+      'This project will only be funded if it reaches its goal by March 15, 2026 at 11:59 PM EST.'
+    const galleryTarget = props.galleryTarget ?? 'Our Story'
+    const rewardsTarget = props.rewardsTarget ?? 'Rewards'
 
     return (
-      <section className={cn("bg-card", props.className)}>
+      <section className={cn('bg-card', props.className)}>
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-20">
           <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
             {/* Campaign image gallery */}
@@ -184,8 +184,8 @@ export const CrowdfundingHero = defineComponent({
                     <div
                       key={s.label}
                       className={cn(
-                        "text-center",
-                        i === 1 && "border-x border-border",
+                        'text-center',
+                        i === 1 && 'border-x border-border',
                       )}
                     >
                       <div className="text-2xl font-bold sm:text-3xl">

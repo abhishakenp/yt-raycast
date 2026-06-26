@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * RealEstateNavbar — confident top navigation for a premium brokerage site. A
@@ -12,7 +12,7 @@ import { SiteNav } from "#/section-kit/SiteNav.tsx"
  * and luxury property firms. Renders fully with no props via baked defaults.
  */
 export const RealEstateNavbar = defineComponent({
-  name: "RealEstateNavbar",
+  name: 'RealEstateNavbar',
   description:
     "Confident sticky top navigation for a premium real-estate brokerage: a serif wordmark on the left, a centered Buy / Sell / Rent / Agents / Contact inline nav on desktop, and a right cluster with a phone link plus a filled 'List a Property' primary CTA. Wordmark, nav items, phone, and CTA route through useNavigate. Use as the site header for brokerages, agent teams, and luxury property firms.",
   props: z.object({
@@ -31,18 +31,18 @@ export const RealEstateNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.links?.length
       ? props.links
-      : ["Buy", "Sell", "Rent", "Agents", "Contact"]
+      : ['Buy', 'Sell', 'Rent', 'Agents', 'Contact']
 
     return (
       <SiteNav
-        brand={props.brand ?? "Marbury & Co."}
+        brand={props.brand ?? 'Marbury & Co.'}
         brandClassName="font-serif text-xl font-semibold tracking-tight"
         nav={nav}
-        phone={props.phone ?? "(415) 555-0148"}
+        phone={props.phone ?? '(415) 555-0148'}
         cta={{
-          label: props.cta ?? "List a Property",
-          target: props.ctaTarget ?? "List",
-          variant: "primary",
+          label: props.cta ?? 'List a Property',
+          target: props.ctaTarget ?? 'List',
+          variant: 'primary',
         }}
         homeTarget="Home"
         className={props.className}

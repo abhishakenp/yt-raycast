@@ -8,16 +8,22 @@ describe('detectSnippetLanguageBcp47', () => {
     'oru marketing compny de website undaakuka, athil services list, client success stories, blog section okke include cheyyuka; target audience small business owners aanu, design sleek, colors brandine reflect cheyyunna professional tone with clear CTA buttons.'
 
   it('detects short explicit language requests', async () => {
-    await expect(detectSnippetLanguageBcp47('Build a Hindi website')).resolves.toBe('hi')
+    await expect(
+      detectSnippetLanguageBcp47('Build a Hindi website'),
+    ).resolves.toBe('hi')
   })
 
   it('detects romanized Malayalam website briefs as Malayalam', async () => {
-    await expect(detectSnippetLanguageBcp47(romanizedMalayalamBrief)).resolves.toBe('ml')
+    await expect(
+      detectSnippetLanguageBcp47(romanizedMalayalamBrief),
+    ).resolves.toBe('ml')
   })
 
   it('detects short French prompts with accents as French', async () => {
     await expect(
-      detectSnippetLanguageBcp47('Créer un site moderne pour une boutique française.'),
+      detectSnippetLanguageBcp47(
+        'Créer un site moderne pour une boutique française.',
+      ),
     ).resolves.toBe('fr')
   })
 

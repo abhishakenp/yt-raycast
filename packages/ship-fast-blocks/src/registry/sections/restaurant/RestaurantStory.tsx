@@ -1,18 +1,18 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { Flame, Leaf, Soup, Wheat } from "lucide-react"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { Flame, Leaf, Soup, Wheat } from 'lucide-react'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 // About "Our Story" feature chips, keyed by intent; falls back to a soup bowl.
 const FEATURE_ICONS = [Flame, Wheat, Leaf]
 
 // Rotating token tints for the decorative story icon chips (no raw palette).
 const FEATURE_CHIPS = [
-  "bg-primary/10 text-primary",
-  "bg-chart-4/10 text-chart-4",
-  "bg-chart-2/10 text-chart-2",
+  'bg-primary/10 text-primary',
+  'bg-chart-4/10 text-chart-4',
+  'bg-chart-2/10 text-chart-2',
 ]
 
 /**
@@ -27,7 +27,7 @@ const FEATURE_CHIPS = [
  * no props via baked-in "Kaze Ramen" defaults.
  */
 export const RestaurantStory = defineComponent({
-  name: "RestaurantStory",
+  name: 'RestaurantStory',
   description:
     "About / origin-story split band for a warm food brand: a two-column section with a tall main photo in a rounded card plus a smaller inset photo overlapping its corner for depth on one side, and on the other an uppercased kicker with a leading rule, a serif heading, a story paragraph, a vertical list of up to three icon-chip features in warm rotating token tints, and a filled primary CTA. The CTA routes through useNavigate. Use to tell the chef's or restaurant's origin story, craft, and values for ramen shops, izakayas, bistros, sushi counters, or any cozy premium food brand.",
   props: z.object({
@@ -51,40 +51,39 @@ export const RestaurantStory = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Our Story"
-    const heading =
-      props.heading ?? "Eighteen Hours of Patience in Every Bowl"
+    const eyebrow = props.eyebrow ?? 'Our Story'
+    const heading = props.heading ?? 'Eighteen Hours of Patience in Every Bowl'
     const body =
       props.body ??
       "Kaze Ramen opened in 2019 when Chef Yuki Tanaka brought her grandfather's Fukuoka recipes to Portland. What started as a 12-seat counter has grown into a gathering place for anyone who believes great food takes time. We simmer pork bones overnight, hand-pull our noodles each morning, and source our produce from farms within 50 miles."
-    const cta = props.cta ?? "Explore the Menu"
+    const cta = props.cta ?? 'Explore the Menu'
     const alt =
-      props.alt ?? "Chef pulling fresh ramen noodles by hand in the kitchen"
+      props.alt ?? 'Chef pulling fresh ramen noodles by hand in the kitchen'
     const altSecondary =
       props.altSecondary ??
-      "Close-up of rich, creamy tonkotsu broth being ladled"
+      'Close-up of rich, creamy tonkotsu broth being ladled'
     const features = props.features?.length
       ? props.features
       : [
           {
-            title: "18-Hour Tonkotsu",
+            title: '18-Hour Tonkotsu',
             description:
               "Pork bones simmered low and slow for a broth that's impossibly creamy.",
           },
           {
-            title: "Hand-Pulled Noodles",
+            title: 'Hand-Pulled Noodles',
             description:
-              "Made fresh every morning with Canadian wheat and precise hydration.",
+              'Made fresh every morning with Canadian wheat and precise hydration.',
           },
           {
-            title: "Local & Seasonal",
+            title: 'Local & Seasonal',
             description:
-              "Produce from Sauvie Island farms, eggs from Pasturebird Ranch.",
+              'Produce from Sauvie Island farms, eggs from Pasturebird Ranch.',
           },
         ]
 
     return (
-      <section className={cn("w-full bg-background", props.className)}>
+      <section className={cn('w-full bg-background', props.className)}>
         <div className="mx-auto grid w-[min(1200px,92vw)] items-center gap-16 py-24 lg:grid-cols-2">
           <div className="relative order-1">
             <div className="overflow-hidden rounded-3xl shadow-2xl shadow-black/15">
@@ -124,7 +123,7 @@ export const RestaurantStory = defineComponent({
                   <div key={feat.title} className="flex items-start gap-3.5">
                     <span
                       className={cn(
-                        "inline-flex size-10 flex-shrink-0 items-center justify-center rounded-md",
+                        'inline-flex size-10 flex-shrink-0 items-center justify-center rounded-md',
                         chip,
                       )}
                     >

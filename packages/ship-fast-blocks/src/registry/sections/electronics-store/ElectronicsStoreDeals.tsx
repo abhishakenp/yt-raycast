@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ElectronicsStoreDeals — a dark inverted "Flash Deals" band for an electronics
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
 export const ElectronicsStoreDeals = defineComponent({
-  name: "ElectronicsStoreDeals",
+  name: 'ElectronicsStoreDeals',
   description:
-    "Dark inverted Flash Deals band for an electronics storefront: a header row pairs a heading + muted description with a boxed countdown timer (hrs / min / sec tiles), above a responsive 1-to-4 grid of clickable product cards — square image with a destructive discount badge, then title, subtitle, current price and a struck-through original price. Cards route through useNavigate; imagery is alt-driven. Use to spotlight limited-time offers on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.",
+    'Dark inverted Flash Deals band for an electronics storefront: a header row pairs a heading + muted description with a boxed countdown timer (hrs / min / sec tiles), above a responsive 1-to-4 grid of clickable product cards — square image with a destructive discount badge, then title, subtitle, current price and a struck-through original price. Cards route through useNavigate; imagery is alt-driven. Use to spotlight limited-time offers on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
   props: z.object({
     /** Band heading. */
     heading: z.string().optional(),
@@ -45,62 +45,62 @@ export const ElectronicsStoreDeals = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Flash Deals"
+    const heading = props.heading ?? 'Flash Deals'
     const description =
       props.description ??
-      "Limited-time offers on top-rated electronics. Ends May 31, 2025."
-    const countdownLabel = props.countdownLabel ?? "Offer ends in:"
+      'Limited-time offers on top-rated electronics. Ends May 31, 2025.'
+    const countdownLabel = props.countdownLabel ?? 'Offer ends in:'
     const countdown = props.countdown?.length
       ? props.countdown
       : [
-          { value: "06", unit: "hrs" },
-          { value: "42", unit: "min" },
-          { value: "18", unit: "sec" },
+          { value: '06', unit: 'hrs' },
+          { value: '42', unit: 'min' },
+          { value: '18', unit: 'sec' },
         ]
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "AirPods Pro 2",
-            subtitle: "Active Noise Cancellation",
-            price: "$224.99",
-            was: "$299.99",
-            discount: "-25%",
+            title: 'AirPods Pro 2',
+            subtitle: 'Active Noise Cancellation',
+            price: '$224.99',
+            was: '$299.99',
+            discount: '-25%',
             imageAlt:
-              "Apple AirPods Pro 2nd generation wireless earbuds in white charging case",
+              'Apple AirPods Pro 2nd generation wireless earbuds in white charging case',
           },
           {
-            title: "Apple Watch Series 9",
-            subtitle: "45mm, Midnight",
-            price: "$319.99",
-            was: "$399.99",
-            discount: "-20%",
+            title: 'Apple Watch Series 9',
+            subtitle: '45mm, Midnight',
+            price: '$319.99',
+            was: '$399.99',
+            discount: '-20%',
             imageAlt:
-              "Apple Watch Series 9 smartwatch with midnight aluminum case and sport band",
+              'Apple Watch Series 9 smartwatch with midnight aluminum case and sport band',
           },
           {
-            title: "iPad Air M2",
-            subtitle: "11-inch, 256GB",
-            price: "$594.99",
-            was: "$699.99",
-            discount: "-15%",
+            title: 'iPad Air M2',
+            subtitle: '11-inch, 256GB',
+            price: '$594.99',
+            was: '$699.99',
+            discount: '-15%',
             imageAlt:
-              "iPad Air 5th generation tablet with 10.9 inch Liquid Retina display in space gray",
+              'iPad Air 5th generation tablet with 10.9 inch Liquid Retina display in space gray',
           },
           {
-            title: "MX Master 3S",
-            subtitle: "Wireless Mouse",
-            price: "$69.99",
-            was: "$99.99",
-            discount: "-30%",
+            title: 'MX Master 3S',
+            subtitle: 'Wireless Mouse',
+            price: '$69.99',
+            was: '$99.99',
+            discount: '-30%',
             imageAlt:
-              "Logitech MX Master 3S wireless ergonomic mouse in graphite gray",
+              'Logitech MX Master 3S wireless ergonomic mouse in graphite gray',
           },
         ]
 
     return (
       <section
-        className={cn("bg-foreground py-16 text-background", props.className)}
+        className={cn('bg-foreground py-16 text-background', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">

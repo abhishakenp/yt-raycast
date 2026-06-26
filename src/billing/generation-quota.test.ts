@@ -6,8 +6,15 @@ import {
   MAX_PAID_PER_MONTH,
   SHARE_BONUS_EXTRA,
 } from './constants'
-import { anonIpDailyHits, shareBonusIps, userMonthlyHits } from '../lib/rate-limit'
-import { getUserGenerationQuota, setActiveSubscriptionLookupForTest } from './payments'
+import {
+  anonIpDailyHits,
+  shareBonusIps,
+  userMonthlyHits,
+} from '../lib/rate-limit'
+import {
+  getUserGenerationQuota,
+  setActiveSubscriptionLookupForTest,
+} from './payments'
 
 let subscribedUids = new Set<string>()
 
@@ -42,7 +49,9 @@ describe('generation quota details', () => {
   it('reports signed-up free monthly quota', async () => {
     userMonthlyHits.set('free-user', [Date.now(), Date.now()])
 
-    await expect(getUserGenerationQuota('free-user', '203.0.113.11')).resolves.toMatchObject({
+    await expect(
+      getUserGenerationQuota('free-user', '203.0.113.11'),
+    ).resolves.toMatchObject({
       isAnonymous: false,
       isSubscribed: false,
       monthlyLimit: MAX_FREE_PER_MONTH,
@@ -55,7 +64,9 @@ describe('generation quota details', () => {
     subscribedUids.add('paid-user')
     userMonthlyHits.set('paid-user', [Date.now(), Date.now(), Date.now()])
 
-    await expect(getUserGenerationQuota('paid-user', '203.0.113.12')).resolves.toMatchObject({
+    await expect(
+      getUserGenerationQuota('paid-user', '203.0.113.12'),
+    ).resolves.toMatchObject({
       isAnonymous: false,
       isSubscribed: true,
       monthlyLimit: MAX_PAID_PER_MONTH,

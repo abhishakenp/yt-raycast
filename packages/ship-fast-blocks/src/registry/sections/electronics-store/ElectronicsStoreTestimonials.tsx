@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ElectronicsStoreTestimonials — a 3-up verified-buyer testimonials row for an
@@ -12,7 +12,7 @@ import { Image } from "#/lib/img.tsx"
  * retailers, or audio/camera storefronts.
  */
 export const ElectronicsStoreTestimonials = defineComponent({
-  name: "ElectronicsStoreTestimonials",
+  name: 'ElectronicsStoreTestimonials',
   description:
     "3-up verified-buyer testimonials row for an electronics storefront: a centered heading above muted rounded cards, each with a 5-star rating, a quoted review, and a footer pairing a round customer avatar with the name and a verified-buyer meta line (e.g. 'Verified Buyer • 3 orders'). Avatars are alt-driven images. Use for social proof on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.",
   props: z.object({
@@ -32,39 +32,39 @@ export const ElectronicsStoreTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "What Our Customers Say"
+    const heading = props.heading ?? 'What Our Customers Say'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
-              "Ordered the Sony WH-1000XM5 headphones and they arrived in 2 days. The noise cancellation is incredible for my commute. Customer service was helpful when I had questions about setup.",
-            name: "Marcus Chen",
-            meta: "Verified Buyer • 3 orders",
+              'Ordered the Sony WH-1000XM5 headphones and they arrived in 2 days. The noise cancellation is incredible for my commute. Customer service was helpful when I had questions about setup.',
+            name: 'Marcus Chen',
+            meta: 'Verified Buyer • 3 orders',
             avatarAlt:
-              "Professional headshot of a smiling male customer with short brown hair",
+              'Professional headshot of a smiling male customer with short brown hair',
           },
           {
             quote:
-              "TechNova has become my go-to for all tech purchases. Bought the DJI Mini 4 Pro and the iPad Air M2 bundle deal saved me over $200. Everything arrived perfectly packaged.",
-            name: "Sarah Mitchell",
-            meta: "Verified Buyer • 8 orders",
+              'TechNova has become my go-to for all tech purchases. Bought the DJI Mini 4 Pro and the iPad Air M2 bundle deal saved me over $200. Everything arrived perfectly packaged.',
+            name: 'Sarah Mitchell',
+            meta: 'Verified Buyer • 8 orders',
             avatarAlt:
-              "Professional headshot of a smiling female customer with blonde hair",
+              'Professional headshot of a smiling female customer with blonde hair',
           },
           {
             quote:
-              "As a professional photographer, I rely on quality gear. The Canon EOS R6 Mark II I purchased was competitively priced and came with full warranty. Their trade-in program is also fantastic.",
-            name: "David Park",
-            meta: "Verified Buyer • 12 orders",
+              'As a professional photographer, I rely on quality gear. The Canon EOS R6 Mark II I purchased was competitively priced and came with full warranty. Their trade-in program is also fantastic.',
+            name: 'David Park',
+            meta: 'Verified Buyer • 12 orders',
             avatarAlt:
-              "Professional headshot of a smiling male photographer with beard and glasses",
+              'Professional headshot of a smiling male photographer with beard and glasses',
           },
         ]
 
     const Star = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4", className)}
+        className={cn('size-4', className)}
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -74,7 +74,7 @@ export const ElectronicsStoreTestimonials = defineComponent({
     )
 
     return (
-      <section className={cn("py-16 lg:py-24", props.className)}>
+      <section className={cn('py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="mb-12 text-center text-2xl font-semibold text-foreground">
             {heading}

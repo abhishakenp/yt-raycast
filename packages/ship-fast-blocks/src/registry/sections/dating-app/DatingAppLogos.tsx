@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DatingAppLogos — a low-contrast "Featured in" press-logo strip for a dating /
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in press defaults.
  */
 export const DatingAppLogos = defineComponent({
-  name: "DatingAppLogos",
+  name: 'DatingAppLogos',
   description:
     "Low-contrast 'Featured in' press-logo strip for a dating / matchmaking landing page: a subtle muted band bordered top and bottom with a small uppercase tracked label centered above a responsive grid of dimmed press logos, each a generic circular glyph beside a bold name, routed through useNavigate. Use directly below the hero as social-proof / credibility for dating apps, singles platforms, or any consumer product citing press mentions.",
   props: z.object({
@@ -25,14 +25,24 @@ export const DatingAppLogos = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const logosLabel = props.label ?? "Featured in"
+    const logosLabel = props.label ?? 'Featured in'
     const logoNames = props.names?.length
       ? props.names
-      : ["TechCrunch", "Forbes", "Wired", "The Verge", "Bloomberg", "Cosmopolitan"]
+      : [
+          'TechCrunch',
+          'Forbes',
+          'Wired',
+          'The Verge',
+          'Bloomberg',
+          'Cosmopolitan',
+        ]
 
     return (
       <section
-        className={cn("border-y border-border bg-muted/50 py-12", props.className)}
+        className={cn(
+          'border-y border-border bg-muted/50 py-12',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wide text-muted-foreground">

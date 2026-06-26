@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * DashboardKpis — a 4-up KPI stat-card row for a SaaS admin dashboard. A
@@ -15,9 +15,9 @@ import { cn } from "#/lib/utils.ts"
  * via four baked-in default KPIs.
  */
 export const DashboardKpis = defineComponent({
-  name: "DashboardKpis",
+  name: 'DashboardKpis',
   description:
-    "A 4-up KPI stat-card row for a SaaS admin dashboard: a responsive 1/2/4-column grid of bordered card tiles, each pairing a label, a large bold value and an up/down trend badge (green chart styling for up, destructive for down, with a directional arrow + optional caption) on the left, and a tone-tinted colored icon tile on the right. Tones rotate across the data-viz tokens (primary / orange / sky / violet / emerald). Tokens-only, no links. Use as the headline-metric summary row at the top of a dashboard — revenue, orders, customers, average order value.",
+    'A 4-up KPI stat-card row for a SaaS admin dashboard: a responsive 1/2/4-column grid of bordered card tiles, each pairing a label, a large bold value and an up/down trend badge (green chart styling for up, destructive for down, with a directional arrow + optional caption) on the left, and a tone-tinted colored icon tile on the right. Tones rotate across the data-viz tokens (primary / orange / sky / violet / emerald). Tokens-only, no links. Use as the headline-metric summary row at the top of a dashboard — revenue, orders, customers, average order value.',
   props: z.object({
     /** KPI stat cards. `tone` colors the icon tile; `trendUp` true = green up trend, false = red down trend. */
     kpis: z
@@ -29,7 +29,7 @@ export const DashboardKpis = defineComponent({
           trendUp: z.boolean().optional(),
           deltaNote: z.string().optional(),
           tone: z
-            .enum(["primary", "orange", "sky", "violet", "emerald"])
+            .enum(['primary', 'orange', 'sky', 'violet', 'emerald'])
             .optional(),
         }),
       )
@@ -41,46 +41,46 @@ export const DashboardKpis = defineComponent({
       ? props.kpis
       : [
           {
-            label: "Total Revenue",
-            value: "$48,294",
-            delta: "12.5%",
+            label: 'Total Revenue',
+            value: '$48,294',
+            delta: '12.5%',
             trendUp: true,
-            deltaNote: "vs last month",
-            tone: "primary" as const,
+            deltaNote: 'vs last month',
+            tone: 'primary' as const,
           },
           {
-            label: "Orders",
-            value: "1,247",
-            delta: "8.2%",
+            label: 'Orders',
+            value: '1,247',
+            delta: '8.2%',
             trendUp: true,
-            deltaNote: "vs last month",
-            tone: "orange" as const,
+            deltaNote: 'vs last month',
+            tone: 'orange' as const,
           },
           {
-            label: "Active Customers",
-            value: "3,842",
-            delta: "5.1%",
+            label: 'Active Customers',
+            value: '3,842',
+            delta: '5.1%',
             trendUp: true,
-            deltaNote: "vs last month",
-            tone: "sky" as const,
+            deltaNote: 'vs last month',
+            tone: 'sky' as const,
           },
           {
-            label: "Avg. Order Value",
-            value: "$87.40",
-            delta: "2.3%",
+            label: 'Avg. Order Value',
+            value: '$87.40',
+            delta: '2.3%',
             trendUp: false,
-            deltaNote: "vs last month",
-            tone: "violet" as const,
+            deltaNote: 'vs last month',
+            tone: 'violet' as const,
           },
         ]
 
     // ── KPI icon tints (data-viz tokens for a multi-color decorative set). ──
     const kpiTones: Record<string, string> = {
-      primary: "bg-primary/10 text-primary",
-      orange: "bg-chart-3/10 text-chart-3",
-      sky: "bg-chart-2/10 text-chart-2",
-      violet: "bg-chart-5/10 text-chart-5",
-      emerald: "bg-chart-1/10 text-chart-1",
+      primary: 'bg-primary/10 text-primary',
+      orange: 'bg-chart-3/10 text-chart-3',
+      sky: 'bg-chart-2/10 text-chart-2',
+      violet: 'bg-chart-5/10 text-chart-5',
+      emerald: 'bg-chart-1/10 text-chart-1',
     }
     const kpiIcons: Record<string, ReactNode> = {
       primary: (
@@ -121,12 +121,12 @@ export const DashboardKpis = defineComponent({
     return (
       <div
         className={cn(
-          "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4",
+          'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4',
           props.className,
         )}
       >
         {kpis.map((kpi) => {
-          const tone = kpi.tone ?? "primary"
+          const tone = kpi.tone ?? 'primary'
           const up = kpi.trendUp ?? true
           return (
             <div
@@ -144,10 +144,10 @@ export const DashboardKpis = defineComponent({
                   <div className="mt-2 flex items-center gap-1">
                     <span
                       className={cn(
-                        "inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold",
+                        'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold',
                         up
-                          ? "bg-chart-1/10 text-chart-1"
-                          : "bg-destructive/10 text-destructive",
+                          ? 'bg-chart-1/10 text-chart-1'
+                          : 'bg-destructive/10 text-destructive',
                       )}
                     >
                       <svg
@@ -185,7 +185,7 @@ export const DashboardKpis = defineComponent({
                 </div>
                 <span
                   className={cn(
-                    "grid size-10 place-items-center rounded-lg",
+                    'grid size-10 place-items-center rounded-lg',
                     kpiTones[tone],
                   )}
                 >

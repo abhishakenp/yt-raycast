@@ -8,7 +8,7 @@ import { runHomepageOrchestrator } from '../src/genui/run.ts'
 
 async function main() {
   const prompt = process.argv[2] || 'A modern fitness club website'
-  
+
   console.log(`🚀 Running Ship Faster engine standalone...`)
   console.log(`📝 Prompt: ${prompt}`)
   console.log()
@@ -35,16 +35,17 @@ async function main() {
     })
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
-    
+
     console.log()
     console.log(`✅ Engine completed in ${elapsed}s`)
     console.log(`🏷️  Brand: ${result.brand}`)
     console.log(`🎨 Theme: ${result.theme}`)
-    console.log(`📄 Generated ${result.source.length} characters of OpenUI source`)
+    console.log(
+      `📄 Generated ${result.source.length} characters of OpenUI source`,
+    )
     console.log()
     console.log('--- Generated OpenUI Source ---')
     console.log(result.source)
-    
   } catch (error) {
     console.error('❌ Engine failed:', error)
     process.exit(1)

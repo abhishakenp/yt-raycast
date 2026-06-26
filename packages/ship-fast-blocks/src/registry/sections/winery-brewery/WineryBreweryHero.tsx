@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * WineryBreweryHero — full-bleed, image-forward hero for a winery, vineyard, or
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * cideries. Renders fully with no props via rustic-premium baked-in defaults.
  */
 export const WineryBreweryHero = defineComponent({
-  name: "WineryBreweryHero",
+  name: 'WineryBreweryHero',
   description:
     "Full-bleed image-forward hero for a winery / vineyard / craft brewery landing page: one golden-hour vineyard or taproom photo fills the band edge to edge under a token-based dark overlay so light serif text stays readable. Centered content has an uppercase eyebrow pill, a large serif headline, a supporting paragraph, dual CTAs (filled 'Visit Us' + outlined translucent 'Our Wines'), and a divider-separated hours / location / phone strip. CTAs route through useNavigate. Use as the opening hero for wineries, cellar doors, vineyards, breweries, taprooms, or cideries.",
   props: z.object({
@@ -46,28 +46,27 @@ export const WineryBreweryHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroEyebrow = props.eyebrow ?? "Estate-grown · Est. 1986"
-    const heroHeading =
-      props.heading ?? "Where the vineyard meets the glass"
+    const heroEyebrow = props.eyebrow ?? 'Estate-grown · Est. 1986'
+    const heroHeading = props.heading ?? 'Where the vineyard meets the glass'
     const heroSub =
       props.subheading ??
-      "A family estate crafting small-batch wines and barrel-aged ales on the same sun-soaked hillside for nearly forty years. Wander the rows, tour the cellar, and taste the seasons poured straight from the source."
-    const heroPrimary = props.primaryCta ?? "Visit Us"
-    const heroPrimaryTarget = props.primaryTarget ?? "Visit"
-    const heroSecondary = props.secondaryCta ?? "Our Wines"
-    const heroSecondaryTarget = props.secondaryTarget ?? "Wines"
+      'A family estate crafting small-batch wines and barrel-aged ales on the same sun-soaked hillside for nearly forty years. Wander the rows, tour the cellar, and taste the seasons poured straight from the source.'
+    const heroPrimary = props.primaryCta ?? 'Visit Us'
+    const heroPrimaryTarget = props.primaryTarget ?? 'Visit'
+    const heroSecondary = props.secondaryCta ?? 'Our Wines'
+    const heroSecondaryTarget = props.secondaryTarget ?? 'Wines'
     const heroImageAlt =
       props.imageAlt ??
-      "rolling hillside vineyard rows glowing at golden hour with an old stone winery and oak barrels in the foreground"
-    const heroHours = props.hours ?? "Tasting room · Thu–Sun · 11am–6pm"
-    const heroLocation = props.location ?? "4200 Vineyard Lane, Sonoma Valley"
-    const heroPhone = props.phone ?? "(707) 555-0148"
+      'rolling hillside vineyard rows glowing at golden hour with an old stone winery and oak barrels in the foreground'
+    const heroHours = props.hours ?? 'Tasting room · Thu–Sun · 11am–6pm'
+    const heroLocation = props.location ?? '4200 Vineyard Lane, Sonoma Valley'
+    const heroPhone = props.phone ?? '(707) 555-0148'
 
     const infoItems = [heroHours, heroLocation, heroPhone].filter(Boolean)
 
     return (
       <section
-        className={cn("relative isolate overflow-hidden", props.className)}
+        className={cn('relative isolate overflow-hidden', props.className)}
       >
         <Image
           alt={heroImageAlt}

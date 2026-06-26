@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * AeoFooter — multi-column site footer for an Answer-Engine-Optimization (AEO)
@@ -31,9 +31,9 @@ const BrandMark = () => (
 )
 
 export const AeoFooter = defineComponent({
-  name: "AeoFooter",
+  name: 'AeoFooter',
   description:
-    "Multi-column site footer for an Answer-Engine-Optimization (AEO) product built on the shared SiteFooter composite: a citation-spark brand block with tagline and social row, link columns (Product, Resources, Company, Legal), a bottom note, and legal links. All links route through useNavigate. Use as the closing footer on AEO, generative-search visibility, or brand-citation analytics sites.",
+    'Multi-column site footer for an Answer-Engine-Optimization (AEO) product built on the shared SiteFooter composite: a citation-spark brand block with tagline and social row, link columns (Product, Resources, Company, Legal), a bottom note, and legal links. All links route through useNavigate. Use as the closing footer on AEO, generative-search visibility, or brand-citation analytics sites.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -58,25 +58,30 @@ export const AeoFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Citeable"
+    const brand = props.brand ?? 'Citeable'
     const columns = props.columns?.length
       ? props.columns
       : [
-          { title: "Product", links: ["Features", "How it works", "Pricing", "FAQ"] },
-          { title: "Resources", links: ["AEO Guide", "Blog", "Benchmarks", "API Docs"] },
-          { title: "Company", links: ["About", "Customers", "Careers", "Contact"] },
-          { title: "Legal", links: ["Privacy", "Terms", "Security", "DPA"] },
+          {
+            title: 'Product',
+            links: ['Features', 'How it works', 'Pricing', 'FAQ'],
+          },
+          {
+            title: 'Resources',
+            links: ['AEO Guide', 'Blog', 'Benchmarks', 'API Docs'],
+          },
+          {
+            title: 'Company',
+            links: ['About', 'Customers', 'Careers', 'Contact'],
+          },
+          { title: 'Legal', links: ['Privacy', 'Terms', 'Security', 'DPA'] },
         ]
     const social = props.social?.length
       ? props.social
-      : [
-          { label: "X" },
-          { label: "LinkedIn" },
-          { label: "GitHub" },
-        ]
+      : [{ label: 'X' }, { label: 'LinkedIn' }, { label: 'GitHub' }]
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy", "Terms", "Cookies"]
+      : ['Privacy', 'Terms', 'Cookies']
 
     return (
       <SiteFooter
@@ -84,12 +89,12 @@ export const AeoFooter = defineComponent({
         brandMark={<BrandMark />}
         tagline={
           props.tagline ??
-          "Get cited by AI answers. Track, optimize, and prove your visibility across every answer engine."
+          'Get cited by AI answers. Track, optimize, and prove your visibility across every answer engine.'
         }
         columns={columns}
         social={social}
         legal={legal}
-        note={props.note ?? "Win the AI answer."}
+        note={props.note ?? 'Win the AI answer.'}
         className={props.className}
       />
     )

@@ -11,20 +11,39 @@
 // production traffic).
 
 const NEUTRAL_PREFIXES = [
-  'bg', 'text', 'border', 'divide', 'from', 'via', 'to', 'ring',
-  'fill', 'stroke', 'decoration', 'placeholder', 'caret', 'outline',
-  'accent', 'shadow',
+  'bg',
+  'text',
+  'border',
+  'divide',
+  'from',
+  'via',
+  'to',
+  'ring',
+  'fill',
+  'stroke',
+  'decoration',
+  'placeholder',
+  'caret',
+  'outline',
+  'accent',
+  'shadow',
 ]
 
-const VARIANT_PREFIX = '(?:dark:|hover:|focus:|focus-visible:|group-hover:|peer-hover:|md:|lg:|sm:|xl:|2xl:|aria-[^:]+:)*'
+const VARIANT_PREFIX =
+  '(?:dark:|hover:|focus:|focus-visible:|group-hover:|peer-hover:|md:|lg:|sm:|xl:|2xl:|aria-[^:]+:)*'
 
 function neutralFamilyRewrites(target) {
-  const families = ['slate', 'zinc', 'gray', 'neutral', 'stone'].filter((f) => f !== target)
+  const families = ['slate', 'zinc', 'gray', 'neutral', 'stone'].filter(
+    (f) => f !== target,
+  )
   const famAlt = families.join('|')
   const rules = []
   for (const prefix of NEUTRAL_PREFIXES) {
     rules.push([
-      new RegExp(`\\b(${VARIANT_PREFIX})${prefix}-(?:${famAlt})-(\\d{2,3})\\b`, 'g'),
+      new RegExp(
+        `\\b(${VARIANT_PREFIX})${prefix}-(?:${famAlt})-(\\d{2,3})\\b`,
+        'g',
+      ),
       `$1${prefix}-${target}-$2`,
     ])
   }
@@ -35,7 +54,10 @@ function allFamilyRewrites(target) {
   const rules = []
   for (const prefix of NEUTRAL_PREFIXES) {
     rules.push([
-      new RegExp(`\\b(${VARIANT_PREFIX})${prefix}-(?:slate|zinc|gray|neutral|stone)-(\\d{2,3})\\b`, 'g'),
+      new RegExp(
+        `\\b(${VARIANT_PREFIX})${prefix}-(?:slate|zinc|gray|neutral|stone)-(\\d{2,3})\\b`,
+        'g',
+      ),
       `$1${prefix}-${target}-$2`,
     ])
   }
@@ -154,11 +176,26 @@ const SITE_TYPE_TO_GENOME = {
 }
 
 const BRIEF_KEYWORD_HINTS = [
-  [/\b(coffee|roaster|tea|patisserie|bakery|brewery|wine|vineyard)\b/i, 'editorial-warm'],
-  [/\b(yoga|meditation|sound bath|wellness|holistic|spa|botanical|skincare|organic|sustainable)\b/i, 'boutique-organic'],
-  [/\b(crossfit|hiit|strength|powerlifting|sprint|combat|fight)\b/i, 'bold-conversion'],
-  [/\b(devtools?|cli|sdk|ide|terminal|kubernetes|prometheus|grafana|datadog|observability)\b/i, 'linear-raycast'],
-  [/\b(stripe|payments?|invoicing|api platform|infrastructure|saas)\b/i, 'stripe-resend'],
+  [
+    /\b(coffee|roaster|tea|patisserie|bakery|brewery|wine|vineyard)\b/i,
+    'editorial-warm',
+  ],
+  [
+    /\b(yoga|meditation|sound bath|wellness|holistic|spa|botanical|skincare|organic|sustainable)\b/i,
+    'boutique-organic',
+  ],
+  [
+    /\b(crossfit|hiit|strength|powerlifting|sprint|combat|fight)\b/i,
+    'bold-conversion',
+  ],
+  [
+    /\b(devtools?|cli|sdk|ide|terminal|kubernetes|prometheus|grafana|datadog|observability)\b/i,
+    'linear-raycast',
+  ],
+  [
+    /\b(stripe|payments?|invoicing|api platform|infrastructure|saas)\b/i,
+    'stripe-resend',
+  ],
 ]
 
 export function pickGenome({ siteType, design, brief } = {}) {
@@ -171,7 +208,8 @@ export function pickGenome({ siteType, design, brief } = {}) {
   }
   const briefStr = String(brief || '')
   for (const [re, g] of BRIEF_KEYWORD_HINTS) {
-    if (re.test(briefStr)) return { genome: g, source: `brief-keyword:${re.source}` }
+    if (re.test(briefStr))
+      return { genome: g, source: `brief-keyword:${re.source}` }
   }
   return { genome: 'vercel-apple', source: 'fallback' }
 }
@@ -180,7 +218,13 @@ export function pickGenome({ siteType, design, brief } = {}) {
 // Returns { html, applied, genome, source, mergeMs } so the runner can log.
 export function applyGenomeMerge(html, ctx = {}) {
   if (process.env.SHIPFAST_USE_GENOME_MERGE !== '1') {
-    return { html, applied: false, genome: null, source: 'disabled', mergeMs: 0 }
+    return {
+      html,
+      applied: false,
+      genome: null,
+      source: 'disabled',
+      mergeMs: 0,
+    }
   }
   if (!html || typeof html !== 'string' || html.length < 200) {
     return { html, applied: false, genome: null, source: 'no-html', mergeMs: 0 }

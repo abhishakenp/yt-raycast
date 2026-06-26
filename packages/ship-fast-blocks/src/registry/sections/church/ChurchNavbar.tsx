@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ChurchNavbar — fixed translucent top navigation bar for a church or faith-community
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Grace Community" defaults.
  */
 export const ChurchNavbar = defineComponent({
-  name: "ChurchNavbar",
+  name: 'ChurchNavbar',
   description:
     "Fixed translucent top navigation bar for a church or faith-community site: backdrop-blurred, border-bottomed header pinned to the top with a star brand mark + church name on the left, horizontal nav links and a pill-shaped 'Give Today' CTA on the right (desktop), and a hamburger menu button on mobile. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for churches, parishes, worship centers, ministries, or religious nonprofits.",
   props: z.object({
@@ -31,13 +31,13 @@ export const ChurchNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Grace Community"
+    const brand = props.brand ?? 'Grace Community'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "About", "Events", "Give", "Contact"]
+      : ['Services', 'About', 'Events', 'Give', 'Contact']
     const homeTarget = props.homeTarget ?? nav[0]
-    const ctaLabel = props.ctaLabel ?? "Give Today"
-    const ctaTarget = props.ctaTarget ?? "Give"
+    const ctaLabel = props.ctaLabel ?? 'Give Today'
+    const ctaTarget = props.ctaTarget ?? 'Give'
 
     const Star = () => (
       <span className="text-2xl text-muted-foreground" aria-hidden="true">
@@ -48,7 +48,7 @@ export const ChurchNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

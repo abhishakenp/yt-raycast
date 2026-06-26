@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * EventTickets — a 3-tier ticket pricing block for a conference or event page. A
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Regular / VIP passes on tech conference, summit, workshop, or festival pages.
  */
 export const EventTickets = defineComponent({
-  name: "EventTickets",
+  name: 'EventTickets',
   description:
     "Three-tier ticket pricing block for a conference or event page: a centered heading + description above a 3-column grid of pricing cards (the featured tier gets a thicker border and a 'Most Popular' badge), each with a tier name, availability line, a big price + unit, a checklist of included features and an optional crossed-out excluded list, and a CTA button that becomes a disabled 'Sold Out' state when flagged. A note line with an inline link sits below. Use to sell Early Bird / Regular / VIP passes on tech conference, summit, workshop, meetup, or festival pages.",
   props: z.object({
@@ -46,61 +46,61 @@ export const EventTickets = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Get Your Ticket"
+    const heading = props.heading ?? 'Get Your Ticket'
     const description =
       props.description ??
-      "Choose the pass that works for you. All tickets include full access to sessions, meals, and the closing party."
+      'Choose the pass that works for you. All tickets include full access to sessions, meals, and the closing party.'
     const note =
       props.note ??
-      "Group discounts available for 5+ tickets. Contact us for team packages."
-    const noteLink = props.noteLink ?? "Contact us"
+      'Group discounts available for 5+ tickets. Contact us for team packages.'
+    const noteLink = props.noteLink ?? 'Contact us'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Early Bird",
-            availability: "Available until July 31",
-            price: "$449",
-            unit: "/person",
+            name: 'Early Bird',
+            availability: 'Available until July 31',
+            price: '$449',
+            unit: '/person',
             features: [
-              "Both days of sessions",
-              "Breakfast & lunch included",
-              "Conference swag kit",
-              "Closing party access",
+              'Both days of sessions',
+              'Breakfast & lunch included',
+              'Conference swag kit',
+              'Closing party access',
             ],
-            excluded: ["Workshop access"],
-            cta: "Sold Out",
+            excluded: ['Workshop access'],
+            cta: 'Sold Out',
             soldOut: true,
           },
           {
-            name: "Regular",
-            availability: "August 1 – September 10",
-            price: "$649",
-            unit: "/person",
+            name: 'Regular',
+            availability: 'August 1 – September 10',
+            price: '$649',
+            unit: '/person',
             features: [
-              "Both days of sessions",
-              "Breakfast & lunch included",
-              "Conference swag kit",
-              "Closing party access",
+              'Both days of sessions',
+              'Breakfast & lunch included',
+              'Conference swag kit',
+              'Closing party access',
             ],
-            excluded: ["Workshop access"],
-            cta: "Get Ticket",
+            excluded: ['Workshop access'],
+            cta: 'Get Ticket',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "VIP + Workshop",
-            availability: "Limited to 50 attendees",
-            price: "$899",
-            unit: "/person",
+            name: 'VIP + Workshop',
+            availability: 'Limited to 50 attendees',
+            price: '$899',
+            unit: '/person',
             features: [
-              "Everything in Regular",
-              "Workshop seat (choose one)",
-              "VIP lounge access",
-              "Speaker meet & greet",
-              "Premium swag bundle",
+              'Everything in Regular',
+              'Workshop seat (choose one)',
+              'VIP lounge access',
+              'Speaker meet & greet',
+              'Premium swag bundle',
             ],
-            cta: "Get VIP Pass",
+            cta: 'Get VIP Pass',
           },
         ]
 
@@ -140,7 +140,7 @@ export const EventTickets = defineComponent({
     )
 
     return (
-      <section className={cn("py-20 lg:py-28", props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -153,10 +153,10 @@ export const EventTickets = defineComponent({
               <div
                 key={tier.name}
                 className={cn(
-                  "relative rounded-2xl bg-card p-8",
+                  'relative rounded-2xl bg-card p-8',
                   tier.featured
-                    ? "border-2 border-foreground"
-                    : "border border-border",
+                    ? 'border-2 border-foreground'
+                    : 'border border-border',
                 )}
               >
                 {tier.badge ? (
@@ -203,10 +203,10 @@ export const EventTickets = defineComponent({
                     type="button"
                     onClick={() => go(tier.cta)}
                     className={cn(
-                      "block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors",
+                      'block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors',
                       tier.featured
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                        : "bg-foreground text-background hover:bg-foreground/90",
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        : 'bg-foreground text-background hover:bg-foreground/90',
                     )}
                   >
                     {tier.cta}
@@ -225,7 +225,7 @@ export const EventTickets = defineComponent({
               >
                 {noteLink}
               </button>
-              {note.split(noteLink)[1] ?? ""}
+              {note.split(noteLink)[1] ?? ''}
             </p>
           </div>
         </div>

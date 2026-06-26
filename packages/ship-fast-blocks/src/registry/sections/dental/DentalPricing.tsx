@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DentalPricing — transparent pricing / in-house membership block for a dental
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * dentists, dental offices, or clinics.
  */
 export const DentalPricing = defineComponent({
-  name: "DentalPricing",
+  name: 'DentalPricing',
   description:
-    "Transparent pricing / in-house membership block for a dental practice site: a centered eyebrow + heading + lede above a 3-up plan grid where the featured plan is filled in the primary color with an optional corner badge and the others are bordered muted cards. Each plan shows a name, tagline, big price + period, a check-marked feature list, and a full-width CTA button, with a small reassurance note under the grid. CTAs route through useNavigate. Use to present exam fees, membership tiers, or treatment packages for dentists, dental offices, or clinics.",
+    'Transparent pricing / in-house membership block for a dental practice site: a centered eyebrow + heading + lede above a 3-up plan grid where the featured plan is filled in the primary color with an optional corner badge and the others are bordered muted cards. Each plan shows a name, tagline, big price + period, a check-marked feature list, and a full-width CTA button, with a small reassurance note under the grid. CTAs route through useNavigate. Use to present exam fees, membership tiers, or treatment packages for dentists, dental offices, or clinics.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -40,59 +40,59 @@ export const DentalPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const pricingEyebrow = props.eyebrow ?? "Pricing & Membership"
+    const pricingEyebrow = props.eyebrow ?? 'Pricing & Membership'
     const pricingHeading =
-      props.heading ?? "Transparent pricing for every budget"
+      props.heading ?? 'Transparent pricing for every budget'
     const pricingDesc =
       props.description ??
-      "We accept most insurance plans and offer an in-house membership plan for uninsured patients. No hidden fees, ever."
+      'We accept most insurance plans and offer an in-house membership plan for uninsured patients. No hidden fees, ever.'
     const pricingNote =
       props.note ??
-      "All major credit cards, HSA/FSA, and CareCredit financing accepted. Insurance claims filed on your behalf."
+      'All major credit cards, HSA/FSA, and CareCredit financing accepted. Insurance claims filed on your behalf.'
     const pricingPlans = props.plans?.length
       ? props.plans
       : [
           {
-            name: "New Patient Exam",
-            tagline: "Comprehensive first visit",
-            price: "$99",
-            period: " one-time",
+            name: 'New Patient Exam',
+            tagline: 'Comprehensive first visit',
+            price: '$99',
+            period: ' one-time',
             features: [
-              "Complete oral examination",
-              "Digital X-rays (4 bitewings)",
-              "Oral cancer screening",
-              "Personalized treatment plan",
+              'Complete oral examination',
+              'Digital X-rays (4 bitewings)',
+              'Oral cancer screening',
+              'Personalized treatment plan',
             ],
-            cta: "Book Now",
+            cta: 'Book Now',
           },
           {
-            name: "Annual Membership",
-            tagline: "For uninsured patients",
-            price: "$39",
-            period: "/month",
+            name: 'Annual Membership',
+            tagline: 'For uninsured patients',
+            price: '$39',
+            period: '/month',
             features: [
-              "2 professional cleanings/year",
-              "Annual exam & X-rays",
-              "15% off all procedures",
-              "Emergency visit included",
-              "No waiting periods",
+              '2 professional cleanings/year',
+              'Annual exam & X-rays',
+              '15% off all procedures',
+              'Emergency visit included',
+              'No waiting periods',
             ],
-            cta: "Enroll Today",
+            cta: 'Enroll Today',
             featured: true,
-            badge: "Popular",
+            badge: 'Popular',
           },
           {
-            name: "Professional Whitening",
-            tagline: "In-office treatment",
-            price: "$499",
-            period: " one-time",
+            name: 'Professional Whitening',
+            tagline: 'In-office treatment',
+            price: '$499',
+            period: ' one-time',
             features: [
-              "Up to 8 shades lighter",
-              "90-minute single session",
-              "Take-home touch-up kit",
-              "Results last 1-3 years",
+              'Up to 8 shades lighter',
+              '90-minute single session',
+              'Take-home touch-up kit',
+              'Results last 1-3 years',
             ],
-            cta: "Book Consultation",
+            cta: 'Book Consultation',
           },
         ]
 
@@ -112,7 +112,7 @@ export const DentalPricing = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">
@@ -128,10 +128,10 @@ export const DentalPricing = defineComponent({
               <div
                 key={plan.name}
                 className={cn(
-                  "relative overflow-hidden rounded-2xl p-8",
+                  'relative overflow-hidden rounded-2xl p-8',
                   plan.featured
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border bg-muted",
+                    ? 'bg-primary text-primary-foreground'
+                    : 'border border-border bg-muted',
                 )}
               >
                 {plan.badge ? (
@@ -141,18 +141,18 @@ export const DentalPricing = defineComponent({
                 ) : null}
                 <h3
                   className={cn(
-                    "mb-2 text-xl font-bold",
-                    plan.featured ? "" : "text-foreground",
+                    'mb-2 text-xl font-bold',
+                    plan.featured ? '' : 'text-foreground',
                   )}
                 >
                   {plan.name}
                 </h3>
                 <p
                   className={cn(
-                    "mb-6",
+                    'mb-6',
                     plan.featured
-                      ? "text-primary-foreground/80"
-                      : "text-muted-foreground",
+                      ? 'text-primary-foreground/80'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {plan.tagline}
@@ -160,8 +160,8 @@ export const DentalPricing = defineComponent({
                 <div className="mb-6">
                   <span
                     className={cn(
-                      "text-4xl font-bold",
-                      plan.featured ? "" : "text-foreground",
+                      'text-4xl font-bold',
+                      plan.featured ? '' : 'text-foreground',
                     )}
                   >
                     {plan.price}
@@ -169,8 +169,8 @@ export const DentalPricing = defineComponent({
                   <span
                     className={cn(
                       plan.featured
-                        ? "text-primary-foreground/80"
-                        : "text-muted-foreground",
+                        ? 'text-primary-foreground/80'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {plan.period}
@@ -181,14 +181,14 @@ export const DentalPricing = defineComponent({
                     <li
                       key={f}
                       className={cn(
-                        "flex items-start gap-3",
-                        plan.featured ? "" : "text-muted-foreground",
+                        'flex items-start gap-3',
+                        plan.featured ? '' : 'text-muted-foreground',
                       )}
                     >
                       <Check
                         className={cn(
-                          "mt-0.5 size-5 shrink-0",
-                          plan.featured ? "" : "text-primary",
+                          'mt-0.5 size-5 shrink-0',
+                          plan.featured ? '' : 'text-primary',
                         )}
                       />
                       {f}
@@ -199,10 +199,10 @@ export const DentalPricing = defineComponent({
                   type="button"
                   onClick={() => go(plan.cta)}
                   className={cn(
-                    "block w-full rounded-xl py-3 text-center font-semibold transition-colors",
+                    'block w-full rounded-xl py-3 text-center font-semibold transition-colors',
                     plan.featured
-                      ? "bg-background text-primary hover:bg-muted"
-                      : "border-2 border-border bg-background text-foreground hover:border-primary hover:text-primary",
+                      ? 'bg-background text-primary hover:bg-muted'
+                      : 'border-2 border-border bg-background text-foreground hover:border-primary hover:text-primary',
                   )}
                 >
                   {plan.cta}

@@ -39,7 +39,10 @@ export function useAITextEdit(
 
       const startContainer = range.startContainer
       const endContainer = range.endContainer
-      if (!containerEl.contains(startContainer) || !containerEl.contains(endContainer)) {
+      if (
+        !containerEl.contains(startContainer) ||
+        !containerEl.contains(endContainer)
+      ) {
         return
       }
 

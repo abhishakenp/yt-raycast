@@ -1,5 +1,5 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 import {
   InputGroup as UIInputGroup,
   InputGroupAddon,
@@ -7,27 +7,27 @@ import {
   InputGroupInput,
   InputGroupText,
   InputGroupTextarea,
-} from "#/components/ui/input-group.tsx"
+} from '#/components/ui/input-group.tsx'
 
 // Compound primitive: an input/textarea wrapped with leading/trailing addons
 // (icons, text, or a button). Addon `align` enum + button `size` enum mirrored exactly.
 export const InputGroup = defineComponent({
-  name: "InputGroup",
+  name: 'InputGroup',
   description:
-    "Text input or textarea with optional leading/trailing addon text and an optional addon button. Use for search bars, prefixed inputs, etc.",
+    'Text input or textarea with optional leading/trailing addon text and an optional addon button. Use for search bars, prefixed inputs, etc.',
   props: z.object({
     placeholder: z.string().optional(),
     multiline: z.boolean().optional(),
     leadingText: z.string().optional(),
     trailingText: z.string().optional(),
     leadingAlign: z
-      .enum(["inline-start", "inline-end", "block-start", "block-end"])
+      .enum(['inline-start', 'inline-end', 'block-start', 'block-end'])
       .optional(),
     trailingAlign: z
-      .enum(["inline-start", "inline-end", "block-start", "block-end"])
+      .enum(['inline-start', 'inline-end', 'block-start', 'block-end'])
       .optional(),
     buttonLabel: z.string().optional(),
-    buttonSize: z.enum(["xs", "sm", "icon-xs", "icon-sm"]).optional(),
+    buttonSize: z.enum(['xs', 'sm', 'icon-xs', 'icon-sm']).optional(),
     defaultValue: z.string().optional(),
     disabled: z.boolean().optional(),
     className: z.string().optional(),
@@ -35,7 +35,7 @@ export const InputGroup = defineComponent({
   component: ({ props }) => (
     <UIInputGroup className={props.className}>
       {props.leadingText && (
-        <InputGroupAddon align={props.leadingAlign ?? "inline-start"}>
+        <InputGroupAddon align={props.leadingAlign ?? 'inline-start'}>
           <InputGroupText>{props.leadingText}</InputGroupText>
         </InputGroupAddon>
       )}
@@ -53,7 +53,7 @@ export const InputGroup = defineComponent({
         />
       )}
       {props.trailingText && (
-        <InputGroupAddon align={props.trailingAlign ?? "inline-end"}>
+        <InputGroupAddon align={props.trailingAlign ?? 'inline-end'}>
           <InputGroupText>{props.trailingText}</InputGroupText>
         </InputGroupAddon>
       )}

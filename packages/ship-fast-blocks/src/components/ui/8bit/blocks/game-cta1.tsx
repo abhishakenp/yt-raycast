@@ -1,41 +1,41 @@
-import { cn } from "#/lib/utils.ts";
+import { cn } from '#/lib/utils.ts'
 
-import { Badge } from "#/components/ui/8bit/badge.tsx";
-import { Button } from "#/components/ui/8bit/button.tsx";
+import { Badge } from '#/components/ui/8bit/badge.tsx'
+import { Button } from '#/components/ui/8bit/button.tsx'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "#/components/ui/8bit/card.tsx";
+} from '#/components/ui/8bit/card.tsx'
 
-import "#/components/ui/8bit/styles/retro.css";
+import '#/components/ui/8bit/styles/retro.css'
 
 interface GameCTA1Props {
-  bossDescription?: string;
-  bossTitle?: string;
-  className?: string;
-  ctaHref?: string;
-  ctaLabel?: string;
-  description?: string;
-  powerUpDescription?: string;
-  powerUpTitle?: string;
-  title?: string;
+  bossDescription?: string
+  bossTitle?: string
+  className?: string
+  ctaHref?: string
+  ctaLabel?: string
+  description?: string
+  powerUpDescription?: string
+  powerUpTitle?: string
+  title?: string
 }
 
 export default function GameCTA1({
-  title = "Face the Final Boss",
-  description = "Every builder faces the same enemy. Here is your power-up.",
-  bossTitle = "THE PROBLEM",
-  bossDescription = "Building landing pages from scratch. Hours of layout work. Generic templates that all look the same. Wasted time.",
-  powerUpTitle = "THE POWER-UP",
-  powerUpDescription = "27 copy-paste blocks. Retro aesthetic that stands out. Dark mode built-in. Ship in minutes, not days.",
-  ctaLabel = "EQUIP POWER-UP",
-  ctaHref = "/docs",
+  title = 'Face the Final Boss',
+  description = 'Every builder faces the same enemy. Here is your power-up.',
+  bossTitle = 'THE PROBLEM',
+  bossDescription = 'Building landing pages from scratch. Hours of layout work. Generic templates that all look the same. Wasted time.',
+  powerUpTitle = 'THE POWER-UP',
+  powerUpDescription = '27 copy-paste blocks. Retro aesthetic that stands out. Dark mode built-in. Ship in minutes, not days.',
+  ctaLabel = 'EQUIP POWER-UP',
+  ctaHref = '/docs',
   className,
 }: GameCTA1Props) {
   return (
-    <section className={cn("w-full px-4 py-16", className)}>
+    <section className={cn('w-full px-4 py-16', className)}>
       <div className="mx-auto max-w-3xl">
         {(title || description) && (
           <div className="mb-10 text-center">
@@ -45,7 +45,9 @@ export default function GameCTA1({
               </h2>
             )}
             {description && (
-              <p className="retro text-muted-foreground text-[9px]">{description}</p>
+              <p className="retro text-muted-foreground text-[9px]">
+                {description}
+              </p>
             )}
           </div>
         )}
@@ -85,5 +87,5 @@ export default function GameCTA1({
         </div>
       </div>
     </section>
-  );
+  )
 }

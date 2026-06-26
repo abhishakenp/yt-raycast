@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LawFirmContact — a dark, split contact band on the primary surface pairing firm
@@ -17,9 +17,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * props via baked-in defaults.
  */
 export const LawFirmContact = defineComponent({
-  name: "LawFirmContact",
+  name: 'LawFirmContact',
   description:
-    "Dark split contact band on the primary surface pairing firm details with a real consultation-request form: the left column carries a tracked-uppercase eyebrow, serif heading, lead paragraph, a phone / email / address contact list with line icons and a LinkedIn social button; the right column is a light card holding a form (first + last name, email, phone, practice-area select, message textarea, full-width submit) plus a fine legal disclaimer. Refined, authoritative editorial aesthetic with sharp squared corners; contact links, the social button and form submit route through useNavigate. Use as the closing consultation / lead-capture conversion section on law-firm, attorney, consulting, accounting or professional-services pages.",
+    'Dark split contact band on the primary surface pairing firm details with a real consultation-request form: the left column carries a tracked-uppercase eyebrow, serif heading, lead paragraph, a phone / email / address contact list with line icons and a LinkedIn social button; the right column is a light card holding a form (first + last name, email, phone, practice-area select, message textarea, full-width submit) plus a fine legal disclaimer. Refined, authoritative editorial aesthetic with sharp squared corners; contact links, the social button and form submit route through useNavigate. Use as the closing consultation / lead-capture conversion section on law-firm, attorney, consulting, accounting or professional-services pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -38,37 +38,36 @@ export const LawFirmContact = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Schedule Consultation"
+    const eyebrow = props.eyebrow ?? 'Schedule Consultation'
     const heading = props.heading ?? "Let's Discuss Your Matter"
     const description =
       props.description ??
       "Whether you're facing a complex transaction, litigation threat, or strategic business decision, we invite you to schedule a confidential consultation with one of our partners. Every conversation begins with listening."
-    const phone = props.phone ?? "(212) 555-0147"
-    const email = props.email ?? "consult@reinhart.law"
+    const phone = props.phone ?? '(212) 555-0147'
+    const email = props.email ?? 'consult@reinhart.law'
     const address =
-      props.address ??
-      "450 Lexington Avenue, 28th Floor, New York, NY 10017"
-    const formHeading = props.formHeading ?? "Request Consultation"
-    const submit = props.submit ?? "Submit Request"
+      props.address ?? '450 Lexington Avenue, 28th Floor, New York, NY 10017'
+    const formHeading = props.formHeading ?? 'Request Consultation'
+    const submit = props.submit ?? 'Submit Request'
     const disclaimer =
       props.disclaimer ??
-      "By submitting this form, you acknowledge that this does not create an attorney-client relationship. Please do not include confidential information."
+      'By submitting this form, you acknowledge that this does not create an attorney-client relationship. Please do not include confidential information.'
     const practiceOptions = props.practiceOptions?.length
       ? props.practiceOptions
       : [
-          "Select a practice area",
-          "Corporate & Securities",
-          "Commercial Litigation",
-          "Employment Law",
-          "Real Estate",
-          "Intellectual Property",
-          "Tax & Estates",
-          "Other",
+          'Select a practice area',
+          'Corporate & Securities',
+          'Commercial Litigation',
+          'Employment Law',
+          'Real Estate',
+          'Intellectual Property',
+          'Tax & Estates',
+          'Other',
         ]
-    const submitTarget = props.submitTarget ?? "Contact"
+    const submitTarget = props.submitTarget ?? 'Contact'
 
     const inputCls =
-      "w-full rounded-sm border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+      'w-full rounded-sm border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
 
     const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
@@ -138,7 +137,7 @@ export const LawFirmContact = defineComponent({
     return (
       <section
         className={cn(
-          "bg-primary py-24 text-primary-foreground lg:py-32",
+          'bg-primary py-24 text-primary-foreground lg:py-32',
           props.className,
         )}
       >
@@ -180,7 +179,7 @@ export const LawFirmContact = defineComponent({
                 <button
                   type="button"
                   aria-label="LinkedIn"
-                  onClick={() => go("LinkedIn")}
+                  onClick={() => go('LinkedIn')}
                   className="grid size-10 place-items-center bg-primary-foreground/10 text-primary-foreground transition-colors hover:bg-primary-foreground/20"
                 >
                   <LinkedInIcon className="size-5" />
@@ -265,7 +264,7 @@ export const LawFirmContact = defineComponent({
                   </label>
                   <select
                     id="lawfirm-contact-practice"
-                    className={cn(inputCls, "appearance-none")}
+                    className={cn(inputCls, 'appearance-none')}
                   >
                     {practiceOptions.map((opt) => (
                       <option key={opt} className="bg-background">
@@ -284,7 +283,7 @@ export const LawFirmContact = defineComponent({
                   <textarea
                     id="lawfirm-contact-message"
                     rows={4}
-                    className={cn(inputCls, "resize-none")}
+                    className={cn(inputCls, 'resize-none')}
                   />
                 </div>
                 <button

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * GovernmentPortalFooter — indigo (#4B57A0) classic indian government / PSU
@@ -16,9 +16,9 @@ import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
  * props via baked-in defaults.
  */
 export const GovernmentPortalFooter = defineComponent({
-  name: "GovernmentPortalFooter",
+  name: 'GovernmentPortalFooter',
   description:
-    "Indigo (#4B57A0) classic indian government / PSU footer: an organisation blurb, Navigation, Head Office and Plant Office columns, an important-links partner strip and an auto-updating copyright row. Official, civic closing chrome for public sector, municipal, utility, power and electricity board portals carrying tender and notice links. Use for the footer of any classic government portal.",
+    'Indigo (#4B57A0) classic indian government / PSU footer: an organisation blurb, Navigation, Head Office and Plant Office columns, an important-links partner strip and an auto-updating copyright row. Official, civic closing chrome for public sector, municipal, utility, power and electricity board portals carrying tender and notice links. Use for the footer of any classic government portal.',
   props: z.object({
     /** Organisation / authority name. */
     orgName: z.string().optional(),
@@ -38,40 +38,40 @@ export const GovernmentPortalFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const orgName = props.orgName ?? "TENUGHAT VIDYUT NIGAM LIMITED"
+    const orgName = props.orgName ?? 'TENUGHAT VIDYUT NIGAM LIMITED'
     const blurb =
       props.blurb ??
-      "Tenughat Vidyut Nigam Limited (TVNL) is a wholly-owned undertaking of the Government of Jharkhand, operating the Tenughat Thermal Power Station near Tenughat Dam in Bokaro district and committed to reliable, transparent public-sector power generation."
+      'Tenughat Vidyut Nigam Limited (TVNL) is a wholly-owned undertaking of the Government of Jharkhand, operating the Tenughat Thermal Power Station near Tenughat Dam in Bokaro district and committed to reliable, transparent public-sector power generation.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Navigation",
+            title: 'Navigation',
             lines: [
-              "Tender Notices",
-              "Tender Extension",
-              "Public Notices",
-              "Careers at TVNL",
-              "Contact Us",
+              'Tender Notices',
+              'Tender Extension',
+              'Public Notices',
+              'Careers at TVNL',
+              'Contact Us',
             ],
           },
           {
-            title: "Head Office",
+            title: 'Head Office',
             lines: [
-              "Tenughat Vidyut Nigam Limited",
-              "JUPMI Building Premises, ABD Area",
-              "Ranchi Smart City, P.O & P.S - Dhurwa",
-              "Dist. Ranchi, Jharkhand, 834004",
-              "Mon - Fri, 10:00 AM - 6:00 PM",
+              'Tenughat Vidyut Nigam Limited',
+              'JUPMI Building Premises, ABD Area',
+              'Ranchi Smart City, P.O & P.S - Dhurwa',
+              'Dist. Ranchi, Jharkhand, 834004',
+              'Mon - Fri, 10:00 AM - 6:00 PM',
             ],
           },
           {
-            title: "Plant Office",
+            title: 'Plant Office',
             lines: [
-              "Tenughat Thermal Power Station",
-              "P.O : T.T.P.S., Lalpania",
-              "Dist. Bokaro, Jharkhand, 829149",
-              "Mon - Sat, 10:00 AM - 6:00 PM",
+              'Tenughat Thermal Power Station',
+              'P.O : T.T.P.S., Lalpania',
+              'Dist. Bokaro, Jharkhand, 829149',
+              'Mon - Sat, 10:00 AM - 6:00 PM',
             ],
           },
         ]
@@ -79,18 +79,18 @@ export const GovernmentPortalFooter = defineComponent({
       ? props.importantLinks
       : [
           {
-            label: "Government of Jharkhand",
-            href: "https://www.jharkhand.gov.in/",
+            label: 'Government of Jharkhand',
+            href: 'https://www.jharkhand.gov.in/',
           },
-          { label: "Ministry of Coal", href: "https://coal.nic.in/" },
-          { label: "MyGov", href: "https://www.mygov.in/" },
+          { label: 'Ministry of Coal', href: 'https://coal.nic.in/' },
+          { label: 'MyGov', href: 'https://www.mygov.in/' },
           {
-            label: "Digital India",
-            href: "https://www.digitalindia.gov.in/",
+            label: 'Digital India',
+            href: 'https://www.digitalindia.gov.in/',
           },
-          { label: "India.gov.in", href: "https://www.india.gov.in/" },
+          { label: 'India.gov.in', href: 'https://www.india.gov.in/' },
         ]
-    const note = props.note ?? "All rights reserved."
+    const note = props.note ?? 'All rights reserved.'
 
     // Delegate the multi-column layout to the shared SiteFooter kit. Gov
     // columns ({title, lines}) map onto kit columns ({title, links}); every
@@ -98,7 +98,7 @@ export const GovernmentPortalFooter = defineComponent({
     // become inert buttons (acceptable; the column layout is what's delegated).
     return (
       <div
-        className={cn("w-full bg-[#4B57A0] text-white", props.className)}
+        className={cn('w-full bg-[#4B57A0] text-white', props.className)}
         style={{
           fontFamily: '"Alegreya Sans","Open Sans",system-ui,sans-serif',
         }}
@@ -134,7 +134,7 @@ export const GovernmentPortalFooter = defineComponent({
 
         <div className="bg-[#3b4684]">
           <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-1 px-4 py-3 text-[13px] text-white/80">
-            &copy; {new Date().getFullYear()}{" "}
+            &copy; {new Date().getFullYear()}{' '}
             <button
               type="button"
               onClick={() => go(orgName)}

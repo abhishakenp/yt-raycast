@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { PricingGrid } from "#/section-kit/PricingGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * OnlineCoursePricing — a 3-tier enrollment-plan band for an online-course
@@ -13,7 +13,7 @@ import { PricingGrid } from "#/section-kit/PricingGrid.tsx"
  * fully with no props via baked-in defaults.
  */
 export const OnlineCoursePricing = defineComponent({
-  name: "OnlineCoursePricing",
+  name: 'OnlineCoursePricing',
   description:
     "A 3-tier enrollment-plan band for an online-course page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of plan cards (name, price, checkmark feature bullets, and a CTA). The middle 'Pro' tier is highlighted with a primary border, shadow, and a 'Most popular' pill, and every CTA routes through useNavigate. Use to present enrollment options — Free Audit, Pro, Team — on an e-learning, bootcamp, or academy landing page.",
   props: z.object({
@@ -37,52 +37,52 @@ export const OnlineCoursePricing = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Enroll your way"
+    const heading = props.heading ?? 'Enroll your way'
     const subheading =
       props.subheading ??
-      "Start free to preview the course, go Pro for the full certificate path, or bring your whole team."
+      'Start free to preview the course, go Pro for the full certificate path, or bring your whole team.'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Free Audit",
-            price: "$0",
-            period: "",
+            name: 'Free Audit',
+            price: '$0',
+            period: '',
             features: [
-              "First module unlocked",
-              "Community read access",
-              "No certificate",
-              "Cancel anytime",
+              'First module unlocked',
+              'Community read access',
+              'No certificate',
+              'Cancel anytime',
             ],
-            cta: "Start free",
+            cta: 'Start free',
             highlighted: false,
           },
           {
-            name: "Pro",
-            price: "$149",
-            period: "one-time",
+            name: 'Pro',
+            price: '$149',
+            period: 'one-time',
             features: [
-              "All modules & projects",
-              "Certificate of completion",
-              "Full community access",
-              "Downloadable resources",
-              "Lifetime updates",
+              'All modules & projects',
+              'Certificate of completion',
+              'Full community access',
+              'Downloadable resources',
+              'Lifetime updates',
             ],
-            cta: "Enroll now",
+            cta: 'Enroll now',
             highlighted: true,
           },
           {
-            name: "Team",
-            price: "$99",
-            period: "per seat",
+            name: 'Team',
+            price: '$99',
+            period: 'per seat',
             features: [
-              "Everything in Pro",
-              "5+ seats",
-              "Team progress dashboard",
-              "Priority mentor support",
-              "Invoicing & SSO",
+              'Everything in Pro',
+              '5+ seats',
+              'Team progress dashboard',
+              'Priority mentor support',
+              'Invoicing & SSO',
             ],
-            cta: "Enroll now",
+            cta: 'Enroll now',
             highlighted: false,
           },
         ]

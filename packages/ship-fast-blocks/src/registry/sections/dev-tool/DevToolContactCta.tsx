@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DevToolContactCta — a dark closing call-to-action band for a developer tool /
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * API platforms, backend-as-a-service, or technical SaaS.
  */
 export const DevToolContactCta = defineComponent({
-  name: "DevToolContactCta",
+  name: 'DevToolContactCta',
   description:
-    "Dark closing call-to-action band for a developer tool / API platform: a centered rounded inverted panel (dark foreground surface) with a bold headline, supporting paragraph, dual CTAs (filled primary + outline-on-dark secondary), and a small footnote. Both CTAs route through useNavigate. Use as the final conversion section before the footer for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
+    'Dark closing call-to-action band for a developer tool / API platform: a centered rounded inverted panel (dark foreground surface) with a bold headline, supporting paragraph, dual CTAs (filled primary + outline-on-dark secondary), and a small footnote. Both CTAs route through useNavigate. Use as the final conversion section before the footer for developer tools, API platforms, backend-as-a-service, or technical SaaS.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -25,18 +25,18 @@ export const DevToolContactCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to ship faster?"
+    const heading = props.heading ?? 'Ready to ship faster?'
     const description =
       props.description ??
-      "Join 50,000+ developers building with DevStack. Start free, scale as you grow. No credit card required."
-    const primaryCta = props.primaryCta ?? "Start Building Free"
-    const secondaryCta = props.secondaryCta ?? "Talk to Sales"
+      'Join 50,000+ developers building with DevStack. Start free, scale as you grow. No credit card required.'
+    const primaryCta = props.primaryCta ?? 'Start Building Free'
+    const secondaryCta = props.secondaryCta ?? 'Talk to Sales'
     const footnote =
-      props.footnote ?? "Free forever plan includes 10,000 requests/month"
+      props.footnote ?? 'Free forever plan includes 10,000 requests/month'
 
     return (
       <section
-        className={cn("py-20 lg:py-28", props.className)}
+        className={cn('py-20 lg:py-28', props.className)}
         aria-labelledby="cta-heading"
       >
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">

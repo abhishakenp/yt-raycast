@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FaqFooter — a five-column resource footer for a help-center / SaaS product page.
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * defaults.
  */
 export const FaqFooter = defineComponent({
-  name: "FaqFooter",
+  name: 'FaqFooter',
   description:
     "A five-column resource footer for a help-center / SaaS product page: a spanning brand block (logo tile + name, tagline, and small social icon buttons) beside four link columns (Product, Resources, Company, Legal) in a responsive grid, with a bottom bar holding the copyright, a Status link, and a green 'All systems operational' status pill. All links route through useNavigate. Use as the global footer for SaaS knowledge bases, help centers, documentation landings, or support pages.",
   props: z.object({
@@ -40,43 +40,55 @@ export const FaqFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "FlowSync"
+    const brand = props.brand ?? 'FlowSync'
     const tagline =
       props.tagline ?? "Project management that flows with your team's work."
     const socials = props.socials?.length
       ? props.socials
-      : ["Twitter", "LinkedIn", "GitHub"]
+      : ['Twitter', 'LinkedIn', 'GitHub']
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Integrations", "Pricing", "Changelog", "Roadmap"],
+            title: 'Product',
+            links: [
+              'Features',
+              'Integrations',
+              'Pricing',
+              'Changelog',
+              'Roadmap',
+            ],
           },
           {
-            title: "Resources",
-            links: ["Documentation", "API Reference", "Community", "Templates", "Guides"],
+            title: 'Resources',
+            links: [
+              'Documentation',
+              'API Reference',
+              'Community',
+              'Templates',
+              'Guides',
+            ],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Press", "Contact"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Press', 'Contact'],
           },
           {
-            title: "Legal",
-            links: ["Privacy", "Terms", "Security", "Cookies", "Compliance"],
+            title: 'Legal',
+            links: ['Privacy', 'Terms', 'Security', 'Cookies', 'Compliance'],
           },
         ]
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
-    const statusTarget = props.statusTarget ?? "Status"
-    const statusLabel = props.statusLabel ?? "All systems operational"
-    const homeTarget = props.homeTarget ?? "Documentation"
+    const statusTarget = props.statusTarget ?? 'Status'
+    const statusLabel = props.statusLabel ?? 'All systems operational'
+    const homeTarget = props.homeTarget ?? 'Documentation'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -100,7 +112,7 @@ export const FaqFooter = defineComponent({
     return (
       <footer
         className={cn(
-          "border-t border-border bg-background py-12 sm:py-16",
+          'border-t border-border bg-background py-12 sm:py-16',
           props.className,
         )}
       >
@@ -127,7 +139,9 @@ export const FaqFooter = defineComponent({
                     onClick={() => go(social)}
                     className="grid size-8 place-items-center rounded-lg bg-secondary text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   >
-                    <span className="text-xs font-bold">{social.charAt(0)}</span>
+                    <span className="text-xs font-bold">
+                      {social.charAt(0)}
+                    </span>
                   </button>
                 ))}
               </div>

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CafeMenu — printed-style food and drink menu for a neighborhood cafe /
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in defaults.
  */
 export const CafeMenu = defineComponent({
-  name: "CafeMenu",
+  name: 'CafeMenu',
   description:
-    "Printed-style food and drink menu for a cozy cafe page: centered cap, heading, and description above a two-column grid of coffee drinks and pastries/light fare. Each item is a clickable row with name, description, and price separated by a border divider. Below, a teas and non-coffee band shows four centered cards. Menu rows route through useNavigate. Use for cafes, bakeries, tea houses, brunch spots, or cozy eateries wanting a readable menu section.",
+    'Printed-style food and drink menu for a cozy cafe page: centered cap, heading, and description above a two-column grid of coffee drinks and pastries/light fare. Each item is a clickable row with name, description, and price separated by a border divider. Below, a teas and non-coffee band shows four centered cards. Menu rows route through useNavigate. Use for cafes, bakeries, tea houses, brunch spots, or cozy eateries wanting a readable menu section.',
   props: z.object({
     /** Eyebrow / cap text above the heading. */
     cap: z.string().optional(),
@@ -67,151 +67,151 @@ export const CafeMenu = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const cap = props.cap ?? "Our Offerings"
-    const heading = props.heading ?? "Crafted with intention"
+    const cap = props.cap ?? 'Our Offerings'
+    const heading = props.heading ?? 'Crafted with intention'
     const description =
       props.description ??
-      "Every drink is made to order with precision. Every pastry is baked fresh before sunrise."
-    const coffeeTitle = props.coffeeTitle ?? "Coffee"
+      'Every drink is made to order with precision. Every pastry is baked fresh before sunrise.'
+    const coffeeTitle = props.coffeeTitle ?? 'Coffee'
     const coffee = props.coffee?.length
       ? props.coffee
       : [
           {
-            name: "Espresso",
-            description: "Double shot, rich crema, served demitasse",
-            price: "$3.50",
+            name: 'Espresso',
+            description: 'Double shot, rich crema, served demitasse',
+            price: '$3.50',
           },
           {
-            name: "House Drip",
-            description: "Rotating single origin, batch brewed",
-            price: "$3.00",
+            name: 'House Drip',
+            description: 'Rotating single origin, batch brewed',
+            price: '$3.00',
           },
           {
-            name: "Cappuccino",
-            description: "Equal parts espresso, steamed milk, microfoam",
-            price: "$4.50",
+            name: 'Cappuccino',
+            description: 'Equal parts espresso, steamed milk, microfoam',
+            price: '$4.50',
           },
           {
-            name: "Latte",
-            description: "Espresso with silky steamed milk",
-            price: "$5.00",
+            name: 'Latte',
+            description: 'Espresso with silky steamed milk',
+            price: '$5.00',
           },
           {
-            name: "Oat Flat White",
-            description: "Double ristretto, Oatly barista blend",
-            price: "$5.50",
+            name: 'Oat Flat White',
+            description: 'Double ristretto, Oatly barista blend',
+            price: '$5.50',
           },
           {
-            name: "Pour Over",
-            description: "V60 or Chemex, rotating seasonal beans",
-            price: "$5.00",
+            name: 'Pour Over',
+            description: 'V60 or Chemex, rotating seasonal beans',
+            price: '$5.00',
           },
           {
-            name: "Cold Brew",
-            description: "Steeped 18 hours, smooth and strong",
-            price: "$4.50",
+            name: 'Cold Brew',
+            description: 'Steeped 18 hours, smooth and strong',
+            price: '$4.50',
           },
           {
-            name: "Nitro Cold Brew",
-            description: "Nitrogen-infused, creamy texture",
-            price: "$5.50",
+            name: 'Nitro Cold Brew',
+            description: 'Nitrogen-infused, creamy texture',
+            price: '$5.50',
           },
           {
-            name: "Americano",
-            description: "Double espresso, hot water",
-            price: "$3.75",
+            name: 'Americano',
+            description: 'Double espresso, hot water',
+            price: '$3.75',
           },
           {
-            name: "Mocha",
-            description: "Espresso, house chocolate, steamed milk",
-            price: "$5.50",
+            name: 'Mocha',
+            description: 'Espresso, house chocolate, steamed milk',
+            price: '$5.50',
           },
         ]
-    const foodTitle = props.foodTitle ?? "Pastries & Light Fare"
+    const foodTitle = props.foodTitle ?? 'Pastries & Light Fare'
     const food = props.food?.length
       ? props.food
       : [
           {
-            name: "Butter Croissant",
-            description: "Flaky layers, French butter, baked fresh",
-            price: "$4.25",
+            name: 'Butter Croissant',
+            description: 'Flaky layers, French butter, baked fresh',
+            price: '$4.25',
           },
           {
-            name: "Almond Croissant",
+            name: 'Almond Croissant',
             description:
-              "Filled with house almond cream, topped with sliced almonds",
-            price: "$5.00",
+              'Filled with house almond cream, topped with sliced almonds',
+            price: '$5.00',
           },
           {
-            name: "Morning Bun",
-            description: "Orange zest, cinnamon sugar, brioche dough",
-            price: "$4.50",
+            name: 'Morning Bun',
+            description: 'Orange zest, cinnamon sugar, brioche dough',
+            price: '$4.50',
           },
           {
-            name: "Sourdough Toast",
+            name: 'Sourdough Toast',
             description: "Ken's Artisan sourdough, cultured butter, sea salt",
-            price: "$4.00",
+            price: '$4.00',
           },
           {
-            name: "Avocado Toast",
-            description: "Sourdough, smashed avocado, radish, chili flakes",
-            price: "$9.50",
+            name: 'Avocado Toast',
+            description: 'Sourdough, smashed avocado, radish, chili flakes',
+            price: '$9.50',
           },
           {
-            name: "Seasonal Scone",
-            description: "Current: Blueberry lemon with glaze",
-            price: "$4.00",
+            name: 'Seasonal Scone',
+            description: 'Current: Blueberry lemon with glaze',
+            price: '$4.00',
           },
           {
-            name: "Cardamom Bun",
-            description: "Swedish-style, caramelized cardamom sugar",
-            price: "$4.75",
+            name: 'Cardamom Bun',
+            description: 'Swedish-style, caramelized cardamom sugar',
+            price: '$4.75',
           },
           {
-            name: "Chocolate Chip Cookie",
-            description: "Tahini, brown butter, Maldon sea salt",
-            price: "$3.50",
+            name: 'Chocolate Chip Cookie',
+            description: 'Tahini, brown butter, Maldon sea salt',
+            price: '$3.50',
           },
           {
-            name: "Quiche Lorraine",
-            description: "Bacon, Gruyère, all-butter crust",
-            price: "$8.50",
+            name: 'Quiche Lorraine',
+            description: 'Bacon, Gruyère, all-butter crust',
+            price: '$8.50',
           },
           {
-            name: "Granola Bowl",
-            description: "House granola, Greek yogurt, seasonal fruit, honey",
-            price: "$7.50",
+            name: 'Granola Bowl',
+            description: 'House granola, Greek yogurt, seasonal fruit, honey',
+            price: '$7.50',
           },
         ]
-    const teaTitle = props.teaTitle ?? "Teas & Non-Coffee"
+    const teaTitle = props.teaTitle ?? 'Teas & Non-Coffee'
     const teas = props.teas?.length
       ? props.teas
       : [
           {
-            name: "Matcha Latte",
-            description: "Ceremonial grade, oat milk",
-            price: "$5.50",
+            name: 'Matcha Latte',
+            description: 'Ceremonial grade, oat milk',
+            price: '$5.50',
           },
           {
-            name: "Chai Latte",
-            description: "House spice blend, steamed milk",
-            price: "$5.00",
+            name: 'Chai Latte',
+            description: 'House spice blend, steamed milk',
+            price: '$5.00',
           },
           {
-            name: "Earl Grey",
-            description: "Loose leaf, bergamot forward",
-            price: "$3.50",
+            name: 'Earl Grey',
+            description: 'Loose leaf, bergamot forward',
+            price: '$3.50',
           },
           {
-            name: "House Kombucha",
-            description: "Rotating flavor, locally brewed",
-            price: "$4.50",
+            name: 'House Kombucha',
+            description: 'Rotating flavor, locally brewed',
+            price: '$4.50',
           },
         ]
-    const menuTarget = props.menuTarget ?? "View Menu"
+    const menuTarget = props.menuTarget ?? 'View Menu'
 
     return (
-      <section className={cn("py-20 lg:py-32", props.className)}>
+      <section className={cn('py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <p className="mb-3 text-sm font-medium uppercase tracking-wider text-primary">

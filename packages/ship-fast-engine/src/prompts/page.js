@@ -28,13 +28,17 @@ function imageGuide(imageHints) {
     .slice(0, 6)
     .map((v, index) => {
       const hint = String(
-        v.query && v.alt && v.alt !== v.query ? `[${v.query}] ${v.alt}` : v.alt || v.query,
+        v.query && v.alt && v.alt !== v.query
+          ? `[${v.query}] ${v.alt}`
+          : v.alt || v.query,
       ).slice(0, 120)
       const poster = v.posterUrl ? ` | poster: ${v.posterUrl}` : ''
       return `- ${index + 1}. ${hint}\n  mp4: ${v.url}${poster}`
     })
     .join('\n')
-  const imgBlock = photos.length ? `Use these verified image URLs first:\n${lines}` : ''
+  const imgBlock = photos.length
+    ? `Use these verified image URLs first:\n${lines}`
+    : ''
   const vidBlock = videos.length
     ? `${photos.length ? '\n\n' : ''}Verified Pexels videos (hero/background: <video muted loop playsinline> + <source type="video/mp4">):\n${videoLines}`
     : ''
@@ -51,11 +55,14 @@ export function pagePrompt(
   siteType = null,
   hasUserDesignReferences = false,
 ) {
-  const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
+  const ecommerceGuidelines = getEcommerceGenerationGuidelines({
+    hasUserDesignReferences,
+  })
   const brandBlock = brandProfilePromptBlock(brandProfile)
   const taskLower = (task.title || '').toLowerCase()
   const fnameLower = (task.filename || '').toLowerCase()
-  const isContactPage = taskLower.includes('contact') || fnameLower.includes('contact')
+  const isContactPage =
+    taskLower.includes('contact') || fnameLower.includes('contact')
   const contactPageBlock = isContactPage
     ? `\nCONTACT PAGE (mandatory):
 - Include a real HTML <form> in <main> with: a text <input name="name">, an email <input type="email" name="email">, a <textarea name="message">, and a submit <button type="submit">. Labels must be visible.
@@ -64,9 +71,12 @@ export function pagePrompt(
 - Do not include "Ship Fast", builder badges, rocket logos, or generator marketing anywhere on the page.
 - The panel titled "Send us a Message" (or similar) must contain the form fields above, not a logo or empty decorative block.\n`
     : ''
-  const ecommercePageBlock = siteType === 'ecommerce'
-    ? taskLower.includes('shop') || taskLower.includes('catalog') || taskLower.includes('product')
-      ? `\n${ecommerceGuidelines}
+  const ecommercePageBlock =
+    siteType === 'ecommerce'
+      ? taskLower.includes('shop') ||
+        taskLower.includes('catalog') ||
+        taskLower.includes('product')
+        ? `\n${ecommerceGuidelines}
 
 E-COMMERCE SHOP PAGE:
 This is a product listing page for an e-commerce store. Build it like a real online shop (template density: ${ECOMMERCE_ENVATO_TEMPLATES_URL}):
@@ -80,8 +90,8 @@ This is a product listing page for an e-commerce store. Build it like a real onl
 - Price display: font-semibold, slightly larger than body text
 - Primary CTA: Add to cart; secondary: quick view or save if present — visually distinct
 - "Add to Cart" buttons: primary accent color, rounded, hover darker\n`
-      : taskLower.includes('cart')
-        ? `\n${ecommerceGuidelines}
+        : taskLower.includes('cart')
+          ? `\n${ecommerceGuidelines}
 
 E-COMMERCE CART PAGE:
 This is a shopping cart page. Build it like a real checkout experience (Medusa cart flow per ${ECOMMERCE_MEDUSA_DOCS_LEARN}):
@@ -95,7 +105,7 @@ This is a shopping cart page. Build it like a real checkout experience (Medusa c
 - Use realistic mock cart data (2-3 items)
 - Clean table/grid layout, clear visual hierarchy
 - For any shipping or contact fields on this page or inline checkout, use appropriate autocomplete attributes (e.g. autocomplete="email", "given-name", "family-name", "address-line1", "postal-code")\n`
-        : `\n${ecommerceGuidelines}
+          : `\n${ecommerceGuidelines}
 
 E-COMMERCE PAGE:
 This page is part of an e-commerce store. Maintain the store aesthetic and Medusa-aligned commerce patterns:
@@ -103,7 +113,7 @@ This page is part of an e-commerce store. Maintain the store aesthetic and Medus
 - Use product-oriented language and imagery
 - Primary vs secondary CTAs: one clear main action per section (e.g. Shop vs Learn more)
 - Maintain trust signals (payment, shipping badges) near purchase paths and in footer\n`
-    : ''
+      : ''
   return {
     system:
       'You build pages that match an existing homepage exactly. Same head, nav, footer, fonts, colors. Output ONLY a complete HTML file.\n\n' +
@@ -132,7 +142,8 @@ CRITICAL: Your output MUST be a complete HTML document starting with <!DOCTYPE h
 
 export function backendPrompt(task, ctx) {
   return {
-    system: 'You are a backend code generator. Output ONLY file content. No markdown fences.',
+    system:
+      'You are a backend code generator. Output ONLY file content. No markdown fences.',
     prompt:
       `Project context:\n${JSON.stringify(ctx)}\n\n` +
       `Task: ${task.title}\nDescription: ${task.description ?? ''}\n\n` +

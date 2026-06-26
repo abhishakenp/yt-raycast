@@ -5,7 +5,8 @@ import { createReferralRecordApiResponse } from '@/features/referrals/server/ref
 export const Route = createFileRoute('/api/referrals/record')({
   server: {
     handlers: {
-      POST: async ({ request }) => await createReferralRecordApiResponse(request),
+      POST: async ({ request }) =>
+        await createReferralRecordApiResponse(request),
     },
   },
 })

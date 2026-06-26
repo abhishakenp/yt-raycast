@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * VacationRentalFeatures — an amenities grid for a vacation-rental listing page.
@@ -133,9 +133,9 @@ const ICONS = {
 } as const
 
 export const VacationRentalFeatures = defineComponent({
-  name: "VacationRentalFeatures",
+  name: 'VacationRentalFeatures',
   description:
-    "Amenities grid for a vacation-rental listing page built on the shared FeatureGrid composite: an Everything you need heading above a responsive grid of amenity cards (fast wifi, private pool, full kitchen, free parking, air conditioning, pet-friendly), each with a line-icon tile, a title, and a short description. Theme-token only. Use to list the amenities of a vacation rental, beach house, cabin, villa, or boutique short-stay.",
+    'Amenities grid for a vacation-rental listing page built on the shared FeatureGrid composite: an Everything you need heading above a responsive grid of amenity cards (fast wifi, private pool, full kitchen, free parking, air conditioning, pet-friendly), each with a line-icon tile, a title, and a short description. Theme-token only. Use to list the amenities of a vacation rental, beach house, cabin, villa, or boutique short-stay.',
   props: z.object({
     /** Section heading above the amenities grid. */
     heading: z.string().optional(),
@@ -148,7 +148,7 @@ export const VacationRentalFeatures = defineComponent({
           title: z.string(),
           description: z.string(),
           icon: z
-            .enum(["wifi", "pool", "kitchen", "parking", "ac", "pet"])
+            .enum(['wifi', 'pool', 'kitchen', 'parking', 'ac', 'pet'])
             .optional(),
         }),
       )
@@ -162,40 +162,40 @@ export const VacationRentalFeatures = defineComponent({
       ? props.features
       : [
           {
-            title: "Fast wifi",
+            title: 'Fast wifi',
             description:
-              "Gigabit fiber throughout the home — stream, video-call, or work from the deck without a hitch.",
-            icon: "wifi" as const,
+              'Gigabit fiber throughout the home — stream, video-call, or work from the deck without a hitch.',
+            icon: 'wifi' as const,
           },
           {
-            title: "Private pool",
+            title: 'Private pool',
             description:
-              "A heated infinity pool with loungers and uninterrupted views of the bay.",
-            icon: "pool" as const,
+              'A heated infinity pool with loungers and uninterrupted views of the bay.',
+            icon: 'pool' as const,
           },
           {
-            title: "Full kitchen",
+            title: 'Full kitchen',
             description:
-              "A chef-grade kitchen with everything you need to cook in, from espresso to fresh-caught dinners.",
-            icon: "kitchen" as const,
+              'A chef-grade kitchen with everything you need to cook in, from espresso to fresh-caught dinners.',
+            icon: 'kitchen' as const,
           },
           {
-            title: "Free parking",
+            title: 'Free parking',
             description:
-              "Two dedicated spots in the private drive — no permits, no street hunting.",
-            icon: "parking" as const,
+              'Two dedicated spots in the private drive — no permits, no street hunting.',
+            icon: 'parking' as const,
           },
           {
-            title: "Air conditioning",
+            title: 'Air conditioning',
             description:
-              "Whole-home climate control keeps every room cool and comfortable through summer.",
-            icon: "ac" as const,
+              'Whole-home climate control keeps every room cool and comfortable through summer.',
+            icon: 'ac' as const,
           },
           {
-            title: "Pet-friendly",
+            title: 'Pet-friendly',
             description:
-              "Bring the whole family — well-behaved pets are warmly welcome at no extra charge.",
-            icon: "pet" as const,
+              'Bring the whole family — well-behaved pets are warmly welcome at no extra charge.',
+            icon: 'pet' as const,
           },
         ]
 
@@ -207,10 +207,10 @@ export const VacationRentalFeatures = defineComponent({
 
     return (
       <FeatureGrid
-        heading={props.heading ?? "Everything you need"}
+        heading={props.heading ?? 'Everything you need'}
         subheading={
           props.subheading ??
-          "Thoughtful comforts and modern essentials so you can settle in and truly relax."
+          'Thoughtful comforts and modern essentials so you can settle in and truly relax.'
         }
         features={features}
         columns={props.columns ?? 3}

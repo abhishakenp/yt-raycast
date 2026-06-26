@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * EcommerceFeatures — a clean "why shop with us" benefits row for a modern
@@ -84,7 +84,7 @@ const ShieldIcon = (
 const ICONS: ReactNode[] = [TruckIcon, ReturnIcon, SupportIcon, ShieldIcon]
 
 export const EcommerceFeatures = defineComponent({
-  name: "EcommerceFeatures",
+  name: 'EcommerceFeatures',
   description:
     "Clean 'why shop with us' benefits row for a modern online store built on the shared FeatureGrid composite: an optional centered heading + subheading above a responsive 4-column grid of benefit cards, each pairing a distinct inline SVG icon with a bold title and a short blurb. Defaults cover the four classic retail trust signals — free shipping, easy returns, 24/7 support, and secure payment. Use to reassure shoppers and reduce checkout hesitation on any general ecommerce or online store homepage.",
   props: z.object({
@@ -101,28 +101,28 @@ export const EcommerceFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Why Shop With Us"
+    const heading = props.heading ?? 'Why Shop With Us'
     const subheading =
       props.subheading ??
-      "Everything you need for a worry-free shopping experience, from cart to doorstep."
+      'Everything you need for a worry-free shopping experience, from cart to doorstep.'
     const features = props.features?.length
       ? props.features
       : [
           {
-            title: "Free Shipping",
-            description: "On all orders over $50, delivered to your door.",
+            title: 'Free Shipping',
+            description: 'On all orders over $50, delivered to your door.',
           },
           {
-            title: "Easy Returns",
-            description: "30-day hassle-free returns on everything.",
+            title: 'Easy Returns',
+            description: '30-day hassle-free returns on everything.',
           },
           {
-            title: "24/7 Support",
-            description: "Our team is here to help any time, day or night.",
+            title: '24/7 Support',
+            description: 'Our team is here to help any time, day or night.',
           },
           {
-            title: "Secure Payment",
-            description: "Checkout safely with encrypted, trusted payments.",
+            title: 'Secure Payment',
+            description: 'Checkout safely with encrypted, trusted payments.',
           },
         ]
 

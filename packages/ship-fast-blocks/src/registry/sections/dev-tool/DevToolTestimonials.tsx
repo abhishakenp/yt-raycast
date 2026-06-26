@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * DevToolTestimonials — a 3-up developer testimonials grid for a developer tool
@@ -12,9 +12,9 @@ import { Image } from "#/lib/img.tsx"
  * tools, API platforms, or technical SaaS.
  */
 export const DevToolTestimonials = defineComponent({
-  name: "DevToolTestimonials",
+  name: 'DevToolTestimonials',
   description:
-    "3-up developer testimonials grid for a developer tool / API platform: a centered heading + intro above a responsive 1/3-column grid of bordered cards, each with a 5-star brand-colored rating row, a blockquote, and an author row (alt-driven circular avatar + name + role). Use as social proof to surface engineering-team quotes for developer tools, API platforms, or technical SaaS.",
+    '3-up developer testimonials grid for a developer tool / API platform: a centered heading + intro above a responsive 1/3-column grid of bordered cards, each with a 5-star brand-colored rating row, a blockquote, and an author row (alt-driven circular avatar + name + role). Use as social proof to surface engineering-team quotes for developer tools, API platforms, or technical SaaS.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -31,36 +31,36 @@ export const DevToolTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Loved by developers"
+    const heading = props.heading ?? 'Loved by developers'
     const description =
       props.description ??
-      "See what engineering teams are building with DevStack."
+      'See what engineering teams are building with DevStack.'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
-              "DevStack cut our API development time by 70%. Authentication, storage, and real-time — all working out of the box. We went from prototype to production in under two weeks.",
-            name: "Marcus Chen",
-            role: "CTO, Velocity Labs",
+              'DevStack cut our API development time by 70%. Authentication, storage, and real-time — all working out of the box. We went from prototype to production in under two weeks.',
+            name: 'Marcus Chen',
+            role: 'CTO, Velocity Labs',
             avatarAlt:
-              "professional headshot of a male CTO with beard and glasses smiling",
+              'professional headshot of a male CTO with beard and glasses smiling',
           },
           {
             quote:
-              "The observability features alone are worth the price. We caught a performance issue in staging that would have cost us thousands in production. Support team is incredibly responsive.",
-            name: "Sarah Williams",
-            role: "Engineering Manager, DataFlow",
+              'The observability features alone are worth the price. We caught a performance issue in staging that would have cost us thousands in production. Support team is incredibly responsive.',
+            name: 'Sarah Williams',
+            role: 'Engineering Manager, DataFlow',
             avatarAlt:
-              "professional headshot of a female engineering manager with dark curly hair",
+              'professional headshot of a female engineering manager with dark curly hair',
           },
           {
             quote:
-              "We migrated from Firebase to DevStack and reduced our infrastructure costs by 60%. The TypeScript SDK is fantastic — everything is fully typed and documented.",
-            name: "David Park",
-            role: "Senior Developer, NexGen Apps",
+              'We migrated from Firebase to DevStack and reduced our infrastructure costs by 60%. The TypeScript SDK is fantastic — everything is fully typed and documented.',
+            name: 'David Park',
+            role: 'Senior Developer, NexGen Apps',
             avatarAlt:
-              "professional headshot of a male senior developer with short dark hair and friendly smile",
+              'professional headshot of a male senior developer with short dark hair and friendly smile',
           },
         ]
 
@@ -77,7 +77,7 @@ export const DevToolTestimonials = defineComponent({
 
     return (
       <section
-        className={cn("py-20 lg:py-28", props.className)}
+        className={cn('py-20 lg:py-28', props.className)}
         aria-labelledby="testimonials-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

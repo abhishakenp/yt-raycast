@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MarketingNavbar — glassy, sticky top navigation bar for a product-marketing /
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * team/project-management tools, developer platforms, or modern software products.
  */
 export const MarketingNavbar = defineComponent({
-  name: "MarketingNavbar",
+  name: 'MarketingNavbar',
   description:
     "Glassy, sticky, backdrop-blurred top navigation bar for a product-marketing / SaaS landing page: border-bottomed header with an indigo brand-initial logo tile + product name on the left, horizontal nav links on the right (desktop), and a 'Log in' outline button plus a filled primary 'Get started' CTA, collapsing to a hamburger on mobile. Clean, premium indigo-on-light aesthetic. All links and CTAs route through useNavigate. Use as the sticky site header for B2B SaaS, team/project-management tools, developer platforms, workspaces, or modern software products.",
   props: z.object({
@@ -34,20 +34,20 @@ export const MarketingNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Flowstate"
+    const brand = props.brand ?? 'Flowstate'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Pricing", "Customers"]
-    const homeTarget = props.homeTarget ?? "Features"
-    const loginLabel = props.loginLabel ?? "Log in"
-    const ctaLabel = props.ctaLabel ?? "Get started"
-    const ctaTarget = props.ctaTarget ?? "Start free trial"
+      : ['Features', 'Pricing', 'Customers']
+    const homeTarget = props.homeTarget ?? 'Features'
+    const loginLabel = props.loginLabel ?? 'Log in'
+    const ctaLabel = props.ctaLabel ?? 'Get started'
+    const ctaTarget = props.ctaTarget ?? 'Start free trial'
 
     // Brand logo mark — indigo tile + brand initial (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid size-8 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground",
+          'grid size-8 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground',
           className,
         )}
       >
@@ -58,7 +58,7 @@ export const MarketingNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-md backdrop-saturate-150 supports-[backdrop-filter]:bg-background/60",
+          'sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-md backdrop-saturate-150 supports-[backdrop-filter]:bg-background/60',
           props.className,
         )}
       >

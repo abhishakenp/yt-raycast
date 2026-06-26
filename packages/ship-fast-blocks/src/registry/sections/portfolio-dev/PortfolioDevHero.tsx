@@ -1,12 +1,12 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 export const PortfolioDevHero = defineComponent({
-  name: "PortfolioDevHero",
+  name: 'PortfolioDevHero',
   description:
-    "A split developer-intro hero. The left column leads with a mono `$ whoami` eyebrow, a large name plus a Full-Stack Developer headline, a short intro paragraph, and dual CTAs (a filled View Work and an outlined Resume) that route via useNavigate, followed by a mono tech-tag row. The right column is a faux terminal/code card with window-chrome dots, a filename, and mono pseudo-code lines. Everything is theme-token only with mono accents — ideal for developer, engineer, and freelancer portfolios.",
+    'A split developer-intro hero. The left column leads with a mono `$ whoami` eyebrow, a large name plus a Full-Stack Developer headline, a short intro paragraph, and dual CTAs (a filled View Work and an outlined Resume) that route via useNavigate, followed by a mono tech-tag row. The right column is a faux terminal/code card with window-chrome dots, a filename, and mono pseudo-code lines. Everything is theme-token only with mono accents — ideal for developer, engineer, and freelancer portfolios.',
   props: z.object({
     eyebrow: z.string().optional(),
     name: z.string().optional(),
@@ -21,22 +21,25 @@ export const PortfolioDevHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "$ whoami"
-    const name = props.name ?? "Alex Chen"
-    const role = props.role ?? "Full-Stack Developer"
+    const eyebrow = props.eyebrow ?? '$ whoami'
+    const name = props.name ?? 'Alex Chen'
+    const role = props.role ?? 'Full-Stack Developer'
     const intro =
       props.intro ??
-      "I design and build fast, accessible web applications end to end — from clean React frontends to reliable APIs and the infrastructure under them."
-    const primaryCta = props.primaryCta ?? "View Work"
-    const primaryTarget = props.primaryTarget ?? "Work"
-    const secondaryCta = props.secondaryCta ?? "Resume"
-    const secondaryTarget = props.secondaryTarget ?? "Resume"
+      'I design and build fast, accessible web applications end to end — from clean React frontends to reliable APIs and the infrastructure under them.'
+    const primaryCta = props.primaryCta ?? 'View Work'
+    const primaryTarget = props.primaryTarget ?? 'Work'
+    const secondaryCta = props.secondaryCta ?? 'Resume'
+    const secondaryTarget = props.secondaryTarget ?? 'Resume'
     const tags = props.tags?.length
       ? props.tags
-      : ["TypeScript", "React", "Node.js", "Postgres", "AWS"]
+      : ['TypeScript', 'React', 'Node.js', 'Postgres', 'AWS']
     return (
       <section
-        className={cn("bg-background py-20 text-foreground sm:py-28", props.className)}
+        className={cn(
+          'bg-background py-20 text-foreground sm:py-28',
+          props.className,
+        )}
       >
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 lg:px-8">
           <div>
@@ -91,14 +94,15 @@ export const PortfolioDevHero = defineComponent({
                 name: <span className="text-accent">"Alex Chen"</span>,
               </p>
               <p className="pl-4 text-muted-foreground">
-                stack: <span className="text-accent">["ts", "react", "node"]</span>,
+                stack:{' '}
+                <span className="text-accent">["ts", "react", "node"]</span>,
               </p>
               <p className="pl-4 text-muted-foreground">
                 available: <span className="text-primary">true</span>,
               </p>
               <p className="text-muted-foreground">{'}'}</p>
               <p className="pt-2 text-muted-foreground">
-                <span className="text-primary">$</span> npm run build{" "}
+                <span className="text-primary">$</span> npm run build{' '}
                 <span className="text-accent">✓</span>
               </p>
             </div>

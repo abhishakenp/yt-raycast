@@ -24,7 +24,8 @@ export function validateSessionId(id) {
 }
 
 export function parseCreateSessionRequest(body = {}) {
-  if (!isObject(body)) return { ok: false, errors: ['request body must be an object.'] }
+  if (!isObject(body))
+    return { ok: false, errors: ['request body must be an object.'] }
 
   const prompt = toString(body.prompt, '').trim()
   const preferredLanguage = toString(body.preferredLanguage, '').trim()
@@ -44,7 +45,8 @@ export function parseCreateSessionRequest(body = {}) {
   if (rawRefs != null && !Array.isArray(rawRefs)) {
     errors.push('designReferenceUrls must be an array when provided.')
   } else if (Array.isArray(rawRefs)) {
-    if (rawRefs.length > 4) errors.push('designReferenceUrls may include at most 4 URLs.')
+    if (rawRefs.length > 4)
+      errors.push('designReferenceUrls may include at most 4 URLs.')
     for (const entry of rawRefs.slice(0, 4)) {
       const s = toString(entry, '').trim()
       if (!s) continue
@@ -115,7 +117,8 @@ export function parseCreateSessionRequest(body = {}) {
 }
 
 export function parseStatusPayload(body = {}) {
-  if (!isObject(body)) return { ok: false, errors: ['status payload must be an object.'] }
+  if (!isObject(body))
+    return { ok: false, errors: ['status payload must be an object.'] }
   return {
     ok: true,
     data: {
@@ -126,7 +129,8 @@ export function parseStatusPayload(body = {}) {
 }
 
 export function parseThemePayload(body = {}) {
-  if (!isObject(body)) return { ok: false, errors: ['theme payload must be an object.'] }
+  if (!isObject(body))
+    return { ok: false, errors: ['theme payload must be an object.'] }
   return {
     ok: true,
     data: {
@@ -152,7 +156,8 @@ export function parseGitHubPushPayload(body = {}) {
   if (!targetResult.ok) return targetResult
 
   const githubAccessToken = toString(body.githubAccessToken, '').trim()
-  if (!githubAccessToken) return { ok: false, errors: ['githubAccessToken is required.'] }
+  if (!githubAccessToken)
+    return { ok: false, errors: ['githubAccessToken is required.'] }
 
   return {
     ok: true,

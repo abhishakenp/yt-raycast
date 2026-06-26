@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CrowdfundingCta — a full-width closing CTA band for a crowdfunding / campaign
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * style raise, pre-order, fundraiser, or product launch page.
  */
 export const CrowdfundingCta = defineComponent({
-  name: "CrowdfundingCta",
+  name: 'CrowdfundingCta',
   description:
     "A full-width closing CTA band for a crowdfunding / campaign landing page: a bold primary-colored, center-aligned section with a large heading, a supporting subhead, a dual button group (a solid background-filled 'Back This Project' primary plus an outlined 'Share' secondary), and a small deadline / ship-date note beneath. Buttons route through useNavigate. Use as the final conversion push before the footer on any Kickstarter/Indiegogo-style raise, pre-order, fundraiser, or product launch page.",
   props: z.object({
@@ -28,21 +28,21 @@ export const CrowdfundingCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const ctaHeading = props.heading ?? "Be Part of the Solution"
+    const ctaHeading = props.heading ?? 'Be Part of the Solution'
     const ctaDesc =
       props.description ??
-      "12,847 people have already joined us. Every pledge brings EcoBrush closer to production and keeps more plastic out of our oceans."
-    const ctaPrimary = props.primaryCta ?? "Back This Project — $49"
-    const ctaSecondary = props.secondaryCta ?? "Share This Campaign"
+      '12,847 people have already joined us. Every pledge brings EcoBrush closer to production and keeps more plastic out of our oceans.'
+    const ctaPrimary = props.primaryCta ?? 'Back This Project — $49'
+    const ctaSecondary = props.secondaryCta ?? 'Share This Campaign'
     const ctaNote =
       props.note ??
-      "Campaign ends March 15, 2026 at 11:59 PM EST · Ships June 2026"
-    const rewardsTarget = props.rewardsTarget ?? "Rewards"
+      'Campaign ends March 15, 2026 at 11:59 PM EST · Ships June 2026'
+    const rewardsTarget = props.rewardsTarget ?? 'Rewards'
 
     return (
       <section
         className={cn(
-          "bg-primary py-20 text-primary-foreground lg:py-28",
+          'bg-primary py-20 text-primary-foreground lg:py-28',
           props.className,
         )}
       >

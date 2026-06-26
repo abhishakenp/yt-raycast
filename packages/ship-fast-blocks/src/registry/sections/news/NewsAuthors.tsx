@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * NewsAuthors — meet our columnists / contributors grid for a news outlet. On a
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * defaults.
  */
 export const NewsAuthors = defineComponent({
-  name: "NewsAuthors",
+  name: 'NewsAuthors',
   description:
     "Meet our columnists / contributors grid for a news outlet on a card surface: a heading with an optional intro, then a responsive grid of journalist cards. Each card has an avatar (via Image), the writer's name, their beat / role, a short bio, an optional social handle and a 'latest column' link. The card, the latest-column link and the social handle route through useNavigate. Use as a masthead / contributors band on a newspaper, magazine or publication homepage or about page so readers can get to know the bylines behind the reporting.",
   props: z.object({
@@ -43,85 +43,85 @@ export const NewsAuthors = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Meet Our Columnists"
+    const heading = props.heading ?? 'Meet Our Columnists'
     const intro =
       props.intro ??
-      "The reporters, critics and correspondents behind the stories — get to know the bylines you read every day."
-    const columnLabel = props.columnLabel ?? "Latest column"
+      'The reporters, critics and correspondents behind the stories — get to know the bylines you read every day.'
+    const columnLabel = props.columnLabel ?? 'Latest column'
     const authors = props.authors?.length
       ? props.authors
       : [
           {
-            name: "Maria Santos",
-            role: "Foreign Correspondent",
-            bio: "Reporting from conflict zones for 15 years, with recent dispatches from Gaza, Ukraine and Sudan.",
-            handle: "@mariasantos",
-            column: "Letters from the Front",
+            name: 'Maria Santos',
+            role: 'Foreign Correspondent',
+            bio: 'Reporting from conflict zones for 15 years, with recent dispatches from Gaza, Ukraine and Sudan.',
+            handle: '@mariasantos',
+            column: 'Letters from the Front',
             avatarAlt:
-              "Professional headshot of journalist Maria Santos smiling in professional attire",
+              'Professional headshot of journalist Maria Santos smiling in professional attire',
           },
           {
-            name: "James Okonkwo",
-            role: "Economics Editor",
-            bio: "Untangling markets, central banks and the global economy for readers who skipped business school.",
-            handle: "@jamesokonkwo",
-            column: "The Bottom Line",
+            name: 'James Okonkwo',
+            role: 'Economics Editor',
+            bio: 'Untangling markets, central banks and the global economy for readers who skipped business school.',
+            handle: '@jamesokonkwo',
+            column: 'The Bottom Line',
             avatarAlt:
-              "Professional headshot of economics editor James Okonkwo in a dark suit",
+              'Professional headshot of economics editor James Okonkwo in a dark suit',
           },
           {
-            name: "Priya Nair",
-            role: "Technology Columnist",
-            bio: "Covering AI, platforms and the people building them — with a healthy dose of skepticism.",
-            handle: "@priyanair",
-            column: "Signal & Noise",
+            name: 'Priya Nair',
+            role: 'Technology Columnist',
+            bio: 'Covering AI, platforms and the people building them — with a healthy dose of skepticism.',
+            handle: '@priyanair',
+            column: 'Signal & Noise',
             avatarAlt:
-              "Professional headshot of technology columnist Priya Nair in a bright office",
+              'Professional headshot of technology columnist Priya Nair in a bright office',
           },
           {
-            name: "Daniel Brooks",
-            role: "Political Correspondent",
-            bio: "On the campaign trail and inside the capital, following the money and the votes for over a decade.",
-            handle: "@danielbrooks",
-            column: "On the Hill",
+            name: 'Daniel Brooks',
+            role: 'Political Correspondent',
+            bio: 'On the campaign trail and inside the capital, following the money and the votes for over a decade.',
+            handle: '@danielbrooks',
+            column: 'On the Hill',
             avatarAlt:
-              "Professional headshot of political correspondent Daniel Brooks in front of government building",
+              'Professional headshot of political correspondent Daniel Brooks in front of government building',
           },
           {
-            name: "Aisha Rahman",
-            role: "Health & Science Writer",
-            bio: "Translating peer-reviewed research into plain English, from new vaccines to the climate crisis.",
-            handle: "@aisharahman",
-            column: "The Lab Notebook",
+            name: 'Aisha Rahman',
+            role: 'Health & Science Writer',
+            bio: 'Translating peer-reviewed research into plain English, from new vaccines to the climate crisis.',
+            handle: '@aisharahman',
+            column: 'The Lab Notebook',
             avatarAlt:
-              "Professional headshot of health and science writer Aisha Rahman wearing glasses",
+              'Professional headshot of health and science writer Aisha Rahman wearing glasses',
           },
           {
-            name: "Marcus Lee",
-            role: "Culture Critic",
-            bio: "Film, music and the arts. Has strong opinions about endings and no patience for sequels.",
-            handle: "@marcuslee",
-            column: "Final Cut",
+            name: 'Marcus Lee',
+            role: 'Culture Critic',
+            bio: 'Film, music and the arts. Has strong opinions about endings and no patience for sequels.',
+            handle: '@marcuslee',
+            column: 'Final Cut',
             avatarAlt:
-              "Professional headshot of culture critic Marcus Lee in a casual jacket",
+              'Professional headshot of culture critic Marcus Lee in a casual jacket',
           },
           {
-            name: "Elena Vogel",
-            role: "Investigations Editor",
-            bio: "Leads our investigative desk. Spent two years on the supply-chain probe that won the press award.",
-            handle: "@elenavogel",
-            column: "Follow the Paper",
+            name: 'Elena Vogel',
+            role: 'Investigations Editor',
+            bio: 'Leads our investigative desk. Spent two years on the supply-chain probe that won the press award.',
+            handle: '@elenavogel',
+            column: 'Follow the Paper',
             avatarAlt:
-              "Professional headshot of investigations editor Elena Vogel with short hair",
+              'Professional headshot of investigations editor Elena Vogel with short hair',
           },
           {
-            name: "Tariq Hassan",
-            role: "Sports Columnist",
-            bio: "From transfer windows to title races, covering the games and the business behind them.",
-            handle: "@tariqhassan",
-            column: "Extra Time",
+            name: 'Tariq Hassan',
+            role: 'Sports Columnist',
+            bio: 'From transfer windows to title races, covering the games and the business behind them.',
+            handle: '@tariqhassan',
+            column: 'Extra Time',
             avatarAlt:
-              "Professional headshot of sports columnist Tariq Hassan in a stadium setting",
+              'Professional headshot of sports columnist Tariq Hassan in a stadium setting',
           },
         ]
 
@@ -141,7 +141,7 @@ export const NewsAuthors = defineComponent({
     )
 
     return (
-      <section className={cn("bg-card py-12 lg:py-16", props.className)}>
+      <section className={cn('bg-card py-12 lg:py-16', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 max-w-2xl">
             <h2 className="text-xl font-bold text-foreground lg:text-2xl">

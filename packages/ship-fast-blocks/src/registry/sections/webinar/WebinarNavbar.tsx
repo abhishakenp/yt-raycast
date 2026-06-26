@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * WebinarNavbar — sticky site header for a live webinar or virtual event.
@@ -30,7 +30,7 @@ const BroadcastMark = ({ className }: { className?: string }) => (
 )
 
 export const WebinarNavbar = defineComponent({
-  name: "WebinarNavbar",
+  name: 'WebinarNavbar',
   description:
     "Sticky webinar/virtual-event site header built on the shared SiteNav composite: a semibold wordmark + broadcast-calendar mark, centered desktop nav links (Overview, Agenda, Speakers, FAQ), a high-contrast 'Register' CTA, and a real mobile drawer. Use as the header for webinars, summits, masterclasses, product launches, or any registration-driven event landing page.",
   props: z.object({
@@ -49,16 +49,16 @@ export const WebinarNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Overview", "Agenda", "Speakers", "FAQ"]
+      : ['Overview', 'Agenda', 'Speakers', 'FAQ']
     return (
       <SiteNav
-        brand={props.brand ?? "Catalyst Labs"}
+        brand={props.brand ?? 'Catalyst Labs'}
         brandMark={<BroadcastMark className="size-8 text-primary" />}
         brandClassName="font-semibold tracking-tight"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Register",
-          target: props.ctaTarget ?? "Register",
+          label: props.ctaLabel ?? 'Register',
+          target: props.ctaTarget ?? 'Register',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

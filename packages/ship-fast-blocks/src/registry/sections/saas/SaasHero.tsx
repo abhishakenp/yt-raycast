@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * SaasHero — split product hero for an AI-product / SaaS landing page. A
@@ -17,9 +17,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * baked-in "Chronos AI" defaults.
  */
 export const SaasHero = defineComponent({
-  name: "SaasHero",
+  name: 'SaasHero',
   description:
-    "Split product hero for an AI-product / SaaS landing page: a two-column band over a soft muted surface with a radial primary glow orb. Left column has a pulsing-dot status pill, a huge headline with one phrase in the indigo primary highlight, a supporting paragraph, dual CTAs (gradient primary + outlined play-icon secondary) and an avatar-stack social-proof row; right column is a floating product-demo mockup card showing an AI-assistant chat thread (AI/user bubbles with action chips) above a live calendar preview with free/busy/success rows. Premium and conversion-focused; CTAs route through useNavigate. Use as the opening hero for AI tools, scheduling/productivity apps, automation products, or B2B SaaS.",
+    'Split product hero for an AI-product / SaaS landing page: a two-column band over a soft muted surface with a radial primary glow orb. Left column has a pulsing-dot status pill, a huge headline with one phrase in the indigo primary highlight, a supporting paragraph, dual CTAs (gradient primary + outlined play-icon secondary) and an avatar-stack social-proof row; right column is a floating product-demo mockup card showing an AI-assistant chat thread (AI/user bubbles with action chips) above a live calendar preview with free/busy/success rows. Premium and conversion-focused; CTAs route through useNavigate. Use as the opening hero for AI tools, scheduling/productivity apps, automation products, or B2B SaaS.',
   props: z.object({
     /** Status / announcement pill text with a pulsing dot. */
     badge: z.string().optional(),
@@ -41,7 +41,7 @@ export const SaasHero = defineComponent({
     chat: z
       .array(
         z.object({
-          from: z.enum(["ai", "user"]),
+          from: z.enum(['ai', 'user']),
           avatar: z.string().optional(),
           text: z.string(),
         }),
@@ -55,7 +55,7 @@ export const SaasHero = defineComponent({
         z.object({
           time: z.string(),
           label: z.string().optional(),
-          tone: z.enum(["free", "busy", "success"]).optional(),
+          tone: z.enum(['free', 'busy', 'success']).optional(),
         }),
       )
       .optional(),
@@ -63,55 +63,52 @@ export const SaasHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Now with GPT-4 scheduling intelligence"
-    const heading = props.heading ?? "Reclaim your day with"
-    const highlight = props.highlight ?? "AI-powered scheduling"
+    const badge = props.badge ?? 'Now with GPT-4 scheduling intelligence'
+    const heading = props.heading ?? 'Reclaim your day with'
+    const highlight = props.highlight ?? 'AI-powered scheduling'
     const subheading =
       props.subheading ??
-      "Chronos AI reads your calendar, understands your priorities, and automatically schedules meetings at the perfect time. No more back-and-forth emails. No more double-bookings. Just focus."
-    const primaryCta = props.primaryCta ?? "Start free trial"
-    const secondaryCta = props.secondaryCta ?? "See how it works"
+      'Chronos AI reads your calendar, understands your priorities, and automatically schedules meetings at the perfect time. No more back-and-forth emails. No more double-bookings. Just focus.'
+    const primaryCta = props.primaryCta ?? 'Start free trial'
+    const secondaryCta = props.secondaryCta ?? 'See how it works'
     const socialProof =
-      props.socialProof ?? "Trusted by 12,000+ busy professionals"
-    const demoTitle = props.demoTitle ?? "Chronos Assistant"
+      props.socialProof ?? 'Trusted by 12,000+ busy professionals'
+    const demoTitle = props.demoTitle ?? 'Chronos Assistant'
     const chat = props.chat?.length
       ? props.chat
       : [
           {
-            from: "ai" as const,
-            avatar: "AI",
-            text: "Good morning! I see you have 3 meeting requests today. Shall I find the best slots?",
+            from: 'ai' as const,
+            avatar: 'AI',
+            text: 'Good morning! I see you have 3 meeting requests today. Shall I find the best slots?',
           },
           {
-            from: "user" as const,
-            avatar: "JD",
-            text: "Yes, prioritize the product review with Sarah",
+            from: 'user' as const,
+            avatar: 'JD',
+            text: 'Yes, prioritize the product review with Sarah',
           },
           {
-            from: "ai" as const,
-            avatar: "AI",
-            text: "Done. I found Tuesday 2pm for Sarah. Also moved your standup to avoid the conflict.",
+            from: 'ai' as const,
+            avatar: 'AI',
+            text: 'Done. I found Tuesday 2pm for Sarah. Also moved your standup to avoid the conflict.',
           },
         ]
-    const chips = props.chips?.length ? props.chips : ["Accept all", "Modify"]
+    const chips = props.chips?.length ? props.chips : ['Accept all', 'Modify']
     const calendar = props.calendar?.length
       ? props.calendar
       : [
-          { time: "9am", tone: "free" as const },
-          { time: "10am", label: "Standup (moved)", tone: "busy" as const },
+          { time: '9am', tone: 'free' as const },
+          { time: '10am', label: 'Standup (moved)', tone: 'busy' as const },
           {
-            time: "2pm",
-            label: "Product Review — Sarah",
-            tone: "success" as const,
+            time: '2pm',
+            label: 'Product Review — Sarah',
+            tone: 'success' as const,
           },
         ]
 
     return (
       <section
-        className={cn(
-          "relative overflow-hidden bg-muted/40",
-          props.className,
-        )}
+        className={cn('relative overflow-hidden bg-muted/40', props.className)}
       >
         <div
           aria-hidden="true"
@@ -161,12 +158,12 @@ export const SaasHero = defineComponent({
             </div>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <div className="flex" aria-hidden="true">
-                {["a", "b", "c", "d"].map((id, i) => (
+                {['a', 'b', 'c', 'd'].map((id, i) => (
                   <span
                     key={id}
                     className={cn(
-                      "grid size-9 place-items-center rounded-full border-2 border-background bg-gradient-to-br from-primary/70 to-primary text-[0.625rem] font-bold text-primary-foreground",
-                      i > 0 && "-ml-2",
+                      'grid size-9 place-items-center rounded-full border-2 border-background bg-gradient-to-br from-primary/70 to-primary text-[0.625rem] font-bold text-primary-foreground',
+                      i > 0 && '-ml-2',
                     )}
                   >
                     {String.fromCharCode(65 + i)}
@@ -195,30 +192,30 @@ export const SaasHero = defineComponent({
                   <div
                     key={i}
                     className={cn(
-                      "mb-4 flex items-start gap-3",
-                      msg.from === "user" && "flex-row-reverse",
+                      'mb-4 flex items-start gap-3',
+                      msg.from === 'user' && 'flex-row-reverse',
                     )}
                   >
                     <span
                       className={cn(
-                        "grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold",
-                        msg.from === "ai"
-                          ? "bg-primary/10 text-primary"
-                          : "bg-accent text-accent-foreground",
+                        'grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold',
+                        msg.from === 'ai'
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-accent text-accent-foreground',
                       )}
                     >
-                      {msg.avatar ?? (msg.from === "ai" ? "AI" : "JD")}
+                      {msg.avatar ?? (msg.from === 'ai' ? 'AI' : 'JD')}
                     </span>
                     <div
                       className={cn(
-                        "max-w-[80%] rounded-xl px-4 py-2.5 text-sm leading-relaxed",
-                        msg.from === "ai"
-                          ? "rounded-bl-sm bg-muted text-foreground"
-                          : "rounded-br-sm bg-primary text-primary-foreground",
+                        'max-w-[80%] rounded-xl px-4 py-2.5 text-sm leading-relaxed',
+                        msg.from === 'ai'
+                          ? 'rounded-bl-sm bg-muted text-foreground'
+                          : 'rounded-br-sm bg-primary text-primary-foreground',
                       )}
                     >
                       {msg.text}
-                      {msg.from === "ai" && i === chat.length - 1 ? (
+                      {msg.from === 'ai' && i === chat.length - 1 ? (
                         <div className="mt-2 flex flex-wrap gap-1">
                           {chips.map((chip) => (
                             <span
@@ -243,12 +240,12 @@ export const SaasHero = defineComponent({
                       </span>
                       <div
                         className={cn(
-                          "flex h-7 flex-1 items-center rounded-sm border px-2 text-[0.6875rem] font-semibold",
-                          row.tone === "success"
-                            ? "border-chart-2/30 bg-chart-2/10 text-chart-2"
-                            : row.tone === "busy"
-                              ? "border-primary/30 bg-primary/10 text-primary"
-                              : "border-border/60 bg-background",
+                          'flex h-7 flex-1 items-center rounded-sm border px-2 text-[0.6875rem] font-semibold',
+                          row.tone === 'success'
+                            ? 'border-chart-2/30 bg-chart-2/10 text-chart-2'
+                            : row.tone === 'busy'
+                              ? 'border-primary/30 bg-primary/10 text-primary'
+                              : 'border-border/60 bg-background',
                         )}
                       >
                         {row.label}

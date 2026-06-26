@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FitnessNavbar — sticky translucent top navigation bar for a gym / fitness-studio
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * boxes, yoga / pilates / boxing / spin studios or personal-training businesses.
  */
 export const FitnessNavbar = defineComponent({
-  name: "FitnessNavbar",
+  name: 'FitnessNavbar',
   description:
     "Sticky translucent top navigation bar for a gym / fitness-studio site: a backdrop-blurred, border-bottomed header with a square monogram logo tile (first letter of the brand) + short brand wordmark on the left, horizontal muted-to-foreground nav links on the right (desktop), a filled primary pill CTA built from the LAST nav item (e.g. 'Start Trial'), and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing, spin / cycle studios, or personal-training businesses.",
   props: z.object({
@@ -26,17 +26,17 @@ export const FitnessNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Base Fitness Studio"
-    const brandShort = brand.split(/\s+/)[0]?.toUpperCase() ?? "BASE"
+    const brand = props.brand ?? 'Base Fitness Studio'
+    const brandShort = brand.split(/\s+/)[0]?.toUpperCase() ?? 'BASE'
     const nav = props.nav?.length
       ? props.nav
-      : ["Classes", "Trainers", "Schedule", "Membership", "Start Trial"]
-    const navPrimary = nav[nav.length - 1] ?? "Start Trial"
+      : ['Classes', 'Trainers', 'Schedule', 'Membership', 'Start Trial']
+    const navPrimary = nav[nav.length - 1] ?? 'Start Trial'
 
     return (
       <nav
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-sm',
           props.className,
         )}
       >

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * PlumbingHvacNavbar — sticky top navigation bar for a local plumbing & HVAC
@@ -36,7 +36,7 @@ const PipeMark = ({ className }: { className?: string }) => (
 )
 
 export const PlumbingHvacNavbar = defineComponent({
-  name: "PlumbingHvacNavbar",
+  name: 'PlumbingHvacNavbar',
   description:
     "Sticky top navigation bar for a local plumbing & HVAC trade site built on the shared SiteNav composite: a pipe/droplet logo mark and company wordmark, horizontal desktop nav links, a click-to-call phone number, a pill 'Schedule Service' CTA, and a real mobile drawer. Nav items and CTA route through useNavigate for page-switching. Use as the sticky site header for plumbers, HVAC contractors, drain/sewer services, water heater installers, and other licensed home-service trades.",
   props: z.object({
@@ -57,17 +57,17 @@ export const PlumbingHvacNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "About", "Reviews", "Service Area", "Contact"]
+      : ['Services', 'About', 'Reviews', 'Service Area', 'Contact']
     return (
       <SiteNav
-        brand={props.brand ?? "Pipeworks Plumbing & HVAC"}
+        brand={props.brand ?? 'Pipeworks Plumbing & HVAC'}
         brandMark={<PipeMark className="size-[18px]" />}
         brandClassName="text-xl font-extrabold tracking-tight"
         nav={nav}
-        phone={props.phone ?? "(555) 010-7878"}
+        phone={props.phone ?? '(555) 010-7878'}
         cta={{
-          label: props.ctaLabel ?? "Schedule Service",
-          target: props.ctaTarget ?? "Contact",
+          label: props.ctaLabel ?? 'Schedule Service',
+          target: props.ctaTarget ?? 'Contact',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

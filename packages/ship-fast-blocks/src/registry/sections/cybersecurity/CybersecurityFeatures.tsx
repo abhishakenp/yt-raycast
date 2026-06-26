@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CybersecurityFeatures — security-capability grid. A light section with a
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * products. Renders fully with no props via baked-in capability defaults.
  */
 export const CybersecurityFeatures = defineComponent({
-  name: "CybersecurityFeatures",
+  name: 'CybersecurityFeatures',
   description:
     "Security-capability grid: a light section with a centered heading + supporting paragraph above a responsive 2-to-3 column grid of bordered cards, each with a rounded icon tile (cycling security glyphs that invert color on hover), a bold title, a description, and an arrowed 'Learn more' link routing through useNavigate. Use to lay out core platform capabilities for cybersecurity vendors, SOC/MDR/XDR providers, zero-trust, cloud-security, or compliance-automation products.",
   props: z.object({
@@ -33,43 +33,43 @@ export const CybersecurityFeatures = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Complete security coverage"
+    const heading = props.heading ?? 'Complete security coverage'
     const description =
       props.description ??
-      "From endpoint to cloud, our unified platform protects every layer of your digital infrastructure with enterprise-grade precision."
-    const cta = props.cta ?? "Learn more"
+      'From endpoint to cloud, our unified platform protects every layer of your digital infrastructure with enterprise-grade precision.'
+    const cta = props.cta ?? 'Learn more'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "AI Threat Detection",
+            title: 'AI Threat Detection',
             description:
-              "Machine learning models trained on 50B+ security events detect anomalies in real-time with 99.7% accuracy. Identifies zero-day exploits before they spread.",
+              'Machine learning models trained on 50B+ security events detect anomalies in real-time with 99.7% accuracy. Identifies zero-day exploits before they spread.',
           },
           {
-            title: "Zero Trust Architecture",
+            title: 'Zero Trust Architecture',
             description:
-              "Never trust, always verify. Multi-factor authentication, device posture checks, and least-privilege access for every user and endpoint.",
+              'Never trust, always verify. Multi-factor authentication, device posture checks, and least-privilege access for every user and endpoint.',
           },
           {
-            title: "Cloud Security Posture",
+            title: 'Cloud Security Posture',
             description:
-              "Continuous monitoring of AWS, Azure, and GCP configurations. Auto-remediation for 500+ compliance checks including CIS benchmarks.",
+              'Continuous monitoring of AWS, Azure, and GCP configurations. Auto-remediation for 500+ compliance checks including CIS benchmarks.',
           },
           {
-            title: "24/7 SOC Monitoring",
+            title: '24/7 SOC Monitoring',
             description:
-              "Expert security analysts in 4 global centers monitor your environment around the clock. Average alert-to-response time under 15 minutes.",
+              'Expert security analysts in 4 global centers monitor your environment around the clock. Average alert-to-response time under 15 minutes.',
           },
           {
-            title: "Compliance Automation",
+            title: 'Compliance Automation',
             description:
-              "Automated evidence collection and reporting for SOC 2, ISO 27001, PCI DSS, HIPAA, and GDPR. Reduce audit prep time by 80%.",
+              'Automated evidence collection and reporting for SOC 2, ISO 27001, PCI DSS, HIPAA, and GDPR. Reduce audit prep time by 80%.',
           },
           {
-            title: "API Security",
+            title: 'API Security',
             description:
-              "Protect your APIs from OWASP Top 10 threats. Real-time schema validation, anomaly detection, and bot mitigation for GraphQL and REST.",
+              'Protect your APIs from OWASP Top 10 threats. Real-time schema validation, anomaly detection, and bot mitigation for GraphQL and REST.',
           },
         ]
 
@@ -134,7 +134,7 @@ export const CybersecurityFeatures = defineComponent({
     ]
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>

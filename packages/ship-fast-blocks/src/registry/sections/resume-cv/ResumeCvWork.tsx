@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * ResumeCvWork — vertical experience timeline for a personal resume / CV /
@@ -13,7 +13,7 @@ import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
  * present work history. Renders fully with no props via baked-in defaults.
  */
 export const ResumeCvWork = defineComponent({
-  name: "ResumeCvWork",
+  name: 'ResumeCvWork',
   description:
     "Vertical experience timeline for a personal resume / CV / portfolio site: a left-aligned SectionHeading ('Experience' / 'Where I've worked') leads into a border-left timeline of roles, each marked by a token dot and showing a bold role title, the company, a muted date range, and two or three bullet-point accomplishments. Clean, scannable, professional. Use on a personal portfolio, online résumé, or professional profile page to present work history.",
   props: z.object({
@@ -41,42 +41,42 @@ export const ResumeCvWork = defineComponent({
       ? props.jobs
       : [
           {
-            role: "Senior Product Designer",
-            company: "Northwind Labs",
-            dateRange: "2021 — Present",
+            role: 'Senior Product Designer',
+            company: 'Northwind Labs',
+            dateRange: '2021 — Present',
             bullets: [
-              "Led design for the core analytics platform used by 40k+ daily users.",
-              "Built and shipped a token-based design system adopted across six product teams.",
-              "Mentored three junior designers and ran the weekly design critique.",
+              'Led design for the core analytics platform used by 40k+ daily users.',
+              'Built and shipped a token-based design system adopted across six product teams.',
+              'Mentored three junior designers and ran the weekly design critique.',
             ],
           },
           {
-            role: "Product Designer",
-            company: "Cobalt Health",
-            dateRange: "2018 — 2021",
+            role: 'Product Designer',
+            company: 'Cobalt Health',
+            dateRange: '2018 — 2021',
             bullets: [
-              "Redesigned the patient onboarding flow, lifting completion by 32%.",
-              "Partnered with research to run usability studies on clinical workflows.",
+              'Redesigned the patient onboarding flow, lifting completion by 32%.',
+              'Partnered with research to run usability studies on clinical workflows.',
             ],
           },
           {
-            role: "UX Designer",
-            company: "Brightside Studio",
-            dateRange: "2016 — 2018",
+            role: 'UX Designer',
+            company: 'Brightside Studio',
+            dateRange: '2016 — 2018',
             bullets: [
-              "Designed responsive marketing sites and apps for early-stage startups.",
+              'Designed responsive marketing sites and apps for early-stage startups.',
               "Established the studio's first shared component library in Figma.",
             ],
           },
         ]
 
     return (
-      <section className={cn("bg-background", props.className)}>
+      <section className={cn('bg-background', props.className)}>
         <div className="mx-auto max-w-3xl px-6 py-24 lg:px-8 lg:py-28">
           <SectionHeading
             align="left"
             eyebrow={props.eyebrow}
-            title={props.heading ?? "Experience"}
+            title={props.heading ?? 'Experience'}
             subtitle={props.subheading ?? "Where I've worked"}
           />
 

@@ -61,7 +61,15 @@ const ratioForColors = (bgStr, fgStr) => {
   return contrastRatio(lb, lf)
 }
 
-const TEXT_CANDIDATES = ['#f8fafc', '#f1f5f9', '#0f172a', '#171717', '#fafafa', '#e2e8f0', '#1e293b']
+const TEXT_CANDIDATES = [
+  '#f8fafc',
+  '#f1f5f9',
+  '#0f172a',
+  '#171717',
+  '#fafafa',
+  '#e2e8f0',
+  '#1e293b',
+]
 
 const pickBestText = (bgStr, surfaceStr, fallbackText) => {
   const candidates = [fallbackText, ...TEXT_CANDIDATES].filter(Boolean)
@@ -169,109 +177,190 @@ const colorHsl = (hex) => rgbToHsl(parseColor(hex))
 // → closest free is Inter.
 const VIBE_PALETTES = {
   coffee: {
-    primary: '#28201D', secondary: '#3B2415', accent: '#0F4C75',
-    background: '#F4EEE5', surface: '#EADBC4', border: '#D9C4A6',
+    primary: '#28201D',
+    secondary: '#3B2415',
+    accent: '#0F4C75',
+    background: '#F4EEE5',
+    surface: '#EADBC4',
+    border: '#D9C4A6',
     typography: { heading: 'Fraunces', body: 'Inter' },
   },
   // farmersmarket: Playwright on misfitsmarket, imperfectfoods, hungryroot,
   // goodeggs, sweetgreen. Cream/oat bg, deep forest primary, harvest-mustard
   // accent.
   farmersmarket: {
-    primary: '#2D4A2A', secondary: '#7B5E3D', accent: '#F1C34A',
-    background: '#F9F8F4', surface: '#EEF5EA', border: '#D9D2BC',
+    primary: '#2D4A2A',
+    secondary: '#7B5E3D',
+    accent: '#F1C34A',
+    background: '#F9F8F4',
+    surface: '#EEF5EA',
+    border: '#D9D2BC',
     typography: { heading: 'Fraunces', body: 'Inter' },
   },
   // food: Mobbin (OpenTable navy+red+cream, Blue Apron cream+navy serif)
   // + restaurant DTC convention. Warm cream bg, restaurant-red primary,
   // deep green secondary, mustard accent. Editorial serif heading.
   food: {
-    primary: '#A53B26', secondary: '#1F4F2C', accent: '#E0A82E',
-    background: '#FAF6F0', surface: '#F5EFE6', border: '#E5CCA1',
+    primary: '#A53B26',
+    secondary: '#1F4F2C',
+    accent: '#E0A82E',
+    background: '#FAF6F0',
+    surface: '#F5EFE6',
+    border: '#E5CCA1',
     typography: { heading: 'Playfair Display', body: 'Inter' },
   },
   // fashion: Mobbin Nike (black+white+sand+saturated-pop). Black/white
   // chrome, photography-led, bold sans heading, saturated red/orange
   // accent for CTAs.
   fashion: {
-    primary: '#0A0A0A', secondary: '#FAFAFA', accent: '#D44C2A',
-    background: '#FAFAFA', surface: '#F0F0F0', border: '#D9D9D9',
+    primary: '#0A0A0A',
+    secondary: '#FAFAFA',
+    accent: '#D44C2A',
+    background: '#FAFAFA',
+    surface: '#F0F0F0',
+    border: '#D9D9D9',
     typography: { heading: 'Manrope', body: 'Inter' },
   },
   // jewelry: Mobbin HODINKEE (white+Bodoni-style serif+small caps+photo
   // editorial). Luxury watches/jewelry use near-black + champagne gold
   // + burgundy on cream. Editorial-luxury serif.
   jewelry: {
-    primary: '#1A1A1D', secondary: '#8B0F2A', accent: '#C9A96E',
-    background: '#FBF6EC', surface: '#F2E9D6', border: '#DECDA8',
+    primary: '#1A1A1D',
+    secondary: '#8B0F2A',
+    accent: '#C9A96E',
+    background: '#FBF6EC',
+    surface: '#F2E9D6',
+    border: '#DECDA8',
     typography: { heading: 'Cormorant Garamond', body: 'Inter' },
   },
   // wellness: Mobbin (Headspace warm yellow+cream playful, Calm deep blue).
   // Default to grounded calm — deep slate-green primary, terracotta
   // secondary, golden-yellow accent. Editorial-warm serif.
   wellness: {
-    primary: '#3F4E3D', secondary: '#A8624D', accent: '#F4C04E',
-    background: '#FAF5EE', surface: '#F0E6D6', border: '#D8C9B2',
+    primary: '#3F4E3D',
+    secondary: '#A8624D',
+    accent: '#F4C04E',
+    background: '#FAF5EE',
+    surface: '#F0E6D6',
+    border: '#D8C9B2',
     typography: { heading: 'DM Serif Display', body: 'Inter' },
   },
   // fitness: Mobbin Tonal (dark+magenta hero, photo-heavy). Dark theme,
   // saturated brand color (neon lime/magenta/electric blue) for energy.
   // Bold display sans heading.
   fitness: {
-    primary: '#0E0E12', secondary: '#1E1E26', accent: '#A6F500',
-    background: '#0A0A0E', surface: '#15151B', border: '#23232C',
+    primary: '#0E0E12',
+    secondary: '#1E1E26',
+    accent: '#A6F500',
+    background: '#0A0A0E',
+    surface: '#15151B',
+    border: '#23232C',
     typography: { heading: 'Bebas Neue', body: 'Inter' },
   },
   // kids: Mobbin ClassDojo (playful purple+orange+cream, chunky illustrative).
   // Saturated playful primaries on warm cream, friendly rounded sans.
   kids: {
-    primary: '#7B3FE4', secondary: '#FF8E3C', accent: '#27D4C6',
-    background: '#FFF8E7', surface: '#FFEFC7', border: '#F1D88A',
+    primary: '#7B3FE4',
+    secondary: '#FF8E3C',
+    accent: '#27D4C6',
+    background: '#FFF8E7',
+    surface: '#FFEFC7',
+    border: '#F1D88A',
     typography: { heading: 'Fredoka', body: 'Nunito' },
   },
   // realestate: Mobbin Zillow/Realtor.com (deep navy + signature green CTA
   // + cream/white). Trust-building navy primary, sage/emerald accent.
   realestate: {
-    primary: '#0F2A4A', secondary: '#1F3A66', accent: '#10B981',
-    background: '#FBF8F2', surface: '#F0EADC', border: '#D9CFB8',
+    primary: '#0F2A4A',
+    secondary: '#1F3A66',
+    accent: '#10B981',
+    background: '#FBF8F2',
+    surface: '#F0EADC',
+    border: '#D9CFB8',
     typography: { heading: 'Lora', body: 'Inter' },
   },
   // outdoors: Travel/adventure DTC convention (Patagonia/REI). Forest
   // green primary, ochre secondary, sky-blue accent on warm sand bg.
   // Editorial-warm serif for grounded/heritage feel.
   outdoors: {
-    primary: '#2F4A2C', secondary: '#A86A2C', accent: '#6FA1C9',
-    background: '#F4EFE3', surface: '#E6DEC8', border: '#C8BFA0',
+    primary: '#2F4A2C',
+    secondary: '#A86A2C',
+    accent: '#6FA1C9',
+    background: '#F4EFE3',
+    surface: '#E6DEC8',
+    border: '#C8BFA0',
     typography: { heading: 'Fraunces', body: 'Inter' },
   },
   // tech: Mobbin OpenAI Platform (dark + indigo, developer tools). Dark
   // theme, violet/cyan accent, modern dev-tool sans (Geist).
   tech: {
-    primary: '#7C3AED', secondary: '#22D3EE', accent: '#A78BFA',
-    background: '#09090B', surface: '#18181B', border: '#27272A',
+    primary: '#7C3AED',
+    secondary: '#22D3EE',
+    accent: '#A78BFA',
+    background: '#09090B',
+    surface: '#18181B',
+    border: '#27272A',
     typography: { heading: 'Geist', body: 'Geist' },
   },
   // saas: Mobbin Productivity (Felt, Confluence, Fireflies — light
   // dashboard, indigo primary, emerald CTA). Clean modern sans throughout.
   saas: {
-    primary: '#4F46E5', secondary: '#0EA5E9', accent: '#10B981',
-    background: '#FBFBFD', surface: '#FFFFFF', border: '#E5E7EB',
+    primary: '#4F46E5',
+    secondary: '#0EA5E9',
+    accent: '#10B981',
+    background: '#FBFBFD',
+    surface: '#FFFFFF',
+    border: '#E5E7EB',
     typography: { heading: 'Inter', body: 'Inter' },
   },
 }
 
 // Keyword → vibe mapping. Order matters — more specific keywords first.
 const VIBE_KEYWORDS = [
-  ['coffee', /\b(coffee|cafe|café|espresso|barista|roastery|tea\s*house|bakery|patisserie)\b/i],
-  ['farmersmarket', /\b(farmer'?s?\s*market|farm|produce|harvest|organic|grocery|grocer|csa|local\s*food|farm.to.table|seasonal\s*produce|veggie|vegetable\s*box)\b/i],
-  ['wellness', /\b(wellness|spa|yoga|meditation|herbal|ayurveda|holistic|naturopath|massage)\b/i],
-  ['fitness', /\b(gym|fitness|crossfit|workout|bodybuilding|martial.arts|boxing|hiit|trainer)\b/i],
-  ['jewelry', /\b(jewel(ry|lery)?|gold|diamond|ring|necklace|bridal|gemstone|wedding\s*band)\b/i],
-  ['fashion', /\b(fashion|streetwear|apparel|clothing|boutique|runway|atelier|couture|outfit)\b/i],
-  ['kids', /\b(kid|kids|child|children|toy|toys|playschool|baby|nursery|daycare)\b/i],
-  ['food', /\b(restaurant|diner|bistro|kitchen|menu|chef|cuisine|food\s*delivery|takeaway|pizza|burger|sushi)\b/i],
-  ['realestate', /\b(real.estate|property|realty|broker|construction|architect|interior\s*design|homes?\s*for\s*sale)\b/i],
-  ['outdoors', /\b(travel|tour|tourism|trek|hike|adventure|outdoor|camping|safari|guide|itiner)\b/i],
-  ['tech', /\b(saas|dashboard|analytics|platform|api|developer|devops|infra|cloud|machine\s*learning|ai\s*tool)\b/i],
+  [
+    'coffee',
+    /\b(coffee|cafe|café|espresso|barista|roastery|tea\s*house|bakery|patisserie)\b/i,
+  ],
+  [
+    'farmersmarket',
+    /\b(farmer'?s?\s*market|farm|produce|harvest|organic|grocery|grocer|csa|local\s*food|farm.to.table|seasonal\s*produce|veggie|vegetable\s*box)\b/i,
+  ],
+  [
+    'wellness',
+    /\b(wellness|spa|yoga|meditation|herbal|ayurveda|holistic|naturopath|massage)\b/i,
+  ],
+  [
+    'fitness',
+    /\b(gym|fitness|crossfit|workout|bodybuilding|martial.arts|boxing|hiit|trainer)\b/i,
+  ],
+  [
+    'jewelry',
+    /\b(jewel(ry|lery)?|gold|diamond|ring|necklace|bridal|gemstone|wedding\s*band)\b/i,
+  ],
+  [
+    'fashion',
+    /\b(fashion|streetwear|apparel|clothing|boutique|runway|atelier|couture|outfit)\b/i,
+  ],
+  [
+    'kids',
+    /\b(kid|kids|child|children|toy|toys|playschool|baby|nursery|daycare)\b/i,
+  ],
+  [
+    'food',
+    /\b(restaurant|diner|bistro|kitchen|menu|chef|cuisine|food\s*delivery|takeaway|pizza|burger|sushi)\b/i,
+  ],
+  [
+    'realestate',
+    /\b(real.estate|property|realty|broker|construction|architect|interior\s*design|homes?\s*for\s*sale)\b/i,
+  ],
+  [
+    'outdoors',
+    /\b(travel|tour|tourism|trek|hike|adventure|outdoor|camping|safari|guide|itiner)\b/i,
+  ],
+  [
+    'tech',
+    /\b(saas|dashboard|analytics|platform|api|developer|devops|infra|cloud|machine\s*learning|ai\s*tool)\b/i,
+  ],
   ['saas', /\b(software|app|tool|productivity|workflow|automation|crm|erp)\b/i],
 ]
 
@@ -283,14 +372,17 @@ const inferVibeFromPrompt = (prompt = '', siteType = '') => {
   for (const [vibe, re] of VIBE_KEYWORDS) {
     if (re.test(text)) return { vibe, confident: true }
   }
-  if (String(siteType).toLowerCase() === 'ecommerce') return { vibe: 'fashion', confident: false }
+  if (String(siteType).toLowerCase() === 'ecommerce')
+    return { vibe: 'fashion', confident: false }
   return { vibe: 'tech', confident: false }
 }
 
 // True if primary, secondary, accent are all near-grayscale (low saturation)
 // OR all crammed within a tiny luminance range (the "5 shades of gray" bug).
 const palettePrimariesAreMonotone = (primary, secondary, accent) => {
-  const ps = [colorHsl(primary), colorHsl(secondary), colorHsl(accent)].filter(Boolean)
+  const ps = [colorHsl(primary), colorHsl(secondary), colorHsl(accent)].filter(
+    Boolean,
+  )
   if (ps.length < 2) return false
   const allLowSat = ps.every((p) => p.s < 0.15)
   if (allLowSat) return true
@@ -350,18 +442,30 @@ const applyVibePalette = (colors, vibe) => {
 // the typography equivalent of the monotone palette bug.
 const typographyIsGeneric = (typography) => {
   if (!typography || typeof typography !== 'object') return true
-  const heading = String(typography.heading || '').trim().toLowerCase()
-  const body = String(typography.body || '').trim().toLowerCase()
+  const heading = String(typography.heading || '')
+    .trim()
+    .toLowerCase()
+  const body = String(typography.body || '')
+    .trim()
+    .toLowerCase()
   if (!heading && !body) return true
   // Both unset, or both set to the same generic system sans
-  const generic = new Set(['', 'inter', 'system-ui', 'sans-serif', 'arial', 'helvetica'])
+  const generic = new Set([
+    '',
+    'inter',
+    'system-ui',
+    'sans-serif',
+    'arial',
+    'helvetica',
+  ])
   return generic.has(heading) && generic.has(body)
 }
 
 const applyVibeTypography = (theme, vibe) => {
   const v = VIBE_PALETTES[vibe]
   if (!v?.typography) return false
-  if (!theme.typography || typeof theme.typography !== 'object') theme.typography = {}
+  if (!theme.typography || typeof theme.typography !== 'object')
+    theme.typography = {}
   theme.typography.heading = v.typography.heading
   theme.typography.body = v.typography.body
   return true
@@ -369,15 +473,26 @@ const applyVibeTypography = (theme, vibe) => {
 
 export const repairThemeColors = (theme, fallbackTheme, options = {}) => {
   if (!theme || typeof theme !== 'object') return theme
-  const colors = theme.colors && typeof theme.colors === 'object' ? theme.colors : null
+  const colors =
+    theme.colors && typeof theme.colors === 'object' ? theme.colors : null
   if (!colors) return theme
-  const fb = fallbackTheme?.colors && typeof fallbackTheme.colors === 'object' ? fallbackTheme.colors : {}
+  const fb =
+    fallbackTheme?.colors && typeof fallbackTheme.colors === 'object'
+      ? fallbackTheme.colors
+      : {}
 
   // ─── Palette quality (vibe-driven, runs first so contrast pass sees fixed bg) ───
   const userPrompt = options.userPrompt || fallbackTheme?.userPrompt || ''
   const siteType = options.siteType || fallbackTheme?.siteType || ''
-  const { vibe, confident: vibeConfident } = inferVibeFromPrompt(userPrompt, siteType)
-  const monotone = palettePrimariesAreMonotone(colors.primary, colors.secondary, colors.accent)
+  const { vibe, confident: vibeConfident } = inferVibeFromPrompt(
+    userPrompt,
+    siteType,
+  )
+  const monotone = palettePrimariesAreMonotone(
+    colors.primary,
+    colors.secondary,
+    colors.accent,
+  )
   const garish = borderIsGarish(colors.border, colors.primary, colors.accent)
   // Off-vibe trigger: only fires when keyword-confident, otherwise we
   // can't be sure the vibe match is correct enough to override.
@@ -397,7 +512,8 @@ export const repairThemeColors = (theme, fallbackTheme, options = {}) => {
   }
 
   // ─── Contrast safety on text/mutedText (existing behavior) ───
-  const bg = typeof colors.background === 'string' ? colors.background : '#09090b'
+  const bg =
+    typeof colors.background === 'string' ? colors.background : '#09090b'
   const surface = typeof colors.surface === 'string' ? colors.surface : bg
   const fbText = typeof fb.text === 'string' ? fb.text : '#f4f4f5'
   const fbMuted = typeof fb.mutedText === 'string' ? fb.mutedText : '#94a3b8'

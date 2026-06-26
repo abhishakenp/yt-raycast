@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CorporateLogos — client logo trust bar for an enterprise / corporate B2B
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * platforms, consultancies, or any B2B offering.
  */
 export const CorporateLogos = defineComponent({
-  name: "CorporateLogos",
+  name: 'CorporateLogos',
   description:
-    "Client logo trust bar for an enterprise / corporate B2B homepage: centered muted heading above a responsive grid of text-logo placeholders at reduced opacity with a thin top border, each clickable via useNavigate. Use beneath the hero to establish credibility for SaaS platforms, consultancies, or any B2B offering.",
+    'Client logo trust bar for an enterprise / corporate B2B homepage: centered muted heading above a responsive grid of text-logo placeholders at reduced opacity with a thin top border, each clickable via useNavigate. Use beneath the hero to establish credibility for SaaS platforms, consultancies, or any B2B offering.',
   props: z.object({
     /** Heading above the logo grid. */
     heading: z.string().optional(),
@@ -24,15 +24,17 @@ export const CorporateLogos = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading =
-      props.heading ?? "Trusted by leading enterprises worldwide"
+    const heading = props.heading ?? 'Trusted by leading enterprises worldwide'
     const items = props.items?.length
       ? props.items
-      : ["AcmeCorp", "Globex", "Initech", "Hooli", "Massive", "Soylent"]
+      : ['AcmeCorp', 'Globex', 'Initech', 'Hooli', 'Massive', 'Soylent']
 
     return (
       <section
-        className={cn("border-b border-border bg-background py-16", props.className)}
+        className={cn(
+          'border-b border-border bg-background py-16',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="mb-10 text-center text-sm font-medium text-muted-foreground">

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const ScissorsIcon = () => (
   <svg
@@ -68,10 +68,15 @@ const SparkleIcon = () => (
   </svg>
 )
 
-const ICONS = [<ScissorsIcon />, <DropletIcon />, <RazorIcon />, <SparkleIcon />]
+const ICONS = [
+  <ScissorsIcon />,
+  <DropletIcon />,
+  <RazorIcon />,
+  <SparkleIcon />,
+]
 
 export const SalonBarberServices = defineComponent({
-  name: "SalonBarberServices",
+  name: 'SalonBarberServices',
   description:
     "Services band for a barbershop or salon, rendered through the shared FeatureGrid as four icon-tiled cards (cuts & fades, color, beard & grooming, styling & treatments). Each card pairs a stroke icon with a short, confident grooming description. Use it directly under the hero to lay out the menu of services on a barbershop, salon, or men's grooming page.",
   props: z.object({
@@ -87,24 +92,24 @@ export const SalonBarberServices = defineComponent({
       ? props.services
       : [
           {
-            title: "Haircuts & Fades",
+            title: 'Haircuts & Fades',
             description:
-              "Skin fades, tapers, scissor cuts and classic styles dialed in to your head shape and hair type.",
+              'Skin fades, tapers, scissor cuts and classic styles dialed in to your head shape and hair type.',
           },
           {
-            title: "Color & Highlights",
+            title: 'Color & Highlights',
             description:
-              "Single-process color, gray blending, and natural-looking highlights applied with a careful, modern hand.",
+              'Single-process color, gray blending, and natural-looking highlights applied with a careful, modern hand.',
           },
           {
-            title: "Beard & Grooming",
+            title: 'Beard & Grooming',
             description:
-              "Hot-towel beard shaping, straight-razor line-ups, and grooming that finishes the whole look.",
+              'Hot-towel beard shaping, straight-razor line-ups, and grooming that finishes the whole look.',
           },
           {
-            title: "Styling & Treatments",
+            title: 'Styling & Treatments',
             description:
-              "Wash, scalp treatments, and product styling so you walk out camera-ready and easy to maintain.",
+              'Wash, scalp treatments, and product styling so you walk out camera-ready and easy to maintain.',
           },
         ]
 
@@ -116,8 +121,8 @@ export const SalonBarberServices = defineComponent({
 
     return (
       <FeatureGrid
-        heading={props.heading ?? "Our Services"}
-        subheading={props.subheading ?? "What we do best"}
+        heading={props.heading ?? 'Our Services'}
+        subheading={props.subheading ?? 'What we do best'}
         features={features}
         columns={4}
         className={props.className}

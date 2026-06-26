@@ -42,7 +42,9 @@ export const MarketingShell = ({
 
       {footer && (
         <footer className="site-footer">
-          <span className="footer-brand">SHIP FAST © {new Date().getFullYear()}</span>
+          <span className="footer-brand">
+            SHIP FAST © {new Date().getFullYear()}
+          </span>
           <nav className="footer-nav" aria-label="Footer links">
             <a href="/">Home</a>
             <a href="/pricing">Pricing</a>

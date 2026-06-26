@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * TourExperiencesTestimonials — traveler-review wall for an adventure /
@@ -11,7 +11,7 @@ import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
  * pages. Renders fully with no props via baked-in defaults.
  */
 export const TourExperiencesTestimonials = defineComponent({
-  name: "TourExperiencesTestimonials",
+  name: 'TourExperiencesTestimonials',
   description:
     "Traveler-review wall for an adventure / guided-tour brand. Composes the shared TestimonialGrid composite as three five-star reviews from past travelers, each with a vivid quote, name, star rating, and a tour/role line (e.g. 'Adventure tour, 2025'). Use to build trust and social proof on tour-operator, expedition, and travel-experience landing pages.",
   props: z.object({
@@ -41,29 +41,29 @@ export const TourExperiencesTestimonials = defineComponent({
           {
             quote:
               "Hands down the best day of our whole trip. Our guide knew every shortcut and told stories you'd never get from a brochure.",
-            name: "Maya Okonkwo",
-            role: "Adventure tour, 2025",
+            name: 'Maya Okonkwo',
+            role: 'Adventure tour, 2025',
             rating: 5,
             avatarAlt:
-              "Smiling woman with curly hair on a sunny mountain trail",
+              'Smiling woman with curly hair on a sunny mountain trail',
           },
           {
             quote:
-              "We ate things we never would have found alone and met the families who cook them. Pure magic from start to finish.",
-            name: "Diego Fuentes",
-            role: "Food tour, 2025",
+              'We ate things we never would have found alone and met the families who cook them. Pure magic from start to finish.',
+            name: 'Diego Fuentes',
+            role: 'Food tour, 2025',
             rating: 5,
             avatarAlt:
-              "Cheerful man with a short beard standing in a vibrant street market",
+              'Cheerful man with a short beard standing in a vibrant street market',
           },
           {
             quote:
-              "Small group, big heart. The multi-day expedition pushed us just enough and the sunset views were unreal.",
-            name: "Hannah Brooks",
-            role: "Multi-day expedition, 2024",
+              'Small group, big heart. The multi-day expedition pushed us just enough and the sunset views were unreal.',
+            name: 'Hannah Brooks',
+            role: 'Multi-day expedition, 2024',
             rating: 5,
             avatarAlt:
-              "Happy young woman with a backpack at a clifftop viewpoint at sunset",
+              'Happy young woman with a backpack at a clifftop viewpoint at sunset',
           },
         ]
 
@@ -71,10 +71,10 @@ export const TourExperiencesTestimonials = defineComponent({
       <section className="bg-muted/30 px-6 py-20 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <TestimonialGrid
-            heading={props.heading ?? "Stories from the trail"}
+            heading={props.heading ?? 'Stories from the trail'}
             subheading={
               props.subheading ??
-              "Real words from real travelers who came back with full memory cards and even fuller hearts."
+              'Real words from real travelers who came back with full memory cards and even fuller hearts.'
             }
             items={items}
             columns={3}

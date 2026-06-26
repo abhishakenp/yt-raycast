@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CafeValues — 4-up values / highlights grid for a cozy cafe / coffee shop
@@ -12,9 +12,9 @@ import { cn } from "#/lib/utils.ts"
  * food-and-drink business. Renders fully with no props via baked-in defaults.
  */
 export const CafeValues = defineComponent({
-  name: "CafeValues",
+  name: 'CafeValues',
   description:
-    "4-up values / highlights grid for a cozy cafe page on a card-colored band: each column centers an inline decorative icon inside a muted circular tile, a serif title, and a small description. Icons rotate via index modulo four. No links. Use as a trust / ethos block for cafes, bakeries, tea houses, or any small food-and-drink business.",
+    '4-up values / highlights grid for a cozy cafe page on a card-colored band: each column centers an inline decorative icon inside a muted circular tile, a serif title, and a small description. Icons rotate via index modulo four. No links. Use as a trust / ethos block for cafes, bakeries, tea houses, or any small food-and-drink business.',
   props: z.object({
     /** Value cards: title + description. */
     items: z
@@ -27,22 +27,22 @@ export const CafeValues = defineComponent({
       ? props.items
       : [
           {
-            title: "Single Origin",
+            title: 'Single Origin',
             description:
-              "Direct trade beans from Ethiopia, Colombia, and Guatemala",
+              'Direct trade beans from Ethiopia, Colombia, and Guatemala',
           },
           {
-            title: "Baked Fresh",
-            description: "Pastries made in-house every morning at 4am",
+            title: 'Baked Fresh',
+            description: 'Pastries made in-house every morning at 4am',
           },
           {
-            title: "Community First",
+            title: 'Community First',
             description:
-              "Local art displays, open mic nights, neighborhood gatherings",
+              'Local art displays, open mic nights, neighborhood gatherings',
           },
           {
-            title: "Sustainable",
-            description: "Compostable cups, local sourcing, zero-waste goals",
+            title: 'Sustainable',
+            description: 'Compostable cups, local sourcing, zero-waste goals',
           },
         ]
 
@@ -110,7 +110,7 @@ export const CafeValues = defineComponent({
     ]
 
     return (
-      <section className={cn("bg-card py-20", props.className)}>
+      <section className={cn('bg-card py-20', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {items.map((v, i) => (
@@ -121,9 +121,7 @@ export const CafeValues = defineComponent({
                 <h3 className="font-serif text-lg font-medium text-foreground">
                   {v.title}
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  {v.description}
-                </p>
+                <p className="text-sm text-muted-foreground">{v.description}</p>
               </div>
             ))}
           </div>

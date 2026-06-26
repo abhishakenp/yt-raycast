@@ -23,10 +23,19 @@ export function buildOpenUIVariationBlock(seed, userPrompt) {
   ]
   const editorialLayout = pick(['editorial', 'compact', 'spotlight'], 7)
   const pageRhythm = ['default', 'airy', 'dense', 'bold'][
-    persona === 'balanced' ? 0 : persona === 'airy' ? 1 : persona === 'dense' ? 2 : 3
+    persona === 'balanced'
+      ? 0
+      : persona === 'airy'
+        ? 1
+        : persona === 'dense'
+          ? 2
+          : 3
   ]
   const bentoMood = (u >>> 9) % 2 === 0 ? 'even' : 'spotlight-first'
-  const fingerprint = ((u ^ (u >>> 16)) >>> 0).toString(16).padStart(8, '0').slice(0, 8)
+  const fingerprint = ((u ^ (u >>> 16)) >>> 0)
+    .toString(16)
+    .padStart(8, '0')
+    .slice(0, 8)
   const omitPool = [
     'FAQBlock section',
     'TestimonialCard row',

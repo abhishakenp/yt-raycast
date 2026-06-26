@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ConsultingHero — two-column hero section for a management-consulting firm
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * baked-in "Nexus Strategy Partners" defaults.
  */
 export const ConsultingHero = defineComponent({
-  name: "ConsultingHero",
+  name: 'ConsultingHero',
   description:
-    "Two-column hero section for a management-consulting firm landing page: an eyebrow pill, a large headline with one phrase rendered in muted highlight, a supporting paragraph, dual CTAs (filled primary and outlined secondary), inline trust stats with check icons, and a hero photo with a floating client-retention stat card. CTAs route through useNavigate. Use as the opening hero for consulting firms, strategy advisories, professional-services groups, or corporate B2B landing pages.",
+    'Two-column hero section for a management-consulting firm landing page: an eyebrow pill, a large headline with one phrase rendered in muted highlight, a supporting paragraph, dual CTAs (filled primary and outlined secondary), inline trust stats with check icons, and a hero photo with a floating client-retention stat card. CTAs route through useNavigate. Use as the opening hero for consulting firms, strategy advisories, professional-services groups, or corporate B2B landing pages.',
   props: z.object({
     /** Eyebrow pill text above the headline. */
     eyebrow: z.string().optional(),
@@ -45,25 +45,24 @@ export const ConsultingHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Global Management Consulting"
+    const eyebrow = props.eyebrow ?? 'Global Management Consulting'
     const heading =
-      props.heading ?? "Transforming Strategy into Sustainable Results"
-    const highlight = props.highlight ?? "Sustainable Results"
+      props.heading ?? 'Transforming Strategy into Sustainable Results'
+    const highlight = props.highlight ?? 'Sustainable Results'
     const subheading =
       props.subheading ??
-      "For 28 years, Nexus Strategy Partners has helped Fortune 500 companies and emerging leaders navigate complex challenges, unlock growth potential, and build enduring competitive advantage."
-    const primaryCta = props.primaryCta ?? "Explore Our Services"
-    const secondaryCta = props.secondaryCta ?? "View Case Studies"
+      'For 28 years, Nexus Strategy Partners has helped Fortune 500 companies and emerging leaders navigate complex challenges, unlock growth potential, and build enduring competitive advantage.'
+    const primaryCta = props.primaryCta ?? 'Explore Our Services'
+    const secondaryCta = props.secondaryCta ?? 'View Case Studies'
     const trust = props.trust?.length
       ? props.trust
-      : ["850+ Clients Served", "24 Offices Worldwide"]
+      : ['850+ Clients Served', '24 Offices Worldwide']
     const imageAlt =
       props.imageAlt ??
-      "Professional consultants collaborating around a conference table reviewing documents and data on laptops"
-    const statValue = props.statValue ?? "92%"
-    const statTitle = props.statTitle ?? "Client Retention Rate"
-    const statSubtitle =
-      props.statSubtitle ?? "Average 8-year partnership"
+      'Professional consultants collaborating around a conference table reviewing documents and data on laptops'
+    const statValue = props.statValue ?? '92%'
+    const statTitle = props.statTitle ?? 'Client Retention Rate'
+    const statSubtitle = props.statSubtitle ?? 'Average 8-year partnership'
 
     const CheckIcon = ({ className }: { className?: string }) => (
       <svg
@@ -96,7 +95,7 @@ export const ConsultingHero = defineComponent({
 
     return (
       <section
-        className={cn("relative overflow-hidden bg-muted", props.className)}
+        className={cn('relative overflow-hidden bg-muted', props.className)}
       >
         <div
           aria-hidden="true"

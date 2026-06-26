@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ConstructionPricing — three-tier pricing table for a construction / general
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const ConstructionPricing = defineComponent({
-  name: "ConstructionPricing",
+  name: 'ConstructionPricing',
   description:
     "Three-tier pricing table for a construction / general contractor page: a centered section heading above a responsive 3-column grid of pricing cards with a 'Most Popular' highlight on the featured tier. Each card lists features with check icons and a CTA button that routes through useNavigate. Use to present transparent project pricing for construction firms, contractors, builders, or remodeling companies.",
   props: z.object({
@@ -44,51 +44,51 @@ export const ConstructionPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Pricing"
-    const heading = props.heading ?? "Transparent pricing for every project"
+    const eyebrow = props.eyebrow ?? 'Pricing'
+    const heading = props.heading ?? 'Transparent pricing for every project'
     const description =
       props.description ??
-      "Every project is unique. Here are typical starting points for our most common project types. Final pricing depends on scope, materials, and timeline."
-    const cta = props.cta ?? "Get estimate"
-    const popularLabel = props.popularLabel ?? "Most Popular"
+      'Every project is unique. Here are typical starting points for our most common project types. Final pricing depends on scope, materials, and timeline.'
+    const cta = props.cta ?? 'Get estimate'
+    const popularLabel = props.popularLabel ?? 'Most Popular'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Kitchen Remodel",
-            price: "$45K",
-            priceSuffix: "+",
-            note: "Starting price",
+            name: 'Kitchen Remodel',
+            price: '$45K',
+            priceSuffix: '+',
+            note: 'Starting price',
             features: [
-              "Cabinet replacement",
-              "Countertop installation",
-              "Flooring & lighting",
-              "6-8 week timeline",
+              'Cabinet replacement',
+              'Countertop installation',
+              'Flooring & lighting',
+              '6-8 week timeline',
             ],
           },
           {
-            name: "Custom Home",
-            price: "$650K",
-            priceSuffix: "+",
-            note: "Starting price",
+            name: 'Custom Home',
+            price: '$650K',
+            priceSuffix: '+',
+            note: 'Starting price',
             features: [
-              "Complete design-build",
-              "3,000-5,000 sq ft",
-              "Premium finishes",
-              "12-18 month timeline",
+              'Complete design-build',
+              '3,000-5,000 sq ft',
+              'Premium finishes',
+              '12-18 month timeline',
             ],
             featured: true,
           },
           {
-            name: "Commercial Build",
-            price: "$2M",
-            priceSuffix: "+",
-            note: "Starting price",
+            name: 'Commercial Build',
+            price: '$2M',
+            priceSuffix: '+',
+            note: 'Starting price',
             features: [
-              "Turnkey delivery",
-              "20,000+ sq ft",
-              "LEED certification available",
-              "18-36 month timeline",
+              'Turnkey delivery',
+              '20,000+ sq ft',
+              'LEED certification available',
+              '18-36 month timeline',
             ],
           },
         ]
@@ -111,7 +111,7 @@ export const ConstructionPricing = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -128,10 +128,10 @@ export const ConstructionPricing = defineComponent({
               <div
                 key={tier.name}
                 className={cn(
-                  "relative rounded-xl p-8",
+                  'relative rounded-xl p-8',
                   tier.featured
-                    ? "bg-foreground shadow-lg"
-                    : "bg-card shadow-sm",
+                    ? 'bg-foreground shadow-lg'
+                    : 'bg-card shadow-sm',
                 )}
               >
                 {tier.featured ? (
@@ -143,25 +143,25 @@ export const ConstructionPricing = defineComponent({
                 ) : null}
                 <h3
                   className={cn(
-                    "mb-2 text-lg font-semibold",
-                    tier.featured ? "text-background" : "text-foreground",
+                    'mb-2 text-lg font-semibold',
+                    tier.featured ? 'text-background' : 'text-foreground',
                   )}
                 >
                   {tier.name}
                 </h3>
                 <div
                   className={cn(
-                    "mb-1 text-4xl font-bold",
-                    tier.featured ? "text-background" : "text-foreground",
+                    'mb-1 text-4xl font-bold',
+                    tier.featured ? 'text-background' : 'text-foreground',
                   )}
                 >
                   {tier.price}
                   <span
                     className={cn(
-                      "text-lg font-normal",
+                      'text-lg font-normal',
                       tier.featured
-                        ? "text-background/60"
-                        : "text-muted-foreground",
+                        ? 'text-background/60'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {tier.priceSuffix}
@@ -169,10 +169,10 @@ export const ConstructionPricing = defineComponent({
                 </div>
                 <p
                   className={cn(
-                    "mb-6 text-sm",
+                    'mb-6 text-sm',
                     tier.featured
-                      ? "text-background/60"
-                      : "text-muted-foreground",
+                      ? 'text-background/60'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {tier.note}
@@ -182,10 +182,10 @@ export const ConstructionPricing = defineComponent({
                     <li
                       key={feature}
                       className={cn(
-                        "flex items-start gap-3 text-sm",
+                        'flex items-start gap-3 text-sm',
                         tier.featured
-                          ? "text-background/80"
-                          : "text-muted-foreground",
+                          ? 'text-background/80'
+                          : 'text-muted-foreground',
                       )}
                     >
                       <Check className="shrink-0 text-primary" />
@@ -197,10 +197,10 @@ export const ConstructionPricing = defineComponent({
                   type="button"
                   onClick={() => go(`${cta} — ${tier.name}`)}
                   className={cn(
-                    "block w-full rounded-lg py-3 text-center font-semibold transition-colors",
+                    'block w-full rounded-lg py-3 text-center font-semibold transition-colors',
                     tier.featured
-                      ? "bg-background text-foreground hover:bg-background/90"
-                      : "bg-muted text-foreground hover:bg-accent",
+                      ? 'bg-background text-foreground hover:bg-background/90'
+                      : 'bg-muted text-foreground hover:bg-accent',
                   )}
                 >
                   {cta}

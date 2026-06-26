@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * AuthTestimonials — 3-up developer testimonial wall for Authly, a developer
@@ -13,7 +13,7 @@ import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
  * platform, identity API, or login SDK. Renders fully with no props.
  */
 export const AuthTestimonials = defineComponent({
-  name: "AuthTestimonials",
+  name: 'AuthTestimonials',
   description:
     "3-up developer testimonial wall for a developer-auth product built on the shared TestimonialGrid composite: a centered heading ('Developers ship faster with us') above a responsive card grid. Each card renders a star row matching the rating, a quoted testimonial, and an attribution pairing the engineer's name with their role and company. Use for social proof on an auth platform, identity API, or login SDK.",
   props: z.object({
@@ -34,32 +34,32 @@ export const AuthTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Developers ship faster with us"
+    const heading = props.heading ?? 'Developers ship faster with us'
     const reviews = props.reviews?.length
       ? props.reviews
       : [
           {
             quote:
-              "We ripped out 4,000 lines of homegrown auth and replaced it with Authly in a weekend. SSO, MFA, and passkeys just worked. Our team finally stopped firefighting login bugs.",
-            name: "Daniela Cruz",
-            role: "CTO",
-            company: "Fintech startup",
+              'We ripped out 4,000 lines of homegrown auth and replaced it with Authly in a weekend. SSO, MFA, and passkeys just worked. Our team finally stopped firefighting login bugs.',
+            name: 'Daniela Cruz',
+            role: 'CTO',
+            company: 'Fintech startup',
             rating: 5,
           },
           {
             quote:
-              "The SDK is genuinely a joy to use — typed end to end, great docs, and sensible defaults. We had protected routes in production the same day we signed up.",
-            name: "Marcus Lee",
-            role: "Staff Engineer",
-            company: "Datapine",
+              'The SDK is genuinely a joy to use — typed end to end, great docs, and sensible defaults. We had protected routes in production the same day we signed up.',
+            name: 'Marcus Lee',
+            role: 'Staff Engineer',
+            company: 'Datapine',
             rating: 5,
           },
           {
             quote:
-              "Authly let us pass our SOC 2 audit without building a security team. Adaptive MFA and breached-password detection came out of the box. Worth every penny.",
-            name: "Aisha Okoro",
-            role: "Founder",
-            company: "Loophole",
+              'Authly let us pass our SOC 2 audit without building a security team. Adaptive MFA and breached-password detection came out of the box. Worth every penny.',
+            name: 'Aisha Okoro',
+            role: 'Founder',
+            company: 'Loophole',
             rating: 5,
           },
         ]

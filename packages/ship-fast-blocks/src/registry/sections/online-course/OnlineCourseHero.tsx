@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * OnlineCourseHero — split, two-column hero for an online-course / e-learning
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * skill-learning subscription product. Renders fully with no props.
  */
 export const OnlineCourseHero = defineComponent({
-  name: "OnlineCourseHero",
+  name: 'OnlineCourseHero',
   description:
-    "Split two-column hero for an online-course / e-learning landing page: left column has a pill enrollment badge with a pulsing dot, a huge tracking-tight headline, a relaxed subheading, dual CTAs (solid primary + outlined Watch Demo with a play glyph), and an overlapping avatar social-proof row; right column has a rounded showcase photo with a floating Certificate Issued card and a floating star-rating card. CTAs route through useNavigate. Use as the top hero for course platforms, e-learning marketplaces, bootcamps, academies, or skill-learning subscription products.",
+    'Split two-column hero for an online-course / e-learning landing page: left column has a pill enrollment badge with a pulsing dot, a huge tracking-tight headline, a relaxed subheading, dual CTAs (solid primary + outlined Watch Demo with a play glyph), and an overlapping avatar social-proof row; right column has a rounded showcase photo with a floating Certificate Issued card and a floating star-rating card. CTAs route through useNavigate. Use as the top hero for course platforms, e-learning marketplaces, bootcamps, academies, or skill-learning subscription products.',
   props: z.object({
     badge: z.string().optional(),
     heading: z.string().optional(),
@@ -37,31 +37,30 @@ export const OnlineCourseHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Over 50,000 students enrolled this month"
-    const heading =
-      props.heading ?? "Master the skills that shape the future"
+    const badge = props.badge ?? 'Over 50,000 students enrolled this month'
+    const heading = props.heading ?? 'Master the skills that shape the future'
     const subheading =
       props.subheading ??
-      "Learn from industry experts with hands-on projects, earn recognized certificates, and join a community of 2 million+ learners advancing their careers."
-    const primaryCta = props.primaryCta ?? "Explore Courses"
-    const secondaryCta = props.secondaryCta ?? "Watch Demo"
+      'Learn from industry experts with hands-on projects, earn recognized certificates, and join a community of 2 million+ learners advancing their careers.'
+    const primaryCta = props.primaryCta ?? 'Explore Courses'
+    const secondaryCta = props.secondaryCta ?? 'Watch Demo'
     const socialProof =
-      props.socialProof ?? "Joined by 2,400+ learners this week"
+      props.socialProof ?? 'Joined by 2,400+ learners this week'
     const avatars = props.avatars?.length
       ? props.avatars
       : [
-          "professional headshot of a smiling woman with brown hair",
-          "professional headshot of a man in his 30s with short dark hair",
-          "professional headshot of a woman with blonde hair smiling",
-          "professional headshot of a young man with beard and glasses",
+          'professional headshot of a smiling woman with brown hair',
+          'professional headshot of a man in his 30s with short dark hair',
+          'professional headshot of a woman with blonde hair smiling',
+          'professional headshot of a young man with beard and glasses',
         ]
     const imageAlt =
       props.imageAlt ??
-      "diverse group of young professionals collaborating around a laptop in a modern office"
-    const certTitle = props.certTitle ?? "Certificate Issued"
-    const certSubtitle = props.certSubtitle ?? "Sarah completed UX Design"
-    const rating = props.rating ?? "4.9/5"
-    const ratingNote = props.ratingNote ?? "From 12,847 reviews"
+      'diverse group of young professionals collaborating around a laptop in a modern office'
+    const certTitle = props.certTitle ?? 'Certificate Issued'
+    const certSubtitle = props.certSubtitle ?? 'Sarah completed UX Design'
+    const rating = props.rating ?? '4.9/5'
+    const ratingNote = props.ratingNote ?? 'From 12,847 reviews'
 
     const Star = ({ className }: { className?: string }) => (
       <svg
@@ -77,9 +76,7 @@ export const OnlineCourseHero = defineComponent({
     )
 
     return (
-      <section
-        className={cn("py-20 sm:py-28 lg:py-32", props.className)}
-      >
+      <section className={cn('py-20 sm:py-28 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">

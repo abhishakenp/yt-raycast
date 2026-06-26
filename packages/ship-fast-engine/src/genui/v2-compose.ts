@@ -17,8 +17,9 @@ import spec from './generated/component-spec.json'
  * output is valid by construction — no free-form OpenUI to mis-parse, no fallback.
  */
 
-const COMPONENTS = (spec as { components: Record<string, { signature: string }> })
-  .components
+const COMPONENTS = (
+  spec as { components: Record<string, { signature: string }> }
+).components
 
 // Canonical top-to-bottom section order for a composed marketing/home page.
 // HEAD = content block (intro → offering); TAIL = proof/convert/close block.
@@ -106,7 +107,9 @@ function discoverFamilies(): Map<string, Family> {
   const bespoke = new Map<string, string[]>()
   for (const name of allNames) {
     if (assignedKnown.has(name)) continue
-    const fam = keptNames.find((f) => name.startsWith(f) && name.length > f.length)
+    const fam = keptNames.find(
+      (f) => name.startsWith(f) && name.length > f.length,
+    )
     if (!fam) continue
     const role = name.slice(fam.length)
     if (!/^[A-Z]/.test(role)) continue
@@ -205,19 +208,45 @@ export async function classifyFamilies(
 
 /** Seed-pick a family from the ranked candidates (deterministic per seed). */
 export function resolveFamily(candidates: string[], seed: string): Family {
-  const valid = candidates.map((c) => FAMILIES.get(c)).filter((f): f is Family => Boolean(f))
+  const valid = candidates
+    .map((c) => FAMILIES.get(c))
+    .filter((f): f is Family => Boolean(f))
   const pool = valid.length ? valid : [...FAMILIES.values()]
   const rng = makeSeededRng(`${seed}:family`)
   return pick(rng, pool)
 }
 
 const LANG_NAMES: Record<string, string> = {
-  fr: 'French', es: 'Spanish', de: 'German', it: 'Italian', pt: 'Portuguese',
-  nl: 'Dutch', sv: 'Swedish', da: 'Danish', no: 'Norwegian', fi: 'Finnish',
-  pl: 'Polish', tr: 'Turkish', ja: 'Japanese', zh: 'Chinese', ko: 'Korean',
-  ar: 'Arabic', hi: 'Hindi', ru: 'Russian', uk: 'Ukrainian', he: 'Hebrew',
-  th: 'Thai', vi: 'Vietnamese', id: 'Indonesian', ms: 'Malay', cs: 'Czech',
-  el: 'Greek', ro: 'Romanian', hu: 'Hungarian', ta: 'Tamil', ml: 'Malayalam',
+  fr: 'French',
+  es: 'Spanish',
+  de: 'German',
+  it: 'Italian',
+  pt: 'Portuguese',
+  nl: 'Dutch',
+  sv: 'Swedish',
+  da: 'Danish',
+  no: 'Norwegian',
+  fi: 'Finnish',
+  pl: 'Polish',
+  tr: 'Turkish',
+  ja: 'Japanese',
+  zh: 'Chinese',
+  ko: 'Korean',
+  ar: 'Arabic',
+  hi: 'Hindi',
+  ru: 'Russian',
+  uk: 'Ukrainian',
+  he: 'Hebrew',
+  th: 'Thai',
+  vi: 'Vietnamese',
+  id: 'Indonesian',
+  ms: 'Malay',
+  cs: 'Czech',
+  el: 'Greek',
+  ro: 'Romanian',
+  hu: 'Hungarian',
+  ta: 'Tamil',
+  ml: 'Malayalam',
 }
 /** Instruction that forces all user-visible content into a non-English locale. */
 function localeDirective(locale?: string): string {
@@ -249,7 +278,8 @@ function parseJsonObject(raw: string): Record<string, Record<string, unknown>> {
   const text = stripFences(raw).trim()
   const start = text.indexOf('{')
   const end = text.lastIndexOf('}')
-  if (start < 0 || end <= start) throw new Error('no JSON object in model output')
+  if (start < 0 || end <= start)
+    throw new Error('no JSON object in model output')
   return JSON.parse(text.slice(start, end + 1))
 }
 
@@ -270,9 +300,36 @@ function buildFamilyKeywords(): Map<string, string> {
 }
 const FAMILY_KEYWORDS = buildFamilyKeywords()
 const STOPWORDS = new Set([
-  'the', 'a', 'an', 'and', 'or', 'for', 'with', 'to', 'of', 'in', 'on', 'site',
-  'website', 'web', 'app', 'page', 'build', 'make', 'create', 'my', 'your',
-  'our', 'that', 'this', 'new', 'modern', 'simple', 'clean', 'best', 'platform',
+  'the',
+  'a',
+  'an',
+  'and',
+  'or',
+  'for',
+  'with',
+  'to',
+  'of',
+  'in',
+  'on',
+  'site',
+  'website',
+  'web',
+  'app',
+  'page',
+  'build',
+  'make',
+  'create',
+  'my',
+  'your',
+  'our',
+  'that',
+  'this',
+  'new',
+  'modern',
+  'simple',
+  'clean',
+  'best',
+  'platform',
 ])
 const tokenize = (s: string): string[] =>
   s
@@ -284,22 +341,202 @@ const tokenize = (s: string): string[] =>
 const splitCamel = (s: string): string => s.replace(/([a-z])([A-Z])/g, '$1 $2')
 // Coarse intent synonyms → boost whole groups of families the keywords miss.
 const INTENT_GROUPS: { hints: string[]; families: string[] }[] = [
-  { hints: ['store', 'shop', 'buy', 'ecommerce', 'storefront', 'merch', 'sell', 'product', 'goods'], families: ['FashionStore', 'ElectronicsStore', 'JewelryStore', 'FurnitureStore', 'BeautyStore', 'Directory'] },
-  { hints: ['restaurant', 'dining', 'eatery', 'bistro', 'food', 'menu', 'chef', 'cuisine'], families: ['Cafe', 'Bakery', 'BarNightclub', 'FoodTruck', 'FoodDelivery'] },
-  { hints: ['saas', 'software', 'api', 'developer', 'dev', 'tool', 'platform', 'dashboard', 'analytics'], families: ['DevTool', 'Crm', 'CloudInfra', 'Cybersecurity', 'NoCode', 'AiProduct'] },
+  {
+    hints: [
+      'store',
+      'shop',
+      'buy',
+      'ecommerce',
+      'storefront',
+      'merch',
+      'sell',
+      'product',
+      'goods',
+    ],
+    families: [
+      'FashionStore',
+      'ElectronicsStore',
+      'JewelryStore',
+      'FurnitureStore',
+      'BeautyStore',
+      'Directory',
+    ],
+  },
+  {
+    hints: [
+      'restaurant',
+      'dining',
+      'eatery',
+      'bistro',
+      'food',
+      'menu',
+      'chef',
+      'cuisine',
+    ],
+    families: ['Cafe', 'Bakery', 'BarNightclub', 'FoodTruck', 'FoodDelivery'],
+  },
+  {
+    hints: [
+      'saas',
+      'software',
+      'api',
+      'developer',
+      'dev',
+      'tool',
+      'platform',
+      'dashboard',
+      'analytics',
+    ],
+    families: [
+      'DevTool',
+      'Crm',
+      'CloudInfra',
+      'Cybersecurity',
+      'NoCode',
+      'AiProduct',
+    ],
+  },
   // Auth / identity products ("authentication as a service", SSO/MFA) collide with
   // CleaningService on the generic word "service" — boost Auth explicitly.
-  { hints: ['auth', 'authentication', 'login', 'signin', 'signup', 'sso', 'mfa', 'oauth', 'identity', 'passwordless', 'credential', 'credentials', 'session', 'otp', 'verification'], families: ['Auth'] },
-  { hints: ['fintech', 'finance', 'financial', 'banking', 'bank', 'payments', 'payment', 'wallet', 'lending', 'loan', 'invest', 'investing', 'money', 'remittance', 'neobank'], families: ['Fintech', 'Lending', 'Investing', 'Crypto'] },
-  { hints: ['marketplace', 'vendors', 'sellers', 'multivendor', 'classifieds', 'buyers'], families: ['Marketplace', 'Directory'] },
-  { hints: ['estate', 'realtor', 'property', 'properties', 'homes', 'housing', 'rental', 'rentals', 'apartment', 'apartments', 'mortgage'], families: ['RealEstate', 'PropertyListing', 'VacationRental'] },
-  { hints: ['telehealth', 'telemedicine', 'doctor', 'doctors', 'clinic', 'patient', 'patients', 'medical'], families: ['Telehealth', 'Healthcare', 'Dental', 'MentalHealth'] },
-  { hints: ['portfolio', 'designer', 'artist', 'creative', 'photographer', 'freelance'], families: ['Illustrator', 'FilmDirector', 'MusicArtist', 'Agency'] },
-  { hints: ['news', 'magazine', 'newsroom', 'editorial', 'press', 'journal', 'publication', 'blog'], families: ['Newsroom', 'Newsletter'] },
+  {
+    hints: [
+      'auth',
+      'authentication',
+      'login',
+      'signin',
+      'signup',
+      'sso',
+      'mfa',
+      'oauth',
+      'identity',
+      'passwordless',
+      'credential',
+      'credentials',
+      'session',
+      'otp',
+      'verification',
+    ],
+    families: ['Auth'],
+  },
+  {
+    hints: [
+      'fintech',
+      'finance',
+      'financial',
+      'banking',
+      'bank',
+      'payments',
+      'payment',
+      'wallet',
+      'lending',
+      'loan',
+      'invest',
+      'investing',
+      'money',
+      'remittance',
+      'neobank',
+    ],
+    families: ['Fintech', 'Lending', 'Investing', 'Crypto'],
+  },
+  {
+    hints: [
+      'marketplace',
+      'vendors',
+      'sellers',
+      'multivendor',
+      'classifieds',
+      'buyers',
+    ],
+    families: ['Marketplace', 'Directory'],
+  },
+  {
+    hints: [
+      'estate',
+      'realtor',
+      'property',
+      'properties',
+      'homes',
+      'housing',
+      'rental',
+      'rentals',
+      'apartment',
+      'apartments',
+      'mortgage',
+    ],
+    families: ['RealEstate', 'PropertyListing', 'VacationRental'],
+  },
+  {
+    hints: [
+      'telehealth',
+      'telemedicine',
+      'doctor',
+      'doctors',
+      'clinic',
+      'patient',
+      'patients',
+      'medical',
+    ],
+    families: ['Telehealth', 'Healthcare', 'Dental', 'MentalHealth'],
+  },
+  {
+    hints: [
+      'portfolio',
+      'designer',
+      'artist',
+      'creative',
+      'photographer',
+      'freelance',
+    ],
+    families: ['Illustrator', 'FilmDirector', 'MusicArtist', 'Agency'],
+  },
+  {
+    hints: [
+      'news',
+      'magazine',
+      'newsroom',
+      'editorial',
+      'press',
+      'journal',
+      'publication',
+      'blog',
+    ],
+    families: ['Newsroom', 'Newsletter'],
+  },
   // Classic Indian-government / public-sector / PSU portals are an obvious, common
   // ask ("indian government site", "classical site", "PSU power utility") — route
   // them firmly to the GovernmentPortal family.
-  { hints: ['government', 'indian', 'india', 'sarkari', 'gov', 'public', 'sector', 'psu', 'ministry', 'department', 'municipal', 'municipality', 'civic', 'citizen', 'classic', 'classical', 'official', 'portal', 'tender', 'notice', 'utility', 'electricity', 'nigam', 'nagar', 'board', 'authority', 'commission'], families: ['GovernmentPortal'] },
+  {
+    hints: [
+      'government',
+      'indian',
+      'india',
+      'sarkari',
+      'gov',
+      'public',
+      'sector',
+      'psu',
+      'ministry',
+      'department',
+      'municipal',
+      'municipality',
+      'civic',
+      'citizen',
+      'classic',
+      'classical',
+      'official',
+      'portal',
+      'tender',
+      'notice',
+      'utility',
+      'electricity',
+      'nigam',
+      'nagar',
+      'board',
+      'authority',
+      'commission',
+    ],
+    families: ['GovernmentPortal'],
+  },
 ]
 
 /** Top-K candidate families by local keyword overlap (no model call). */
@@ -308,7 +545,8 @@ export function shortlistFamilies(prompt: string, k = 3): string[] {
   const groupBoost = new Map<string, number>()
   for (const g of INTENT_GROUPS) {
     if (g.hints.some((h) => pt.has(h)))
-      for (const f of g.families) groupBoost.set(f, (groupBoost.get(f) ?? 0) + 4)
+      for (const f of g.families)
+        groupBoost.set(f, (groupBoost.get(f) ?? 0) + 4)
   }
   const scored = [...FAMILIES.keys()]
     .map((name) => {
@@ -319,7 +557,10 @@ export function shortlistFamilies(prompt: string, k = 3): string[] {
       return { name, score }
     })
     .sort((a, b) => b.score - a.score)
-  const top = scored.filter((s) => s.score > 0).slice(0, k).map((s) => s.name)
+  const top = scored
+    .filter((s) => s.score > 0)
+    .slice(0, k)
+    .map((s) => s.name)
   if (top.length < k && !top.includes('Marketing')) top.push('Marketing')
   return top.length ? top.slice(0, Math.max(k, 1)) : ['Marketing']
 }
@@ -378,7 +619,12 @@ export async function composeHomeFirstPass(input: {
         `  ${sec.toLowerCase()}: ${getComponentSignature(`${fam.name}${sec}`) ?? `${fam.name}${sec}(...)`}`,
     ),
   }))
-  const ask = async (strict: boolean): Promise<{ family?: string; props: Record<string, Record<string, unknown>> }> => {
+  const ask = async (
+    strict: boolean,
+  ): Promise<{
+    family?: string
+    props: Record<string, Record<string, unknown>>
+  }> => {
     const sys = strict
       ? `${superagentSystem(input.locale)} You MUST fill EVERY section listed for the chosen vertical with rich content — never return an empty or partial object.`
       : superagentSystem(input.locale)
@@ -392,7 +638,9 @@ export async function composeHomeFirstPass(input: {
     let parsed: Record<string, unknown> = {}
     try {
       const text = stripFences(raw).trim()
-      parsed = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1))
+      parsed = JSON.parse(
+        text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1),
+      )
     } catch {
       parsed = {}
     }
@@ -413,7 +661,10 @@ export async function composeHomeFirstPass(input: {
   }
 
   let out = await ask(false)
-  let chosen = (out.family && FAMILIES.get(out.family)) || shortlist[0] || FAMILIES.get('Marketing')!
+  let chosen =
+    (out.family && FAMILIES.get(out.family)) ||
+    shortlist[0] ||
+    FAMILIES.get('Marketing')!
   // Quality strictness: the home must be substantially filled (hero + ≥ half the
   // sections). If not, retry once with a stricter instruction — never ship an
   // empty/placeholder homepage.
@@ -471,7 +722,12 @@ export function assembleComposedPage(input: {
     refs.push(id)
   }
   statements.push(`${input.pageId} = Stack([${refs.join(', ')}])`)
-  return { statements, rootRef: input.pageId, family: input.family.name, sectionIds: refs }
+  return {
+    statements,
+    rootRef: input.pageId,
+    family: input.family.name,
+    sectionIds: refs,
+  }
 }
 
 export type ComposedPage = {
@@ -615,7 +871,8 @@ type PagePlan = { id: string; label: string; sections: string[] }
 function buildFullstackManifest(family: Family): GeneratedArtifact {
   const tables = new Set<string>()
   for (const sec of family.sections) {
-    for (const field of arrayFieldNames(`${family.name}${sec}`)) tables.add(field)
+    for (const field of arrayFieldNames(`${family.name}${sec}`))
+      tables.add(field)
   }
   const manifest = {
     version: 2,
@@ -633,37 +890,102 @@ function buildFullstackManifest(family: Family): GeneratedArtifact {
   return { key: 'fullstack-manifest', contentJson: JSON.stringify(manifest) }
 }
 
-const SECONDARY_ROLES: { id: string; label: string; need: string; want: string[] }[] = [
-  { id: 'pricing', label: 'Pricing', need: 'Pricing', want: ['Navbar', 'Hero', 'Pricing', 'Faq', 'Cta', 'Footer'] },
-  { id: 'menu', label: 'Menu', need: 'Menu', want: ['Navbar', 'Hero', 'Menu', 'Gallery', 'Footer'] },
-  { id: 'services', label: 'Services', need: 'Services', want: ['Navbar', 'Hero', 'Services', 'Process', 'Stats', 'Cta', 'Footer'] },
-  { id: 'work', label: 'Work', need: 'Work', want: ['Navbar', 'Hero', 'Work', 'Projects', 'Stats', 'Testimonials', 'Footer'] },
-  { id: 'gallery', label: 'Gallery', need: 'Gallery', want: ['Navbar', 'Hero', 'Gallery', 'Testimonials', 'Footer'] },
-  { id: 'about', label: 'About', need: 'About', want: ['Navbar', 'Hero', 'About', 'Stats', 'Process', 'Testimonials', 'Footer'] },
-  { id: 'contact', label: 'Contact', need: 'Contact', want: ['Navbar', 'Hero', 'Contact', 'Faq', 'Footer'] },
+const SECONDARY_ROLES: {
+  id: string
+  label: string
+  need: string
+  want: string[]
+}[] = [
+  {
+    id: 'pricing',
+    label: 'Pricing',
+    need: 'Pricing',
+    want: ['Navbar', 'Hero', 'Pricing', 'Faq', 'Cta', 'Footer'],
+  },
+  {
+    id: 'menu',
+    label: 'Menu',
+    need: 'Menu',
+    want: ['Navbar', 'Hero', 'Menu', 'Gallery', 'Footer'],
+  },
+  {
+    id: 'services',
+    label: 'Services',
+    need: 'Services',
+    want: ['Navbar', 'Hero', 'Services', 'Process', 'Stats', 'Cta', 'Footer'],
+  },
+  {
+    id: 'work',
+    label: 'Work',
+    need: 'Work',
+    want: [
+      'Navbar',
+      'Hero',
+      'Work',
+      'Projects',
+      'Stats',
+      'Testimonials',
+      'Footer',
+    ],
+  },
+  {
+    id: 'gallery',
+    label: 'Gallery',
+    need: 'Gallery',
+    want: ['Navbar', 'Hero', 'Gallery', 'Testimonials', 'Footer'],
+  },
+  {
+    id: 'about',
+    label: 'About',
+    need: 'About',
+    want: [
+      'Navbar',
+      'Hero',
+      'About',
+      'Stats',
+      'Process',
+      'Testimonials',
+      'Footer',
+    ],
+  },
+  {
+    id: 'contact',
+    label: 'Contact',
+    need: 'Contact',
+    want: ['Navbar', 'Hero', 'Contact', 'Faq', 'Footer'],
+  },
 ]
 
 /** Pick the homepage + 2-3 secondary pages this family can actually compose. */
 function planPages(family: Family, seed: string): PagePlan[] {
-  const home: PagePlan = { id: 'home', label: 'Home', sections: family.sections }
+  const home: PagePlan = {
+    id: 'home',
+    label: 'Home',
+    sections: family.sections,
+  }
   const rng = makeSeededRng(`${seed}:pages`)
   const has = new Set(family.sections)
-  const candidates = SECONDARY_ROLES.filter((r) => has.has(r.need)).map((r) => ({
-    id: r.id,
-    label: r.label,
-    sections: family.sections.filter((s) => r.want.includes(s)),
-  }))
+  const candidates = SECONDARY_ROLES.filter((r) => has.has(r.need)).map(
+    (r) => ({
+      id: r.id,
+      label: r.label,
+      sections: family.sections.filter((s) => r.want.includes(s)),
+    }),
+  )
   // Always provide an "Explore" page from sections not foregrounded elsewhere so
   // even families with few named roles still ship a multi-page site.
   const spine = ['Navbar', 'Hero', 'Footer']
   const leftover = family.sections.filter(
-    (s) => !spine.includes(s) && !candidates.some((c) => c.sections.includes(s)),
+    (s) =>
+      !spine.includes(s) && !candidates.some((c) => c.sections.includes(s)),
   )
   if (leftover.length >= 2) {
     candidates.push({
       id: 'explore',
       label: 'Explore',
-      sections: ['Navbar', 'Hero', ...leftover, 'Footer'].filter((s) => has.has(s)),
+      sections: ['Navbar', 'Hero', ...leftover, 'Footer'].filter((s) =>
+        has.has(s),
+      ),
     })
   }
   const usable = candidates.filter((p) => p.sections.length >= 3)
@@ -744,10 +1066,25 @@ export type ComposedContent = {
 // marketing sections so an "app" prompt yields a focused tool, not a site.
 // Nothing here knows about any specific app (no counter/todo/etc. hardcoding).
 const APP_PRIMITIVES = [
-  'Stack', 'Section', 'Heading', 'Text', 'Button',
-  'StateText', 'StateButton', 'StateInput',
-  'Input', 'Textarea', 'Card', 'Badge', 'Separator', 'Image',
-  'Switch', 'Slider', 'Progress', 'Avatar', 'SignIn',
+  'Stack',
+  'Section',
+  'Heading',
+  'Text',
+  'Button',
+  'StateText',
+  'StateButton',
+  'StateInput',
+  'Input',
+  'Textarea',
+  'Card',
+  'Badge',
+  'Separator',
+  'Image',
+  'Switch',
+  'Slider',
+  'Progress',
+  'Avatar',
+  'SignIn',
 ] as const
 
 function appPrimitiveCatalog(): string {
@@ -762,7 +1099,9 @@ function appPrimitiveCatalog(): string {
 /** Light structural check: root is a Stack and every component call is known. */
 function isValidFreeForm(source: string): boolean {
   if (!/(^|\n)\s*root\s*=\s*Stack\s*\(/.test(source)) return false
-  const names = [...source.matchAll(/\b([A-Z][A-Za-z0-9]+)\s*\(/g)].map((m) => m[1])
+  const names = [...source.matchAll(/\b([A-Z][A-Za-z0-9]+)\s*\(/g)].map(
+    (m) => m[1],
+  )
   return names.length > 0 && names.every((n) => n in COMPONENTS)
 }
 
@@ -780,8 +1119,17 @@ export async function classifyGenerationMode(
 WEBSITE — a marketing, content, or business website for a real-world organization, product, brand, or person (it informs or sells, with pages like home/about/services).
 APP — a self-contained interactive tool, utility, widget, tracker, calculator, or game that a person OPERATES with controls and live state, and is NOT a marketing website.
 Output only the single word WEBSITE or APP.`
-  const raw = await generateText(modelId, system, `Request: ${prompt}`, signal, 0)
-  const first = stripFences(raw).trim().split(/[^A-Za-z]/)[0]?.toUpperCase()
+  const raw = await generateText(
+    modelId,
+    system,
+    `Request: ${prompt}`,
+    signal,
+    0,
+  )
+  const first = stripFences(raw)
+    .trim()
+    .split(/[^A-Za-z]/)[0]
+    ?.toUpperCase()
   return first === 'APP' ? 'app' : 'website'
 }
 

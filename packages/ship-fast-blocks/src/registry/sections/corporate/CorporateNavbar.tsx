@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CorporateNavbar — sticky translucent top navigation bar for an enterprise /
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * corporate site that needs gravitas and clear conversion paths.
  */
 export const CorporateNavbar = defineComponent({
-  name: "CorporateNavbar",
+  name: 'CorporateNavbar',
   description:
-    "Sticky translucent top navigation bar for an enterprise / corporate B2B site: backdrop-blurred, border-bottomed header with a solid brand-initial logo tile + company name on the left, horizontal nav links and a secondary text link plus a filled primary CTA on the right (desktop), and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for enterprise software, SaaS, IT consultancies, or any corporate site.",
+    'Sticky translucent top navigation bar for an enterprise / corporate B2B site: backdrop-blurred, border-bottomed header with a solid brand-initial logo tile + company name on the left, horizontal nav links and a secondary text link plus a filled primary CTA on the right (desktop), and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for enterprise software, SaaS, IT consultancies, or any corporate site.',
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -32,13 +32,13 @@ export const CorporateNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Nexus"
+    const brand = props.brand ?? 'Nexus'
     const nav = props.nav?.length
       ? props.nav
-      : ["Solutions", "Customers", "Pricing", "Investors", "Company"]
-    const ctaLabel = props.ctaLabel ?? "Request Demo"
-    const ctaTarget = props.ctaTarget ?? "Schedule a Demo"
-    const secondaryCta = props.secondaryCta ?? "Explore Solutions"
+      : ['Solutions', 'Customers', 'Pricing', 'Investors', 'Company']
+    const ctaLabel = props.ctaLabel ?? 'Request Demo'
+    const ctaTarget = props.ctaTarget ?? 'Schedule a Demo'
+    const secondaryCta = props.secondaryCta ?? 'Explore Solutions'
 
     const LogoMark = ({
       className,
@@ -49,10 +49,10 @@ export const CorporateNavbar = defineComponent({
     }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg font-bold",
+          'grid place-items-center rounded-lg font-bold',
           inverse
-            ? "bg-background text-foreground"
-            : "bg-foreground text-background",
+            ? 'bg-background text-foreground'
+            : 'bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -64,7 +64,7 @@ export const CorporateNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

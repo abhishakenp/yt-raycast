@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FashionStoreNavbar — fixed, backdrop-blurred top navigation bar for a
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * shops, or any premium minimalist retail storefront.
  */
 export const FashionStoreNavbar = defineComponent({
-  name: "FashionStoreNavbar",
+  name: 'FashionStoreNavbar',
   description:
-    "Fixed, backdrop-blurred top navigation bar for a minimalist fashion / apparel store: a border-bottomed translucent header pinned to the top with a centered serif wordmark logo, a hamburger menu button on mobile, horizontal nav links on desktop, and a trio of icon actions on the right (search, account, shopping bag with an item-count badge). Every nav item and action routes through useNavigate and labels match the nav array so PageSwitch can swap pages. Use as the sticky site header for clothing brands, boutiques, apparel and accessories shops, lookbook commerce, or any premium minimalist retail storefront.",
+    'Fixed, backdrop-blurred top navigation bar for a minimalist fashion / apparel store: a border-bottomed translucent header pinned to the top with a centered serif wordmark logo, a hamburger menu button on mobile, horizontal nav links on desktop, and a trio of icon actions on the right (search, account, shopping bag with an item-count badge). Every nav item and action routes through useNavigate and labels match the nav array so PageSwitch can swap pages. Use as the sticky site header for clothing brands, boutiques, apparel and accessories shops, lookbook commerce, or any premium minimalist retail storefront.',
   props: z.object({
     /** Brand / store name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -28,16 +28,16 @@ export const FashionStoreNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "NOIRE"
+    const brand = props.brand ?? 'NOIRE'
     const nav = props.nav?.length
       ? props.nav
-      : ["Collections", "Lookbook", "New Arrivals", "Our Story", "Journal"]
-    const bagCount = props.bagCount ?? "3"
+      : ['Collections', 'Lookbook', 'New Arrivals', 'Our Story', 'Journal']
+    const bagCount = props.bagCount ?? '3'
 
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >
@@ -99,7 +99,7 @@ export const FashionStoreNavbar = defineComponent({
               <button
                 type="button"
                 aria-label="Search"
-                onClick={() => go("Search")}
+                onClick={() => go('Search')}
                 className="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:block"
               >
                 <svg
@@ -120,7 +120,7 @@ export const FashionStoreNavbar = defineComponent({
               <button
                 type="button"
                 aria-label="Account"
-                onClick={() => go("Account")}
+                onClick={() => go('Account')}
                 className="p-2 text-muted-foreground transition-colors hover:text-foreground"
               >
                 <svg
@@ -141,7 +141,7 @@ export const FashionStoreNavbar = defineComponent({
               <button
                 type="button"
                 aria-label="Shopping bag"
-                onClick={() => go("Bag")}
+                onClick={() => go('Bag')}
                 className="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
               >
                 <svg

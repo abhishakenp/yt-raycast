@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * AuthFooter — rich, multi-column closing footer for Authly, a developer
@@ -29,9 +29,9 @@ const KeyholeMark = ({ className }: { className?: string }) => (
 )
 
 export const AuthFooter = defineComponent({
-  name: "AuthFooter",
+  name: 'AuthFooter',
   description:
-    "Rich, multi-column closing footer for a developer-auth product built on the shared SiteFooter composite: a sharp sans wordmark + keyhole/shield mark, a developer-focused tagline, a social row (GitHub, X, Discord), and a responsive grid of link columns (Product, Developers, Company, Legal); a bordered-top bottom bar holds an auto-updating copyright note. Use as the site-wide footer for auth platforms, identity APIs, login SDKs, or developer SaaS landing pages.",
+    'Rich, multi-column closing footer for a developer-auth product built on the shared SiteFooter composite: a sharp sans wordmark + keyhole/shield mark, a developer-focused tagline, a social row (GitHub, X, Discord), and a responsive grid of link columns (Product, Developers, Company, Legal); a bordered-top bottom bar holds an auto-updating copyright note. Use as the site-wide footer for auth platforms, identity APIs, login SDKs, or developer SaaS landing pages.',
   props: z.object({
     /** Product / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -52,40 +52,40 @@ export const AuthFooter = defineComponent({
   component: ({ props }) => {
     const social = props.social?.length
       ? props.social
-      : [{ label: "GitHub" }, { label: "X" }, { label: "Discord" }]
+      : [{ label: 'GitHub' }, { label: 'X' }, { label: 'Discord' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "Customers", "Changelog", "Status"],
+            title: 'Product',
+            links: ['Features', 'Pricing', 'Customers', 'Changelog', 'Status'],
           },
           {
-            title: "Developers",
-            links: ["Docs", "API Reference", "SDKs", "Quickstart", "Examples"],
+            title: 'Developers',
+            links: ['Docs', 'API Reference', 'SDKs', 'Quickstart', 'Examples'],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Security", "Contact"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Security', 'Contact'],
           },
           {
-            title: "Legal",
-            links: ["Privacy", "Terms", "DPA", "Compliance"],
+            title: 'Legal',
+            links: ['Privacy', 'Terms', 'DPA', 'Compliance'],
           },
         ]
 
     return (
       <SiteFooter
-        brand={props.brand ?? "Authly"}
+        brand={props.brand ?? 'Authly'}
         brandMark={<KeyholeMark className="size-7 text-primary" />}
         brandClassName="text-xl font-semibold tracking-tight"
         tagline={
           props.tagline ??
-          "Authentication for developers — secure sign-in, SSO, and MFA behind a clean API."
+          'Authentication for developers — secure sign-in, SSO, and MFA behind a clean API.'
         }
         social={social}
         columns={columns}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

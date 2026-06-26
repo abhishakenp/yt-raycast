@@ -58,7 +58,9 @@ export function supplementSiteSpecPages(siteSpec, ctx = {}) {
   const pages = names.map((name, idx) => {
     const match = existing.find(
       (p) =>
-        isHomePage(p) && idx === 0 && HOME_LABELS.includes(String(name).toLowerCase()),
+        isHomePage(p) &&
+        idx === 0 &&
+        HOME_LABELS.includes(String(name).toLowerCase()),
     )
     if (match) return match
     const byName = existing.find((p) => slug(p.name || p.title) === slug(name))
@@ -75,7 +77,9 @@ export function supplementSiteSpecPages(siteSpec, ctx = {}) {
     ...siteSpec,
     pages,
     navigation: {
-      ...(siteSpec.navigation && typeof siteSpec.navigation === 'object' ? siteSpec.navigation : {}),
+      ...(siteSpec.navigation && typeof siteSpec.navigation === 'object'
+        ? siteSpec.navigation
+        : {}),
       global: navLinks,
       footer: navLinks,
     },

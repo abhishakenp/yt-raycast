@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * KidsEducationHero — bright, playful split hero for a kids / family learning
@@ -18,7 +18,7 @@ import { Image } from "#/lib/img.tsx"
  * props via baked-in "WonderLearn" defaults.
  */
 export const KidsEducationHero = defineComponent({
-  name: "KidsEducationHero",
+  name: 'KidsEducationHero',
   description:
     "Bright, playful split hero for a kids / family learning platform: left side with a live-learners pill (pulsing dot), bold headline with a gradient 'adventure' highlight, supporting paragraph, dual rounded CTAs (filled primary with arrow + outlined play-icon secondary), and an inline trust-points row with check icons; right side has a large rounded hero photo with soft overlay plus two floating cards (a star-rating card bottom-left and an avatar-stack '+2k today' card top-right). Decorative blurred glow orbs sit behind. CTAs route through useNavigate. Use as the opening hero for kids-education startups, children's e-learning, family learning apps, and playful course platforms.",
   props: z.object({
@@ -48,23 +48,23 @@ export const KidsEducationHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Join 50,000+ happy learners"
-    const headingTop = props.headingTop ?? "Learning is an"
-    const highlight = props.highlight ?? "adventure"
+    const badge = props.badge ?? 'Join 50,000+ happy learners'
+    const headingTop = props.headingTop ?? 'Learning is an'
+    const highlight = props.highlight ?? 'adventure'
     const subheading =
       props.subheading ??
-      "Engaging, play-based activities designed for curious minds ages 4-12. Science experiments, art projects, coding games, and more—delivered daily."
-    const primaryCta = props.primaryCta ?? "Start Free 14-Day Trial"
-    const secondaryCta = props.secondaryCta ?? "See Activities"
+      'Engaging, play-based activities designed for curious minds ages 4-12. Science experiments, art projects, coding games, and more—delivered daily.'
+    const primaryCta = props.primaryCta ?? 'Start Free 14-Day Trial'
+    const secondaryCta = props.secondaryCta ?? 'See Activities'
     const imageAlt =
       props.imageAlt ??
-      "Happy children doing a hands-on science experiment with colorful liquids in a bright classroom"
-    const ratingValue = props.ratingValue ?? "4.9/5 Rating"
-    const ratingLabel = props.ratingLabel ?? "From 12,000+ parents"
-    const avatarBadge = props.avatarBadge ?? "+2k today"
+      'Happy children doing a hands-on science experiment with colorful liquids in a bright classroom'
+    const ratingValue = props.ratingValue ?? '4.9/5 Rating'
+    const ratingLabel = props.ratingLabel ?? 'From 12,000+ parents'
+    const avatarBadge = props.avatarBadge ?? '+2k today'
     const trustPoints = props.trustPoints?.length
       ? props.trustPoints
-      : ["No credit card required", "Cancel anytime"]
+      : ['No credit card required', 'Cancel anytime']
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -120,7 +120,7 @@ export const KidsEducationHero = defineComponent({
     return (
       <section
         className={cn(
-          "relative overflow-hidden bg-background",
+          'relative overflow-hidden bg-background',
           props.className,
         )}
       >
@@ -147,7 +147,7 @@ export const KidsEducationHero = defineComponent({
                 </span>
               </div>
               <h1 className="mb-6 text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                {headingTop}{" "}
+                {headingTop}{' '}
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                   {highlight}
                 </span>
@@ -199,29 +199,43 @@ export const KidsEducationHero = defineComponent({
               </div>
               <div className="absolute -bottom-6 -left-6 flex items-center gap-3 rounded-2xl bg-card p-4 shadow-xl">
                 <div className="grid size-12 place-items-center rounded-xl bg-primary/15 text-primary">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                   </svg>
                 </div>
                 <div>
-                  <p className="font-bold text-card-foreground">{ratingValue}</p>
+                  <p className="font-bold text-card-foreground">
+                    {ratingValue}
+                  </p>
                   <p className="text-sm text-muted-foreground">{ratingLabel}</p>
                 </div>
               </div>
               <div className="absolute -right-4 -top-4 rounded-2xl bg-card p-4 shadow-xl">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
-                    {["Happy child learning", "Smiling young learner", "Excited student"].map(
-                      (a) => (
-                        <Image
-                          key={a}
-                          alt={a}
-                          w={100}
-                          h={100}
-                          className="size-8 rounded-full border-2 border-card object-cover"
-                        />
-                      ),
-                    )}
+                    {[
+                      'Happy child learning',
+                      'Smiling young learner',
+                      'Excited student',
+                    ].map((a) => (
+                      <Image
+                        key={a}
+                        alt={a}
+                        w={100}
+                        h={100}
+                        className="size-8 rounded-full border-2 border-card object-cover"
+                      />
+                    ))}
                   </div>
                   <span className="text-sm font-medium text-muted-foreground">
                     {avatarBadge}

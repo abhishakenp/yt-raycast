@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * JobBoardNavbar — sticky, backdrop-blurred top navigation bar for a job-board /
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * defaults.
  */
 export const JobBoardNavbar = defineComponent({
-  name: "JobBoardNavbar",
+  name: 'JobBoardNavbar',
   description:
     "Sticky backdrop-blurred top navigation bar for a job-board / careers marketplace: border-bottomed header pinned to the top with a briefcase brand-mark tile + product name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a solid primary 'Post a Job' CTA on the right. Links and CTAs route through useNavigate for page-switching. Use as the sticky site header for job boards, careers sites, hiring marketplaces, recruiting platforms or talent networks.",
   props: z.object({
@@ -33,18 +33,18 @@ export const JobBoardNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "WorkFlow"
+    const brand = props.brand ?? 'WorkFlow'
     const nav = props.nav?.length
       ? props.nav
-      : ["Browse Jobs", "Companies", "Categories", "Success Stories"]
-    const signIn = props.signIn ?? "Sign In"
-    const cta = props.cta ?? "Post a Job"
+      : ['Browse Jobs', 'Companies', 'Categories', 'Success Stories']
+    const signIn = props.signIn ?? 'Sign In'
+    const cta = props.cta ?? 'Post a Job'
     const homeTarget = props.homeTarget ?? nav[0]
 
     const BriefcaseMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -68,7 +68,7 @@ export const JobBoardNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >

@@ -1,8 +1,8 @@
-import { GenericId, Value } from "convex/values";
-import { GenericDocument } from "convex/server";
-import classNames from "classnames";
-import React, { memo, useRef, useState, useEffect } from "react";
-import { areEqual } from "react-window";
+import { GenericId, Value } from 'convex/values'
+import { GenericDocument } from 'convex/server'
+import classNames from 'classnames'
+import React, { memo, useRef, useState, useEffect } from 'react'
+import { areEqual } from 'react-window'
 
 const useClickAway = (
   ref: React.RefObject<HTMLElement | null>,
@@ -18,63 +18,63 @@ const useClickAway = (
     return () => document.removeEventListener('mousedown', handleClick)
   }, [ref, callback])
 }
-import { usePopper } from "react-popper";
-import { ColumnInstance } from "react-table";
-import { DotsVerticalIcon, Link2Icon } from "@radix-ui/react-icons";
-import { Portal } from "@headlessui/react";
-import { useTableDensity } from "@common/features/data/lib/useTableDensity";
-import { CopiedPopper } from "@common/elements/CopiedPopper";
+import { usePopper } from 'react-popper'
+import { ColumnInstance } from 'react-table'
+import { DotsVerticalIcon, Link2Icon } from '@radix-ui/react-icons'
+import { Portal } from '@headlessui/react'
+import { useTableDensity } from '@common/features/data/lib/useTableDensity'
+import { CopiedPopper } from '@common/elements/CopiedPopper'
 
-import { AuthorizeEditsConfirmationDialog } from "@common/elements/AuthorizeEditsConfirmationDialog";
+import { AuthorizeEditsConfirmationDialog } from '@common/elements/AuthorizeEditsConfirmationDialog'
 
-import { KeyboardShortcut } from "@ui/KeyboardShortcut";
-import { DataDetail } from "@common/features/data/components/Table/DataCell/DataDetail";
-import { CellEditor } from "@common/features/data/components/Table/DataCell/CellEditor";
-import { DataCellValue } from "@common/features/data/components/Table/DataCell/DataCellValue";
+import { KeyboardShortcut } from '@ui/KeyboardShortcut'
+import { DataDetail } from '@common/features/data/components/Table/DataCell/DataDetail'
+import { CellEditor } from '@common/features/data/components/Table/DataCell/CellEditor'
+import { DataCellValue } from '@common/features/data/components/Table/DataCell/DataCellValue'
 
-import type { usePatchDocumentField } from "@common/features/data/components/Table/utils/usePatchDocumentField";
-import { arrowKeyHandler } from "@common/features/data/components/Table/utils/arrowKeyHandler";
+import type { usePatchDocumentField } from '@common/features/data/components/Table/utils/usePatchDocumentField'
+import { arrowKeyHandler } from '@common/features/data/components/Table/utils/arrowKeyHandler'
 import {
   OpenContextMenu,
   useActionHotkeys,
   useCellActions,
-} from "@common/features/data/components/Table/DataCell/utils/cellActions";
-import { usePasteListener } from "@common/features/data/components/Table/DataCell/utils/usePasteListener";
-import { useTrackCellChanges } from "@common/features/data/components/Table/DataCell/utils/useTrackCellChanges";
-import { useValidator } from "@common/features/data/components/Table/DataCell/utils/useValidator";
-import { SchemaJson } from "@common/lib/format";
-import { stringifyValue } from "@common/lib/stringifyValue";
-import { buttonClasses } from "@ui/Button";
-import { Loading } from "@ui/Loading";
-import { useQuery } from "convex/react";
-import udfs from "@common/udfs";
-import { useNents } from "@common/lib/useNents";
-import { getReferencedTableName } from "@common/lib/utils";
-import { ReadonlyCode } from "@common/elements/ReadonlyCode";
-import { Tooltip } from "@ui/Tooltip";
-import { cn } from "@ui/cn";
+} from '@common/features/data/components/Table/DataCell/utils/cellActions'
+import { usePasteListener } from '@common/features/data/components/Table/DataCell/utils/usePasteListener'
+import { useTrackCellChanges } from '@common/features/data/components/Table/DataCell/utils/useTrackCellChanges'
+import { useValidator } from '@common/features/data/components/Table/DataCell/utils/useValidator'
+import { SchemaJson } from '@common/lib/format'
+import { stringifyValue } from '@common/lib/stringifyValue'
+import { buttonClasses } from '@ui/Button'
+import { Loading } from '@ui/Loading'
+import { useQuery } from 'convex/react'
+import udfs from '@common/udfs'
+import { useNents } from '@common/lib/useNents'
+import { getReferencedTableName } from '@common/lib/utils'
+import { ReadonlyCode } from '@common/elements/ReadonlyCode'
+import { Tooltip } from '@ui/Tooltip'
+import { cn } from '@ui/cn'
 
 export type DataCellProps = {
-  value: Value;
-  document: GenericDocument;
-  column: ColumnInstance<GenericDocument>;
-  editDocument: () => void;
-  areEditsAuthorized: boolean;
-  authorizeEdits?: () => void;
-  rowId: GenericId<string>;
-  didRowChange: boolean;
-  width?: string;
-  inferIsDate: boolean;
-  patchDocument: ReturnType<typeof usePatchDocumentField>;
-  tableName: string;
-  onOpenContextMenu: OpenContextMenu;
-  onCloseContextMenu: () => void;
-  canManageTable: boolean;
-  activeSchema: SchemaJson | null;
-  isContextMenuOpen: boolean;
-};
+  value: Value
+  document: GenericDocument
+  column: ColumnInstance<GenericDocument>
+  editDocument: () => void
+  areEditsAuthorized: boolean
+  authorizeEdits?: () => void
+  rowId: GenericId<string>
+  didRowChange: boolean
+  width?: string
+  inferIsDate: boolean
+  patchDocument: ReturnType<typeof usePatchDocumentField>
+  tableName: string
+  onOpenContextMenu: OpenContextMenu
+  onCloseContextMenu: () => void
+  canManageTable: boolean
+  activeSchema: SchemaJson | null
+  isContextMenuOpen: boolean
+}
 
-export const DataCell = memo(DataCellImpl, areEqual);
+export const DataCell = memo(DataCellImpl, areEqual)
 
 function DataCellImpl({
   value,
@@ -95,24 +95,24 @@ function DataCellImpl({
   editDocument,
   isContextMenuOpen,
 }: DataCellProps) {
-  const cellRef = useRef<HTMLDivElement | null>(null);
-  const cellButtonRef = useRef<HTMLButtonElement>(null);
+  const cellRef = useRef<HTMLDivElement | null>(null)
+  const cellButtonRef = useRef<HTMLButtonElement>(null)
 
   // Derive all the information needed to render the cell
-  const columnName = column.Header as string;
-  const stringValue = typeof value === "string" ? value : stringifyValue(value);
-  const [isHoveringCell, setIsHoveringCell] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-  const isSystemField = columnName?.startsWith("_");
-  const isEditable = !isSystemField && canManageTable;
-  const isDateField = columnName === "_creationTime";
+  const columnName = column.Header as string
+  const stringValue = typeof value === 'string' ? value : stringifyValue(value)
+  const [isHoveringCell, setIsHoveringCell] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
+  const isSystemField = columnName?.startsWith('_')
+  const isEditable = !isSystemField && canManageTable
+  const isDateField = columnName === '_creationTime'
 
   // State for showing various modals and popovers
-  const [showAuthorizeEditsModal, setShowAuthorizeEditsModal] = useState(false);
-  const [showEditor, setShowEditor] = useState(false);
-  const [pastedValue, setPastedValue] = useState<Value>();
-  const [showDetail, setShowDetail] = useState(false);
-  const [showDocumentDetail, setShowDocumentDetail] = useState(false);
+  const [showAuthorizeEditsModal, setShowAuthorizeEditsModal] = useState(false)
+  const [showEditor, setShowEditor] = useState(false)
+  const [pastedValue, setPastedValue] = useState<Value>()
+  const [showDetail, setShowDetail] = useState(false)
+  const [showDocumentDetail, setShowDocumentDetail] = useState(false)
 
   // Mega hook to generate all the actions
   // that can be performed on a cell
@@ -144,7 +144,7 @@ function DataCellImpl({
     setShowDetail,
     setShowDocumentDetail,
     editDocument,
-  });
+  })
 
   const hotkeyRefs = useActionHotkeys({
     copyCb: copyValue,
@@ -159,50 +159,50 @@ function DataCellImpl({
         contextMenuCallback({
           x: cellRef.current!.getBoundingClientRect().right,
           y: cellRef.current!.getBoundingClientRect().top,
-        });
+        })
       }
     },
-  });
+  })
 
   const { shouldSurfaceValidatorErrors, allowTopLevelUndefined, validator } =
-    useValidator(activeSchema, tableName, columnName);
+    useValidator(activeSchema, tableName, columnName)
 
-  usePasteListener(cellRef, columnName, editValue, allowTopLevelUndefined);
+  usePasteListener(cellRef, columnName, editValue, allowTopLevelUndefined)
 
   const didValueJustChange = useTrackCellChanges({
     value,
     didRowChange,
-  });
+  })
 
-  const { densityValues } = useTableDensity();
+  const { densityValues } = useTableDensity()
 
   // Controls the copied value popper that shows up when a value is copied
   const [copiedPopperElement, setCopiedPopperElement] =
-    useState<HTMLDivElement | null>(null);
+    useState<HTMLDivElement | null>(null)
 
   // Controls the editor popper -- the popper that shows the ObjectEditor for the cell
-  const [editorPopper, setEditorPopper] = useState<HTMLDivElement | null>(null);
+  const [editorPopper, setEditorPopper] = useState<HTMLDivElement | null>(null)
   const { styles: editorStyles, attributes: editorAttrs } = usePopper(
     cellRef.current,
     editorPopper,
     {
-      placement: "bottom-start",
+      placement: 'bottom-start',
       modifiers: [
         {
-          name: "offset",
+          name: 'offset',
           options: { offset: [0, -densityValues.height] },
         },
       ],
     },
-  );
+  )
   const closeEditor = () => {
-    setShowEditor(false);
-    cellButtonRef.current?.focus();
-    setPastedValue(undefined);
-  };
+    setShowEditor(false)
+    cellButtonRef.current?.focus()
+    setPastedValue(undefined)
+  }
 
   // When you click away from the cell, close the editor if it is open
-  useClickAway({ current: editorPopper }, closeEditor);
+  useClickAway({ current: editorPopper }, closeEditor)
 
   return (
     <>
@@ -210,9 +210,9 @@ function DataCellImpl({
       <div
         ref={(r) => {
           if (cellRef.current !== r) {
-            cellRef.current = r;
+            cellRef.current = r
           }
-          hotkeyRefs(r);
+          hotkeyRefs(r)
         }}
         className="relative flex size-full items-center hover:bg-background-tertiary/75"
         style={{ width }}
@@ -227,17 +227,17 @@ function DataCellImpl({
           className={classNames(
             // Show a border on the right side while animating to prevent the background highlight
             // from overlapping other cells
-            didValueJustChange && "animate-highlight border-r",
-            "font-mono text-xs text-content-primary",
-            "w-full h-full flex items-center focus:outline-hidden",
-            "focus:ring-1 focus:ring-border-selected text-left",
-            isContextMenuOpen && "ring-1 ring-border-selected",
-            !isEditable && "cursor-default",
+            didValueJustChange && 'animate-highlight border-r',
+            'font-mono text-xs text-content-primary',
+            'w-full h-full flex items-center focus:outline-hidden',
+            'focus:ring-1 focus:ring-border-selected text-left',
+            isContextMenuOpen && 'ring-1 ring-border-selected',
+            !isEditable && 'cursor-default',
           )}
           style={{
             padding: `${densityValues.paddingY}px ${densityValues.paddingX}px`,
           }}
-          role={isEditable ? "button" : undefined}
+          role={isEditable ? 'button' : undefined}
           type="button"
           tabIndex={0}
           onFocus={() => setIsFocused(true)}
@@ -245,7 +245,7 @@ function DataCellImpl({
           onKeyDown={arrowKeyHandler(cellRef)}
           onDoubleClick={clickHandler(isEditable, cellRef, editValue)}
         >
-          {idReferenceLink !== undefined && columnName !== "_id" && (
+          {idReferenceLink !== undefined && columnName !== '_id' && (
             <Tooltip
               tip={<DocumentPreview id={value} />}
               contentClassName="bg-background-secondary animate-fadeInFromLoading"
@@ -292,10 +292,10 @@ function DataCellImpl({
               })
             }
             className={cn(
-              buttonClasses({ size: "xs", variant: "neutral" }),
-              "absolute z-20 shadow-xs hover:bg-background-tertiary",
-              isFocused && "focused",
-              "animate-none",
+              buttonClasses({ size: 'xs', variant: 'neutral' }),
+              'absolute z-20 shadow-xs hover:bg-background-tertiary',
+              isFocused && 'focused',
+              'animate-none',
             )}
             style={{
               right:
@@ -307,7 +307,7 @@ function DataCellImpl({
             {isHoveringCell && <DotsVerticalIcon />}
             {!isHoveringCell && (
               <KeyboardShortcut
-                value={["CtrlOrCmd", "Return"]}
+                value={['CtrlOrCmd', 'Return']}
                 className="text-xs text-content-secondary"
               />
             )}
@@ -363,13 +363,13 @@ function DataCellImpl({
             tabIndex={-1}
             onBlur={(e) => {
               if (e.relatedTarget === null) {
-                closeEditor();
+                closeEditor()
               }
             }}
             // for safari
             onKeyDown={async (e) => {
-              if (e.key === "Escape") {
-                closeEditor();
+              if (e.key === 'Escape') {
+                closeEditor()
               }
             }}
             {...editorAttrs.popper}
@@ -383,7 +383,7 @@ function DataCellImpl({
               value={value}
               onSave={async (v) => {
                 if (v !== undefined) {
-                  await patchDocument(tableName, rowId, columnName, v);
+                  await patchDocument(tableName, rowId, columnName, v)
                 }
               }}
             />
@@ -394,12 +394,12 @@ function DataCellImpl({
       {showAuthorizeEditsModal && (
         <AuthorizeEditsConfirmationDialog
           onClose={() => {
-            setShowAuthorizeEditsModal(false);
+            setShowAuthorizeEditsModal(false)
           }}
           onConfirm={async () => {
-            authorizeEdits?.();
-            setShowAuthorizeEditsModal(false);
-            setShowEditor(true);
+            authorizeEdits?.()
+            setShowAuthorizeEditsModal(false)
+            setShowEditor(true)
           }}
         />
       )}
@@ -411,13 +411,13 @@ function DataCellImpl({
         show={didJustCopy !== null}
         message={
           didJustCopy
-            ? `Copied ${didJustCopy === "value" ? columnName : "document"}`
-            : "Copied"
+            ? `Copied ${didJustCopy === 'value' ? columnName : 'document'}`
+            : 'Copied'
         }
         offset={[densityValues.paddingX - 4, 4]}
       />
     </>
-  );
+  )
 }
 
 const clickHandler =
@@ -428,35 +428,35 @@ const clickHandler =
   ) =>
   () => {
     if (isEditable) {
-      editValue();
-      return;
+      editValue()
+      return
     }
 
-    const selection = window.getSelection();
-    selection?.selectAllChildren(cellRef.current!);
-  };
+    const selection = window.getSelection()
+    selection?.selectAllChildren(cellRef.current!)
+  }
 
 function DocumentPreview({ id }: { id: string | Value }) {
   // Safely convert id to string if it's not already
-  const stringId = typeof id === "string" ? id : String(id);
+  const stringId = typeof id === 'string' ? id : String(id)
 
-  const componentId = useNents().selectedNent?.id ?? null;
+  const componentId = useNents().selectedNent?.id ?? null
   const tableMapping = useQuery(udfs.getTableMapping.default, {
     componentId,
-  });
-  const tableName = getReferencedTableName(tableMapping, stringId);
+  })
+  const tableName = getReferencedTableName(tableMapping, stringId)
 
   const docs = useQuery(udfs.listById.default, {
     componentId,
-    ids: [{ id: stringId, tableName: tableName ?? "" }],
-  });
+    ids: [{ id: stringId, tableName: tableName ?? '' }],
+  })
 
   if (!docs) {
-    return <Loading className="h-8 w-80" />;
+    return <Loading className="h-8 w-80" />
   }
 
   if (!docs?.[0]) {
-    return <div>Document not found.</div>;
+    return <div>Document not found.</div>
   }
 
   return (
@@ -465,8 +465,8 @@ function DocumentPreview({ id }: { id: string | Value }) {
         disableLineNumbers
         code={stringifyValue(docs[0] ?? null, true, true)}
         path={`documentPreview-${stringId}`}
-        height={{ type: "content", maxHeightRem: 20 }}
+        height={{ type: 'content', maxHeightRem: 20 }}
       />
     </div>
-  );
+  )
 }

@@ -1,21 +1,21 @@
-import { DataPanel } from "@common/features/data/components/DataPanel";
-import { ConvexSchemaFilePath } from "@common/features/data/components/ConvexSchemaFilePath";
-import { Loading } from "@ui/Loading";
-import { useSingleTableSchemaStatus } from "./TableSchema";
-import { IndexList } from "./IndexList";
+import { DataPanel } from '@common/features/data/components/DataPanel'
+import { ConvexSchemaFilePath } from '@common/features/data/components/ConvexSchemaFilePath'
+import { Loading } from '@ui/Loading'
+import { useSingleTableSchemaStatus } from './TableSchema'
+import { IndexList } from './IndexList'
 
 export function TableIndexesPanel({
   tableName,
   onClose,
 }: {
-  tableName: string;
-  onClose: () => void;
+  tableName: string
+  onClose: () => void
 }) {
   return (
     <DataPanel
       title={
         <>
-          Indexes for table{" "}
+          Indexes for table{' '}
           <span className="font-mono text-[1.0625rem]">{tableName}</span>
         </>
       }
@@ -23,13 +23,13 @@ export function TableIndexesPanel({
     >
       <IndexBody tableName={tableName} />
     </DataPanel>
-  );
+  )
 }
 
 function IndexBody({ tableName }: { tableName: string }) {
-  const tableSchemaStatus = useSingleTableSchemaStatus(tableName);
+  const tableSchemaStatus = useSingleTableSchemaStatus(tableName)
   if (tableSchemaStatus === undefined) {
-    return <Loading />;
+    return <Loading />
   }
 
   return (
@@ -44,5 +44,5 @@ function IndexBody({ tableName }: { tableName: string }) {
         </>
       )}
     </div>
-  );
+  )
 }

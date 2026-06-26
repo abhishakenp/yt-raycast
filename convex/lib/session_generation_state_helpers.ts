@@ -141,7 +141,8 @@ export const completeGeneratedSession = async (
   await ctx.db.patch(args.sessionId, {
     status: 'preview_ready',
     openuiReady:
-      typeof args.openUiSource === 'string' && args.openUiSource.trim().length > 0,
+      typeof args.openUiSource === 'string' &&
+      args.openUiSource.trim().length > 0,
     previewVersion,
     elapsed: args.elapsed,
     cost,

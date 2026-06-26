@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AgencyWork — selected-work / case-study gallery for a creative digital-agency
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * work. Renders fully with no props via four baked-in default projects.
  */
 export const AgencyWork = defineComponent({
-  name: "AgencyWork",
+  name: 'AgencyWork',
   description:
     "Selected-work / case-study gallery for a creative digital-agency page on a subtle muted band: a heading and lead paragraph on the left with a 'view all' link on the right, above a 2-column grid of clickable project cards. Each card has a 4:3 alt-driven image that zooms on hover, a 'View case study' overlay pill that fades in, a title that color-shifts on hover, a description, and a category tag chip. Cards and the view-all link route through useNavigate. Use to showcase an agency's portfolio, case studies, featured projects, or selected work.",
   props: z.object({
@@ -39,37 +39,37 @@ export const AgencyWork = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Selected work"
+    const heading = props.heading ?? 'Selected work'
     const description =
       props.description ??
-      "A curated collection of projects where strategy, craft, and technology converged."
-    const viewAll = props.viewAll ?? "View all projects"
+      'A curated collection of projects where strategy, craft, and technology converged.'
+    const viewAll = props.viewAll ?? 'View all projects'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Aurora Fintech",
+            title: 'Aurora Fintech',
             description:
-              "Complete brand overhaul and product design for a next-generation trading platform.",
-            tag: "Fintech",
+              'Complete brand overhaul and product design for a next-generation trading platform.',
+            tag: 'Fintech',
           },
           {
-            title: "Nova Commerce",
+            title: 'Nova Commerce',
             description:
-              "Headless e-commerce experience with 40% faster checkout and 3x conversion lift.",
-            tag: "E-commerce",
+              'Headless e-commerce experience with 40% faster checkout and 3x conversion lift.',
+            tag: 'E-commerce',
           },
           {
-            title: "Medilink Health",
+            title: 'Medilink Health',
             description:
-              "Patient-centric telehealth platform serving over 2 million users across Europe.",
-            tag: "Healthcare",
+              'Patient-centric telehealth platform serving over 2 million users across Europe.',
+            tag: 'Healthcare',
           },
           {
-            title: "Vertex Real Estate",
+            title: 'Vertex Real Estate',
             description:
-              "Immersive property platform with 3D tours and AI-powered matching algorithms.",
-            tag: "Real Estate",
+              'Immersive property platform with 3D tours and AI-powered matching algorithms.',
+            tag: 'Real Estate',
           },
         ]
 
@@ -91,9 +91,7 @@ export const AgencyWork = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-muted/30 py-24 sm:py-32", props.className)}
-      >
+      <section className={cn('bg-muted/30 py-24 sm:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-16 flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>

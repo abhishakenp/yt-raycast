@@ -713,9 +713,13 @@ export default function SectionRenderer({ section, siteSpec }) {
 
 export function renderReactProject(siteSpec, session) {
   const useSwiper = shouldUseSwiper(siteSpec)
-  const homePage = (siteSpec.pages || []).find((page) => page.route === '/') || siteSpec.pages?.[0]
+  const homePage =
+    (siteSpec.pages || []).find((page) => page.route === '/') ||
+    siteSpec.pages?.[0]
   const homeSeo = resolvePageSeo(siteSpec, homePage)
-  const homeStructuredData = homePage ? buildStructuredData(siteSpec, homePage) : []
+  const homeStructuredData = homePage
+    ? buildStructuredData(siteSpec, homePage)
+    : []
   const files = {
     'package.json': renderReactPackageJson(
       siteSpec.projectName,
@@ -738,13 +742,14 @@ export function renderReactProject(siteSpec, session) {
     ${homeSeo.canonicalUrl ? `<meta property="og:url" content="${escapeHtml(homeSeo.canonicalUrl)}" />` : ''}
     <meta property="og:site_name" content="${escapeHtml(homeSeo.siteName)}" />
     <meta property="og:locale" content="${escapeHtml(homeSeo.locale)}" />
-    ${homeSeo.ogImage
+    ${
+      homeSeo.ogImage
         ? `<meta property="og:image" content="${escapeHtml(homeSeo.ogImage)}" />
     <meta property="og:image:alt" content="${escapeHtml(homeSeo.ogImageAlt)}" />
     <meta name="twitter:image" content="${escapeHtml(homeSeo.ogImage)}" />
     <meta name="twitter:image:alt" content="${escapeHtml(homeSeo.ogImageAlt)}" />`
         : ''
-      }
+    }
     <meta name="twitter:card" content="${escapeHtml(homeSeo.ogImage ? homeSeo.twitterCard : 'summary')}" />
     <meta name="twitter:title" content="${escapeHtml(homeSeo.title)}" />
     <meta name="twitter:description" content="${escapeHtml(homeSeo.description)}" />
@@ -770,12 +775,13 @@ export default defineConfig({
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './styles.css'
-${useSwiper
-        ? `import 'swiper/css'
+${
+  useSwiper
+    ? `import 'swiper/css'
 import 'swiper/css/pagination'
 `
-        : ''
-      }
+    : ''
+}
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
@@ -1009,7 +1015,9 @@ export default function SmartLink({ href = '#', children, ...props }) {
   )
 }
 `,
-    'src/components/ExactClonePage.jsx': renderExactClonePageComponent({ mode: 'react' }),
+    'src/components/ExactClonePage.jsx': renderExactClonePageComponent({
+      mode: 'react',
+    }),
     'src/components/MotionPageShell.jsx': `'use client'
 
 import { motion, useReducedMotion } from 'framer-motion'
@@ -1125,16 +1133,25 @@ export default function PageTemplate({ siteSpec, page }) {
     files['package.json'] = JSON.stringify(pkg, null, 2)
 
     const backendUrl =
-      String(session?.medusaConfig?.backendUrl || '').trim() || 'http://localhost:9000'
-    const publishableKey = String(session?.medusaConfig?.publishableKey || '').trim()
+      String(session?.medusaConfig?.backendUrl || '').trim() ||
+      'http://localhost:9000'
+    const publishableKey = String(
+      session?.medusaConfig?.publishableKey || '',
+    ).trim()
     const prefilled = Boolean(
       String(session?.medusaConfig?.backendUrl || '').trim() || publishableKey,
     )
     const isSanityCms = siteSpec?.exportOptions?.cms === 'sanity'
-    const sanityProjectId = String(session?.sanityConfig?.projectId || '').trim()
+    const sanityProjectId = String(
+      session?.sanityConfig?.projectId || '',
+    ).trim()
     const sanityDataset = String(session?.sanityConfig?.dataset || '').trim()
-    const sanityApiVersion = String(session?.sanityConfig?.apiVersion || '').trim()
-    const sanityPrefilled = Boolean(sanityProjectId || sanityDataset || sanityApiVersion)
+    const sanityApiVersion = String(
+      session?.sanityConfig?.apiVersion || '',
+    ).trim()
+    const sanityPrefilled = Boolean(
+      sanityProjectId || sanityDataset || sanityApiVersion,
+    )
 
     files['src/lib/medusa.js'] =
       `const backendUrl = import.meta.env.VITE_MEDUSA_BACKEND_URL || 'http://localhost:9000'

@@ -2,7 +2,11 @@ import { Link } from '@tanstack/react-router'
 import { ArrowLeft, SearchIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/components/ui/input-group'
 import { Kbd } from '@/components/ui/kbd'
 
 import {
@@ -59,8 +63,12 @@ export const GalleryPage = () => {
                 <ArrowLeft className="size-4" />
               </Link>
               <div className="min-w-0">
-                <p className="font-mono text-xs uppercase tracking-[0.16em] text-cyan-200">Gallery</p>
-                <h1 className="truncate text-lg font-bold tracking-normal">Public Sessions</h1>
+                <p className="font-mono text-xs uppercase tracking-[0.16em] text-cyan-200">
+                  Gallery
+                </p>
+                <h1 className="truncate text-lg font-bold tracking-normal">
+                  Public Sessions
+                </h1>
               </div>
             </div>
 
@@ -79,7 +87,9 @@ export const GalleryPage = () => {
                 }}
               />
               <InputGroupAddon align="inline-end" className="hidden sm:flex">
-                <Kbd className="border-white/10 bg-white/[0.07] text-white/45">⌘K</Kbd>
+                <Kbd className="border-white/10 bg-white/[0.07] text-white/45">
+                  ⌘K
+                </Kbd>
               </InputGroupAddon>
             </InputGroup>
           </div>
@@ -96,21 +106,26 @@ export const GalleryPage = () => {
               {gallery === undefined ? (
                 <span className="h-4 w-24 animate-pulse rounded-full bg-white/10" />
               ) : (
-                <p className="text-sm text-white/45">{gallery.total} previews</p>
+                <p className="text-sm text-white/45">
+                  {gallery.total} previews
+                </p>
               )}
             </div>
 
-            <GalleryGrid
-              gallery={gallery}
-              skeletonCount={PAGE_SIZE}
-            />
+            <GalleryGrid gallery={gallery} skeletonCount={PAGE_SIZE} />
 
             {gallery !== undefined ? (
               <GalleryPagination
                 hasNext={gallery.hasNext}
                 hasPrev={gallery.hasPrev}
-                onNext={() => setPage((currentPage) => Math.min(currentPage + 1, gallery.totalPages))}
-                onPrev={() => setPage((currentPage) => Math.max(currentPage - 1, 1))}
+                onNext={() =>
+                  setPage((currentPage) =>
+                    Math.min(currentPage + 1, gallery.totalPages),
+                  )
+                }
+                onPrev={() =>
+                  setPage((currentPage) => Math.max(currentPage - 1, 1))
+                }
                 page={gallery.page}
                 totalPages={gallery.totalPages}
               />

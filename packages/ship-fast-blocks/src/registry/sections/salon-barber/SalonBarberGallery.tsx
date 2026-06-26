@@ -1,9 +1,9 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { GalleryGrid } from "#/section-kit/GalleryGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 export const SalonBarberGallery = defineComponent({
-  name: "SalonBarberGallery",
+  name: 'SalonBarberGallery',
   description:
     "Portfolio gallery for a barbershop or salon, rendered through the shared GalleryGrid. Shows a responsive grid of recent cuts, styles, and interior shots with short captions so prospective clients can judge the work at a glance. Use it lower on a barbershop, salon, or men's grooming page to build trust with real-looking before/after style proof.",
   props: z.object({
@@ -19,35 +19,35 @@ export const SalonBarberGallery = defineComponent({
       ? props.images
       : [
           {
-            alt: "barber finishing a crisp skin fade haircut on a young man in a modern barbershop",
-            caption: "Skin fade",
+            alt: 'barber finishing a crisp skin fade haircut on a young man in a modern barbershop',
+            caption: 'Skin fade',
           },
           {
-            alt: "close up of a sharp beard line-up and hot towel shave with straight razor",
-            caption: "Beard line-up",
+            alt: 'close up of a sharp beard line-up and hot towel shave with straight razor',
+            caption: 'Beard line-up',
           },
           {
-            alt: "textured modern quiff hairstyle styled with matte product on a male client",
-            caption: "Textured quiff",
+            alt: 'textured modern quiff hairstyle styled with matte product on a male client',
+            caption: 'Textured quiff',
           },
           {
-            alt: "natural blonde highlights and color blend on layered salon haircut",
-            caption: "Color & highlights",
+            alt: 'natural blonde highlights and color blend on layered salon haircut',
+            caption: 'Color & highlights',
           },
           {
-            alt: "classic pompadour haircut with tight taper on the sides in a barbershop chair",
-            caption: "Classic pompadour",
+            alt: 'classic pompadour haircut with tight taper on the sides in a barbershop chair',
+            caption: 'Classic pompadour',
           },
           {
-            alt: "interior of a stylish barbershop with leather chairs vintage mirrors and warm lighting",
-            caption: "Our shop",
+            alt: 'interior of a stylish barbershop with leather chairs vintage mirrors and warm lighting',
+            caption: 'Our shop',
           },
         ]
 
     return (
       <GalleryGrid
-        heading={props.heading ?? "The Work"}
-        subheading={props.description ?? "Recent cuts & styles"}
+        heading={props.heading ?? 'The Work'}
+        subheading={props.description ?? 'Recent cuts & styles'}
         images={images}
         className={props.className}
       />

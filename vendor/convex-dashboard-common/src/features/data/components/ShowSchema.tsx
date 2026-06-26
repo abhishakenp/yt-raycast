@@ -1,22 +1,22 @@
-import { Fragment, useMemo } from "react";
-import { Shape } from "shapes";
+import { Fragment, useMemo } from 'react'
+import { Shape } from 'shapes'
 import {
   TabList as HeadlessTabList,
   TabPanel as HeadlessTabPanel,
   TabPanels as HeadlessTabPanels,
   TabGroup as HeadlessTabGroup,
-} from "@headlessui/react";
-import { Tab } from "@ui/Tab";
-import { ConvexSchemaFilePath } from "@common/features/data/components/ConvexSchemaFilePath";
+} from '@headlessui/react'
+import { Tab } from '@ui/Tab'
+import { ConvexSchemaFilePath } from '@common/features/data/components/ConvexSchemaFilePath'
 import {
   GenerateSchema,
   CodeTransformation,
   LineHighlighter,
-} from "@common/features/data/components/GenerateSchema";
-import { SchemaJson, displaySchema } from "@common/lib/format";
-import { ReadonlyCode } from "@common/elements/ReadonlyCode";
-import { Spinner } from "@ui/Spinner";
-import { ProgressBarWithPercent } from "@ui/ProgressBar";
+} from '@common/features/data/components/GenerateSchema'
+import { SchemaJson, displaySchema } from '@common/lib/format'
+import { ReadonlyCode } from '@common/elements/ReadonlyCode'
+import { Spinner } from '@ui/Spinner'
+import { ProgressBarWithPercent } from '@ui/ProgressBar'
 
 export function ShowSchema({
   activeSchema,
@@ -28,27 +28,27 @@ export function ShowSchema({
   showLearnMoreLink = true,
   schemaValidationProgress = undefined,
 }: {
-  activeSchema: SchemaJson | null | undefined;
-  inProgressSchema: SchemaJson | null | undefined;
-  shapes: Map<string, Shape>;
-  hasShapeError?: boolean;
-  lineHighlighter?: LineHighlighter;
-  codeTransformation?: CodeTransformation;
-  showLearnMoreLink?: boolean;
+  activeSchema: SchemaJson | null | undefined
+  inProgressSchema: SchemaJson | null | undefined
+  shapes: Map<string, Shape>
+  hasShapeError?: boolean
+  lineHighlighter?: LineHighlighter
+  codeTransformation?: CodeTransformation
+  showLearnMoreLink?: boolean
   schemaValidationProgress?: {
-    numDocsValidated: number;
-    totalDocs: number | null;
-  } | null;
+    numDocsValidated: number
+    totalDocs: number | null
+  } | null
 }) {
   const displayedSchema = useMemo(() => {
     if (!activeSchema) {
-      return "";
+      return ''
     }
-    const schema = displaySchema(activeSchema);
-    return schema ? codeTransformation(schema) : "";
-  }, [activeSchema, codeTransformation]);
+    const schema = displaySchema(activeSchema)
+    return schema ? codeTransformation(schema) : ''
+  }, [activeSchema, codeTransformation])
 
-  const noSavedSchema = !activeSchema && !inProgressSchema;
+  const noSavedSchema = !activeSchema && !inProgressSchema
   return (
     <div className="max-w-full">
       <HeadlessTabGroup as={Fragment}>
@@ -57,7 +57,7 @@ export function ShowSchema({
             disabled={noSavedSchema}
             tip={
               noSavedSchema
-                ? "Your project doesn’t have a saved schema yet. Edit convex/schema.ts to add one."
+                ? 'Your project doesn’t have a saved schema yet. Edit convex/schema.ts to add one.'
                 : undefined
             }
           >
@@ -70,10 +70,10 @@ export function ShowSchema({
             {activeSchema && (
               <>
                 <p className="mb-2">
-                  This is a representation of the schema that is{" "}
+                  This is a representation of the schema that is{' '}
                   {activeSchema?.schemaValidation
-                    ? "currently being enforced"
-                    : "saved"}
+                    ? 'currently being enforced'
+                    : 'saved'}
                   . It is equivalent to your <ConvexSchemaFilePath />.
                 </p>
                 <div className="block rounded-sm border p-4 text-sm wrap-break-word whitespace-pre-wrap">
@@ -87,7 +87,7 @@ export function ShowSchema({
                     }
                     code={displayedSchema}
                     language="javascript"
-                    height={{ type: "content", maxHeightRem: 52 }}
+                    height={{ type: 'content', maxHeightRem: 52 }}
                   />
                 </div>
               </>
@@ -101,8 +101,8 @@ export function ShowSchema({
                   </div>
                 )}
                 {schemaValidationProgress
-                  ? "Schema validation in progress..."
-                  : "Code push in progress..."}
+                  ? 'Schema validation in progress...'
+                  : 'Code push in progress...'}
                 {schemaValidationProgress &&
                   schemaValidationProgress.totalDocs !== null && (
                     <div className="grow sm:px-6">
@@ -135,5 +135,5 @@ export function ShowSchema({
         </HeadlessTabPanels>
       </HeadlessTabGroup>
     </div>
-  );
+  )
 }

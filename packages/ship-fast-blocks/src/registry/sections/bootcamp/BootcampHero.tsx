@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BootcampHero — split-layout hero section for a coding bootcamp / career-school
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * dev courses, or career-switch programs.
  */
 export const BootcampHero = defineComponent({
-  name: "BootcampHero",
+  name: 'BootcampHero',
   description:
-    "Split-layout hero section for a coding bootcamp / career-school landing page: two-column band on a muted canvas with a soft gradient wash. Left side has a pulsing live-cohort pill badge, a bold multi-line headline with one phrase in primary accent, a supporting paragraph, dual CTAs (filled primary + outlined secondary), and an inline trust-chip row. Right side has a glowing cohort photo with a floating stat card showing graduate headshots and a placement count. CTAs route through useNavigate. Use as the opening hero for coding bootcamps, software-engineering academies, dev courses, or career-switch programs.",
+    'Split-layout hero section for a coding bootcamp / career-school landing page: two-column band on a muted canvas with a soft gradient wash. Left side has a pulsing live-cohort pill badge, a bold multi-line headline with one phrase in primary accent, a supporting paragraph, dual CTAs (filled primary + outlined secondary), and an inline trust-chip row. Right side has a glowing cohort photo with a floating stat card showing graduate headshots and a placement count. CTAs route through useNavigate. Use as the opening hero for coding bootcamps, software-engineering academies, dev courses, or career-switch programs.',
   props: z.object({
     /** Availability / cohort pill text. */
     badge: z.string().optional(),
@@ -44,22 +44,22 @@ export const BootcampHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroBadge = props.badge ?? "Next cohort starts July 14, 2025"
-    const heroHeadingTop = props.headingTop ?? "Become a Full-Stack"
-    const heroHighlight = props.highlight ?? "Developer in 16 Weeks"
+    const heroBadge = props.badge ?? 'Next cohort starts July 14, 2025'
+    const heroHeadingTop = props.headingTop ?? 'Become a Full-Stack'
+    const heroHighlight = props.highlight ?? 'Developer in 16 Weeks'
     const heroSub =
       props.subheading ??
-      "Join 2,400+ graduates who transformed their careers. Learn JavaScript, React, Node.js, and PostgreSQL through hands-on projects with 1:1 mentorship from senior engineers at Google, Stripe, and Airbnb."
-    const heroPrimary = props.primaryCta ?? "Start Your Application"
-    const heroSecondary = props.secondaryCta ?? "View Curriculum"
+      'Join 2,400+ graduates who transformed their careers. Learn JavaScript, React, Node.js, and PostgreSQL through hands-on projects with 1:1 mentorship from senior engineers at Google, Stripe, and Airbnb.'
+    const heroPrimary = props.primaryCta ?? 'Start Your Application'
+    const heroSecondary = props.secondaryCta ?? 'View Curriculum'
     const heroTrust = props.trust?.length
       ? props.trust
-      : ["Job guarantee", "89% placement rate", "Income share option"]
+      : ['Job guarantee', '89% placement rate', 'Income share option']
     const heroImageAlt =
       props.imageAlt ??
-      "diverse group of students collaborating on laptops in a modern coding workspace"
-    const heroStatValue = props.statValue ?? "2,400+"
-    const heroStatLabel = props.statLabel ?? "graduates placed"
+      'diverse group of students collaborating on laptops in a modern coding workspace'
+    const heroStatValue = props.statValue ?? '2,400+'
+    const heroStatLabel = props.statLabel ?? 'graduates placed'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -78,10 +78,7 @@ export const BootcampHero = defineComponent({
 
     return (
       <section
-        className={cn(
-          "relative overflow-hidden bg-muted/40",
-          props.className,
-        )}
+        className={cn('relative overflow-hidden bg-muted/40', props.className)}
       >
         <div
           aria-hidden="true"
@@ -144,9 +141,9 @@ export const BootcampHero = defineComponent({
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">
                     {[
-                      "professional headshot of a female graduate",
-                      "professional headshot of a male graduate",
-                      "professional headshot of a smiling graduate",
+                      'professional headshot of a female graduate',
+                      'professional headshot of a male graduate',
+                      'professional headshot of a smiling graduate',
                     ].map((a) => (
                       <Image
                         key={a}

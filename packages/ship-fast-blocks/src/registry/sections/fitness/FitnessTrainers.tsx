@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FitnessTrainers — expert-trainers / coaches grid for a gym or fitness studio. A
@@ -11,9 +11,9 @@ import { Image } from "#/lib/img.tsx"
  * personal trainers on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
 export const FitnessTrainers = defineComponent({
-  name: "FitnessTrainers",
+  name: 'FitnessTrainers',
   description:
-    "Expert-trainers / coaches grid for a gym or fitness studio: a centered heading and lead paragraph above a 1/2/4-column grid of centered cards, each with a tall rounded headshot, name, role and a short credentials bio. Headshots use the alt-driven Image component. Use to introduce coaches, instructors, yoga directors or personal trainers on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.",
+    'Expert-trainers / coaches grid for a gym or fitness studio: a centered heading and lead paragraph above a 1/2/4-column grid of centered cards, each with a tall rounded headshot, name, role and a short credentials bio. Headshots use the alt-driven Image component. Use to introduce coaches, instructors, yoga directors or personal trainers on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -30,45 +30,45 @@ export const FitnessTrainers = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const trainersHeading = props.heading ?? "Expert trainers"
+    const trainersHeading = props.heading ?? 'Expert trainers'
     const trainersDesc =
       props.description ??
-      "Our coaches bring years of experience, certifications, and a genuine passion for helping you reach your goals."
+      'Our coaches bring years of experience, certifications, and a genuine passion for helping you reach your goals.'
     const trainerItems = props.items?.length
       ? props.items
       : [
           {
-            name: "Marcus Williams",
-            role: "Head Coach — Strength",
-            bio: "CSCS, CrossFit L2. 12 years experience. Former collegiate strength coach.",
+            name: 'Marcus Williams',
+            role: 'Head Coach — Strength',
+            bio: 'CSCS, CrossFit L2. 12 years experience. Former collegiate strength coach.',
             imageAlt:
-              "professional headshot of Marcus Williams a muscular Black male fitness trainer with short hair wearing black athletic shirt",
+              'professional headshot of Marcus Williams a muscular Black male fitness trainer with short hair wearing black athletic shirt',
           },
           {
-            name: "Elena Park",
-            role: "Yoga Director",
-            bio: "E-RYT 500, YACEP. 8 years teaching. Specializes in power vinyasa.",
+            name: 'Elena Park',
+            role: 'Yoga Director',
+            bio: 'E-RYT 500, YACEP. 8 years teaching. Specializes in power vinyasa.',
             imageAlt:
-              "professional headshot of Elena Park a Korean American female yoga instructor with long dark hair in peaceful smile",
+              'professional headshot of Elena Park a Korean American female yoga instructor with long dark hair in peaceful smile',
           },
           {
-            name: "James Chen",
-            role: "Boxing Coach",
-            bio: "Golden Gloves champion. NASM-CPT. Focus on technique and conditioning.",
+            name: 'James Chen',
+            role: 'Boxing Coach',
+            bio: 'Golden Gloves champion. NASM-CPT. Focus on technique and conditioning.',
             imageAlt:
-              "professional headshot of James Chen an athletic Asian male boxing trainer with buzz cut and confident expression",
+              'professional headshot of James Chen an athletic Asian male boxing trainer with buzz cut and confident expression',
           },
           {
-            name: "Sofia Martinez",
-            role: "Pilates Lead",
-            bio: "Balanced Body certified. Former dancer. 6 years pilates instruction.",
+            name: 'Sofia Martinez',
+            role: 'Pilates Lead',
+            bio: 'Balanced Body certified. Former dancer. 6 years pilates instruction.',
             imageAlt:
-              "professional headshot of Sofia Martinez a fit Latina female pilates instructor with warm smile and athletic build",
+              'professional headshot of Sofia Martinez a fit Latina female pilates instructor with warm smile and athletic build',
           },
         ]
 
     return (
-      <section className={cn("py-20 md:py-32", props.className)}>
+      <section className={cn('py-20 md:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">

@@ -24,9 +24,12 @@ export const createGalleryApiResponse = async (
   clientOverride?: GalleryConvexClient,
 ) => {
   const url = new URL(request.url)
-  const { limit, page } = parseGalleryPagination(Object.fromEntries(url.searchParams))
+  const { limit, page } = parseGalleryPagination(
+    Object.fromEntries(url.searchParams),
+  )
   // Support "query" as an alias for "search" for recent-session compatibility
-  const search = url.searchParams.get('search') ?? url.searchParams.get('query') ?? undefined
+  const search =
+    url.searchParams.get('search') ?? url.searchParams.get('query') ?? undefined
   const category = url.searchParams.get('category') ?? undefined
 
   try {
@@ -48,7 +51,8 @@ export const createGalleryApiResponse = async (
   } catch (error) {
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'Unable to load gallery',
+        error:
+          error instanceof Error ? error.message : 'Unable to load gallery',
       }),
       {
         status: 500,

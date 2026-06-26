@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AutoDealershipFeatures — "why buy from us" trust band for an auto dealership
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * car lots, or certified pre-owned sellers. Renders fully with no props.
  */
 export const AutoDealershipFeatures = defineComponent({
-  name: "AutoDealershipFeatures",
+  name: 'AutoDealershipFeatures',
   description:
     "'Why buy from us' trust band for an auto dealership page on a soft muted surface: a two-column layout where the left column has a heading and lead plus a 2-up grid of icon tiles (150-point inspection, 7-day money-back, 90-day warranty, no hidden fees) with rotating token-colored line icons, and the right column stacks a large rounded dealership photo over a bordered founder quote card (blockquote, round avatar, name + role). The default heading folds in the brand name. Photo and avatar use the alt-driven Image component. Use as the value-prop / trust section for car dealerships, used-car lots, or certified pre-owned sellers.",
   props: z.object({
@@ -42,7 +42,7 @@ export const AutoDealershipFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Meridian Motors"
+    const brand = props.brand ?? 'Meridian Motors'
     const heading = props.heading ?? `Why Buy from ${brand}`
     const description =
       props.description ??
@@ -51,37 +51,37 @@ export const AutoDealershipFeatures = defineComponent({
       ? props.items
       : [
           {
-            title: "150-Point Inspection",
+            title: '150-Point Inspection',
             description:
-              "Every vehicle undergoes rigorous mechanical and cosmetic inspection before sale.",
+              'Every vehicle undergoes rigorous mechanical and cosmetic inspection before sale.',
           },
           {
-            title: "7-Day Money Back",
+            title: '7-Day Money Back',
             description:
-              "Not satisfied? Return your vehicle within 7 days for a full refund, no questions asked.",
+              'Not satisfied? Return your vehicle within 7 days for a full refund, no questions asked.',
           },
           {
-            title: "90-Day Warranty",
+            title: '90-Day Warranty',
             description:
-              "Comprehensive coverage on all certified vehicles. Extended plans available.",
+              'Comprehensive coverage on all certified vehicles. Extended plans available.',
           },
           {
-            title: "No Hidden Fees",
+            title: 'No Hidden Fees',
             description:
-              "Transparent pricing. The price you see is the price you pay plus tax and title.",
+              'Transparent pricing. The price you see is the price you pay plus tax and title.',
           },
         ]
     const imageAlt =
       props.imageAlt ??
-      "Modern glass and steel car dealership showroom exterior at sunset"
+      'Modern glass and steel car dealership showroom exterior at sunset'
     const quote =
       props.quote ??
-      "We built this dealership on the principle that buying a car should be enjoyable, not stressful. Every decision we make puts our customers first."
-    const quoteName = props.quoteName ?? "David Chen"
-    const quoteRole = props.quoteRole ?? "General Manager & Founder"
+      'We built this dealership on the principle that buying a car should be enjoyable, not stressful. Every decision we make puts our customers first.'
+    const quoteName = props.quoteName ?? 'David Chen'
+    const quoteRole = props.quoteRole ?? 'General Manager & Founder'
     const quoteAvatarAlt =
       props.quoteAvatarAlt ??
-      "Professional headshot of David Chen, General Manager"
+      'Professional headshot of David Chen, General Manager'
 
     const CheckBadge = () => (
       <svg
@@ -146,7 +146,7 @@ export const AutoDealershipFeatures = defineComponent({
     const featureIcons = [<CheckBadge />, <Clock />, <Shield />, <Receipt />]
 
     return (
-      <section className={cn("bg-muted py-16 lg:py-24", props.className)}>
+      <section className={cn('bg-muted py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">

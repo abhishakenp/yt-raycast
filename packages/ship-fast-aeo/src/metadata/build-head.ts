@@ -6,7 +6,10 @@ export type HeadTagOptions = {
   structuredDataScript?: string
 }
 
-export function buildHeadTags(seo: ResolvedPageSeo, options: HeadTagOptions = {}): string[] {
+export function buildHeadTags(
+  seo: ResolvedPageSeo,
+  options: HeadTagOptions = {},
+): string[] {
   const tags = [
     '<meta charset="UTF-8" />',
     '<meta name="viewport" content="width=device-width, initial-scale=1.0" />',
@@ -17,11 +20,15 @@ export function buildHeadTags(seo: ResolvedPageSeo, options: HeadTagOptions = {}
   ]
 
   if (seo.keywords.length) {
-    tags.push(`<meta name="keywords" content="${escapeHtml(seo.keywords.join(', '))}" />`)
+    tags.push(
+      `<meta name="keywords" content="${escapeHtml(seo.keywords.join(', '))}" />`,
+    )
   }
   if (seo.canonicalUrl) {
     tags.push(`<link rel="canonical" href="${escapeHtml(seo.canonicalUrl)}" />`)
-    tags.push(`<meta property="og:url" content="${escapeHtml(seo.canonicalUrl)}" />`)
+    tags.push(
+      `<meta property="og:url" content="${escapeHtml(seo.canonicalUrl)}" />`,
+    )
   }
 
   tags.push(
@@ -45,7 +52,9 @@ export function buildHeadTags(seo: ResolvedPageSeo, options: HeadTagOptions = {}
   }
 
   if (options.includeLlmsTxtLink !== false) {
-    tags.push('<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-readable site summary" />')
+    tags.push(
+      '<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-readable site summary" />',
+    )
   }
 
   if (options.structuredDataScript) {
@@ -68,6 +77,9 @@ export function renderSeoHeadMarkup(
 
   return {
     htmlLang: seo.htmlLang,
-    markup: buildHeadTags(seo, { ...options, structuredDataScript: script }).join('\n    '),
+    markup: buildHeadTags(seo, {
+      ...options,
+      structuredDataScript: script,
+    }).join('\n    '),
   }
 }

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * InteriorDesignProjects — filterable project portfolio gallery for an upscale
@@ -17,7 +17,7 @@ import { Image } from "#/lib/img.tsx"
  * no props via baked-in defaults.
  */
 export const InteriorDesignProjects = defineComponent({
-  name: "InteriorDesignProjects",
+  name: 'InteriorDesignProjects',
   description:
     "Filterable project portfolio gallery for an upscale interior-design / architecture studio: a header row pairing an uppercase eyebrow + light-weight heading with underline-style filter tabs (first active), above a responsive 2/3-column grid of tall project cards — each a zoom-on-hover photo over an uppercase tag, a medium title and a location/year meta line — and a centered outlined 'view all' button. Editorial and gallery-like; filters, cards and button route through useNavigate and photos use the alt-driven Image component. Use to showcase a body of work for interior designers, design studios or architecture firms.",
   props: z.object({
@@ -38,53 +38,50 @@ export const InteriorDesignProjects = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Portfolio"
-    const heading = props.heading ?? "Selected projects"
+    const eyebrow = props.eyebrow ?? 'Portfolio'
+    const heading = props.heading ?? 'Selected projects'
     const filters = props.filters?.length
       ? props.filters
-      : ["All", "Residential", "Commercial"]
-    const viewAll = props.viewAll ?? "View All Projects"
+      : ['All', 'Residential', 'Commercial']
+    const viewAll = props.viewAll ?? 'View All Projects'
     const items = props.items?.length
       ? props.items
       : [
           {
-            tag: "Residential",
-            title: "Tiburon Bay House",
-            meta: "Tiburon, California — 2024",
+            tag: 'Residential',
+            title: 'Tiburon Bay House',
+            meta: 'Tiburon, California — 2024',
           },
           {
-            tag: "Residential",
-            title: "Napa Valley Retreat",
-            meta: "St. Helena, California — 2023",
+            tag: 'Residential',
+            title: 'Napa Valley Retreat',
+            meta: 'St. Helena, California — 2023',
           },
           {
-            tag: "Commercial",
-            title: "Meridian Offices",
-            meta: "San Francisco, California — 2023",
+            tag: 'Commercial',
+            title: 'Meridian Offices',
+            meta: 'San Francisco, California — 2023',
           },
           {
-            tag: "Residential",
-            title: "Presidio Heights Kitchen",
-            meta: "San Francisco, California — 2024",
+            tag: 'Residential',
+            title: 'Presidio Heights Kitchen',
+            meta: 'San Francisco, California — 2024',
           },
           {
-            tag: "Hospitality",
-            title: "The Calistoga Inn",
-            meta: "Calistoga, California — 2022",
+            tag: 'Hospitality',
+            title: 'The Calistoga Inn',
+            meta: 'Calistoga, California — 2022',
           },
           {
-            tag: "Residential",
-            title: "Sausalito Master Bath",
-            meta: "Sausalito, California — 2023",
+            tag: 'Residential',
+            title: 'Sausalito Master Bath',
+            meta: 'Sausalito, California — 2023',
           },
         ]
 
     return (
       <section
-        className={cn(
-          "px-4 py-20 sm:px-6 md:py-32 lg:px-8",
-          props.className,
-        )}
+        className={cn('px-4 py-20 sm:px-6 md:py-32 lg:px-8', props.className)}
       >
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 flex flex-col gap-6 md:mb-16 md:flex-row md:items-end md:justify-between">
@@ -103,10 +100,10 @@ export const InteriorDesignProjects = defineComponent({
                   type="button"
                   onClick={() => go(filter)}
                   className={cn(
-                    "px-4 py-2 text-sm font-medium transition-colors",
+                    'px-4 py-2 text-sm font-medium transition-colors',
                     i === 0
-                      ? "border-b-2 border-foreground text-foreground"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? 'border-b-2 border-foreground text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
                   {filter}

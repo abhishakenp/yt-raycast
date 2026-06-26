@@ -8,8 +8,14 @@ const readRootSource = () =>
 describe('root document hydration hardening', () => {
   it('suppresses extension-added attribute mismatches on document elements', () => {
     const source = readRootSource()
-    const htmlBlock = source.slice(source.indexOf('<html'), source.indexOf('<head>'))
-    const bodyBlock = source.slice(source.indexOf('<body'), source.indexOf('{children}'))
+    const htmlBlock = source.slice(
+      source.indexOf('<html'),
+      source.indexOf('<head>'),
+    )
+    const bodyBlock = source.slice(
+      source.indexOf('<body'),
+      source.indexOf('{children}'),
+    )
 
     expect(htmlBlock).toContain('suppressHydrationWarning')
     expect(bodyBlock).toContain('suppressHydrationWarning')

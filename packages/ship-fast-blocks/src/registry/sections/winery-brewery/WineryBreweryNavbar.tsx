@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * WineryBreweryNavbar — sticky site header for a winery, vineyard estate, or
@@ -34,7 +34,7 @@ const GrapeClusterMark = ({ className }: { className?: string }) => (
 )
 
 export const WineryBreweryNavbar = defineComponent({
-  name: "WineryBreweryNavbar",
+  name: 'WineryBreweryNavbar',
   description:
     "Sticky winery / brewery site header (vineyard estate or craft taproom) built on the shared SiteNav composite: serif wordmark + inline grape-cluster mark, centered desktop nav links, a tasting-room phone number, a 'Plan a Visit' CTA, and a real mobile drawer. Use as the header for wineries, cellar doors, vineyards, breweries, taprooms, cideries, or any rustic-premium drinks brand where bookings and visits matter.",
   props: z.object({
@@ -55,17 +55,17 @@ export const WineryBreweryNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Wines", "Visit", "Events", "Gallery", "Contact"]
+      : ['Wines', 'Visit', 'Events', 'Gallery', 'Contact']
     return (
       <SiteNav
-        brand={props.brand ?? "Cellar & Cask"}
+        brand={props.brand ?? 'Cellar & Cask'}
         brandMark={<GrapeClusterMark className="size-8 text-primary" />}
         brandClassName="font-serif text-xl font-medium"
         nav={nav}
-        phone={props.phone ?? "(707) 555-0148"}
+        phone={props.phone ?? '(707) 555-0148'}
         cta={{
-          label: props.ctaLabel ?? "Plan a Visit",
-          target: props.ctaTarget ?? "Visit",
+          label: props.ctaLabel ?? 'Plan a Visit',
+          target: props.ctaTarget ?? 'Visit',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

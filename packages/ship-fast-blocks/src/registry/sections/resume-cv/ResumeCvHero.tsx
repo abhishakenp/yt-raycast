@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ResumeCvHero — clean two-column opening hero for a personal resume / CV /
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * no props via baked-in "Jordan Avery" defaults.
  */
 export const ResumeCvHero = defineComponent({
-  name: "ResumeCvHero",
+  name: 'ResumeCvHero',
   description:
     "Clean two-column opening hero for a personal resume / CV / portfolio site: the left column stacks an availability eyebrow, the person's name in a large sans headline, their role / title, a short pitch paragraph, and dual CTAs (filled 'Download CV' + outlined 'Contact'); the right column holds a rounded professional headshot photo. Token surfaces, crisp spacing, minimal professional feel. Both CTAs route through useNavigate. Use as the opening hero for personal portfolios, online résumés, designer or developer profiles, or any individual's professional landing page.",
   props: z.object({
@@ -42,20 +42,20 @@ export const ResumeCvHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Available for new projects"
-    const name = props.name ?? "Jordan Avery"
-    const role = props.role ?? "Senior Product Designer"
+    const eyebrow = props.eyebrow ?? 'Available for new projects'
+    const name = props.name ?? 'Jordan Avery'
+    const role = props.role ?? 'Senior Product Designer'
     const pitch =
       props.pitch ??
-      "I design calm, useful digital products for teams that care about craft. Eight years turning ambiguous problems into clear, accessible interfaces people love to use."
-    const primaryCta = props.primaryCta ?? "Download CV"
-    const primaryTarget = props.primaryTarget ?? "CV"
-    const secondaryCta = props.secondaryCta ?? "Contact"
-    const secondaryTarget = props.secondaryTarget ?? "Contact"
-    const imageAlt = props.imageAlt ?? "professional headshot portrait"
+      'I design calm, useful digital products for teams that care about craft. Eight years turning ambiguous problems into clear, accessible interfaces people love to use.'
+    const primaryCta = props.primaryCta ?? 'Download CV'
+    const primaryTarget = props.primaryTarget ?? 'CV'
+    const secondaryCta = props.secondaryCta ?? 'Contact'
+    const secondaryTarget = props.secondaryTarget ?? 'Contact'
+    const imageAlt = props.imageAlt ?? 'professional headshot portrait'
 
     return (
-      <section className={cn("bg-background", props.className)}>
+      <section className={cn('bg-background', props.className)}>
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-24 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-32">
           <div className="flex flex-col items-start">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">

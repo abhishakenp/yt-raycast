@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * DatingAppTestimonials — a 3-up "love stories" testimonial grid for a dating /
@@ -13,7 +13,7 @@ import { Image } from "#/lib/img.tsx"
  * no props via baked-in couple-story defaults.
  */
 export const DatingAppTestimonials = defineComponent({
-  name: "DatingAppTestimonials",
+  name: 'DatingAppTestimonials',
   description:
     "3-up 'love stories' testimonial grid for a dating / matchmaking app: a centered heading + supporting paragraph above a responsive 1/2/3-column grid of soft muted cards, each with a round couple avatar beside the pair's names and a 'matched' date, a row of five primary stars, and an italic quote. Avatars are alt-driven <Image>. Use as social proof / success stories for dating apps, singles platforms, or relationship products.",
   props: z.object({
@@ -33,32 +33,34 @@ export const DatingAppTestimonials = defineComponent({
   }),
   component: ({ props }) => {
     const testimonialsHeading =
-      props.heading ?? "Love stories that started here"
+      props.heading ?? 'Love stories that started here'
     const testimonialsDesc =
-      props.description ?? "Real couples who found each other on HeartLink."
+      props.description ?? 'Real couples who found each other on HeartLink.'
     const testimonialItems = props.items?.length
       ? props.items
       : [
           {
-            names: "Jessica & Marcus",
-            meta: "Matched March 2024",
+            names: 'Jessica & Marcus',
+            meta: 'Matched March 2024',
             quote:
               "The compatibility quiz actually worked! We discovered we both love hiking and craft beer before we even met. First date was at a brewery—now we're planning our wedding there.",
-            avatarAlt: "happy couple portrait of Jessica and Marcus smiling together",
+            avatarAlt:
+              'happy couple portrait of Jessica and Marcus smiling together',
           },
           {
-            names: "David & Priya",
-            meta: "Matched January 2024",
+            names: 'David & Priya',
+            meta: 'Matched January 2024',
             quote:
               "I was skeptical about dating apps until HeartLink. The video date feature let us connect before meeting. Six months later, we're moving in together!",
-            avatarAlt: "happy couple portrait of David and Priya at a park",
+            avatarAlt: 'happy couple portrait of David and Priya at a park',
           },
           {
-            names: "Michael & Elena",
-            meta: "Matched November 2023",
+            names: 'Michael & Elena',
+            meta: 'Matched November 2023',
             quote:
               "We met at a HeartLink singles mixer in Austin. The app made me feel safe enough to try meeting in person, and I'm so glad I did. Best decision ever!",
-            avatarAlt: "happy couple portrait of Michael and Elena embracing outdoors",
+            avatarAlt:
+              'happy couple portrait of Michael and Elena embracing outdoors',
           },
         ]
 
@@ -74,7 +76,7 @@ export const DatingAppTestimonials = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">

@@ -1,13 +1,13 @@
-import React, { useCallback, useId } from "react";
+import React, { useCallback, useId } from 'react'
 import {
   FilterByIndex,
   FilterByIndexRange,
-} from "system-udfs/convex/_system/frontend/lib/filters";
-import { Tooltip } from "@ui/Tooltip";
-import { TextInput } from "@ui/TextInput";
-import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+} from 'system-udfs/convex/_system/frontend/lib/filters'
+import { Tooltip } from '@ui/Tooltip'
+import { TextInput } from '@ui/TextInput'
+import { MagnifyingGlassIcon } from '@radix-ui/react-icons'
 
-export type IndexFilterState = FilterByIndex | FilterByIndexRange;
+export type IndexFilterState = FilterByIndex | FilterByIndexRange
 
 export function SearchValueEditor({
   field,
@@ -16,29 +16,29 @@ export function SearchValueEditor({
   onApplyFilters,
   indented,
 }: {
-  field: string;
-  value: string;
-  onChange(newValue: string): void;
-  onApplyFilters(): void;
-  indented: boolean;
+  field: string
+  value: string
+  onChange(newValue: string): void
+  onApplyFilters(): void
+  indented: boolean
 }) {
-  const inputId = useId();
+  const inputId = useId()
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange(e.target.value);
+      onChange(e.target.value)
     },
     [onChange],
-  );
+  )
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (event.key === "Enter") {
-        onApplyFilters();
+      if (event.key === 'Enter') {
+        onApplyFilters()
       }
     },
     [onApplyFilters],
-  );
+  )
 
   return (
     <div className="flex min-w-0 items-center gap-2">
@@ -66,5 +66,5 @@ export function SearchValueEditor({
         />
       </div>
     </div>
-  );
+  )
 }

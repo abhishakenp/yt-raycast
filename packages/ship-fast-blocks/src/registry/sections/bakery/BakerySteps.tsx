@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * BakerySteps — "how to order" 3-step guide for an artisan-bakery page, on a
@@ -15,7 +15,7 @@ import { cn } from "#/lib/utils.ts"
  * props via three baked-in default steps.
  */
 export const BakerySteps = defineComponent({
-  name: "BakerySteps",
+  name: 'BakerySteps',
   description:
     "'How to order' 3-step guide for an artisan-bakery page on a card surface: a centered heading and lead paragraph above a responsive 3-up grid of step cards, each with a giant faded ordinal number bleeding off the corner, a rounded tinted icon tile (rotating inline line-icons: device, phone, pin), a title, a description, and an accent-colored note line. Warm, editorial, light and craft-forward; tokens-only, no links. Use to explain a bakery's ordering options (pre-order online, call ahead, walk in) or any 'how it works' / process steps block for food makers.",
   props: z.object({
@@ -36,30 +36,29 @@ export const BakerySteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "How to order"
+    const heading = props.heading ?? 'How to order'
     const description =
-      props.description ??
-      "Three simple ways to get your hands on fresh bread."
+      props.description ?? 'Three simple ways to get your hands on fresh bread.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Pre-order online",
+            title: 'Pre-order online',
             description:
-              "Reserve your favorites by 6pm the day before. Pick up anytime during business hours. Guaranteed availability.",
-            note: "Best for: Large orders, special items, busy weekends",
+              'Reserve your favorites by 6pm the day before. Pick up anytime during business hours. Guaranteed availability.',
+            note: 'Best for: Large orders, special items, busy weekends',
           },
           {
-            title: "Call ahead",
+            title: 'Call ahead',
             description:
-              "Phone in your order for same-day pickup. We set aside your items and have them ready at the counter.",
-            note: "(503) 555-0142",
+              'Phone in your order for same-day pickup. We set aside your items and have them ready at the counter.',
+            note: '(503) 555-0142',
           },
           {
-            title: "Walk in",
+            title: 'Walk in',
             description:
-              "Visit us at 1423 Oak Street. First come, first served. Popular items often sell out by midday.",
-            note: "Open 7am–4pm daily",
+              'Visit us at 1423 Oak Street. First come, first served. Popular items often sell out by midday.',
+            note: 'Open 7am–4pm daily',
           },
         ]
 
@@ -110,7 +109,7 @@ export const BakerySteps = defineComponent({
     ]
 
     return (
-      <section className={cn("bg-card py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground lg:text-4xl">
@@ -122,7 +121,7 @@ export const BakerySteps = defineComponent({
             {items.map((step, i) => (
               <div key={step.title} className="relative">
                 <div className="absolute -left-2 -top-4 text-6xl font-bold text-muted">
-                  {String(i + 1).padStart(2, "0")}
+                  {String(i + 1).padStart(2, '0')}
                 </div>
                 <div className="relative h-full rounded-xl bg-muted p-8">
                   <div className="mb-6 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">

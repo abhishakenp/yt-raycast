@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FilmDirectorHero — full-height split hero for a film director / cinematographer
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * portfolios on a clean, editorial, light canvas.
  */
 export const FilmDirectorHero = defineComponent({
-  name: "FilmDirectorHero",
+  name: 'FilmDirectorHero',
   description:
-    "Full-height split hero for a film director / cinematographer portfolio: a two-column layout with a left text column (uppercase tracked eyebrow label, a thin light display headline with one emphasized phrase rendered in medium weight, a lede paragraph, a play-icon primary CTA plus an outlined secondary CTA, and a 3-up KPI strip above a top border) beside a tall 4:5 portrait photo with a soft bottom-up gradient overlay. CTAs route through useNavigate; the portrait uses the Image component. Use as the top hero for filmmakers, directors, cinematographers, DPs, or video production portfolios on a clean, editorial, light canvas.",
+    'Full-height split hero for a film director / cinematographer portfolio: a two-column layout with a left text column (uppercase tracked eyebrow label, a thin light display headline with one emphasized phrase rendered in medium weight, a lede paragraph, a play-icon primary CTA plus an outlined secondary CTA, and a 3-up KPI strip above a top border) beside a tall 4:5 portrait photo with a soft bottom-up gradient overlay. CTAs route through useNavigate; the portrait uses the Image component. Use as the top hero for filmmakers, directors, cinematographers, DPs, or video production portfolios on a clean, editorial, light canvas.',
   props: z.object({
     eyebrow: z.string().optional(),
     /** Heading text; the `highlight` phrase within it is rendered emphasized. */
@@ -35,23 +35,23 @@ export const FilmDirectorHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroEyebrow = props.eyebrow ?? "Film Director & Cinematographer"
-    const heroHeading = props.heading ?? "Visual stories that resonate"
-    const heroHighlight = props.highlight ?? "resonate"
+    const heroEyebrow = props.eyebrow ?? 'Film Director & Cinematographer'
+    const heroHeading = props.heading ?? 'Visual stories that resonate'
+    const heroHighlight = props.highlight ?? 'resonate'
     const heroSub =
       props.subheading ??
-      "Crafting cinematic narratives for brands, agencies, and artists. From concept to final cut, I bring vision and precision to every frame."
-    const heroPrimary = props.primaryCta ?? "Watch Reel"
-    const heroSecondary = props.secondaryCta ?? "View Projects"
+      'Crafting cinematic narratives for brands, agencies, and artists. From concept to final cut, I bring vision and precision to every frame.'
+    const heroPrimary = props.primaryCta ?? 'Watch Reel'
+    const heroSecondary = props.secondaryCta ?? 'View Projects'
     const heroImageAlt =
       props.imageAlt ??
-      "cinematic behind-the-scenes shot of a film director operating a professional cinema camera on a commercial set with lighting equipment visible"
+      'cinematic behind-the-scenes shot of a film director operating a professional cinema camera on a commercial set with lighting equipment visible'
     const heroStats = props.stats?.length
       ? props.stats
       : [
-          { value: "12+", label: "Years Experience" },
-          { value: "87", label: "Projects Delivered" },
-          { value: "14", label: "Industry Awards" },
+          { value: '12+', label: 'Years Experience' },
+          { value: '87', label: 'Projects Delivered' },
+          { value: '14', label: 'Industry Awards' },
         ]
 
     const PlayIcon = ({ className }: { className?: string }) => (
@@ -83,7 +83,7 @@ export const FilmDirectorHero = defineComponent({
 
     return (
       <section
-        className={cn("flex min-h-screen items-center", props.className)}
+        className={cn('flex min-h-screen items-center', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-24 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">

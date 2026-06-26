@@ -6,6 +6,7 @@ import { hashOwnerSecret } from './session_access_helpers'
 import {
   finalizeSessionClonePreview,
   listSessionClonePages,
+  loadClonePagePreview,
   writeSessionClonePage,
 } from './session_clone_helpers'
 
@@ -223,8 +224,7 @@ describe('session clone helpers', () => {
       expect(
         patches.filter(
           (patch) =>
-            patch.id === sessionId &&
-            (patch.value as Row).cloneMode === true,
+            patch.id === sessionId && (patch.value as Row).cloneMode === true,
         ),
       ).toHaveLength(0)
     })
@@ -289,7 +289,7 @@ describe('session clone helpers', () => {
               sessionId,
               version: 2,
               html: '<main>Cloned home</main>',
-              openUiSource: '<main>Cloned home</main>',
+              openUiSource: '',
               source: 'generation',
             }),
           },
@@ -414,24 +414,109 @@ describe('session clone helpers', () => {
           pathname: '/',
           title: 'Home',
           html: '<main>Home</main>',
+          storageId: undefined,
           isHome: true,
           failed: false,
+          byteLength: 12,
+          truncated: false,
         },
         {
           pathname: '/blog',
           title: 'Blog',
           html: '<main>Blog</main>',
+          storageId: undefined,
           isHome: false,
           failed: true,
+          byteLength: 12,
+          truncated: false,
         },
         {
           pathname: '/about',
           title: 'About',
           html: '<main>About</main>',
+          storageId: undefined,
           isHome: false,
           failed: false,
+          byteLength: 12,
+          truncated: false,
         },
       ])
+    })
+  })
+
+  describe('loadClonePagePreview', () => {
+    it('returns the requested clone page storage URL when pathname is provided', async () => {
+      const { ctx } = await mutationCtxFor({
+        clonePages: [
+          clonePageRow({
+            _id: 'clone_home',
+            pathname: '/',
+            html: undefined,
+            storageId: 'stored_home' as Id<'_storage'>,
+            isHome: true,
+            order: 0,
+          }),
+          clonePageRow({
+            _id: 'clone_career',
+            pathname: '/career',
+            html: undefined,
+            storageId: 'stored_career' as Id<'_storage'>,
+            isHome: false,
+            order: 1,
+          }),
+        ],
+      })
+      const queryCtx = {
+        db: {
+          ...ctx.db,
+          normalizeId: vi.fn(() => sessionId),
+        },
+        storage: {
+          getUrl: vi.fn(async (storageId: Id<'_storage'>) =>
+            `https://storage.test/${storageId}`,
+          ),
+        },
+      } as unknown as Pick<QueryCtx, 'db' | 'storage'>
+
+      await expect(
+        loadClonePagePreview(queryCtx, sessionId, '/career'),
+      ).resolves.toEqual({
+        html: null,
+        url: 'https://storage.test/stored_career',
+        version: 1,
+      })
+    })
+
+    it('falls back to the home clone page when no pathname is provided', async () => {
+      const { ctx } = await mutationCtxFor({
+        clonePages: [
+          clonePageRow({
+            _id: 'clone_home',
+            pathname: '/',
+            html: undefined,
+            storageId: 'stored_home' as Id<'_storage'>,
+            isHome: true,
+            order: 0,
+          }),
+        ],
+      })
+      const queryCtx = {
+        db: {
+          ...ctx.db,
+          normalizeId: vi.fn(() => sessionId),
+        },
+        storage: {
+          getUrl: vi.fn(async (storageId: Id<'_storage'>) =>
+            `https://storage.test/${storageId}`,
+          ),
+        },
+      } as unknown as Pick<QueryCtx, 'db' | 'storage'>
+
+      await expect(loadClonePagePreview(queryCtx, sessionId)).resolves.toEqual({
+        html: null,
+        url: 'https://storage.test/stored_home',
+        version: 1,
+      })
     })
   })
 })

@@ -44,7 +44,10 @@ function stripExistingSeoHeadMarkup(headHtml = '') {
       '',
     )
     .replace(/<link\b[^>]*rel\s*=\s*['"]canonical['"][^>]*>/gi, '')
-    .replace(/<script\b[^>]*type\s*=\s*['"]application\/ld\+json['"][^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(
+      /<script\b[^>]*type\s*=\s*['"]application\/ld\+json['"][^>]*>[\s\S]*?<\/script>/gi,
+      '',
+    )
     .trim()
 }
 
@@ -53,19 +56,25 @@ function applySeoToExactCloneDocument(html, siteSpec, page) {
   const withLang = applyLangToDocument(html, htmlLang)
 
   if (/<head\b[^>]*>/i.test(withLang)) {
-    return withLang.replace(/<head\b[^>]*>([\s\S]*?)<\/head>/i, (_match, headInner) => {
-      const cleanedHead = stripExistingSeoHeadMarkup(headInner)
-      return `<head>
+    return withLang.replace(
+      /<head\b[^>]*>([\s\S]*?)<\/head>/i,
+      (_match, headInner) => {
+        const cleanedHead = stripExistingSeoHeadMarkup(headInner)
+        return `<head>
     ${markup}${cleanedHead ? `\n    ${cleanedHead}` : ''}
   </head>`
-    })
+      },
+    )
   }
 
   if (/<html\b[^>]*>/i.test(withLang)) {
-    return withLang.replace(/<html\b[^>]*>/i, (match) => `${match}
+    return withLang.replace(
+      /<html\b[^>]*>/i,
+      (match) => `${match}
   <head>
     ${markup}
-  </head>`)
+  </head>`,
+    )
   }
 
   return `<!doctype html>
@@ -81,24 +90,40 @@ ${withLang}
 
 function applySiteCssHrefToHtml(html, siteCssHref) {
   const safe = escapeHtml(siteCssHref)
-  const hadSiteCssLink = /<link\b[^>]*\bhref=["'][^"']*site\.css[^"']*["'][^>]*>/i.test(html)
+  const hadSiteCssLink =
+    /<link\b[^>]*\bhref=["'][^"']*site\.css[^"']*["'][^>]*>/i.test(html)
   let next = html.replace(
     /(<link\b[^>]*\bhref=["'])(\.\/)?site\.css(\?[^"'#]*)?(["'])/gi,
     `$1${safe}$4`,
   )
   if (!hadSiteCssLink && /<\/head>/i.test(next)) {
-    next = next.replace(/<\/head>/i, `    <link rel="stylesheet" href="${safe}" />\n  </head>`)
+    next = next.replace(
+      /<\/head>/i,
+      `    <link rel="stylesheet" href="${safe}" />\n  </head>`,
+    )
   }
   return next
 }
 
-const SWIPER_CDN_CSS = 'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css'
-const SWIPER_CDN_JS = 'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js'
-const SPLIDE_CDN_CSS = 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css'
-const SPLIDE_CDN_JS = 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js'
+const SWIPER_CDN_CSS =
+  'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css'
+const SWIPER_CDN_JS =
+  'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js'
+const SPLIDE_CDN_CSS =
+  'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css'
+const SPLIDE_CDN_JS =
+  'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js'
 
-function renderPageDocument(siteSpec, page, siteCssHref, siteMotionHref, useSwiper = false) {
-  const sections = (page.sections || []).map((section) => renderSectionHtml(section, siteSpec)).join('\n')
+function renderPageDocument(
+  siteSpec,
+  page,
+  siteCssHref,
+  siteMotionHref,
+  useSwiper = false,
+) {
+  const sections = (page.sections || [])
+    .map((section) => renderSectionHtml(section, siteSpec))
+    .join('\n')
   const { htmlLang, markup } = renderSeoHeadMarkup(siteSpec, page)
   const indianFontMarkup = getLanguageFontMarkup(siteSpec._indiaMode)
   const cssHref = escapeHtml(siteCssHref)
@@ -110,7 +135,8 @@ function renderPageDocument(siteSpec, page, siteCssHref, siteMotionHref, useSwip
     ? `    <script src="${escapeHtml(SWIPER_CDN_JS)}" defer></script>\n    <script src="${escapeHtml(SPLIDE_CDN_JS)}" defer></script>\n`
     : ''
 
-  const storeShell = siteSpec.siteType === 'ecommerce' ? ' site-shell--store' : ''
+  const storeShell =
+    siteSpec.siteType === 'ecommerce' ? ' site-shell--store' : ''
   return `<!doctype html>
 <html lang="${escapeHtml(htmlLang)}">
   <head>
@@ -136,11 +162,17 @@ export function renderHtmlProject(siteSpec) {
     ecommerce: siteSpec.siteType === 'ecommerce',
     siteType: siteSpec.siteType,
   })
-  const cssFingerprint = createHash('sha256').update(cssContent).digest('hex').slice(0, 12)
+  const cssFingerprint = createHash('sha256')
+    .update(cssContent)
+    .digest('hex')
+    .slice(0, 12)
   const siteCssHref = `./site.css?v=${cssFingerprint}`
 
   const motionContent = buildHtmlMotionModule()
-  const motionFingerprint = createHash('sha256').update(motionContent).digest('hex').slice(0, 12)
+  const motionFingerprint = createHash('sha256')
+    .update(motionContent)
+    .digest('hex')
+    .slice(0, 12)
   const siteMotionHref = `./site-motion.mjs?v=${motionFingerprint}`
 
   const files = {
@@ -157,12 +189,16 @@ export function renderHtmlProject(siteSpec) {
   if (siteSpec.siteType === 'ecommerce' && siteSpec.ecommerce?.products) {
     for (const page of siteSpec.pages || []) {
       for (const section of page.sections || []) {
-        if (section.type === 'product-grid' && (!section.items || section.items.length === 0)) {
+        if (
+          section.type === 'product-grid' &&
+          (!section.items || section.items.length === 0)
+        ) {
           section.items = siteSpec.ecommerce.products.map((p) => ({
             id: p.id,
             title: p.title,
             body: p.description,
-            price: typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price,
+            price:
+              typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price,
             image: p.image || '',
             category: p.category || p.categoryName || '',
             compareAt:
@@ -178,12 +214,16 @@ export function renderHtmlProject(siteSpec) {
             rating: typeof p.rating === 'number' ? p.rating : undefined,
           }))
         }
-        if (section.type === 'featured-products' && (!section.items || section.items.length === 0)) {
+        if (
+          section.type === 'featured-products' &&
+          (!section.items || section.items.length === 0)
+        ) {
           section.items = siteSpec.ecommerce.products.slice(0, 4).map((p) => ({
             id: p.id,
             title: p.title,
             body: p.description,
-            price: typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price,
+            price:
+              typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price,
             image: p.image || '',
             category: p.category || p.categoryName || '',
             compareAt:
@@ -206,10 +246,20 @@ export function renderHtmlProject(siteSpec) {
   for (const page of siteSpec.pages || []) {
     files[routeToHtmlFile(page.route)] = pageUsesExactClone(page)
       ? applySiteCssHrefToHtml(
-          applySeoToExactCloneDocument(page.renderBlueprint.originalHtmlDocument, siteSpec, page),
+          applySeoToExactCloneDocument(
+            page.renderBlueprint.originalHtmlDocument,
+            siteSpec,
+            page,
+          ),
           siteCssHref,
         )
-      : renderPageDocument(siteSpec, page, siteCssHref, siteMotionHref, useSwiper)
+      : renderPageDocument(
+          siteSpec,
+          page,
+          siteCssHref,
+          siteMotionHref,
+          useSwiper,
+        )
   }
 
   return { files }

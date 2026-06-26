@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * MarketingTestimonial — a single large, centered testimonial card for a SaaS /
@@ -12,9 +12,9 @@ import { cn } from "#/lib/utils.ts"
  * SaaS, productivity, or developer-platform pages.
  */
 export const MarketingTestimonial = defineComponent({
-  name: "MarketingTestimonial",
+  name: 'MarketingTestimonial',
   description:
-    "Single large, centered testimonial card for a SaaS / product-marketing landing page: on a soft muted-to-background gradient band, a rounded bordered card centers a circular indigo quote glyph above a big balanced blockquote, with an initials avatar (gradient tile) + name + role beneath. Clean premium indigo-on-light aesthetic. Use as a focused social-proof / customer-quote section between features and pricing on B2B SaaS, productivity, or developer-platform pages.",
+    'Single large, centered testimonial card for a SaaS / product-marketing landing page: on a soft muted-to-background gradient band, a rounded bordered card centers a circular indigo quote glyph above a big balanced blockquote, with an initials avatar (gradient tile) + name + role beneath. Clean premium indigo-on-light aesthetic. Use as a focused social-proof / customer-quote section between features and pricing on B2B SaaS, productivity, or developer-platform pages.',
   props: z.object({
     quote: z.string().optional(),
     name: z.string().optional(),
@@ -25,13 +25,13 @@ export const MarketingTestimonial = defineComponent({
     const quote =
       props.quote ??
       "Flowstate transformed how our product team operates. We've cut meeting time by 40% and shipped three major releases ahead of schedule. It's the operating system for our company."
-    const name = props.name ?? "Sarah Chen"
-    const role = props.role ?? "VP of Engineering, Acme Corp"
+    const name = props.name ?? 'Sarah Chen'
+    const role = props.role ?? 'VP of Engineering, Acme Corp'
 
     return (
       <section
         className={cn(
-          "bg-gradient-to-b from-muted/50 to-background py-20",
+          'bg-gradient-to-b from-muted/50 to-background py-20',
           props.className,
         )}
       >
@@ -55,9 +55,9 @@ export const MarketingTestimonial = defineComponent({
             <figcaption className="mt-7 flex items-center justify-center gap-3.5">
               <span className="grid size-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-base font-bold text-primary-foreground">
                 {name
-                  .split(" ")
+                  .split(' ')
                   .map((w) => w.charAt(0))
-                  .join("")
+                  .join('')
                   .slice(0, 2)}
               </span>
               <div className="text-left">

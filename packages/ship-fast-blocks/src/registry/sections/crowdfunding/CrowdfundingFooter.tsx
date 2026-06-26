@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CrowdfundingFooter — a 4-column closing footer for a crowdfunding / campaign
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * launch, fundraiser, or maker/hardware campaign.
  */
 export const CrowdfundingFooter = defineComponent({
-  name: "CrowdfundingFooter",
+  name: 'CrowdfundingFooter',
   description:
     "A 4-column closing footer for a crowdfunding / campaign landing page: a bg-foreground footer with a decorative leaf/sparkle brand mark + campaign name and a tagline in the first cell, multiple link columns, a 'Connect' cell of first-letter social icon buttons, and a bottom row with a copyright note and legal links. All buttons route through useNavigate. Use as the site footer for a Kickstarter/Indiegogo-style raise, pre-order, product launch, fundraiser, or maker/hardware campaign.",
   props: z.object({
@@ -37,36 +37,41 @@ export const CrowdfundingFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "EcoBrush"
+    const brand = props.brand ?? 'EcoBrush'
     const footerTagline =
       props.tagline ??
-      "The first electric toothbrush designed to return to the earth. Sustainable oral care without compromise."
+      'The first electric toothbrush designed to return to the earth. Sustainable oral care without compromise.'
     const footerColumns = props.columns?.length
       ? props.columns
       : [
           {
-            heading: "Campaign",
-            links: ["Our Story", "Features", "Rewards", "FAQ"],
+            heading: 'Campaign',
+            links: ['Our Story', 'Features', 'Rewards', 'FAQ'],
           },
           {
-            heading: "Company",
-            links: ["About Us", "Sustainability Report", "Press Kit", "Contact"],
+            heading: 'Company',
+            links: [
+              'About Us',
+              'Sustainability Report',
+              'Press Kit',
+              'Contact',
+            ],
           },
         ]
-    const connectHeading = props.connectHeading ?? "Connect"
+    const connectHeading = props.connectHeading ?? 'Connect'
     const footerSocials = props.socials?.length
       ? props.socials
-      : ["Instagram", "Twitter", "YouTube"]
+      : ['Instagram', 'Twitter', 'YouTube']
     const footerNote =
-      props.note ?? "© 2026 EcoBrush Inc. All rights reserved."
+      props.note ?? '© 2026 EcoBrush Inc. All rights reserved.'
     const footerLegal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Policy"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
 
     const LeafMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-full bg-primary text-primary-foreground",
+          'grid place-items-center rounded-full bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -88,7 +93,10 @@ export const CrowdfundingFooter = defineComponent({
 
     return (
       <footer
-        className={cn("bg-foreground py-16 text-background/70", props.className)}
+        className={cn(
+          'bg-foreground py-16 text-background/70',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 grid gap-12 md:grid-cols-4">

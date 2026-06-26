@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DatingAppPricing — a 3-tier pricing table for a dating / matchmaking app. Sits on
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in tier defaults.
  */
 export const DatingAppPricing = defineComponent({
-  name: "DatingAppPricing",
+  name: 'DatingAppPricing',
   description:
     "3-tier pricing table for a dating / matchmaking app on a soft muted band: a centered heading + supporting paragraph above three card tiers, where the featured tier gains a primary ring, shadow, and a centered 'Most Popular' badge. Each card shows name, tagline, big price + period, a check/cross feature checklist, and a full-width CTA (filled for the featured tier, outlined otherwise) routed through useNavigate. Use to present Free / Premium / Elite plans for dating apps, singles platforms, or subscription products.",
   props: z.object({
@@ -40,7 +40,7 @@ export const DatingAppPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const pricingHeading = props.heading ?? "Choose your journey"
+    const pricingHeading = props.heading ?? 'Choose your journey'
     const pricingDesc =
       props.description ??
       "Start free, upgrade when you're ready for more connections."
@@ -48,47 +48,47 @@ export const DatingAppPricing = defineComponent({
       ? props.tiers
       : [
           {
-            name: "Free",
-            tagline: "Get started with the basics",
-            price: "$0",
-            period: "/month",
-            cta: "Get Started",
+            name: 'Free',
+            tagline: 'Get started with the basics',
+            price: '$0',
+            period: '/month',
+            cta: 'Get Started',
             featured: false,
             features: [
-              { label: "10 likes per day", included: true },
-              { label: "Basic matching", included: true },
-              { label: "Chat with matches", included: true },
-              { label: "See who liked you", included: false },
+              { label: '10 likes per day', included: true },
+              { label: 'Basic matching', included: true },
+              { label: 'Chat with matches', included: true },
+              { label: 'See who liked you', included: false },
             ],
           },
           {
-            name: "Premium",
-            tagline: "Unlock your full potential",
-            price: "$29",
-            period: "/month",
-            cta: "Start Free Trial",
+            name: 'Premium',
+            tagline: 'Unlock your full potential',
+            price: '$29',
+            period: '/month',
+            cta: 'Start Free Trial',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
             features: [
-              { label: "Unlimited likes", included: true },
-              { label: "See who liked you", included: true },
-              { label: "Advanced filters", included: true },
-              { label: "Video dates included", included: true },
-              { label: "Priority support", included: true },
+              { label: 'Unlimited likes', included: true },
+              { label: 'See who liked you', included: true },
+              { label: 'Advanced filters', included: true },
+              { label: 'Video dates included', included: true },
+              { label: 'Priority support', included: true },
             ],
           },
           {
-            name: "Elite",
-            tagline: "The ultimate experience",
-            price: "$49",
-            period: "/month",
-            cta: "Go Elite",
+            name: 'Elite',
+            tagline: 'The ultimate experience',
+            price: '$49',
+            period: '/month',
+            cta: 'Go Elite',
             featured: false,
             features: [
-              { label: "Everything in Premium", included: true },
-              { label: "Profile boost monthly", included: true },
-              { label: "Read receipts", included: true },
-              { label: "Exclusive events access", included: true },
+              { label: 'Everything in Premium', included: true },
+              { label: 'Profile boost monthly', included: true },
+              { label: 'Read receipts', included: true },
+              { label: 'Exclusive events access', included: true },
             ],
           },
         ]
@@ -124,7 +124,7 @@ export const DatingAppPricing = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted py-24", props.className)}>
+      <section className={cn('bg-muted py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
@@ -137,10 +137,10 @@ export const DatingAppPricing = defineComponent({
               <div
                 key={tier.name}
                 className={cn(
-                  "relative rounded-2xl bg-card p-8",
+                  'relative rounded-2xl bg-card p-8',
                   tier.featured
-                    ? "border-2 border-primary shadow-xl"
-                    : "border border-border shadow-sm",
+                    ? 'border-2 border-primary shadow-xl'
+                    : 'border border-border shadow-sm',
                 )}
               >
                 {tier.badge && (
@@ -163,10 +163,10 @@ export const DatingAppPricing = defineComponent({
                     <li
                       key={f.label}
                       className={cn(
-                        "flex items-center gap-3",
+                        'flex items-center gap-3',
                         f.included
-                          ? "text-muted-foreground"
-                          : "text-muted-foreground/60",
+                          ? 'text-muted-foreground'
+                          : 'text-muted-foreground/60',
                       )}
                     >
                       {f.included ? (
@@ -182,10 +182,10 @@ export const DatingAppPricing = defineComponent({
                   type="button"
                   onClick={() => go(tier.cta)}
                   className={cn(
-                    "w-full rounded-xl px-4 py-3 font-semibold transition-colors",
+                    'w-full rounded-xl px-4 py-3 font-semibold transition-colors',
                     tier.featured
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
-                      : "border-2 border-border text-foreground hover:bg-accent",
+                      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90'
+                      : 'border-2 border-border text-foreground hover:bg-accent',
                   )}
                 >
                   {tier.cta}

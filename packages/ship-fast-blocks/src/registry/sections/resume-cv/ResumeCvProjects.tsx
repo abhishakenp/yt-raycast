@@ -1,9 +1,9 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * ResumeCvProjects — selected-work grid for a personal resume / CV / portfolio
@@ -16,7 +16,7 @@ import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
  * fully with no props via baked-in defaults.
  */
 export const ResumeCvProjects = defineComponent({
-  name: "ResumeCvProjects",
+  name: 'ResumeCvProjects',
   description:
     "Selected-work grid for a personal resume / CV / portfolio site: a left-aligned SectionHeading ('Projects' / 'Selected work') leads into a responsive grid of project cards, each with a rounded thumbnail photo, a title, a short description, a row of token tag chips, and a routable 'Case study' link. Every card link navigates through useNavigate. Clean, minimal, portfolio-style. Use on a personal portfolio, online résumé, or professional profile page to showcase recent work.",
   props: z.object({
@@ -47,55 +47,54 @@ export const ResumeCvProjects = defineComponent({
       ? props.projects
       : [
           {
-            title: "Northwind Analytics",
+            title: 'Northwind Analytics',
             description:
-              "A real-time analytics dashboard redesign that simplified complex data into clear, actionable views.",
+              'A real-time analytics dashboard redesign that simplified complex data into clear, actionable views.',
             imageAlt:
-              "analytics dashboard interface with charts and clean data tables",
-            tags: ["Product Design", "Design System"],
-            linkLabel: "Case study",
-            target: "Projects",
+              'analytics dashboard interface with charts and clean data tables',
+            tags: ['Product Design', 'Design System'],
+            linkLabel: 'Case study',
+            target: 'Projects',
           },
           {
-            title: "Cobalt Patient App",
+            title: 'Cobalt Patient App',
             description:
-              "A mobile onboarding experience for patients that cut drop-off and earned a top app-store rating.",
-            imageAlt:
-              "mobile health app onboarding screens on a smartphone",
-            tags: ["Mobile", "User Research"],
-            linkLabel: "Case study",
-            target: "Projects",
+              'A mobile onboarding experience for patients that cut drop-off and earned a top app-store rating.',
+            imageAlt: 'mobile health app onboarding screens on a smartphone',
+            tags: ['Mobile', 'User Research'],
+            linkLabel: 'Case study',
+            target: 'Projects',
           },
           {
-            title: "Brightside Design System",
+            title: 'Brightside Design System',
             description:
-              "A from-scratch component library and documentation site adopted across multiple product teams.",
+              'A from-scratch component library and documentation site adopted across multiple product teams.',
             imageAlt:
-              "design system component library with color tokens and UI components",
-            tags: ["Design System", "Frontend"],
-            linkLabel: "Case study",
-            target: "Projects",
+              'design system component library with color tokens and UI components',
+            tags: ['Design System', 'Frontend'],
+            linkLabel: 'Case study',
+            target: 'Projects',
           },
           {
-            title: "Field Ops Console",
+            title: 'Field Ops Console',
             description:
-              "An operations console for field technicians that streamlined scheduling and on-site reporting.",
+              'An operations console for field technicians that streamlined scheduling and on-site reporting.',
             imageAlt:
-              "operations console web interface with schedule and map view",
-            tags: ["Web App", "Strategy"],
-            linkLabel: "Case study",
-            target: "Projects",
+              'operations console web interface with schedule and map view',
+            tags: ['Web App', 'Strategy'],
+            linkLabel: 'Case study',
+            target: 'Projects',
           },
         ]
 
     return (
-      <section className={cn("bg-background", props.className)}>
+      <section className={cn('bg-background', props.className)}>
         <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-28">
           <SectionHeading
             align="left"
             eyebrow={props.eyebrow}
-            title={props.heading ?? "Projects"}
-            subtitle={props.subheading ?? "Selected work"}
+            title={props.heading ?? 'Projects'}
+            subtitle={props.subheading ?? 'Selected work'}
           />
 
           <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -135,10 +134,10 @@ export const ResumeCvProjects = defineComponent({
                   <div className="mt-6 pt-2">
                     <button
                       type="button"
-                      onClick={() => go(project.target ?? "Projects")}
+                      onClick={() => go(project.target ?? 'Projects')}
                       className="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
                     >
-                      {project.linkLabel ?? "Case study"}
+                      {project.linkLabel ?? 'Case study'}
                       <span aria-hidden="true">&rarr;</span>
                     </button>
                   </div>

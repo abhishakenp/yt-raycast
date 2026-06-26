@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * NewsFeaturedStory — featured big lead story band for a news / editorial
@@ -18,9 +18,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const NewsFeaturedStory = defineComponent({
-  name: "NewsFeaturedStory",
+  name: 'NewsFeaturedStory',
   description:
-    "Featured big lead story band for a news / editorial outlet on a card surface: a top breaking-news banner (uppercase badge + clickable headline + timestamp), then a 12-column grid anchored by one large lead article on the left (wide photo with overlaid tag, big headline, excerpt and author/date/read-time byline) and a stacked rail of secondary headlines on the right (each with a rotating-accent category label, headline, excerpt, timestamp and small square thumbnail, divided by rules). Stories and the breaking headline route through useNavigate. Use directly below the masthead as the lead/featured big-story band of a newspaper, magazine or publication homepage.",
+    'Featured big lead story band for a news / editorial outlet on a card surface: a top breaking-news banner (uppercase badge + clickable headline + timestamp), then a 12-column grid anchored by one large lead article on the left (wide photo with overlaid tag, big headline, excerpt and author/date/read-time byline) and a stacked rail of secondary headlines on the right (each with a rotating-accent category label, headline, excerpt, timestamp and small square thumbnail, divided by rules). Stories and the breaking headline route through useNavigate. Use directly below the masthead as the lead/featured big-story band of a newspaper, magazine or publication homepage.',
   props: z.object({
     /** Breaking-news badge label. */
     breakingBadge: z.string().optional(),
@@ -58,67 +58,67 @@ export const NewsFeaturedStory = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const breakingBadge = props.breakingBadge ?? "Breaking"
+    const breakingBadge = props.breakingBadge ?? 'Breaking'
     const breakingHeadline =
       props.breakingHeadline ??
-      "Federal Reserve announces 0.25% interest rate cut amid economic uncertainty"
-    const breakingTime = props.breakingTime ?? "2 min ago"
-    const tag = props.tag ?? "Featured"
+      'Federal Reserve announces 0.25% interest rate cut amid economic uncertainty'
+    const breakingTime = props.breakingTime ?? '2 min ago'
+    const tag = props.tag ?? 'Featured'
     const title =
       props.title ??
-      "Inside the Newsroom: How Investigative Journalism is Evolving in the Digital Age"
+      'Inside the Newsroom: How Investigative Journalism is Evolving in the Digital Age'
     const excerpt =
       props.excerpt ??
       "A year-long study reveals the transformation of investigative reporting as newsrooms adapt to shrinking budgets, AI tools, and changing reader habits across America's leading publications."
-    const author = props.author ?? "Sarah Mitchell"
-    const date = props.date ?? "January 15, 2026"
-    const readTime = props.readTime ?? "12 min read"
+    const author = props.author ?? 'Sarah Mitchell'
+    const date = props.date ?? 'January 15, 2026'
+    const readTime = props.readTime ?? '12 min read'
     const imageAlt =
       props.imageAlt ??
-      "Newsroom journalist working at computer screens in modern newsroom"
+      'Newsroom journalist working at computer screens in modern newsroom'
     const secondary = props.secondary?.length
       ? props.secondary
       : [
           {
-            category: "Politics",
+            category: 'Politics',
             title:
-              "Senate Passes Infrastructure Bill with Historic Climate Provisions",
+              'Senate Passes Infrastructure Bill with Historic Climate Provisions',
             excerpt:
-              "Bipartisan vote marks major legislative victory for Biden administration.",
-            time: "4 hours ago",
-            imageAlt: "United States Capitol building dome against blue sky",
+              'Bipartisan vote marks major legislative victory for Biden administration.',
+            time: '4 hours ago',
+            imageAlt: 'United States Capitol building dome against blue sky',
           },
           {
-            category: "Tech",
+            category: 'Tech',
             title:
-              "Apple Unveils Mixed Reality Headset Pro with Revolutionary Display",
-            excerpt: "$3,499 device promises to transform spatial computing.",
-            time: "6 hours ago",
+              'Apple Unveils Mixed Reality Headset Pro with Revolutionary Display',
+            excerpt: '$3,499 device promises to transform spatial computing.',
+            time: '6 hours ago',
             imageAlt:
-              "Person wearing modern VR virtual reality headset in bright studio",
+              'Person wearing modern VR virtual reality headset in bright studio',
           },
           {
-            category: "Science",
+            category: 'Science',
             title:
-              "James Webb Telescope Discovers Water Vapor on Distant Exoplanet",
+              'James Webb Telescope Discovers Water Vapor on Distant Exoplanet',
             excerpt:
-              "Finding suggests potential for habitable conditions 120 light-years away.",
-            time: "8 hours ago",
+              'Finding suggests potential for habitable conditions 120 light-years away.',
+            time: '8 hours ago',
             imageAlt:
-              "James Webb Space Telescope golden hexagonal mirrors closeup",
+              'James Webb Space Telescope golden hexagonal mirrors closeup',
           },
         ]
 
     // Rotate category labels through theme accent tokens (no raw palette colors).
     const catTones = [
-      "text-primary",
-      "text-secondary-foreground",
-      "text-accent-foreground",
-      "text-chart-1",
-      "text-chart-2",
-      "text-chart-3",
-      "text-chart-4",
-      "text-chart-5",
+      'text-primary',
+      'text-secondary-foreground',
+      'text-accent-foreground',
+      'text-chart-1',
+      'text-chart-2',
+      'text-chart-3',
+      'text-chart-4',
+      'text-chart-5',
     ]
     const toneFor = (key: string) => {
       let h = 0
@@ -127,7 +127,7 @@ export const NewsFeaturedStory = defineComponent({
     }
 
     return (
-      <section className={cn("bg-card py-8 lg:py-12", props.className)}>
+      <section className={cn('bg-card py-8 lg:py-12', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Breaking banner */}
           <div className="mb-8 flex items-center gap-3">
@@ -199,7 +199,7 @@ export const NewsFeaturedStory = defineComponent({
                       <div className="flex-1">
                         <span
                           className={cn(
-                            "text-xs font-semibold uppercase tracking-wider",
+                            'text-xs font-semibold uppercase tracking-wider',
                             toneFor(story.category),
                           )}
                         >

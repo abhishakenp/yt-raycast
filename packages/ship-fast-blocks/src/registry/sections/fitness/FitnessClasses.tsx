@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FitnessClasses — responsive class / program grid for a gym or fitness studio. A
@@ -12,9 +12,9 @@ import { Image } from "#/lib/img.tsx"
  * gyms, fitness studios, CrossFit boxes, yoga / pilates / boxing / spin studios.
  */
 export const FitnessClasses = defineComponent({
-  name: "FitnessClasses",
+  name: 'FitnessClasses',
   description:
-    "Responsive class / program grid for a gym or fitness studio: a centered heading and lead paragraph above a 1/2/3-column grid of bordered card-surface tiles, each with a cover photo, title, short description and a footer meta row of a clock-icon duration and a bolt-icon intensity, with cards lifting on hover. Images use the alt-driven Image component. Use to showcase classes, programs or services (strength, yoga, cycle, HIIT, pilates, boxing) on gyms, fitness studios, CrossFit boxes or yoga / pilates / boxing / spin studios.",
+    'Responsive class / program grid for a gym or fitness studio: a centered heading and lead paragraph above a 1/2/3-column grid of bordered card-surface tiles, each with a cover photo, title, short description and a footer meta row of a clock-icon duration and a bolt-icon intensity, with cards lifting on hover. Images use the alt-driven Image component. Use to showcase classes, programs or services (strength, yoga, cycle, HIIT, pilates, boxing) on gyms, fitness studios, CrossFit boxes or yoga / pilates / boxing / spin studios.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -32,64 +32,64 @@ export const FitnessClasses = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const classesHeading = props.heading ?? "Classes for every goal"
+    const classesHeading = props.heading ?? 'Classes for every goal'
     const classesDesc =
       props.description ??
-      "From high-intensity interval training to restorative yoga, find the perfect class to match your fitness journey."
+      'From high-intensity interval training to restorative yoga, find the perfect class to match your fitness journey.'
     const classItems = props.items?.length
       ? props.items
       : [
           {
-            title: "Strength Training",
+            title: 'Strength Training',
             description:
-              "Build lean muscle with barbell and dumbbell workouts. Suitable for all levels with progressive programming.",
+              'Build lean muscle with barbell and dumbbell workouts. Suitable for all levels with progressive programming.',
             imageAlt:
-              "person lifting heavy barbell during strength training session",
-            duration: "60 min",
-            intensity: "High intensity",
+              'person lifting heavy barbell during strength training session',
+            duration: '60 min',
+            intensity: 'High intensity',
           },
           {
-            title: "Power Yoga",
+            title: 'Power Yoga',
             description:
-              "Dynamic vinyasa flow combining strength, flexibility, and breathwork. Heated to 85°F for deeper movement.",
-            imageAlt: "woman in warrior yoga pose on mat in peaceful studio",
-            duration: "75 min",
-            intensity: "Moderate",
+              'Dynamic vinyasa flow combining strength, flexibility, and breathwork. Heated to 85°F for deeper movement.',
+            imageAlt: 'woman in warrior yoga pose on mat in peaceful studio',
+            duration: '75 min',
+            intensity: 'Moderate',
           },
           {
-            title: "Cycle",
+            title: 'Cycle',
             description:
-              "Rhythm-based indoor cycling with choreographed movements. Burn 500+ calories while riding to the beat.",
+              'Rhythm-based indoor cycling with choreographed movements. Burn 500+ calories while riding to the beat.',
             imageAlt:
-              "group cycling class with people on stationary bikes in dark studio with colored lights",
-            duration: "45 min",
-            intensity: "High intensity",
+              'group cycling class with people on stationary bikes in dark studio with colored lights',
+            duration: '45 min',
+            intensity: 'High intensity',
           },
           {
-            title: "HIIT",
+            title: 'HIIT',
             description:
-              "High-intensity interval training with short bursts of explosive movement followed by active recovery periods.",
-            imageAlt: "person doing burpees during HIIT workout in gym",
-            duration: "45 min",
-            intensity: "High intensity",
+              'High-intensity interval training with short bursts of explosive movement followed by active recovery periods.',
+            imageAlt: 'person doing burpees during HIIT workout in gym',
+            duration: '45 min',
+            intensity: 'High intensity',
           },
           {
-            title: "Pilates",
+            title: 'Pilates',
             description:
-              "Core-focused movements on reformers and mats. Improve posture, flexibility, and deep muscle stability.",
+              'Core-focused movements on reformers and mats. Improve posture, flexibility, and deep muscle stability.',
             imageAlt:
-              "woman practicing pilates on reformer machine in bright studio",
-            duration: "50 min",
-            intensity: "Low intensity",
+              'woman practicing pilates on reformer machine in bright studio',
+            duration: '50 min',
+            intensity: 'Low intensity',
           },
           {
-            title: "Boxing",
+            title: 'Boxing',
             description:
-              "Learn proper boxing technique, footwork, and combinations. Full-body conditioning with bag and partner work.",
+              'Learn proper boxing technique, footwork, and combinations. Full-body conditioning with bag and partner work.',
             imageAlt:
-              "two people sparring during boxing training session with gloves and focus mitts",
-            duration: "60 min",
-            intensity: "High intensity",
+              'two people sparring during boxing training session with gloves and focus mitts',
+            duration: '60 min',
+            intensity: 'High intensity',
           },
         ]
 
@@ -126,7 +126,7 @@ export const FitnessClasses = defineComponent({
     )
 
     return (
-      <section className={cn("py-20 md:py-32", props.className)}>
+      <section className={cn('py-20 md:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">

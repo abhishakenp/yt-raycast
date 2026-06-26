@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MembershipClubHero — calm, editorial split hero for a private membership club /
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * or paid community subscriptions. Renders fully with no props.
  */
 export const MembershipClubHero = defineComponent({
-  name: "MembershipClubHero",
+  name: 'MembershipClubHero',
   description:
-    "Calm, editorial split hero for a private membership club / exclusive community landing page: left column with an uppercase tracked eyebrow label, a thin display headline containing one emphasized (normal-weight) highlight phrase, a relaxed subheading, dual rounded-pill CTAs (solid primary + outlined secondary) and a member-count proof strip; right column with a large rounded lifestyle photo and a floating pull-quote card overlapping its lower-left corner. CTAs route through useNavigate. Use as the trust-building opening section for members clubs, founders/social clubs, professional networks, curated communities or paid community subscriptions.",
+    'Calm, editorial split hero for a private membership club / exclusive community landing page: left column with an uppercase tracked eyebrow label, a thin display headline containing one emphasized (normal-weight) highlight phrase, a relaxed subheading, dual rounded-pill CTAs (solid primary + outlined secondary) and a member-count proof strip; right column with a large rounded lifestyle photo and a floating pull-quote card overlapping its lower-left corner. CTAs route through useNavigate. Use as the trust-building opening section for members clubs, founders/social clubs, professional networks, curated communities or paid community subscriptions.',
   props: z.object({
     eyebrow: z.string().optional(),
     /** Headline text before the emphasized highlight phrase. */
@@ -40,34 +40,34 @@ export const MembershipClubHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Est. 2019 — Private Collective"
+    const eyebrow = props.eyebrow ?? 'Est. 2019 — Private Collective'
     const headingBefore =
-      props.headingBefore ?? "A private space for people who value "
-    const highlight = props.highlight ?? "depth over breadth"
-    const headingAfter = props.headingAfter ?? ""
+      props.headingBefore ?? 'A private space for people who value '
+    const highlight = props.highlight ?? 'depth over breadth'
+    const headingAfter = props.headingAfter ?? ''
     const subheading =
       props.subheading ??
-      "The Guild is a curated membership of 500 professionals, founders, and creatives. We host intimate dinners, workshops, and retreats designed for genuine connection."
-    const primaryCta = props.primaryCta ?? "Apply for Membership"
-    const secondaryCta = props.secondaryCta ?? "Explore Benefits"
+      'The Guild is a curated membership of 500 professionals, founders, and creatives. We host intimate dinners, workshops, and retreats designed for genuine connection.'
+    const primaryCta = props.primaryCta ?? 'Apply for Membership'
+    const secondaryCta = props.secondaryCta ?? 'Explore Benefits'
     const imageAlt =
       props.imageAlt ??
-      "group of professionals having an engaging conversation in a modern airy loft space with large windows"
+      'group of professionals having an engaging conversation in a modern airy loft space with large windows'
     const proof = props.proof?.length
       ? props.proof
       : [
-          { value: "487", label: "Members" },
-          { value: "12", label: "Cities Worldwide" },
+          { value: '487', label: 'Members' },
+          { value: '12', label: 'Cities Worldwide' },
         ]
     const quote =
       props.quote ??
       "The quality of conversations here is unlike anything I've found elsewhere."
     const quoteAuthor =
-      props.quoteAuthor ?? "— Sarah Chen, Product Lead at Stripe"
+      props.quoteAuthor ?? '— Sarah Chen, Product Lead at Stripe'
 
     return (
       <section
-        className={cn("w-full bg-background", props.className)}
+        className={cn('w-full bg-background', props.className)}
         aria-labelledby="hero-heading"
       >
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">

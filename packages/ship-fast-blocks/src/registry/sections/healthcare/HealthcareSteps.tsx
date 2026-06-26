@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * HealthcareSteps — "how it works" booking flow for a medical-clinic page. A
@@ -12,7 +12,7 @@ import { cn } from "#/lib/utils.ts"
  * clinic. Renders fully with no props via baked-in 3-step booking defaults.
  */
 export const HealthcareSteps = defineComponent({
-  name: "HealthcareSteps",
+  name: 'HealthcareSteps',
   description:
     "'How it works' booking flow for a medical-clinic page: a centered eyebrow chip, heading and intro above a responsive 1/3-column row of numbered steps, each with a solid primary rounded-square number tile, a title and a description, and a faint connecting rule running between tiles on desktop. Tokens-only, no links. Use for a booking / onboarding / 'getting started' section of a doctors' office, primary-care practice or telehealth clinic.",
   props: z.object({
@@ -29,35 +29,35 @@ export const HealthcareSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "How It Works"
-    const heading = props.heading ?? "Book your visit in 3 simple steps"
+    const eyebrow = props.eyebrow ?? 'How It Works'
+    const heading = props.heading ?? 'Book your visit in 3 simple steps'
     const description =
       props.description ??
-      "Getting quality healthcare has never been easier. Same-day appointments available for urgent needs."
+      'Getting quality healthcare has never been easier. Same-day appointments available for urgent needs.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Book online or call",
+            title: 'Book online or call',
             description:
-              "Choose your preferred time slot through our secure booking system or call us directly at (415) 555-1234. Virtual visits available.",
+              'Choose your preferred time slot through our secure booking system or call us directly at (415) 555-1234. Virtual visits available.',
           },
           {
-            title: "Complete intake",
+            title: 'Complete intake',
             description:
-              "Fill out your medical history and insurance information through our patient portal before your visit. Takes just 5 minutes.",
+              'Fill out your medical history and insurance information through our patient portal before your visit. Takes just 5 minutes.',
           },
           {
-            title: "See your doctor",
+            title: 'See your doctor',
             description:
-              "Arrive 10 minutes early (or join your video call). Your physician will review your history, address concerns, and create a personalized care plan.",
+              'Arrive 10 minutes early (or join your video call). Your physician will review your history, address concerns, and create a personalized care plan.',
           },
         ]
 
     return (
       <section
         id="booking"
-        className={cn("bg-background py-20 lg:py-28", props.className)}
+        className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="booking-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

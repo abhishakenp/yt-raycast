@@ -2,8 +2,8 @@ import {
   createLibrary,
   isDefinedComponent,
   type ShipFastCapsule,
-} from "./capsules/openui.ts"
-import * as registry from "./registry/all.ts"
+} from './capsules/openui.ts'
+import * as registry from './registry/all.ts'
 
 // The OpenUI component library is assembled from the registry's defined
 // components (section families + primitives). Each exposes the client
@@ -16,8 +16,12 @@ const registryCapsules = Object.values(registry)
 
 export const library = createLibrary({
   capsules: registryCapsules,
-  root: "Stack",
+  root: 'Stack',
 })
 
-export const componentNames = Object.values(library.components).map((c) => c.name)
-export const openUIComponentOpenPatternSource = [...componentNames].sort().join('|')
+export const componentNames = Object.values(library.components).map(
+  (c) => c.name,
+)
+export const openUIComponentOpenPatternSource = [...componentNames]
+  .sort()
+  .join('|')

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LogisticsPricing — a three-tier service-pricing table for a global-logistics /
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * shipping, courier or cargo/transport companies. Renders fully with no props.
  */
 export const LogisticsPricing = defineComponent({
-  name: "LogisticsPricing",
+  name: 'LogisticsPricing',
   description:
     "Three-tier service-pricing table for a global-logistics / freight-forwarding company: a centered heading + lede over a 1 → 3 column grid of pricing cards, with the featured tier inverted to a solid primary surface and an optional floating 'Popular' badge. Each card lists name, tagline, a large price with unit, a check-marked feature list and a full-width CTA, plus a centered footnote below. Clean and corporate on a light surface with a deep slate primary; every CTA routes through useNavigate. Use to present shipping service tiers (Standard / Priority / Express) for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.",
   props: z.object({
@@ -40,64 +40,64 @@ export const LogisticsPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Service tiers"
+    const heading = props.heading ?? 'Service tiers'
     const description =
       props.description ??
-      "Choose the service level that matches your timeline and budget."
+      'Choose the service level that matches your timeline and budget.'
     const footnote =
       props.footnote ??
-      "Ocean freight rates from $85/CBM. Ground transport from $1.45/mile. Volume discounts available."
+      'Ocean freight rates from $85/CBM. Ground transport from $1.45/mile. Volume discounts available.'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Standard",
-            tagline: "Economy shipping for non-urgent cargo",
-            price: "$2.80",
-            unit: "/kg air",
+            name: 'Standard',
+            tagline: 'Economy shipping for non-urgent cargo',
+            price: '$2.80',
+            unit: '/kg air',
             features: [
-              "5-7 day air transit",
-              "Standard tracking",
-              "$100 insurance included",
-              "Email support",
+              '5-7 day air transit',
+              'Standard tracking',
+              '$100 insurance included',
+              'Email support',
             ],
-            cta: "Get a quote",
+            cta: 'Get a quote',
           },
           {
-            name: "Priority",
-            tagline: "Best balance of speed and cost",
-            price: "$4.50",
-            unit: "/kg air",
+            name: 'Priority',
+            tagline: 'Best balance of speed and cost',
+            price: '$4.50',
+            unit: '/kg air',
             features: [
-              "2-4 day air transit",
-              "Real-time GPS tracking",
-              "$500 insurance included",
-              "24/7 phone & email support",
-              "Customs brokerage",
+              '2-4 day air transit',
+              'Real-time GPS tracking',
+              '$500 insurance included',
+              '24/7 phone & email support',
+              'Customs brokerage',
             ],
-            cta: "Get a quote",
-            badge: "Popular",
+            cta: 'Get a quote',
+            badge: 'Popular',
             featured: true,
           },
           {
-            name: "Express",
-            tagline: "When every hour counts",
-            price: "$8.90",
-            unit: "/kg air",
+            name: 'Express',
+            tagline: 'When every hour counts',
+            price: '$8.90',
+            unit: '/kg air',
             features: [
-              "Next-flight-out (NFO)",
-              "Real-time GPS + EDI",
-              "$2,500 insurance included",
-              "Dedicated account manager",
-              "Charter options available",
+              'Next-flight-out (NFO)',
+              'Real-time GPS + EDI',
+              '$2,500 insurance included',
+              'Dedicated account manager',
+              'Charter options available',
             ],
-            cta: "Contact sales",
+            cta: 'Contact sales',
           },
         ]
 
     const Check = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5 shrink-0", className)}
+        className={cn('size-5 shrink-0', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -111,7 +111,7 @@ export const LogisticsPricing = defineComponent({
     )
 
     return (
-      <section className={cn("py-16 lg:py-24", props.className)}>
+      <section className={cn('py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight lg:text-4xl">
@@ -127,10 +127,10 @@ export const LogisticsPricing = defineComponent({
                 <div
                   key={tier.name}
                   className={cn(
-                    "relative rounded-2xl p-8",
+                    'relative rounded-2xl p-8',
                     featured
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border bg-card",
+                      ? 'bg-primary text-primary-foreground'
+                      : 'border border-border bg-card',
                   )}
                 >
                   {tier.badge ? (
@@ -140,18 +140,20 @@ export const LogisticsPricing = defineComponent({
                   ) : null}
                   <h3
                     className={cn(
-                      "mb-2 text-lg font-semibold",
-                      featured ? "text-primary-foreground" : "text-card-foreground",
+                      'mb-2 text-lg font-semibold',
+                      featured
+                        ? 'text-primary-foreground'
+                        : 'text-card-foreground',
                     )}
                   >
                     {tier.name}
                   </h3>
                   <p
                     className={cn(
-                      "mb-6 text-sm",
+                      'mb-6 text-sm',
                       featured
-                        ? "text-primary-foreground/70"
-                        : "text-muted-foreground",
+                        ? 'text-primary-foreground/70'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {tier.tagline}
@@ -159,8 +161,10 @@ export const LogisticsPricing = defineComponent({
                   <div className="mb-6">
                     <span
                       className={cn(
-                        "text-4xl font-semibold",
-                        featured ? "text-primary-foreground" : "text-card-foreground",
+                        'text-4xl font-semibold',
+                        featured
+                          ? 'text-primary-foreground'
+                          : 'text-card-foreground',
                       )}
                     >
                       {tier.price}
@@ -168,8 +172,8 @@ export const LogisticsPricing = defineComponent({
                     <span
                       className={cn(
                         featured
-                          ? "text-primary-foreground/70"
-                          : "text-muted-foreground",
+                          ? 'text-primary-foreground/70'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.unit}
@@ -177,17 +181,19 @@ export const LogisticsPricing = defineComponent({
                   </div>
                   <ul
                     className={cn(
-                      "mb-8 space-y-3 text-sm",
+                      'mb-8 space-y-3 text-sm',
                       featured
-                        ? "text-primary-foreground/90"
-                        : "text-muted-foreground",
+                        ? 'text-primary-foreground/90'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {tier.features.map((feature) => (
                       <li key={feature} className="flex items-center gap-2">
                         <Check
                           className={
-                            featured ? "text-primary-foreground" : "text-primary"
+                            featured
+                              ? 'text-primary-foreground'
+                              : 'text-primary'
                           }
                         />
                         {feature}
@@ -198,10 +204,10 @@ export const LogisticsPricing = defineComponent({
                     type="button"
                     onClick={() => go(tier.cta)}
                     className={cn(
-                      "w-full rounded-xl py-3 font-medium transition-colors",
+                      'w-full rounded-xl py-3 font-medium transition-colors',
                       featured
-                        ? "bg-background text-foreground hover:bg-muted"
-                        : "border border-primary text-primary hover:bg-muted/50",
+                        ? 'bg-background text-foreground hover:bg-muted'
+                        : 'border border-primary text-primary hover:bg-muted/50',
                     )}
                   >
                     {tier.cta}

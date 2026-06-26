@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LendingHero — split, conversion-focused hero for a personal-lending / loan
@@ -16,7 +16,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * pages. Renders fully with no props via baked-in "ClearLoan" defaults.
  */
 export const LendingHero = defineComponent({
-  name: "LendingHero",
+  name: 'LendingHero',
   description:
     "Split conversion hero for a personal-lending / loan marketing page: left column has a two-tone headline (lead + muted-accent highlight), supporting subheading, dual CTAs (solid primary 'check your rate' pill with arrow + soft play-style secondary) and check-marked trust pills; right column is a raised white loan-calculator card with a $-prefixed amount input, credit-score select, 3-up loan-term toggle, Est. APR / monthly-payment summary and a full-width CTA. Controls route through useNavigate. Use as the top section of personal-loan, debt-consolidation, BNPL, or fintech-financing landing pages.",
   props: z.object({
@@ -44,42 +44,42 @@ export const LendingHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroLead = props.headingLead ?? "Personal loans made"
-    const heroHighlight = props.headingHighlight ?? "refreshingly simple"
+    const heroLead = props.headingLead ?? 'Personal loans made'
+    const heroHighlight = props.headingHighlight ?? 'refreshingly simple'
     const heroSub =
       props.subheading ??
-      "Borrow $1,000 to $50,000 with fixed rates starting at 6.99% APR. No hidden fees, no prepayment penalties, and funds as soon as tomorrow."
-    const heroPrimary = props.primaryCta ?? "Check Your Rate"
-    const heroSecondary = props.secondaryCta ?? "See How It Works"
+      'Borrow $1,000 to $50,000 with fixed rates starting at 6.99% APR. No hidden fees, no prepayment penalties, and funds as soon as tomorrow.'
+    const heroPrimary = props.primaryCta ?? 'Check Your Rate'
+    const heroSecondary = props.secondaryCta ?? 'See How It Works'
     const heroTrust = props.trust?.length
       ? props.trust
-      : ["No impact to credit score", "2-minute application"]
-    const heroCardTitle = props.cardTitle ?? "Loan Calculator"
+      : ['No impact to credit score', '2-minute application']
+    const heroCardTitle = props.cardTitle ?? 'Loan Calculator'
     const heroCardSubtitle =
-      props.cardSubtitle ?? "Estimate your monthly payment"
-    const heroAmountLabel = props.amountLabel ?? "Loan Amount"
-    const heroAmountValue = props.amountValue ?? "15000"
-    const heroScoreLabel = props.scoreLabel ?? "Credit Score"
+      props.cardSubtitle ?? 'Estimate your monthly payment'
+    const heroAmountLabel = props.amountLabel ?? 'Loan Amount'
+    const heroAmountValue = props.amountValue ?? '15000'
+    const heroScoreLabel = props.scoreLabel ?? 'Credit Score'
     const heroScoreOptions = props.scoreOptions?.length
       ? props.scoreOptions
       : [
-          "Excellent (750+)",
-          "Good (700-749)",
-          "Fair (650-699)",
-          "Average (600-649)",
+          'Excellent (750+)',
+          'Good (700-749)',
+          'Fair (650-699)',
+          'Average (600-649)',
         ]
-    const heroTermLabel = props.termLabel ?? "Loan Term"
+    const heroTermLabel = props.termLabel ?? 'Loan Term'
     const heroTerms = props.terms?.length
       ? props.terms
-      : ["36 mo", "48 mo", "60 mo"]
-    const heroAprLabel = props.aprLabel ?? "Est. APR"
-    const heroAprValue = props.aprValue ?? "11.49%"
-    const heroPaymentLabel = props.paymentLabel ?? "Monthly Payment"
-    const heroPaymentValue = props.paymentValue ?? "$389"
-    const heroCardCta = props.cardCta ?? "Get My Personalized Rate"
+      : ['36 mo', '48 mo', '60 mo']
+    const heroAprLabel = props.aprLabel ?? 'Est. APR'
+    const heroAprValue = props.aprValue ?? '11.49%'
+    const heroPaymentLabel = props.paymentLabel ?? 'Monthly Payment'
+    const heroPaymentValue = props.paymentValue ?? '$389'
+    const heroCardCta = props.cardCta ?? 'Get My Personalized Rate'
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-muted px-4 py-3 font-medium text-foreground transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-ring"
+      'w-full rounded-lg border border-input bg-muted px-4 py-3 font-medium text-foreground transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-ring'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -112,12 +112,12 @@ export const LendingHero = defineComponent({
     )
 
     return (
-      <section className={cn("relative overflow-hidden", props.className)}>
+      <section className={cn('relative overflow-hidden', props.className)}>
         <div className="mx-auto max-w-7xl px-4 pb-24 pt-20 sm:px-6 lg:px-8 lg:pb-40 lg:pt-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
               <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                {heroLead}{" "}
+                {heroLead}{' '}
                 <span className="text-muted-foreground">{heroHighlight}</span>
               </h1>
               <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
@@ -201,7 +201,7 @@ export const LendingHero = defineComponent({
                       <input
                         type="number"
                         defaultValue={heroAmountValue}
-                        className={cn(inputCls, "pl-8")}
+                        className={cn(inputCls, 'pl-8')}
                       />
                     </div>
                   </div>
@@ -211,7 +211,7 @@ export const LendingHero = defineComponent({
                     </label>
                     <select
                       defaultValue={heroScoreOptions[2]}
-                      className={cn(inputCls, "appearance-none")}
+                      className={cn(inputCls, 'appearance-none')}
                     >
                       {heroScoreOptions.map((opt) => (
                         <option key={opt} className="bg-background">
@@ -231,10 +231,10 @@ export const LendingHero = defineComponent({
                           type="button"
                           onClick={() => go(`${heroTermLabel}: ${term}`)}
                           className={cn(
-                            "rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                            'rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                             i === 1
-                              ? "border-2 border-primary bg-muted text-foreground"
-                              : "border border-border text-muted-foreground hover:border-primary hover:text-foreground",
+                              ? 'border-2 border-primary bg-muted text-foreground'
+                              : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
                           )}
                         >
                           {term}

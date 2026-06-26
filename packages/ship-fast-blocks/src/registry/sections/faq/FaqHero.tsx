@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FaqHero — calm centered search hero for a help-center / FAQ / knowledge-base page.
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * documentation landings, or support pages. Renders fully with no props.
  */
 export const FaqHero = defineComponent({
-  name: "FaqHero",
+  name: 'FaqHero',
   description:
     "Calm centered search hero for a help-center / FAQ / knowledge-base page with a light, documentation-style band (no big marketing imagery): large centered heading, a supporting lead paragraph, a wide rounded search input with a leading magnifier icon and a trailing ⌘K keyboard-shortcut hint, and a row of 'Popular:' keyword chips below. Search submit and chip taps route through useNavigate. Use as the top search section for SaaS knowledge bases, help centers, documentation landings, or support pages.",
   props: z.object({
@@ -33,24 +33,21 @@ export const FaqHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "How can we help you?"
+    const heading = props.heading ?? 'How can we help you?'
     const subheading =
       props.subheading ??
-      "Search our knowledge base or browse topics to find answers about FlowSync features, billing, and integrations."
+      'Search our knowledge base or browse topics to find answers about FlowSync features, billing, and integrations.'
     const searchPlaceholder =
-      props.searchPlaceholder ?? "Search for articles, topics, or keywords..."
-    const popularLabel = props.popularLabel ?? "Popular:"
+      props.searchPlaceholder ?? 'Search for articles, topics, or keywords...'
+    const popularLabel = props.popularLabel ?? 'Popular:'
     const popular = props.popular?.length
       ? props.popular
-      : ["Getting Started", "Billing", "API Keys", "SSO Setup"]
-    const searchTarget = props.searchTarget ?? "Documentation"
+      : ['Getting Started', 'Billing', 'API Keys', 'SSO Setup']
+    const searchTarget = props.searchTarget ?? 'Documentation'
 
     return (
       <section
-        className={cn(
-          "border-b border-border bg-background",
-          props.className,
-        )}
+        className={cn('border-b border-border bg-background', props.className)}
       >
         <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <h1 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
@@ -68,7 +65,18 @@ export const FaqHero = defineComponent({
             }}
           >
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-muted-foreground">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                className="text-muted-foreground"
+              >
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
@@ -87,7 +95,9 @@ export const FaqHero = defineComponent({
           </form>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-            <span className="text-sm text-muted-foreground">{popularLabel}</span>
+            <span className="text-sm text-muted-foreground">
+              {popularLabel}
+            </span>
             {popular.map((chip) => (
               <button
                 key={chip}

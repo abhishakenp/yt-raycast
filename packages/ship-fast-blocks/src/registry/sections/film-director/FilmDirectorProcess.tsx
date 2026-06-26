@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FilmDirectorProcess — a split, numbered "how we work" process / about band for
@@ -14,7 +14,7 @@ import { Image } from "#/lib/img.tsx"
  * for filmmakers, directors, DPs, or video production houses.
  */
 export const FilmDirectorProcess = defineComponent({
-  name: "FilmDirectorProcess",
+  name: 'FilmDirectorProcess',
   description:
     "Split, numbered 'how we work' process / about band for a film director or cinematographer: a two-column layout with a left text column (uppercase tracked eyebrow, thin heading, muted intro, then a vertical list of numbered circular badges paired with step title + description) beside a tall 3:4 photo with a floating overlapping client pull-quote card (italic quote + attribution) anchored at its lower-left on desktop. Imagery uses the Image component. Use to explain a collaborative production workflow for filmmakers, directors, DPs, or video production houses.",
   props: z.object({
@@ -31,47 +31,46 @@ export const FilmDirectorProcess = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const processEyebrow = props.eyebrow ?? "The Process"
-    const processHeading = props.heading ?? "How we work together"
+    const processEyebrow = props.eyebrow ?? 'The Process'
+    const processHeading = props.heading ?? 'How we work together'
     const processDesc =
       props.description ??
-      "Every project begins with understanding your vision and ends with delivering a film that exceeds expectations. My process is collaborative, transparent, and designed to bring out the best in every story."
+      'Every project begins with understanding your vision and ends with delivering a film that exceeds expectations. My process is collaborative, transparent, and designed to bring out the best in every story.'
     const processImageAlt =
       props.imageAlt ??
-      "film director reviewing footage on a professional monitor in a color grading suite with calibrated displays and dim ambient lighting"
+      'film director reviewing footage on a professional monitor in a color grading suite with calibrated displays and dim ambient lighting'
     const processSteps = props.steps?.length
       ? props.steps
       : [
           {
-            title: "Discovery & Concept",
+            title: 'Discovery & Concept',
             description:
               "We start with deep conversations about your goals, audience, and vision. I develop creative treatments and storyboards that capture the essence of what we're building.",
           },
           {
-            title: "Pre-Production",
+            title: 'Pre-Production',
             description:
-              "Casting, location scouting, shot lists, and schedules. Every detail is planned to ensure a smooth production day and the highest quality footage.",
+              'Casting, location scouting, shot lists, and schedules. Every detail is planned to ensure a smooth production day and the highest quality footage.',
           },
           {
-            title: "Production",
+            title: 'Production',
             description:
-              "On set, I focus on capturing authentic performances and stunning visuals. My approach balances creative spontaneity with meticulous technical execution.",
+              'On set, I focus on capturing authentic performances and stunning visuals. My approach balances creative spontaneity with meticulous technical execution.',
           },
           {
-            title: "Post-Production",
+            title: 'Post-Production',
             description:
-              "Editing, color grading, sound design, and final delivery. I work with top-tier post houses and colorists to ensure your film looks and sounds its best.",
+              'Editing, color grading, sound design, and final delivery. I work with top-tier post houses and colorists to ensure your film looks and sounds its best.',
           },
         ]
     const processQuote =
       props.quote ??
-      "Marcus has an incredible eye for detail and a gift for bringing out authentic performances."
-    const processQuoteName = props.quoteName ?? "Sarah Mitchell"
-    const processQuoteRole =
-      props.quoteRole ?? "Creative Director, Nike Global"
+      'Marcus has an incredible eye for detail and a gift for bringing out authentic performances.'
+    const processQuoteName = props.quoteName ?? 'Sarah Mitchell'
+    const processQuoteRole = props.quoteRole ?? 'Creative Director, Nike Global'
 
     return (
-      <section className={cn("py-20 md:py-32", props.className)}>
+      <section className={cn('py-20 md:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>

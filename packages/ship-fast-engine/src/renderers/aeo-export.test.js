@@ -81,9 +81,18 @@ describe('renderHtmlProject AEO export', () => {
             variant: 'accordion',
             headline: 'Frequently asked questions',
             items: [
-              { title: 'What is Acme?', body: 'Acme is project management software for remote teams.' },
-              { title: 'Who is Acme for?', body: 'Product teams that need clearer planning.' },
-              { title: 'Why choose Acme?', body: 'It reduces coordination overhead with clear ownership.' },
+              {
+                title: 'What is Acme?',
+                body: 'Acme is project management software for remote teams.',
+              },
+              {
+                title: 'Who is Acme for?',
+                body: 'Product teams that need clearer planning.',
+              },
+              {
+                title: 'Why choose Acme?',
+                body: 'It reduces coordination overhead with clear ownership.',
+              },
             ],
           },
           {

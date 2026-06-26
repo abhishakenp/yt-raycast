@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * InteriorDesignHero — refined split hero band for an upscale interior-design /
@@ -17,9 +17,9 @@ import { Image } from "#/lib/img.tsx"
  * fully with no props via baked-in "Atelier Studio" defaults.
  */
 export const InteriorDesignHero = defineComponent({
-  name: "InteriorDesignHero",
+  name: 'InteriorDesignHero',
   description:
-    "Refined split hero band for an upscale interior-design / architecture studio landing page: two-column layout with an uppercase tracked eyebrow, a large light-weight headline featuring an italic accent word, a supporting paragraph, dual square CTAs (filled + outlined) and a row of award badges with icons on the left, and a tall featured-project photo with an overlaid translucent caption card (eyebrow + title + meta) on the right. Editorial, airy and gallery-like; CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the opening hero for interior designers, design studios, architecture firms, home staging or renovation businesses.",
+    'Refined split hero band for an upscale interior-design / architecture studio landing page: two-column layout with an uppercase tracked eyebrow, a large light-weight headline featuring an italic accent word, a supporting paragraph, dual square CTAs (filled + outlined) and a row of award badges with icons on the left, and a tall featured-project photo with an overlaid translucent caption card (eyebrow + title + meta) on the right. Editorial, airy and gallery-like; CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the opening hero for interior designers, design studios, architecture firms, home staging or renovation businesses.',
   props: z.object({
     eyebrow: z.string().optional(),
     /** First heading line. */
@@ -40,30 +40,29 @@ export const InteriorDesignHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Est. 2014 — San Francisco"
-    const headingTop = props.headingTop ?? "Spaces that"
-    const headingItalic = props.headingItalic ?? "inspire"
-    const headingEnd = props.headingEnd ?? "living"
+    const eyebrow = props.eyebrow ?? 'Est. 2014 — San Francisco'
+    const headingTop = props.headingTop ?? 'Spaces that'
+    const headingItalic = props.headingItalic ?? 'inspire'
+    const headingEnd = props.headingEnd ?? 'living'
     const subheading =
       props.subheading ??
-      "Award-winning interior design studio crafting elegant, timeless spaces. We transform houses into homes and offices into environments where creativity flourishes."
-    const primaryCta = props.primaryCta ?? "View Our Work"
-    const secondaryCta = props.secondaryCta ?? "Start Your Project"
+      'Award-winning interior design studio crafting elegant, timeless spaces. We transform houses into homes and offices into environments where creativity flourishes.'
+    const primaryCta = props.primaryCta ?? 'View Our Work'
+    const secondaryCta = props.secondaryCta ?? 'Start Your Project'
     const badges = props.badges?.length
       ? props.badges
-      : ["AD100 Designer", "250+ Projects"]
+      : ['AD100 Designer', '250+ Projects']
     const imageAlt =
       props.imageAlt ??
-      "Minimalist living room with neutral tones featuring a cream sofa, natural light through large windows, and contemporary interior design"
-    const featuredEyebrow = props.featuredEyebrow ?? "Featured Project"
-    const featuredTitle = props.featuredTitle ?? "Pacific Heights Residence"
-    const featuredMeta =
-      props.featuredMeta ?? "San Francisco, CA — Residential"
+      'Minimalist living room with neutral tones featuring a cream sofa, natural light through large windows, and contemporary interior design'
+    const featuredEyebrow = props.featuredEyebrow ?? 'Featured Project'
+    const featuredTitle = props.featuredTitle ?? 'Pacific Heights Residence'
+    const featuredMeta = props.featuredMeta ?? 'San Francisco, CA — Residential'
 
     return (
       <section
         className={cn(
-          "px-4 pb-20 pt-32 sm:px-6 md:pb-32 md:pt-40 lg:px-8 lg:pb-40 lg:pt-48",
+          'px-4 pb-20 pt-32 sm:px-6 md:pb-32 md:pt-40 lg:px-8 lg:pb-40 lg:pt-48',
           props.className,
         )}
       >
@@ -76,7 +75,9 @@ export const InteriorDesignHero = defineComponent({
               <h1 className="text-4xl font-light leading-tight text-foreground sm:text-5xl lg:text-6xl">
                 {headingTop}
                 <br />
-                <span className="font-extralight italic">{headingItalic}</span>{" "}
+                <span className="font-extralight italic">
+                  {headingItalic}
+                </span>{' '}
                 {headingEnd}
               </h1>
               <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">

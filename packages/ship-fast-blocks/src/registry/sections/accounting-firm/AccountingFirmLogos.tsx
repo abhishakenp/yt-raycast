@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AccountingFirmLogos — slim "trusted by" client logo strip for a CPA /
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in defaults.
  */
 export const AccountingFirmLogos = defineComponent({
-  name: "AccountingFirmLogos",
+  name: 'AccountingFirmLogos',
   description:
-    "Slim trusted-by client logo strip for a CPA / accounting-firm site: a muted, bordered band with a small uppercase heading above a responsive 2-to-6 column grid of dimmed, bold word-mark client names. Calm professional-services social-proof band; each name routes through useNavigate. Use directly below the hero on accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, audit/assurance firms, or financial advisory practices.",
+    'Slim trusted-by client logo strip for a CPA / accounting-firm site: a muted, bordered band with a small uppercase heading above a responsive 2-to-6 column grid of dimmed, bold word-mark client names. Calm professional-services social-proof band; each name routes through useNavigate. Use directly below the hero on accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, audit/assurance firms, or financial advisory practices.',
   props: z.object({
     /** Small uppercase heading above the logo row. */
     heading: z.string().optional(),
@@ -26,21 +26,21 @@ export const AccountingFirmLogos = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Trusted by leading businesses"
+    const heading = props.heading ?? 'Trusted by leading businesses'
     const names = props.names?.length
       ? props.names
       : [
-          "Cascade Tech",
-          "Evergreen Co.",
-          "Summit Holdings",
-          "Pacific Realty",
-          "Harbor Logistics",
-          "Vista Medical",
+          'Cascade Tech',
+          'Evergreen Co.',
+          'Summit Holdings',
+          'Pacific Realty',
+          'Harbor Logistics',
+          'Vista Medical',
         ]
 
     return (
       <section
-        className={cn("border-b border-border bg-muted py-12", props.className)}
+        className={cn('border-b border-border bg-muted py-12', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">

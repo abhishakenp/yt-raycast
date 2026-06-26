@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CryptoSteps — 3-step numbered process flow for a crypto / DeFi onboarding
@@ -11,9 +11,9 @@ import { cn } from "#/lib/utils.ts"
  * started sequences.
  */
 export const CryptoSteps = defineComponent({
-  name: "CryptoSteps",
+  name: 'CryptoSteps',
   description:
-    "3-step numbered process flow for a crypto / DeFi onboarding landing page: centered heading + description, then a responsive three-column grid with oversized numbered circles (with connecting border lines on desktop), a bold title, and a description paragraph beneath each step. Use for deploy/connect/onboard flows, integration guides, or getting-started sequences.",
+    '3-step numbered process flow for a crypto / DeFi onboarding landing page: centered heading + description, then a responsive three-column grid with oversized numbered circles (with connecting border lines on desktop), a bold title, and a description paragraph beneath each step. Use for deploy/connect/onboard flows, integration guides, or getting-started sequences.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -26,34 +26,34 @@ export const CryptoSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Deploy in minutes, not months"
+    const heading = props.heading ?? 'Deploy in minutes, not months'
     const description =
       props.description ??
-      "From first connection to production deployment, our developer experience is designed for speed."
+      'From first connection to production deployment, our developer experience is designed for speed.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Connect Wallet",
+            title: 'Connect Wallet',
             description:
-              "Integrate with MetaMask, WalletConnect, or 40+ supported wallets. One-line SDK initialization with automatic network detection.",
+              'Integrate with MetaMask, WalletConnect, or 40+ supported wallets. One-line SDK initialization with automatic network detection.',
           },
           {
-            title: "Configure Contracts",
+            title: 'Configure Contracts',
             description:
-              "Deploy pre-audited contract templates or upload your own. Automatic verification on Etherscan, Sourcify, and 8+ explorers.",
+              'Deploy pre-audited contract templates or upload your own. Automatic verification on Etherscan, Sourcify, and 8+ explorers.',
           },
           {
-            title: "Go Live",
+            title: 'Go Live',
             description:
-              "Instant mainnet deployment with automatic monitoring. Real-time alerts, gas optimization, and 99.99% uptime SLA.",
+              'Instant mainnet deployment with automatic monitoring. Real-time alerts, gas optimization, and 99.99% uptime SLA.',
           },
         ]
 
     return (
       <section
         className={cn(
-          "border-y border-border bg-card py-20 lg:py-32",
+          'border-y border-border bg-card py-20 lg:py-32',
           props.className,
         )}
       >

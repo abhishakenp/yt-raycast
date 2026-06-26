@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * RestaurantMenu — printed-style multi-course menu for a full-service
@@ -16,7 +16,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * defaults.
  */
 export const RestaurantMenu = defineComponent({
-  name: "RestaurantMenu",
+  name: 'RestaurantMenu',
   description:
     "Printed-style multi-course menu for a full-service restaurant page: centered heading and description above a stack of categories (Starters, Mains, Desserts). Each category has a titled divider and a two-column grid of dishes. Every dish is a clickable row with name, optional tag pill (Chef's pick, Vegan, Seasonal), description, and price, routing through useNavigate. Use for restaurants, bistros, trattorias, steakhouses, fine dining, or sit-down eateries wanting a readable menu section.",
   props: z.object({
@@ -46,91 +46,90 @@ export const RestaurantMenu = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "The Menu"
+    const heading = props.heading ?? 'The Menu'
     const description =
       props.description ??
-      "Seasonal plates built from local produce and time-honored technique. Served family-style or à la carte."
-    const menuTarget = props.menuTarget ?? "Reservations"
+      'Seasonal plates built from local produce and time-honored technique. Served family-style or à la carte.'
+    const menuTarget = props.menuTarget ?? 'Reservations'
     const categories = props.categories?.length
       ? props.categories
       : [
           {
-            name: "Starters",
+            name: 'Starters',
             items: [
               {
-                name: "Burrata & Heirloom Tomato",
+                name: 'Burrata & Heirloom Tomato',
                 description:
-                  "Creamy burrata, basil oil, aged balsamic, grilled sourdough",
-                price: "$16",
-                tag: "Seasonal",
+                  'Creamy burrata, basil oil, aged balsamic, grilled sourdough',
+                price: '$16',
+                tag: 'Seasonal',
               },
               {
-                name: "Charred Octopus",
-                description:
-                  "Smoked paprika, fingerling potatoes, salsa verde",
-                price: "$19",
+                name: 'Charred Octopus',
+                description: 'Smoked paprika, fingerling potatoes, salsa verde',
+                price: '$19',
                 tag: "Chef's pick",
               },
               {
-                name: "Roasted Beet Salad",
-                description: "Whipped goat cheese, candied walnuts, citrus",
-                price: "$14",
-                tag: "Vegan",
+                name: 'Roasted Beet Salad',
+                description: 'Whipped goat cheese, candied walnuts, citrus',
+                price: '$14',
+                tag: 'Vegan',
               },
               {
-                name: "French Onion Soup",
-                description: "Caramelized onion, Gruyère crouton, beef broth",
-                price: "$12",
+                name: 'French Onion Soup',
+                description: 'Caramelized onion, Gruyère crouton, beef broth',
+                price: '$12',
               },
             ],
           },
           {
-            name: "Mains",
+            name: 'Mains',
             items: [
               {
-                name: "Dry-Aged Ribeye",
+                name: 'Dry-Aged Ribeye',
                 description:
-                  "12oz prime cut, bone marrow butter, hand-cut fries",
-                price: "$48",
+                  '12oz prime cut, bone marrow butter, hand-cut fries',
+                price: '$48',
                 tag: "Chef's pick",
               },
               {
-                name: "Pan-Seared Branzino",
+                name: 'Pan-Seared Branzino',
                 description:
-                  "Whole Mediterranean sea bass, lemon caper, fennel",
-                price: "$34",
+                  'Whole Mediterranean sea bass, lemon caper, fennel',
+                price: '$34',
               },
               {
-                name: "Wild Mushroom Risotto",
-                description: "Carnaroli rice, truffle, aged parmesan, chive",
-                price: "$26",
-                tag: "Vegan",
+                name: 'Wild Mushroom Risotto',
+                description: 'Carnaroli rice, truffle, aged parmesan, chive',
+                price: '$26',
+                tag: 'Vegan',
               },
               {
-                name: "Braised Short Rib",
-                description: "Red wine reduction, creamy polenta, gremolata",
-                price: "$38",
+                name: 'Braised Short Rib',
+                description: 'Red wine reduction, creamy polenta, gremolata',
+                price: '$38',
               },
             ],
           },
           {
-            name: "Desserts",
+            name: 'Desserts',
             items: [
               {
-                name: "Dark Chocolate Tart",
-                description: "Sea salt, crème fraîche, cocoa nib tuile",
-                price: "$12",
+                name: 'Dark Chocolate Tart',
+                description: 'Sea salt, crème fraîche, cocoa nib tuile',
+                price: '$12',
               },
               {
-                name: "Vanilla Bean Panna Cotta",
-                description: "Macerated berries, shortbread crumble",
-                price: "$11",
-                tag: "Seasonal",
+                name: 'Vanilla Bean Panna Cotta',
+                description: 'Macerated berries, shortbread crumble',
+                price: '$11',
+                tag: 'Seasonal',
               },
               {
-                name: "Warm Apple Crostata",
-                description: "Brown butter, cinnamon ice cream, caramel",
-                price: "$13",
+                name: 'Warm Apple Crostata',
+                description: 'Brown butter, cinnamon ice cream, caramel',
+                price: '$13',
                 tag: "Chef's pick",
               },
             ],
@@ -138,7 +137,7 @@ export const RestaurantMenu = defineComponent({
         ]
 
     return (
-      <section className={cn("py-20 lg:py-32", props.className)}>
+      <section className={cn('py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-6 font-serif text-3xl font-medium text-foreground sm:text-4xl lg:text-5xl">

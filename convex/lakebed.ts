@@ -105,7 +105,11 @@ const getSessionOrThrow = async (
 
 const getSessionActor = async (
   ctx: QueryCtx | MutationCtx,
-  session: { anonOwnerSecretHash?: string; isPrivate?: boolean; userId?: string },
+  session: {
+    anonOwnerSecretHash?: string
+    isPrivate?: boolean
+    userId?: string
+  },
   anonymousOwnerSecret?: string,
 ): Promise<SessionActor | null> => {
   const auth = await createUserAuth(ctx)
@@ -153,7 +157,11 @@ const getSessionActor = async (
 
 const getRequiredSessionActor = async (
   ctx: QueryCtx | MutationCtx,
-  session: { anonOwnerSecretHash?: string; isPrivate?: boolean; userId?: string },
+  session: {
+    anonOwnerSecretHash?: string
+    isPrivate?: boolean
+    userId?: string
+  },
   anonymousOwnerSecret?: string,
 ) => {
   const actor = await getSessionActor(ctx, session, anonymousOwnerSecret)
@@ -220,7 +228,10 @@ const actorFields = (actor: SessionActor) => ({
 
 const defaultAuth = createGuestAuth('guest:public', 'Guest')
 
-const stateFrom = (data: Record<string, unknown>, actor: SessionActor | null) => {
+const stateFrom = (
+  data: Record<string, unknown>,
+  actor: SessionActor | null,
+) => {
   const auth = actor?.auth ?? defaultAuth
   return { auth, canWrite: actor !== null, data }
 }
@@ -233,11 +244,7 @@ export const getSessionData = query({
   },
   handler: async (ctx, args) => {
     const session = await getSessionOrThrow(ctx, args.sessionId)
-    const actor = await getSessionActor(
-      ctx,
-      session,
-      args.anonymousOwnerSecret,
-    )
+    const actor = await getSessionActor(ctx, session, args.anonymousOwnerSecret)
     const doc = await getReadableSessionDataDoc(
       ctx,
       args.sessionId,
@@ -256,11 +263,7 @@ export const getSessionState = query({
   },
   handler: async (ctx, args) => {
     const session = await getSessionOrThrow(ctx, args.sessionId)
-    const actor = await getSessionActor(
-      ctx,
-      session,
-      args.anonymousOwnerSecret,
-    )
+    const actor = await getSessionActor(ctx, session, args.anonymousOwnerSecret)
     const doc = await getReadableSessionDataDoc(
       ctx,
       args.sessionId,
@@ -279,11 +282,7 @@ export const listSessionData = query({
   },
   handler: async (ctx, args) => {
     const session = await getSessionOrThrow(ctx, args.sessionId)
-    const actor = await getSessionActor(
-      ctx,
-      session,
-      args.anonymousOwnerSecret,
-    )
+    const actor = await getSessionActor(ctx, session, args.anonymousOwnerSecret)
     if (!actor) return []
 
     const actorDocs = await ctx.db
@@ -297,9 +296,10 @@ export const listSessionData = query({
       .withIndex('by_sessionId', (q) => q.eq('sessionId', args.sessionId))
       .take(64)
     const docsById = new Map(
-      [...actorDocs, ...legacyDocs.filter((doc) => doc.ownerKey === undefined)].map(
-        (doc) => [doc._id, doc],
-      ),
+      [
+        ...actorDocs,
+        ...legacyDocs.filter((doc) => doc.ownerKey === undefined),
+      ].map((doc) => [doc._id, doc]),
     )
     const docs = [...docsById.values()]
 

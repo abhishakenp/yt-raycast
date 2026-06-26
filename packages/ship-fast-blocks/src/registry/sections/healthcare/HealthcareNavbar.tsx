@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * HealthcareNavbar — sticky, translucent top navigation bar for a primary-care
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Vitality Health Partners" defaults.
  */
 export const HealthcareNavbar = defineComponent({
-  name: "HealthcareNavbar",
+  name: 'HealthcareNavbar',
   description:
     "Sticky translucent top navigation bar for a primary-care / medical-clinic site: backdrop-blurred, border-bottomed header pinned to the top with a heart-in-tile brand mark + clinic name on the left, horizontal nav links in the center (desktop), and a phone-number link plus a solid 'Book Appointment' primary CTA on the right. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for doctors' offices, family-medicine practices, pediatric / women's-health / telehealth clinics, hospitals or medical groups.",
   props: z.object({
@@ -33,18 +33,18 @@ export const HealthcareNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Vitality Health Partners"
+    const brand = props.brand ?? 'Vitality Health Partners'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Doctors", "Reviews", "Pricing", "FAQ"]
-    const phone = props.phone ?? "(415) 555-1234"
-    const cta = props.cta ?? "Book Appointment"
-    const ctaTarget = props.ctaTarget ?? "Schedule Your Visit"
+      : ['Services', 'Doctors', 'Reviews', 'Pricing', 'FAQ']
+    const phone = props.phone ?? '(415) 555-1234'
+    const cta = props.cta ?? 'Book Appointment'
+    const ctaTarget = props.ctaTarget ?? 'Schedule Your Visit'
 
     const HeartMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-xl bg-primary text-primary-foreground",
+          'grid place-items-center rounded-xl bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -67,7 +67,7 @@ export const HealthcareNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md',
           props.className,
         )}
       >

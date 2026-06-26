@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FashionStoreNewsletter — centered newsletter signup CTA for a minimalist
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * shops.
  */
 export const FashionStoreNewsletter = defineComponent({
-  name: "FashionStoreNewsletter",
+  name: 'FashionStoreNewsletter',
   description:
-    "Centered newsletter signup CTA for a minimalist fashion store: a narrow, centered section with an eyebrow + serif heading + description above a real inline email form (a labelled email input beside a filled primary submit button) and a small disclaimer note. The form submit routes through useNavigate. Use to capture subscribers for new-collection drops, exclusive offers and editorial content for clothing brands, boutiques, or apparel shops.",
+    'Centered newsletter signup CTA for a minimalist fashion store: a narrow, centered section with an eyebrow + serif heading + description above a real inline email form (a labelled email input beside a filled primary submit button) and a small disclaimer note. The form submit routes through useNavigate. Use to capture subscribers for new-collection drops, exclusive offers and editorial content for clothing brands, boutiques, or apparel shops.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -27,27 +27,27 @@ export const FashionStoreNewsletter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const nlEyebrow = props.eyebrow ?? "The Journal"
-    const nlHeading = props.heading ?? "Stay Informed"
+    const nlEyebrow = props.eyebrow ?? 'The Journal'
+    const nlHeading = props.heading ?? 'Stay Informed'
     const nlDesc =
       props.description ??
-      "Subscribe to receive early access to new collections, exclusive offers, and editorial content delivered to your inbox."
-    const nlPlaceholder = props.placeholder ?? "Enter your email"
-    const nlSubmit = props.submit ?? "Subscribe"
+      'Subscribe to receive early access to new collections, exclusive offers, and editorial content delivered to your inbox.'
+    const nlPlaceholder = props.placeholder ?? 'Enter your email'
+    const nlSubmit = props.submit ?? 'Subscribe'
     const nlDisclaimer =
       props.disclaimer ??
-      "By subscribing, you agree to our Privacy Policy. Unsubscribe anytime."
+      'By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.'
 
     const eyebrowCls =
-      "text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground"
+      'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
 
     return (
       <section
         aria-label="Newsletter signup"
-        className={cn("py-20 lg:py-32", props.className)}
+        className={cn('py-20 lg:py-32', props.className)}
       >
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-          <p className={cn(eyebrowCls, "mb-4")}>{nlEyebrow}</p>
+          <p className={cn(eyebrowCls, 'mb-4')}>{nlEyebrow}</p>
           <h2 className="mb-6 font-serif text-4xl font-normal sm:text-5xl lg:text-6xl">
             {nlHeading}
           </h2>

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * DirectoryTestimonials — dark inverted testimonials band for a local-business
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * find-a-service platforms, or review-and-discovery sites.
  */
 export const DirectoryTestimonials = defineComponent({
-  name: "DirectoryTestimonials",
+  name: 'DirectoryTestimonials',
   description:
-    "Dark inverted testimonials band for a local-business DIRECTORY: a foreground-on-background inverted section with a centered heading and description and a responsive 3-column grid of quote cards on a translucent surface — each has a 5-star primary rating row, the quote in inverted text, and a customer footer with a round headshot, name, and role. Avatars use the alt-driven Image component; no links. Use as social proof on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.",
+    'Dark inverted testimonials band for a local-business DIRECTORY: a foreground-on-background inverted section with a centered heading and description and a responsive 3-column grid of quote cards on a translucent surface — each has a 5-star primary rating row, the quote in inverted text, and a customer footer with a round headshot, name, and role. Avatars use the alt-driven Image component; no links. Use as social proof on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -35,36 +35,36 @@ export const DirectoryTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "What People Are Saying"
+    const heading = props.heading ?? 'What People Are Saying'
     const description =
       props.description ??
-      "Real experiences from customers and business owners in our community"
+      'Real experiences from customers and business owners in our community'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
-              "Found an amazing contractor for my kitchen renovation through LocalFindr. The reviews were spot-on and saved me from hiring someone unreliable. Absolutely love this platform!",
-            name: "Sarah Mitchell",
-            role: "Homeowner in Portland",
+              'Found an amazing contractor for my kitchen renovation through LocalFindr. The reviews were spot-on and saved me from hiring someone unreliable. Absolutely love this platform!',
+            name: 'Sarah Mitchell',
+            role: 'Homeowner in Portland',
             avatarAlt:
-              "Professional headshot of a smiling woman with shoulder-length brown hair",
+              'Professional headshot of a smiling woman with shoulder-length brown hair',
           },
           {
             quote:
               "Since listing my bakery on LocalFindr, we've seen a 40% increase in foot traffic. The platform connects us with customers who genuinely appreciate local businesses.",
-            name: "Marcus Chen",
-            role: "Owner, Sunrise Bakery",
+            name: 'Marcus Chen',
+            role: 'Owner, Sunrise Bakery',
             avatarAlt:
-              "Professional headshot of a smiling man with short dark hair and glasses",
+              'Professional headshot of a smiling man with short dark hair and glasses',
           },
           {
             quote:
-              "As someone new to the city, LocalFindr has been invaluable. Found my gym, dentist, and favorite pizza place all in one week. The detailed reviews helped me make informed decisions.",
-            name: "James Rodriguez",
-            role: "New Resident in Austin",
+              'As someone new to the city, LocalFindr has been invaluable. Found my gym, dentist, and favorite pizza place all in one week. The detailed reviews helped me make informed decisions.',
+            name: 'James Rodriguez',
+            role: 'New Resident in Austin',
             avatarAlt:
-              "Professional headshot of a young man with curly hair and friendly expression",
+              'Professional headshot of a young man with curly hair and friendly expression',
           },
         ]
 
@@ -82,7 +82,7 @@ export const DirectoryTestimonials = defineComponent({
     return (
       <section
         className={cn(
-          "bg-foreground py-16 text-background lg:py-24",
+          'bg-foreground py-16 text-background lg:py-24',
           props.className,
         )}
       >
@@ -107,7 +107,9 @@ export const DirectoryTestimonials = defineComponent({
                     <Star key={s} className="size-5 text-primary" />
                   ))}
                 </div>
-                <p className="mb-6 text-background/80">&ldquo;{t.quote}&rdquo;</p>
+                <p className="mb-6 text-background/80">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
                 <div className="flex items-center gap-4">
                   <Image
                     alt={t.avatarAlt}

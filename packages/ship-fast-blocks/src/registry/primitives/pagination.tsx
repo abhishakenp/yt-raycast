@@ -1,5 +1,5 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 import {
   Pagination as UIPagination,
   PaginationContent,
@@ -8,15 +8,15 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "#/components/ui/pagination.tsx"
+} from '#/components/ui/pagination.tsx'
 
 // Compound primitive: flatten Pagination/PaginationContent/PaginationItem/...
 // into a single node. `pages` is the list of page numbers to show; `activePage`
 // highlights the current one; `ellipsis` appends a "more pages" gap.
 export const Pagination = defineComponent({
-  name: "Pagination",
+  name: 'Pagination',
   description:
-    "Page navigation control with previous/next, numbered page links and an optional trailing ellipsis.",
+    'Page navigation control with previous/next, numbered page links and an optional trailing ellipsis.',
   props: z.object({
     pages: z.array(z.string()).optional(),
     activePage: z.string().optional(),
@@ -26,7 +26,7 @@ export const Pagination = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const pages = props.pages?.length ? props.pages : ["1", "2", "3"]
+    const pages = props.pages?.length ? props.pages : ['1', '2', '3']
     const active = props.activePage ?? pages[0]
     return (
       <UIPagination className={props.className}>

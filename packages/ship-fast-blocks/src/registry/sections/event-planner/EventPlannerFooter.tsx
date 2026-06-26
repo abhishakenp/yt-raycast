@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * EventPlannerFooter — inverted four-column site footer. A foreground-colored band
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * businesses.
  */
 export const EventPlannerFooter = defineComponent({
-  name: "EventPlannerFooter",
+  name: 'EventPlannerFooter',
   description:
-    "Inverted four-column site footer: a foreground-colored band with a brand column (thin clock-glyph logo + light brand name + tagline) beside link columns of grouped navigation buttons, then a top-bordered bottom bar with a copyright line and legal links. Every link routes through useNavigate. Use as the closing footer for event/wedding planners, agencies, or premium service businesses.",
+    'Inverted four-column site footer: a foreground-colored band with a brand column (thin clock-glyph logo + light brand name + tagline) beside link columns of grouped navigation buttons, then a top-bordered bottom bar with a copyright line and legal links. Every link routes through useNavigate. Use as the closing footer for event/wedding planners, agencies, or premium service businesses.',
   props: z.object({
     /** Brand / studio name shown beside the footer logo. */
     brand: z.string().optional(),
@@ -28,29 +28,29 @@ export const EventPlannerFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Serene Events"
+    const brand = props.brand ?? 'Serene Events'
     const footerTagline =
       props.tagline ??
-      "Creating unforgettable moments with elegance, precision, and heart since 2012."
+      'Creating unforgettable moments with elegance, precision, and heart since 2012.'
     const footerColumns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Services",
+            title: 'Services',
             links: [
-              "Wedding Planning",
-              "Corporate Events",
-              "Private Celebrations",
-              "Destination Events",
+              'Wedding Planning',
+              'Corporate Events',
+              'Private Celebrations',
+              'Destination Events',
             ],
           },
           {
-            title: "Company",
-            links: ["Portfolio", "Testimonials", "Our Process", "FAQ"],
+            title: 'Company',
+            links: ['Portfolio', 'Testimonials', 'Our Process', 'FAQ'],
           },
           {
-            title: "Connect",
-            links: ["Instagram", "Pinterest", "LinkedIn", "Contact Us"],
+            title: 'Connect',
+            links: ['Instagram', 'Pinterest', 'LinkedIn', 'Contact Us'],
           },
         ]
     const footerLegal =
@@ -58,7 +58,7 @@ export const EventPlannerFooter = defineComponent({
       `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
     const footerLegalLinks = props.legalLinks?.length
       ? props.legalLinks
-      : ["Privacy Policy", "Terms of Service"]
+      : ['Privacy Policy', 'Terms of Service']
 
     const Clock = ({ className }: { className?: string }) => (
       <svg
@@ -80,7 +80,7 @@ export const EventPlannerFooter = defineComponent({
     return (
       <footer
         className={cn(
-          "bg-foreground px-4 py-12 sm:px-6 lg:px-8 lg:py-16",
+          'bg-foreground px-4 py-12 sm:px-6 lg:px-8 lg:py-16',
           props.className,
         )}
       >

@@ -1,11 +1,17 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 type NavItem = { label: string; children?: string[] }
+type RawNavItem = string | NavItem
+
+const normalizeNavItem = (item: RawNavItem): NavItem => {
+  if (typeof item === 'string') return { label: item }
+  return item
+}
 
 /**
  * GovernmentPortalNavbar — three-tier classic indian government / PSU portal
@@ -18,9 +24,9 @@ type NavItem = { label: string; children?: string[] }
  * electricity board and power-company sites with tender and notice menus.
  */
 export const GovernmentPortalNavbar = defineComponent({
-  name: "GovernmentPortalNavbar",
+  name: 'GovernmentPortalNavbar',
   description:
-    "Three-tier classic indian government / PSU portal header: a light-blue (#0792D0) utility top bar (Career/Events, government emblem, A-/A/A+ font sizing, social icons), a white header band (org logo + official organisation name + Hindi subtitle + address), and a royal-blue (#3346B5) mega-nav with white 18px links and hover dropdowns. Built for public sector, civic, municipal, utility, electricity board and power-company sites with tender and notice menus. Use for the sticky official header of any classic indian government portal.",
+    'Three-tier classic indian government / PSU portal header: a light-blue (#0792D0) utility top bar (Career/Events, government emblem, A-/A/A+ font sizing, social icons), a white header band (org logo + official organisation name + Hindi subtitle + address), and a royal-blue (#3346B5) mega-nav with white 18px links and hover dropdowns. Built for public sector, civic, municipal, utility, electricity board and power-company sites with tender and notice menus. Use for the sticky official header of any classic indian government portal.',
   props: z.object({
     /** Logo text / short org name shown in the emblem tile. */
     brand: z.string().optional(),
@@ -33,10 +39,13 @@ export const GovernmentPortalNavbar = defineComponent({
     /** Mega-nav items; each may carry a dropdown of child links. */
     nav: z
       .array(
-        z.object({
-          label: z.string(),
-          children: z.array(z.string()).optional(),
-        }),
+        z.union([
+          z.string(),
+          z.object({
+            label: z.string(),
+            children: z.array(z.string()).optional(),
+          }),
+        ]),
       )
       .optional(),
     /** Navigation target for the logo / home clicks. */
@@ -47,69 +56,71 @@ export const GovernmentPortalNavbar = defineComponent({
     const go = useNavigate()
     const [openIdx, setOpenIdx] = useState<number | null>(null)
 
-    const brand = props.brand ?? "TVNL"
-    const orgName = props.orgName ?? "TENUGHAT VIDYUT NIGAM LIMITED"
+    const brand = props.brand ?? 'TVNL'
+    const orgName = props.orgName ?? 'TENUGHAT VIDYUT NIGAM LIMITED'
     const sub =
       props.sub ??
-      "तेनुघाट विद्युत निगम लिमिटेड · A Government of Jharkhand Undertaking"
-    const address = props.address ?? "Smart City, Dhurwa, Ranchi, Jharkhand"
-    const homeTarget = props.homeTarget ?? "Home"
-    const nav: NavItem[] = props.nav?.length
-      ? props.nav
-      : [
-          { label: "Home" },
-          {
-            label: "The Company",
-            children: [
-              "TVNL Overview",
-              "Board of Directors",
-              "Chairman's Message",
-              "Awards & Achievements",
-            ],
-          },
-          {
-            label: "Power Generation",
-            children: [
-              "Operational Power Plants",
-              "Installed Capacity",
-              "Performance Highlights",
-            ],
-          },
-          {
-            label: "Tenders",
-            children: [
-              "Tender Notices",
-              "Extension Notices",
-              "Corrigendum",
-              "Cancellation Notices",
-            ],
-          },
-          {
-            label: "Notices",
-            children: [
-              "Circulars / Office Orders",
-              "Public Notices",
-              "Employment Notices",
-            ],
-          },
-          {
-            label: "Sustainability",
-            children: ["CSR", "Environment", "Safety"],
-          },
-          {
-            label: "Contact us",
-            children: ["Headquarter", "Plant", "Directory"],
-          },
-        ]
+      'तेनुघाट विद्युत निगम लिमिटेड · A Government of Jharkhand Undertaking'
+    const address = props.address ?? 'Smart City, Dhurwa, Ranchi, Jharkhand'
+    const homeTarget = props.homeTarget ?? 'Home'
+    const nav: NavItem[] = (
+      props.nav?.length
+        ? props.nav.map(normalizeNavItem)
+        : [
+            { label: 'Home' },
+            {
+              label: 'The Company',
+              children: [
+                'TVNL Overview',
+                'Board of Directors',
+                "Chairman's Message",
+                'Awards & Achievements',
+              ],
+            },
+            {
+              label: 'Power Generation',
+              children: [
+                'Operational Power Plants',
+                'Installed Capacity',
+                'Performance Highlights',
+              ],
+            },
+            {
+              label: 'Tenders',
+              children: [
+                'Tender Notices',
+                'Extension Notices',
+                'Corrigendum',
+                'Cancellation Notices',
+              ],
+            },
+            {
+              label: 'Notices',
+              children: [
+                'Circulars / Office Orders',
+                'Public Notices',
+                'Employment Notices',
+              ],
+            },
+            {
+              label: 'Sustainability',
+              children: ['CSR', 'Environment', 'Safety'],
+            },
+            {
+              label: 'Contact us',
+              children: ['Headquarter', 'Plant', 'Directory'],
+            },
+          ]
+    ).filter((item) => item.label.trim().length > 0)
 
     // Flat top-level labels delegated to the kit's SiteNav (mobile drawer).
     const topLevelLabels = nav
       .map((item) => item.label)
-      .filter((l): l is string => typeof l === "string" && l.length > 0)
+      .filter((l): l is string => typeof l === 'string' && l.length > 0)
 
     return (
       <header
-        className={cn("bg-white", props.className)}
+        className={cn('bg-white', props.className)}
         style={{
           fontFamily: '"Alegreya Sans", "Open Sans", system-ui, sans-serif',
         }}
@@ -131,7 +142,7 @@ export const GovernmentPortalNavbar = defineComponent({
               </span>
               <button
                 type="button"
-                onClick={() => go("Career")}
+                onClick={() => go('Career')}
                 className="leading-none opacity-90 hover:opacity-100"
               >
                 Career
@@ -139,7 +150,7 @@ export const GovernmentPortalNavbar = defineComponent({
               <span className="opacity-50">|</span>
               <button
                 type="button"
-                onClick={() => go("Events")}
+                onClick={() => go('Events')}
                 className="leading-none opacity-90 hover:opacity-100"
               >
                 Events
@@ -212,7 +223,11 @@ export const GovernmentPortalNavbar = defineComponent({
                   aria-hidden="true"
                 >
                   <circle cx="11" cy="11" r="7" strokeWidth="2" />
-                  <path strokeLinecap="round" strokeWidth="2" d="m21 21-4.3-4.3" />
+                  <path
+                    strokeLinecap="round"
+                    strokeWidth="2"
+                    d="m21 21-4.3-4.3"
+                  />
                 </svg>
               </button>
             </div>

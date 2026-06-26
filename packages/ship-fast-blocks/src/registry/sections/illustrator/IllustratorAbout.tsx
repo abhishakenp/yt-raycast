@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * IllustratorAbout — a split about / bio band for an illustrator / visual-artist
@@ -13,7 +13,7 @@ import { Image } from "#/lib/img.tsx"
  * props via baked-in "Mira" defaults.
  */
 export const IllustratorAbout = defineComponent({
-  name: "IllustratorAbout",
+  name: 'IllustratorAbout',
   description:
     "Split about / bio band for an illustrator / visual-artist portfolio on a subtle muted band: left a tall 3:4 portrait photo with a floating years-of-experience stat badge card anchored bottom-right; right an uppercase accent eyebrow, serif heading, a stack of bio paragraphs, and a bordered recognition / awards list with accent arrow bullets. Use to tell the artist's personal story and surface awards and honors.",
   props: z.object({
@@ -36,35 +36,35 @@ export const IllustratorAbout = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "About Me"
+    const eyebrow = props.eyebrow ?? 'About Me'
     const heading = props.heading ?? "Hi, I'm Mira"
     const imageAlt =
       props.imageAlt ??
-      "Portrait of Mira Chen, illustrator, holding a paintbrush in her sunlit studio surrounded by artwork"
-    const badgeValue = props.badgeValue ?? "8+"
+      'Portrait of Mira Chen, illustrator, holding a paintbrush in her sunlit studio surrounded by artwork'
+    const badgeValue = props.badgeValue ?? '8+'
     const badgeLabel =
       props.badgeLabel ??
-      "Years creating illustrations for beloved brands and books"
+      'Years creating illustrations for beloved brands and books'
     const paragraphs = props.paragraphs?.length
       ? props.paragraphs
       : [
-          "I grew up between Taipei and Portland, collecting visual inspiration from bustling night markets and misty Pacific Northwest forests. After studying illustration at Rhode Island School of Design, I spent three years in New York working with publishers before returning to Oregon to build my independent studio.",
+          'I grew up between Taipei and Portland, collecting visual inspiration from bustling night markets and misty Pacific Northwest forests. After studying illustration at Rhode Island School of Design, I spent three years in New York working with publishers before returning to Oregon to build my independent studio.',
           "My work blends traditional watercolor techniques with digital refinement, creating illustrations that feel both hand-crafted and contemporary. I'm drawn to themes of nature, childhood wonder, and quiet everyday moments that deserve celebration.",
           "When I'm not illustrating, you'll find me tending to my herb garden, browsing local bookstores, or hiking the Columbia River Gorge with my rescue mutt, Basil.",
         ]
-    const recognitionHeading = props.recognitionHeading ?? "Recognition"
+    const recognitionHeading = props.recognitionHeading ?? 'Recognition'
     const recognition = props.recognition?.length
       ? props.recognition
       : [
-          "Society of Illustrators Gold Medal, 2023",
-          "Communication Arts Illustration Award, 2022",
+          'Society of Illustrators Gold Medal, 2023',
+          'Communication Arts Illustration Award, 2022',
           "New York Times Best Illustrated Children's Books, 2021",
         ]
 
     return (
       <section
         className={cn(
-          "bg-muted/50 px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36",
+          'bg-muted/50 px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36',
           props.className,
         )}
       >

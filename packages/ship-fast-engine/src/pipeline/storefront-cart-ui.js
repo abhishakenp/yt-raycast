@@ -5,7 +5,10 @@ const MARKER = 'data-sf-storefront-cart-ui'
 
 export function stripStorefrontCartUi(html) {
   if (!html || typeof html !== 'string') return html
-  return html.replace(/\n?<div id="sf-cart-backdrop"[\s\S]*?<\/script>\s*/i, '\n')
+  return html.replace(
+    /\n?<div id="sf-cart-backdrop"[\s\S]*?<\/script>\s*/i,
+    '\n',
+  )
 }
 
 function readVariantMapFromWorkspace(workspace) {
@@ -20,16 +23,26 @@ function readVariantMapFromWorkspace(workspace) {
 }
 
 export function injectMedusaVariantDataAttributes(html, byTitle = {}) {
-  if (!html || typeof html !== 'string' || !byTitle || typeof byTitle !== 'object') return html
+  if (
+    !html ||
+    typeof html !== 'string' ||
+    !byTitle ||
+    typeof byTitle !== 'object'
+  )
+    return html
   let next = html
   for (const [title, vid] of Object.entries(byTitle)) {
     if (!title || !vid) continue
     const dq = `data-product="${title.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`
     const sq = `data-product='${title.replace(/'/g, '&#39;')}'`
     if (next.includes(dq)) {
-      next = next.split(dq).join(`${dq} data-medusa-variant-id="${String(vid).replace(/"/g, '')}"`)
+      next = next
+        .split(dq)
+        .join(`${dq} data-medusa-variant-id="${String(vid).replace(/"/g, '')}"`)
     } else if (next.includes(sq)) {
-      next = next.split(sq).join(`${sq} data-medusa-variant-id="${String(vid).replace(/"/g, '')}"`)
+      next = next
+        .split(sq)
+        .join(`${sq} data-medusa-variant-id="${String(vid).replace(/"/g, '')}"`)
     }
   }
   return next
@@ -276,11 +289,19 @@ export function injectStorefrontCartUi(html, options = {}) {
   if (force && /id=["']sf-cart-backdrop["']/.test(html)) {
     html = stripStorefrontCartUi(html)
   }
-  if ((html.includes(`id="sf-cart-drawer"`) || html.includes(`id='sf-cart-drawer'`)) && !force) return html
+  if (
+    (html.includes(`id="sf-cart-drawer"`) ||
+      html.includes(`id='sf-cart-drawer'`)) &&
+    !force
+  )
+    return html
   const hasCart =
     /id\s*=\s*["']cart-toggle["']/i.test(html) ||
-    /class\s*=\s*["'][^"']*utilities[^"']*["'][^>]*>[\s\S]*aria-label\s*=\s*["']Cart["']/i.test(html) ||
-    (/class\s*=\s*["'][^"']*product-card/i.test(html) && /cart-badge|cart-count/i.test(html))
+    /class\s*=\s*["'][^"']*utilities[^"']*["'][^>]*>[\s\S]*aria-label\s*=\s*["']Cart["']/i.test(
+      html,
+    ) ||
+    (/class\s*=\s*["'][^"']*product-card/i.test(html) &&
+      /cart-badge|cart-count/i.test(html))
 
   if (!hasCart) return html
 
@@ -288,7 +309,8 @@ export function injectStorefrontCartUi(html, options = {}) {
   if (!map && options.workspace) {
     map = readVariantMapFromWorkspace(options.workspace)
   }
-  const medusaMapJson = map && (map.byTitle || map.byHandle) ? JSON.stringify(map) : 'null'
+  const medusaMapJson =
+    map && (map.byTitle || map.byHandle) ? JSON.stringify(map) : 'null'
 
   const block = buildBlock(medusaMapJson)
   if (!/<\/body>/i.test(html)) return `${html}\n${block}`

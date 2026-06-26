@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { PricingGrid } from "#/section-kit/PricingGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * SaasPricing — a 3-tier pricing band for a B2B SaaS landing page. Thin
@@ -13,7 +13,7 @@ import { PricingGrid } from "#/section-kit/PricingGrid.tsx"
  * defaults.
  */
 export const SaasPricing = defineComponent({
-  name: "SaasPricing",
+  name: 'SaasPricing',
   description:
     "A 3-tier pricing band for a B2B SaaS landing page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of plan cards (name, big price + period, checkmark feature bullets, and a CTA button). The highlighted tier gets a primary border, shadow, and a floating 'Most popular' pill, and every CTA routes through useNavigate. Use to present subscription tiers for SaaS products, apps, or online services.",
   props: z.object({
@@ -37,7 +37,7 @@ export const SaasPricing = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Pricing that scales with you"
+    const heading = props.heading ?? 'Pricing that scales with you'
     const subheading =
       props.subheading ??
       "Start free and upgrade when you're ready. No hidden fees, cancel anytime."
@@ -45,43 +45,43 @@ export const SaasPricing = defineComponent({
       ? props.tiers
       : [
           {
-            name: "Starter",
-            price: "$0",
-            period: "/mo",
+            name: 'Starter',
+            price: '$0',
+            period: '/mo',
             features: [
-              "Up to 3 projects",
-              "Community support",
-              "Basic analytics",
-              "1 team member",
+              'Up to 3 projects',
+              'Community support',
+              'Basic analytics',
+              '1 team member',
             ],
-            cta: "Get started",
+            cta: 'Get started',
             highlighted: false,
           },
           {
-            name: "Pro",
-            price: "$29",
-            period: "/mo",
+            name: 'Pro',
+            price: '$29',
+            period: '/mo',
             features: [
-              "Unlimited projects",
-              "Priority email support",
-              "Advanced analytics",
-              "Up to 10 team members",
-              "Custom integrations",
+              'Unlimited projects',
+              'Priority email support',
+              'Advanced analytics',
+              'Up to 10 team members',
+              'Custom integrations',
             ],
-            cta: "Start free trial",
+            cta: 'Start free trial',
             highlighted: true,
           },
           {
-            name: "Enterprise",
-            price: "Custom",
+            name: 'Enterprise',
+            price: 'Custom',
             features: [
-              "Everything in Pro",
-              "Dedicated success manager",
-              "SSO & audit logs",
-              "Unlimited team members",
-              "99.9% uptime SLA",
+              'Everything in Pro',
+              'Dedicated success manager',
+              'SSO & audit logs',
+              'Unlimited team members',
+              '99.9% uptime SLA',
             ],
-            cta: "Contact sales",
+            cta: 'Contact sales',
             highlighted: false,
           },
         ]

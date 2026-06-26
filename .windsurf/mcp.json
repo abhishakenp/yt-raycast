@@ -2,28 +2,18 @@
   "mcpServers": {
     "github": {
       "command": "bunx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-github"
-      ],
+      "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
         "GITHUB_TOKEN": "${GITHUB_TOKEN}"
       }
     },
     "gitnexus": {
       "command": "npx",
-      "args": [
-        "-y",
-        "gitnexus",
-        "mcp"
-      ]
+      "args": ["-y", "gitnexus", "mcp"]
     },
     "doppler": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@dopplerhq/mcp-server"
-      ]
+      "args": ["-y", "@dopplerhq/mcp-server"]
     }
   }
 }

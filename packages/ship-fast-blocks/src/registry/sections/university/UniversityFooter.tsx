@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 function UniversityBrandMark() {
   return (
@@ -22,9 +22,9 @@ function UniversityBrandMark() {
 }
 
 export const UniversityFooter = defineComponent({
-  name: "UniversityFooter",
+  name: 'UniversityFooter',
   description:
-    "Prestigious collegiate site footer for the University page family. Composes the shared SiteFooter kit composite with a serif wordmark and graduation-cap brand mark, an institutional tagline, four link columns (Academics, Admissions, Campus, About), a social row, and a legal note. Use as the closing band of any university homepage or as the persistent footer across a multi-page campus site.",
+    'Prestigious collegiate site footer for the University page family. Composes the shared SiteFooter kit composite with a serif wordmark and graduation-cap brand mark, an institutional tagline, four link columns (Academics, Admissions, Campus, About), a social row, and a legal note. Use as the closing band of any university homepage or as the persistent footer across a multi-page campus site.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -39,36 +39,46 @@ export const UniversityFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Whitmore University"
+    const brand = props.brand ?? 'Whitmore University'
     const tagline =
-      props.tagline ?? "Lux et Veritas — light and truth since 1887."
+      props.tagline ?? 'Lux et Veritas — light and truth since 1887.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Academics",
-            links: ["Colleges & Schools", "Majors", "Graduate Programs", "Libraries"],
+            title: 'Academics',
+            links: [
+              'Colleges & Schools',
+              'Majors',
+              'Graduate Programs',
+              'Libraries',
+            ],
           },
           {
-            title: "Admissions",
-            links: ["Apply", "Visit", "Financial Aid", "Transfer Students"],
+            title: 'Admissions',
+            links: ['Apply', 'Visit', 'Financial Aid', 'Transfer Students'],
           },
           {
-            title: "Campus",
-            links: ["Campus Life", "Housing", "Athletics", "Dining"],
+            title: 'Campus',
+            links: ['Campus Life', 'Housing', 'Athletics', 'Dining'],
           },
           {
-            title: "About",
-            links: ["Our History", "Leadership", "News", "Contact"],
+            title: 'About',
+            links: ['Our History', 'Leadership', 'News', 'Contact'],
           },
         ]
     const social = props.social?.length
       ? props.social
-      : [{ label: "Instagram" }, { label: "LinkedIn" }, { label: "YouTube" }, { label: "X" }]
+      : [
+          { label: 'Instagram' },
+          { label: 'LinkedIn' },
+          { label: 'YouTube' },
+          { label: 'X' },
+        ]
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy", "Accessibility", "Title IX", "Nondiscrimination"]
-    const note = props.note ?? "All rights reserved."
+      : ['Privacy', 'Accessibility', 'Title IX', 'Nondiscrimination']
+    const note = props.note ?? 'All rights reserved.'
 
     return (
       <SiteFooter

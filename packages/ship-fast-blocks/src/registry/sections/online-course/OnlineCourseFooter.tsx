@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * OnlineCourseFooter — a rich, multi-column closing footer for an online-course
@@ -28,9 +28,9 @@ const BookMark = ({ className }: { className?: string }) => (
 )
 
 export const OnlineCourseFooter = defineComponent({
-  name: "OnlineCourseFooter",
+  name: 'OnlineCourseFooter',
   description:
-    "Rich, multi-column closing footer for an online-course / e-learning site built on the shared SiteFooter composite: a brand block (semibold wordmark + book/open-pages mark + tagline + social row of Twitter/LinkedIn/YouTube) beside link columns (Learn, Platform, Company, Support), with a bordered-top bottom bar holding an auto-updating copyright line and legal links. Use as the site-wide footer for course platforms, e-learning marketplaces, MOOCs, bootcamps, or academies.",
+    'Rich, multi-column closing footer for an online-course / e-learning site built on the shared SiteFooter composite: a brand block (semibold wordmark + book/open-pages mark + tagline + social row of Twitter/LinkedIn/YouTube) beside link columns (Learn, Platform, Company, Support), with a bordered-top bottom bar holding an auto-updating copyright line and legal links. Use as the site-wide footer for course platforms, e-learning marketplaces, MOOCs, bootcamps, or academies.',
   props: z.object({
     /** Platform / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -53,44 +53,44 @@ export const OnlineCourseFooter = defineComponent({
   component: ({ props }) => {
     const social = props.social?.length
       ? props.social
-      : [{ label: "Twitter" }, { label: "LinkedIn" }, { label: "YouTube" }]
+      : [{ label: 'Twitter' }, { label: 'LinkedIn' }, { label: 'YouTube' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Learn",
-            links: ["Courses", "Curriculum", "Instructors", "Certificates"],
+            title: 'Learn',
+            links: ['Courses', 'Curriculum', 'Instructors', 'Certificates'],
           },
           {
-            title: "Platform",
-            links: ["Pricing", "Mobile app", "For teams", "Gift cards"],
+            title: 'Platform',
+            links: ['Pricing', 'Mobile app', 'For teams', 'Gift cards'],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Blog", "Press"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Blog', 'Press'],
           },
           {
-            title: "Support",
-            links: ["Help center", "Community", "Contact", "FAQ"],
+            title: 'Support',
+            links: ['Help center', 'Community', 'Contact', 'FAQ'],
           },
         ]
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy", "Terms", "Refunds"]
+      : ['Privacy', 'Terms', 'Refunds']
 
     return (
       <SiteFooter
-        brand={props.brand ?? "LearnSpace"}
+        brand={props.brand ?? 'LearnSpace'}
         brandMark={<BookMark className="size-8 text-primary" />}
         brandClassName="font-semibold tracking-tight"
         tagline={
           props.tagline ??
-          "Practical, project-based courses that turn curiosity into a career."
+          'Practical, project-based courses that turn curiosity into a career.'
         }
         social={social}
         columns={columns}
         legal={legal}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

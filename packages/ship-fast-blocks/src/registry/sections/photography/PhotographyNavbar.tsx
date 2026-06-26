@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * PhotographyNavbar — fixed, translucent top navigation bar for a fine-art /
@@ -13,7 +13,7 @@ import { SiteNav } from "#/section-kit/SiteNav.tsx"
  * portfolio. Renders fully with no props via baked-in "Elena Vossen" defaults.
  */
 export const PhotographyNavbar = defineComponent({
-  name: "PhotographyNavbar",
+  name: 'PhotographyNavbar',
   description:
     "Fixed translucent site header for a fine-art / wedding photographer portfolio built on the shared SiteNav composite: a serif wordmark brand, evenly spaced desktop nav links, a 'Book a Shoot' CTA pill, and a real mobile drawer (Sheet) on small screens. Every link and the CTA route through useNavigate for page-switching. Use as the sticky site header for wedding photographers, portrait studios, elopement shooters, or warm editorial visual-creative portfolios.",
   props: z.object({
@@ -32,15 +32,15 @@ export const PhotographyNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Work", "Services", "About", "Testimonials", "Contact"]
+      : ['Work', 'Services', 'About', 'Testimonials', 'Contact']
     return (
       <SiteNav
-        brand={props.brand ?? "Elena Vossen"}
+        brand={props.brand ?? 'Elena Vossen'}
         brandClassName="font-serif text-2xl font-medium tracking-tight"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Book a Shoot",
-          target: props.ctaTarget ?? "Contact",
+          label: props.ctaLabel ?? 'Book a Shoot',
+          target: props.ctaTarget ?? 'Contact',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

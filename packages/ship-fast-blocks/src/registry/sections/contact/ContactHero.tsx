@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * ContactHero — centered hero section for a contact / get-in-touch page.
@@ -10,9 +10,9 @@ import { cn } from "#/lib/utils.ts"
  * book-a-demo, or inquiry pages. Renders fully with no props via baked-in defaults.
  */
 export const ContactHero = defineComponent({
-  name: "ContactHero",
+  name: 'ContactHero',
   description:
-    "Centered hero section for a contact / get-in-touch page: a compact text-centered band with an eyebrow rule + label, a bold multi-line heading, and a supporting lead paragraph. Token-only colors flip with the active theme. Use as the top-of-page introduction for contact, support, book-a-demo, or inquiry pages.",
+    'Centered hero section for a contact / get-in-touch page: a compact text-centered band with an eyebrow rule + label, a bold multi-line heading, and a supporting lead paragraph. Token-only colors flip with the active theme. Use as the top-of-page introduction for contact, support, book-a-demo, or inquiry pages.',
   props: z.object({
     /** Eyebrow rule label (e.g. 'Get in Touch'). */
     eyebrow: z.string().optional(),
@@ -23,14 +23,14 @@ export const ContactHero = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Get in Touch"
+    const eyebrow = props.eyebrow ?? 'Get in Touch'
     const heading = props.heading ?? "Let's start a conversation"
     const lead =
       props.lead ??
-      "Whether you have a question about our services, pricing, need a demo, or anything else, our team is ready to answer all your questions."
+      'Whether you have a question about our services, pricing, need a demo, or anything else, our team is ready to answer all your questions.'
 
     return (
-      <section className={cn("pt-20 pb-14 text-center", props.className)}>
+      <section className={cn('pt-20 pb-14 text-center', props.className)}>
         <span className="mb-5 inline-flex items-center gap-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-primary">
           <span
             aria-hidden="true"

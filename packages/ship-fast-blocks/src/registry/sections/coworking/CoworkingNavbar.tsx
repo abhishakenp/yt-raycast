@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * CoworkingNavbar — sticky site header for a coworking / workspace brand. Thin
@@ -21,7 +21,7 @@ const BrandTile = ({ letter }: { letter: string }) => (
 )
 
 export const CoworkingNavbar = defineComponent({
-  name: "CoworkingNavbar",
+  name: 'CoworkingNavbar',
   description:
     "Sticky coworking / workspace site header built on the shared SiteNav composite: a rounded brand-initial logo tile beside the workspace name, centered desktop nav links, an optional front-desk phone number, a single 'Book a Tour' pill CTA, and a real mobile drawer. All links route through useNavigate. Use as the sticky site header for coworking spaces, shared offices, flex-office platforms, or workspace membership pages.",
   props: z.object({
@@ -40,10 +40,10 @@ export const CoworkingNavbar = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Northside"
+    const brand = props.brand ?? 'Northside'
     const nav = props.nav?.length
       ? props.nav
-      : ["Spaces", "Amenities", "Pricing", "Gallery", "FAQ"]
+      : ['Spaces', 'Amenities', 'Pricing', 'Gallery', 'FAQ']
     return (
       <SiteNav
         brand={brand}
@@ -52,8 +52,8 @@ export const CoworkingNavbar = defineComponent({
         nav={nav}
         phone={props.phone}
         cta={{
-          label: props.ctaLabel ?? "Book a Tour",
-          target: props.ctaTarget ?? "Pricing",
+          label: props.ctaLabel ?? 'Book a Tour',
+          target: props.ctaTarget ?? 'Pricing',
         }}
         homeTarget={props.homeTarget ?? brand}
         className={props.className}

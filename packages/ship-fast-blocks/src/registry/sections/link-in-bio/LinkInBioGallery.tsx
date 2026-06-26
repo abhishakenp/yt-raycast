@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { GalleryGrid } from "#/section-kit/GalleryGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
  * LinkInBioGallery — a bold, mobile-first "Featured" content grid for a creator
@@ -17,7 +17,7 @@ import { GalleryGrid } from "#/section-kit/GalleryGrid.tsx"
  * defaults.
  */
 export const LinkInBioGallery = defineComponent({
-  name: "LinkInBioGallery",
+  name: 'LinkInBioGallery',
   description:
     "Bold, mobile-first 'Featured' content grid for a creator LINK-IN-BIO / link-hub / Linktree-style page, built on the shared GalleryGrid composite. A compact heading + subheading sit over a tight 2-column grid (2/3/4 supported) of recent posts, product drops, videos, and projects; each tile pulls a relevant stock photo from its alt text and shows a short caption strip, turning the section into a visual portfolio teaser beneath the profile and links stack. The wrapper centers the grid in a narrow column with mobile-first padding. Use to spotlight latest work, drops, tutorials, or video content on any creator, influencer, or freelancer link-in-bio landing page. Renders fully with no props.",
   props: z.object({
@@ -43,40 +43,38 @@ export const LinkInBioGallery = defineComponent({
       ? props.images
       : [
           {
-            alt: "minimalist product photo of a design UI kit on a laptop screen on a clean desk",
-            caption: "Latest UI kit",
+            alt: 'minimalist product photo of a design UI kit on a laptop screen on a clean desk',
+            caption: 'Latest UI kit',
           },
           {
-            alt: "creator filming a video tutorial at a desk with a ring light and camera",
-            caption: "New tutorial",
+            alt: 'creator filming a video tutorial at a desk with a ring light and camera',
+            caption: 'New tutorial',
           },
           {
-            alt: "flat lay of a freelancer notebook, phone, and coffee on a marble desk",
-            caption: "Behind the scenes",
+            alt: 'flat lay of a freelancer notebook, phone, and coffee on a marble desk',
+            caption: 'Behind the scenes',
           },
           {
-            alt: "vibrant abstract 3D render of soft gradient shapes for a brand drop",
-            caption: "Brand drop",
+            alt: 'vibrant abstract 3D render of soft gradient shapes for a brand drop',
+            caption: 'Brand drop',
           },
           {
             alt: "smartphone showing a mobile app interface mockup in someone's hand",
-            caption: "App in progress",
+            caption: 'App in progress',
           },
           {
-            alt: "person presenting on stage at a creator conference with bright lighting",
-            caption: "Recent talk",
+            alt: 'person presenting on stage at a creator conference with bright lighting',
+            caption: 'Recent talk',
           },
         ]
 
     return (
       <GalleryGrid
-        heading={props.heading ?? "Featured"}
-        subheading={
-          props.subheading ?? "Recent posts, drops, and projects."
-        }
+        heading={props.heading ?? 'Featured'}
+        subheading={props.subheading ?? 'Recent posts, drops, and projects.'}
         columns={props.columns ?? 2}
         images={images}
-        className={cn("mx-auto w-full max-w-2xl px-6 py-10", props.className)}
+        className={cn('mx-auto w-full max-w-2xl px-6 py-10', props.className)}
       />
     )
   },

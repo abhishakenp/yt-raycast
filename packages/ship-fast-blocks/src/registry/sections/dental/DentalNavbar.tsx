@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DentalNavbar — sticky translucent top navigation bar for a dental practice /
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * dental offices, orthodontists, or cosmetic / pediatric dental clinics.
  */
 export const DentalNavbar = defineComponent({
-  name: "DentalNavbar",
+  name: 'DentalNavbar',
   description:
     "Sticky translucent top navigation bar for a dental practice / dentist site: backdrop-blurred, border-bottomed header with a rounded mint-primary tooth-glyph logo tile + practice name and a 'Dental Care' eyebrow on the left, horizontal nav links on the right (desktop), a filled primary pill CTA built from the last nav item (e.g. 'Book Appointment'), and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for dentists, dental offices, orthodontists, or cosmetic / pediatric dental clinics.",
   props: z.object({
@@ -28,11 +28,11 @@ export const DentalNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Bright Smile"
-    const tagline = props.tagline ?? "Dental Care"
+    const brand = props.brand ?? 'Bright Smile'
+    const tagline = props.tagline ?? 'Dental Care'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Our Team", "Reviews", "FAQ", "Book Appointment"]
+      : ['Services', 'Our Team', 'Reviews', 'FAQ', 'Book Appointment']
 
     const ToothMark = () => (
       <svg
@@ -53,7 +53,7 @@ export const DentalNavbar = defineComponent({
     const LogoBadge = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-xl bg-primary text-primary-foreground",
+          'grid place-items-center rounded-xl bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -65,7 +65,7 @@ export const DentalNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

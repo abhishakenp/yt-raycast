@@ -13,9 +13,13 @@ export const inferSiteTypeHint = (prompt) => {
   )
     return 'saas'
   if (
-    /\b(e-?commerce|online\s*store|shop|cart|checkout|buy|retail|merch)\b/.test(lower) ||
+    /\b(e-?commerce|online\s*store|shop|cart|checkout|buy|retail|merch)\b/.test(
+      lower,
+    ) ||
     (/\bproduct\b/.test(lower) &&
-      !/\b(dashboard|admin|analytics|kpi|metrics|internal\s+tool)\b/.test(lower))
+      !/\b(dashboard|admin|analytics|kpi|metrics|internal\s+tool)\b/.test(
+        lower,
+      ))
   )
     return 'ecommerce'
   if (
@@ -24,8 +28,10 @@ export const inferSiteTypeHint = (prompt) => {
     )
   )
     return 'institutional'
-  if (/\b(portfolio|creative|artist|photographer|designer)\b/.test(lower)) return 'portfolio'
-  if (/\b(blog|journal|magazine|publication|article)\b/.test(lower)) return 'blog'
+  if (/\b(portfolio|creative|artist|photographer|designer)\b/.test(lower))
+    return 'portfolio'
+  if (/\b(blog|journal|magazine|publication|article)\b/.test(lower))
+    return 'blog'
   if (/\b(game|play|3d|arcade)\b/.test(lower)) return 'game'
   return null
 }

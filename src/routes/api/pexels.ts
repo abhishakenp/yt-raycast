@@ -1,7 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { searchQueryFromAlt } from '@/lib/image-query'
-import { generateContextAwareQuery, type ImageContext } from '@/lib/image-context'
+import {
+  generateContextAwareQuery,
+  type ImageContext,
+} from '@/lib/image-context'
 
 type PexelsPhoto = {
   src?: {
@@ -16,19 +19,29 @@ type PexelsResponse = {
   photos?: PexelsPhoto[]
 }
 
-type UnsplashPhoto = { urls?: { raw?: string; full?: string; regular?: string; small?: string } }
+type UnsplashPhoto = {
+  urls?: { raw?: string; full?: string; regular?: string; small?: string }
+}
 type UnsplashResponse = { results?: UnsplashPhoto[] }
 
 const readServerEnv = (key: string): string =>
   typeof process !== 'undefined' ? (process.env?.[key]?.trim() ?? '') : ''
 
-const clampInt = (value: string | null, fallback: number, min: number, max: number) => {
+const clampInt = (
+  value: string | null,
+  fallback: number,
+  min: number,
+  max: number,
+) => {
   const parsed = Number.parseInt(value ?? '', 10)
   if (!Number.isFinite(parsed)) return fallback
   return Math.min(Math.max(parsed, min), max)
 }
 
-const orientationFromSize = (w: number, h: number): 'landscape' | 'portrait' | 'square' => {
+const orientationFromSize = (
+  w: number,
+  h: number,
+): 'landscape' | 'portrait' | 'square' => {
   const ratio = w / h
   if (ratio > 1.15) return 'landscape'
   if (ratio < 0.87) return 'portrait'
@@ -63,12 +76,43 @@ const redirect = (url: string, status = 302) =>
     },
   })
 
-const choosePhotoUrl = (photo: PexelsPhoto | undefined, w: number, h: number) => {
+const choosePhotoUrl = (
+  photo: PexelsPhoto | undefined,
+  w: number,
+  h: number,
+) => {
   if (!photo?.src) return null
-  if (w > 1200 || h > 1200) return photo.src.original ?? photo.src.large2x ?? photo.src.large ?? photo.src.medium ?? null
-  if (w > 800 || h > 800) return photo.src.large2x ?? photo.src.large ?? photo.src.original ?? photo.src.medium ?? null
-  if (w > 400 || h > 400) return photo.src.large ?? photo.src.large2x ?? photo.src.medium ?? photo.src.original ?? null
-  return photo.src.medium ?? photo.src.large ?? photo.src.large2x ?? photo.src.original ?? null
+  if (w > 1200 || h > 1200)
+    return (
+      photo.src.original ??
+      photo.src.large2x ??
+      photo.src.large ??
+      photo.src.medium ??
+      null
+    )
+  if (w > 800 || h > 800)
+    return (
+      photo.src.large2x ??
+      photo.src.large ??
+      photo.src.original ??
+      photo.src.medium ??
+      null
+    )
+  if (w > 400 || h > 400)
+    return (
+      photo.src.large ??
+      photo.src.large2x ??
+      photo.src.medium ??
+      photo.src.original ??
+      null
+    )
+  return (
+    photo.src.medium ??
+    photo.src.large ??
+    photo.src.large2x ??
+    photo.src.original ??
+    null
+  )
 }
 
 export const resolvePexelsSearchQuery = (
@@ -93,7 +137,9 @@ const searchPexels = async (
   pexelsUrl.searchParams.set('per_page', '15')
   pexelsUrl.searchParams.set('orientation', orientationFromSize(w, h))
   try {
-    const response = await fetch(pexelsUrl, { headers: { Authorization: pexelsApiKey } })
+    const response = await fetch(pexelsUrl, {
+      headers: { Authorization: pexelsApiKey },
+    })
     if (!response.ok) return null
     const data = (await response.json()) as PexelsResponse
     const photos = data.photos ?? []
@@ -125,7 +171,11 @@ const searchUnsplash = async (
     const results = data.results ?? []
     if (!results.length) return null
     const photo = results[seedIndex(seed, results.length)]
-    const base = photo?.urls?.regular ?? photo?.urls?.small ?? photo?.urls?.full ?? photo?.urls?.raw
+    const base =
+      photo?.urls?.regular ??
+      photo?.urls?.small ??
+      photo?.urls?.full ??
+      photo?.urls?.raw
     if (!base) return null
     const targetW = Math.min(Math.max(w, 400), 2400)
     const targetH = Math.min(Math.max(h, 300), 1600)
@@ -140,27 +190,39 @@ export const Route = createFileRoute('/api/pexels')({
     handlers: {
       GET: async ({ request }) => {
         const url = new URL(request.url)
-        const query = (url.searchParams.get('query') ?? url.searchParams.get('q') ?? '').trim() || 'nature'
+        const query =
+          (
+            url.searchParams.get('query') ??
+            url.searchParams.get('q') ??
+            ''
+          ).trim() || 'nature'
         const seed = url.searchParams.get('seed')
         const w = clampInt(url.searchParams.get('w'), 800, 100, 2400)
         const h = clampInt(url.searchParams.get('h'), 600, 100, 2400)
-        
+
         // Extract context parameters
         const context: ImageContext = {
           section: url.searchParams.get('section') || undefined,
-          siteType: (url.searchParams.get('siteType') as ImageContext['siteType']) || undefined,
+          siteType:
+            (url.searchParams.get('siteType') as ImageContext['siteType']) ||
+            undefined,
           prompt: url.searchParams.get('prompt') || undefined,
           brandContext: url.searchParams.get('brandContext') || undefined,
         }
-        
+
         // Use context-aware query generation if context is provided
         let searchQuery: string
-        if (context.section || context.siteType || context.prompt || context.brandContext) {
+        if (
+          context.section ||
+          context.siteType ||
+          context.prompt ||
+          context.brandContext
+        ) {
           searchQuery = generateContextAwareQuery(query, context)
         } else {
           searchQuery = resolvePexelsSearchQuery(query, seed)
         }
-        
+
         const fallback = picsumUrl(seed || searchQuery, w, h)
         const seedKey = seed ?? searchQuery
 

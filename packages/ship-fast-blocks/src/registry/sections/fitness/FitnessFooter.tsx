@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FitnessFooter — inverted multi-column site footer for a gym or fitness studio. A
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * studios, wellness clubs or class-booking sites.
  */
 export const FitnessFooter = defineComponent({
-  name: "FitnessFooter",
+  name: 'FitnessFooter',
   description:
-    "Inverted multi-column site footer for a gym or fitness studio: a foreground-filled band with a brand block (square monogram tile + short wordmark + tagline) beside link columns (classes, company, connect / social), and a divided bottom bar with a copyright line and inline legal links. All links route through useNavigate. Use as the closing footer on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios, wellness clubs and class-booking sites.",
+    'Inverted multi-column site footer for a gym or fitness studio: a foreground-filled band with a brand block (square monogram tile + short wordmark + tagline) beside link columns (classes, company, connect / social), and a divided bottom bar with a copyright line and inline legal links. All links route through useNavigate. Use as the closing footer on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios, wellness clubs and class-booking sites.',
   props: z.object({
     /** Brand / studio name; first letter forms the monogram, first word is shown. */
     brand: z.string().optional(),
@@ -28,43 +28,43 @@ export const FitnessFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Base Fitness Studio"
-    const brandShort = brand.split(/\s+/)[0]?.toUpperCase() ?? "BASE"
+    const brand = props.brand ?? 'Base Fitness Studio'
+    const brandShort = brand.split(/\s+/)[0]?.toUpperCase() ?? 'BASE'
     const footerTagline =
       props.tagline ??
-      "Strength through movement. A fitness community built on progress, not perfection."
+      'Strength through movement. A fitness community built on progress, not perfection.'
     const footerColumns = props.columns?.length
       ? props.columns
       : [
           {
-            heading: "Classes",
+            heading: 'Classes',
             links: [
-              "Strength Training",
-              "Power Yoga",
-              "Cycle",
-              "HIIT",
-              "Pilates",
-              "Boxing",
+              'Strength Training',
+              'Power Yoga',
+              'Cycle',
+              'HIIT',
+              'Pilates',
+              'Boxing',
             ],
           },
           {
-            heading: "Company",
-            links: ["About Us", "Careers", "Press", "Partners", "Contact"],
+            heading: 'Company',
+            links: ['About Us', 'Careers', 'Press', 'Partners', 'Contact'],
           },
           {
-            heading: "Connect",
-            links: ["Instagram", "Facebook", "YouTube", "Spotify Playlists"],
+            heading: 'Connect',
+            links: ['Instagram', 'Facebook', 'YouTube', 'Spotify Playlists'],
           },
         ]
-    const footerCopyright = props.copyright ?? "All rights reserved."
+    const footerCopyright = props.copyright ?? 'All rights reserved.'
     const footerLegal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
 
     return (
       <footer
         className={cn(
-          "border-t border-border bg-foreground py-12 text-background",
+          'border-t border-border bg-foreground py-12 text-background',
           props.className,
         )}
       >

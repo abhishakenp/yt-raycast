@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ManufacturingHero — split hero band for a precision-manufacturing /
@@ -17,9 +17,9 @@ import { Image } from "#/lib/img.tsx"
  * fully with no props via baked-in "Vertex Manufacturing" defaults.
  */
 export const ManufacturingHero = defineComponent({
-  name: "ManufacturingHero",
+  name: 'ManufacturingHero',
   description:
-    "Split hero band for a precision-manufacturing / industrial-fabrication landing page: two-column layout with a certification status pill (pulsing dot + label), a large semibold headline, a supporting paragraph, dual CTAs (filled + outlined) and a divided KPI stat strip on the left, and a tall CNC machining photo with a floating quality-badge card (check icon + title + subtitle) on the right. Clean, neutral, industrial B2B aesthetic; CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the opening hero for CNC machine shops, metal fabricators, contract manufacturers or industrial engineering firms.",
+    'Split hero band for a precision-manufacturing / industrial-fabrication landing page: two-column layout with a certification status pill (pulsing dot + label), a large semibold headline, a supporting paragraph, dual CTAs (filled + outlined) and a divided KPI stat strip on the left, and a tall CNC machining photo with a floating quality-badge card (check icon + title + subtitle) on the right. Clean, neutral, industrial B2B aesthetic; CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the opening hero for CNC machine shops, metal fabricators, contract manufacturers or industrial engineering firms.',
   props: z.object({
     badge: z.string().optional(),
     heading: z.string().optional(),
@@ -36,30 +36,30 @@ export const ManufacturingHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "ISO 9001:2015 Certified"
+    const badge = props.badge ?? 'ISO 9001:2015 Certified'
     const heading =
-      props.heading ?? "Precision Manufacturing for Complex Industries"
+      props.heading ?? 'Precision Manufacturing for Complex Industries'
     const subheading =
       props.subheading ??
       'Vertex Manufacturing Solutions delivers aerospace-grade CNC machining, metal fabrication, and industrial engineering. From prototype to production, we transform raw materials into mission-critical components with tolerances as tight as ±0.0005".'
-    const primaryCta = props.primaryCta ?? "Request a Quote"
-    const secondaryCta = props.secondaryCta ?? "View Our Work"
+    const primaryCta = props.primaryCta ?? 'Request a Quote'
+    const secondaryCta = props.secondaryCta ?? 'View Our Work'
     const imageAlt =
       props.imageAlt ??
-      "CNC machining center cutting precision metal parts with coolant spray in industrial manufacturing facility"
-    const floatingTitle = props.floatingTitle ?? "AS9100D Certified"
+      'CNC machining center cutting precision metal parts with coolant spray in industrial manufacturing facility'
+    const floatingTitle = props.floatingTitle ?? 'AS9100D Certified'
     const floatingSubtitle =
-      props.floatingSubtitle ?? "Aerospace Quality Standard"
+      props.floatingSubtitle ?? 'Aerospace Quality Standard'
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "50+", label: "CNC Machines" },
-          { value: "35", label: "Years Experience" },
-          { value: "99.7%", label: "Quality Rate" },
+          { value: '50+', label: 'CNC Machines' },
+          { value: '35', label: 'Years Experience' },
+          { value: '99.7%', label: 'Quality Rate' },
         ]
 
     return (
-      <section className={cn("relative bg-background", props.className)}>
+      <section className={cn('relative bg-background', props.className)}>
         <div className="mx-auto max-w-7xl px-4 pb-24 pt-16 sm:px-6 lg:px-8 lg:pb-32 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
@@ -116,7 +116,17 @@ export const ManufacturingHero = defineComponent({
               <div className="absolute -bottom-6 -left-6 hidden rounded-lg bg-card p-4 shadow-lg sm:block">
                 <div className="flex items-center gap-3">
                   <span className="grid size-10 place-items-center rounded-full bg-muted text-foreground">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </span>

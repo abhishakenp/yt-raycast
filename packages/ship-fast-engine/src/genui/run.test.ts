@@ -12,8 +12,8 @@ const mocks = ((
 vi.mock('../generate.ts', () => ({
   generateText: (...args: unknown[]) =>
     (
-      (globalThis as typeof globalThis & { __runMocks: typeof mocks }).__runMocks
-        .generateText as unknown as (...a: unknown[]) => unknown
+      (globalThis as typeof globalThis & { __runMocks: typeof mocks })
+        .__runMocks.generateText as unknown as (...a: unknown[]) => unknown
     )(...args),
   isHardLlmFailure: () => false,
   formatLlmFailureMessage: (e: unknown) => String(e),
@@ -29,12 +29,17 @@ import { runHomepageOrchestrator } from './run.ts'
 
 // Fill the first-pass superagent (vertical + section props) and the per-page calls.
 const superagentReply = (user: string): string => {
-  const family = (user.match(/Vertical "([A-Za-z0-9]+)"/) ?? [])[1] ?? 'Marketing'
+  const family =
+    (user.match(/Vertical "([A-Za-z0-9]+)"/) ?? [])[1] ?? 'Marketing'
   const keys = [...user.matchAll(/^\s+([a-z0-9]+):\s/gm)].map((m) => m[1])
   const sections = Object.fromEntries(
     [...new Set(keys)].map((k) => [
       k,
-      { heading: `H ${k}`, subheading: 'S', items: [{ title: 'A' }, { title: 'B' }] },
+      {
+        heading: `H ${k}`,
+        subheading: 'S',
+        items: [{ title: 'A' }, { title: 'B' }],
+      },
     ]),
   )
   return JSON.stringify({ family, sections })
@@ -55,7 +60,9 @@ describe('runHomepageOrchestrator (composable engine)', () => {
   beforeEach(() => mocks.generateText.mockReset())
 
   it('composes a valid multi-page PageSwitch site with theme, brand and category', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => reply(String(_a[2])))
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) =>
+      reply(String(_a[2])),
+    )
     const events: { type: string }[] = []
     const result = await runHomepageOrchestrator({
       prompt: 'a crm for small sales teams',
@@ -87,7 +94,9 @@ describe('runHomepageOrchestrator (composable engine)', () => {
   })
 
   it('carries the detected locale through to the result', async () => {
-    mocks.generateText.mockImplementation(async (..._a: unknown[]) => reply(String(_a[2])))
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) =>
+      reply(String(_a[2])),
+    )
     const result = await runHomepageOrchestrator({
       prompt: 'un cafe de quartier',
       preferredLanguage: 'fr',

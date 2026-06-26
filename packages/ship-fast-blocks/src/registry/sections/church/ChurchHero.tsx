@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ChurchHero — centered, image-backed hero section for a church or faith-community
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * or religious nonprofits. Renders fully with no props via baked-in defaults.
  */
 export const ChurchHero = defineComponent({
-  name: "ChurchHero",
+  name: 'ChurchHero',
   description:
-    "Centered, image-backed hero section for a church or faith-community landing page: generous top padding over a soft background photo with gradient overlay, an established-since eyebrow, a two-tone headline (primary + muted accent line), supporting paragraph, dual pill CTAs (filled primary + outlined secondary), and an inline service-time + address strip beneath. Warm, inviting, and conversion-focused; CTAs route through useNavigate. Use as the opening hero for churches, worship centers, ministries, or religious nonprofits.",
+    'Centered, image-backed hero section for a church or faith-community landing page: generous top padding over a soft background photo with gradient overlay, an established-since eyebrow, a two-tone headline (primary + muted accent line), supporting paragraph, dual pill CTAs (filled primary + outlined secondary), and an inline service-time + address strip beneath. Warm, inviting, and conversion-focused; CTAs route through useNavigate. Use as the opening hero for churches, worship centers, ministries, or religious nonprofits.',
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -40,24 +40,24 @@ export const ChurchHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Est. 1987 • Portland, Oregon"
-    const headingTop = props.headingTop ?? "A place to belong,"
-    const headingBottom = props.headingBottom ?? "believe, and become."
+    const eyebrow = props.eyebrow ?? 'Est. 1987 • Portland, Oregon'
+    const headingTop = props.headingTop ?? 'A place to belong,'
+    const headingBottom = props.headingBottom ?? 'believe, and become.'
     const subheading =
       props.subheading ??
       "We're a welcoming community of faith, hope, and love. Whether you're exploring spirituality for the first time or looking for a church home, there's a seat for you here."
-    const primaryCta = props.primaryCta ?? "Plan Your Visit"
-    const secondaryCta = props.secondaryCta ?? "Watch Live"
-    const serviceTime = props.serviceTime ?? "Sundays at 9:00 & 11:00 AM"
-    const address = props.address ?? "4521 NE Glisan Street"
+    const primaryCta = props.primaryCta ?? 'Plan Your Visit'
+    const secondaryCta = props.secondaryCta ?? 'Watch Live'
+    const serviceTime = props.serviceTime ?? 'Sundays at 9:00 & 11:00 AM'
+    const address = props.address ?? '4521 NE Glisan Street'
     const imageAlt =
       props.imageAlt ??
-      "Sunlight streaming through tall church windows creating warm golden rays"
+      'Sunlight streaming through tall church windows creating warm golden rays'
 
     return (
       <section
         className={cn(
-          "relative overflow-hidden pb-20 pt-32 lg:pb-32 lg:pt-48",
+          'relative overflow-hidden pb-20 pt-32 lg:pb-32 lg:pt-48',
           props.className,
         )}
       >

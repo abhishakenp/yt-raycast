@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * MarketplaceTestimonials — 3-up review wall for a multi-vendor marketplace /
@@ -14,7 +14,7 @@ import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
  * aggregators. Renders fully with no props via baked-in defaults.
  */
 export const MarketplaceTestimonials = defineComponent({
-  name: "MarketplaceTestimonials",
+  name: 'MarketplaceTestimonials',
   description:
     "3-up review wall for a multi-vendor marketplace / e-commerce page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted testimonial, and an attribution row pairing the reviewer name with their role (Verified Buyer, Seller since 2021, …). The public reviews prop maps to the composite's items. Use for social proof on online marketplaces, multi-vendor or maker/artisan platforms, and retail aggregators.",
   props: z.object({
@@ -34,30 +34,30 @@ export const MarketplaceTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Loved by buyers and sellers"
+    const heading = props.heading ?? 'Loved by buyers and sellers'
     const reviews = props.reviews?.length
       ? props.reviews
       : [
           {
             quote:
               "I've furnished half my apartment through MarketHub. Every order arrived fast, beautifully packed, and exactly as pictured. Buyer protection made the one return effortless.",
-            name: "Hannah Cole",
+            name: 'Hannah Cole',
             rating: 5,
-            role: "Verified Buyer",
+            role: 'Verified Buyer',
           },
           {
             quote:
-              "Opening a storefront took an afternoon and I made my first sale that same week. The seller tools and built-in payouts let me focus on making, not admin.",
-            name: "Diego Marín",
+              'Opening a storefront took an afternoon and I made my first sale that same week. The seller tools and built-in payouts let me focus on making, not admin.',
+            name: 'Diego Marín',
             rating: 5,
-            role: "Seller since 2021",
+            role: 'Seller since 2021',
           },
           {
             quote:
-              "The quality of independent makers here is unreal. I found a ceramicist whose work I now gift to everyone. Reviews and ratings make it easy to shop with confidence.",
-            name: "Aisha Rahman",
+              'The quality of independent makers here is unreal. I found a ceramicist whose work I now gift to everyone. Reviews and ratings make it easy to shop with confidence.',
+            name: 'Aisha Rahman',
             rating: 4,
-            role: "Verified Buyer",
+            role: 'Verified Buyer',
           },
         ]
 

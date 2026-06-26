@@ -1,13 +1,13 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 export const PodcastSubscribe = defineComponent({
-  name: "PodcastSubscribe",
+  name: 'PodcastSubscribe',
   description:
-    "Subscribe-everywhere call-to-action band for a podcast site, set on a warm accent-tinted background. It centers a heading and subtitle above a wrapping row of platform pill buttons (Apple Podcasts, Spotify, Overcast, RSS, YouTube) that route via useNavigate. Use it to convert listeners by sending them to the show on whichever podcast app they already use.",
+    'Subscribe-everywhere call-to-action band for a podcast site, set on a warm accent-tinted background. It centers a heading and subtitle above a wrapping row of platform pill buttons (Apple Podcasts, Spotify, Overcast, RSS, YouTube) that route via useNavigate. Use it to convert listeners by sending them to the show on whichever podcast app they already use.',
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -23,25 +23,25 @@ export const PodcastSubscribe = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Listen anywhere"
-    const heading = props.heading ?? "Subscribe everywhere you listen"
+    const eyebrow = props.eyebrow ?? 'Listen anywhere'
+    const heading = props.heading ?? 'Subscribe everywhere you listen'
     const subheading =
       props.subheading ??
-      "New episodes drop weekly. Tap your favorite app and never miss a transmission."
+      'New episodes drop weekly. Tap your favorite app and never miss a transmission.'
     const platforms = props.platforms?.length
       ? props.platforms
       : [
-          { label: "Apple Podcasts", target: "Subscribe" },
-          { label: "Spotify", target: "Subscribe" },
-          { label: "Overcast", target: "Subscribe" },
-          { label: "RSS", target: "Subscribe" },
-          { label: "YouTube", target: "Subscribe" },
+          { label: 'Apple Podcasts', target: 'Subscribe' },
+          { label: 'Spotify', target: 'Subscribe' },
+          { label: 'Overcast', target: 'Subscribe' },
+          { label: 'RSS', target: 'Subscribe' },
+          { label: 'YouTube', target: 'Subscribe' },
         ]
 
     return (
       <section
         className={cn(
-          "bg-accent/10 py-20 text-foreground lg:py-28",
+          'bg-accent/10 py-20 text-foreground lg:py-28',
           props.className,
         )}
       >

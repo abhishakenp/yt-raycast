@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * BlogPostSubscribe — newsletter signup band for an editorial blog/article
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * magazines, journals, or any publication page.
  */
 export const BlogPostSubscribe = defineComponent({
-  name: "BlogPostSubscribe",
+  name: 'BlogPostSubscribe',
   description:
-    "Newsletter signup band for a blog/article page: a soft card/muted surface with a bold heading, a short supporting line, an email input + Subscribe button (stacked on mobile, side-by-side on desktop), and a small reassurance footnote. The Subscribe button routes through useNavigate. Use as the newsletter signup section on blogs, magazines, journals, or any publication page.",
+    'Newsletter signup band for a blog/article page: a soft card/muted surface with a bold heading, a short supporting line, an email input + Subscribe button (stacked on mobile, side-by-side on desktop), and a small reassurance footnote. The Subscribe button routes through useNavigate. Use as the newsletter signup section on blogs, magazines, journals, or any publication page.',
   props: z.object({
     /** Band heading. */
     heading: z.string().optional(),
@@ -31,16 +31,16 @@ export const BlogPostSubscribe = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Subscribe to Studio Journal"
+    const heading = props.heading ?? 'Subscribe to Studio Journal'
     const subheading =
       props.subheading ??
-      "Get weekly articles on design craft, strategy, and team culture, delivered every Tuesday."
-    const placeholder = props.placeholder ?? "your@email.com"
-    const ctaLabel = props.ctaLabel ?? "Subscribe"
-    const note = props.note ?? "No spam. Unsubscribe anytime."
+      'Get weekly articles on design craft, strategy, and team culture, delivered every Tuesday.'
+    const placeholder = props.placeholder ?? 'your@email.com'
+    const ctaLabel = props.ctaLabel ?? 'Subscribe'
+    const note = props.note ?? 'No spam. Unsubscribe anytime.'
 
     return (
-      <section className={cn("py-16 lg:py-24", props.className)}>
+      <section className={cn('py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-2xl px-6 lg:px-8">
           <div className="rounded-2xl bg-muted px-6 py-12 text-center sm:px-12">
             <h2 className="mb-3 text-2xl font-semibold tracking-tight text-foreground">

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CafeNewsletter — newsletter sign-up CTA for a cozy cafe / coffee shop page,
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * with no props via baked-in defaults.
  */
 export const CafeNewsletter = defineComponent({
-  name: "CafeNewsletter",
+  name: 'CafeNewsletter',
   description:
-    "Newsletter sign-up CTA for a cozy cafe page on a soft primary/10 band: centered serif heading and supporting paragraph above a rounded email input and submit button form, plus a fine-print line. The form submit routes through useNavigate. Use as a list-building section for cafes, bakeries, tea houses, or any small business.",
+    'Newsletter sign-up CTA for a cozy cafe page on a soft primary/10 band: centered serif heading and supporting paragraph above a rounded email input and submit button form, plus a fine-print line. The form submit routes through useNavigate. Use as a list-building section for cafes, bakeries, tea houses, or any small business.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -32,19 +32,19 @@ export const CafeNewsletter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Join the flock"
+    const heading = props.heading ?? 'Join the flock'
     const description =
       props.description ??
-      "Get first dibs on new seasonal drinks, events, and coffee education workshops. We send one email a week—no spam, ever."
-    const placeholder = props.placeholder ?? "Enter your email"
-    const submit = props.submit ?? "Subscribe"
+      'Get first dibs on new seasonal drinks, events, and coffee education workshops. We send one email a week—no spam, ever.'
+    const placeholder = props.placeholder ?? 'Enter your email'
+    const submit = props.submit ?? 'Subscribe'
     const fineprint =
       props.fineprint ??
-      "By subscribing, you agree to receive marketing emails. Unsubscribe anytime."
-    const submitTarget = props.submitTarget ?? "Location"
+      'By subscribing, you agree to receive marketing emails. Unsubscribe anytime.'
+    const submitTarget = props.submitTarget ?? 'Location'
 
     return (
-      <section className={cn("bg-primary/10 py-20", props.className)}>
+      <section className={cn('bg-primary/10 py-20', props.className)}>
         <div className="mx-auto max-w-4xl px-6 text-center lg:px-8">
           <h2 className="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl">
             {heading}

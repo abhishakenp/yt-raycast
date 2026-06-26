@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const Mark = ({ className }: { className?: string }) => (
   <svg
@@ -22,7 +22,7 @@ const Mark = ({ className }: { className?: string }) => (
 )
 
 export const SalonBarberFooter = defineComponent({
-  name: "SalonBarberFooter",
+  name: 'SalonBarberFooter',
   description:
     "Barbershop / salon site footer built on the shared SiteFooter composite. Renders a grooming brand with a scissors brand mark, a tagline, social links, and columns for hours, location, services, and quick links. Use it as the closing footer on any barbershop, salon, or men's grooming site to surface hours, address, and contact details below the fold.",
   props: z.object({
@@ -50,43 +50,43 @@ export const SalonBarberFooter = defineComponent({
   component: ({ props }) => {
     const social = props.social?.length
       ? props.social
-      : [{ label: "Instagram" }, { label: "TikTok" }, { label: "Facebook" }]
+      : [{ label: 'Instagram' }, { label: 'TikTok' }, { label: 'Facebook' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Hours",
+            title: 'Hours',
             links: [
-              "Mon–Fri · 9am–8pm",
-              "Saturday · 9am–6pm",
-              "Sunday · 11am–5pm",
+              'Mon–Fri · 9am–8pm',
+              'Saturday · 9am–6pm',
+              'Sunday · 11am–5pm',
             ],
           },
           {
-            title: "Visit",
+            title: 'Visit',
             links: [
-              "88 Barber Lane, New York, NY 10012",
-              "(212) 555-0147",
-              "hello@fadeandco.com",
+              '88 Barber Lane, New York, NY 10012',
+              '(212) 555-0147',
+              'hello@fadeandco.com',
             ],
           },
           {
-            title: "Services",
-            links: ["Haircuts", "Color", "Beard & Grooming", "Styling"],
+            title: 'Services',
+            links: ['Haircuts', 'Color', 'Beard & Grooming', 'Styling'],
           },
           {
-            title: "More",
-            links: ["Gallery", "Pricing", "Team", "Book Now"],
+            title: 'More',
+            links: ['Gallery', 'Pricing', 'Team', 'Book Now'],
           },
         ]
     return (
       <SiteFooter
-        brand={props.brand ?? "Fade & Co."}
+        brand={props.brand ?? 'Fade & Co.'}
         brandMark={<Mark className="size-7 text-primary" />}
-        tagline={props.tagline ?? "Modern barbering for the well-groomed."}
+        tagline={props.tagline ?? 'Modern barbering for the well-groomed.'}
         social={social}
         columns={columns}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

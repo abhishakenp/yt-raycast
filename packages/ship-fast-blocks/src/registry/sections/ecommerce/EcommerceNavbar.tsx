@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * EcommerceNavbar — sticky store header for a general online marketplace or
@@ -13,7 +13,7 @@ import { SiteNav } from "#/section-kit/SiteNav.tsx"
  * fully with no props via baked-in "Marketplace" defaults.
  */
 export const EcommerceNavbar = defineComponent({
-  name: "EcommerceNavbar",
+  name: 'EcommerceNavbar',
   description:
     "Sticky store header for a general online marketplace or retail shop built on the shared SiteNav composite: a bold sans-serif wordmark, a category nav (Shop, Categories, Deals, New, Sale), a primary 'Shop' CTA pill, and a real mobile drawer. Every nav item and the CTA route through useNavigate and labels match the nav array so PageSwitch can swap pages. Use as the site header for online stores, marketplaces, electronics, home goods, multi-category retail, or any clean modern storefront.",
   props: z.object({
@@ -32,11 +32,11 @@ export const EcommerceNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Shop", "Categories", "Deals", "New", "Sale"]
-    const shopCta = props.shopCta ?? "Shop"
+      : ['Shop', 'Categories', 'Deals', 'New', 'Sale']
+    const shopCta = props.shopCta ?? 'Shop'
     return (
       <SiteNav
-        brand={props.brand ?? "Marketplace"}
+        brand={props.brand ?? 'Marketplace'}
         brandClassName="text-xl font-bold tracking-tight lg:text-2xl"
         nav={nav}
         cta={{ label: shopCta, target: props.shopTarget ?? shopCta }}

@@ -1,5 +1,5 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 import {
   Command as UICommand,
   CommandEmpty,
@@ -9,15 +9,15 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 
 // Compound primitive: command palette / searchable menu. Flattened to
 // groups:[{heading, items:[{label,shortcut}]}]. Rendered INLINE (not the
 // dialog variant) so it is visible as a static preview.
 export const Command = defineComponent({
-  name: "Command",
+  name: 'Command',
   description:
-    "Searchable command palette rendered inline. groups:[{heading, items:[{label,shortcut}]}]. Shows a search box + grouped, selectable items.",
+    'Searchable command palette rendered inline. groups:[{heading, items:[{label,shortcut}]}]. Shows a search box + grouped, selectable items.',
   props: z.object({
     groups: z
       .array(
@@ -40,27 +40,29 @@ export const Command = defineComponent({
   component: ({ props }) => {
     const groups = props.groups ?? [
       {
-        heading: "Suggestions",
+        heading: 'Suggestions',
         items: [
-          { label: "Calendar" },
-          { label: "Search Emoji" },
-          { label: "Calculator" },
+          { label: 'Calendar' },
+          { label: 'Search Emoji' },
+          { label: 'Calculator' },
         ],
       },
       {
-        heading: "Settings",
+        heading: 'Settings',
         items: [
-          { label: "Profile", shortcut: "⌘P" },
-          { label: "Billing", shortcut: "⌘B" },
-          { label: "Settings", shortcut: "⌘S" },
+          { label: 'Profile', shortcut: '⌘P' },
+          { label: 'Billing', shortcut: '⌘B' },
+          { label: 'Settings', shortcut: '⌘S' },
         ],
       },
     ]
     return (
       <UICommand className={props.className}>
-        <CommandInput placeholder={props.placeholder ?? "Type a command or search..."} />
+        <CommandInput
+          placeholder={props.placeholder ?? 'Type a command or search...'}
+        />
         <CommandList>
-          <CommandEmpty>{props.emptyText ?? "No results found."}</CommandEmpty>
+          <CommandEmpty>{props.emptyText ?? 'No results found.'}</CommandEmpty>
           {groups.map((group, gi) => (
             <div key={gi}>
               {gi > 0 && <CommandSeparator />}
@@ -68,7 +70,9 @@ export const Command = defineComponent({
                 {group.items.map((item, ii) => (
                   <CommandItem key={ii} disabled={item.disabled}>
                     <span>{item.label}</span>
-                    {item.shortcut && <CommandShortcut>{item.shortcut}</CommandShortcut>}
+                    {item.shortcut && (
+                      <CommandShortcut>{item.shortcut}</CommandShortcut>
+                    )}
                   </CommandItem>
                 ))}
               </CommandGroup>

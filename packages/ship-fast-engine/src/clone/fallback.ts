@@ -32,7 +32,10 @@ const KIND_TO_ROLE: Record<SectionKind, string> = {
 }
 
 // Nearest native section role for a failed section (provenance only).
-export function findFallbackBlock(sectionKind: SectionKind, _index = 0): string {
+export function findFallbackBlock(
+  sectionKind: SectionKind,
+  _index = 0,
+): string {
   return KIND_TO_ROLE[sectionKind] || 'Hero'
 }
 

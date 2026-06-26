@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * RestaurantTestimonials — 3-up guest-review wall for a restaurant page. Thin
@@ -14,9 +14,9 @@ import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
  * defaults.
  */
 export const RestaurantTestimonials = defineComponent({
-  name: "RestaurantTestimonials",
+  name: 'RestaurantTestimonials',
   description:
-    "3-up guest-review wall for a restaurant page: a centered serif heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted testimonial, and an attribution row pairing the guest name with the review source (Google, Yelp, OpenTable). Use for social-proof on restaurants, bistros, fine dining, or any dining venue.",
+    '3-up guest-review wall for a restaurant page: a centered serif heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted testimonial, and an attribution row pairing the guest name with the review source (Google, Yelp, OpenTable). Use for social-proof on restaurants, bistros, fine dining, or any dining venue.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -34,30 +34,30 @@ export const RestaurantTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "What our guests say"
+    const heading = props.heading ?? 'What our guests say'
     const reviews = props.reviews?.length
       ? props.reviews
       : [
           {
             quote:
-              "Every dish arrived plated like art and tasted even better. The pasta was made fresh that morning and the wine pairing was spot on. Easily our best dinner this year.",
-            name: "Elena Rossi",
+              'Every dish arrived plated like art and tasted even better. The pasta was made fresh that morning and the wine pairing was spot on. Easily our best dinner this year.',
+            name: 'Elena Rossi',
             rating: 5,
-            source: "Google Review",
+            source: 'Google Review',
           },
           {
             quote:
-              "Booked for our anniversary and the team made it unforgettable. Warm service, an unhurried pace, and a tasting menu that kept surprising us course after course.",
-            name: "Marcus Bennett",
+              'Booked for our anniversary and the team made it unforgettable. Warm service, an unhurried pace, and a tasting menu that kept surprising us course after course.',
+            name: 'Marcus Bennett',
             rating: 5,
-            source: "OpenTable",
+            source: 'OpenTable',
           },
           {
             quote:
-              "The seasonal menu changes often and never misses. The roasted branzino and the burnt-honey dessert are reason enough to come back. Reserve ahead — it fills up fast.",
-            name: "Priya Nair",
+              'The seasonal menu changes often and never misses. The roasted branzino and the burnt-honey dessert are reason enough to come back. Reserve ahead — it fills up fast.',
+            name: 'Priya Nair',
             rating: 4,
-            source: "Yelp",
+            source: 'Yelp',
           },
         ]
 

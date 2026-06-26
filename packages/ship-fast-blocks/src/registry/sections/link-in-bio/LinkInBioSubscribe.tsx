@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LinkInBioSubscribe — a compact, centered email-capture band sized for a
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * or social-profile splash. Renders fully with no props.
  */
 export const LinkInBioSubscribe = defineComponent({
-  name: "LinkInBioSubscribe",
+  name: 'LinkInBioSubscribe',
   description:
     "Compact, centered EMAIL-CAPTURE / newsletter-subscribe band sized for a mobile LINK-IN-BIO / link-hub page. Renders a single rounded card on a card surface with a small mail icon tile, an uppercase eyebrow, a bold headline, a short subtitle, a stacked subscribe form (an email input + a full-width pill submit button), and a small reassurance note. Use as the 'Subscribe' / 'Join my newsletter' / email-signup role of a Linktree / Bento style personal landing page, creator or influencer link hub, freelancer bio link, or social-profile splash. Supply copy only — eyebrow, heading, subheading, placeholder, CTA label, and note; the section owns all layout and styling.",
   props: z.object({
@@ -38,18 +38,20 @@ export const LinkInBioSubscribe = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
 
-    const eyebrow = props.eyebrow ?? "Stay in the loop"
-    const heading = props.heading ?? "Join my newsletter"
+    const eyebrow = props.eyebrow ?? 'Stay in the loop'
+    const heading = props.heading ?? 'Join my newsletter'
     const subheading =
       props.subheading ??
-      "Get new drops, posts, and behind-the-scenes — straight to your inbox."
-    const placeholder = props.placeholder ?? "you@example.com"
-    const ctaLabel = props.ctaLabel ?? "Subscribe"
-    const ctaTarget = props.ctaTarget ?? "Subscribe"
-    const note = props.note ?? "No spam. Unsubscribe anytime."
+      'Get new drops, posts, and behind-the-scenes — straight to your inbox.'
+    const placeholder = props.placeholder ?? 'you@example.com'
+    const ctaLabel = props.ctaLabel ?? 'Subscribe'
+    const ctaTarget = props.ctaTarget ?? 'Subscribe'
+    const note = props.note ?? 'No spam. Unsubscribe anytime.'
 
     return (
-      <section className={cn("mx-auto w-full max-w-md px-6 py-10", props.className)}>
+      <section
+        className={cn('mx-auto w-full max-w-md px-6 py-10', props.className)}
+      >
         <div className="rounded-2xl border border-border bg-card p-6 text-center sm:p-8">
           <div className="mx-auto grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
             <svg

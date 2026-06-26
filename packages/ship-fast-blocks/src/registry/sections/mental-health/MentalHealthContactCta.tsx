@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MentalHealthContactCta — a final full-bleed booking CTA band for a therapy
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * psychologists or wellness centers.
  */
 export const MentalHealthContactCta = defineComponent({
-  name: "MentalHealthContactCta",
+  name: 'MentalHealthContactCta',
   description:
-    "Final full-bleed booking CTA band for a therapy practice: a solid primary-colored section with a centered heading + reassuring paragraph, dual rounded CTAs (a light booking button with a calendar icon + an outline phone button), and a row of trust badges (HIPAA, secure, next-day) with checkmarks. Calm yet confident wellness aesthetic. CTAs route through useNavigate. Use as the closing conversion section for therapists, counselors, psychologists or wellness centers.",
+    'Final full-bleed booking CTA band for a therapy practice: a solid primary-colored section with a centered heading + reassuring paragraph, dual rounded CTAs (a light booking button with a calendar icon + an outline phone button), and a row of trust badges (HIPAA, secure, next-day) with checkmarks. Calm yet confident wellness aesthetic. CTAs route through useNavigate. Use as the closing conversion section for therapists, counselors, psychologists or wellness centers.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -28,16 +28,16 @@ export const MentalHealthContactCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to take the first step?"
+    const heading = props.heading ?? 'Ready to take the first step?'
     const description =
       props.description ??
       "Schedule your free 15-minute consultation today. We'll discuss your needs, answer questions, and match you with the right therapist. No obligation, no pressure."
-    const primaryCta = props.primaryCta ?? "Book Online Now"
-    const secondaryCta = props.secondaryCta ?? "Call (503) 555-0147"
+    const primaryCta = props.primaryCta ?? 'Book Online Now'
+    const secondaryCta = props.secondaryCta ?? 'Call (503) 555-0147'
     const badges = props.badges?.length
       ? props.badges
-      : ["HIPAA Compliant", "Secure & Confidential", "Next Day Appointments"]
-    const bookLabel = props.bookLabel ?? "Book Session"
+      : ['HIPAA Compliant', 'Secure & Confidential', 'Next Day Appointments']
+    const bookLabel = props.bookLabel ?? 'Book Session'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -76,7 +76,7 @@ export const MentalHealthContactCta = defineComponent({
     return (
       <section
         className={cn(
-          "relative overflow-hidden bg-primary py-20 lg:py-28",
+          'relative overflow-hidden bg-primary py-20 lg:py-28',
           props.className,
         )}
       >

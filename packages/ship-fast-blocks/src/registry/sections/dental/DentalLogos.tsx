@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DentalLogos — insurance-provider / trust logo strip for a dental practice
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * and build trust.
  */
 export const DentalLogos = defineComponent({
-  name: "DentalLogos",
+  name: 'DentalLogos',
   description:
-    "Insurance-provider / trust logo strip for a dental practice site: a border-bottomed band on the page surface with a small uppercase caption above a faded, responsive 2-to-6 column grid of provider wordmarks rendered as text buttons that brighten on hover. Every wordmark routes through useNavigate. Use directly below the hero of a dentist, dental office, or clinic site to signal accepted insurance and build trust.",
+    'Insurance-provider / trust logo strip for a dental practice site: a border-bottomed band on the page surface with a small uppercase caption above a faded, responsive 2-to-6 column grid of provider wordmarks rendered as text buttons that brighten on hover. Every wordmark routes through useNavigate. Use directly below the hero of a dentist, dental office, or clinic site to signal accepted insurance and build trust.',
   props: z.object({
     label: z.string().optional(),
     items: z.array(z.string()).optional(),
@@ -23,15 +23,15 @@ export const DentalLogos = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const logosLabel = props.label ?? "Trusted by leading insurance providers"
+    const logosLabel = props.label ?? 'Trusted by leading insurance providers'
     const logoItems = props.items?.length
       ? props.items
-      : ["Delta Dental", "Cigna", "Aetna", "MetLife", "Guardian", "Humana"]
+      : ['Delta Dental', 'Cigna', 'Aetna', 'MetLife', 'Guardian', 'Humana']
 
     return (
       <section
         className={cn(
-          "border-b border-border bg-background py-16",
+          'border-b border-border bg-background py-16',
           props.className,
         )}
       >

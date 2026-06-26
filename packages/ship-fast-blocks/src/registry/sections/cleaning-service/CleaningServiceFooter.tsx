@@ -1,15 +1,15 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CleaningServiceFooter — a multi-column footer for a home-cleaning / maid-service landing page. A dark card-background footer with a 5-column layout: brand sparkle-mark + company name + tagline + social-icon buttons on the left (spanning 2 columns on desktop), followed by link-column groups (Services, Company, Support) and a bottom bar with copyright, location, phone, and email — all routable through useNavigate. Every brand click, footer link, phone, email, and social button routes through useNavigate. Use as the closing site footer for residential cleaning companies, maid services, housekeeping platforms, janitorial businesses, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
  */
 export const CleaningServiceFooter = defineComponent({
-  name: "CleaningServiceFooter",
+  name: 'CleaningServiceFooter',
   description:
-    "Multi-column footer for a home-cleaning / maid-service landing page: dark card-background with a 5-column layout. Left side has brand sparkle-mark + company name + tagline + social-icon buttons (spanning 2 columns on desktop); right side has link-column groups (Services, Company, Support). Bottom bar carries copyright, location, phone, and email — all routable through useNavigate. Use as the closing site footer for residential cleaning, maid services, housekeeping, janitorial, or local home-service brands.",
+    'Multi-column footer for a home-cleaning / maid-service landing page: dark card-background with a 5-column layout. Left side has brand sparkle-mark + company name + tagline + social-icon buttons (spanning 2 columns on desktop); right side has link-column groups (Services, Company, Support). Bottom bar carries copyright, location, phone, and email — all routable through useNavigate. Use as the closing site footer for residential cleaning, maid services, housekeeping, janitorial, or local home-service brands.',
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -35,52 +35,53 @@ export const CleaningServiceFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "PureSpace"
+    const brand = props.brand ?? 'PureSpace'
     const tagline =
       props.tagline ??
-      "Professional home cleaning services in Seattle. Making homes sparkle since 2018."
-    const homeTarget = props.homeTarget ?? "Services"
+      'Professional home cleaning services in Seattle. Making homes sparkle since 2018.'
+    const homeTarget = props.homeTarget ?? 'Services'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Services",
+            title: 'Services',
             links: [
-              "Standard Cleaning",
-              "Deep Cleaning",
-              "Move In/Out",
-              "Post-Construction",
-              "Eco-Friendly",
+              'Standard Cleaning',
+              'Deep Cleaning',
+              'Move In/Out',
+              'Post-Construction',
+              'Eco-Friendly',
             ],
           },
           {
-            title: "Company",
-            links: ["About Us", "Careers", "Press", "Blog", "Gift Cards"],
+            title: 'Company',
+            links: ['About Us', 'Careers', 'Press', 'Blog', 'Gift Cards'],
           },
           {
-            title: "Support",
+            title: 'Support',
             links: [
-              "Help Center",
-              "Contact Us",
-              "Become a Cleaner",
-              "Privacy Policy",
-              "Terms of Service",
+              'Help Center',
+              'Contact Us',
+              'Become a Cleaner',
+              'Privacy Policy',
+              'Terms of Service',
             ],
           },
         ]
     const copyright =
-      props.copyright ?? `© ${new Date().getFullYear()} ${brand} Cleaning Services. All rights reserved.`
-    const location = props.location ?? "Seattle, WA"
-    const phone = props.phone ?? "(555) 123-4567"
-    const email = props.email ?? "hello@purespace.com"
+      props.copyright ??
+      `© ${new Date().getFullYear()} ${brand} Cleaning Services. All rights reserved.`
+    const location = props.location ?? 'Seattle, WA'
+    const phone = props.phone ?? '(555) 123-4567'
+    const email = props.email ?? 'hello@purespace.com'
     const socials = props.socials?.length
       ? props.socials
-      : ["Facebook", "Twitter", "Instagram"]
+      : ['Facebook', 'Twitter', 'Instagram']
 
     const SparkleMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -102,7 +103,10 @@ export const CleaningServiceFooter = defineComponent({
 
     return (
       <footer
-        className={cn("bg-card py-16 text-muted-foreground lg:py-20", props.className)}
+        className={cn(
+          'bg-card py-16 text-muted-foreground lg:py-20',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5 lg:gap-8">
@@ -117,9 +121,7 @@ export const CleaningServiceFooter = defineComponent({
                   {brand}
                 </span>
               </button>
-              <p className="mb-6 max-w-sm text-muted-foreground">
-                {tagline}
-              </p>
+              <p className="mb-6 max-w-sm text-muted-foreground">{tagline}</p>
               <div className="flex items-center gap-4">
                 {socials.map((social) => (
                   <button

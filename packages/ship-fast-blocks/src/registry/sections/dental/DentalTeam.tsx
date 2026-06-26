@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * DentalTeam — meet-the-team grid for a dental practice site. On a soft muted
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * board-certified dentists, orthodontists, or oral surgeons for a clinic site.
  */
 export const DentalTeam = defineComponent({
-  name: "DentalTeam",
+  name: 'DentalTeam',
   description:
-    "Meet-the-team grid for a dental practice site on a soft muted band: a centered eyebrow + heading + lede above a responsive 1-to-4 column grid of card-framed dentist profiles, each with a tall headshot photo, name, primary-colored role, short bio, and a round LinkedIn icon button that brightens to the primary color on hover. Links route through useNavigate; headshots use the Image component. Use to introduce board-certified dentists, orthodontists, or oral surgeons for a clinic site.",
+    'Meet-the-team grid for a dental practice site on a soft muted band: a centered eyebrow + heading + lede above a responsive 1-to-4 column grid of card-framed dentist profiles, each with a tall headshot photo, name, primary-colored role, short bio, and a round LinkedIn icon button that brightens to the primary color on hover. Links route through useNavigate; headshots use the Image component. Use to introduce board-certified dentists, orthodontists, or oral surgeons for a clinic site.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -35,46 +35,46 @@ export const DentalTeam = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const teamEyebrow = props.eyebrow ?? "Meet Our Team"
-    const teamHeading = props.heading ?? "Expert dentists who truly care"
+    const teamEyebrow = props.eyebrow ?? 'Meet Our Team'
+    const teamHeading = props.heading ?? 'Expert dentists who truly care'
     const teamDesc =
       props.description ??
-      "Our board-certified dentists bring decades of combined experience and a genuine passion for helping patients achieve their healthiest, most confident smiles."
+      'Our board-certified dentists bring decades of combined experience and a genuine passion for helping patients achieve their healthiest, most confident smiles.'
     const teamMembers = props.members?.length
       ? props.members
       : [
           {
-            name: "Dr. Sarah Chen, DDS",
-            role: "Founder & Lead Dentist",
-            bio: "Harvard School of Dental Medicine graduate with 15+ years of experience in cosmetic and restorative dentistry.",
+            name: 'Dr. Sarah Chen, DDS',
+            role: 'Founder & Lead Dentist',
+            bio: 'Harvard School of Dental Medicine graduate with 15+ years of experience in cosmetic and restorative dentistry.',
             imageAlt:
-              "Professional headshot of Dr. Sarah Chen, female dentist in white coat with warm smile",
+              'Professional headshot of Dr. Sarah Chen, female dentist in white coat with warm smile',
           },
           {
-            name: "Dr. Michael Torres, DMD",
-            role: "Orthodontist",
-            bio: "Board-certified orthodontist specializing in Invisalign and complex bite corrections for patients of all ages.",
+            name: 'Dr. Michael Torres, DMD',
+            role: 'Orthodontist',
+            bio: 'Board-certified orthodontist specializing in Invisalign and complex bite corrections for patients of all ages.',
             imageAlt:
-              "Professional headshot of Dr. Michael Torres, male dentist with friendly confident expression",
+              'Professional headshot of Dr. Michael Torres, male dentist with friendly confident expression',
           },
           {
-            name: "Dr. Emily Watson, DDS",
-            role: "Pediatric Specialist",
-            bio: "Certified pediatric dentist creating positive dental experiences for children from their first tooth through their teens.",
+            name: 'Dr. Emily Watson, DDS',
+            role: 'Pediatric Specialist',
+            bio: 'Certified pediatric dentist creating positive dental experiences for children from their first tooth through their teens.',
             imageAlt:
-              "Professional headshot of Dr. Emily Watson, female dentist with warm approachable smile",
+              'Professional headshot of Dr. Emily Watson, female dentist with warm approachable smile',
           },
           {
-            name: "Dr. James Park, MD",
-            role: "Oral Surgeon",
-            bio: "Oral and maxillofacial surgeon specializing in dental implants, wisdom teeth extraction, and reconstructive procedures.",
+            name: 'Dr. James Park, MD',
+            role: 'Oral Surgeon',
+            bio: 'Oral and maxillofacial surgeon specializing in dental implants, wisdom teeth extraction, and reconstructive procedures.',
             imageAlt:
-              "Professional headshot of Dr. James Park, male oral surgeon with confident professional demeanor",
+              'Professional headshot of Dr. James Park, male oral surgeon with confident professional demeanor',
           },
         ]
 
     return (
-      <section className={cn("bg-muted py-24", props.className)}>
+      <section className={cn('bg-muted py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">

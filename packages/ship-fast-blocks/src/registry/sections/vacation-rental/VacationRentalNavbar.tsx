@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * VacationRentalNavbar — airy sticky top navigation for a vacation-rental /
@@ -35,9 +35,9 @@ const PalmMark = ({ className }: { className?: string }) => (
 )
 
 export const VacationRentalNavbar = defineComponent({
-  name: "VacationRentalNavbar",
+  name: 'VacationRentalNavbar',
   description:
-    "Airy sticky top navigation for a vacation-rental / getaway listing site built on the shared SiteNav composite: a palm-and-sun logo mark and property wordmark, horizontal desktop nav links, a phone number, a pill Book Now CTA, and a real mobile drawer. Nav items and CTA route through useNavigate for page-switching. Use as the inviting site header for vacation rentals, beach houses, cabins, villas, or boutique short-stay properties.",
+    'Airy sticky top navigation for a vacation-rental / getaway listing site built on the shared SiteNav composite: a palm-and-sun logo mark and property wordmark, horizontal desktop nav links, a phone number, a pill Book Now CTA, and a real mobile drawer. Nav items and CTA route through useNavigate for page-switching. Use as the inviting site header for vacation rentals, beach houses, cabins, villas, or boutique short-stay properties.',
   props: z.object({
     /** Property / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -56,17 +56,17 @@ export const VacationRentalNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Stays", "Amenities", "Gallery", "Reviews", "Book Now"]
+      : ['Stays', 'Amenities', 'Gallery', 'Reviews', 'Book Now']
     return (
       <SiteNav
-        brand={props.brand ?? "Azure Cove Retreats"}
+        brand={props.brand ?? 'Azure Cove Retreats'}
         brandMark={<PalmMark className="size-8 text-primary" />}
         brandClassName="text-xl font-semibold tracking-tight"
         nav={nav}
-        phone={props.phone ?? "+1 (800) 555-0199"}
+        phone={props.phone ?? '+1 (800) 555-0199'}
         cta={{
-          label: props.ctaLabel ?? "Book Now",
-          target: props.ctaTarget ?? "Book Now",
+          label: props.ctaLabel ?? 'Book Now',
+          target: props.ctaTarget ?? 'Book Now',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

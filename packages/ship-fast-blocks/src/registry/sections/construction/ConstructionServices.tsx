@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ConstructionServices — six-up services grid for a construction / general
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * defaults.
  */
 export const ConstructionServices = defineComponent({
-  name: "ConstructionServices",
+  name: 'ConstructionServices',
   description:
     "Six-up services grid for a construction / general contractor page: a centered section heading above a responsive 1/2/3-column grid of hover-highlight cards, each with a rounded icon tile (rotating inline line-icons), a title, a description, and a 'Learn more' link that routes through useNavigate. Use to present a construction firm's offerings (commercial, residential, renovation, project management, design-build, pre-construction).",
   props: z.object({
@@ -35,44 +35,44 @@ export const ConstructionServices = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Our Services"
-    const heading = props.heading ?? "Full-service construction solutions"
+    const eyebrow = props.eyebrow ?? 'Our Services'
+    const heading = props.heading ?? 'Full-service construction solutions'
     const description =
       props.description ??
-      "From initial concept to final inspection, we handle every phase of your construction project with precision and care."
-    const cta = props.cta ?? "Learn more"
+      'From initial concept to final inspection, we handle every phase of your construction project with precision and care.'
+    const cta = props.cta ?? 'Learn more'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Commercial Construction",
+            title: 'Commercial Construction',
             description:
-              "Office buildings, retail centers, warehouses, and industrial facilities. Projects from 5,000 to 500,000 square feet.",
+              'Office buildings, retail centers, warehouses, and industrial facilities. Projects from 5,000 to 500,000 square feet.',
           },
           {
-            title: "Residential Building",
+            title: 'Residential Building',
             description:
-              "Custom homes, multi-family housing, and residential developments. Crafted with attention to every detail.",
+              'Custom homes, multi-family housing, and residential developments. Crafted with attention to every detail.',
           },
           {
-            title: "Renovation & Remodeling",
+            title: 'Renovation & Remodeling',
             description:
-              "Transform existing spaces with modern upgrades, structural modifications, and complete interior renovations.",
+              'Transform existing spaces with modern upgrades, structural modifications, and complete interior renovations.',
           },
           {
-            title: "Project Management",
+            title: 'Project Management',
             description:
-              "End-to-end oversight including scheduling, budgeting, subcontractor coordination, and quality control.",
+              'End-to-end oversight including scheduling, budgeting, subcontractor coordination, and quality control.',
           },
           {
-            title: "Design-Build Services",
+            title: 'Design-Build Services',
             description:
-              "Integrated design and construction services for streamlined delivery, reduced costs, and faster timelines.",
+              'Integrated design and construction services for streamlined delivery, reduced costs, and faster timelines.',
           },
           {
-            title: "Pre-Construction",
+            title: 'Pre-Construction',
             description:
-              "Site analysis, feasibility studies, permitting, budgeting, and value engineering to set your project up for success.",
+              'Site analysis, feasibility studies, permitting, budgeting, and value engineering to set your project up for success.',
           },
         ]
 
@@ -180,7 +180,7 @@ export const ConstructionServices = defineComponent({
     )
 
     return (
-      <section className={cn("bg-card py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">

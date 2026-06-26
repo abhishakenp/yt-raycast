@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * EventNavbar — sticky translucent top navigation bar for a conference / event
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * summits, meetups, workshops, festivals, webinars, or any ticketed event.
  */
 export const EventNavbar = defineComponent({
-  name: "EventNavbar",
+  name: 'EventNavbar',
   description:
     "Sticky translucent top navigation bar for a conference / event landing page: a blurred, border-bottomed header pinned to the top with a square brand-initials mark plus the event name on the left, a horizontal row of nav links in the center, and a primary 'Get Tickets' CTA button on the right. Every nav link and the CTA route through useNavigate, and the nav labels match site routes so PageSwitch can swap pages. Use as the sticky site header for tech conferences, summits, meetups, workshops, festivals, webinars, hackathons, or any ticketed event.",
   props: z.object({
@@ -31,18 +31,18 @@ export const EventNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "DesignFront"
+    const brand = props.brand ?? 'DesignFront'
     const nav = props.nav?.length
       ? props.nav
-      : ["Agenda", "Speakers", "Venue", "Tickets"]
-    const ctaLabel = props.ctaLabel ?? "Get Tickets"
+      : ['Agenda', 'Speakers', 'Venue', 'Tickets']
+    const ctaLabel = props.ctaLabel ?? 'Get Tickets'
     const homeTarget = props.homeTarget ?? nav[0]
     const ctaTarget = props.ctaTarget ?? nav[nav.length - 1]
 
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur',
           props.className,
         )}
       >

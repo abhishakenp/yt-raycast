@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CybersecurityHero — split, two-column hero for an enterprise security
@@ -17,7 +17,7 @@ import { Image } from "#/lib/img.tsx"
  * "SentinelGuard" defaults.
  */
 export const CybersecurityHero = defineComponent({
-  name: "CybersecurityHero",
+  name: 'CybersecurityHero',
   description:
     "Split two-column hero for an enterprise cybersecurity platform: left column stacks a live-status pill (pulsing dot + certification microcopy), a large bold headline, a reassuring subheading, dual CTAs (solid primary + outlined secondary) and a row of check-marked trust proofs; right column shows a security command-center photo on a rotated gradient backdrop with a floating 'Threat Blocked' alert card overlapping its corner. CTAs and trust chips route through useNavigate; imagery is alt-driven. Use as the opening hero for cybersecurity vendors, SOC/MDR/XDR providers, threat-detection, zero-trust or cloud-security SaaS.",
   props: z.object({
@@ -45,23 +45,22 @@ export const CybersecurityHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Now SOC 2 Type II Certified"
-    const heading =
-      props.heading ?? "Security that never sleeps, so you can"
+    const badge = props.badge ?? 'Now SOC 2 Type II Certified'
+    const heading = props.heading ?? 'Security that never sleeps, so you can'
     const subheading =
       props.subheading ??
       "SentinelGuard's AI-powered platform detected and neutralized 2.4 million threats last quarter for Fortune 500 companies. Our 24/7 Security Operations Center monitors your infrastructure while you focus on growth."
-    const primaryCta = props.primaryCta ?? "Schedule Live Demo"
-    const secondaryCta = props.secondaryCta ?? "Explore Platform"
+    const primaryCta = props.primaryCta ?? 'Schedule Live Demo'
+    const secondaryCta = props.secondaryCta ?? 'Explore Platform'
     const proofs = props.proofs?.length
       ? props.proofs
-      : ["14-day free trial", "No credit card required"]
+      : ['14-day free trial', 'No credit card required']
     const imageAlt =
       props.imageAlt ??
-      "Cybersecurity command center with multiple monitors displaying threat monitoring dashboards and network security visualizations"
-    const alertTitle = props.alertTitle ?? "Threat Blocked"
-    const alertSubtitle = props.alertSubtitle ?? "Ransomware attempt"
-    const alertMeta = props.alertMeta ?? "Just now • Acme Corp infrastructure"
+      'Cybersecurity command center with multiple monitors displaying threat monitoring dashboards and network security visualizations'
+    const alertTitle = props.alertTitle ?? 'Threat Blocked'
+    const alertSubtitle = props.alertSubtitle ?? 'Ransomware attempt'
+    const alertMeta = props.alertMeta ?? 'Just now • Acme Corp infrastructure'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -80,7 +79,10 @@ export const CybersecurityHero = defineComponent({
 
     return (
       <section
-        className={cn("relative overflow-hidden bg-background", props.className)}
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">

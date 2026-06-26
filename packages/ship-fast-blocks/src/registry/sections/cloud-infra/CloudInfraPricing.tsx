@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CloudInfraPricing — usage-based pricing card grid for a cloud-infrastructure /
@@ -10,7 +10,7 @@ import { cn } from "#/lib/utils.ts"
  * lists features with a check icon. Tokens-only. Renders fully on zero arguments.
  */
 export const CloudInfraPricing = defineComponent({
-  name: "CloudInfraPricing",
+  name: 'CloudInfraPricing',
   description:
     "Usage-based pricing card grid for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a 3-tier pricing card grid, with the middle tier optionally tagged 'Most Popular' using a primary border. Below the cards sits an enterprise reserved-capacity panel listing feature bullets with check icons. Tokens-only. Use for pricing sections on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.",
   props: z.object({
@@ -40,59 +40,59 @@ export const CloudInfraPricing = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Usage-based pricing that scales"
+    const heading = props.heading ?? 'Usage-based pricing that scales'
     const description =
       props.description ??
-      "Pay only for what you use. No minimums, no upfront commitments, no surprise bills."
+      'Pay only for what you use. No minimums, no upfront commitments, no surprise bills.'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Compute",
-            tagline: "Virtual machines and containers",
-            price: "$0.004",
-            unit: "/ vCPU-hour",
+            name: 'Compute',
+            tagline: 'Virtual machines and containers',
+            price: '$0.004',
+            unit: '/ vCPU-hour',
             features: [
-              "Shared CPU instances from 1 vCPU / 512 MB",
-              "Dedicated CPU at $0.028/vCPU-hour",
-              "GPU instances (NVIDIA A100) at $2.50/hour",
-              "Auto-scaling with per-second billing",
+              'Shared CPU instances from 1 vCPU / 512 MB',
+              'Dedicated CPU at $0.028/vCPU-hour',
+              'GPU instances (NVIDIA A100) at $2.50/hour',
+              'Auto-scaling with per-second billing',
             ],
           },
           {
-            name: "Serverless",
-            tagline: "Functions and edge computing",
-            price: "$0.15",
-            unit: "/ million requests",
+            name: 'Serverless',
+            tagline: 'Functions and edge computing',
+            price: '$0.15',
+            unit: '/ million requests',
             popular: true,
             features: [
-              "First 1M requests free every month",
-              "$0.0001 per GB-second of compute",
-              "128 MB to 8 GB memory tiers",
-              "Global edge deployment included",
+              'First 1M requests free every month',
+              '$0.0001 per GB-second of compute',
+              '128 MB to 8 GB memory tiers',
+              'Global edge deployment included',
             ],
           },
           {
-            name: "Storage & Data",
-            tagline: "Databases, caches, and object storage",
-            price: "$0.10",
-            unit: "/ GB-month",
+            name: 'Storage & Data',
+            tagline: 'Databases, caches, and object storage',
+            price: '$0.10',
+            unit: '/ GB-month',
             features: [
-              "Managed PostgreSQL and MySQL",
-              "Redis cache from $15/month",
-              "Object storage with free egress",
-              "Automated daily backups included",
+              'Managed PostgreSQL and MySQL',
+              'Redis cache from $15/month',
+              'Object storage with free egress',
+              'Automated daily backups included',
             ],
           },
         ]
     const enterpriseHeading =
-      props.enterpriseHeading ?? "Enterprise commitments"
+      props.enterpriseHeading ?? 'Enterprise commitments'
     const enterpriseDescription =
       props.enterpriseDescription ??
-      "For predictable workloads, reserve capacity and save up to 40%. Annual commitments include dedicated support and custom SLAs."
+      'For predictable workloads, reserve capacity and save up to 40%. Annual commitments include dedicated support and custom SLAs.'
     const enterpriseItems = props.enterpriseItems?.length
       ? props.enterpriseItems
-      : ["1-year: 15% discount", "2-year: 25% discount", "3-year: 40% discount"]
+      : ['1-year: 15% discount', '2-year: 25% discount', '3-year: 40% discount']
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -110,7 +110,7 @@ export const CloudInfraPricing = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted/40 py-20 lg:py-32", props.className)}>
+      <section className={cn('bg-muted/40 py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -123,10 +123,10 @@ export const CloudInfraPricing = defineComponent({
               <div
                 key={tier.name}
                 className={cn(
-                  "relative rounded-xl bg-card p-8",
+                  'relative rounded-xl bg-card p-8',
                   tier.popular
-                    ? "border-2 border-primary"
-                    : "border border-border",
+                    ? 'border-2 border-primary'
+                    : 'border border-border',
                 )}
               >
                 {tier.popular && (

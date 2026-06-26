@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DocsHero — search-forward hero band for a developer DOCUMENTATION / API-reference
@@ -16,7 +16,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in "StackForge" defaults.
  */
 export const DocsHero = defineComponent({
-  name: "DocsHero",
+  name: 'DocsHero',
   description:
     "Search-forward centered hero band for a developer DOCUMENTATION / API-reference home: an uppercase 'Documentation' eyebrow pill in accent, a large semibold headline, a muted supporting paragraph, a prominent search bar with an inline magnifier glyph and a real type='search' input whose form submit routes to the search target, and a row of two CTA pill buttons (primary 'Read the docs' + outline 'Quickstart') with an optional ⌘K keyboard hint chip. CTAs and the search form route through useNavigate for page-switching; labels match site routes. Use as the lead band for docs homes, API references, SDK guides, developer portals, or knowledge bases. Clean developer-docs aesthetic, theme tokens only.",
   props: z.object({
@@ -42,23 +42,23 @@ export const DocsHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Documentation"
+    const eyebrow = props.eyebrow ?? 'Documentation'
     const heading =
-      props.heading ?? "Everything you need to build with StackForge"
+      props.heading ?? 'Everything you need to build with StackForge'
     const subheading =
       props.subheading ??
-      "Guides, API references, and tutorials to take you from first request to production."
-    const searchPlaceholder = props.searchPlaceholder ?? "Search the docs..."
-    const searchTarget = props.searchTarget ?? "Getting Started"
-    const primaryCta = props.primaryCta ?? "Read the docs"
-    const primaryTarget = props.primaryTarget ?? "Getting Started"
-    const secondaryCta = props.secondaryCta ?? "Quickstart"
-    const secondaryTarget = props.secondaryTarget ?? "Quick Start"
+      'Guides, API references, and tutorials to take you from first request to production.'
+    const searchPlaceholder = props.searchPlaceholder ?? 'Search the docs...'
+    const searchTarget = props.searchTarget ?? 'Getting Started'
+    const primaryCta = props.primaryCta ?? 'Read the docs'
+    const primaryTarget = props.primaryTarget ?? 'Getting Started'
+    const secondaryCta = props.secondaryCta ?? 'Quickstart'
+    const secondaryTarget = props.secondaryTarget ?? 'Quick Start'
 
     return (
       <section
         className={cn(
-          "mx-auto w-full max-w-4xl px-6 py-20 text-center sm:py-24",
+          'mx-auto w-full max-w-4xl px-6 py-20 text-center sm:py-24',
           props.className,
         )}
       >

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * WineryBreweryMenu — printed-style tasting list for a winery or craft brewery
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * tasting menu. Renders fully with no props via baked-in defaults.
  */
 export const WineryBreweryMenu = defineComponent({
-  name: "WineryBreweryMenu",
+  name: 'WineryBreweryMenu',
   description:
-    "Printed-style tasting list for a winery or craft brewery page: centered serif heading and description above a stack of categories (Reds, Whites, Seasonal Ales). Each category has a titled divider and a two-column grid of pours. Every pour is a clickable row with name, optional tag pill (Estate, Limited, Award), tasting notes, and a price, routing through useNavigate. Use for wineries, vineyards, cellar doors, breweries, taprooms, or cideries wanting a readable tasting menu.",
+    'Printed-style tasting list for a winery or craft brewery page: centered serif heading and description above a stack of categories (Reds, Whites, Seasonal Ales). Each category has a titled divider and a two-column grid of pours. Every pour is a clickable row with name, optional tag pill (Estate, Limited, Award), tasting notes, and a price, routing through useNavigate. Use for wineries, vineyards, cellar doors, breweries, taprooms, or cideries wanting a readable tasting menu.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -45,91 +45,92 @@ export const WineryBreweryMenu = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Tasting List"
+    const heading = props.heading ?? 'Tasting List'
     const description =
       props.description ??
-      "Pours from our estate vineyard and small-batch brewhouse, each grown, fermented, and aged on the property. Available by the glass or as a guided flight."
-    const menuTarget = props.menuTarget ?? "Visit"
+      'Pours from our estate vineyard and small-batch brewhouse, each grown, fermented, and aged on the property. Available by the glass or as a guided flight.'
+    const menuTarget = props.menuTarget ?? 'Visit'
     const categories = props.categories?.length
       ? props.categories
       : [
           {
-            name: "Reds",
+            name: 'Reds',
             items: [
               {
-                name: "Old-Vine Zinfandel",
+                name: 'Old-Vine Zinfandel',
                 notes:
-                  "Brambly blackberry, cracked pepper, and a warm vanilla-oak finish",
-                price: "$14",
-                tag: "Estate",
+                  'Brambly blackberry, cracked pepper, and a warm vanilla-oak finish',
+                price: '$14',
+                tag: 'Estate',
               },
               {
-                name: "Hillside Cabernet",
-                notes: "Dark cherry, cedar, fine-grained tannins, long cellar life",
-                price: "$18",
-                tag: "Award",
+                name: 'Hillside Cabernet',
+                notes:
+                  'Dark cherry, cedar, fine-grained tannins, long cellar life',
+                price: '$18',
+                tag: 'Award',
               },
               {
-                name: "Barrel-Select Syrah",
-                notes: "Plum, smoked meat, violet, and crushed stone",
-                price: "$16",
+                name: 'Barrel-Select Syrah',
+                notes: 'Plum, smoked meat, violet, and crushed stone',
+                price: '$16',
               },
               {
-                name: "Grenache Reserve",
-                notes: "Wild strawberry, white pepper, garrigue herbs",
-                price: "$15",
-                tag: "Limited",
-              },
-            ],
-          },
-          {
-            name: "Whites & Rosé",
-            items: [
-              {
-                name: "Cellar Chardonnay",
-                notes: "Meyer lemon, toasted hazelnut, a whisper of butter",
-                price: "$13",
-                tag: "Estate",
-              },
-              {
-                name: "Dry Sauvignon Blanc",
-                notes: "Grapefruit, fresh-cut grass, crisp mineral snap",
-                price: "$12",
-              },
-              {
-                name: "Hillside Rosé",
-                notes: "Watermelon, rose petal, bright citrus, bone dry",
-                price: "$12",
-                tag: "Seasonal",
+                name: 'Grenache Reserve',
+                notes: 'Wild strawberry, white pepper, garrigue herbs',
+                price: '$15',
+                tag: 'Limited',
               },
             ],
           },
           {
-            name: "Seasonal Ales",
+            name: 'Whites & Rosé',
             items: [
               {
-                name: "Harvest Saison",
-                notes: "Farmhouse spice, ripe pear, a peppery dry finish",
-                price: "$9",
-                tag: "Limited",
+                name: 'Cellar Chardonnay',
+                notes: 'Meyer lemon, toasted hazelnut, a whisper of butter',
+                price: '$13',
+                tag: 'Estate',
               },
               {
-                name: "Barrel-Aged Stout",
-                notes: "Dark chocolate, espresso, oak, and toasted coconut",
-                price: "$11",
-                tag: "Award",
+                name: 'Dry Sauvignon Blanc',
+                notes: 'Grapefruit, fresh-cut grass, crisp mineral snap',
+                price: '$12',
               },
               {
-                name: "Estate Hopped IPA",
-                notes: "Pine, grapefruit zest, and a soft cracker malt base",
-                price: "$9",
+                name: 'Hillside Rosé',
+                notes: 'Watermelon, rose petal, bright citrus, bone dry',
+                price: '$12',
+                tag: 'Seasonal',
+              },
+            ],
+          },
+          {
+            name: 'Seasonal Ales',
+            items: [
+              {
+                name: 'Harvest Saison',
+                notes: 'Farmhouse spice, ripe pear, a peppery dry finish',
+                price: '$9',
+                tag: 'Limited',
+              },
+              {
+                name: 'Barrel-Aged Stout',
+                notes: 'Dark chocolate, espresso, oak, and toasted coconut',
+                price: '$11',
+                tag: 'Award',
+              },
+              {
+                name: 'Estate Hopped IPA',
+                notes: 'Pine, grapefruit zest, and a soft cracker malt base',
+                price: '$9',
               },
             ],
           },
         ]
 
     return (
-      <section className={cn("py-20 lg:py-32", props.className)}>
+      <section className={cn('py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-6 font-serif text-3xl font-medium text-foreground sm:text-4xl lg:text-5xl">

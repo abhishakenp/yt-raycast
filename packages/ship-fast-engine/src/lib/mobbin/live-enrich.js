@@ -2,7 +2,9 @@ import { resolveDna, synthesizeDna } from './dna.js'
 import { fetchLiveScreensForApp, isMobbinLiveEnabled } from './session.js'
 
 function normApp(name) {
-  return String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '')
+  return String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
 }
 
 /** Enrich ship-engine anchor with live Mobbin screen metadata when Pro auth is available. */
@@ -12,9 +14,16 @@ export async function enrichAnchorWithLiveMobbin(primary) {
   const screens = await fetchLiveScreensForApp(primary.app, { limit: 2 })
   if (!screens.length) return primary
 
-  const elements = [...new Set(screens.flatMap((s) => s.elements || []).filter(Boolean))].slice(0, 12)
-  const patterns = [...new Set(screens.flatMap((s) => s.patterns || []).filter(Boolean))].slice(0, 6)
-  const dna = primary.dna || resolveDna(primary.app) || synthesizeDna(primary.palette || [])
+  const elements = [
+    ...new Set(screens.flatMap((s) => s.elements || []).filter(Boolean)),
+  ].slice(0, 12)
+  const patterns = [
+    ...new Set(screens.flatMap((s) => s.patterns || []).filter(Boolean)),
+  ].slice(0, 6)
+  const dna =
+    primary.dna ||
+    resolveDna(primary.app) ||
+    synthesizeDna(primary.palette || [])
 
   const liveLayout =
     elements.length || patterns.length
@@ -25,10 +34,16 @@ export async function enrichAnchorWithLiveMobbin(primary) {
     ...primary,
     dna: {
       ...dna,
-      layout: liveLayout ? `${dna?.layout || ''} ${liveLayout}`.trim() : dna?.layout,
+      layout: liveLayout
+        ? `${dna?.layout || ''} ${liveLayout}`.trim()
+        : dna?.layout,
       doctrine: [
         ...(Array.isArray(dna?.doctrine) ? dna.doctrine : []),
-        ...(elements.length ? [`Include visible ${elements.slice(0, 3).join(' / ')} surfaces like the live Mobbin reference`] : []),
+        ...(elements.length
+          ? [
+              `Include visible ${elements.slice(0, 3).join(' / ')} surfaces like the live Mobbin reference`,
+            ]
+          : []),
       ].slice(0, 5),
       _liveMobbin: true,
       _liveScreens: screens.length,

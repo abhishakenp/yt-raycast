@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AgencyHero — bold full-bleed hero band for a creative digital-agency landing
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in "Studio Rise" defaults.
  */
 export const AgencyHero = defineComponent({
-  name: "AgencyHero",
+  name: 'AgencyHero',
   description:
-    "Bold full-bleed hero band for a creative digital-agency landing page: near-full-viewport centered section over a soft token gradient with pulsing blurred glow orbs, an availability pill with a pulsing dot, a huge multi-line headline with one phrase in an indigo-violet gradient highlight, a supporting paragraph, dual pill CTAs (filled primary + outlined secondary), and an inline KPI/stats strip beneath. Cinematic, premium and conversion-focused; CTAs route through useNavigate. Use as the opening hero for agencies, design studios, branding shops, or production houses.",
+    'Bold full-bleed hero band for a creative digital-agency landing page: near-full-viewport centered section over a soft token gradient with pulsing blurred glow orbs, an availability pill with a pulsing dot, a huge multi-line headline with one phrase in an indigo-violet gradient highlight, a supporting paragraph, dual pill CTAs (filled primary + outlined secondary), and an inline KPI/stats strip beneath. Cinematic, premium and conversion-focused; CTAs route through useNavigate. Use as the opening hero for agencies, design studios, branding shops, or production houses.',
   props: z.object({
     /** Availability / status pill text. */
     badge: z.string().optional(),
@@ -41,22 +41,22 @@ export const AgencyHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Available for new projects"
-    const headingTop = props.headingTop ?? "We craft digital"
-    const highlight = props.highlight ?? "experiences"
-    const headingBottom = props.headingBottom ?? "that define brands."
+    const badge = props.badge ?? 'Available for new projects'
+    const headingTop = props.headingTop ?? 'We craft digital'
+    const highlight = props.highlight ?? 'experiences'
+    const headingBottom = props.headingBottom ?? 'that define brands.'
     const subheading =
       props.subheading ??
-      "Strategy, design, and technology fused into cohesive digital products that captivate users and drive measurable business growth."
-    const primaryCta = props.primaryCta ?? "View our work"
-    const secondaryCta = props.secondaryCta ?? "Start a project"
+      'Strategy, design, and technology fused into cohesive digital products that captivate users and drive measurable business growth.'
+    const primaryCta = props.primaryCta ?? 'View our work'
+    const secondaryCta = props.secondaryCta ?? 'Start a project'
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "120+", label: "Projects delivered" },
-          { value: "45", label: "Industry awards" },
-          { value: "8 yrs", label: "In the game" },
-          { value: "98%", label: "Client retention" },
+          { value: '120+', label: 'Projects delivered' },
+          { value: '45', label: 'Industry awards' },
+          { value: '8 yrs', label: 'In the game' },
+          { value: '98%', label: 'Client retention' },
         ]
 
     const ArrowRight = () => (
@@ -79,7 +79,7 @@ export const AgencyHero = defineComponent({
     return (
       <section
         className={cn(
-          "relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-primary/15 via-accent/5 to-background pt-16",
+          'relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-primary/15 via-accent/5 to-background pt-16',
           props.className,
         )}
       >
@@ -97,7 +97,7 @@ export const AgencyHero = defineComponent({
             <br />
             <span className="bg-gradient-to-br from-primary via-primary/80 to-accent bg-clip-text text-transparent">
               {highlight}
-            </span>{" "}
+            </span>{' '}
             {headingBottom}
           </h1>
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">

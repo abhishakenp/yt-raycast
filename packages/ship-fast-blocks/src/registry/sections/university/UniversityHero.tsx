@@ -1,13 +1,13 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { Image } from "#/lib/img.tsx"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { Image } from '#/lib/img.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { cn } from '#/lib/utils.ts'
 
 export const UniversityHero = defineComponent({
-  name: "UniversityHero",
+  name: 'UniversityHero',
   description:
-    "Bespoke full-bleed hero band for the University page family with a prestigious, collegiate aesthetic. Renders a campus photograph through the alt-driven Image component, a dark token overlay, an established-since eyebrow pill, a stately serif headline, supporting copy, dual call-to-action buttons (Apply Now + Visit Campus) routed via useNavigate, and a quick-stats strip summarizing enrollment, graduation rate, and student-faculty ratio. Use as the opening viewport of a university homepage.",
+    'Bespoke full-bleed hero band for the University page family with a prestigious, collegiate aesthetic. Renders a campus photograph through the alt-driven Image component, a dark token overlay, an established-since eyebrow pill, a stately serif headline, supporting copy, dual call-to-action buttons (Apply Now + Visit Campus) routed via useNavigate, and a quick-stats strip summarizing enrollment, graduation rate, and student-faculty ratio. Use as the opening viewport of a university homepage.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -22,24 +22,26 @@ export const UniversityHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Est. 1887 · Ranked Top 25 Nationally"
-    const heading = props.heading ?? "A tradition of inquiry, a future without limits"
+    const eyebrow = props.eyebrow ?? 'Est. 1887 · Ranked Top 25 Nationally'
+    const heading =
+      props.heading ?? 'A tradition of inquiry, a future without limits'
     const subheading =
       props.subheading ??
-      "For more than a century, Whitmore University has shaped scholars, scientists, and civic leaders. Join a community where rigorous academics meet timeless ideals and a campus built for discovery."
-    const primaryCta = props.primaryCta ?? "Apply Now"
-    const primaryTarget = props.primaryTarget ?? "Admissions"
-    const secondaryCta = props.secondaryCta ?? "Visit Campus"
-    const secondaryTarget = props.secondaryTarget ?? "Campus Life"
-    const imageAlt = props.imageAlt ?? "historic university campus quad with stone buildings"
+      'For more than a century, Whitmore University has shaped scholars, scientists, and civic leaders. Join a community where rigorous academics meet timeless ideals and a campus built for discovery.'
+    const primaryCta = props.primaryCta ?? 'Apply Now'
+    const primaryTarget = props.primaryTarget ?? 'Admissions'
+    const secondaryCta = props.secondaryCta ?? 'Visit Campus'
+    const secondaryTarget = props.secondaryTarget ?? 'Campus Life'
+    const imageAlt =
+      props.imageAlt ?? 'historic university campus quad with stone buildings'
     const quickStats = props.quickStats?.length
       ? props.quickStats
-      : ["18,000 students", "95% graduation rate", "22:1 student-faculty ratio"]
+      : ['18,000 students', '95% graduation rate', '22:1 student-faculty ratio']
 
     return (
       <section
         className={cn(
-          "relative isolate flex min-h-[640px] items-center overflow-hidden bg-foreground py-28 text-background sm:py-32",
+          'relative isolate flex min-h-[640px] items-center overflow-hidden bg-foreground py-28 text-background sm:py-32',
           props.className,
         )}
       >
@@ -49,7 +51,10 @@ export const UniversityHero = defineComponent({
           h={1080}
           className="absolute inset-0 -z-10 size-full object-cover"
         />
-        <div className="absolute inset-0 -z-10 bg-foreground/60" aria-hidden="true" />
+        <div
+          className="absolute inset-0 -z-10 bg-foreground/60"
+          aria-hidden="true"
+        />
         <div className="mx-auto max-w-4xl px-6 text-center lg:px-8">
           <span className="inline-flex items-center rounded-full border border-background/30 bg-background/10 px-4 py-2 text-sm font-medium uppercase tracking-wide text-background backdrop-blur-sm">
             {eyebrow}

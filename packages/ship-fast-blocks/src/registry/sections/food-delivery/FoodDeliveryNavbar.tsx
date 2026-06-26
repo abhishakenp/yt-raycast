@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FoodDeliveryNavbar — fixed, translucent top navigation bar for a food-delivery
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "nosh" defaults.
  */
 export const FoodDeliveryNavbar = defineComponent({
-  name: "FoodDeliveryNavbar",
+  name: 'FoodDeliveryNavbar',
   description:
-    "Fixed translucent top navigation bar for a food-delivery / restaurant-marketplace site: backdrop-blurred, border-bottomed header pinned to the top with a location-pin brand mark + brand name on the left, horizontal nav links in the center (desktop), and a text Sign In link plus a rounded-full filled Get Started CTA on the right. Links and CTAs route through useNavigate for page-switching. Use as the sticky site header for food-delivery apps, restaurant aggregators, online-ordering platforms, ghost-kitchen/meal-delivery startups, or takeout services.",
+    'Fixed translucent top navigation bar for a food-delivery / restaurant-marketplace site: backdrop-blurred, border-bottomed header pinned to the top with a location-pin brand mark + brand name on the left, horizontal nav links in the center (desktop), and a text Sign In link plus a rounded-full filled Get Started CTA on the right. Links and CTAs route through useNavigate for page-switching. Use as the sticky site header for food-delivery apps, restaurant aggregators, online-ordering platforms, ghost-kitchen/meal-delivery startups, or takeout services.',
   props: z.object({
     /** Brand name shown beside the pin mark. */
     brand: z.string().optional(),
@@ -33,13 +33,13 @@ export const FoodDeliveryNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "nosh"
+    const brand = props.brand ?? 'nosh'
     const nav = props.nav?.length
       ? props.nav
-      : ["Restaurants", "How it Works", "About"]
-    const homeTarget = props.homeTarget ?? "Home"
-    const signIn = props.signIn ?? "Sign In"
-    const getStarted = props.getStarted ?? "Get Started"
+      : ['Restaurants', 'How it Works', 'About']
+    const homeTarget = props.homeTarget ?? 'Home'
+    const signIn = props.signIn ?? 'Sign In'
+    const getStarted = props.getStarted ?? 'Get Started'
 
     const PinMark = ({ className }: { className?: string }) => (
       <svg
@@ -55,7 +55,7 @@ export const FoodDeliveryNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >

@@ -18,11 +18,13 @@ describe('createRuntimeConvexHttpClient', () => {
 
       expect(client.backendUrl()).toBe('http://127.0.0.1:3210/api')
     } finally {
-      if (previousSelfHostedUrl === undefined) delete process.env.CONVEX_SELF_HOSTED_URL
+      if (previousSelfHostedUrl === undefined)
+        delete process.env.CONVEX_SELF_HOSTED_URL
       else process.env.CONVEX_SELF_HOSTED_URL = previousSelfHostedUrl
       if (previousConvexUrl === undefined) delete process.env.CONVEX_URL
       else process.env.CONVEX_URL = previousConvexUrl
-      if (previousViteSelfHostedUrl === undefined) delete process.env.VITE_CONVEX_SELF_HOSTED_URL
+      if (previousViteSelfHostedUrl === undefined)
+        delete process.env.VITE_CONVEX_SELF_HOSTED_URL
       else process.env.VITE_CONVEX_SELF_HOSTED_URL = previousViteSelfHostedUrl
       if (previousUrl === undefined) delete process.env.VITE_CONVEX_URL
       else process.env.VITE_CONVEX_URL = previousUrl

@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CloudInfraStats — split stats / trust band for a cloud-infrastructure / developer-
@@ -10,9 +10,9 @@ import { cn } from "#/lib/utils.ts"
  * side: a 2x2 grid of big metric tiles. Tokens-only. Renders fully on zero arguments.
  */
 export const CloudInfraStats = defineComponent({
-  name: "CloudInfraStats",
+  name: 'CloudInfraStats',
   description:
-    "Split stats / trust band for a cloud-infrastructure / developer-platform SaaS landing page: left side carries a heading, a description paragraph, and a vertical list of trust badges (each with an icon tile, title, and subtitle); right side is a 2x2 grid of big metric value tiles. Tokens-only. Use for credibility, social-proof, and KPI bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.",
+    'Split stats / trust band for a cloud-infrastructure / developer-platform SaaS landing page: left side carries a heading, a description paragraph, and a vertical list of trust badges (each with an icon tile, title, and subtitle); right side is a 2x2 grid of big metric value tiles. Tokens-only. Use for credibility, social-proof, and KPI bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -29,30 +29,29 @@ export const CloudInfraStats = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading =
-      props.heading ?? "Trusted by thousands of engineering teams"
+    const heading = props.heading ?? 'Trusted by thousands of engineering teams'
     const description =
       props.description ??
-      "From startups to Fortune 500s, teams rely on CloudShift for mission-critical infrastructure. Our platform processes billions of requests daily across 35 global regions."
+      'From startups to Fortune 500s, teams rely on CloudShift for mission-critical infrastructure. Our platform processes billions of requests daily across 35 global regions.'
     const badges = props.badges?.length
       ? props.badges
       : [
           {
-            title: "99.99% Uptime SLA",
-            subtitle: "Backed by financial credits",
+            title: '99.99% Uptime SLA',
+            subtitle: 'Backed by financial credits',
           },
           {
-            title: "SOC 2 Type II Certified",
-            subtitle: "GDPR and HIPAA compliant",
+            title: 'SOC 2 Type II Certified',
+            subtitle: 'GDPR and HIPAA compliant',
           },
         ]
     const items = props.items?.length
       ? props.items
       : [
-          { value: "12K+", label: "Active deployments" },
-          { value: "35", label: "Global regions" },
-          { value: "50B+", label: "Requests/month" },
-          { value: "<20ms", label: "Edge latency" },
+          { value: '12K+', label: 'Active deployments' },
+          { value: '35', label: 'Global regions' },
+          { value: '50B+', label: 'Requests/month' },
+          { value: '<20ms', label: 'Edge latency' },
         ]
 
     const icons: ReactNode[] = [
@@ -85,7 +84,7 @@ export const CloudInfraStats = defineComponent({
     ]
 
     return (
-      <section className={cn("py-20 lg:py-32", props.className)}>
+      <section className={cn('py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div>

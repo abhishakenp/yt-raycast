@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import type { ReactNode } from "react"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import type { ReactNode } from 'react'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * SubscriptionBoxFeatures — feature band for a subscription-box brand built on
@@ -83,7 +83,7 @@ const CancelIcon = (
 )
 
 export const SubscriptionBoxFeatures = defineComponent({
-  name: "SubscriptionBoxFeatures",
+  name: 'SubscriptionBoxFeatures',
   description:
     "Feature band for a subscription-box brand built on the shared FeatureGrid composite: a padded section wrapping a 4-up grid of value-prop cards (what's inside, flexible plans, free shipping, cancel anytime), each with an inline outline icon, title, and description. Use to sell the membership perks on any curated-box or recurring-delivery page.",
   props: z.object({
@@ -99,35 +99,30 @@ export const SubscriptionBoxFeatures = defineComponent({
     const heading = props.heading ?? "Why you'll love it"
     const subheading =
       props.subheading ??
-      "A membership built to delight — flexible, generous, and packed with surprises."
-    const icons: ReactNode[] = [
-      SparkleIcon,
-      SlidersIcon,
-      ShipIcon,
-      CancelIcon,
-    ]
+      'A membership built to delight — flexible, generous, and packed with surprises.'
+    const icons: ReactNode[] = [SparkleIcon, SlidersIcon, ShipIcon, CancelIcon]
     const base = props.features?.length
       ? props.features
       : [
           {
-            title: "Curated surprises",
+            title: 'Curated surprises',
             description:
               "Every box is hand-packed with treats, gadgets, and finds you won't see coming.",
           },
           {
-            title: "Flexible plans",
+            title: 'Flexible plans',
             description:
               "Go monthly, quarterly, or pause whenever life gets busy. You're always in control.",
           },
           {
-            title: "Free shipping",
+            title: 'Free shipping',
             description:
-              "Your box ships free, every single month. No surprise fees at checkout, ever.",
+              'Your box ships free, every single month. No surprise fees at checkout, ever.',
           },
           {
-            title: "Cancel anytime",
+            title: 'Cancel anytime',
             description:
-              "No contracts, no hoops. Skip a month or cancel in two clicks whenever you like.",
+              'No contracts, no hoops. Skip a month or cancel in two clicks whenever you like.',
           },
         ]
     const features = base.map((f, i) => ({
@@ -138,7 +133,7 @@ export const SubscriptionBoxFeatures = defineComponent({
     return (
       <section
         className={cn(
-          "bg-background py-20 text-foreground sm:py-24",
+          'bg-background py-20 text-foreground sm:py-24',
           props.className,
         )}
       >

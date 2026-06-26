@@ -1,1 +1,1 @@
-export * from "./openui.ts"
+export * from './openui.ts'

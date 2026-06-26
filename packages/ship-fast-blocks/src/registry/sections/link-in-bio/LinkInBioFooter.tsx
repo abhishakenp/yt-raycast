@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * LinkInBioFooter — a bold, mobile-first closing footer for a "link in bio" /
@@ -32,9 +32,9 @@ const SparkMark = ({ className }: { className?: string }) => (
 )
 
 export const LinkInBioFooter = defineComponent({
-  name: "LinkInBioFooter",
+  name: 'LinkInBioFooter',
   description:
-    "Bold, mobile-first closing footer for a LINK-IN-BIO / single-page link hub (Linktree / Bento style personal landing): a creator wordmark beside an inline spark mark, a short tagline, a social row (Twitter, Instagram, GitHub, LinkedIn), and a couple of compact link columns (Links, More) in a responsive grid; a bordered-top bottom bar holds an auto-updating copyright line plus legal links. Every brand, social, and column link routes through useNavigate. Use to close a creator/influencer link hub, freelancer bio link, or personal landing page.",
+    'Bold, mobile-first closing footer for a LINK-IN-BIO / single-page link hub (Linktree / Bento style personal landing): a creator wordmark beside an inline spark mark, a short tagline, a social row (Twitter, Instagram, GitHub, LinkedIn), and a couple of compact link columns (Links, More) in a responsive grid; a bordered-top bottom bar holds an auto-updating copyright line plus legal links. Every brand, social, and column link routes through useNavigate. Use to close a creator/influencer link hub, freelancer bio link, or personal landing page.',
   props: z.object({
     /** Creator / person name shown as the wordmark. */
     brand: z.string().optional(),
@@ -56,36 +56,34 @@ export const LinkInBioFooter = defineComponent({
     const social = props.social?.length
       ? props.social
       : [
-          { label: "Twitter" },
-          { label: "Instagram" },
-          { label: "GitHub" },
-          { label: "LinkedIn" },
+          { label: 'Twitter' },
+          { label: 'Instagram' },
+          { label: 'GitHub' },
+          { label: 'LinkedIn' },
         ]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Links",
-            links: ["Portfolio", "Newsletter", "Shop", "Book a Call"],
+            title: 'Links',
+            links: ['Portfolio', 'Newsletter', 'Shop', 'Book a Call'],
           },
           {
-            title: "More",
-            links: ["About", "Contact"],
+            title: 'More',
+            links: ['About', 'Contact'],
           },
         ]
 
     return (
       <SiteFooter
-        brand={props.brand ?? "Sarah Chen"}
+        brand={props.brand ?? 'Sarah Chen'}
         brandMark={<SparkMark className="size-7 text-primary" />}
         brandClassName="text-xl font-bold tracking-tight"
-        tagline={
-          props.tagline ?? "Design engineer. All my links in one place."
-        }
+        tagline={props.tagline ?? 'Design engineer. All my links in one place.'}
         social={social}
         columns={columns}
-        legal={["Privacy", "Terms"]}
-        note={props.note ?? "All rights reserved."}
+        legal={['Privacy', 'Terms']}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

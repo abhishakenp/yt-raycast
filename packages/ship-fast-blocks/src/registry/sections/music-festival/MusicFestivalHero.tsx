@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MusicFestivalHero — split, editorial hero for a multi-day music / arts
@@ -17,9 +17,9 @@ import { Image } from "#/lib/img.tsx"
  * multi-day ticketed live event.
  */
 export const MusicFestivalHero = defineComponent({
-  name: "MusicFestivalHero",
+  name: 'MusicFestivalHero',
   description:
-    "Split, editorial hero for a multi-day music / arts festival landing page: a two-column layout with a warm-clay uppercase date eyebrow, a huge two-line headline, a supporting paragraph, dual primary/secondary pill CTAs (buy tickets / view lineup), and a bordered inline KPI strip (artists / stages / attendees) on the left, plus a large rounded festival crowd photo with a floating early-bird price card overlay (countdown + starting price) on the right. Both CTAs route through useNavigate; the photo uses the alt-driven Image component. Use as the opening hero for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed live event.",
+    'Split, editorial hero for a multi-day music / arts festival landing page: a two-column layout with a warm-clay uppercase date eyebrow, a huge two-line headline, a supporting paragraph, dual primary/secondary pill CTAs (buy tickets / view lineup), and a bordered inline KPI strip (artists / stages / attendees) on the left, plus a large rounded festival crowd photo with a floating early-bird price card overlay (countdown + starting price) on the right. Both CTAs route through useNavigate; the photo uses the alt-driven Image component. Use as the opening hero for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed live event.',
   props: z.object({
     /** Date eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -51,38 +51,51 @@ export const MusicFestivalHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "August 15-17, 2025"
-    const headingTop = props.headingTop ?? "Three days of"
-    const headingBottom = props.headingBottom ?? "music & magic"
+    const eyebrow = props.eyebrow ?? 'August 15-17, 2025'
+    const headingTop = props.headingTop ?? 'Three days of'
+    const headingBottom = props.headingBottom ?? 'music & magic'
     const subheading =
       props.subheading ??
-      "Join 25,000 music lovers in the Mojave Desert for an unforgettable weekend featuring 80+ artists across four stages, immersive art installations, and camping under the stars."
-    const primaryCta = props.primaryCta ?? "Buy Tickets"
-    const secondaryCta = props.secondaryCta ?? "View Lineup"
+      'Join 25,000 music lovers in the Mojave Desert for an unforgettable weekend featuring 80+ artists across four stages, immersive art installations, and camping under the stars.'
+    const primaryCta = props.primaryCta ?? 'Buy Tickets'
+    const secondaryCta = props.secondaryCta ?? 'View Lineup'
     const imageAlt =
       props.imageAlt ??
-      "Festival crowd with raised hands silhouetted against orange sunset sky and stage lights"
+      'Festival crowd with raised hands silhouetted against orange sunset sky and stage lights'
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "80+", label: "Artists" },
-          { value: "4", label: "Stages" },
-          { value: "25K", label: "Attendees" },
+          { value: '80+', label: 'Artists' },
+          { value: '4', label: 'Stages' },
+          { value: '25K', label: 'Attendees' },
         ]
-    const countdownLabel = props.countdownLabel ?? "Early Bird Ends In"
-    const countdownValue = props.countdownValue ?? "47 days"
-    const priceLabel = props.priceLabel ?? "Starting at"
-    const priceValue = props.priceValue ?? "$249"
+    const countdownLabel = props.countdownLabel ?? 'Early Bird Ends In'
+    const countdownValue = props.countdownValue ?? '47 days'
+    const priceLabel = props.priceLabel ?? 'Starting at'
+    const priceValue = props.priceValue ?? '$249'
 
     const ArrowRight = () => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
       </svg>
     )
 
     return (
       <section
-        className={cn("relative overflow-hidden py-20 lg:py-28", props.className)}
+        className={cn(
+          'relative overflow-hidden py-20 lg:py-28',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">

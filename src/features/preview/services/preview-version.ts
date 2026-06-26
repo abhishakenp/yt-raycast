@@ -27,7 +27,9 @@ export const createEmptyPreviewState = (): PreviewState => ({
   versions: [],
 })
 
-export const getCurrentPreview = (state: PreviewState): PreviewVersion | undefined =>
+export const getCurrentPreview = (
+  state: PreviewState,
+): PreviewVersion | undefined =>
   state.versions.find((version) => version.version === state.currentVersion)
 
 export const appendPreviewVersion = (
@@ -59,7 +61,9 @@ export const restorePreviewVersion = (
   version: number,
   createdAt: number,
 ): PreviewState => {
-  const preview = state.versions.find((candidate) => candidate.version === version)
+  const preview = state.versions.find(
+    (candidate) => candidate.version === version,
+  )
 
   return preview
     ? appendPreviewVersion(state, {
@@ -68,6 +72,9 @@ export const restorePreviewVersion = (
         createdAt,
       })
     : (() => {
-        throw createAppError('NOT_FOUND', `Preview version ${version} was not found`)
+        throw createAppError(
+          'NOT_FOUND',
+          `Preview version ${version} was not found`,
+        )
       })()
 }

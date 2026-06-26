@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MarketplaceAuthors — a "Featured Sellers" section (the Authors role for a
@@ -18,7 +18,7 @@ import { Image } from "#/lib/img.tsx"
  * multi-vendor or maker/artisan platforms, and seller communities.
  */
 export const MarketplaceAuthors = defineComponent({
-  name: "MarketplaceAuthors",
+  name: 'MarketplaceAuthors',
   description:
     "'Featured Sellers' section serving the Authors role for a marketplace (the vendors / creators behind the storefronts): a heading + description on the left and a 'View all sellers' link on the right cap a responsive 2/4-column grid of vendor storefront cards, each stacking a rounded cover photo (with a star-rating chip and an optional eco-verified badge overlaid) above a row pairing a circular seller avatar with the store name, location, and a product-count + follower-count meta line. Clean, neutral, light e-commerce aesthetic. Cards and the view-all link route through useNavigate; cover and avatar use the alt-driven Image component. Use to spotlight top vendors / featured authors on online marketplaces, multi-vendor or maker/artisan platforms, and seller communities.",
   props: z.object({
@@ -43,61 +43,63 @@ export const MarketplaceAuthors = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const sellersHeading = props.heading ?? "Featured Sellers"
+    const sellersHeading = props.heading ?? 'Featured Sellers'
     const sellersDesc =
       props.description ??
-      "Discover our most trusted and top-rated sellers, each verified and committed to quality"
-    const sellersViewAll = props.viewAll ?? "View all 12,483 sellers"
+      'Discover our most trusted and top-rated sellers, each verified and committed to quality'
+    const sellersViewAll = props.viewAll ?? 'View all 12,483 sellers'
     const sellerItems = props.items?.length
       ? props.items
       : [
           {
-            name: "Artisan Home Co.",
-            location: "Portland, Oregon",
-            rating: "4.9",
-            products: "847 products",
-            followers: "12.4k followers",
+            name: 'Artisan Home Co.',
+            location: 'Portland, Oregon',
+            rating: '4.9',
+            products: '847 products',
+            followers: '12.4k followers',
             coverAlt:
-              "Handcrafted wooden kitchen utensils and cutting boards on marble countertop",
-            avatarAlt: "Portrait of male artisan woodworker in his workshop",
+              'Handcrafted wooden kitchen utensils and cutting boards on marble countertop',
+            avatarAlt: 'Portrait of male artisan woodworker in his workshop',
           },
           {
-            name: "Tech Forward",
-            location: "Austin, Texas",
-            rating: "4.8",
-            products: "1,234 products",
-            followers: "28.9k followers",
+            name: 'Tech Forward',
+            location: 'Austin, Texas',
+            rating: '4.8',
+            products: '1,234 products',
+            followers: '28.9k followers',
             coverAlt:
-              "Modern electronic gadgets including smartphone, earbuds, and smartwatch on dark surface",
-            avatarAlt: "Professional headshot of female tech entrepreneur with short hair",
+              'Modern electronic gadgets including smartphone, earbuds, and smartwatch on dark surface',
+            avatarAlt:
+              'Professional headshot of female tech entrepreneur with short hair',
           },
           {
-            name: "Green Earth Organics",
-            location: "Sonoma, California",
-            rating: "5.0",
-            products: "342 products",
-            followers: "8.2k followers",
+            name: 'Green Earth Organics',
+            location: 'Sonoma, California',
+            rating: '5.0',
+            products: '342 products',
+            followers: '8.2k followers',
             coverAlt:
-              "Organic fresh produce and vegetables in woven baskets at farmers market",
-            avatarAlt: "Portrait of male organic farmer in field wearing work shirt",
+              'Organic fresh produce and vegetables in woven baskets at farmers market',
+            avatarAlt:
+              'Portrait of male organic farmer in field wearing work shirt',
             eco: true,
           },
           {
-            name: "Vintage Revival",
-            location: "Brooklyn, New York",
-            rating: "4.9",
-            products: "567 products",
-            followers: "15.6k followers",
+            name: 'Vintage Revival',
+            location: 'Brooklyn, New York',
+            rating: '4.9',
+            products: '567 products',
+            followers: '15.6k followers',
             coverAlt:
-              "Collection of vintage leather bags and accessories on rustic wooden shelf",
+              'Collection of vintage leather bags and accessories on rustic wooden shelf',
             avatarAlt:
-              "Portrait of female vintage curator with styled hair and statement earrings",
+              'Portrait of female vintage curator with styled hair and statement earrings',
           },
         ]
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
-        className={className ?? "size-4"}
+        className={className ?? 'size-4'}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -111,7 +113,12 @@ export const MarketplaceAuthors = defineComponent({
     )
 
     const Star = ({ className }: { className?: string }) => (
-      <svg className={className} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <svg
+        className={className}
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
     )
@@ -163,7 +170,7 @@ export const MarketplaceAuthors = defineComponent({
 
     return (
       <section
-        className={cn("bg-background py-20 lg:py-28", props.className)}
+        className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="sellers-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

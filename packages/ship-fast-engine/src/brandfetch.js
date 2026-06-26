@@ -43,11 +43,16 @@ const escapeXmlForSvg = (value = '') =>
 
 const sniffDownloadedAsset = (buf) => {
   if (!buf || buf.length < 4) return ''
-  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'png'
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47)
+    return 'png'
   if (buf[0] === 0xff && buf[1] === 0xd8) return 'jpeg'
-  const head = buf.toString('utf8', 0, Math.min(800, buf.length)).replace(/^\uFEFF/, '').trimStart()
+  const head = buf
+    .toString('utf8', 0, Math.min(800, buf.length))
+    .replace(/^\uFEFF/, '')
+    .trimStart()
   if (head.startsWith('<svg')) return 'svg'
-  if (head.startsWith('<?xml') && /<svg/i.test(head.slice(0, 2000))) return 'svg'
+  if (head.startsWith('<?xml') && /<svg/i.test(head.slice(0, 2000)))
+    return 'svg'
   return ''
 }
 
@@ -80,7 +85,9 @@ const pickLargestLogo = (logos = []) => {
     for (const fmt of formats) {
       const src = toStringValue(fmt?.src || fmt?.url || '')
       if (!src) continue
-      const type = toStringValue(fmt?.format || fmt?.type || fmt?.mimeType || fmt?.mime || '')
+      const type = toStringValue(
+        fmt?.format || fmt?.type || fmt?.mimeType || fmt?.mime || '',
+      )
       const width = Number(fmt?.width || 0) || 0
       const height = Number(fmt?.height || 0) || 0
       flat.push({ src, type, width, height })
@@ -103,7 +110,10 @@ export const materializeBrandfetchLogoToWorkspace = async (
   if (!logo || logo.kind !== 'remote' || !logo.src) return logo
   if (String(logo.provider || '').toLowerCase() !== 'brandfetch') return logo
 
-  const label = toStringValue(logo.alt).replace(/\s+logo$/i, '').trim() || 'Brand'
+  const label =
+    toStringValue(logo.alt)
+      .replace(/\s+logo$/i, '')
+      .trim() || 'Brand'
 
   const fromDataUri = parseDataUriSvg(logo.src)
   if (fromDataUri) {
@@ -142,7 +152,10 @@ export const materializeBrandfetchLogoToWorkspace = async (
       (/\.svg(\?|#|$)/i.test(logo.src) ? 'svg' : '')
 
     if (kind === 'svg') {
-      const text = buf.toString('utf8').replace(/^\uFEFF/, '').trim()
+      const text = buf
+        .toString('utf8')
+        .replace(/^\uFEFF/, '')
+        .trim()
       if (/<svg/i.test(text)) {
         return {
           kind: 'svg',
@@ -167,7 +180,10 @@ export const materializeBrandfetchLogoToWorkspace = async (
 
     const probe = buf.toString('utf8', 0, Math.min(400, buf.length))
     if (/<svg/i.test(probe)) {
-      const text = buf.toString('utf8').replace(/^\uFEFF/, '').trim()
+      const text = buf
+        .toString('utf8')
+        .replace(/^\uFEFF/, '')
+        .trim()
       return {
         kind: 'svg',
         svg: text,
@@ -183,63 +199,78 @@ export const materializeBrandfetchLogoToWorkspace = async (
   }
 }
 
-export const brandfetchSearch = async ({ query, limit = 1, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) => {
+export const brandfetchSearch = async ({
+  query,
+  limit = 1,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+} = {}) => {
   const q = toStringValue(query)
   if (!q) return { ok: false, status: 400, error: 'Missing query.' }
 
-  const url = new URL(`https://api.brandfetch.io/v2/search/${encodeURIComponent(q)}`)
-  url.searchParams.set('limit', String(Math.max(1, Math.min(5, Number(limit) || 1))))
-
-  return withTimeout(
-    async (signal) => {
-      const res = await fetch(url.toString(), {
-        method: 'GET',
-        headers: getBrandfetchHeaders(),
-        signal,
-      })
-      const data = await safeJson(res)
-      if (!res.ok) {
-        return {
-          ok: false,
-          status: res.status,
-          error: toStringValue(data?.error || data?.message || res.statusText || 'Brandfetch request failed'),
-          data,
-        }
-      }
-      return { ok: true, status: res.status, data }
-    },
-    timeoutMs,
+  const url = new URL(
+    `https://api.brandfetch.io/v2/search/${encodeURIComponent(q)}`,
   )
+  url.searchParams.set(
+    'limit',
+    String(Math.max(1, Math.min(5, Number(limit) || 1))),
+  )
+
+  return withTimeout(async (signal) => {
+    const res = await fetch(url.toString(), {
+      method: 'GET',
+      headers: getBrandfetchHeaders(),
+      signal,
+    })
+    const data = await safeJson(res)
+    if (!res.ok) {
+      return {
+        ok: false,
+        status: res.status,
+        error: toStringValue(
+          data?.error ||
+            data?.message ||
+            res.statusText ||
+            'Brandfetch request failed',
+        ),
+        data,
+      }
+    }
+    return { ok: true, status: res.status, data }
+  }, timeoutMs)
 }
 
 export const brandfetchBrandByDomain = async ({
   domain,
   timeoutMs = DEFAULT_TIMEOUT_MS,
 } = {}) => {
-  const d = toStringValue(domain).replace(/^https?:\/\//i, '').replace(/\/.*$/, '')
+  const d = toStringValue(domain)
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/.*$/, '')
   if (!d) return { ok: false, status: 400, error: 'Missing domain.' }
 
   const url = `https://api.brandfetch.io/v2/brands/domain/${encodeURIComponent(d)}`
-  return withTimeout(
-    async (signal) => {
-      const res = await fetch(url, {
-        method: 'GET',
-        headers: getBrandfetchHeaders(),
-        signal,
-      })
-      const data = await safeJson(res)
-      if (!res.ok) {
-        return {
-          ok: false,
-          status: res.status,
-          error: toStringValue(data?.error || data?.message || res.statusText || 'Brandfetch request failed'),
-          data,
-        }
+  return withTimeout(async (signal) => {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: getBrandfetchHeaders(),
+      signal,
+    })
+    const data = await safeJson(res)
+    if (!res.ok) {
+      return {
+        ok: false,
+        status: res.status,
+        error: toStringValue(
+          data?.error ||
+            data?.message ||
+            res.statusText ||
+            'Brandfetch request failed',
+        ),
+        data,
       }
-      return { ok: true, status: res.status, data }
-    },
-    timeoutMs,
-  )
+    }
+    return { ok: true, status: res.status, data }
+  }, timeoutMs)
 }
 
 const normalizePalette = (data) => {
@@ -278,16 +309,36 @@ export const resolveBrandfetchBrandProfile = async ({
   timeoutMs = DEFAULT_TIMEOUT_MS,
 } = {}) => {
   const search = await brandfetchSearch({ query, limit: 1, timeoutMs })
-  if (!search.ok) return { ok: false, error: search.error || 'Brandfetch search failed', status: search.status }
+  if (!search.ok)
+    return {
+      ok: false,
+      error: search.error || 'Brandfetch search failed',
+      status: search.status,
+    }
 
   const raw = search.data
-  const results = Array.isArray(raw) ? raw : Array.isArray(raw?.results) ? raw.results : []
+  const results = Array.isArray(raw)
+    ? raw
+    : Array.isArray(raw?.results)
+      ? raw.results
+      : []
   const best = results[0] || null
-  if (!best) return { ok: false, error: 'No Brandfetch match found', status: 404 }
+  if (!best)
+    return { ok: false, error: 'No Brandfetch match found', status: 404 }
 
-  const name = toStringValue(best?.name || best?.brand?.name || best?.company?.name || '')
-  const domain = toStringValue(best?.domain || best?.brand?.domain || best?.company?.domain || '')
-  if (!domain) return { ok: false, error: 'Brandfetch search returned no domain', status: 404, match: { name } }
+  const name = toStringValue(
+    best?.name || best?.brand?.name || best?.company?.name || '',
+  )
+  const domain = toStringValue(
+    best?.domain || best?.brand?.domain || best?.company?.domain || '',
+  )
+  if (!domain)
+    return {
+      ok: false,
+      error: 'Brandfetch search returned no domain',
+      status: 404,
+      match: { name },
+    }
   const officialUrl = (() => {
     try {
       return new URL(`https://${domain}`).toString().replace(/\/$/, '')
@@ -299,10 +350,17 @@ export const resolveBrandfetchBrandProfile = async ({
   const brand = await brandfetchBrandByDomain({ domain, timeoutMs })
   if (!brand.ok) {
     const icon = toStringValue(best?.icon || best?.logo || best?.image || '')
-    if (!icon) return { ok: false, error: brand.error || 'Brandfetch brand API failed', status: brand.status }
+    if (!icon)
+      return {
+        ok: false,
+        error: brand.error || 'Brandfetch brand API failed',
+        status: brand.status,
+      }
 
     const quality = Number(best?.qualityScore || best?._score || 0)
-    const confidence = Number(Math.max(0.45, Math.min(0.75, quality || 0.6)).toFixed(2))
+    const confidence = Number(
+      Math.max(0.45, Math.min(0.75, quality || 0.6)).toFixed(2),
+    )
 
     return {
       ok: true,
@@ -349,7 +407,9 @@ export const resolveBrandfetchBrandProfile = async ({
       }
     : null
 
-  const palettePayload = paletteNorm.ok ? { ...paletteNorm.palette, provider: 'brandfetch', confidence: 0.9 } : null
+  const palettePayload = paletteNorm.ok
+    ? { ...paletteNorm.palette, provider: 'brandfetch', confidence: 0.9 }
+    : null
 
   const confidence =
     (logoPayload ? 0.55 : 0) +

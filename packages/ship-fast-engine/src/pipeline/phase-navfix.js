@@ -32,7 +32,9 @@ function buildNavTargets(tasks = []) {
   const targets = []
   for (const task of tasks) {
     if (!task?.filename || task.filename === 'index.html') continue
-    const title = String(task.title || task.filename.replace(/\.html$/i, '')).trim()
+    const title = String(
+      task.title || task.filename.replace(/\.html$/i, ''),
+    ).trim()
     targets.push({
       title,
       filename: task.filename,
@@ -44,13 +46,19 @@ function buildNavTargets(tasks = []) {
 }
 
 const LINK_ALIASES = [
-  { re: /\b(shop|store|catalog|products?|collections?)\b/i, prefer: /shop|store|catalog|product/i },
+  {
+    re: /\b(shop|store|catalog|products?|collections?)\b/i,
+    prefer: /shop|store|catalog|product/i,
+  },
   { re: /\b(cart|bag|basket)\b/i, prefer: /cart|bag|checkout/i },
   { re: /\b(checkout|pay)\b/i, prefer: /checkout|cart/i },
   { re: /\b(blog|articles?|news|journal)\b/i, prefer: /blog|article|news/i },
   { re: /\b(about|story|company)\b/i, prefer: /about|story|company/i },
   { re: /\b(contact|support|help)\b/i, prefer: /contact|support|help/i },
-  { re: /\b(account|sign in|login|profile)\b/i, prefer: /account|sign|login|profile|auth/i },
+  {
+    re: /\b(account|sign in|login|profile)\b/i,
+    prefer: /account|sign|login|profile|auth/i,
+  },
   { re: /\b(product details?|pdp|item)\b/i, prefer: /product|details|pdp/i },
 ]
 
@@ -59,18 +67,25 @@ function resolveNavFilename(label, targets) {
   const norm = normalizeLinkText(label)
   if (!norm || norm === 'home' || norm === 'homepage') return 'index.html'
 
-  const exact = targets.find((t) => t.slug === slug(label) || normalizeLinkText(t.title) === norm)
+  const exact = targets.find(
+    (t) => t.slug === slug(label) || normalizeLinkText(t.title) === norm,
+  )
   if (exact) return exact.filename
 
   for (const target of targets) {
-    if (norm.includes(target.slug.replace(/-/g, ' ')) || target.slug.includes(norm.replace(/\s+/g, '-'))) {
+    if (
+      norm.includes(target.slug.replace(/-/g, ' ')) ||
+      target.slug.includes(norm.replace(/\s+/g, '-'))
+    ) {
       return target.filename
     }
   }
 
   for (const alias of LINK_ALIASES) {
     if (!alias.re.test(norm)) continue
-    const hit = targets.find((t) => alias.prefer.test(t.title) || alias.prefer.test(t.filename))
+    const hit = targets.find(
+      (t) => alias.prefer.test(t.title) || alias.prefer.test(t.filename),
+    )
     if (hit) return hit.filename
   }
 
@@ -88,7 +103,7 @@ function resolveNavFilename(label, targets) {
       best = target
     }
   }
-  return bestScore >= 2 ? best?.filename ?? null : null
+  return bestScore >= 2 ? (best?.filename ?? null) : null
 }
 
 function rewriteHref(tag, filename) {
@@ -108,26 +123,41 @@ export function wireHomepageNavLinks(html, tasks = []) {
   const targets = buildNavTargets(tasks)
   if (!targets.length) return html
 
-  let next = html.replace(/<a\b([^>]*?)>([\s\S]*?)<\/a>/gi, (full, attrs, inner) => {
-    const hrefMatch = attrs.match(/\bhref\s*=\s*(["'])([^"']*)\1/i)
-    const href = hrefMatch?.[2] ?? ''
-    if (href && !/^#(?:|$)/.test(href) && href !== '' && href !== '/') return full
+  let next = html.replace(
+    /<a\b([^>]*?)>([\s\S]*?)<\/a>/gi,
+    (full, attrs, inner) => {
+      const hrefMatch = attrs.match(/\bhref\s*=\s*(["'])([^"']*)\1/i)
+      const href = hrefMatch?.[2] ?? ''
+      if (href && !/^#(?:|$)/.test(href) && href !== '' && href !== '/')
+        return full
 
-    const label = normalizeLinkText(inner)
-    const filename = resolveNavFilename(label, targets)
-    if (!filename || filename === href) return full
-    return `${rewriteHref(`<a${attrs}>`, filename)}${inner}</a>`
-  })
+      const label = normalizeLinkText(inner)
+      const filename = resolveNavFilename(label, targets)
+      if (!filename || filename === href) return full
+      return `${rewriteHref(`<a${attrs}>`, filename)}${inner}</a>`
+    },
+  )
 
   // Map absolute-ish paths like /shop or /blog to shop.html when we have that page.
   next = next.replace(/<a\b([^>]*?)>/gi, (full, attrs) => {
     const hrefMatch = attrs.match(/\bhref\s*=\s*(["'])([^"']*)\1/i)
     if (!hrefMatch) return full
     const href = hrefMatch[2]
-    if (!href || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+    if (
+      !href ||
+      href.startsWith('http') ||
+      href.startsWith('mailto:') ||
+      href.startsWith('tel:')
+    ) {
       return full
     }
-    const pathSlug = slug(href.replace(/^\.\/?/, '').replace(/\.html$/i, '').split('/').pop() || '')
+    const pathSlug = slug(
+      href
+        .replace(/^\.\/?/, '')
+        .replace(/\.html$/i, '')
+        .split('/')
+        .pop() || '',
+    )
     if (!pathSlug) return full
     const target = targets.find((t) => t.slug === pathSlug)
     if (!target || target.filename === href) return full
@@ -154,8 +184,13 @@ export async function fixHomepageNav(navList, workspace, log, tasks = []) {
   }
 
   log('\n  ── Fixing homepage nav links (LLM) ──')
-  const { system, prompt, temperature, maxTokens } = navfixPrompt(navList, fileContent)
-  const [result] = await groqParallel([{ system, prompt, temperature, maxTokens }])
+  const { system, prompt, temperature, maxTokens } = navfixPrompt(
+    navList,
+    fileContent,
+  )
+  const [result] = await groqParallel([
+    { system, prompt, temperature, maxTokens },
+  ])
 
   if (result?.content && !result.error) {
     const cleaned = ensureLucideIconRuntime(stripFences(result.content), log)

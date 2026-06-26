@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FurnitureStoreNavbar — sticky, backdrop-blurred top navigation bar for a warm
@@ -16,7 +16,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * "Haven & Home" defaults.
  */
 export const FurnitureStoreNavbar = defineComponent({
-  name: "FurnitureStoreNavbar",
+  name: 'FurnitureStoreNavbar',
   description:
     "Sticky backdrop-blurred top navigation bar for a warm minimal furniture / home-decor e-commerce site: bordered-bottom header pinned to the top with a house-glyph logo tile + store name on the left, horizontal category nav links (with a destructive-colored 'Sale' link) in the center, and search / account / cart icon buttons (cart shows a count badge) plus a mobile hamburger on the right. Links and icon buttons route through useNavigate for page-switching. Use as the sticky site header for furniture stores, home-decor or interiors brands, homewares retailers, or any warm boutique-retail landing page.",
   props: z.object({
@@ -30,11 +30,11 @@ export const FurnitureStoreNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Haven & Home"
+    const brand = props.brand ?? 'Haven & Home'
     const nav = props.nav?.length
       ? props.nav
-      : ["Room Inspiration", "Furniture", "Decor", "New Arrivals", "Sale"]
-    const cartCount = props.cartCount ?? "3"
+      : ['Room Inspiration', 'Furniture', 'Decor', 'New Arrivals', 'Sale']
+    const cartCount = props.cartCount ?? '3'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -50,7 +50,7 @@ export const FurnitureStoreNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >
@@ -78,10 +78,10 @@ export const FurnitureStoreNavbar = defineComponent({
                   type="button"
                   onClick={() => go(label)}
                   className={cn(
-                    "text-sm font-medium transition-colors",
-                    label.toLowerCase() === "sale"
-                      ? "text-destructive hover:text-destructive/80"
-                      : "text-muted-foreground hover:text-foreground",
+                    'text-sm font-medium transition-colors',
+                    label.toLowerCase() === 'sale'
+                      ? 'text-destructive hover:text-destructive/80'
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
                   {label}
@@ -92,7 +92,7 @@ export const FurnitureStoreNavbar = defineComponent({
             <div className="flex items-center gap-4">
               <button
                 type="button"
-                onClick={() => go("Search")}
+                onClick={() => go('Search')}
                 className="rounded-full p-2 transition-colors hover:bg-muted"
                 aria-label="Search"
               >
@@ -111,7 +111,7 @@ export const FurnitureStoreNavbar = defineComponent({
               </button>
               <button
                 type="button"
-                onClick={() => go("Account")}
+                onClick={() => go('Account')}
                 className="hidden rounded-full p-2 transition-colors hover:bg-muted sm:flex"
                 aria-label="Account"
               >
@@ -130,7 +130,7 @@ export const FurnitureStoreNavbar = defineComponent({
               </button>
               <button
                 type="button"
-                onClick={() => go("Cart")}
+                onClick={() => go('Cart')}
                 className="relative rounded-full p-2 transition-colors hover:bg-muted"
                 aria-label="Shopping cart"
               >

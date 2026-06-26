@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * RestaurantNavbar — sticky site header for a restaurant (casual neighborhood
@@ -30,7 +30,7 @@ const ForkKnifeMark = ({ className }: { className?: string }) => (
 )
 
 export const RestaurantNavbar = defineComponent({
-  name: "RestaurantNavbar",
+  name: 'RestaurantNavbar',
   description:
     "Sticky restaurant site header (casual or upscale dining) built on the shared SiteNav composite: serif wordmark + fork-and-knife mark, centered desktop nav links, a reservations phone number, a 'Book a Table' CTA, and a real mobile drawer. Use as the header for bistros, trattorias, steak houses, sushi counters, or any dining brand where reservations matter.",
   props: z.object({
@@ -51,17 +51,17 @@ export const RestaurantNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Menu", "About", "Gallery", "Reservations", "Contact"]
+      : ['Menu', 'About', 'Gallery', 'Reservations', 'Contact']
     return (
       <SiteNav
-        brand={props.brand ?? "Saffron & Sage"}
+        brand={props.brand ?? 'Saffron & Sage'}
         brandMark={<ForkKnifeMark className="size-8 text-primary" />}
         brandClassName="font-serif text-xl font-medium"
         nav={nav}
-        phone={props.phone ?? "(415) 555-0182"}
+        phone={props.phone ?? '(415) 555-0182'}
         cta={{
-          label: props.ctaLabel ?? "Book a Table",
-          target: props.ctaTarget ?? "Reservations",
+          label: props.ctaLabel ?? 'Book a Table',
+          target: props.ctaTarget ?? 'Reservations',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

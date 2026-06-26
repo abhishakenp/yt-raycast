@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ChurchServices — split weekly service-times section for a church or faith-community
@@ -12,7 +12,7 @@ import { Image } from "#/lib/img.tsx"
  * parishes, or ministries. Renders fully with no props via baked-in defaults.
  */
 export const ChurchServices = defineComponent({
-  name: "ChurchServices",
+  name: 'ChurchServices',
   description:
     "Split weekly service-times section for a church or faith-community site: left column with eyebrow, heading, description, and an icon-accented list of service cards (clock/moon/hands cycle); right column with a sticky tall photo and a 'What to Expect' checklist card beneath. Warm, informative, and welcoming. Use as the service-times / weekly-gatherings section for churches, worship centers, parishes, or ministries.",
   props: z.object({
@@ -41,44 +41,44 @@ export const ChurchServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Weekly Gatherings"
-    const heading = props.heading ?? "Join us this Sunday"
+    const eyebrow = props.eyebrow ?? 'Weekly Gatherings'
+    const heading = props.heading ?? 'Join us this Sunday'
     const description =
       props.description ??
-      "Experience contemporary worship, relevant teaching, and a welcoming community. Services last approximately 75 minutes."
+      'Experience contemporary worship, relevant teaching, and a welcoming community. Services last approximately 75 minutes.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Sunday Morning Worship",
+            title: 'Sunday Morning Worship',
             detail:
               "9:00 AM & 11:00 AM — Contemporary service with full band, children's programs, and nursery care.",
-            location: "Main Sanctuary & Live Stream",
+            location: 'Main Sanctuary & Live Stream',
           },
           {
-            title: "Wednesday Night Encounter",
+            title: 'Wednesday Night Encounter',
             detail:
-              "7:00 PM — Midweek prayer, worship, and teaching. Dinner served at 6:00 PM ($5 suggested).",
-            location: "Fellowship Hall",
+              '7:00 PM — Midweek prayer, worship, and teaching. Dinner served at 6:00 PM ($5 suggested).',
+            location: 'Fellowship Hall',
           },
           {
-            title: "Saturday Prayer Vigil",
+            title: 'Saturday Prayer Vigil',
             detail:
-              "First Saturday monthly, 8:00 AM — 12:00 PM — Corporate prayer for our city and world.",
-            location: "Prayer Chapel",
+              'First Saturday monthly, 8:00 AM — 12:00 PM — Corporate prayer for our city and world.',
+            location: 'Prayer Chapel',
           },
         ]
     const imageAlt =
       props.imageAlt ??
-      "Wide interior view of a modern church sanctuary with warm lighting and wooden accents"
-    const expectTitle = props.expectTitle ?? "What to Expect"
+      'Wide interior view of a modern church sanctuary with warm lighting and wooden accents'
+    const expectTitle = props.expectTitle ?? 'What to Expect'
     const expect = props.expect?.length
       ? props.expect
       : [
-          "Casual dress — come as you are",
-          "Free coffee and pastries before service",
-          "Programs for kids ages 0-18",
-          "Accessible parking and seating",
+          'Casual dress — come as you are',
+          'Free coffee and pastries before service',
+          'Programs for kids ages 0-18',
+          'Accessible parking and seating',
         ]
 
     const Check = ({ className }: { className?: string }) => (
@@ -141,7 +141,7 @@ export const ChurchServices = defineComponent({
     ]
 
     return (
-      <section className={cn("bg-muted py-24 lg:py-32", props.className)}>
+      <section className={cn('bg-muted py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid items-start gap-16 lg:grid-cols-2">
             <div>

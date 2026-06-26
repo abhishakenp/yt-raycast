@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * PlumbingHvacServices — a centered-heading feature grid of core trade services
@@ -60,9 +60,9 @@ const ServiceIcon = ({ glyph }: { glyph: ReactNode }) => (
 )
 
 export const PlumbingHvacServices = defineComponent({
-  name: "PlumbingHvacServices",
+  name: 'PlumbingHvacServices',
   description:
-    "Centered-heading feature grid of core trade services for a plumbing & HVAC site built on the shared FeatureGrid composite: a centered heading + supporting subheading above a responsive grid of service cards, each pairing an inline stroke-SVG glyph (cycled per index) with a bold title and a muted blurb. Defaults cover the four pillars of the trade — Repair, Installation, Maintenance, and 24/7 Emergency Service. Use to showcase what a plumber or HVAC contractor offers beneath the hero.",
+    'Centered-heading feature grid of core trade services for a plumbing & HVAC site built on the shared FeatureGrid composite: a centered heading + supporting subheading above a responsive grid of service cards, each pairing an inline stroke-SVG glyph (cycled per index) with a bold title and a muted blurb. Defaults cover the four pillars of the trade — Repair, Installation, Maintenance, and 24/7 Emergency Service. Use to showcase what a plumber or HVAC contractor offers beneath the hero.',
   props: z.object({
     /** Centered section heading above the grid. */
     heading: z.string().optional(),
@@ -82,32 +82,32 @@ export const PlumbingHvacServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Plumbing & HVAC services you can count on"
+    const heading = props.heading ?? 'Plumbing & HVAC services you can count on'
     const subheading =
       props.subheading ??
-      "From a leaky faucet to a full system replacement, our licensed and insured techs handle it all — backed by upfront pricing and a satisfaction guarantee."
+      'From a leaky faucet to a full system replacement, our licensed and insured techs handle it all — backed by upfront pricing and a satisfaction guarantee.'
     const features = props.features?.length
       ? props.features
       : [
           {
-            title: "Repair",
+            title: 'Repair',
             description:
-              "Leaky pipes, clogged drains, broken water heaters, and failing AC or furnace units — diagnosed and fixed right the first time.",
+              'Leaky pipes, clogged drains, broken water heaters, and failing AC or furnace units — diagnosed and fixed right the first time.',
           },
           {
-            title: "Installation",
+            title: 'Installation',
             description:
-              "Expert installation of water heaters, sump pumps, furnaces, air conditioners, and complete plumbing fixtures, built to last.",
+              'Expert installation of water heaters, sump pumps, furnaces, air conditioners, and complete plumbing fixtures, built to last.',
           },
           {
-            title: "Maintenance",
+            title: 'Maintenance',
             description:
-              "Seasonal tune-ups and preventive maintenance plans that keep your systems efficient and head off costly breakdowns.",
+              'Seasonal tune-ups and preventive maintenance plans that keep your systems efficient and head off costly breakdowns.',
           },
           {
-            title: "Emergency Service",
+            title: 'Emergency Service',
             description:
-              "Burst pipes, no heat, no AC, or flooding? Our 24/7 emergency crew is on call every day of the year, holidays included.",
+              'Burst pipes, no heat, no AC, or flooding? Our 24/7 emergency crew is on call every day of the year, holidays included.',
           },
         ]
 

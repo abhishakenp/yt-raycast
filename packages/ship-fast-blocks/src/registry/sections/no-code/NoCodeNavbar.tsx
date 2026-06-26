@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NoCodeNavbar — sticky, translucent top navigation bar for a clean, bright
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Buildr" defaults.
  */
 export const NoCodeNavbar = defineComponent({
-  name: "NoCodeNavbar",
+  name: 'NoCodeNavbar',
   description:
     "Sticky translucent top navigation bar for a clean, bright no-code / app-builder SaaS site: backdrop-blurred, border-bottomed header pinned to the top with an inverse cube-glyph logo tile + brand name on the left, centered nav links (desktop), and a 'Sign in' text link plus a filled primary CTA on the right. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for no-code / website-builder / page-builder / form-builder / SaaS platform landing pages.",
   props: z.object({
@@ -32,18 +32,18 @@ export const NoCodeNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Buildr"
+    const brand = props.brand ?? 'Buildr'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Templates", "Pricing", "Stories"]
-    const signInLabel = props.signInLabel ?? "Sign in"
-    const cta = props.cta ?? "Start building free"
+      : ['Features', 'Templates', 'Pricing', 'Stories']
+    const signInLabel = props.signInLabel ?? 'Sign in'
+    const cta = props.cta ?? 'Start building free'
     const homeTarget = props.homeTarget ?? nav[0]
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-foreground text-background",
+          'grid place-items-center rounded-lg bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -66,7 +66,7 @@ export const NoCodeNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >

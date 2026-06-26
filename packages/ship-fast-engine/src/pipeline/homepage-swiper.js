@@ -1,9 +1,13 @@
 import { shouldUseSwiper } from '../lib/swiper-policy.js'
 
-const SWIPER_CDN_CSS = 'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css'
-const SWIPER_CDN_JS = 'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js'
-const SPLIDE_CDN_CSS = 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css'
-const SPLIDE_CDN_JS = 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js'
+const SWIPER_CDN_CSS =
+  'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css'
+const SWIPER_CDN_JS =
+  'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js'
+const SPLIDE_CDN_CSS =
+  'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css'
+const SPLIDE_CDN_JS =
+  'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js'
 const MARKER = 'data-sf-llm-swiper-injected'
 const MARKER_SPLIDE = 'data-sf-llm-splide-runtime'
 
@@ -94,10 +98,14 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 }
 
 export function injectLLMHomepageSwiper(html, siteSpec) {
-  if (!html || typeof html !== 'string' || !shouldUseSwiper(siteSpec)) return html
-  if (html.includes('./site.js') && html.includes('site-motion.mjs')) return html
+  if (!html || typeof html !== 'string' || !shouldUseSwiper(siteSpec))
+    return html
+  if (html.includes('./site.js') && html.includes('site-motion.mjs'))
+    return html
   const runtimeOk =
-    html.includes(MARKER) && html.includes(MARKER_SPLIDE) && html.includes(SPLIDE_CDN_JS)
+    html.includes(MARKER) &&
+    html.includes(MARKER_SPLIDE) &&
+    html.includes(SPLIDE_CDN_JS)
   if (runtimeOk) return html
 
   let out = html
@@ -112,11 +120,16 @@ export function injectLLMHomepageSwiper(html, siteSpec) {
       : `${buildLlmSwiperStyleBlock()}\n${out}`
   } else if (!out.includes(SPLIDE_CDN_CSS)) {
     out = /<\/head>/i.test(out)
-      ? out.replace(/<\/head>/i, `  <link rel="stylesheet" href="${SPLIDE_CDN_CSS}" />\n</head>`)
+      ? out.replace(
+          /<\/head>/i,
+          `  <link rel="stylesheet" href="${SPLIDE_CDN_CSS}" />\n</head>`,
+        )
       : out
   }
   if (out.includes(SWIPER_CDN_CSS) && !out.includes(`<style ${MARKER}`)) {
-    out = /<\/head>/i.test(out) ? out.replace(/<\/head>/i, `  ${buildLlmSwiperStyleBlock()}\n</head>`) : `${buildLlmSwiperStyleBlock()}\n${out}`
+    out = /<\/head>/i.test(out)
+      ? out.replace(/<\/head>/i, `  ${buildLlmSwiperStyleBlock()}\n</head>`)
+      : `${buildLlmSwiperStyleBlock()}\n${out}`
   }
 
   if (!out.includes(SWIPER_CDN_JS)) {
@@ -129,7 +142,10 @@ export function injectLLMHomepageSwiper(html, siteSpec) {
   } else {
     if (!out.includes(SPLIDE_CDN_JS)) {
       out = out.replace(
-        new RegExp(`(<script[^>]+src=["']${esc(SWIPER_CDN_JS)}["'][^>]*>\\s*</script>)`, 'i'),
+        new RegExp(
+          `(<script[^>]+src=["']${esc(SWIPER_CDN_JS)}["'][^>]*>\\s*</script>)`,
+          'i',
+        ),
         `$1\n  <script src="${SPLIDE_CDN_JS}" defer></script>`,
       )
     }
@@ -140,7 +156,10 @@ export function injectLLMHomepageSwiper(html, siteSpec) {
     }
     if (!out.includes(MARKER_SPLIDE)) {
       out = /<\/body>/i.test(out)
-        ? out.replace(/<\/body>/i, `  ${buildSplideInitInlineScript()}\n</body>`)
+        ? out.replace(
+            /<\/body>/i,
+            `  ${buildSplideInitInlineScript()}\n</body>`,
+          )
         : `${out}\n${buildSplideInitInlineScript()}`
     }
   }

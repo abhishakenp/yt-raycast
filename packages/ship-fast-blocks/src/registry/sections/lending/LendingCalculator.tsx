@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * LendingCalculator — an interactive personalized-rate calculator panel for a
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * loan, debt-consolidation, or financing pages. Renders fully with no props.
  */
 export const LendingCalculator = defineComponent({
-  name: "LendingCalculator",
+  name: 'LendingCalculator',
   description:
     "Interactive personalized-rate calculator panel for a lending or fintech marketing page: centered heading + description above a two-column white card — left 'loan details' pane has a labelled amount range slider (min/max captions), a purpose select, a 3-up loan-term toggle and a 2-up credit-tier picker; right muted 'estimated offer' pane shows a large monthly-payment figure, a key/value summary list (free items in the primary tone), a full-width primary CTA and a reassuring sub-note. Controls route through useNavigate. Use to let visitors estimate loan terms on personal-loan, debt-consolidation, or financing pages.",
   props: z.object({
@@ -48,62 +48,62 @@ export const LendingCalculator = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const calcHeading = props.heading ?? "Personalized rate calculator"
+    const calcHeading = props.heading ?? 'Personalized rate calculator'
     const calcDesc =
-      props.description ?? "See what you could save with a ClearLoan."
-    const calcDetailsTitle = props.detailsTitle ?? "Loan Details"
-    const calcAmountLabel = props.amountLabel ?? "Loan Amount"
-    const calcAmountValue = props.amountValue ?? "20,000"
-    const calcAmountMin = props.amountMin ?? "$1,000"
-    const calcAmountMax = props.amountMax ?? "$50,000"
-    const calcPurposeLabel = props.purposeLabel ?? "Loan Purpose"
+      props.description ?? 'See what you could save with a ClearLoan.'
+    const calcDetailsTitle = props.detailsTitle ?? 'Loan Details'
+    const calcAmountLabel = props.amountLabel ?? 'Loan Amount'
+    const calcAmountValue = props.amountValue ?? '20,000'
+    const calcAmountMin = props.amountMin ?? '$1,000'
+    const calcAmountMax = props.amountMax ?? '$50,000'
+    const calcPurposeLabel = props.purposeLabel ?? 'Loan Purpose'
     const calcPurposes = props.purposes?.length
       ? props.purposes
       : [
-          "Debt Consolidation",
-          "Home Improvement",
-          "Medical Expenses",
-          "Auto Purchase",
-          "Education",
-          "Major Purchase",
-          "Vacation",
-          "Other",
+          'Debt Consolidation',
+          'Home Improvement',
+          'Medical Expenses',
+          'Auto Purchase',
+          'Education',
+          'Major Purchase',
+          'Vacation',
+          'Other',
         ]
-    const calcTermLabel = props.termLabel ?? "Loan Term"
-    const calcTermValue = props.termValue ?? "48 months"
+    const calcTermLabel = props.termLabel ?? 'Loan Term'
+    const calcTermValue = props.termValue ?? '48 months'
     const calcTerms = props.terms?.length
       ? props.terms
-      : ["36 mo", "48 mo", "60 mo"]
-    const calcScoreLabel = props.scoreLabel ?? "Your Credit Score Range"
+      : ['36 mo', '48 mo', '60 mo']
+    const calcScoreLabel = props.scoreLabel ?? 'Your Credit Score Range'
     const calcScores = props.scores?.length
       ? props.scores
       : [
-          { tier: "Excellent", range: "750+" },
-          { tier: "Good", range: "700-749" },
-          { tier: "Fair", range: "650-699" },
-          { tier: "Average", range: "600-649" },
+          { tier: 'Excellent', range: '750+' },
+          { tier: 'Good', range: '700-749' },
+          { tier: 'Fair', range: '650-699' },
+          { tier: 'Average', range: '600-649' },
         ]
-    const calcOfferTitle = props.offerTitle ?? "Estimated Offer"
-    const calcPaymentLabel = props.paymentLabel ?? "Monthly Payment"
-    const calcPaymentValue = props.paymentValue ?? "$478"
-    const calcPaymentNote = props.paymentNote ?? "per month for 48 months"
+    const calcOfferTitle = props.offerTitle ?? 'Estimated Offer'
+    const calcPaymentLabel = props.paymentLabel ?? 'Monthly Payment'
+    const calcPaymentValue = props.paymentValue ?? '$478'
+    const calcPaymentNote = props.paymentNote ?? 'per month for 48 months'
     const calcSummary = props.summary?.length
       ? props.summary
       : [
-          { label: "Loan Amount", value: "$20,000" },
-          { label: "Est. APR", value: "8.99%" },
-          { label: "Origination Fee", value: "$0" },
-          { label: "Total Interest", value: "$2,944" },
+          { label: 'Loan Amount', value: '$20,000' },
+          { label: 'Est. APR', value: '8.99%' },
+          { label: 'Origination Fee', value: '$0' },
+          { label: 'Total Interest', value: '$2,944' },
         ]
-    const calcCta = props.cta ?? "Get My Real Rate"
+    const calcCta = props.cta ?? 'Get My Real Rate'
     const calcCtaNote =
       props.ctaNote ?? "Checking won't affect your credit score"
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-muted px-4 py-3 font-medium text-foreground transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-ring"
+      'w-full rounded-lg border border-input bg-muted px-4 py-3 font-medium text-foreground transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-ring'
 
     return (
-      <section className={cn("py-24 lg:py-32", props.className)}>
+      <section className={cn('py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -145,7 +145,7 @@ export const LendingCalculator = defineComponent({
                         {calcPurposeLabel}
                       </label>
                       <select
-                        className={cn(inputCls, "appearance-none font-normal")}
+                        className={cn(inputCls, 'appearance-none font-normal')}
                       >
                         {calcPurposes.map((p) => (
                           <option key={p} className="bg-background">
@@ -168,10 +168,10 @@ export const LendingCalculator = defineComponent({
                             type="button"
                             onClick={() => go(`${calcTermLabel}: ${term}`)}
                             className={cn(
-                              "rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                              'rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                               i === 1
-                                ? "border-2 border-primary bg-muted text-foreground"
-                                : "border border-border text-muted-foreground hover:border-primary hover:text-foreground",
+                                ? 'border-2 border-primary bg-muted text-foreground'
+                                : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
                             )}
                           >
                             {term}
@@ -190,10 +190,10 @@ export const LendingCalculator = defineComponent({
                             type="button"
                             onClick={() => go(`Credit: ${s.tier}`)}
                             className={cn(
-                              "rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors",
+                              'rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors',
                               i === 0
-                                ? "border-2 border-primary bg-muted text-foreground"
-                                : "border border-border text-muted-foreground hover:border-primary hover:text-foreground",
+                                ? 'border-2 border-primary bg-muted text-foreground'
+                                : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
                             )}
                           >
                             <div className="font-semibold">{s.tier}</div>
@@ -227,9 +227,9 @@ export const LendingCalculator = defineComponent({
                         <div
                           key={row.label}
                           className={cn(
-                            "flex justify-between py-2",
+                            'flex justify-between py-2',
                             i < calcSummary.length - 1 &&
-                              "border-b border-border",
+                              'border-b border-border',
                           )}
                         >
                           <span className="text-muted-foreground">
@@ -237,10 +237,10 @@ export const LendingCalculator = defineComponent({
                           </span>
                           <span
                             className={cn(
-                              "font-medium",
-                              row.value === "$0"
-                                ? "text-primary"
-                                : "text-foreground",
+                              'font-medium',
+                              row.value === '$0'
+                                ? 'text-primary'
+                                : 'text-foreground',
                             )}
                           >
                             {row.value}

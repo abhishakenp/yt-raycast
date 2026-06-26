@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * SubscriptionBoxFooter — site footer for a subscription-box brand built on the
@@ -29,9 +29,9 @@ const GiftBoxMark = ({ className }: { className?: string }) => (
 )
 
 export const SubscriptionBoxFooter = defineComponent({
-  name: "SubscriptionBoxFooter",
+  name: 'SubscriptionBoxFooter',
   description:
-    "Site footer for a subscription-box brand built on the shared SiteFooter composite: gift-box wordmark + ribboned mark, a playful tagline, link columns (Shop, Company, Support, Legal), a social row, and a bottom note. Use as the footer for any curated-box, recurring-delivery, or membership-kit page.",
+    'Site footer for a subscription-box brand built on the shared SiteFooter composite: gift-box wordmark + ribboned mark, a playful tagline, link columns (Shop, Company, Support, Legal), a social row, and a bottom note. Use as the footer for any curated-box, recurring-delivery, or membership-kit page.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -46,41 +46,37 @@ export const SubscriptionBoxFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "BoxJoy"
+    const brand = props.brand ?? 'BoxJoy'
     const tagline =
       props.tagline ??
-      "A little box of joy, delivered to your door every single month."
+      'A little box of joy, delivered to your door every single month.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Shop",
-            links: ["Boxes", "Pricing", "Gift a box", "Past boxes"],
+            title: 'Shop',
+            links: ['Boxes', 'Pricing', 'Gift a box', 'Past boxes'],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Press"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Press'],
           },
           {
-            title: "Support",
-            links: ["How it works", "FAQ", "Shipping", "Contact"],
+            title: 'Support',
+            links: ['How it works', 'FAQ', 'Shipping', 'Contact'],
           },
           {
-            title: "Legal",
-            links: ["Privacy", "Terms", "Cookies"],
+            title: 'Legal',
+            links: ['Privacy', 'Terms', 'Cookies'],
           },
         ]
     const social = props.social?.length
       ? props.social
-      : [
-          { label: "Instagram" },
-          { label: "TikTok" },
-          { label: "Pinterest" },
-        ]
+      : [{ label: 'Instagram' }, { label: 'TikTok' }, { label: 'Pinterest' }]
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy", "Terms", "Cookies"]
-    const note = props.note ?? "Unbox the joy."
+      : ['Privacy', 'Terms', 'Cookies']
+    const note = props.note ?? 'Unbox the joy.'
 
     return (
       <SiteFooter

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CorporatePricing — transparent 3-tier pricing table for an enterprise / corporate
@@ -12,7 +12,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Use for SaaS, managed services, or enterprise software pricing pages.
  */
 export const CorporatePricing = defineComponent({
-  name: "CorporatePricing",
+  name: 'CorporatePricing',
   description:
     "Transparent 3-tier pricing table for an enterprise / corporate B2B site: centered heading above a responsive 1/2/3-column grid of pricing cards on a muted band, with an optional featured dark middle card and a floating 'Most Popular' badge. Each card lists plan name, blurb, price, feature checklist, and a CTA button routing through useNavigate. Use for SaaS, managed services, or enterprise software pricing.",
   props: z.object({
@@ -39,59 +39,58 @@ export const CorporatePricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading =
-      props.heading ?? "Transparent enterprise pricing"
+    const heading = props.heading ?? 'Transparent enterprise pricing'
     const description =
       props.description ??
-      "Flexible plans designed to scale with your organization. All plans include implementation support."
+      'Flexible plans designed to scale with your organization. All plans include implementation support.'
     const plans = props.plans?.length
       ? props.plans
       : [
           {
-            name: "Professional",
-            blurb: "For growing teams up to 250 employees",
-            price: "$2,500",
-            period: "/month",
+            name: 'Professional',
+            blurb: 'For growing teams up to 250 employees',
+            price: '$2,500',
+            period: '/month',
             features: [
-              "Up to 5 cloud environments",
-              "24/7 email and chat support",
-              "Standard security features",
-              "Basic analytics dashboard",
-              "Quarterly business reviews",
+              'Up to 5 cloud environments',
+              '24/7 email and chat support',
+              'Standard security features',
+              'Basic analytics dashboard',
+              'Quarterly business reviews',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
             featured: false,
           },
           {
-            name: "Enterprise",
-            blurb: "For mid-size organizations up to 5,000 employees",
-            price: "$8,500",
-            period: "/month",
+            name: 'Enterprise',
+            blurb: 'For mid-size organizations up to 5,000 employees',
+            price: '$8,500',
+            period: '/month',
             features: [
-              "Unlimited cloud environments",
-              "24/7 phone, email & chat support",
-              "Advanced security & compliance",
-              "Custom analytics & AI insights",
-              "Monthly business reviews",
-              "Dedicated success manager",
+              'Unlimited cloud environments',
+              '24/7 phone, email & chat support',
+              'Advanced security & compliance',
+              'Custom analytics & AI insights',
+              'Monthly business reviews',
+              'Dedicated success manager',
             ],
-            cta: "Contact Sales",
+            cta: 'Contact Sales',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Global",
-            blurb: "For large enterprises with 5,000+ employees",
-            price: "Custom",
-            period: "",
+            name: 'Global',
+            blurb: 'For large enterprises with 5,000+ employees',
+            price: 'Custom',
+            period: '',
             features: [
-              "Everything in Enterprise",
-              "Multi-region deployment",
-              "Custom SLAs & contracts",
-              "On-premise deployment options",
-              "Executive advisory board access",
+              'Everything in Enterprise',
+              'Multi-region deployment',
+              'Custom SLAs & contracts',
+              'On-premise deployment options',
+              'Executive advisory board access',
             ],
-            cta: "Contact Sales",
+            cta: 'Contact Sales',
             featured: false,
           },
         ]
@@ -114,7 +113,7 @@ export const CorporatePricing = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted/50 py-20 lg:py-32", props.className)}>
+      <section className={cn('bg-muted/50 py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -127,10 +126,10 @@ export const CorporatePricing = defineComponent({
               <div
                 key={plan.name}
                 className={cn(
-                  "relative rounded-xl border p-8",
+                  'relative rounded-xl border p-8',
                   plan.featured
-                    ? "border-foreground bg-foreground"
-                    : "border-border bg-background",
+                    ? 'border-foreground bg-foreground'
+                    : 'border-border bg-background',
                 )}
               >
                 {plan.badge && (
@@ -142,18 +141,18 @@ export const CorporatePricing = defineComponent({
                 )}
                 <h3
                   className={cn(
-                    "mb-2 text-lg font-semibold",
-                    plan.featured ? "text-background" : "text-foreground",
+                    'mb-2 text-lg font-semibold',
+                    plan.featured ? 'text-background' : 'text-foreground',
                   )}
                 >
                   {plan.name}
                 </h3>
                 <p
                   className={cn(
-                    "mb-6 text-sm",
+                    'mb-6 text-sm',
                     plan.featured
-                      ? "text-background/70"
-                      : "text-muted-foreground",
+                      ? 'text-background/70'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {plan.blurb}
@@ -161,10 +160,8 @@ export const CorporatePricing = defineComponent({
                 <div className="mb-6">
                   <span
                     className={cn(
-                      "text-4xl font-semibold",
-                      plan.featured
-                        ? "text-background"
-                        : "text-foreground",
+                      'text-4xl font-semibold',
+                      plan.featured ? 'text-background' : 'text-foreground',
                     )}
                   >
                     {plan.price}
@@ -173,8 +170,8 @@ export const CorporatePricing = defineComponent({
                     <span
                       className={cn(
                         plan.featured
-                          ? "text-background/70"
-                          : "text-muted-foreground",
+                          ? 'text-background/70'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {plan.period}
@@ -186,18 +183,18 @@ export const CorporatePricing = defineComponent({
                     <li key={feature} className="flex items-start gap-3">
                       <Check
                         className={cn(
-                          "mt-0.5 size-5 flex-shrink-0",
+                          'mt-0.5 size-5 flex-shrink-0',
                           plan.featured
-                            ? "text-primary-foreground"
-                            : "text-primary",
+                            ? 'text-primary-foreground'
+                            : 'text-primary',
                         )}
                       />
                       <span
                         className={cn(
-                          "text-sm",
+                          'text-sm',
                           plan.featured
-                            ? "text-background/80"
-                            : "text-muted-foreground",
+                            ? 'text-background/80'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {feature}
@@ -209,10 +206,10 @@ export const CorporatePricing = defineComponent({
                   type="button"
                   onClick={() => go(plan.cta)}
                   className={cn(
-                    "w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                    'w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                     plan.featured
-                      ? "bg-background text-foreground hover:bg-muted"
-                      : "bg-muted text-foreground hover:bg-accent",
+                      ? 'bg-background text-foreground hover:bg-muted'
+                      : 'bg-muted text-foreground hover:bg-accent',
                   )}
                 >
                   {plan.cta}

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * IllustratorNavbar — sticky, translucent top navigation bar for an illustrator
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * portfolio. Renders fully with no props via baked-in "Mira Chen" defaults.
  */
 export const IllustratorNavbar = defineComponent({
-  name: "IllustratorNavbar",
+  name: 'IllustratorNavbar',
   description:
-    "Sticky translucent top navigation bar for an illustrator / visual-artist portfolio: backdrop-blurred header with a serif wordmark brand on the left, horizontal nav links in the center (desktop), a pill-shaped primary CTA and a hamburger menu on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for illustrators, painters, picture-book artists, surface designers, or warm editorial creative portfolios.",
+    'Sticky translucent top navigation bar for an illustrator / visual-artist portfolio: backdrop-blurred header with a serif wordmark brand on the left, horizontal nav links in the center (desktop), a pill-shaped primary CTA and a hamburger menu on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for illustrators, painters, picture-book artists, surface designers, or warm editorial creative portfolios.',
   props: z.object({
     /** Artist / brand name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -32,18 +32,18 @@ export const IllustratorNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Mira Chen"
+    const brand = props.brand ?? 'Mira Chen'
     const nav = props.nav?.length
       ? props.nav
-      : ["Work", "Shop", "About", "Contact"]
+      : ['Work', 'Shop', 'About', 'Contact']
     const homeTarget = props.homeTarget ?? nav[0]
-    const ctaLabel = props.ctaLabel ?? "Visit Shop"
-    const ctaTarget = props.ctaTarget ?? "Shop"
+    const ctaLabel = props.ctaLabel ?? 'Visit Shop'
+    const ctaTarget = props.ctaTarget ?? 'Shop'
 
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

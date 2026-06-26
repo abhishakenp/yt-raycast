@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MarketingAgencyTestimonials — a 3-up star-rated testimonial grid. A centered
@@ -12,9 +12,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props.
  */
 export const MarketingAgencyTestimonials = defineComponent({
-  name: "MarketingAgencyTestimonials",
+  name: 'MarketingAgencyTestimonials',
   description:
-    "3-up star-rated testimonial grid: a centered eyebrow + heading + description above a responsive grid (1/3 columns) of muted rounded cards, each with a 5-star rating row, a quoted client testimonial, and an author block pairing a round avatar with a name and role. Use for social proof from founders and marketing leaders on a marketing / growth agency, SaaS, or B2B services landing page.",
+    '3-up star-rated testimonial grid: a centered eyebrow + heading + description above a responsive grid (1/3 columns) of muted rounded cards, each with a 5-star rating row, a quoted client testimonial, and an author block pairing a round avatar with a name and role. Use for social proof from founders and marketing leaders on a marketing / growth agency, SaaS, or B2B services landing page.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -31,8 +31,8 @@ export const MarketingAgencyTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Testimonials"
-    const heading = props.heading ?? "What Clients Say"
+    const eyebrow = props.eyebrow ?? 'Testimonials'
+    const heading = props.heading ?? 'What Clients Say'
     const description =
       props.description ??
       "Don't just take our word for it. Here's what founders and marketing leaders say about working with us."
@@ -41,21 +41,21 @@ export const MarketingAgencyTestimonials = defineComponent({
       : [
           {
             quote:
-              "Nexus transformed our marketing. Within 6 months, we went from $50K MRR to $180K MRR. Their data-driven approach and weekly insights helped us understand exactly what was working.",
-            name: "Marcus Chen",
-            role: "CEO, CloudSync",
+              'Nexus transformed our marketing. Within 6 months, we went from $50K MRR to $180K MRR. Their data-driven approach and weekly insights helped us understand exactly what was working.',
+            name: 'Marcus Chen',
+            role: 'CEO, CloudSync',
           },
           {
             quote:
-              "Finally, a marketing agency that understands attribution. Nexus built us a proper tracking infrastructure and our CAC dropped by 40% while volume increased. Game changer.",
-            name: "Sarah Mitchell",
-            role: "CMO, Luxe Threads",
+              'Finally, a marketing agency that understands attribution. Nexus built us a proper tracking infrastructure and our CAC dropped by 40% while volume increased. Game changer.',
+            name: 'Sarah Mitchell',
+            role: 'CMO, Luxe Threads',
           },
           {
             quote:
               "The SEO results have been phenomenal. We're ranking #1 for our top 20 target keywords and organic is now our #1 acquisition channel. Worth every penny.",
-            name: "David Park",
-            role: "Founder, LearnHub",
+            name: 'David Park',
+            role: 'Founder, LearnHub',
           },
         ]
 
@@ -71,7 +71,7 @@ export const MarketingAgencyTestimonials = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <p className="mb-3 text-sm font-medium text-muted-foreground">

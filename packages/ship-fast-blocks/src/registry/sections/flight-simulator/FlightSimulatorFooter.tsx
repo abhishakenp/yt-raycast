@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * FlightSimulatorFooter — a rich, multi-column closing footer for a flight
@@ -31,9 +31,9 @@ const WingMark = ({ className }: { className?: string }) => (
 )
 
 export const FlightSimulatorFooter = defineComponent({
-  name: "FlightSimulatorFooter",
+  name: 'FlightSimulatorFooter',
   description:
-    "Rich, multi-column closing footer for a flight-simulator site built on the shared SiteFooter composite: a bold wordmark + inline winged-plane mark, an aviation tagline, a social row, and a responsive grid of link columns (Product, Editions, Community, Support), with an auto-updating copyright line in the bottom bar. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for flight simulators, airliner / combat sims, or aviation titles.",
+    'Rich, multi-column closing footer for a flight-simulator site built on the shared SiteFooter composite: a bold wordmark + inline winged-plane mark, an aviation tagline, a social row, and a responsive grid of link columns (Product, Editions, Community, Support), with an auto-updating copyright line in the bottom bar. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for flight simulators, airliner / combat sims, or aviation titles.',
   props: z.object({
     /** Product / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -55,44 +55,44 @@ export const FlightSimulatorFooter = defineComponent({
     const social = props.social?.length
       ? props.social
       : [
-          { label: "YouTube" },
-          { label: "Discord" },
-          { label: "X" },
-          { label: "Twitch" },
+          { label: 'YouTube' },
+          { label: 'Discord' },
+          { label: 'X' },
+          { label: 'Twitch' },
         ]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Aircraft", "Scenery", "System Requirements"],
+            title: 'Product',
+            links: ['Features', 'Aircraft', 'Scenery', 'System Requirements'],
           },
           {
-            title: "Editions",
-            links: ["Standard", "Deluxe", "Premium", "Add-on Packs"],
+            title: 'Editions',
+            links: ['Standard', 'Deluxe', 'Premium', 'Add-on Packs'],
           },
           {
-            title: "Community",
-            links: ["Forums", "Discord", "Liveries", "Events"],
+            title: 'Community',
+            links: ['Forums', 'Discord', 'Liveries', 'Events'],
           },
           {
-            title: "Support",
-            links: ["Help Center", "Patch Notes", "Report a Bug", "Contact"],
+            title: 'Support',
+            links: ['Help Center', 'Patch Notes', 'Report a Bug', 'Contact'],
           },
         ]
 
     return (
       <SiteFooter
-        brand={props.brand ?? "SkyForge Sim"}
+        brand={props.brand ?? 'SkyForge Sim'}
         brandMark={<WingMark className="size-8 text-primary" />}
         brandClassName="text-xl font-bold tracking-tight"
         tagline={
           props.tagline ??
-          "The whole world is your runway. Fly anywhere, in any weather, in stunning detail."
+          'The whole world is your runway. Fly anywhere, in any weather, in stunning detail.'
         }
         social={social}
         columns={columns}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * FoodDeliveryStats — inverted KPI stats strip for a food-delivery /
@@ -12,9 +12,9 @@ import { cn } from "#/lib/utils.ts"
  * no props via baked-in defaults.
  */
 export const FoodDeliveryStats = defineComponent({
-  name: "FoodDeliveryStats",
+  name: 'FoodDeliveryStats',
   description:
-    "Inverted KPI stats strip for a food-delivery / restaurant-marketplace site: a full-width foreground-on-background dark band with a responsive 2/4-up grid of big bold metric values over muted labels (happy customers, restaurant partners, cities served, avg. delivery time). Use as a punchy social-proof divider between lighter sections for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.",
+    'Inverted KPI stats strip for a food-delivery / restaurant-marketplace site: a full-width foreground-on-background dark band with a responsive 2/4-up grid of big bold metric values over muted labels (happy customers, restaurant partners, cities served, avg. delivery time). Use as a punchy social-proof divider between lighter sections for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',
   props: z.object({
     /** KPI items (value + label). */
     items: z
@@ -26,18 +26,15 @@ export const FoodDeliveryStats = defineComponent({
     const statItems = props.items?.length
       ? props.items
       : [
-          { value: "2M+", label: "Happy customers" },
-          { value: "500+", label: "Restaurant partners" },
-          { value: "45", label: "Cities served" },
-          { value: "15min", label: "Avg. delivery time" },
+          { value: '2M+', label: 'Happy customers' },
+          { value: '500+', label: 'Restaurant partners' },
+          { value: '45', label: 'Cities served' },
+          { value: '15min', label: 'Avg. delivery time' },
         ]
 
     return (
       <section
-        className={cn(
-          "bg-foreground py-16 text-background",
-          props.className,
-        )}
+        className={cn('bg-foreground py-16 text-background', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-8 text-center lg:grid-cols-4">

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * LandscapingHero — calm, premium two-column hero for a landscaping / outdoor-
@@ -17,9 +17,9 @@ import { Image } from "#/lib/img.tsx"
  * defaults.
  */
 export const LandscapingHero = defineComponent({
-  name: "LandscapingHero",
+  name: 'LandscapingHero',
   description:
-    "Calm, premium two-column hero for a landscaping / outdoor-design company on a warm stone band: left column with a large headline, supporting paragraph, dual pill CTAs (filled primary like Request Free Consultation + outlined secondary like View Our Work), and a star-rated social-proof row with overlapping customer avatars; right column with a tall rounded garden photo and a floating projects-completed stat card overlapping its lower-left corner. Sage-green accent, amber stars, generous whitespace and soft shadows; CTAs route through useNavigate and imagery uses the alt-driven Image component. Use as the opening hero for landscapers, lawn-care and yard-maintenance services, garden designers or hardscaping contractors.",
+    'Calm, premium two-column hero for a landscaping / outdoor-design company on a warm stone band: left column with a large headline, supporting paragraph, dual pill CTAs (filled primary like Request Free Consultation + outlined secondary like View Our Work), and a star-rated social-proof row with overlapping customer avatars; right column with a tall rounded garden photo and a floating projects-completed stat card overlapping its lower-left corner. Sage-green accent, amber stars, generous whitespace and soft shadows; CTAs route through useNavigate and imagery uses the alt-driven Image component. Use as the opening hero for landscapers, lawn-care and yard-maintenance services, garden designers or hardscaping contractors.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -36,31 +36,31 @@ export const LandscapingHero = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
     const heading =
-      props.heading ?? "Transform your outdoor space into a living sanctuary"
+      props.heading ?? 'Transform your outdoor space into a living sanctuary'
     const subheading =
       props.subheading ??
-      "Award-winning landscape design and maintenance services for Portland homes and businesses. Over 500 completed projects since 2008. Licensed, insured, and committed to sustainable practices."
-    const primaryCta = props.primaryCta ?? "Request Free Consultation"
-    const secondaryCta = props.secondaryCta ?? "View Our Work"
-    const rating = props.rating ?? "4.9/5 from 127 reviews"
+      'Award-winning landscape design and maintenance services for Portland homes and businesses. Over 500 completed projects since 2008. Licensed, insured, and committed to sustainable practices.'
+    const primaryCta = props.primaryCta ?? 'Request Free Consultation'
+    const secondaryCta = props.secondaryCta ?? 'View Our Work'
+    const rating = props.rating ?? '4.9/5 from 127 reviews'
     const imageAlt =
       props.imageAlt ??
-      "Modern landscaped garden with curved stone pathway, ornamental grasses, and native plants"
-    const statValue = props.statValue ?? "500+"
-    const statLabel = props.statLabel ?? "Projects Completed"
+      'Modern landscaped garden with curved stone pathway, ornamental grasses, and native plants'
+    const statValue = props.statValue ?? '500+'
+    const statLabel = props.statLabel ?? 'Projects Completed'
     const avatars = props.avatars?.length
       ? props.avatars
       : [
-          "Headshot of a smiling male customer with short brown hair",
-          "Headshot of a smiling female customer with blonde hair",
-          "Headshot of a smiling older male customer with glasses",
+          'Headshot of a smiling male customer with short brown hair',
+          'Headshot of a smiling female customer with blonde hair',
+          'Headshot of a smiling older male customer with glasses',
         ]
 
     const StarIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"
-        className={cn("size-4 text-chart-4", className)}
+        className={cn('size-4 text-chart-4', className)}
         aria-hidden="true"
       >
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -68,7 +68,7 @@ export const LandscapingHero = defineComponent({
     )
 
     return (
-      <section className={cn("relative bg-muted", props.className)}>
+      <section className={cn('relative bg-muted', props.className)}>
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">

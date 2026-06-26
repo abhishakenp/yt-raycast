@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * JewelryStoreLogos — press / awards recognition strip for a luxury jewelry
@@ -12,24 +12,24 @@ import { cn } from "#/lib/utils.ts"
  * via baked-in defaults.
  */
 export const JewelryStoreLogos = defineComponent({
-  name: "JewelryStoreLogos",
+  name: 'JewelryStoreLogos',
   description:
-    "Press / awards recognition strip for a luxury jewelry brand: a bordered band with a centered wide letter-spaced uppercase caption above a responsive grid of dimmed serif publication wordmarks (2 cols mobile, 4 tablet, 6 desktop; trailing items reveal only on large screens). Use directly below the hero to establish editorial credibility via Vogue / Bazaar / Tatler-style press logos for fine jewelers, diamond houses, or any premium luxury-retail brand.",
+    'Press / awards recognition strip for a luxury jewelry brand: a bordered band with a centered wide letter-spaced uppercase caption above a responsive grid of dimmed serif publication wordmarks (2 cols mobile, 4 tablet, 6 desktop; trailing items reveal only on large screens). Use directly below the hero to establish editorial credibility via Vogue / Bazaar / Tatler-style press logos for fine jewelers, diamond houses, or any premium luxury-retail brand.',
   props: z.object({
     label: z.string().optional(),
     items: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const label = props.label ?? "Recognized Excellence"
+    const label = props.label ?? 'Recognized Excellence'
     const items = props.items?.length
       ? props.items
-      : ["VOGUE", "BAZAAR", "TATLER", "WWD", "JCK JEWELRY", "ELLE"]
+      : ['VOGUE', 'BAZAAR', 'TATLER', 'WWD', 'JCK JEWELRY', 'ELLE']
 
     return (
       <section
         className={cn(
-          "border-b border-border bg-background py-20",
+          'border-b border-border bg-background py-20',
           props.className,
         )}
       >
@@ -42,8 +42,8 @@ export const JewelryStoreLogos = defineComponent({
               <div
                 key={logo}
                 className={cn(
-                  "flex justify-center font-serif text-lg tracking-widest text-muted-foreground",
-                  i >= 4 && "hidden lg:flex",
+                  'flex justify-center font-serif text-lg tracking-widest text-muted-foreground',
+                  i >= 4 && 'hidden lg:flex',
                 )}
               >
                 {logo}

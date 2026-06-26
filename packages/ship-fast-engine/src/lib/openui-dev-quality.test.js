@@ -3,7 +3,9 @@ import { openUIDevQualityHints } from './openui-dev-quality.js'
 
 describe('openUIDevQualityHints', () => {
   it('flags empty source', () => {
-    expect(openUIDevQualityHints('').some((h) => h.includes('Empty'))).toBe(true)
+    expect(openUIDevQualityHints('').some((h) => h.includes('Empty'))).toBe(
+      true,
+    )
   })
 
   it('is quiet for a rich registry-module stub', () => {

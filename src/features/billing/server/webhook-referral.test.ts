@@ -23,7 +23,9 @@ const hmacSha256Hex = async (secret: string, payload: string) => {
     key,
     new TextEncoder().encode(payload),
   )
-  return Array.from(new Uint8Array(sig), (b) => b.toString(16).padStart(2, '0')).join('')
+  return Array.from(new Uint8Array(sig), (b) =>
+    b.toString(16).padStart(2, '0'),
+  ).join('')
 }
 
 const buildSignedStripeRequest = async (event: unknown) => {
@@ -112,7 +114,13 @@ describe('billing webhook → referral discount wiring', () => {
       }),
     )
 
-    await createWebhookApiResponse(request, 'stripe', env, client, applyDiscount)
+    await createWebhookApiResponse(
+      request,
+      'stripe',
+      env,
+      client,
+      applyDiscount,
+    )
     expect(applyDiscount.mock.calls.map((call) => call[1])).toEqual(['payer2'])
   })
 

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FoodTruckNavbar — fixed, backdrop-blurred top navigation bar for a gourmet
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * concepts, pop-up kitchens or catering businesses.
  */
 export const FoodTruckNavbar = defineComponent({
-  name: "FoodTruckNavbar",
+  name: 'FoodTruckNavbar',
   description:
     "Fixed, backdrop-blurred top navigation bar for a gourmet food-truck / street-food site: a border-bottomed header pinned to the top with a circular monogram logo tile (brand initials) and brand wordmark on the left, horizontal muted-to-foreground nav links on the right (desktop), a filled pill CTA built from the LAST nav item (e.g. 'Book Catering'), and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for food trucks, street-food vendors, taco / burger / bowl concepts, pop-up kitchens or catering businesses.",
   props: z.object({
@@ -26,23 +26,23 @@ export const FoodTruckNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Curbside Kitchen"
+    const brand = props.brand ?? 'Curbside Kitchen'
     const nav = props.nav?.length
       ? props.nav
-      : ["Menu", "Locations", "Catering", "FAQ", "Book Catering"]
+      : ['Menu', 'Locations', 'Catering', 'FAQ', 'Book Catering']
     const lastNav = nav[nav.length - 1]
 
     const initials = brand
       .split(/\s+/)
       .map((w) => w.charAt(0))
-      .join("")
+      .join('')
       .slice(0, 2)
       .toUpperCase()
 
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

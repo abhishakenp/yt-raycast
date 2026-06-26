@@ -4,77 +4,77 @@ import {
   MixerHorizontalIcon,
   ChevronDownIcon,
   DotsVerticalIcon,
-} from "@radix-ui/react-icons";
-import { useContext, useEffect, useRef, useState } from "react";
-import { CreateNewTable } from "@common/features/data/components/DataSidebar";
-import { EmptySection } from "@common/elements/EmptySection";
-import { useNents } from "@common/lib/useNents";
+} from '@radix-ui/react-icons'
+import { useContext, useEffect, useRef, useState } from 'react'
+import { CreateNewTable } from '@common/features/data/components/DataSidebar'
+import { EmptySection } from '@common/elements/EmptySection'
+import { useNents } from '@common/lib/useNents'
 import {
   DeploymentInfoContext,
   PermissionsContext,
-} from "@common/lib/deploymentContext";
-import { useTableMetadata } from "@common/lib/useTableMetadata";
-import { Loading } from "@ui/Loading";
-import { Button } from "@ui/Button";
-import { Sheet } from "@ui/Sheet";
-import { cn } from "@ui/cn";
-import { useSize } from "react-use";
-import { useTableDensity } from "../lib/useTableDensity";
+} from '@common/lib/deploymentContext'
+import { useTableMetadata } from '@common/lib/useTableMetadata'
+import { Loading } from '@ui/Loading'
+import { Button } from '@ui/Button'
+import { Sheet } from '@ui/Sheet'
+import { cn } from '@ui/cn'
+import { useSize } from 'react-use'
+import { useTableDensity } from '../lib/useTableDensity'
 
 // Example table data for the background
-const EXAMPLE_COLUMNS = ["_id", "name", "email", "_creationTime"];
+const EXAMPLE_COLUMNS = ['_id', 'name', 'email', '_creationTime']
 
 export function EmptyData() {
   return (
     <div className="flex h-full items-center justify-center p-6">
       <EmptyDataContent noTables />
     </div>
-  );
+  )
 }
 
 export function EmptyDataContent({
   noTables,
   openAddDocuments,
 }: {
-  noTables?: boolean;
-  openAddDocuments?: () => void;
+  noTables?: boolean
+  openAddDocuments?: () => void
 }) {
-  const { selectedNent } = useNents();
+  const { selectedNent } = useNents()
 
-  const { useLogDeploymentEvent } = useContext(DeploymentInfoContext);
-  const { useIsOperationAllowed } = useContext(PermissionsContext);
+  const { useLogDeploymentEvent } = useContext(DeploymentInfoContext)
+  const { useIsOperationAllowed } = useContext(PermissionsContext)
 
-  const canAddDocuments = useIsOperationAllowed("WriteData");
-  const tableMetadata = useTableMetadata();
-  const log = useLogDeploymentEvent();
+  const canAddDocuments = useIsOperationAllowed('WriteData')
+  const tableMetadata = useTableMetadata()
+  const log = useLogDeploymentEvent()
 
-  const sizeMe = <div />;
-  const [sized, { width }] = useSize(sizeMe);
+  const sizeMe = <div />
+  const [sized, { width }] = useSize(sizeMe)
 
-  const [fakeRowsCount, setFakeRowsCount] = useState(20);
-  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [fakeRowsCount, setFakeRowsCount] = useState(20)
+  const tableContainerRef = useRef<HTMLDivElement>(null)
 
-  const { densityValues } = useTableDensity();
-  const rowHeight = densityValues.height;
+  const { densityValues } = useTableDensity()
+  const rowHeight = densityValues.height
 
   useEffect(() => {
-    if (!tableContainerRef.current) return;
+    if (!tableContainerRef.current) return
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const ROW_HEIGHT = rowHeight;
-        const rowsNeeded = Math.ceil(entry.contentRect.height / ROW_HEIGHT);
-        setFakeRowsCount(rowsNeeded + 5);
+        const ROW_HEIGHT = rowHeight
+        const rowsNeeded = Math.ceil(entry.contentRect.height / ROW_HEIGHT)
+        setFakeRowsCount(rowsNeeded + 5)
       }
-    });
-    resizeObserver.observe(tableContainerRef.current);
+    })
+    resizeObserver.observe(tableContainerRef.current)
     return () => {
-      resizeObserver.disconnect();
-    };
-  }, [rowHeight]);
+      resizeObserver.disconnect()
+    }
+  }, [rowHeight])
 
   if (!tableMetadata) {
-    return <Loading />;
+    return <Loading />
   }
 
   return (
@@ -85,7 +85,7 @@ export function EmptyDataContent({
         className="pointer-events-none absolute inset-0"
         style={{
           maskImage:
-            "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgb(0,0,0,0.3) 30%, transparent 85%)",
+            'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgb(0,0,0,0.3) 30%, transparent 85%)',
         }}
       >
         <div className="flex size-full flex-col">
@@ -192,22 +192,22 @@ export function EmptyDataContent({
         <Sheet
           padding={false}
           className={cn(
-            "size-fit bg-background-secondary/90 backdrop-blur-[2px]",
-            width > 320 ? "m-6 p-2" : "m-0 p-0",
+            'size-fit bg-background-secondary/90 backdrop-blur-[2px]',
+            width > 320 ? 'm-6 p-2' : 'm-0 p-0',
           )}
         >
           <EmptySection
             Icon={TableIcon}
             header={
               noTables
-                ? "There are no tables here yet."
-                : "This table is empty."
+                ? 'There are no tables here yet.'
+                : 'This table is empty.'
             }
             sheet={false}
             body={
               noTables
-                ? "Create a table to start storing data."
-                : "Create a document or run a mutation to start storing data."
+                ? 'Create a table to start storing data.'
+                : 'Create a document or run a mutation to start storing data.'
             }
             action={
               noTables ? (
@@ -218,19 +218,19 @@ export function EmptyDataContent({
                     <Button
                       inline
                       onClick={() => {
-                        log("open add documents panel", { how: "empty data" });
-                        openAddDocuments();
+                        log('open add documents panel', { how: 'empty data' })
+                        openAddDocuments()
                       }}
                       size="sm"
                       disabled={
                         !canAddDocuments ||
-                        !!(selectedNent && selectedNent.state !== "active")
+                        !!(selectedNent && selectedNent.state !== 'active')
                       }
                       tip={
-                        selectedNent && selectedNent.state !== "active"
-                          ? "Cannot add documents in an unmounted component."
+                        selectedNent && selectedNent.state !== 'active'
+                          ? 'Cannot add documents in an unmounted component.'
                           : !canAddDocuments &&
-                            "You do not have permission to add documents in this deployment."
+                            'You do not have permission to add documents in this deployment.'
                       }
                       icon={<PlusIcon aria-hidden="true" />}
                     >
@@ -241,12 +241,12 @@ export function EmptyDataContent({
               )
             }
             learnMoreButton={{
-              href: "https://docs.convex.dev/quickstarts",
-              children: "Follow a quickstart guide",
+              href: 'https://docs.convex.dev/quickstarts',
+              children: 'Follow a quickstart guide',
             }}
           />
         </Sheet>
       </div>
     </div>
-  );
+  )
 }

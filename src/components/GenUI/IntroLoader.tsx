@@ -26,7 +26,9 @@ export function IntroLoader({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isMounted, setIsMounted] = useState(false)
-  const [logoClass, setLogoClass] = useState<'hidden' | 'visible' | 'shaking' | 'settled'>('visible')
+  const [logoClass, setLogoClass] = useState<
+    'hidden' | 'visible' | 'shaking' | 'settled'
+  >('visible')
   const [phaseVisible, setPhaseVisible] = useState(true)
   const [statusIdx, setStatusIdx] = useState(0)
   const [isExiting, setIsExiting] = useState(false)
@@ -80,7 +82,7 @@ export function IntroLoader({
       typeof window !== 'undefined' &&
       window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    
+
     if (reduce) {
       setLogoClass('visible')
       setPhaseVisible(true)
@@ -119,23 +121,29 @@ export function IntroLoader({
   }, [effectiveProgress, isExiting])
 
   return (
-    <div 
+    <div
       ref={overlayRef}
       className={cn(
         'group pointer-events-none fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_38%,rgba(41,232,255,0.2),transparent_22%),radial-gradient(circle_at_73%_20%,rgba(166,74,255,0.2),transparent_31%),radial-gradient(circle_at_22%_78%,rgba(17,72,214,0.2),transparent_34%),linear-gradient(180deg,#050714_0%,#0a0e25_46%,#030511_100%)] transition-[opacity,transform] duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] before:absolute before:inset-[-20%] before:z-0 before:animate-pulse before:bg-[linear-gradient(105deg,transparent_0_38%,rgba(32,225,255,0.1)_43%,transparent_49%),linear-gradient(72deg,transparent_0_58%,rgba(170,70,255,0.12)_63%,transparent_69%)] before:opacity-80 before:blur-[2px] after:absolute after:inset-x-[-12%] after:bottom-[-16%] after:z-0 after:h-[50vh] after:translate-y-[var(--intro-glow-y,12vh)] after:bg-[radial-gradient(ellipse_at_50%_0%,rgba(31,228,255,0.18),transparent_62%),linear-gradient(90deg,transparent,rgba(45,232,255,0.16),transparent)] after:blur-[22px] after:transition-transform after:duration-1000',
         isExiting && 'is-exiting opacity-0',
       )}
-      style={{
-        '--intro-progress': effectiveProgress,
-        '--intro-frame-y': `${58 - effectiveProgress * 58}vh`,
-        '--intro-frame-scale': 0.9 + effectiveProgress * 0.1,
-        '--intro-frame-opacity': effectiveProgress > 0.1 ? 1 : 0,
-      } as React.CSSProperties}
+      style={
+        {
+          '--intro-progress': effectiveProgress,
+          '--intro-frame-y': `${58 - effectiveProgress * 58}vh`,
+          '--intro-frame-scale': 0.9 + effectiveProgress * 0.1,
+          '--intro-frame-opacity': effectiveProgress > 0.1 ? 1 : 0,
+        } as React.CSSProperties
+      }
       role="status"
       aria-live="polite"
       aria-busy={!isExiting}
     >
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" aria-hidden />
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full"
+        aria-hidden
+      />
       <IntroBeams />
       <IntroPreviewFrame />
       <IntroLogo logoClass={logoClass} />

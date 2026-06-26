@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * PlumbingHvacFooter — a multi-column site footer for a plumbing & HVAC trade
@@ -34,9 +34,9 @@ const PipeMark = () => (
 )
 
 export const PlumbingHvacFooter = defineComponent({
-  name: "PlumbingHvacFooter",
+  name: 'PlumbingHvacFooter',
   description:
-    "Multi-column site footer for a plumbing & HVAC trade site built on the shared SiteFooter composite: a pipe/droplet brand mark + wordmark, a tagline, a social row, and a responsive grid of link columns (Services / Service Area / Company / Contact with address, phone, and email); below, a bordered-top bottom bar with an auto-updating copyright line and optional legal links. The brand, every column link, and each social link route through useNavigate. Use as the closing footer for plumber, HVAC, or other home-service sites.",
+    'Multi-column site footer for a plumbing & HVAC trade site built on the shared SiteFooter composite: a pipe/droplet brand mark + wordmark, a tagline, a social row, and a responsive grid of link columns (Services / Service Area / Company / Contact with address, phone, and email); below, a bordered-top bottom bar with an auto-updating copyright line and optional legal links. The brand, every column link, and each social link route through useNavigate. Use as the closing footer for plumber, HVAC, or other home-service sites.',
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -62,37 +62,47 @@ export const PlumbingHvacFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Pipeworks Plumbing & HVAC"
+    const brand = props.brand ?? 'Pipeworks Plumbing & HVAC'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Services",
-            links: ["Repair", "Installation", "Maintenance", "Emergency Service"],
-          },
-          {
-            title: "Service Area",
-            links: ["Downtown", "North Side", "West End", "Surrounding Suburbs"],
-          },
-          {
-            title: "Company",
-            links: ["About", "Reviews", "Careers", "Financing"],
-          },
-          {
-            title: "Contact",
+            title: 'Services',
             links: [
-              "1420 Industrial Ave, Springfield",
-              "(555) 010-7878",
-              "hello@pipeworks.example",
+              'Repair',
+              'Installation',
+              'Maintenance',
+              'Emergency Service',
+            ],
+          },
+          {
+            title: 'Service Area',
+            links: [
+              'Downtown',
+              'North Side',
+              'West End',
+              'Surrounding Suburbs',
+            ],
+          },
+          {
+            title: 'Company',
+            links: ['About', 'Reviews', 'Careers', 'Financing'],
+          },
+          {
+            title: 'Contact',
+            links: [
+              '1420 Industrial Ave, Springfield',
+              '(555) 010-7878',
+              'hello@pipeworks.example',
             ],
           },
         ]
     const social = props.social?.length
       ? props.social
-      : [{ label: "Facebook" }, { label: "Instagram" }, { label: "Google" }]
+      : [{ label: 'Facebook' }, { label: 'Instagram' }, { label: 'Google' }]
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy", "Terms", "Licensing"]
+      : ['Privacy', 'Terms', 'Licensing']
 
     return (
       <SiteFooter
@@ -101,12 +111,12 @@ export const PlumbingHvacFooter = defineComponent({
         brandClassName="text-lg font-bold"
         tagline={
           props.tagline ??
-          "Licensed, insured, and available 24/7 for all your plumbing and HVAC needs. Honest work, fair prices, guaranteed."
+          'Licensed, insured, and available 24/7 for all your plumbing and HVAC needs. Honest work, fair prices, guaranteed.'
         }
         columns={columns}
         social={social}
         legal={legal}
-        note={props.note ?? "License #PL-0042189 • All rights reserved."}
+        note={props.note ?? 'License #PL-0042189 • All rights reserved.'}
         className={props.className}
       />
     )

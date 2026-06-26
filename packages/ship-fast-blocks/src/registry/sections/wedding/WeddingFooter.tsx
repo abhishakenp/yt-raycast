@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const Mark = ({ className }: { className?: string }) => (
   <svg
@@ -20,9 +20,9 @@ const Mark = ({ className }: { className?: string }) => (
 )
 
 export const WeddingFooter = defineComponent({
-  name: "WeddingFooter",
+  name: 'WeddingFooter',
   description:
-    "Elegant wedding site footer built on the shared SiteFooter composite: a serif couple wordmark with an interlocking-rings mark, a warm tagline, the wedding day details, explore links, and a questions/contact column. Use as the closing band of a wedding invitation or celebration page.",
+    'Elegant wedding site footer built on the shared SiteFooter composite: a serif couple wordmark with an interlocking-rings mark, a warm tagline, the wedding day details, explore links, and a questions/contact column. Use as the closing band of a wedding invitation or celebration page.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -48,32 +48,36 @@ export const WeddingFooter = defineComponent({
   component: ({ props }) => {
     const social = props.social?.length
       ? props.social
-      : [{ label: "Instagram" }, { label: "#AvaAndLiam" }]
+      : [{ label: 'Instagram' }, { label: '#AvaAndLiam' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "The Day",
-            links: ["September 14, 2025", "Willowbrook Gardens", "Napa Valley, CA"],
+            title: 'The Day',
+            links: [
+              'September 14, 2025',
+              'Willowbrook Gardens',
+              'Napa Valley, CA',
+            ],
           },
           {
-            title: "Explore",
-            links: ["Story", "Gallery", "Details", "RSVP"],
+            title: 'Explore',
+            links: ['Story', 'Gallery', 'Details', 'RSVP'],
           },
           {
-            title: "Questions?",
-            links: ["hello@avaandliam.com", "FAQ", "Travel & Stay"],
+            title: 'Questions?',
+            links: ['hello@avaandliam.com', 'FAQ', 'Travel & Stay'],
           },
         ]
     return (
       <SiteFooter
-        brand={props.brand ?? "Ava & Liam"}
+        brand={props.brand ?? 'Ava & Liam'}
         brandMark={<Mark className="size-7 text-primary" />}
         brandClassName="font-serif text-lg font-medium"
         tagline={props.tagline ?? "Can't wait to celebrate with you."}
         social={social}
         columns={columns}
-        note={props.note ?? "With love."}
+        note={props.note ?? 'With love.'}
         className={props.className}
       />
     )

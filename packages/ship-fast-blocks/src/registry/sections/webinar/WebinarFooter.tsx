@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * WebinarFooter — a rich, multi-column closing footer for a webinar or virtual
@@ -32,9 +32,9 @@ const BroadcastMark = ({ className }: { className?: string }) => (
 )
 
 export const WebinarFooter = defineComponent({
-  name: "WebinarFooter",
+  name: 'WebinarFooter',
   description:
-    "Rich, multi-column closing footer for a webinar or virtual-event site built on the shared SiteFooter composite: a brand block (semibold wordmark + broadcast mark + tagline + social row of LinkedIn/Twitter/YouTube) beside link columns (Event, Resources, Company), with a bordered-top bottom bar holding an auto-updating copyright line and legal links. Use as the site-wide footer for webinars, summits, masterclasses, or any registration-driven event page.",
+    'Rich, multi-column closing footer for a webinar or virtual-event site built on the shared SiteFooter composite: a brand block (semibold wordmark + broadcast mark + tagline + social row of LinkedIn/Twitter/YouTube) beside link columns (Event, Resources, Company), with a bordered-top bottom bar holding an auto-updating copyright line and legal links. Use as the site-wide footer for webinars, summits, masterclasses, or any registration-driven event page.',
   props: z.object({
     /** Event host / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -57,38 +57,38 @@ export const WebinarFooter = defineComponent({
   component: ({ props }) => {
     const social = props.social?.length
       ? props.social
-      : [{ label: "LinkedIn" }, { label: "Twitter" }, { label: "YouTube" }]
+      : [{ label: 'LinkedIn' }, { label: 'Twitter' }, { label: 'YouTube' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Event",
-            links: ["Overview", "Agenda", "Speakers", "Register"],
+            title: 'Event',
+            links: ['Overview', 'Agenda', 'Speakers', 'Register'],
           },
           {
-            title: "Resources",
-            links: ["Blog", "Past webinars", "Guides", "FAQ"],
+            title: 'Resources',
+            links: ['Blog', 'Past webinars', 'Guides', 'FAQ'],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Contact", "Press"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Contact', 'Press'],
           },
         ]
-    const legal = props.legal?.length ? props.legal : ["Privacy", "Terms"]
+    const legal = props.legal?.length ? props.legal : ['Privacy', 'Terms']
 
     return (
       <SiteFooter
-        brand={props.brand ?? "Catalyst Labs"}
+        brand={props.brand ?? 'Catalyst Labs'}
         brandMark={<BroadcastMark className="size-8 text-primary" />}
         brandClassName="font-semibold tracking-tight"
         tagline={
           props.tagline ??
-          "Live, practical sessions for SaaS operators who want to grow faster."
+          'Live, practical sessions for SaaS operators who want to grow faster.'
         }
         social={social}
         columns={columns}
         legal={legal}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

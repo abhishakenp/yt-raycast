@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ArchitectureFirmHero — split editorial hero for an architecture-studio /
@@ -17,9 +17,9 @@ import { Image } from "#/lib/img.tsx"
  * with no props.
  */
 export const ArchitectureFirmHero = defineComponent({
-  name: "ArchitectureFirmHero",
+  name: 'ArchitectureFirmHero',
   description:
-    "Split editorial hero for an architecture-studio / design-practice landing page: a left-aligned content column with a wide letter-spaced eyebrow label, a serene two-line light headline, a relaxed lead paragraph and dual CTAs (solid primary + outline secondary), beside a full-height facade photograph anchored to the right edge on large screens. Calm Scandinavian-minimalist aesthetic with generous whitespace, light type weights and quiet monochrome contrast. CTAs route through useNavigate. Use as the opening hero for architecture firms, design studios, interior designers, landscape architects, urban planners or premium built-environment portfolio sites.",
+    'Split editorial hero for an architecture-studio / design-practice landing page: a left-aligned content column with a wide letter-spaced eyebrow label, a serene two-line light headline, a relaxed lead paragraph and dual CTAs (solid primary + outline secondary), beside a full-height facade photograph anchored to the right edge on large screens. Calm Scandinavian-minimalist aesthetic with generous whitespace, light type weights and quiet monochrome contrast. CTAs route through useNavigate. Use as the opening hero for architecture firms, design studios, interior designers, landscape architects, urban planners or premium built-environment portfolio sites.',
   props: z.object({
     /** Wide letter-spaced eyebrow label above the headline. */
     eyebrow: z.string().optional(),
@@ -39,23 +39,23 @@ export const ArchitectureFirmHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Architecture Studio — Copenhagen"
-    const headingLine1 = props.headingLine1 ?? "Spaces that breathe,"
-    const headingLine2 = props.headingLine2 ?? "structures that endure"
+    const eyebrow = props.eyebrow ?? 'Architecture Studio — Copenhagen'
+    const headingLine1 = props.headingLine1 ?? 'Spaces that breathe,'
+    const headingLine2 = props.headingLine2 ?? 'structures that endure'
     const subheading =
       props.subheading ??
-      "Atelier Móði creates architecture rooted in place, informed by climate, and designed for the way people actually live. From intimate residential renovations to cultural institutions, we build with intention."
-    const primaryCta = props.primaryCta ?? "View Projects"
-    const secondaryCta = props.secondaryCta ?? "Our Philosophy"
+      'Atelier Móði creates architecture rooted in place, informed by climate, and designed for the way people actually live. From intimate residential renovations to cultural institutions, we build with intention.'
+    const primaryCta = props.primaryCta ?? 'View Projects'
+    const secondaryCta = props.secondaryCta ?? 'Our Philosophy'
     const imageAlt =
       props.imageAlt ??
-      "Minimalist modern building facade with clean geometric lines and natural stone cladding"
+      'Minimalist modern building facade with clean geometric lines and natural stone cladding'
 
     return (
       <section
         aria-labelledby="architecture-firm-hero-heading"
         className={cn(
-          "relative flex min-h-[70vh] items-center",
+          'relative flex min-h-[70vh] items-center',
           props.className,
         )}
       >

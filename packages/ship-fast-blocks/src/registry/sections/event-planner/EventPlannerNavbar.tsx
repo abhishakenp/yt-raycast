@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * EventPlannerNavbar — fixed translucent top navigation for a luxury event-planning
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * organizers, or any premium hospitality service.
  */
 export const EventPlannerNavbar = defineComponent({
-  name: "EventPlannerNavbar",
+  name: 'EventPlannerNavbar',
   description:
     "Fixed translucent top navigation bar for a luxury event-planning agency site: backdrop-blurred, border-bottomed header with a thin clock-glyph logo + light-weight brand name on the left, horizontal nav links on the right (desktop), a filled primary pill 'Book Consultation' CTA, and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for wedding/event planners, party, celebration, corporate-event and gala organizers, or any premium hospitality service.",
   props: z.object({
@@ -27,11 +27,11 @@ export const EventPlannerNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Serene Events"
+    const brand = props.brand ?? 'Serene Events'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Gallery", "Process", "Testimonials", "FAQ"]
-    const ctaLabel = props.ctaLabel ?? "Book Consultation"
+      : ['Services', 'Gallery', 'Process', 'Testimonials', 'FAQ']
+    const ctaLabel = props.ctaLabel ?? 'Book Consultation'
 
     const Clock = ({ className }: { className?: string }) => (
       <svg
@@ -53,7 +53,7 @@ export const EventPlannerNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

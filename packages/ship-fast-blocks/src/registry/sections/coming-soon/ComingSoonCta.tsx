@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ComingSoonCta — final email-capture CTA band for a "launching soon" / waitlist
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in defaults.
  */
 export const ComingSoonCta = defineComponent({
-  name: "ComingSoonCta",
+  name: 'ComingSoonCta',
   description:
     "Final email-capture CTA band for a 'launching soon' / waitlist pre-launch landing page: centered heading and supporting paragraph above an inline email-capture form with a primary submit button, followed by a contact email line below. Form submit and the contact email link route through useNavigate. Use as the closing conversion push on SaaS waitlists, app pre-launch pages, beta sign-ups, or 'notify me' / early-access landing pages.",
   props: z.object({
@@ -33,25 +33,24 @@ export const ComingSoonCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading =
-      props.heading ?? "Ready to transform how your team works?"
+    const heading = props.heading ?? 'Ready to transform how your team works?'
     const description =
       props.description ??
-      "Join 12,000+ teams on the waitlist. Early access members save 50% for 6 months."
-    const emailPlaceholder = props.emailPlaceholder ?? "Enter your email"
-    const submit = props.submit ?? "Get early access"
-    const contactPrefix = props.contactPrefix ?? "Questions? Reach us at"
-    const contactEmail = props.contactEmail ?? "hello@nexus.app"
+      'Join 12,000+ teams on the waitlist. Early access members save 50% for 6 months.'
+    const emailPlaceholder = props.emailPlaceholder ?? 'Enter your email'
+    const submit = props.submit ?? 'Get early access'
+    const contactPrefix = props.contactPrefix ?? 'Questions? Reach us at'
+    const contactEmail = props.contactEmail ?? 'hello@nexus.app'
 
     const inputCls =
-      "flex-1 rounded-lg border border-input bg-background px-5 py-3.5 text-sm text-foreground placeholder-muted-foreground transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+      'flex-1 rounded-lg border border-input bg-background px-5 py-3.5 text-sm text-foreground placeholder-muted-foreground transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring'
     const submitCls =
-      "whitespace-nowrap rounded-lg bg-primary px-8 py-3.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+      'whitespace-nowrap rounded-lg bg-primary px-8 py-3.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
 
     return (
       <section
         className={cn(
-          "w-full px-4 py-24 sm:px-6 sm:py-32 lg:px-8 xl:px-12",
+          'w-full px-4 py-24 sm:px-6 sm:py-32 lg:px-8 xl:px-12',
           props.className,
         )}
       >
@@ -88,7 +87,7 @@ export const ComingSoonCta = defineComponent({
             </div>
           </form>
           <p className="mt-8 text-xs text-muted-foreground">
-            {contactPrefix}{" "}
+            {contactPrefix}{' '}
             <button
               type="button"
               onClick={() => go(contactEmail)}

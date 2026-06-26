@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NewsroomFeaturedStory — editorial "Editor's Pick" featured long-read band for
@@ -16,7 +16,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * homepages. Renders fully with no props.
  */
 export const NewsroomFeaturedStory = defineComponent({
-  name: "NewsroomFeaturedStory",
+  name: 'NewsroomFeaturedStory',
   description:
     "Editorial 'Editor's Pick' featured long-read band for a digital newsroom or magazine: a two-column split with a large feature photograph on one side and, on the other, a wide letter-spaced eyebrow label, a serif headline, a two-to-three sentence excerpt, a short bulleted 'key points' list, a set-off pull-quote, a byline (author • date) and a 'Continue reading' CTA that routes through useNavigate. Magazine-grade, unhurried, long-form aesthetic. Use to spotlight a featured analysis, cover story or editor-selected long read on news sites, magazines, blogs or publication homepages.",
   props: z.object({
@@ -44,31 +44,31 @@ export const NewsroomFeaturedStory = defineComponent({
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? "EDITOR'S PICK"
     const headline =
-      props.headline ?? "The Quiet Reordering of the Global Supply Chain"
+      props.headline ?? 'The Quiet Reordering of the Global Supply Chain'
     const excerpt =
       props.excerpt ??
       "For two decades, manufacturers chased the lowest possible cost across a single, sprawling network. A pandemic, a war and a wave of tariffs have rewritten that logic. This is the story of how the world's factories are being redrawn, region by region."
     const points = props.points?.length
       ? props.points
       : [
-          "Nearshoring has doubled in three of the four largest manufacturing hubs since 2021.",
+          'Nearshoring has doubled in three of the four largest manufacturing hubs since 2021.',
           "Inventory buffers are up 18% on average as 'just-in-time' gives way to 'just-in-case'.",
-          "Smaller suppliers, long squeezed out, are quietly winning back regional contracts.",
+          'Smaller suppliers, long squeezed out, are quietly winning back regional contracts.',
         ]
     const quote =
       props.quote ??
-      "We stopped optimizing for the cheapest mile and started optimizing for the mile we can count on."
-    const author = props.author ?? "Mara Delacroix"
-    const date = props.date ?? "June 18, 2026"
+      'We stopped optimizing for the cheapest mile and started optimizing for the mile we can count on.'
+    const author = props.author ?? 'Mara Delacroix'
+    const date = props.date ?? 'June 18, 2026'
     const imageAlt =
       props.imageAlt ??
-      "Aerial view of a busy container port at dusk with cranes and stacked shipping containers"
-    const cta = props.cta ?? "Continue reading"
+      'Aerial view of a busy container port at dusk with cranes and stacked shipping containers'
+    const cta = props.cta ?? 'Continue reading'
 
     return (
       <section
         aria-labelledby="newsroom-featured-story-heading"
-        className={cn("bg-background py-20 lg:py-28", props.className)}
+        className={cn('bg-background py-20 lg:py-28', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">

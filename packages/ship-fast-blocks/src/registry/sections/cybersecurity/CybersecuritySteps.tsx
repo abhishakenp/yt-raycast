@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CybersecuritySteps — deploy-in-minutes timeline. A muted-band section with a
@@ -13,9 +13,9 @@ import { cn } from "#/lib/utils.ts"
  * security SaaS. Renders fully with no props via baked-in deployment defaults.
  */
 export const CybersecuritySteps = defineComponent({
-  name: "CybersecuritySteps",
+  name: 'CybersecuritySteps',
   description:
-    "Deploy-in-minutes timeline: a muted-band section with a centered heading + subheading above a 3-column step layout connected by a dashed horizontal rule (desktop). Each step has a large numbered square tile, bold title and description; step 1 adds an inline mono code snippet, step 2 a check-marked checklist, step 3 a pulsing live-status indicator. Pure display, no links. Use to explain fast onboarding for cybersecurity vendors, SOC/MDR providers, or any agent/API-deployed security SaaS.",
+    'Deploy-in-minutes timeline: a muted-band section with a centered heading + subheading above a 3-column step layout connected by a dashed horizontal rule (desktop). Each step has a large numbered square tile, bold title and description; step 1 adds an inline mono code snippet, step 2 a check-marked checklist, step 3 a pulsing live-status indicator. Pure display, no links. Use to explain fast onboarding for cybersecurity vendors, SOC/MDR providers, or any agent/API-deployed security SaaS.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -34,34 +34,34 @@ export const CybersecuritySteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Deploy in minutes, not months"
+    const heading = props.heading ?? 'Deploy in minutes, not months'
     const description =
       props.description ??
-      "Get enterprise-grade protection without the enterprise-grade complexity"
+      'Get enterprise-grade protection without the enterprise-grade complexity'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Connect your infrastructure",
+            title: 'Connect your infrastructure',
             description:
-              "One-line agent deployment or API integration. Support for AWS, Azure, GCP, Kubernetes, and on-premise environments. No configuration changes required.",
+              'One-line agent deployment or API integration. Support for AWS, Azure, GCP, Kubernetes, and on-premise environments. No configuration changes required.',
           },
           {
-            title: "Discover & baseline",
+            title: 'Discover & baseline',
             description:
-              "Our platform automatically maps your assets, identifies vulnerabilities, and establishes behavioral baselines. Full visibility in under 24 hours.",
+              'Our platform automatically maps your assets, identifies vulnerabilities, and establishes behavioral baselines. Full visibility in under 24 hours.',
           },
           {
-            title: "Start protecting",
+            title: 'Start protecting',
             description:
-              "Threat detection activates immediately. Customize policies, set up notifications, and access your dashboard. SOC team available 24/7 for escalation.",
+              'Threat detection activates immediately. Customize policies, set up notifications, and access your dashboard. SOC team available 24/7 for escalation.',
           },
         ]
-    const snippet = props.snippet ?? "curl -sL https://sg.io/install | bash"
+    const snippet = props.snippet ?? 'curl -sL https://sg.io/install | bash'
     const checklist = props.checklist?.length
       ? props.checklist
-      : ["Asset inventory", "Risk scoring", "Baseline profiles"]
-    const liveLabel = props.liveLabel ?? "Live protection active"
+      : ['Asset inventory', 'Risk scoring', 'Baseline profiles']
+    const liveLabel = props.liveLabel ?? 'Live protection active'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -79,7 +79,7 @@ export const CybersecuritySteps = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted/50 py-24", props.className)}>
+      <section className={cn('bg-muted/50 py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>

@@ -22,9 +22,7 @@ export const escapeRegExp = (value: string): string =>
 const SCRIPT_STYLE_BLOCK_RE =
   /<(script|style|noscript|template)\b[\s\S]*?<\/\1>/gi
 
-const createWhitespaceTolerantTextPattern = (
-  value: string,
-): RegExp | null => {
+const createWhitespaceTolerantTextPattern = (value: string): RegExp | null => {
   const tokens = value.trim().split(/\s+/).filter(Boolean)
   if (tokens.length === 0) return null
 
@@ -124,7 +122,9 @@ export const readHtmlAttribute = (
   return match?.[1]?.trim() || undefined
 }
 
-export const inferCmsBindingType = (field: string | undefined): CmsBindingType => {
+export const inferCmsBindingType = (
+  field: string | undefined,
+): CmsBindingType => {
   const normalized =
     field?.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase() ?? ''
   if (
@@ -181,7 +181,10 @@ export const isCmsSiteSpecContentPath = (path: string[]): boolean => {
   return !/^[_$]/.test(leaf)
 }
 
-export const siteSpecContentType = (field: string, type: CmsBindingType): string =>
+export const siteSpecContentType = (
+  field: string,
+  type: CmsBindingType,
+): string =>
   type === 'image' || type === 'link'
     ? 'text/uri-list'
     : /\b(body|content|description|summary|excerpt|bio|answer|paragraph|copy)\b/i.test(

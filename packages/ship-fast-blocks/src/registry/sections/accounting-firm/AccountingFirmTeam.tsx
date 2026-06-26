@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AccountingFirmTeam — leadership team grid for a CPA / accounting-firm site. A
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * providers, audit firms, or advisory practices. Renders fully with no props.
  */
 export const AccountingFirmTeam = defineComponent({
-  name: "AccountingFirmTeam",
+  name: 'AccountingFirmTeam',
   description:
-    "Leadership team grid for a CPA / accounting-firm site: a muted band with a centered heading + lede above a responsive 1-to-4 column grid of bordered cards, each with a square headshot, name, role, and short bio, plus a centered footnote with an arrow-linked meet-the-full-team action. Calm professional-services look; headshots use the alt-driven Image component and the footnote action routes through useNavigate. Use to introduce partners on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or advisory practices.",
+    'Leadership team grid for a CPA / accounting-firm site: a muted band with a centered heading + lede above a responsive 1-to-4 column grid of bordered cards, each with a square headshot, name, role, and short bio, plus a centered footnote with an arrow-linked meet-the-full-team action. Calm professional-services look; headshots use the alt-driven Image component and the footnote action routes through useNavigate. Use to introduce partners on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or advisory practices.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -42,46 +42,46 @@ export const AccountingFirmTeam = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Meet our leadership"
+    const heading = props.heading ?? 'Meet our leadership'
     const description =
       props.description ??
-      "Experienced professionals committed to your financial success."
+      'Experienced professionals committed to your financial success.'
     const members = props.members?.length
       ? props.members
       : [
           {
-            name: "Robert Northridge",
-            role: "Founder & Managing Partner, CPA",
-            bio: "37 years of experience. Specializes in complex business advisory and estate planning.",
+            name: 'Robert Northridge',
+            role: 'Founder & Managing Partner, CPA',
+            bio: '37 years of experience. Specializes in complex business advisory and estate planning.',
             avatarAlt:
-              "professional headshot of Robert Northridge senior partner in charcoal suit with confident expression",
+              'professional headshot of Robert Northridge senior partner in charcoal suit with confident expression',
           },
           {
-            name: "Sarah Chen",
-            role: "Tax Partner, CPA, MST",
-            bio: "18 years in taxation. Expert in multi-state tax planning and IRS dispute resolution.",
+            name: 'Sarah Chen',
+            role: 'Tax Partner, CPA, MST',
+            bio: '18 years in taxation. Expert in multi-state tax planning and IRS dispute resolution.',
             avatarAlt:
-              "professional headshot of Sarah Chen tax partner with warm smile and professional blazer",
+              'professional headshot of Sarah Chen tax partner with warm smile and professional blazer',
           },
           {
-            name: "Michael Torres",
-            role: "Audit Partner, CPA",
-            bio: "15 years in assurance services. Leads our nonprofit and healthcare audit practice.",
+            name: 'Michael Torres',
+            role: 'Audit Partner, CPA',
+            bio: '15 years in assurance services. Leads our nonprofit and healthcare audit practice.',
             avatarAlt:
-              "professional headshot of Michael Torres audit partner with dark hair and navy suit",
+              'professional headshot of Michael Torres audit partner with dark hair and navy suit',
           },
           {
-            name: "Jennifer Walsh",
-            role: "Advisory Partner, CPA, CFP",
-            bio: "12 years in financial planning. Focuses on retirement strategies and wealth management.",
+            name: 'Jennifer Walsh',
+            role: 'Advisory Partner, CPA, CFP',
+            bio: '12 years in financial planning. Focuses on retirement strategies and wealth management.',
             avatarAlt:
-              "professional headshot of Jennifer Walsh advisory partner with blonde hair and elegant professional attire",
+              'professional headshot of Jennifer Walsh advisory partner with blonde hair and elegant professional attire',
           },
         ]
     const footnote =
       props.footnote ??
-      "Our full team includes 20 additional professionals including senior accountants, bookkeepers, and support staff."
-    const footnoteCta = props.footnoteCta ?? "Get to know our full team"
+      'Our full team includes 20 additional professionals including senior accountants, bookkeepers, and support staff.'
+    const footnoteCta = props.footnoteCta ?? 'Get to know our full team'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -99,7 +99,7 @@ export const AccountingFirmTeam = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

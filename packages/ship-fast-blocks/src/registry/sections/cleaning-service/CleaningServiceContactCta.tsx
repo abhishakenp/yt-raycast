@@ -1,15 +1,15 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CleaningServiceContactCta — a big closing book-now CTA section for a home-cleaning / maid-service landing page. A centered heading + supporting paragraph inside a rounded-3xl primary-colored card with a subtle dot-pattern background overlay, followed by dual pill CTAs (filled primary-foreground + outlined secondary) and a cancellation-note line beneath. Every CTA routes through useNavigate. Use as the final conversion push for residential cleaning companies, maid services, housekeeping platforms, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
  */
 export const CleaningServiceContactCta = defineComponent({
-  name: "CleaningServiceContactCta",
+  name: 'CleaningServiceContactCta',
   description:
-    "Big closing book-now CTA section for a home-cleaning / maid-service landing page: centered heading + supporting paragraph inside a rounded-3xl primary-colored card with a subtle dot-pattern background overlay, followed by dual pill CTAs (filled primary-foreground + outlined secondary with phone icon) and a cancellation-note line beneath. CTAs route through useNavigate. Use as the final conversion push for residential cleaning, maid services, housekeeping, or local home-service brands.",
+    'Big closing book-now CTA section for a home-cleaning / maid-service landing page: centered heading + supporting paragraph inside a rounded-3xl primary-colored card with a subtle dot-pattern background overlay, followed by dual pill CTAs (filled primary-foreground + outlined secondary with phone icon) and a cancellation-note line beneath. CTAs route through useNavigate. Use as the final conversion push for residential cleaning, maid services, housekeeping, or local home-service brands.',
   props: z.object({
     /** Section heading inside the colored card. */
     heading: z.string().optional(),
@@ -25,15 +25,14 @@ export const CleaningServiceContactCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready for a cleaner home?"
+    const heading = props.heading ?? 'Ready for a cleaner home?'
     const description =
       props.description ??
-      "Book your first cleaning today and experience the PureSpace difference. Same-day appointments available for urgent needs."
-    const primaryCta = props.primaryCta ?? "Book Your Cleaning Now"
-    const secondaryCta = props.secondaryCta ?? "Call (555) 123-4567"
+      'Book your first cleaning today and experience the PureSpace difference. Same-day appointments available for urgent needs.'
+    const primaryCta = props.primaryCta ?? 'Book Your Cleaning Now'
+    const secondaryCta = props.secondaryCta ?? 'Call (555) 123-4567'
     const note =
-      props.note ??
-      "Free cancellation up to 24 hours before your appointment"
+      props.note ?? 'Free cancellation up to 24 hours before your appointment'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -70,7 +69,7 @@ export const CleaningServiceContactCta = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl bg-primary p-8 text-center lg:p-16">
             <div aria-hidden="true" className="absolute inset-0 opacity-10">
@@ -120,9 +119,7 @@ export const CleaningServiceContactCta = defineComponent({
                   {secondaryCta}
                 </button>
               </div>
-              <p className="mt-6 text-sm text-primary-foreground/70">
-                {note}
-              </p>
+              <p className="mt-6 text-sm text-primary-foreground/70">{note}</p>
             </div>
           </div>
         </div>

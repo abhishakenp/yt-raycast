@@ -32,7 +32,10 @@ const session = convexRun('sessions:create', {
   anonymousClientId: `anon-verify-deployment-${Date.now()}`,
 })
 const sessionId = session.sessionId
-assert(typeof sessionId === 'string', 'sessions:create did not return sessionId')
+assert(
+  typeof sessionId === 'string',
+  'sessions:create did not return sessionId',
+)
 
 convexRun('internal.sessions.completeGeneration', {
   sessionId,
@@ -41,7 +44,9 @@ convexRun('internal.sessions.completeGeneration', {
   siteSpecJson: JSON.stringify({
     projectName: prompt,
     hero: { headline: prompt },
-    pages: [{ id: 'home', title: prompt, description: 'Deployment verifier page' }],
+    pages: [
+      { id: 'home', title: prompt, description: 'Deployment verifier page' },
+    ],
   }),
   tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
   elapsed: 1500,
@@ -54,19 +59,37 @@ const publish = convexRun('sessions:publishPreview', {
 })
 assert(publish.slug === slug, 'publishPreview returned a different slug')
 assert(publish.status === 'ready', 'publishPreview did not return ready status')
-assert(publish.url === `https://${slug}.ship-fast.io`, 'publishPreview returned wrong public URL')
+assert(
+  publish.url === `https://${slug}.ship-fast.io`,
+  'publishPreview returned wrong public URL',
+)
 
 const status = convexRun('sessions:getDeploymentStatus', { sessionId })
 assert(status.slug === slug, 'getDeploymentStatus returned wrong slug')
 assert(status.status === 'ready', 'getDeploymentStatus did not return ready')
-assert(status.previewVersion === 1, 'deployment status did not pin preview version 1')
+assert(
+  status.previewVersion === 1,
+  'deployment status did not pin preview version 1',
+)
 
 const preview = await requestText(`/preview/${encodeURIComponent(slug)}`)
 assert(preview.status === 200, `/preview/${slug} returned ${preview.status}`)
-assert(preview.contentType.includes('text/html'), 'preview route did not return HTML')
-assert(preview.headers.get('x-ship-fast-deployment') === slug, 'deployment header mismatch')
-assert(preview.headers.get('x-ship-fast-preview-version') === '1', 'preview version header mismatch')
-assert(preview.body.includes(prompt), 'preview HTML did not contain generated prompt')
+assert(
+  preview.contentType.includes('text/html'),
+  'preview route did not return HTML',
+)
+assert(
+  preview.headers.get('x-ship-fast-deployment') === slug,
+  'deployment header mismatch',
+)
+assert(
+  preview.headers.get('x-ship-fast-preview-version') === '1',
+  'preview version header mismatch',
+)
+assert(
+  preview.body.includes(prompt),
+  'preview HTML did not contain generated prompt',
+)
 assert(
   preview.body.includes(`https://${slug}.ship-fast.io/`),
   'preview HTML did not include canonical public URL',
@@ -90,11 +113,15 @@ console.log(
 )
 
 function convexRun(functionName, payload) {
-  const output = execFileSync('bunx', ['convex', 'run', functionName, JSON.stringify(payload)], {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-    timeout: timeoutMs,
-  }).trim()
+  const output = execFileSync(
+    'bunx',
+    ['convex', 'run', functionName, JSON.stringify(payload)],
+    {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: timeoutMs,
+    },
+  ).trim()
   return parseJson(output || 'null', `Convex ${functionName}`)
 }
 

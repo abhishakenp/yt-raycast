@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * DentalServices — 6-up services grid for a dental practice / dentist site. A
@@ -13,9 +13,9 @@ import { cn } from "#/lib/utils.ts"
  * orthodontists, or cosmetic / restorative dental clinics.
  */
 export const DentalServices = defineComponent({
-  name: "DentalServices",
+  name: 'DentalServices',
   description:
-    "6-up services grid for a dental practice / dentist site: a centered eyebrow + heading + lede intro above a responsive 1-to-3 column grid of soft muted cards, each with a rounded tinted icon tile (rotating shield / sparkle / implant / smile / crown / alert glyphs), a service title, a description, and a check-marked bullet list; cards lift and brighten on hover. Use as the core services overview for dentists, dental offices, orthodontists, or cosmetic / restorative dental clinics.",
+    '6-up services grid for a dental practice / dentist site: a centered eyebrow + heading + lede intro above a responsive 1-to-3 column grid of soft muted cards, each with a rounded tinted icon tile (rotating shield / sparkle / implant / smile / crown / alert glyphs), a service title, a description, and a check-marked bullet list; cards lift and brighten on hover. Use as the core services overview for dentists, dental offices, orthodontists, or cosmetic / restorative dental clinics.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -32,73 +32,73 @@ export const DentalServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const servicesEyebrow = props.eyebrow ?? "Our Services"
+    const servicesEyebrow = props.eyebrow ?? 'Our Services'
     const servicesHeading =
-      props.heading ?? "Comprehensive dental care for your entire family"
+      props.heading ?? 'Comprehensive dental care for your entire family'
     const servicesDesc =
       props.description ??
-      "From routine cleanings to advanced cosmetic procedures, we provide a full spectrum of dental services using the latest technology."
+      'From routine cleanings to advanced cosmetic procedures, we provide a full spectrum of dental services using the latest technology.'
     const serviceItems = props.items?.length
       ? props.items
       : [
           {
-            title: "Preventive Care",
+            title: 'Preventive Care',
             description:
-              "Regular checkups, professional cleanings, fluoride treatments, and dental sealants to keep your smile healthy and catch issues early.",
+              'Regular checkups, professional cleanings, fluoride treatments, and dental sealants to keep your smile healthy and catch issues early.',
             points: [
-              "Comprehensive exams",
-              "Digital X-rays",
-              "Oral cancer screenings",
+              'Comprehensive exams',
+              'Digital X-rays',
+              'Oral cancer screenings',
             ],
           },
           {
-            title: "Cosmetic Dentistry",
+            title: 'Cosmetic Dentistry',
             description:
-              "Transform your smile with veneers, professional whitening, bonding, and smile makeovers designed to boost your confidence.",
+              'Transform your smile with veneers, professional whitening, bonding, and smile makeovers designed to boost your confidence.',
             points: [
-              "Porcelain veneers",
-              "Professional whitening",
-              "Invisalign clear aligners",
+              'Porcelain veneers',
+              'Professional whitening',
+              'Invisalign clear aligners',
             ],
           },
           {
-            title: "Dental Implants",
+            title: 'Dental Implants',
             description:
-              "Permanent tooth replacement solutions that look, feel, and function like natural teeth. From single implants to full-arch restorations.",
+              'Permanent tooth replacement solutions that look, feel, and function like natural teeth. From single implants to full-arch restorations.',
             points: [
-              "Single tooth implants",
-              "All-on-4 full arch",
-              "Implant-supported bridges",
+              'Single tooth implants',
+              'All-on-4 full arch',
+              'Implant-supported bridges',
             ],
           },
           {
-            title: "Orthodontics",
+            title: 'Orthodontics',
             description:
-              "Straighten your teeth with modern orthodontic solutions including Invisalign, ceramic braces, and traditional braces for all ages.",
+              'Straighten your teeth with modern orthodontic solutions including Invisalign, ceramic braces, and traditional braces for all ages.',
             points: [
-              "Invisalign treatment",
-              "Clear ceramic braces",
-              "Retainers and night guards",
+              'Invisalign treatment',
+              'Clear ceramic braces',
+              'Retainers and night guards',
             ],
           },
           {
-            title: "Restorative Dentistry",
+            title: 'Restorative Dentistry',
             description:
-              "Repair damaged or missing teeth with crowns, bridges, fillings, and dentures crafted to match your natural smile perfectly.",
+              'Repair damaged or missing teeth with crowns, bridges, fillings, and dentures crafted to match your natural smile perfectly.',
             points: [
-              "CEREC same-day crowns",
-              "Tooth-colored fillings",
-              "Custom dentures",
+              'CEREC same-day crowns',
+              'Tooth-colored fillings',
+              'Custom dentures',
             ],
           },
           {
-            title: "Emergency Care",
+            title: 'Emergency Care',
             description:
               "Dental emergencies can't wait. We offer same-day appointments for toothaches, broken teeth, knocked-out teeth, and other urgent issues.",
             points: [
-              "Same-day appointments",
-              "Root canal therapy",
-              "Tooth extractions",
+              'Same-day appointments',
+              'Root canal therapy',
+              'Tooth extractions',
             ],
           },
         ]
@@ -206,7 +206,7 @@ export const DentalServices = defineComponent({
     ]
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-primary">

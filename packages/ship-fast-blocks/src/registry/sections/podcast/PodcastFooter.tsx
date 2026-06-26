@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const MicWaveMark = ({ className }: { className?: string }) => (
   <svg
@@ -24,7 +24,7 @@ const MicWaveMark = ({ className }: { className?: string }) => (
 )
 
 export const PodcastFooter = defineComponent({
-  name: "PodcastFooter",
+  name: 'PodcastFooter',
   description:
     "Multi-column podcast footer built on SiteFooter: a 'Signal & Static' brand block with a mic/soundwave mark and tagline, a social row (Instagram / Twitter / YouTube), and link columns grouped into Listen, Show, and Company, finished with a bottom copyright note. Designed for podcast and audio-show sites that want a warm, structured close to every page. Renders fully with no props via baked defaults and passes className through for layout control.",
   props: z.object({
@@ -42,26 +42,32 @@ export const PodcastFooter = defineComponent({
   component: ({ props }) => {
     const social = props.social?.length
       ? props.social
-      : [{ label: "Instagram" }, { label: "Twitter" }, { label: "YouTube" }]
+      : [{ label: 'Instagram' }, { label: 'Twitter' }, { label: 'YouTube' }]
     const columns = props.columns?.length
       ? props.columns
       : [
-          { title: "Listen", links: ["Apple Podcasts", "Spotify", "Overcast", "RSS Feed"] },
-          { title: "Show", links: ["Episodes", "About", "Hosts", "Topics"] },
-          { title: "Company", links: ["Sponsor", "Contact", "Press", "Newsletter"] },
+          {
+            title: 'Listen',
+            links: ['Apple Podcasts', 'Spotify', 'Overcast', 'RSS Feed'],
+          },
+          { title: 'Show', links: ['Episodes', 'About', 'Hosts', 'Topics'] },
+          {
+            title: 'Company',
+            links: ['Sponsor', 'Contact', 'Press', 'Newsletter'],
+          },
         ]
     return (
       <SiteFooter
-        brand={props.brand ?? "Signal & Static"}
+        brand={props.brand ?? 'Signal & Static'}
         brandMark={<MicWaveMark className="size-8 text-primary" />}
         brandClassName="font-semibold tracking-tight text-xl"
         tagline={
           props.tagline ??
-          "Conversations on sound, story, and the static in between — a new episode every Thursday."
+          'Conversations on sound, story, and the static in between — a new episode every Thursday.'
         }
         social={social}
         columns={columns}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

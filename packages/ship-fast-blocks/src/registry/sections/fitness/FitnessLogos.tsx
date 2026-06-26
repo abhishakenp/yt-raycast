@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * FitnessLogos — compact trusted-by logo / brand strip for a gym or fitness-studio
@@ -10,23 +10,23 @@ import { cn } from "#/lib/utils.ts"
  * build credibility with recognizable brand or partner names.
  */
 export const FitnessLogos = defineComponent({
-  name: "FitnessLogos",
+  name: 'FitnessLogos',
   description:
-    "Compact trusted-by logo / brand strip for a gym or fitness-studio site: a bordered, card-surfaced band with a small uppercase eyebrow label centered above a wrapping, dimmed row of partner / brand wordmarks. Use directly under the hero on gyms, fitness studios, wellness clubs or class-booking sites to build credibility with recognizable brand or partner names.",
+    'Compact trusted-by logo / brand strip for a gym or fitness-studio site: a bordered, card-surfaced band with a small uppercase eyebrow label centered above a wrapping, dimmed row of partner / brand wordmarks. Use directly under the hero on gyms, fitness studios, wellness clubs or class-booking sites to build credibility with recognizable brand or partner names.',
   props: z.object({
     label: z.string().optional(),
     items: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const logosLabel = props.label ?? "Trusted by teams at"
+    const logosLabel = props.label ?? 'Trusted by teams at'
     const logoItems = props.items?.length
       ? props.items
-      : ["Nike", "Equinox", "Lululemon", "WHOOP", "Rogue", "Concept2"]
+      : ['Nike', 'Equinox', 'Lululemon', 'WHOOP', 'Rogue', 'Concept2']
 
     return (
       <section
-        className={cn("border-y border-border bg-card py-12", props.className)}
+        className={cn('border-y border-border bg-card py-12', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="mb-8 text-center text-xs uppercase tracking-wider text-muted-foreground">

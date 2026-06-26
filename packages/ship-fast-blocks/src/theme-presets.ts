@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 export const themeStylePropsSchema = z.object({
   background: z
@@ -97,57 +97,57 @@ export const themeStylePropsSchema = z.object({
   'shadow-offset-y': z.string(),
   'letter-spacing': z.string().describe('The global letter spacing for text.'),
   spacing: z.string().optional(),
-});
+})
 
 export const themeStylesSchema = z.object({
   light: themeStylePropsSchema,
   dark: themeStylePropsSchema,
-});
+})
 
-export type ThemeStyleProps = z.infer<typeof themeStylePropsSchema>;
+export type ThemeStyleProps = z.infer<typeof themeStylePropsSchema>
 // export type ThemeStyles = z.infer<typeof themeStylesSchema>;
 
 export const themeStylePropsSchemaWithoutSpacing = themeStylePropsSchema.omit({
   spacing: true,
-});
+})
 
 export const themeStylesSchemaWithoutSpacing = z.object({
   light: themeStylePropsSchemaWithoutSpacing,
   dark: themeStylePropsSchemaWithoutSpacing,
-});
+})
 
 export type ThemeStylesWithoutSpacing = z.infer<
   typeof themeStylesSchemaWithoutSpacing
->;
+>
 
 export interface ThemeEditorPreviewProps {
-  styles: ThemeStyles;
-  currentMode: 'light' | 'dark';
+  styles: ThemeStyles
+  currentMode: 'light' | 'dark'
 }
 
 export interface ThemeEditorControlsProps {
-  styles: ThemeStyles;
-  currentMode: 'light' | 'dark';
-  onChange: (styles: ThemeStyles) => void;
-  themePromise: Promise<Theme | null>;
+  styles: ThemeStyles
+  currentMode: 'light' | 'dark'
+  onChange: (styles: ThemeStyles) => void
+  themePromise: Promise<Theme | null>
 }
 
 export type ThemePreset = {
-  source?: 'SAVED' | 'BUILT_IN';
-  createdAt?: string;
-  label?: string;
+  source?: 'SAVED' | 'BUILT_IN'
+  createdAt?: string
+  label?: string
   styles: {
-    light: Partial<ThemeStyleProps>;
-    dark: Partial<ThemeStyleProps>;
-  };
-};
+    light: Partial<ThemeStyleProps>
+    dark: Partial<ThemeStyleProps>
+  }
+}
 
 const theme = z.object({
   name: z.string(),
   styles: z.record(z.string(), themeStylesSchema),
-});
+})
 
-export type Theme = z.infer<typeof theme>;
+export type Theme = z.infer<typeof theme>
 
 export const defaultPresets: Record<string, ThemePreset> = {
   'modern-minimal': {
@@ -3746,5 +3746,5 @@ export const defaultPresets: Record<string, ThemePreset> = {
       },
     },
   },
-} as const;
-export type ThemeStyles = (typeof defaultPresets)[string]['styles'];
+} as const
+export type ThemeStyles = (typeof defaultPresets)[string]['styles']

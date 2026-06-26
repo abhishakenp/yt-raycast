@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * InsurancePricing — 3-tier transparent pricing table for an insurance page. On
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * with no props via baked-in defaults.
  */
 export const InsurancePricing = defineComponent({
-  name: "InsurancePricing",
+  name: 'InsurancePricing',
   description:
     "3-tier transparent pricing table for an insurance page on a soft muted canvas: a centered eyebrow chip + heading + lede above a 3-column grid of plan cards (name, tagline, big monthly price + period, an included/excluded feature checklist with check or cross icons, and a CTA button). The 'Most Popular' plan is highlighted with a brand border, upward lift and a top badge. CTAs route through useNavigate. Use as the pricing section for insurance carriers, insurtech startups, brokers, or financial-protection products.",
   props: z.object({
@@ -46,57 +46,57 @@ export const InsurancePricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Transparent Pricing"
-    const heading = props.heading ?? "Simple, upfront pricing"
+    const eyebrow = props.eyebrow ?? 'Transparent Pricing'
+    const heading = props.heading ?? 'Simple, upfront pricing'
     const description =
       props.description ??
       "No hidden fees, no surprises. Choose the coverage level that's right for you."
-    const popularLabel = props.popularLabel ?? "Most Popular"
+    const popularLabel = props.popularLabel ?? 'Most Popular'
     const plans = props.plans?.length
       ? props.plans
       : [
           {
-            name: "Essential",
-            tagline: "Basic coverage for budget-conscious families",
-            price: "$89",
-            period: "/month",
-            cta: "Get Started",
+            name: 'Essential',
+            tagline: 'Basic coverage for budget-conscious families',
+            price: '$89',
+            period: '/month',
+            cta: 'Get Started',
             popular: false,
             features: [
-              { label: "$100K liability coverage", included: true },
-              { label: "$500 deductible", included: true },
-              { label: "24/7 claims support", included: true },
-              { label: "Identity theft protection", included: false },
+              { label: '$100K liability coverage', included: true },
+              { label: '$500 deductible', included: true },
+              { label: '24/7 claims support', included: true },
+              { label: 'Identity theft protection', included: false },
             ],
           },
           {
-            name: "Complete",
-            tagline: "Comprehensive protection for peace of mind",
-            price: "$149",
-            period: "/month",
-            cta: "Get Started",
+            name: 'Complete',
+            tagline: 'Comprehensive protection for peace of mind',
+            price: '$149',
+            period: '/month',
+            cta: 'Get Started',
             popular: true,
             features: [
-              { label: "$500K liability coverage", included: true },
-              { label: "$250 deductible", included: true },
-              { label: "24/7 claims support", included: true },
-              { label: "Identity theft protection", included: true },
-              { label: "Personal umbrella policy", included: true },
+              { label: '$500K liability coverage', included: true },
+              { label: '$250 deductible', included: true },
+              { label: '24/7 claims support', included: true },
+              { label: 'Identity theft protection', included: true },
+              { label: 'Personal umbrella policy', included: true },
             ],
           },
           {
-            name: "Premium",
-            tagline: "Maximum protection for high-value assets",
-            price: "$229",
-            period: "/month",
-            cta: "Contact Sales",
+            name: 'Premium',
+            tagline: 'Maximum protection for high-value assets',
+            price: '$229',
+            period: '/month',
+            cta: 'Contact Sales',
             popular: false,
             features: [
-              { label: "$1M liability coverage", included: true },
-              { label: "$100 deductible", included: true },
-              { label: "Priority claims processing", included: true },
-              { label: "Full identity restoration", included: true },
-              { label: "Dedicated agent", included: true },
+              { label: '$1M liability coverage', included: true },
+              { label: '$100 deductible', included: true },
+              { label: 'Priority claims processing', included: true },
+              { label: 'Full identity restoration', included: true },
+              { label: 'Dedicated agent', included: true },
             ],
           },
         ]
@@ -136,7 +136,7 @@ export const InsurancePricing = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-4 inline-block rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-primary">
@@ -152,10 +152,10 @@ export const InsurancePricing = defineComponent({
               <div
                 key={plan.name}
                 className={cn(
-                  "relative rounded-2xl bg-background p-8",
+                  'relative rounded-2xl bg-background p-8',
                   plan.popular
-                    ? "border-2 border-primary shadow-xl md:-translate-y-4"
-                    : "border border-border shadow-sm",
+                    ? 'border-2 border-primary shadow-xl md:-translate-y-4'
+                    : 'border border-border shadow-sm',
                 )}
               >
                 {plan.popular && (
@@ -172,8 +172,8 @@ export const InsurancePricing = defineComponent({
                 <div className="mb-6">
                   <span
                     className={cn(
-                      "text-4xl font-bold",
-                      plan.popular ? "text-primary" : "text-foreground",
+                      'text-4xl font-bold',
+                      plan.popular ? 'text-primary' : 'text-foreground',
                     )}
                   >
                     {plan.price}
@@ -185,10 +185,10 @@ export const InsurancePricing = defineComponent({
                     <li
                       key={f.label}
                       className={cn(
-                        "flex items-center gap-3",
+                        'flex items-center gap-3',
                         f.included
-                          ? "text-muted-foreground"
-                          : "text-muted-foreground/50",
+                          ? 'text-muted-foreground'
+                          : 'text-muted-foreground/50',
                       )}
                     >
                       {f.included ? (
@@ -204,10 +204,10 @@ export const InsurancePricing = defineComponent({
                   type="button"
                   onClick={() => go(plan.cta)}
                   className={cn(
-                    "w-full rounded-xl px-4 py-3 font-semibold transition-colors",
+                    'w-full rounded-xl px-4 py-3 font-semibold transition-colors',
                     plan.popular
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90"
-                      : "border-2 border-border bg-background text-foreground hover:bg-muted",
+                      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90'
+                      : 'border-2 border-border bg-background text-foreground hover:bg-muted',
                   )}
                 >
                   {plan.cta}

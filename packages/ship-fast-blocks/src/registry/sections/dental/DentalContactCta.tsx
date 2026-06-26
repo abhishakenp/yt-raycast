@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DentalContactCta — bold closing call-to-action banner for a dental practice
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * the footer on a dentist, dental office, or clinic site.
  */
 export const DentalContactCta = defineComponent({
-  name: "DentalContactCta",
+  name: 'DentalContactCta',
   description:
-    "Bold closing call-to-action banner for a dental practice site: a full-width primary-colored section with soft blurred corner glows, a centered heading + supporting paragraph, a pair of pill buttons (an inverted click-to-call button with a phone icon and a translucent online-booking button with a calendar icon), and a row of check-marked reassurance perks. All buttons route through useNavigate. Use as the final conversion banner above the footer on a dentist, dental office, or clinic site.",
+    'Bold closing call-to-action banner for a dental practice site: a full-width primary-colored section with soft blurred corner glows, a centered heading + supporting paragraph, a pair of pill buttons (an inverted click-to-call button with a phone icon and a translucent online-booking button with a calendar icon), and a row of check-marked reassurance perks. All buttons route through useNavigate. Use as the final conversion banner above the footer on a dentist, dental office, or clinic site.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -26,15 +26,15 @@ export const DentalContactCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const contactHeading = props.heading ?? "Ready to love your smile?"
+    const contactHeading = props.heading ?? 'Ready to love your smile?'
     const contactDesc =
       props.description ??
-      "Schedule your first visit today and experience the difference of truly patient-centered dental care. New patient exams are just $99."
-    const contactCallCta = props.callCta ?? "Call (503) 555-0142"
-    const contactBookCta = props.bookCta ?? "Book Online"
+      'Schedule your first visit today and experience the difference of truly patient-centered dental care. New patient exams are just $99.'
+    const contactCallCta = props.callCta ?? 'Call (503) 555-0142'
+    const contactBookCta = props.bookCta ?? 'Book Online'
     const contactPerks = props.perks?.length
       ? props.perks
-      : ["Open 6 days a week", "Free parking available", "Evening appointments"]
+      : ['Open 6 days a week', 'Free parking available', 'Evening appointments']
 
     const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
@@ -54,7 +54,7 @@ export const DentalContactCta = defineComponent({
     return (
       <section
         className={cn(
-          "relative overflow-hidden bg-primary py-24 text-primary-foreground",
+          'relative overflow-hidden bg-primary py-24 text-primary-foreground',
           props.className,
         )}
       >

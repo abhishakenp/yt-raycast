@@ -1,6 +1,9 @@
 export function trimInlineAiText(s) {
   let t = String(s || '').trim()
-  if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
+  if (
+    (t.startsWith('"') && t.endsWith('"')) ||
+    (t.startsWith("'") && t.endsWith("'"))
+  ) {
     t = t.slice(1, -1).trim()
   }
   if (t.startsWith('```')) {
@@ -68,7 +71,8 @@ const PRICING = {
 
 export function calculateCost(model, inputTokens, outputTokens) {
   const p = PRICING[model] || PRICING.default
-  const cost = (inputTokens / 1_000_000) * p.in + (outputTokens / 1_000_000) * p.out
+  const cost =
+    (inputTokens / 1_000_000) * p.in + (outputTokens / 1_000_000) * p.out
   return cost
 }
 

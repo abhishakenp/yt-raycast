@@ -41,26 +41,42 @@ const portfolioTails = [
 
 const inferTails = (partial: string): readonly string[] => {
   const lower = partial.toLowerCase()
-  if (/\b(blog|publication|newsletter|articles?|magazine|editorial)\b/.test(lower)) {
+  if (
+    /\b(blog|publication|newsletter|articles?|magazine|editorial)\b/.test(lower)
+  ) {
     return blogTails
   }
-  if (/\b(shop|store|e-?commerce|commerce|products?|checkout|cart|marketplace)\b/.test(lower)) {
+  if (
+    /\b(shop|store|e-?commerce|commerce|products?|checkout|cart|marketplace)\b/.test(
+      lower,
+    )
+  ) {
     return commerceTails
   }
-  if (/\b(app|saas|software|dashboard|platform|tool|ai|analytics)\b/.test(lower)) {
+  if (
+    /\b(app|saas|software|dashboard|platform|tool|ai|analytics)\b/.test(lower)
+  ) {
     return appTails
   }
-  if (/\b(portfolio|designer|developer|photographer|studio|agency|creator)\b/.test(lower)) {
+  if (
+    /\b(portfolio|designer|developer|photographer|studio|agency|creator)\b/.test(
+      lower,
+    )
+  ) {
     return portfolioTails
   }
   return genericTails
 }
 
 const normalizePartial = (partial: string): string =>
-  String(partial ?? '').replace(/\s+/g, ' ').trim()
+  String(partial ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
 
 const joinPartialTail = (partial: string, tail: string): string =>
-  /\s$/.test(partial) || /^[,.;:!?]/.test(tail) ? `${partial}${tail}` : `${partial} ${tail}`
+  /\s$/.test(partial) || /^[,.;:!?]/.test(tail)
+    ? `${partial}${tail}`
+    : `${partial} ${tail}`
 
 export const getPromptSuggestionCacheKey = (
   partial: string,

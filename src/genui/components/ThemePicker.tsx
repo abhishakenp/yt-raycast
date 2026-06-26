@@ -1,13 +1,13 @@
-"use client"
+'use client'
 
-import { type ReactElement } from "react"
-import { Palette, Check, Sun, Moon } from "lucide-react"
+import { type ReactElement } from 'react'
+import { Palette, Check, Sun, Moon } from 'lucide-react'
 
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from "../../components/ui/popover"
+} from '../../components/ui/popover'
 import {
   Command,
   CommandEmpty,
@@ -15,11 +15,11 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "../../components/ui/command"
-import { ScrollArea } from "../../components/ui/scroll-area"
-import { THEME_CATALOG } from "../theme-apply"
-import { defaultPresets } from "../theme-presets"
-import { cn } from "../../lib/utils"
+} from '../../components/ui/command'
+import { ScrollArea } from '../../components/ui/scroll-area'
+import { THEME_CATALOG } from '../theme-apply'
+import { defaultPresets } from '../theme-presets'
+import { cn } from '../../lib/utils'
 
 export interface ThemePickerProps {
   value: string | null
@@ -45,7 +45,7 @@ export default function ThemePicker({
   onToggleMode,
   trigger,
 }: ThemePickerProps) {
-  const mode = isDark ? "dark" : "light"
+  const mode = isDark ? 'dark' : 'light'
 
   return (
     <Popover>
@@ -70,7 +70,7 @@ export default function ThemePicker({
             className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
           >
             {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-            {isDark ? "Light mode" : "Dark mode"}
+            {isDark ? 'Light mode' : 'Dark mode'}
           </button>
         </div>
         <Command>
@@ -89,16 +89,16 @@ export default function ThemePicker({
                       className="gap-2"
                     >
                       <div className="flex items-center gap-1">
-                        <Swatch color={styles?.primary ?? "#888"} />
-                        <Swatch color={styles?.secondary ?? "#888"} />
-                        <Swatch color={styles?.accent ?? "#888"} />
-                        <Swatch color={styles?.border ?? "#888"} />
+                        <Swatch color={styles?.primary ?? '#888'} />
+                        <Swatch color={styles?.secondary ?? '#888'} />
+                        <Swatch color={styles?.accent ?? '#888'} />
+                        <Swatch color={styles?.border ?? '#888'} />
                       </div>
                       <span className="truncate">{entry.label}</span>
                       <Check
                         className={cn(
-                          "ml-auto size-4",
-                          value === entry.name ? "opacity-100" : "opacity-0"
+                          'ml-auto size-4',
+                          value === entry.name ? 'opacity-100' : 'opacity-0',
                         )}
                       />
                     </CommandItem>

@@ -3,7 +3,11 @@ export const stripDestructiveEmptyDesignTheme = (html) =>
     /<!--\s*sf-design-theme\s*-->[\s\S]*?<!--\s*\/sf-design-theme\s*-->\s*/gi,
     (block) => {
       if (/patchColors|patchFonts|Object\.assign/.test(block)) return block
-      if (/\bcolors:\s*\{\s*\}/.test(block) && /\bfontFamily:\s*\{\s*\}/.test(block)) return ''
+      if (
+        /\bcolors:\s*\{\s*\}/.test(block) &&
+        /\bfontFamily:\s*\{\s*\}/.test(block)
+      )
+        return ''
       return block
     },
   )

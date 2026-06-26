@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CybersecurityPricing — three-tier pricing table. A muted-band section with a
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Starter / Professional / Enterprise defaults.
  */
 export const CybersecurityPricing = defineComponent({
-  name: "CybersecurityPricing",
+  name: 'CybersecurityPricing',
   description:
-    "Three-tier pricing table: a muted-band section with a centered heading + subheading above a 3-column grid of plan cards. The featured plan inverts to the dark brand surface, lifts upward, and shows a floating badge; each card lists a name, blurb, large price + period, check-marked feature list, and a full-width CTA routing through useNavigate. Use to present subscription tiers for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.",
+    'Three-tier pricing table: a muted-band section with a centered heading + subheading above a 3-column grid of plan cards. The featured plan inverts to the dark brand surface, lifts upward, and shows a floating badge; each card lists a name, blurb, large price + period, check-marked feature list, and a full-width CTA routing through useNavigate. Use to present subscription tiers for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -41,58 +41,58 @@ export const CybersecurityPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Simple, transparent pricing"
+    const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
-      "Choose the plan that fits your security needs. All plans include our core AI detection engine."
+      'Choose the plan that fits your security needs. All plans include our core AI detection engine.'
     const plans = props.plans?.length
       ? props.plans
       : [
           {
-            name: "Starter",
-            blurb: "For small teams getting started with security",
-            price: "$999",
-            period: "/month",
-            cta: "Start free trial",
+            name: 'Starter',
+            blurb: 'For small teams getting started with security',
+            price: '$999',
+            period: '/month',
+            cta: 'Start free trial',
             features: [
-              "Up to 100 endpoints",
-              "Email support (business hours)",
-              "Basic threat detection",
-              "Weekly security reports",
-              "1 cloud account",
+              'Up to 100 endpoints',
+              'Email support (business hours)',
+              'Basic threat detection',
+              'Weekly security reports',
+              '1 cloud account',
             ],
           },
           {
-            name: "Professional",
-            blurb: "For growing companies with complex infrastructure",
-            price: "$4,999",
-            period: "/month",
-            cta: "Start free trial",
+            name: 'Professional',
+            blurb: 'For growing companies with complex infrastructure',
+            price: '$4,999',
+            period: '/month',
+            cta: 'Start free trial',
             featured: true,
-            badge: "MOST POPULAR",
+            badge: 'MOST POPULAR',
             features: [
-              "Up to 1,000 endpoints",
-              "24/7 phone & email support",
-              "Advanced AI threat detection",
-              "Real-time security dashboard",
-              "5 cloud accounts",
-              "Compliance reporting (SOC 2, ISO)",
-              "API access",
+              'Up to 1,000 endpoints',
+              '24/7 phone & email support',
+              'Advanced AI threat detection',
+              'Real-time security dashboard',
+              '5 cloud accounts',
+              'Compliance reporting (SOC 2, ISO)',
+              'API access',
             ],
           },
           {
-            name: "Enterprise",
-            blurb: "For large organizations with custom requirements",
-            price: "Custom",
-            cta: "Contact sales",
+            name: 'Enterprise',
+            blurb: 'For large organizations with custom requirements',
+            price: 'Custom',
+            cta: 'Contact sales',
             features: [
-              "Unlimited endpoints",
-              "Dedicated account manager",
-              "Custom AI model training",
-              "Unlimited cloud accounts",
-              "On-premise deployment option",
-              "Custom SLA & response times",
-              "White-glove onboarding",
+              'Unlimited endpoints',
+              'Dedicated account manager',
+              'Custom AI model training',
+              'Unlimited cloud accounts',
+              'On-premise deployment option',
+              'Custom SLA & response times',
+              'White-glove onboarding',
             ],
           },
         ]
@@ -113,7 +113,7 @@ export const CybersecurityPricing = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted/50 py-24", props.className)}>
+      <section className={cn('bg-muted/50 py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>
@@ -124,10 +124,10 @@ export const CybersecurityPricing = defineComponent({
               <div
                 key={plan.name}
                 className={cn(
-                  "relative rounded-2xl border p-8",
+                  'relative rounded-2xl border p-8',
                   plan.featured
-                    ? "border-border bg-foreground text-background md:-translate-y-4"
-                    : "border-border bg-card text-card-foreground",
+                    ? 'border-border bg-foreground text-background md:-translate-y-4'
+                    : 'border-border bg-card text-card-foreground',
                 )}
               >
                 {plan.badge && (
@@ -137,18 +137,18 @@ export const CybersecurityPricing = defineComponent({
                 )}
                 <h3
                   className={cn(
-                    "mb-2 text-lg font-semibold",
-                    plan.featured ? "text-background" : "text-card-foreground",
+                    'mb-2 text-lg font-semibold',
+                    plan.featured ? 'text-background' : 'text-card-foreground',
                   )}
                 >
                   {plan.name}
                 </h3>
                 <p
                   className={cn(
-                    "mb-6 text-sm",
+                    'mb-6 text-sm',
                     plan.featured
-                      ? "text-background/60"
-                      : "text-muted-foreground",
+                      ? 'text-background/60'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {plan.blurb}
@@ -159,8 +159,8 @@ export const CybersecurityPricing = defineComponent({
                     <span
                       className={cn(
                         plan.featured
-                          ? "text-background/60"
-                          : "text-muted-foreground",
+                          ? 'text-background/60'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {plan.period}
@@ -169,10 +169,10 @@ export const CybersecurityPricing = defineComponent({
                 </div>
                 <ul
                   className={cn(
-                    "mb-8 space-y-3 text-sm",
+                    'mb-8 space-y-3 text-sm',
                     plan.featured
-                      ? "text-background/80"
-                      : "text-muted-foreground",
+                      ? 'text-background/80'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {plan.features.map((f) => (
@@ -186,10 +186,10 @@ export const CybersecurityPricing = defineComponent({
                   type="button"
                   onClick={() => go(plan.cta)}
                   className={cn(
-                    "block w-full rounded-lg py-3 text-center font-semibold transition-colors",
+                    'block w-full rounded-lg py-3 text-center font-semibold transition-colors',
                     plan.featured
-                      ? "bg-background text-foreground hover:bg-background/90"
-                      : "border border-input text-foreground hover:bg-muted",
+                      ? 'bg-background text-foreground hover:bg-background/90'
+                      : 'border border-input text-foreground hover:bg-muted',
                   )}
                 >
                   {plan.cta}

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * AuthSteps — bespoke three-step drop-in integration guide for Authly, a developer
@@ -14,7 +14,7 @@ import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
  * props.
  */
 export const AuthSteps = defineComponent({
-  name: "AuthSteps",
+  name: 'AuthSteps',
   description:
     "Bespoke three-step drop-in integration guide for a developer-auth product: a centered SectionHeading ('Drop-in auth in three steps') above a responsive 3-column grid of numbered step cards, each pairing a big token-circle number with a title, a short description, and a small font-mono command snippet line. Baked steps walk through installing the SDK, adding the provider, and shipping protected routes. Use to show how fast an auth platform, identity API, or login SDK integrates.",
   props: z.object({
@@ -35,37 +35,41 @@ export const AuthSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Drop-in auth in three steps"
+    const heading = props.heading ?? 'Drop-in auth in three steps'
     const subheading =
       props.subheading ??
-      "Go from zero to a secure, production-ready login flow in a single afternoon."
+      'Go from zero to a secure, production-ready login flow in a single afternoon.'
     const steps = props.steps?.length
       ? props.steps
       : [
           {
-            title: "Install the SDK",
+            title: 'Install the SDK',
             description:
-              "Add Authly to your project with a single command. Framework adapters ship for React, Next.js, and Node.",
-            snippet: "npm i @authly/sdk",
+              'Add Authly to your project with a single command. Framework adapters ship for React, Next.js, and Node.',
+            snippet: 'npm i @authly/sdk',
           },
           {
-            title: "Add the provider",
+            title: 'Add the provider',
             description:
-              "Wrap your app in <AuthProvider> and point it at your API key. Sessions, tokens, and refresh are handled for you.",
-            snippet: "<AuthProvider apiKey={KEY}>",
+              'Wrap your app in <AuthProvider> and point it at your API key. Sessions, tokens, and refresh are handled for you.',
+            snippet: '<AuthProvider apiKey={KEY}>',
           },
           {
-            title: "Ship protected routes",
+            title: 'Ship protected routes',
             description:
-              "Guard any page or API route with a hook or middleware. Authly resolves the user and enforces your access rules.",
-            snippet: "const { user } = useAuth()",
+              'Guard any page or API route with a hook or middleware. Authly resolves the user and enforces your access rules.',
+            snippet: 'const { user } = useAuth()',
           },
         ]
 
     return (
-      <section className={cn("bg-background", props.className)}>
+      <section className={cn('bg-background', props.className)}>
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-24">
-          <SectionHeading title={heading} subtitle={subheading} align="center" />
+          <SectionHeading
+            title={heading}
+            subtitle={subheading}
+            align="center"
+          />
 
           <div className="mt-14 grid grid-cols-1 gap-8 md:grid-cols-3">
             {steps.filter(Boolean).map((step, i) => (

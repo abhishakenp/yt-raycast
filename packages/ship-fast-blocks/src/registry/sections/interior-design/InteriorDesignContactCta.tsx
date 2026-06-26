@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * InteriorDesignContactCta — split contact section pairing studio details with a
@@ -17,9 +17,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * defaults.
  */
 export const InteriorDesignContactCta = defineComponent({
-  name: "InteriorDesignContactCta",
+  name: 'InteriorDesignContactCta',
   description:
-    "Split contact section pairing studio details with a real inquiry form for an upscale interior-design / architecture studio: two-column layout with an uppercase eyebrow, light-weight heading, supporting paragraph and a stack of contact rows (studio address, email, phone) each with a circular muted line icon on the left, and a bordered inquiry form (first/last name, email, project-type + budget selects, message textarea) with a filled submit button and footnote on the right. Editorial and conversion-focused; email, phone and submit route through useNavigate. Use as the closing contact / lead-capture block for interior designers, design studios or architecture firms.",
+    'Split contact section pairing studio details with a real inquiry form for an upscale interior-design / architecture studio: two-column layout with an uppercase eyebrow, light-weight heading, supporting paragraph and a stack of contact rows (studio address, email, phone) each with a circular muted line icon on the left, and a bordered inquiry form (first/last name, email, project-type + budget selects, message textarea) with a filled submit button and footnote on the right. Editorial and conversion-focused; email, phone and submit route through useNavigate. Use as the closing contact / lead-capture block for interior designers, design studios or architecture firms.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -38,54 +38,50 @@ export const InteriorDesignContactCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Start Your Project"
-    const heading =
-      props.heading ?? "Let's create something beautiful together"
+    const eyebrow = props.eyebrow ?? 'Start Your Project'
+    const heading = props.heading ?? "Let's create something beautiful together"
     const description =
       props.description ??
       "Ready to transform your space? We'd love to hear about your project. Schedule a complimentary consultation to discuss your vision, timeline, and investment."
-    const submit = props.submit ?? "Request Consultation"
+    const submit = props.submit ?? 'Request Consultation'
     const footnote =
       props.footnote ??
-      "We typically respond within 24-48 hours. Initial consultations are complimentary."
-    const studioLabel = props.studioLabel ?? "Studio"
+      'We typically respond within 24-48 hours. Initial consultations are complimentary.'
+    const studioLabel = props.studioLabel ?? 'Studio'
     const studioAddress =
       props.studioAddress ??
-      "465 California Street, Suite 1200\nSan Francisco, CA 94104"
-    const emailLabel = props.emailLabel ?? "Email"
-    const email = props.email ?? "hello@atelierstudio.co"
-    const phoneLabel = props.phoneLabel ?? "Phone"
-    const phone = props.phone ?? "(415) 555-0147"
+      '465 California Street, Suite 1200\nSan Francisco, CA 94104'
+    const emailLabel = props.emailLabel ?? 'Email'
+    const email = props.email ?? 'hello@atelierstudio.co'
+    const phoneLabel = props.phoneLabel ?? 'Phone'
+    const phone = props.phone ?? '(415) 555-0147'
     const projectTypes = props.projectTypes?.length
       ? props.projectTypes
       : [
-          "Select project type",
-          "Residential — Full Home",
-          "Residential — Single Room",
-          "Commercial Office",
-          "Hospitality",
-          "Design Consultation",
-          "Other",
+          'Select project type',
+          'Residential — Full Home',
+          'Residential — Single Room',
+          'Commercial Office',
+          'Hospitality',
+          'Design Consultation',
+          'Other',
         ]
     const budgets = props.budgets?.length
       ? props.budgets
       : [
-          "Select budget range",
-          "$25,000 — $50,000",
-          "$50,000 — $100,000",
-          "$100,000 — $250,000",
-          "$250,000+",
+          'Select budget range',
+          '$25,000 — $50,000',
+          '$50,000 — $100,000',
+          '$100,000 — $250,000',
+          '$250,000+',
         ]
 
     const inputCls =
-      "w-full rounded-sm border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+      'w-full rounded-sm border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
 
     return (
       <section
-        className={cn(
-          "px-4 py-20 sm:px-6 md:py-32 lg:px-8",
-          props.className,
-        )}
+        className={cn('px-4 py-20 sm:px-6 md:py-32 lg:px-8', props.className)}
       >
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
@@ -251,7 +247,7 @@ export const InteriorDesignContactCta = defineComponent({
                 </label>
                 <select
                   id="interior-design-contact-project-type"
-                  className={cn(inputCls, "appearance-none")}
+                  className={cn(inputCls, 'appearance-none')}
                 >
                   {projectTypes.map((opt) => (
                     <option key={opt} className="bg-background">
@@ -270,7 +266,7 @@ export const InteriorDesignContactCta = defineComponent({
                 </label>
                 <select
                   id="interior-design-contact-budget"
-                  className={cn(inputCls, "appearance-none")}
+                  className={cn(inputCls, 'appearance-none')}
                 >
                   {budgets.map((opt) => (
                     <option key={opt} className="bg-background">
@@ -291,7 +287,7 @@ export const InteriorDesignContactCta = defineComponent({
                   id="interior-design-contact-message"
                   rows={4}
                   placeholder="Describe your space, timeline, and any specific design goals..."
-                  className={cn(inputCls, "resize-none")}
+                  className={cn(inputCls, 'resize-none')}
                 />
               </div>
 

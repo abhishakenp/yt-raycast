@@ -1,11 +1,11 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 export const WebinarHero = defineComponent({
-  name: "WebinarHero",
+  name: 'WebinarHero',
   description:
     "Conversion-focused webinar hero: an uppercase live-event eyebrow pill, a large headline naming the webinar topic, a prominent date/time badge, a value-proposition subheading, a primary 'Save my seat' CTA with a 'Free · Live + Recording' note, a presenter preview (avatar + name + role), and a static countdown row of token cards (Days/Hours/Mins/Secs). Use as the opening viewport of a webinar, summit, or virtual-event registration page.",
   props: z.object({
@@ -26,34 +26,42 @@ export const WebinarHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Live online masterclass"
-    const title = props.title ?? "Scaling SaaS in 2026"
-    const dateTime = props.dateTime ?? "Thursday, July 17 · 11:00 AM PT"
+    const eyebrow = props.eyebrow ?? 'Live online masterclass'
+    const title = props.title ?? 'Scaling SaaS in 2026'
+    const dateTime = props.dateTime ?? 'Thursday, July 17 · 11:00 AM PT'
     const subheading =
       props.subheading ??
-      "Join our growth team for a 60-minute, no-fluff session on the playbooks that take a SaaS product from product-market fit to predictable, compounding revenue."
-    const primaryCta = props.primaryCta ?? "Save my seat"
-    const primaryTarget = props.primaryTarget ?? "Register"
-    const note = props.note ?? "Free · Live + Recording"
-    const presenterName = props.presenterName ?? "Dana Whitfield"
-    const presenterRole = props.presenterRole ?? "VP of Growth, Catalyst Labs"
+      'Join our growth team for a 60-minute, no-fluff session on the playbooks that take a SaaS product from product-market fit to predictable, compounding revenue.'
+    const primaryCta = props.primaryCta ?? 'Save my seat'
+    const primaryTarget = props.primaryTarget ?? 'Register'
+    const note = props.note ?? 'Free · Live + Recording'
+    const presenterName = props.presenterName ?? 'Dana Whitfield'
+    const presenterRole = props.presenterRole ?? 'VP of Growth, Catalyst Labs'
     const presenterAvatarAlt =
       props.presenterAvatarAlt ??
-      "professional headshot of a confident woman in business attire smiling at camera"
+      'professional headshot of a confident woman in business attire smiling at camera'
     const countdown = props.countdown?.length
       ? props.countdown
       : [
-          { value: "12", label: "Days" },
-          { value: "08", label: "Hours" },
-          { value: "45", label: "Mins" },
-          { value: "30", label: "Secs" },
+          { value: '12', label: 'Days' },
+          { value: '08', label: 'Hours' },
+          { value: '45', label: 'Mins' },
+          { value: '30', label: 'Secs' },
         ]
 
     return (
-      <section className={cn("bg-background py-20 text-foreground lg:py-28", props.className)}>
+      <section
+        className={cn(
+          'bg-background py-20 text-foreground lg:py-28',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-3xl px-6 text-center lg:px-8">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            <span className="size-2 rounded-full bg-primary" aria-hidden="true" />
+            <span
+              className="size-2 rounded-full bg-primary"
+              aria-hidden="true"
+            />
             {eyebrow}
           </span>
 
@@ -91,7 +99,9 @@ export const WebinarHero = defineComponent({
               className="size-10 rounded-full object-cover"
             />
             <div>
-              <p className="text-sm font-semibold text-foreground">{presenterName}</p>
+              <p className="text-sm font-semibold text-foreground">
+                {presenterName}
+              </p>
               <p className="text-xs text-muted-foreground">{presenterRole}</p>
             </div>
           </div>

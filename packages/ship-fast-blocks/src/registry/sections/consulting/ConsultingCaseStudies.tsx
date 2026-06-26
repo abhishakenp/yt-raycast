@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ConsultingCaseStudies — 6-up case-study gallery with industry tags and
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * baked-in default case studies.
  */
 export const ConsultingCaseStudies = defineComponent({
-  name: "ConsultingCaseStudies",
+  name: 'ConsultingCaseStudies',
   description:
     "6-up case-study gallery with industry tags and engagement metrics for a management-consulting firm page: a heading and lead paragraph on the left with a 'View All' link on the right, above a 3-column grid of clickable project cards. Each card has an alt-driven image that zooms on hover, a category tag chip overlaid on the image, a title, a description, and duration/period meta. Cards and the view-all link route through useNavigate. Use to showcase consulting case studies, client success stories, or industry-specific engagements.",
   props: z.object({
@@ -43,73 +43,73 @@ export const ConsultingCaseStudies = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Featured Case Studies"
+    const heading = props.heading ?? 'Featured Case Studies'
     const description =
       props.description ??
       "Real results from real partnerships. Explore how we've helped clients across industries achieve transformative outcomes."
-    const viewAll = props.viewAll ?? "View All Insights"
+    const viewAll = props.viewAll ?? 'View All Insights'
     const items = props.items?.length
       ? props.items
       : [
           {
-            tag: "Financial Services",
+            tag: 'Financial Services',
             title: "Transforming a Regional Bank's Digital Ecosystem",
             description:
-              "Helped First Capital Bank redesign their digital platform, resulting in 47% increase in mobile adoption and $23M in operational savings over 18 months.",
-            duration: "18-month engagement",
-            period: "2023-2024",
+              'Helped First Capital Bank redesign their digital platform, resulting in 47% increase in mobile adoption and $23M in operational savings over 18 months.',
+            duration: '18-month engagement',
+            period: '2023-2024',
             imageAlt:
-              "Modern glass skyscraper headquarters building in downtown business district",
+              'Modern glass skyscraper headquarters building in downtown business district',
           },
           {
-            tag: "Manufacturing",
-            title: "Operational Turnaround for Industrial Manufacturer",
+            tag: 'Manufacturing',
+            title: 'Operational Turnaround for Industrial Manufacturer',
             description:
-              "Partnered with Meridian Industrial to implement lean manufacturing principles, reducing production costs by 31% and improving on-time delivery to 97%.",
-            duration: "24-month engagement",
-            period: "2022-2024",
+              'Partnered with Meridian Industrial to implement lean manufacturing principles, reducing production costs by 31% and improving on-time delivery to 97%.',
+            duration: '24-month engagement',
+            period: '2022-2024',
             imageAlt:
-              "Advanced manufacturing facility with robotic arms assembling products on production line",
+              'Advanced manufacturing facility with robotic arms assembling products on production line',
           },
           {
-            tag: "Healthcare",
-            title: "Post-Merger Integration for Health System Expansion",
+            tag: 'Healthcare',
+            title: 'Post-Merger Integration for Health System Expansion',
             description:
-              "Guided Westview Health System through the integration of three acquired hospitals, achieving $85M in synergies while maintaining quality of care standards.",
-            duration: "36-month engagement",
-            period: "2021-2024",
+              'Guided Westview Health System through the integration of three acquired hospitals, achieving $85M in synergies while maintaining quality of care standards.',
+            duration: '36-month engagement',
+            period: '2021-2024',
             imageAlt:
-              "Healthcare professionals reviewing patient data on tablets in modern hospital setting",
+              'Healthcare professionals reviewing patient data on tablets in modern hospital setting',
           },
           {
-            tag: "Retail",
-            title: "Omnichannel Strategy for National Retailer",
+            tag: 'Retail',
+            title: 'Omnichannel Strategy for National Retailer',
             description:
-              "Developed and executed an omnichannel transformation for Carter Retail Group, driving 28% growth in e-commerce revenue and improving customer lifetime value by 34%.",
-            duration: "30-month engagement",
-            period: "2022-2024",
+              'Developed and executed an omnichannel transformation for Carter Retail Group, driving 28% growth in e-commerce revenue and improving customer lifetime value by 34%.',
+            duration: '30-month engagement',
+            period: '2022-2024',
             imageAlt:
-              "Retail store interior with customers shopping and modern product displays",
+              'Retail store interior with customers shopping and modern product displays',
           },
           {
-            tag: "Energy",
-            title: "Sustainability Transformation for Energy Provider",
+            tag: 'Energy',
+            title: 'Sustainability Transformation for Energy Provider',
             description:
               "Supported Pacific Energy's transition to renewable sources, developing a 10-year roadmap that positions the company for carbon neutrality by 2035.",
-            duration: "15-month engagement",
-            period: "2023-2024",
+            duration: '15-month engagement',
+            period: '2023-2024',
             imageAlt:
-              "Sustainable office building with green rooftop garden and solar panels",
+              'Sustainable office building with green rooftop garden and solar panels',
           },
           {
-            tag: "Technology",
-            title: "Product Strategy for SaaS Market Leader",
+            tag: 'Technology',
+            title: 'Product Strategy for SaaS Market Leader',
             description:
-              "Helped CloudSync Technologies redefine their product portfolio, entering three new market segments and increasing ARR by $42M in the first year.",
-            duration: "12-month engagement",
-            period: "2023-2024",
+              'Helped CloudSync Technologies redefine their product portfolio, entering three new market segments and increasing ARR by $42M in the first year.',
+            duration: '12-month engagement',
+            period: '2023-2024',
             imageAlt:
-              "Software development team collaborating on multiple monitors in modern tech office",
+              'Software development team collaborating on multiple monitors in modern tech office',
           },
         ]
 
@@ -131,7 +131,7 @@ export const ConsultingCaseStudies = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted py-24", props.className)}>
+      <section className={cn('bg-muted py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>

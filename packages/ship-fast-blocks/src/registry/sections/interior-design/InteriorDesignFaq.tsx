@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * InteriorDesignFaq — centered FAQ accordion on a muted surface for an upscale
@@ -13,9 +13,9 @@ import { cn } from "#/lib/utils.ts"
  * via baked-in defaults.
  */
 export const InteriorDesignFaq = defineComponent({
-  name: "InteriorDesignFaq",
+  name: 'InteriorDesignFaq',
   description:
-    "Centered FAQ accordion on a muted surface for an upscale interior-design / architecture studio: a narrow column with a centered uppercase eyebrow + light-weight heading above a stack of native details/summary cards on a card surface, each with a question, a chevron that rotates when open and a relaxed answer (no JS state). Editorial and calm. Use to address common project, pricing and process questions for interior designers, design studios or architecture firms.",
+    'Centered FAQ accordion on a muted surface for an upscale interior-design / architecture studio: a narrow column with a centered uppercase eyebrow + light-weight heading above a stack of native details/summary cards on a card surface, each with a question, a chevron that rotates when open and a relaxed answer (no JS state). Editorial and calm. Use to address common project, pricing and process questions for interior designers, design studios or architecture firms.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -25,33 +25,33 @@ export const InteriorDesignFaq = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "FAQ"
-    const heading = props.heading ?? "Common questions"
+    const eyebrow = props.eyebrow ?? 'FAQ'
+    const heading = props.heading ?? 'Common questions'
     const items = props.items?.length
       ? props.items
       : [
           {
-            question: "What is your typical project timeline?",
+            question: 'What is your typical project timeline?',
             answer:
-              "Residential projects typically range from 3-6 months from concept to completion, depending on scope. Full home renovations may take 8-12 months. We provide detailed timelines during our initial consultation and keep you informed throughout every phase.",
+              'Residential projects typically range from 3-6 months from concept to completion, depending on scope. Full home renovations may take 8-12 months. We provide detailed timelines during our initial consultation and keep you informed throughout every phase.',
           },
           {
-            question: "How do you charge for your services?",
+            question: 'How do you charge for your services?',
             answer:
-              "We offer both flat-fee and hourly arrangements depending on project complexity. Full-service design typically starts at $25,000 for single-room projects. Consultations are $500/hour. We provide detailed proposals after our initial discovery meeting so you know exactly what to expect.",
+              'We offer both flat-fee and hourly arrangements depending on project complexity. Full-service design typically starts at $25,000 for single-room projects. Consultations are $500/hour. We provide detailed proposals after our initial discovery meeting so you know exactly what to expect.',
           },
           {
-            question: "Do you work with contractors and architects?",
+            question: 'Do you work with contractors and architects?',
             answer:
-              "Absolutely. We have established relationships with top contractors, architects, and artisans throughout the Bay Area. We can recommend trusted professionals or work seamlessly with your existing team. Our project management ensures everyone stays aligned.",
+              'Absolutely. We have established relationships with top contractors, architects, and artisans throughout the Bay Area. We can recommend trusted professionals or work seamlessly with your existing team. Our project management ensures everyone stays aligned.',
           },
           {
-            question: "Do you take on small projects or single rooms?",
+            question: 'Do you take on small projects or single rooms?',
             answer:
               "Yes, we love projects of all scales. Whether it's a complete home transformation or a single room refresh, we bring the same level of care and expertise. Our consultation services are also perfect for clients who want professional guidance for DIY projects.",
           },
           {
-            question: "What areas do you serve?",
+            question: 'What areas do you serve?',
             answer:
               "We're based in San Francisco and primarily serve the Bay Area including Marin County, the Peninsula, and Napa/Sonoma. For select commercial and hospitality projects, we work nationally and internationally. Virtual consultations are available for out-of-area clients.",
           },
@@ -60,7 +60,7 @@ export const InteriorDesignFaq = defineComponent({
     return (
       <section
         className={cn(
-          "bg-muted px-4 py-20 sm:px-6 md:py-32 lg:px-8",
+          'bg-muted px-4 py-20 sm:px-6 md:py-32 lg:px-8',
           props.className,
         )}
       >

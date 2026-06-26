@@ -1,14 +1,14 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { useState } from "react"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { useState } from 'react'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 export const ProductDetailHero = defineComponent({
-  name: "ProductDetailHero",
+  name: 'ProductDetailHero',
   description:
-    "Premium two-column product detail hero / buy box for a single flagship product (Aurora Pro Headphones). The left column shows a large square product photo rendered through the alt-driven Image component; the right column is a conversion-focused buy box with product title, an inline 5-star rating with review count, a price row with optional strike-through compare price, a short product blurb, selectable variant pills (color / size options) backed by local state, and a dual CTA row (Add to Cart primary, Buy Now secondary) wired through the navigate helper. Use when composing a product detail page that needs a polished above-the-fold purchase experience without generating new HTML.",
+    'Premium two-column product detail hero / buy box for a single flagship product (Aurora Pro Headphones). The left column shows a large square product photo rendered through the alt-driven Image component; the right column is a conversion-focused buy box with product title, an inline 5-star rating with review count, a price row with optional strike-through compare price, a short product blurb, selectable variant pills (color / size options) backed by local state, and a dual CTA row (Add to Cart primary, Buy Now secondary) wired through the navigate helper. Use when composing a product detail page that needs a polished above-the-fold purchase experience without generating new HTML.',
   props: z.object({
     title: z.string().optional(),
     price: z.string().optional(),
@@ -25,23 +25,24 @@ export const ProductDetailHero = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
     const [sel, setSel] = useState(0)
-    const title = props.title ?? "Aurora Pro Headphones"
-    const price = props.price ?? "$299"
-    const comparePrice = props.comparePrice ?? "$349"
+    const title = props.title ?? 'Aurora Pro Headphones'
+    const price = props.price ?? '$299'
+    const comparePrice = props.comparePrice ?? '$349'
     const rating = props.rating ?? 4.8
     const reviewCount = props.reviewCount ?? 1240
     const description =
       props.description ??
-      "Studio-grade adaptive noise cancellation, 40-hour battery life, and plush memory-foam ear cushions engineered for all-day listening. The flagship Aurora sound, refined."
-    const imageAlt = props.imageAlt ?? "Aurora Pro Headphones premium product photo"
+      'Studio-grade adaptive noise cancellation, 40-hour battery life, and plush memory-foam ear cushions engineered for all-day listening. The flagship Aurora sound, refined.'
+    const imageAlt =
+      props.imageAlt ?? 'Aurora Pro Headphones premium product photo'
     const variants = props.variants?.length
       ? props.variants
-      : ["Midnight Black", "Arctic Silver", "Aurora Blue"]
-    const primaryCta = props.primaryCta ?? "Add to Cart"
-    const secondaryCta = props.secondaryCta ?? "Buy Now"
+      : ['Midnight Black', 'Arctic Silver', 'Aurora Blue']
+    const primaryCta = props.primaryCta ?? 'Add to Cart'
+    const secondaryCta = props.secondaryCta ?? 'Buy Now'
 
     return (
-      <section className={cn("bg-background py-12 sm:py-20", props.className)}>
+      <section className={cn('bg-background py-12 sm:py-20', props.className)}>
         <div className="mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-2 lg:items-start lg:px-8">
           <div>
             <Image
@@ -52,7 +53,9 @@ export const ProductDetailHero = defineComponent({
             />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-foreground sm:text-4xl">{title}</h1>
+            <h1 className="text-3xl font-bold text-foreground sm:text-4xl">
+              {title}
+            </h1>
             <div className="mt-4 flex items-center gap-3">
               <div className="flex items-center">
                 {[0, 1, 2, 3, 4].map((i) => (
@@ -73,12 +76,18 @@ export const ProductDetailHero = defineComponent({
               </span>
             </div>
             <div className="mt-6 flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-foreground">{price}</span>
+              <span className="text-3xl font-bold text-foreground">
+                {price}
+              </span>
               {comparePrice ? (
-                <span className="text-lg text-muted-foreground line-through">{comparePrice}</span>
+                <span className="text-lg text-muted-foreground line-through">
+                  {comparePrice}
+                </span>
               ) : null}
             </div>
-            <p className="mt-5 text-base leading-7 text-muted-foreground">{description}</p>
+            <p className="mt-5 text-base leading-7 text-muted-foreground">
+              {description}
+            </p>
             <div className="mt-8 flex flex-wrap gap-3">
               {variants.map((v, i) => (
                 <button
@@ -86,10 +95,10 @@ export const ProductDetailHero = defineComponent({
                   type="button"
                   onClick={() => setSel(i)}
                   className={cn(
-                    "rounded-full border px-4 py-2 text-sm font-medium transition",
+                    'rounded-full border px-4 py-2 text-sm font-medium transition',
                     sel === i
-                      ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border bg-background text-muted-foreground hover:bg-muted",
+                      ? 'border-primary bg-primary/10 text-foreground'
+                      : 'border-border bg-background text-muted-foreground hover:bg-muted',
                   )}
                 >
                   {v}

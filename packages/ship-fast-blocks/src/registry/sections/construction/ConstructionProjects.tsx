@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ConstructionProjects — featured-projects gallery for a construction /
@@ -14,7 +14,7 @@ import { Image } from "#/lib/img.tsx"
  * firms. Renders fully with no props via baked-in defaults.
  */
 export const ConstructionProjects = defineComponent({
-  name: "ConstructionProjects",
+  name: 'ConstructionProjects',
   description:
     "Featured-projects gallery for a construction / general contractor page: a centered section heading above a responsive grid of clickable project cards, each with an alt-driven image with a category tag overlay, a title, and a meta line. Cards and the 'View all' link route through useNavigate. Use to showcase completed projects for construction firms, contractors, builders, or design-build firms.",
   props: z.object({
@@ -40,44 +40,44 @@ export const ConstructionProjects = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Featured Projects"
+    const eyebrow = props.eyebrow ?? 'Featured Projects'
     const heading = props.heading ?? "Recent work we're proud of"
     const description =
       props.description ??
-      "A selection of our completed commercial and residential projects across Washington and Oregon."
-    const viewAll = props.viewAll ?? "View all 500+ projects"
+      'A selection of our completed commercial and residential projects across Washington and Oregon.'
+    const viewAll = props.viewAll ?? 'View all 500+ projects'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Pacific Tower Office Complex",
-            meta: "Downtown Seattle, WA • 120,000 sq ft • Completed 2024",
-            tag: "Commercial",
+            title: 'Pacific Tower Office Complex',
+            meta: 'Downtown Seattle, WA • 120,000 sq ft • Completed 2024',
+            tag: 'Commercial',
           },
           {
-            title: "Mercer Island Estate",
-            meta: "Mercer Island, WA • 8,500 sq ft • Completed 2024",
-            tag: "Residential",
+            title: 'Mercer Island Estate',
+            meta: 'Mercer Island, WA • 8,500 sq ft • Completed 2024',
+            tag: 'Residential',
           },
           {
-            title: "The Willows Apartments",
-            meta: "Bellevue, WA • 48 units • Completed 2023",
-            tag: "Multi-Family",
+            title: 'The Willows Apartments',
+            meta: 'Bellevue, WA • 48 units • Completed 2023',
+            tag: 'Multi-Family',
           },
           {
-            title: "Harvest Kitchen & Bar",
-            meta: "Portland, OR • 4,200 sq ft • Completed 2023",
-            tag: "Retail",
+            title: 'Harvest Kitchen & Bar',
+            meta: 'Portland, OR • 4,200 sq ft • Completed 2023',
+            tag: 'Retail',
           },
           {
-            title: "Aurora Distribution Center",
-            meta: "Tacoma, WA • 250,000 sq ft • Completed 2023",
-            tag: "Industrial",
+            title: 'Aurora Distribution Center',
+            meta: 'Tacoma, WA • 250,000 sq ft • Completed 2023',
+            tag: 'Industrial',
           },
           {
-            title: "Green Lake Craftsman",
-            meta: "Seattle, WA • 3,800 sq ft • Completed 2022",
-            tag: "Residential",
+            title: 'Green Lake Craftsman',
+            meta: 'Seattle, WA • 3,800 sq ft • Completed 2022',
+            tag: 'Residential',
           },
         ]
 
@@ -99,7 +99,7 @@ export const ConstructionProjects = defineComponent({
     )
 
     return (
-      <section className={cn("bg-card py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">

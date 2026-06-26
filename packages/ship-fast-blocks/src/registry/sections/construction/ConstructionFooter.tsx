@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ConstructionFooter — four-column footer for a construction / general
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const ConstructionFooter = defineComponent({
-  name: "ConstructionFooter",
+  name: 'ConstructionFooter',
   description:
-    "Four-column footer for a construction / general contractor page: a multi-column layout with a brand logo tile + company blurb + social buttons on the left, service links and company links in the middle columns, and contact info (address, phone, email) on the right. Every link and social button routes through useNavigate. A bottom bar shows copyright and legal links. Use as the closing site footer for construction firms, contractors, builders, or trades businesses.",
+    'Four-column footer for a construction / general contractor page: a multi-column layout with a brand logo tile + company blurb + social buttons on the left, service links and company links in the middle columns, and contact info (address, phone, email) on the right. Every link and social button routes through useNavigate. A bottom bar shows copyright and legal links. Use as the closing site footer for construction firms, contractors, builders, or trades businesses.',
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -50,51 +50,50 @@ export const ConstructionFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "BuiltRight"
+    const brand = props.brand ?? 'BuiltRight'
     const about =
       props.about ??
-      "Building excellence since 1987. Commercial and residential construction across the Pacific Northwest."
-    const servicesTitle = props.servicesTitle ?? "Services"
+      'Building excellence since 1987. Commercial and residential construction across the Pacific Northwest.'
+    const servicesTitle = props.servicesTitle ?? 'Services'
     const servicesLinks = props.servicesLinks?.length
       ? props.servicesLinks
       : [
-          "Commercial Construction",
-          "Residential Building",
-          "Renovation & Remodeling",
-          "Project Management",
-          "Design-Build",
+          'Commercial Construction',
+          'Residential Building',
+          'Renovation & Remodeling',
+          'Project Management',
+          'Design-Build',
         ]
-    const companyTitle = props.companyTitle ?? "Company"
+    const companyTitle = props.companyTitle ?? 'Company'
     const companyLinks = props.companyLinks?.length
       ? props.companyLinks
-      : ["About Us", "Projects", "Careers", "News", "Contact"]
-    const contactTitle = props.contactTitle ?? "Contact"
-    const address =
-      props.address ?? "1234 Construction Ave, Seattle, WA 98101"
-    const phone = props.phone ?? "(206) 555-1234"
-    const email = props.email ?? "info@builtright.com"
+      : ['About Us', 'Projects', 'Careers', 'News', 'Contact']
+    const contactTitle = props.contactTitle ?? 'Contact'
+    const address = props.address ?? '1234 Construction Ave, Seattle, WA 98101'
+    const phone = props.phone ?? '(206) 555-1234'
+    const email = props.email ?? 'info@builtright.com'
     const socials = props.socials?.length
       ? props.socials
-      : ["LinkedIn", "Instagram", "Facebook"]
+      : ['LinkedIn', 'Instagram', 'Facebook']
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Licenses"]
-    const note = props.note ?? "All rights reserved."
-    const homeTarget = props.homeTarget ?? "Services"
+      : ['Privacy Policy', 'Terms of Service', 'Licenses']
+    const note = props.note ?? 'All rights reserved.'
+    const homeTarget = props.homeTarget ?? 'Services'
 
     const LogoMark = ({
       className,
-      tone = "primary",
+      tone = 'primary',
     }: {
       className?: string
-      tone?: "primary" | "foreground"
+      tone?: 'primary' | 'foreground'
     }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-md",
-          tone === "primary"
-            ? "bg-primary text-primary-foreground"
-            : "bg-foreground text-background",
+          'grid place-items-center rounded-md',
+          tone === 'primary'
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -115,9 +114,7 @@ export const ConstructionFooter = defineComponent({
     )
 
     return (
-      <footer
-        className={cn("bg-background py-16", props.className)}
-      >
+      <footer className={cn('bg-background py-16', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div>

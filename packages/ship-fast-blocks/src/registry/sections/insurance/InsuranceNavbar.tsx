@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * InsuranceNavbar — sticky top navigation bar for an insurance / fintech site.
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const InsuranceNavbar = defineComponent({
-  name: "InsuranceNavbar",
+  name: 'InsuranceNavbar',
   description:
     "Sticky top navigation bar for an insurance / fintech site: backdrop-blurred, border-bottomed header with a shield logo tile + brand name on the left, horizontal nav links in the center, and a phone link plus a primary 'Get a Quote' CTA on the right (desktop). Links and CTA route through useNavigate for page-switching. Clean, trustworthy corporate aesthetic on a light canvas with a single brand-blue accent. Use as the sticky site header for insurance carriers, insurtech startups, brokers, or financial-protection products.",
   props: z.object({
@@ -31,17 +31,17 @@ export const InsuranceNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "SecureLife"
+    const brand = props.brand ?? 'SecureLife'
     const nav = props.nav?.length
       ? props.nav
-      : ["Coverage", "How It Works", "Pricing", "Reviews", "FAQ"]
-    const phone = props.phone ?? "1-800-555-0199"
-    const ctaLabel = props.ctaLabel ?? "Get a Quote"
+      : ['Coverage', 'How It Works', 'Pricing', 'Reviews', 'FAQ']
+    const phone = props.phone ?? '1-800-555-0199'
+    const ctaLabel = props.ctaLabel ?? 'Get a Quote'
 
     const Shield = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -81,7 +81,7 @@ export const InsuranceNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

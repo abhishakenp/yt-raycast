@@ -1,36 +1,36 @@
-import { Pencil1Icon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
-import { useContext } from "react";
-import { Button } from "@ui/Button";
-import { Tooltip } from "@ui/Tooltip";
-import { Spinner } from "@ui/Spinner";
-import { useShowGlobalRunner } from "@common/features/functionRunner/lib/functionRunner";
+import { Pencil1Icon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
+import { useContext } from 'react'
+import { Button } from '@ui/Button'
+import { Tooltip } from '@ui/Tooltip'
+import { Spinner } from '@ui/Spinner'
+import { useShowGlobalRunner } from '@common/features/functionRunner/lib/functionRunner'
 import {
   DeploymentInfoContext,
   PermissionsContext,
-} from "@common/lib/deploymentContext";
-import { useNents } from "@common/lib/useNents";
-import { PopupState } from "@common/features/data/lib/useToolPopup";
-import { useEnabledDebounced } from "@common/features/data/lib/useEnabledDebounced";
-import { DataOverflowMenu } from "@common/features/data/components/DataOverflowMenu/DataOverflowMenu";
+} from '@common/lib/deploymentContext'
+import { useNents } from '@common/lib/useNents'
+import { PopupState } from '@common/features/data/lib/useToolPopup'
+import { useEnabledDebounced } from '@common/features/data/lib/useEnabledDebounced'
+import { DataOverflowMenu } from '@common/features/data/components/DataOverflowMenu/DataOverflowMenu'
 import {
   isTableMissingFromSchema,
   useActiveSchema,
-} from "@common/features/data/lib/helpers";
-import { TableSchemaStatus } from "@common/features/data/components/TableSchema";
-import { PermissionDeniedTip } from "@common/elements/NoPermissionMessage";
-import { useRouter } from "next/router";
+} from '@common/features/data/lib/helpers'
+import { TableSchemaStatus } from '@common/features/data/components/TableSchema'
+import { PermissionDeniedTip } from '@common/elements/NoPermissionMessage'
+import { useRouter } from 'next/router'
 
 export type DataToolbarProps = {
-  popupState: PopupState;
-  allRowsSelected: boolean;
-  deleteRows: (rowIds: Set<string>) => Promise<void>;
-  isLoadingMore: boolean;
-  tableSchemaStatus: TableSchemaStatus | undefined;
-  numRows?: number;
-  selectedRowsIds: Set<string>;
-  selectedDocument: Record<string, any> | undefined;
-  tableName: string;
-};
+  popupState: PopupState
+  allRowsSelected: boolean
+  deleteRows: (rowIds: Set<string>) => Promise<void>
+  isLoadingMore: boolean
+  tableSchemaStatus: TableSchemaStatus | undefined
+  numRows?: number
+  selectedRowsIds: Set<string>
+  selectedDocument: Record<string, any> | undefined
+  tableName: string
+}
 
 export function DataToolbar({
   popupState: { popup: popupState, setPopup },
@@ -43,36 +43,35 @@ export function DataToolbar({
   selectedDocument,
   tableName,
 }: DataToolbarProps) {
-  const popup = popupState?.type;
+  const popup = popupState?.type
 
-  const showSpinner = useEnabledDebounced(isLoadingMore);
+  const showSpinner = useEnabledDebounced(isLoadingMore)
 
-  const schema = useActiveSchema();
-  const isMissingFromSchema = isTableMissingFromSchema(tableName, schema);
+  const schema = useActiveSchema()
+  const isMissingFromSchema = isTableMissingFromSchema(tableName, schema)
 
-  const { selectedNent } = useNents();
+  const { selectedNent } = useNents()
 
   const isInUnmountedComponent = !!(
-    selectedNent && selectedNent.state !== "active"
-  );
+    selectedNent && selectedNent.state !== 'active'
+  )
 
-  const numRowsSelected = selectedRowsIds.size;
-  const selectionToolsEnabled = numRowsSelected > 0 || allRowsSelected;
+  const numRowsSelected = selectedRowsIds.size
+  const selectionToolsEnabled = numRowsSelected > 0 || allRowsSelected
 
-  const showGlobalRunner = useShowGlobalRunner();
+  const showGlobalRunner = useShowGlobalRunner()
 
-  const isEditingAllAndMoreThanOne = allRowsSelected && numRowsSelected !== 1;
-  const isEditingMoreThanOne =
-    isEditingAllAndMoreThanOne || numRowsSelected > 1;
+  const isEditingAllAndMoreThanOne = allRowsSelected && numRowsSelected !== 1
+  const isEditingMoreThanOne = isEditingAllAndMoreThanOne || numRowsSelected > 1
 
   const { useLogDeploymentEvent, useIsProtectedDeployment } = useContext(
     DeploymentInfoContext,
-  );
-  const { useIsOperationAllowed } = useContext(PermissionsContext);
-  const isProtectedDeployment = useIsProtectedDeployment();
-  const log = useLogDeploymentEvent();
+  )
+  const { useIsOperationAllowed } = useContext(PermissionsContext)
+  const isProtectedDeployment = useIsProtectedDeployment()
+  const log = useLogDeploymentEvent()
 
-  const canManageTable = useIsOperationAllowed("WriteData");
+  const canManageTable = useIsOperationAllowed('WriteData')
 
   return (
     <div className="flex flex-col">
@@ -84,12 +83,12 @@ export function DataToolbar({
               side="right"
               tip={
                 isMissingFromSchema
-                  ? "This table is not defined in your schema."
+                  ? 'This table is not defined in your schema.'
                   : undefined
               }
             >
               <h3 className="flex items-start gap-0.5 font-mono">
-                {tableName}{" "}
+                {tableName}{' '}
                 {isMissingFromSchema && (
                   <span className="font-sans text-base">*</span>
                 )}
@@ -108,7 +107,7 @@ export function DataToolbar({
         </div>
         {/* Right side of the toolbar. */}
         <div className="flex flex-wrap items-center gap-2">
-          {(!selectionToolsEnabled || popup === "addDocuments") && (
+          {(!selectionToolsEnabled || popup === 'addDocuments') && (
             <AddDocumentButton
               popup={popup}
               popupState={popupState}
@@ -120,7 +119,7 @@ export function DataToolbar({
             />
           )}
           {selectionToolsEnabled ||
-          ((popup === "editDocument" || popup === "bulkEdit") &&
+          ((popup === 'editDocument' || popup === 'bulkEdit') &&
             popupState?.tableName === tableName) ? (
             <EditDocumentButton
               popupState={popupState}
@@ -159,79 +158,79 @@ export function DataToolbar({
               numRows={numRows ?? 0}
               onClickCustomQuery={() =>
                 showGlobalRunner(
-                  { type: "customQuery", table: tableName },
-                  "click",
+                  { type: 'customQuery', table: tableName },
+                  'click',
                 )
               }
               onClickClearTable={() => {
-                log("open delete document panel", {
-                  how: "toolbar",
-                  count: "all",
-                });
-                setPopup({ type: "clearTable", tableName });
+                log('open delete document panel', {
+                  how: 'toolbar',
+                  count: 'all',
+                })
+                setPopup({ type: 'clearTable', tableName })
               }}
               onClickSchema={() => {
-                log("view table schema", {
-                  how: "toolbar",
-                });
-                setPopup({ type: "viewSchema", tableName });
+                log('view table schema', {
+                  how: 'toolbar',
+                })
+                setPopup({ type: 'viewSchema', tableName })
               }}
               onClickIndexes={() => {
-                log("view table indexes", {
-                  how: "toolbar",
-                });
-                setPopup({ type: "viewIndexes", tableName });
+                log('view table indexes', {
+                  how: 'toolbar',
+                })
+                setPopup({ type: 'viewIndexes', tableName })
               }}
               onClickMetrics={() => {
-                log("view table metrics", {
-                  how: "toolbar",
-                });
-                setPopup({ type: "metrics", tableName });
+                log('view table metrics', {
+                  how: 'toolbar',
+                })
+                setPopup({ type: 'metrics', tableName })
               }}
               onClickDeleteTable={() => {
-                log("open delete table panel", {
-                  how: "toolbar",
-                });
-                setPopup({ type: "deleteTable", tableName });
+                log('open delete table panel', {
+                  how: 'toolbar',
+                })
+                setPopup({ type: 'deleteTable', tableName })
               }}
             />
           )}
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export function documentsLabel(numDocuments: number, allRowsSelected: boolean) {
   if (!allRowsSelected && numDocuments === 0) {
-    return "";
+    return ''
   }
   return allRowsSelected && numDocuments !== 1
-    ? "All"
+    ? 'All'
     : numDocuments === 1
-      ? ""
-      : numDocuments;
+      ? ''
+      : numDocuments
 }
 
 export function DataToolbarSkeleton() {
-  const { query } = useRouter();
+  const { query } = useRouter()
   return (
     <div className="flex items-end justify-between">
       <h3 className="font-mono">{query.table}</h3>
       <div className="flex h-9.5 gap-2" />
     </div>
-  );
+  )
 }
 
 type AddDocumentButtonProps = {
-  popup: string | undefined;
-  popupState: PopupState["popup"];
-  setPopup: PopupState["setPopup"];
-  tableName: string;
-  canManageTable: boolean;
-  isInUnmountedComponent: boolean;
-  log: (event: string, data: Record<string, any>) => void;
-};
+  popup: string | undefined
+  popupState: PopupState['popup']
+  setPopup: PopupState['setPopup']
+  tableName: string
+  canManageTable: boolean
+  isInUnmountedComponent: boolean
+  log: (event: string, data: Record<string, any>) => void
+}
 
 function AddDocumentButton({
   popup,
@@ -243,29 +242,29 @@ function AddDocumentButton({
   log,
 }: AddDocumentButtonProps) {
   const isAddingInCurrentlyViewedTable =
-    popupState?.type === "addDocuments" && popupState.tableName === tableName;
+    popupState?.type === 'addDocuments' && popupState.tableName === tableName
 
   return (
     <Button
       onClick={() => {
         if (
-          (popup === "addDocuments" || popup === "editDocument") &&
+          (popup === 'addDocuments' || popup === 'editDocument') &&
           isAddingInCurrentlyViewedTable
         ) {
-          setPopup(undefined);
-          return;
+          setPopup(undefined)
+          return
         }
-        log("open add documents panel", { how: "toolbar" });
-        setPopup({ type: "addDocuments", tableName });
+        log('open add documents panel', { how: 'toolbar' })
+        setPopup({ type: 'addDocuments', tableName })
       }}
       size="sm"
       variant="neutral"
-      focused={popup === "addDocuments" && isAddingInCurrentlyViewedTable}
+      focused={popup === 'addDocuments' && isAddingInCurrentlyViewedTable}
       icon={<PlusIcon aria-hidden="true" />}
       disabled={!canManageTable || isInUnmountedComponent}
       tip={
         isInUnmountedComponent
-          ? "Cannot add documents in an unmounted component."
+          ? 'Cannot add documents in an unmounted component.'
           : !canManageTable && (
               <PermissionDeniedTip
                 message="You do not have permission to add documents in this deployment."
@@ -276,22 +275,22 @@ function AddDocumentButton({
     >
       Add
     </Button>
-  );
+  )
 }
 
 type EditDocumentButtonProps = {
-  popupState: PopupState["popup"];
-  setPopup: PopupState["setPopup"];
-  tableName: string;
-  canManageTable: boolean;
-  isInUnmountedComponent: boolean;
-  log: (event: string, data: Record<string, any>) => void;
-  isEditingMoreThanOne: boolean;
-  allRowsSelected: boolean;
-  numRowsSelected: number;
-  selectedRowsIds: Set<string>;
-  selectedDocument: Record<string, any> | undefined;
-};
+  popupState: PopupState['popup']
+  setPopup: PopupState['setPopup']
+  tableName: string
+  canManageTable: boolean
+  isInUnmountedComponent: boolean
+  log: (event: string, data: Record<string, any>) => void
+  isEditingMoreThanOne: boolean
+  allRowsSelected: boolean
+  numRowsSelected: number
+  selectedRowsIds: Set<string>
+  selectedDocument: Record<string, any> | undefined
+}
 
 function EditDocumentButton({
   popupState,
@@ -307,38 +306,38 @@ function EditDocumentButton({
   selectedDocument,
 }: EditDocumentButtonProps) {
   const isPopupFocused = (() => {
-    if (!popupState) return false;
+    if (!popupState) return false
 
-    if (popupState.type !== "bulkEdit" && popupState.type !== "editDocument") {
-      return false;
+    if (popupState.type !== 'bulkEdit' && popupState.type !== 'editDocument') {
+      return false
     }
 
     if (popupState.tableName !== tableName) {
-      return false;
+      return false
     }
 
-    if (popupState.type === "editDocument") {
+    if (popupState.type === 'editDocument') {
       return (
         selectedRowsIds.size === 1 &&
         popupState.document._id === selectedDocument?._id
-      );
+      )
     }
 
-    if (popupState.type === "bulkEdit") {
-      return popupState.rowIds === "all"
+    if (popupState.type === 'bulkEdit') {
+      return popupState.rowIds === 'all'
         ? allRowsSelected
-        : popupState.rowIds === selectedRowsIds;
+        : popupState.rowIds === selectedRowsIds
     }
 
-    return false;
-  })();
+    return false
+  })()
 
   return (
     <Button
       disabled={!canManageTable || isInUnmountedComponent}
       tip={
         isInUnmountedComponent
-          ? "Cannot edit documents in an unmounted component."
+          ? 'Cannot edit documents in an unmounted component.'
           : !canManageTable && (
               <PermissionDeniedTip
                 message="You do not have permission to edit documents in this deployment."
@@ -350,26 +349,26 @@ function EditDocumentButton({
       variant="neutral"
       onClick={() => {
         if (isPopupFocused) {
-          setPopup(undefined);
-          return;
+          setPopup(undefined)
+          return
         }
-        log("open document editor", {
-          how: "toolbar",
-          count: allRowsSelected ? "all" : numRowsSelected,
-        });
+        log('open document editor', {
+          how: 'toolbar',
+          count: allRowsSelected ? 'all' : numRowsSelected,
+        })
 
         if (isEditingMoreThanOne) {
           setPopup({
-            type: "bulkEdit",
-            rowIds: allRowsSelected ? "all" : selectedRowsIds,
+            type: 'bulkEdit',
+            rowIds: allRowsSelected ? 'all' : selectedRowsIds,
             tableName,
-          });
+          })
         } else {
           setPopup({
-            type: "editDocument",
+            type: 'editDocument',
             document: selectedDocument!,
             tableName,
-          });
+          })
         }
       }}
       focused={isPopupFocused}
@@ -377,23 +376,23 @@ function EditDocumentButton({
     >
       Edit {documentsLabel(numRowsSelected, allRowsSelected)}
     </Button>
-  );
+  )
 }
 
 type DeleteDocumentButtonProps = {
-  popup: string | undefined;
-  setPopup: PopupState["setPopup"];
-  tableName: string;
-  canManageTable: boolean;
-  isInUnmountedComponent: boolean;
-  log: (event: string, data: Record<string, any>) => void;
-  isEditingAllAndMoreThanOne: boolean;
-  allRowsSelected: boolean;
-  numRowsSelected: number;
-  selectedRowsIds: Set<string>;
-  isProtectedDeployment: boolean;
-  deleteRows: (rowIds: Set<string>) => Promise<void>;
-};
+  popup: string | undefined
+  setPopup: PopupState['setPopup']
+  tableName: string
+  canManageTable: boolean
+  isInUnmountedComponent: boolean
+  log: (event: string, data: Record<string, any>) => void
+  isEditingAllAndMoreThanOne: boolean
+  allRowsSelected: boolean
+  numRowsSelected: number
+  selectedRowsIds: Set<string>
+  isProtectedDeployment: boolean
+  deleteRows: (rowIds: Set<string>) => Promise<void>
+}
 
 function DeleteDocumentButton({
   popup,
@@ -414,7 +413,7 @@ function DeleteDocumentButton({
       disabled={!canManageTable || isInUnmountedComponent}
       tip={
         isInUnmountedComponent
-          ? "Cannot delete documents in an unmounted component."
+          ? 'Cannot delete documents in an unmounted component.'
           : !canManageTable && (
               <PermissionDeniedTip
                 message="You do not have permission to delete documents in this deployment."
@@ -423,28 +422,28 @@ function DeleteDocumentButton({
             )
       }
       onClick={async () => {
-        log("open delete document panel", {
-          how: "toolbar",
-          count: allRowsSelected ? "all" : numRowsSelected,
-        });
+        log('open delete document panel', {
+          how: 'toolbar',
+          count: allRowsSelected ? 'all' : numRowsSelected,
+        })
 
         if (isEditingAllAndMoreThanOne) {
-          setPopup({ type: "clearTable", tableName });
+          setPopup({ type: 'clearTable', tableName })
         } else if (isProtectedDeployment) {
           setPopup({
-            type: "deleteRows",
+            type: 'deleteRows',
             rowIds: selectedRowsIds,
-          });
+          })
         } else {
-          await deleteRows(selectedRowsIds);
+          await deleteRows(selectedRowsIds)
         }
       }}
       size="sm"
       variant="danger"
-      focused={popup === "deleteRows"}
+      focused={popup === 'deleteRows'}
       icon={<TrashIcon aria-hidden="true" />}
     >
       Delete {documentsLabel(numRowsSelected, allRowsSelected)}
     </Button>
-  );
+  )
 }

@@ -3,7 +3,7 @@ import {
   FilterByIndex,
   FilterByIndexRange,
   FilterExpression,
-} from "system-udfs/convex/_system/frontend/lib/filters";
+} from 'system-udfs/convex/_system/frontend/lib/filters'
 
 export function clearFilters(
   filters: FilterExpression | undefined,
@@ -18,7 +18,7 @@ export function clearFilters(
       // show none. This is a little bit incoherent with the behavior
       // for database filters (which clears all filters but stays on the
       // same index).
-      "search" in filters.index
+      'search' in filters.index
         ? undefined
         : ({
             name: filters.index.name,
@@ -32,5 +32,5 @@ export function clearFilters(
             })) as FilterByIndex[] | [...FilterByIndex[], FilterByIndexRange],
           } satisfies DatabaseIndexFilter),
     order: filters?.order,
-  };
+  }
 }

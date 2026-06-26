@@ -57,7 +57,10 @@ export const normalizeGalleryMeta = (
 ): GalleryPageMeta => {
   const limit = positiveInt(raw?.limit, GALLERY_PAGE_SIZE)
   const total = nonNegativeInt(raw?.total, 0)
-  const totalPages = Math.max(1, positiveInt(raw?.totalPages, Math.ceil(total / limit) || 1))
+  const totalPages = Math.max(
+    1,
+    positiveInt(raw?.totalPages, Math.ceil(total / limit) || 1),
+  )
   const page = Math.min(positiveInt(raw?.page, 1), totalPages)
 
   return {
@@ -70,10 +73,14 @@ export const normalizeGalleryMeta = (
   }
 }
 
-export const fetchPublicGalleryPage = async (page: number): Promise<PublicGalleryFetchResult> => {
+export const fetchPublicGalleryPage = async (
+  page: number,
+): Promise<PublicGalleryFetchResult> => {
   const r = await fetch(`/api/gallery?page=${page}&limit=${GALLERY_PAGE_SIZE}`)
   if (!r.ok) throw new Error('recent-sessions')
   const data = (await r.json()) as PublicGalleryPayload
-  const items = Array.isArray(data.items) ? (data.items as PublicGallerySessionSummary[]) : []
+  const items = Array.isArray(data.items)
+    ? (data.items as PublicGallerySessionSummary[])
+    : []
   return { ok: true, items, data }
 }

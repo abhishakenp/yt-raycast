@@ -10,7 +10,10 @@
  * to see baseline numbers across real production sessions before deciding
  * which axis is the right one to fail-close on.
  */
-import { scoreMobbinCoverage, detectVerbatimAnchorCopy } from '../lib/mobbin/score.js'
+import {
+  scoreMobbinCoverage,
+  detectVerbatimAnchorCopy,
+} from '../lib/mobbin/score.js'
 
 const PALETTE_WARN_RATIO = 0.4 // <40% of anchor hex strings appearing → warn
 const DOCTRINE_WARN_RATIO = 0.15 // <15% doctrine markers → warn

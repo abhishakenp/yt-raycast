@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { StatGrid } from "#/section-kit/StatGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
 /**
  * GovernmentPortalStats — classic Indian-government / public-sector (PSU)
@@ -13,9 +13,9 @@ import { StatGrid } from "#/section-kit/StatGrid.tsx"
  * portal.
  */
 export const GovernmentPortalStats = defineComponent({
-  name: "GovernmentPortalStats",
+  name: 'GovernmentPortalStats',
   description:
-    "Formal classic indian government / PSU key-figures band on a royal-blue strip (installed capacity MW, generating units, years operational, % plant availability). Official, institutional statistics for public sector, civic, municipal, utility, power and electricity board portals that publish tenders and notices. Use for the at-a-glance metrics strip of a classic government portal.",
+    'Formal classic indian government / PSU key-figures band on a royal-blue strip (installed capacity MW, generating units, years operational, % plant availability). Official, institutional statistics for public sector, civic, municipal, utility, power and electricity board portals that publish tenders and notices. Use for the at-a-glance metrics strip of a classic government portal.',
   props: z.object({
     /** Strip heading; render only when non-empty. */
     heading: z.string().optional(),
@@ -26,23 +26,23 @@ export const GovernmentPortalStats = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "TVNL at a Glance"
+    const heading = props.heading ?? 'TVNL at a Glance'
     const rawStats = props.stats?.length
       ? props.stats
       : [
-          { value: "420 MW", label: "Installed Capacity" },
-          { value: "4", label: "Generating Units" },
-          { value: "30+", label: "Years Operational" },
-          { value: "85%", label: "Plant Availability" },
+          { value: '420 MW', label: 'Installed Capacity' },
+          { value: '4', label: 'Generating Units' },
+          { value: '30+', label: 'Years Operational' },
+          { value: '85%', label: 'Plant Availability' },
         ]
     const stats = rawStats.map((s) => ({
-      value: String(s.value ?? ""),
-      label: String(s.label ?? ""),
+      value: String(s.value ?? ''),
+      label: String(s.label ?? ''),
     }))
 
     return (
       <section
-        className={cn("w-full bg-[#3346B5] text-white", props.className)}
+        className={cn('w-full bg-[#3346B5] text-white', props.className)}
         style={{
           fontFamily: '"Alegreya Sans","Open Sans",system-ui,sans-serif',
         }}

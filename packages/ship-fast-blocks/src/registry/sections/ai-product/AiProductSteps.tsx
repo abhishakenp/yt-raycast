@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AiProductSteps — a numbered onboarding / how-it-works timeline for a clean,
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via a built-in 3-step flow.
  */
 export const AiProductSteps = defineComponent({
-  name: "AiProductSteps",
+  name: 'AiProductSteps',
   description:
-    "Numbered onboarding / how-it-works timeline for a clean, light AI SaaS / product page on a subtle muted band: a centered heading and paragraph above a responsive 3-column grid of steps, each with a large near-black rounded numbered tile, a title, and a description, connected by a faint vertical rule on desktop, with a centered near-black CTA button below. The CTA routes through useNavigate. Use to explain a simple sign-up-to-value flow for AI tools, SaaS apps, or any product with quick onboarding.",
+    'Numbered onboarding / how-it-works timeline for a clean, light AI SaaS / product page on a subtle muted band: a centered heading and paragraph above a responsive 3-column grid of steps, each with a large near-black rounded numbered tile, a title, and a description, connected by a faint vertical rule on desktop, with a centered near-black CTA button below. The CTA routes through useNavigate. Use to explain a simple sign-up-to-value flow for AI tools, SaaS apps, or any product with quick onboarding.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -32,33 +32,33 @@ export const AiProductSteps = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Start writing smarter in 3 steps"
+    const heading = props.heading ?? 'Start writing smarter in 3 steps'
     const description =
       props.description ??
-      "From signup to your first AI-assisted document in under 5 minutes."
+      'From signup to your first AI-assisted document in under 5 minutes.'
     const cta = props.cta ?? "Get started now — it's free"
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Create your account",
+            title: 'Create your account',
             description:
-              "Sign up with your email or Google account. No credit card required for the 14-day trial. Choose your primary use case during onboarding.",
+              'Sign up with your email or Google account. No credit card required for the 14-day trial. Choose your primary use case during onboarding.',
           },
           {
-            title: "Set your preferences",
+            title: 'Set your preferences',
             description:
-              "Tell us about your writing style, preferred tone, and industry. The AI learns from examples you provide to match your unique voice.",
+              'Tell us about your writing style, preferred tone, and industry. The AI learns from examples you provide to match your unique voice.',
           },
           {
-            title: "Start creating",
+            title: 'Start creating',
             description:
-              "Open the editor, pick a template or start from scratch, and experience AI-assisted writing. Export to any format or publish directly.",
+              'Open the editor, pick a template or start from scratch, and experience AI-assisted writing. Export to any format or publish directly.',
           },
         ]
 
     return (
-      <section className={cn("bg-muted/50 py-20 lg:py-32", props.className)}>
+      <section className={cn('bg-muted/50 py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

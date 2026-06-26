@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CommunityForumPricing — 3-tier pricing table for a community-platform / discussion-forum
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * products, subscription services, or membership tools.
  */
 export const CommunityForumPricing = defineComponent({
-  name: "CommunityForumPricing",
+  name: 'CommunityForumPricing',
   description:
-    "3-tier pricing table for a community-platform / discussion-forum landing page: a centered heading and description above a responsive 3-column grid of bordered pricing cards on a muted band, with one tier highlighted (dark foreground theme). Each card shows a badge, name, price, cadence, description, feature list with checkmarks, and a CTA button; all buttons route through useNavigate. Use as the pricing section for SaaS community-platform products, subscription services, or membership tools.",
+    '3-tier pricing table for a community-platform / discussion-forum landing page: a centered heading and description above a responsive 3-column grid of bordered pricing cards on a muted band, with one tier highlighted (dark foreground theme). Each card shows a badge, name, price, cadence, description, feature list with checkmarks, and a CTA button; all buttons route through useNavigate. Use as the pricing section for SaaS community-platform products, subscription services, or membership tools.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -39,59 +39,59 @@ export const CommunityForumPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Simple, transparent pricing"
+    const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
-      "Start free and scale as your community grows. No hidden fees, no surprises."
+      'Start free and scale as your community grows. No hidden fees, no surprises.'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Starter",
-            price: "$0",
-            cadence: "Forever free",
+            name: 'Starter',
+            price: '$0',
+            cadence: 'Forever free',
             description:
-              "Perfect for small groups getting started with community building.",
+              'Perfect for small groups getting started with community building.',
             features: [
-              "Up to 100 members",
-              "5 topic categories",
-              "Basic analytics",
-              "Community support",
+              'Up to 100 members',
+              '5 topic categories',
+              'Basic analytics',
+              'Community support',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
             featured: false,
           },
           {
-            name: "Growth",
-            price: "$49",
-            cadence: "per month",
+            name: 'Growth',
+            price: '$49',
+            cadence: 'per month',
             description:
-              "For growing communities that need more power and flexibility.",
+              'For growing communities that need more power and flexibility.',
             features: [
-              "Up to 5,000 members",
-              "Unlimited categories",
-              "Advanced analytics",
-              "Priority email support",
-              "Custom domain",
+              'Up to 5,000 members',
+              'Unlimited categories',
+              'Advanced analytics',
+              'Priority email support',
+              'Custom domain',
             ],
-            cta: "Start 14-Day Trial",
+            cta: 'Start 14-Day Trial',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Enterprise",
-            price: "$299",
-            cadence: "per month",
+            name: 'Enterprise',
+            price: '$299',
+            cadence: 'per month',
             description:
-              "For large organizations with advanced security and scaling needs.",
+              'For large organizations with advanced security and scaling needs.',
             features: [
-              "Unlimited members",
-              "SSO & SAML",
-              "API access",
-              "Dedicated support",
-              "SLA guarantee",
+              'Unlimited members',
+              'SSO & SAML',
+              'API access',
+              'Dedicated support',
+              'SLA guarantee',
             ],
-            cta: "Contact Sales",
+            cta: 'Contact Sales',
             featured: false,
           },
         ]
@@ -112,7 +112,7 @@ export const CommunityForumPricing = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted py-24 lg:py-32", props.className)}>
+      <section className={cn('bg-muted py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
@@ -125,10 +125,10 @@ export const CommunityForumPricing = defineComponent({
               <div
                 key={tier.name}
                 className={cn(
-                  "relative rounded-xl border p-8",
+                  'relative rounded-xl border p-8',
                   tier.featured
-                    ? "border-foreground bg-foreground"
-                    : "border-border bg-card",
+                    ? 'border-foreground bg-foreground'
+                    : 'border-border bg-card',
                 )}
               >
                 {tier.badge && (
@@ -138,32 +138,38 @@ export const CommunityForumPricing = defineComponent({
                 )}
                 <div
                   className={cn(
-                    "mb-2 text-sm font-medium",
-                    tier.featured ? "text-background/60" : "text-muted-foreground",
+                    'mb-2 text-sm font-medium',
+                    tier.featured
+                      ? 'text-background/60'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {tier.name}
                 </div>
                 <div
                   className={cn(
-                    "mb-2 text-4xl font-bold",
-                    tier.featured ? "text-background" : "text-foreground",
+                    'mb-2 text-4xl font-bold',
+                    tier.featured ? 'text-background' : 'text-foreground',
                   )}
                 >
                   {tier.price}
                 </div>
                 <div
                   className={cn(
-                    "mb-6 text-sm",
-                    tier.featured ? "text-background/60" : "text-muted-foreground",
+                    'mb-6 text-sm',
+                    tier.featured
+                      ? 'text-background/60'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {tier.cadence}
                 </div>
                 <p
                   className={cn(
-                    "mb-6 text-sm",
-                    tier.featured ? "text-background/80" : "text-muted-foreground",
+                    'mb-6 text-sm',
+                    tier.featured
+                      ? 'text-background/80'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {tier.description}
@@ -173,8 +179,10 @@ export const CommunityForumPricing = defineComponent({
                     <li
                       key={feat}
                       className={cn(
-                        "flex items-center gap-3 text-sm",
-                        tier.featured ? "text-background/90" : "text-foreground/80",
+                        'flex items-center gap-3 text-sm',
+                        tier.featured
+                          ? 'text-background/90'
+                          : 'text-foreground/80',
                       )}
                     >
                       <Check className="size-5 shrink-0 text-primary" />
@@ -186,10 +194,10 @@ export const CommunityForumPricing = defineComponent({
                   type="button"
                   onClick={() => go(tier.cta)}
                   className={cn(
-                    "block w-full rounded-lg py-3 text-center text-sm font-medium transition-colors",
+                    'block w-full rounded-lg py-3 text-center text-sm font-medium transition-colors',
                     tier.featured
-                      ? "bg-background text-foreground hover:bg-background/90"
-                      : "border border-input bg-card text-foreground/80 hover:bg-muted",
+                      ? 'bg-background text-foreground hover:bg-background/90'
+                      : 'border border-input bg-card text-foreground/80 hover:bg-muted',
                   )}
                 >
                   {tier.cta}

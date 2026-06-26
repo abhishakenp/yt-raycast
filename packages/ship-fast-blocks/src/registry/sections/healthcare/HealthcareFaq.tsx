@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * HealthcareFaq — accordion FAQ for a medical-clinic page. A narrow centered
@@ -12,7 +12,7 @@ import { cn } from "#/lib/utils.ts"
  * Renders fully with no props via baked-in clinic-FAQ defaults.
  */
 export const HealthcareFaq = defineComponent({
-  name: "HealthcareFaq",
+  name: 'HealthcareFaq',
   description:
     "Accordion FAQ for a medical-clinic page: a narrow centered column with an eyebrow chip, heading and intro above a stack of native <details> accordions, each muted-surface row with a question summary, a chevron that rotates when open, and a revealed answer paragraph. Tokens-only, no links, no JS state. Use for a frequently-asked-questions / patient-info section of a doctors' office, primary-care practice or telehealth clinic.",
   props: z.object({
@@ -29,49 +29,49 @@ export const HealthcareFaq = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "FAQ"
-    const heading = props.heading ?? "Frequently asked questions"
+    const eyebrow = props.eyebrow ?? 'FAQ'
+    const heading = props.heading ?? 'Frequently asked questions'
     const description =
-      props.description ?? "Everything you need to know about our practice."
+      props.description ?? 'Everything you need to know about our practice.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            question: "Do you accept my insurance?",
+            question: 'Do you accept my insurance?',
             answer:
-              "We accept most major insurance plans including Blue Shield, Aetna, Cigna, UnitedHealthcare, Kaiser, and Medicare. We also offer competitive self-pay rates for those without insurance or with out-of-network plans. Contact our billing team at (415) 555-1235 to verify your specific coverage.",
+              'We accept most major insurance plans including Blue Shield, Aetna, Cigna, UnitedHealthcare, Kaiser, and Medicare. We also offer competitive self-pay rates for those without insurance or with out-of-network plans. Contact our billing team at (415) 555-1235 to verify your specific coverage.',
           },
           {
-            question: "How quickly can I get an appointment?",
+            question: 'How quickly can I get an appointment?',
             answer:
-              "For routine visits, we typically have availability within 1-3 days. For urgent concerns, we offer same-day appointments and walk-in hours from 7:00-9:00 AM weekdays. Virtual visits are often available within hours. Book online 24/7 or call us during business hours.",
+              'For routine visits, we typically have availability within 1-3 days. For urgent concerns, we offer same-day appointments and walk-in hours from 7:00-9:00 AM weekdays. Virtual visits are often available within hours. Book online 24/7 or call us during business hours.',
           },
           {
-            question: "What should I bring to my first appointment?",
+            question: 'What should I bring to my first appointment?',
             answer:
-              "Please bring a valid photo ID, your insurance card, a list of current medications (including dosages), and any relevant medical records or recent test results. If you have specific concerns, writing them down beforehand helps ensure we address everything during your visit.",
+              'Please bring a valid photo ID, your insurance card, a list of current medications (including dosages), and any relevant medical records or recent test results. If you have specific concerns, writing them down beforehand helps ensure we address everything during your visit.',
           },
           {
-            question: "Do you offer virtual visits?",
+            question: 'Do you offer virtual visits?',
             answer:
               "Yes! We offer HIPAA-compliant video visits for many types of appointments including follow-ups, medication management, mental health check-ins, and minor acute concerns. Virtual visits are covered by most insurance plans at the same rate as in-person visits. You'll receive a secure link via email and text before your appointment.",
           },
           {
-            question: "What are your office hours?",
+            question: 'What are your office hours?',
             answer:
               "We're open Monday through Friday 7:00 AM - 7:00 PM, and Saturday 8:00 AM - 2:00 PM. We offer early morning and evening appointments to accommodate busy schedules. Virtual visits are available during all business hours and selected evening hours Monday through Thursday until 8:00 PM.",
           },
           {
-            question: "Can you manage my chronic conditions?",
+            question: 'Can you manage my chronic conditions?',
             answer:
-              "Absolutely. Our physicians specialize in managing chronic conditions including diabetes, hypertension, asthma, thyroid disorders, high cholesterol, and depression/anxiety. We coordinate with specialists when needed and use our patient portal for ongoing communication and medication adjustments between visits.",
+              'Absolutely. Our physicians specialize in managing chronic conditions including diabetes, hypertension, asthma, thyroid disorders, high cholesterol, and depression/anxiety. We coordinate with specialists when needed and use our patient portal for ongoing communication and medication adjustments between visits.',
           },
         ]
 
     return (
       <section
         id="faq"
-        className={cn("bg-background py-20 lg:py-28", props.className)}
+        className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="faq-heading"
       >
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">

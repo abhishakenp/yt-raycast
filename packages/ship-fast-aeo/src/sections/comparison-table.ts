@@ -1,11 +1,19 @@
 import type { SectionLike } from '../contracts/page-aeo.ts'
 import { escapeHtml } from '../utils.ts'
-import { renderItemList, sectionBody, sectionHeadline, sectionSubheadline } from './helpers.ts'
+import {
+  renderItemList,
+  sectionBody,
+  sectionHeadline,
+  sectionSubheadline,
+} from './helpers.ts'
 
 export function renderComparisonTableSection(section: SectionLike): string {
   const columns = section.columns?.length
     ? section.columns
-    : (section.items || []).map((item) => ({ title: item.title, highlight: false }))
+    : (section.items || []).map((item) => ({
+        title: item.title,
+        highlight: false,
+      }))
   const rows = section.rows?.length
     ? section.rows
     : (section.items || []).map((item) => ({
@@ -28,12 +36,15 @@ export function renderComparisonTableSection(section: SectionLike): string {
                 </tr>
               </thead>
               <tbody>
-                ${renderItemList(rows, (row) => `
+                ${renderItemList(
+                  rows,
+                  (row) => `
                   <tr>
                     <th scope="row">${escapeHtml(row.label || '')}</th>
                     ${renderItemList(row.values || [], (value) => `<td>${escapeHtml(value)}</td>`)}
                   </tr>
-                `)}
+                `,
+                )}
               </tbody>
             </table>
           </div>

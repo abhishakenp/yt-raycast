@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * LendingStats — a stats / about split with a glowing photo and a floating review
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const LendingStats = defineComponent({
-  name: "LendingStats",
+  name: 'LendingStats',
   description:
-    "Stats / about split with a photo and a floating review card for a lending or fintech marketing page: left column has a heading, supporting paragraph and a 2x2 grid of muted stat tiles (big value + label); right column is a large rounded photo with an overlapping bottom-left review card — five star icons, a quoted testimonial, an avatar and a name/location. Use to build trust with track-record numbers and a real-borrower quote on loan, about, or fintech landing pages. Imagery uses the alt-driven Image component.",
+    'Stats / about split with a photo and a floating review card for a lending or fintech marketing page: left column has a heading, supporting paragraph and a 2x2 grid of muted stat tiles (big value + label); right column is a large rounded photo with an overlapping bottom-left review card — five star icons, a quoted testimonial, an avatar and a name/location. Use to build trust with track-record numbers and a real-borrower quote on loan, about, or fintech landing pages. Imagery uses the alt-driven Image component.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -31,30 +31,29 @@ export const LendingStats = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const statsHeading =
-      props.heading ?? "Trusted by over 250,000 borrowers"
+    const statsHeading = props.heading ?? 'Trusted by over 250,000 borrowers'
     const statsDesc =
       props.description ??
       "Since 2019, we've helped people consolidate debt, fund major purchases, and achieve financial goals without the stress of traditional lending."
     const statsItems = props.items?.length
       ? props.items
       : [
-          { value: "$1.2B+", label: "In loans funded" },
-          { value: "4.9/5", label: "Average rating" },
-          { value: "2 min", label: "Average application" },
-          { value: "24 hrs", label: "Average funding time" },
+          { value: '$1.2B+', label: 'In loans funded' },
+          { value: '4.9/5', label: 'Average rating' },
+          { value: '2 min', label: 'Average application' },
+          { value: '24 hrs', label: 'Average funding time' },
         ]
     const statsImageAlt =
       props.imageAlt ??
-      "diverse group of professionals collaborating in modern office setting"
+      'diverse group of professionals collaborating in modern office setting'
     const statsReviewQuote =
       props.reviewQuote ??
       "ClearLoan helped me consolidate $18,000 in credit card debt. I'm saving $340/month and paying off 3 years sooner."
-    const statsReviewName = props.reviewName ?? "Sarah Mitchell"
-    const statsReviewMeta = props.reviewMeta ?? "San Francisco, CA"
+    const statsReviewName = props.reviewName ?? 'Sarah Mitchell'
+    const statsReviewMeta = props.reviewMeta ?? 'San Francisco, CA'
     const statsReviewAvatarAlt =
       props.reviewAvatarAlt ??
-      "professional headshot of a smiling woman with brown hair in business attire"
+      'professional headshot of a smiling woman with brown hair in business attire'
 
     const Star = ({ className }: { className?: string }) => (
       <svg
@@ -68,7 +67,7 @@ export const LendingStats = defineComponent({
     )
 
     return (
-      <section className={cn("py-24 lg:py-32", props.className)}>
+      <section className={cn('py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div>

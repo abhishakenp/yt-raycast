@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * BlogPostNavbar — sticky reading-page header for a single-article / editorial
@@ -28,7 +28,7 @@ const FeatherMark = ({ className }: { className?: string }) => (
 )
 
 export const BlogPostNavbar = defineComponent({
-  name: "BlogPostNavbar",
+  name: 'BlogPostNavbar',
   description:
     "Sticky reading-page header for a single-article / editorial blog page built on the shared SiteNav composite: a feather/pen wordmark, centered desktop nav links, a 'Subscribe' CTA, and a real mobile drawer on small screens. Clean editorial voice. Use as the sticky site header for a blog post, magazine article, journal, or any editorial publication detail page.",
   props: z.object({
@@ -45,14 +45,14 @@ export const BlogPostNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Home", "Articles", "Topics", "About"]
+      : ['Home', 'Articles', 'Topics', 'About']
     return (
       <SiteNav
-        brand={props.brand ?? "The Editorial"}
+        brand={props.brand ?? 'The Editorial'}
         brandMark={<FeatherMark className="size-7 text-primary" />}
         brandClassName="text-xl font-semibold"
         nav={nav}
-        cta={{ label: props.subscribeCta ?? "Subscribe", target: "Subscribe" }}
+        cta={{ label: props.subscribeCta ?? 'Subscribe', target: 'Subscribe' }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}
       />

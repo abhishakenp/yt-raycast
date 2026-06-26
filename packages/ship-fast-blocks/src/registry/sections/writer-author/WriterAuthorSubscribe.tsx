@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * WriterAuthorSubscribe — bespoke newsletter signup band for a literary author
@@ -14,9 +14,9 @@ import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
  * baked-in defaults.
  */
 export const WriterAuthorSubscribe = defineComponent({
-  name: "WriterAuthorSubscribe",
+  name: 'WriterAuthorSubscribe',
   description:
-    "Bespoke newsletter signup band for a literary author site: a centered SectionHeading (uppercase eyebrow, elegant serif headline, inviting subtitle) sits above an inline email form (email input + filled Subscribe button) on a rounded token card / muted band, with reassuring privacy microcopy underneath. Serif-forward and fully token-based. Use on an author, writer, novelist, or essayist homepage or about page to capture newsletter subscribers and invite readers to follow new books, essays, and announcements.",
+    'Bespoke newsletter signup band for a literary author site: a centered SectionHeading (uppercase eyebrow, elegant serif headline, inviting subtitle) sits above an inline email form (email input + filled Subscribe button) on a rounded token card / muted band, with reassuring privacy microcopy underneath. Serif-forward and fully token-based. Use on an author, writer, novelist, or essayist homepage or about page to capture newsletter subscribers and invite readers to follow new books, essays, and announcements.',
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -33,17 +33,17 @@ export const WriterAuthorSubscribe = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Newsletter"
-    const heading = props.heading ?? "Letters from Eleanor"
+    const eyebrow = props.eyebrow ?? 'Newsletter'
+    const heading = props.heading ?? 'Letters from Eleanor'
     const subheading =
       props.subheading ??
       "Join Eleanor Vance's readers for occasional letters on new books, work-in-progress essays, and the stories behind the writing — delivered straight to your inbox."
-    const placeholder = props.placeholder ?? "you@example.com"
-    const buttonLabel = props.buttonLabel ?? "Subscribe"
-    const privacy = props.privacy ?? "No spam. Unsubscribe anytime."
+    const placeholder = props.placeholder ?? 'you@example.com'
+    const buttonLabel = props.buttonLabel ?? 'Subscribe'
+    const privacy = props.privacy ?? 'No spam. Unsubscribe anytime.'
 
     return (
-      <section className={cn("bg-background py-20 sm:py-24", props.className)}>
+      <section className={cn('bg-background py-20 sm:py-24', props.className)}>
         <div className="mx-auto max-w-3xl px-6 lg:px-8">
           <div className="rounded-2xl border border-border bg-card p-8 text-center text-card-foreground sm:p-12">
             <SectionHeading

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FitnessHero — warm, editorial split hero for a gym / fitness-studio landing page.
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * the top hero for gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
 export const FitnessHero = defineComponent({
-  name: "FitnessHero",
+  name: 'FitnessHero',
   description:
-    "Warm, editorial split hero for a gym / fitness-studio landing page: a two-column layout pairing a large two-tone headline (lead in foreground, highlight phrase in muted), a supporting paragraph, dual CTAs (a filled primary pill with an arrow icon and an outlined secondary), and a row of check-marked member-proof points on the left, with a tall rounded showcase photo carrying a floating member-quote card on the right. CTAs route through useNavigate; the photo uses the alt-driven Image component. Use as the top hero for gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.",
+    'Warm, editorial split hero for a gym / fitness-studio landing page: a two-column layout pairing a large two-tone headline (lead in foreground, highlight phrase in muted), a supporting paragraph, dual CTAs (a filled primary pill with an arrow icon and an outlined secondary), and a row of check-marked member-proof points on the left, with a tall rounded showcase photo carrying a floating member-quote card on the right. CTAs route through useNavigate; the photo uses the alt-driven Image component. Use as the top hero for gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.',
   props: z.object({
     /** Heading lead text rendered in foreground. */
     headingLead: z.string().optional(),
@@ -33,22 +33,21 @@ export const FitnessHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroLead = props.headingLead ?? "Strength through"
-    const heroHighlight = props.headingHighlight ?? "movement"
+    const heroLead = props.headingLead ?? 'Strength through'
+    const heroHighlight = props.headingHighlight ?? 'movement'
     const heroSub =
       props.subheading ??
-      "Base Fitness Studio offers expert-led classes, personalized training, and a supportive community. Build strength, find balance, and move better every day."
-    const heroPrimary = props.primaryCta ?? "Explore Classes"
-    const heroSecondary = props.secondaryCta ?? "View Memberships"
+      'Base Fitness Studio offers expert-led classes, personalized training, and a supportive community. Build strength, find balance, and move better every day.'
+    const heroPrimary = props.primaryCta ?? 'Explore Classes'
+    const heroSecondary = props.secondaryCta ?? 'View Memberships'
     const heroProof = props.proof?.length
       ? props.proof
-      : ["3,200+ members", "4.9 rating"]
+      : ['3,200+ members', '4.9 rating']
     const heroImageAlt =
       props.imageAlt ??
-      "athletic woman performing barbell back squat in modern gym with natural lighting"
+      'athletic woman performing barbell back squat in modern gym with natural lighting'
     const heroQuote = props.quote ?? "Best fitness decision I've made"
-    const heroQuoteAuthor =
-      props.quoteAuthor ?? "Sarah Chen, member since 2022"
+    const heroQuoteAuthor = props.quoteAuthor ?? 'Sarah Chen, member since 2022'
 
     const CheckIcon = ({ className }: { className?: string }) => (
       <svg
@@ -70,7 +69,7 @@ export const FitnessHero = defineComponent({
     return (
       <section
         className={cn(
-          "relative overflow-hidden py-20 md:py-32 lg:py-40",
+          'relative overflow-hidden py-20 md:py-32 lg:py-40',
           props.className,
         )}
       >
@@ -78,7 +77,7 @@ export const FitnessHero = defineComponent({
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div className="space-y-8">
               <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                {heroLead}{" "}
+                {heroLead}{' '}
                 <span className="text-muted-foreground">{heroHighlight}</span>
               </h1>
               <p className="max-w-lg text-lg leading-relaxed text-muted-foreground md:text-xl">

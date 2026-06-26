@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AgencyNavbar — fixed, translucent top navigation bar for a creative
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Studio Rise" defaults.
  */
 export const AgencyNavbar = defineComponent({
-  name: "AgencyNavbar",
+  name: 'AgencyNavbar',
   description:
-    "Fixed translucent top navigation bar for a creative agency / design studio site: backdrop-blurred, border-bottomed header pinned to the top with a gradient brand-initial logo tile + studio name on the left, horizontal nav links and a pill-shaped primary CTA on the right (desktop), and a hamburger menu button on mobile. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for agencies, studios, branding/marketing shops, freelance creatives, or production houses.",
+    'Fixed translucent top navigation bar for a creative agency / design studio site: backdrop-blurred, border-bottomed header pinned to the top with a gradient brand-initial logo tile + studio name on the left, horizontal nav links and a pill-shaped primary CTA on the right (desktop), and a hamburger menu button on mobile. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for agencies, studios, branding/marketing shops, freelance creatives, or production houses.',
   props: z.object({
     /** Brand / studio name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -29,16 +29,16 @@ export const AgencyNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Studio Rise"
+    const brand = props.brand ?? 'Studio Rise'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Work", "About", "Contact"]
-    const cta = props.cta ?? "Start a project"
+      : ['Services', 'Work', 'About', 'Contact']
+    const cta = props.cta ?? 'Start a project'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent font-black text-primary-foreground",
+          'grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent font-black text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -50,7 +50,7 @@ export const AgencyNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/70 backdrop-blur-md",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/70 backdrop-blur-md',
           props.className,
         )}
       >

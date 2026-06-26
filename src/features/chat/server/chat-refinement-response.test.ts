@@ -60,7 +60,10 @@ describe('buildChatRefinementPrompt', () => {
 describe('createChatRefinementResponse', () => {
   it('keeps the engine text-generation runtime behind the planner path', () => {
     const source = readFileSync(
-      join(process.cwd(), 'src/features/chat/server/chat-refinement-response.ts'),
+      join(
+        process.cwd(),
+        'src/features/chat/server/chat-refinement-response.ts',
+      ),
       'utf8',
     )
     const imports = source.slice(0, source.indexOf('type ChatRefinementClient'))

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * JobBoardSteps — a 3-step "how it works" timeline for a job-board / careers
@@ -12,7 +12,7 @@ import { cn } from "#/lib/utils.ts"
  * with no props.
  */
 export const JobBoardSteps = defineComponent({
-  name: "JobBoardSteps",
+  name: 'JobBoardSteps',
   description:
     "3-step 'how it works' timeline for a job-board / careers site: a muted band with a centered heading + description above a 3-column grid connected by a horizontal rule on desktop, each step showing a numbered round primary badge, a title and a supporting paragraph. Use to explain the candidate journey (create profile, discover & apply, get hired) on job boards, hiring marketplaces or recruiting platforms.",
   props: z.object({
@@ -27,32 +27,31 @@ export const JobBoardSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "How it works"
+    const heading = props.heading ?? 'How it works'
     const description =
-      props.description ??
-      "Three simple steps to your next career opportunity"
+      props.description ?? 'Three simple steps to your next career opportunity'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Create your profile",
+            title: 'Create your profile',
             description:
-              "Upload your resume, set your preferences, and let employers discover you. Complete profiles get 3x more views.",
+              'Upload your resume, set your preferences, and let employers discover you. Complete profiles get 3x more views.',
           },
           {
-            title: "Discover & apply",
+            title: 'Discover & apply',
             description:
-              "Browse curated listings, filter by what matters to you, and apply with one click using your saved profile.",
+              'Browse curated listings, filter by what matters to you, and apply with one click using your saved profile.',
           },
           {
-            title: "Get hired",
+            title: 'Get hired',
             description:
-              "Connect directly with hiring managers, interview, and land your next role. Average placement in 14 days.",
+              'Connect directly with hiring managers, interview, and land your next role. Average placement in 14 days.',
           },
         ]
 
     return (
-      <section className={cn("bg-muted/40 py-20", props.className)}>
+      <section className={cn('bg-muted/40 py-20', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground">

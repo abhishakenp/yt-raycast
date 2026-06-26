@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CommunityForumContactCta — final dark call-to-action band for a community-platform /
@@ -11,9 +11,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * for community platforms, SaaS products, or subscription services.
  */
 export const CommunityForumContactCta = defineComponent({
-  name: "CommunityForumContactCta",
+  name: 'CommunityForumContactCta',
   description:
-    "Final dark call-to-action band for a community-platform / discussion-forum landing page: a centered section on a dark foreground background with a large heading, a supporting paragraph, dual CTAs (filled primary + outlined secondary), and a trust note beneath. All CTAs route through useNavigate. Use as the closing conversion band for community platforms, SaaS products, or subscription services.",
+    'Final dark call-to-action band for a community-platform / discussion-forum landing page: a centered section on a dark foreground background with a large heading, a supporting paragraph, dual CTAs (filled primary + outlined secondary), and a trust note beneath. All CTAs route through useNavigate. Use as the closing conversion band for community platforms, SaaS products, or subscription services.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -29,18 +29,18 @@ export const CommunityForumContactCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to build your community?"
+    const heading = props.heading ?? 'Ready to build your community?'
     const description =
       props.description ??
       "Join thousands of communities already fostering meaningful conversations on Threadloom. Start free, upgrade when you're ready."
-    const primaryCta = props.primaryCta ?? "Create Free Community"
-    const secondaryCta = props.secondaryCta ?? "Schedule a Demo"
+    const primaryCta = props.primaryCta ?? 'Create Free Community'
+    const secondaryCta = props.secondaryCta ?? 'Schedule a Demo'
     const note =
       props.note ??
-      "Free 14-day trial on all paid plans • No credit card required"
+      'Free 14-day trial on all paid plans • No credit card required'
 
     return (
-      <section className={cn("bg-foreground py-24 lg:py-32", props.className)}>
+      <section className={cn('bg-foreground py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-3xl font-bold text-background sm:text-4xl lg:text-5xl">
             {heading}

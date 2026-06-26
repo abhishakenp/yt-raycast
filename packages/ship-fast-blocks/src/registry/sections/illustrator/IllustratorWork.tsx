@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * IllustratorWork — a selected-work project gallery for an illustrator /
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * personal projects. Renders fully with no props via baked-in defaults.
  */
 export const IllustratorWork = defineComponent({
-  name: "IllustratorWork",
+  name: 'IllustratorWork',
   description:
     "Selected-work project gallery for an illustrator / visual-artist portfolio on a raised card-colored band: a header row pairing an uppercase accent eyebrow + serif heading with a 'view all' arrow link, above a responsive 3-up grid of clickable projects, each a tall 4:5 image that zooms on hover with a serif title and small meta line. Items and the view-all link route through useNavigate. Use to showcase an artist's recent books, editorial spreads, campaigns, and personal projects.",
   props: z.object({
@@ -33,18 +33,21 @@ export const IllustratorWork = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Selected Work"
-    const heading = props.heading ?? "Recent Projects"
-    const viewAll = props.viewAll ?? "View all work"
+    const eyebrow = props.eyebrow ?? 'Selected Work'
+    const heading = props.heading ?? 'Recent Projects'
+    const viewAll = props.viewAll ?? 'View all work'
     const items = props.items?.length
       ? props.items
       : [
-          { title: "The Star Collector", meta: "Children's picture book · 2024" },
-          { title: "Kinfolk Magazine", meta: "Editorial spread · Spring 2024" },
-          { title: "Portland Farmers Market", meta: "Brand campaign · 2024" },
-          { title: "Botanical Series", meta: "Personal project · 2023" },
-          { title: "The Reading Life", meta: "Book cover · Chronicle Books" },
-          { title: "Garden Adventures", meta: "Picture book · 2023" },
+          {
+            title: 'The Star Collector',
+            meta: "Children's picture book · 2024",
+          },
+          { title: 'Kinfolk Magazine', meta: 'Editorial spread · Spring 2024' },
+          { title: 'Portland Farmers Market', meta: 'Brand campaign · 2024' },
+          { title: 'Botanical Series', meta: 'Personal project · 2023' },
+          { title: 'The Reading Life', meta: 'Book cover · Chronicle Books' },
+          { title: 'Garden Adventures', meta: 'Picture book · 2023' },
         ]
 
     const ArrowRight = ({ className }: { className?: string }) => (
@@ -67,7 +70,7 @@ export const IllustratorWork = defineComponent({
     return (
       <section
         className={cn(
-          "bg-card px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36",
+          'bg-card px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36',
           props.className,
         )}
       >

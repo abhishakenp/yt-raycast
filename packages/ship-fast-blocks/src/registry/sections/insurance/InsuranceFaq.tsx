@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * InsuranceFaq — frequently-asked-questions stack for an insurance page. On a
@@ -12,9 +12,9 @@ import { cn } from "#/lib/utils.ts"
  * baked-in defaults.
  */
 export const InsuranceFaq = defineComponent({
-  name: "InsuranceFaq",
+  name: 'InsuranceFaq',
   description:
-    "Frequently-asked-questions stack for an insurance page on a soft muted canvas: a centered eyebrow chip + heading + lede above a narrow column of bordered question/answer cards, each showing the question as a bold heading over a muted answer paragraph. Use to address common coverage, claims, billing, premium and cancellation questions for insurance carriers, insurtech startups, brokers, or financial-protection products.",
+    'Frequently-asked-questions stack for an insurance page on a soft muted canvas: a centered eyebrow chip + heading + lede above a narrow column of bordered question/answer cards, each showing the question as a bold heading over a muted answer paragraph. Use to address common coverage, claims, billing, premium and cancellation questions for insurance carriers, insurtech startups, brokers, or financial-protection products.',
   props: z.object({
     /** Eyebrow chip above the heading. */
     eyebrow: z.string().optional(),
@@ -29,8 +29,8 @@ export const InsuranceFaq = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Common Questions"
-    const heading = props.heading ?? "Frequently asked questions"
+    const eyebrow = props.eyebrow ?? 'Common Questions'
+    const heading = props.heading ?? 'Frequently asked questions'
     const description =
       props.description ??
       "Everything you need to know about SecureLife insurance. Can't find what you're looking for? Contact our support team."
@@ -38,44 +38,44 @@ export const InsuranceFaq = defineComponent({
       ? props.items
       : [
           {
-            question: "How quickly can I get coverage?",
+            question: 'How quickly can I get coverage?',
             answer:
               "Most policies are active immediately upon purchase. For life insurance, simplified issue policies are active right away, while traditional policies may require a brief underwriting period of 2-5 days. You'll receive your policy documents via email within minutes of purchase.",
           },
           {
             question: "What's included in the 24/7 claims support?",
             answer:
-              "Our claims hotline (1-800-555-0199) is available around the clock for emergencies. You can report claims, check status, arrange emergency services like towing or temporary housing, and get immediate assistance from licensed adjusters.",
+              'Our claims hotline (1-800-555-0199) is available around the clock for emergencies. You can report claims, check status, arrange emergency services like towing or temporary housing, and get immediate assistance from licensed adjusters.',
           },
           {
-            question: "Can I bundle multiple policies for a discount?",
+            question: 'Can I bundle multiple policies for a discount?',
             answer:
-              "Absolutely! Bundle any 2 policies and save 10%, bundle 3+ policies and save 15%. Our most popular bundle includes home + auto, with an average savings of $340 per year. Bundling also simplifies billing and gives you a single point of contact.",
+              'Absolutely! Bundle any 2 policies and save 10%, bundle 3+ policies and save 15%. Our most popular bundle includes home + auto, with an average savings of $340 per year. Bundling also simplifies billing and gives you a single point of contact.',
           },
           {
-            question: "Do you offer monthly payment options?",
+            question: 'Do you offer monthly payment options?',
             answer:
-              "Yes, all our policies offer flexible payment options: monthly, quarterly, semi-annual, or annual. Choose monthly payments with no additional fees when you set up automatic payments. Pay annually and receive a 5% discount.",
+              'Yes, all our policies offer flexible payment options: monthly, quarterly, semi-annual, or annual. Choose monthly payments with no additional fees when you set up automatic payments. Pay annually and receive a 5% discount.',
           },
           {
-            question: "What factors affect my insurance premium?",
+            question: 'What factors affect my insurance premium?',
             answer:
               "For home insurance: location, home age, construction type, credit score, and claim history. For auto: driving record, vehicle type, annual mileage, age, and location. We use advanced analytics to ensure you're getting the fairest rate possible based on your specific risk profile.",
           },
           {
-            question: "Is there a penalty for canceling my policy?",
+            question: 'Is there a penalty for canceling my policy?',
             answer:
               "None at all. You can cancel anytime with no cancellation fees. If you prepaid annually, you'll receive a prorated refund for unused months. We believe in earning your business every month, not trapping you in contracts.",
           },
           {
-            question: "How do I file a claim?",
+            question: 'How do I file a claim?',
             answer:
               "File claims through our mobile app, online portal, or by calling 1-800-555-0199. Most claims can be reported in under 5 minutes. You'll receive a claim number immediately and be contacted by an adjuster within 24 hours (4 hours for emergencies).",
           },
         ]
 
     return (
-      <section className={cn("bg-muted py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-4 inline-block rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-primary">

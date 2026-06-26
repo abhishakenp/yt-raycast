@@ -1,5 +1,5 @@
-import { generatePrompt, type PromptSpec } from "@openuidev/lang-core"
-import componentSpec from "./generated/component-spec.json"
+import { generatePrompt, type PromptSpec } from '@openuidev/lang-core'
+import componentSpec from './generated/component-spec.json'
 
 // Component spec emitted by `@openuidev/cli generate --json-schema` (regenerate via
 // `pnpm genui:spec`). No React deps — safe to import in the server route.
@@ -15,25 +15,25 @@ Favour clear visual hierarchy: Section/Stack/Grid for layout, Card to group, Hea
 
 // Always available regardless of router filtering — layout spine + ubiquitous atoms.
 export const ALWAYS_INCLUDE = [
-  "Stack",
-  "Grid",
-  "Box",
-  "Section",
-  "Spacer",
-  "Heading",
-  "Text",
-  "Button",
-  "Card",
-  "Badge",
-  "Tabs",
-  "Separator",
+  'Stack',
+  'Grid',
+  'Box',
+  'Section',
+  'Spacer',
+  'Heading',
+  'Text',
+  'Button',
+  'Card',
+  'Badge',
+  'Tabs',
+  'Separator',
 ]
 
 const RULES = [
-  "Break a multi-feature app into distinct PAGES/MODULES. Use Tabs at the top level to switch modules when there is more than one.",
-  "Prefer references over deep inlining: define a child on its own line and reference it by name for better streaming.",
-  "Every defined identifier (except root) MUST be referenced from root, directly or transitively.",
-  "Use Grid for card collections (stats, products, features); use Stack for vertical flow.",
+  'Break a multi-feature app into distinct PAGES/MODULES. Use Tabs at the top level to switch modules when there is more than one.',
+  'Prefer references over deep inlining: define a child on its own line and reference it by name for better streaming.',
+  'Every defined identifier (except root) MUST be referenced from root, directly or transitively.',
+  'Use Grid for card collections (stats, products, features); use Stack for vertical flow.',
 ]
 
 const EXAMPLES = [
@@ -47,7 +47,7 @@ s2 = Card([], "Orders", "1,284 orders")
 s3 = Card([], "Customers", "9,402 active")`,
 ]
 
-function specWith(components: PromptSpec["components"]): PromptSpec {
+function specWith(components: PromptSpec['components']): PromptSpec {
   return {
     ...SPEC,
     components,
@@ -68,7 +68,7 @@ export function fullSystemPrompt(): string {
 export function filteredSystemPrompt(names: string[] | null): string {
   if (!names || names.length === 0) return fullSystemPrompt()
   const keep = new Set([...ALWAYS_INCLUDE, ...names])
-  const components: PromptSpec["components"] = {}
+  const components: PromptSpec['components'] = {}
   for (const [name, spec] of Object.entries(SPEC.components)) {
     if (keep.has(name)) components[name] = spec
   }
@@ -81,11 +81,14 @@ export function filteredSystemPrompt(names: string[] | null): string {
  * stays focused on filling one block's content (and the prompt stays small).
  */
 export function pageSystemPrompt(chosenBlock: string): string {
-  return filteredSystemPrompt([chosenBlock, "PageSwitch"])
+  return filteredSystemPrompt([chosenBlock, 'PageSwitch'])
 }
 
 /** Compact catalog (name + description) for the router call. */
-export function componentCatalog(): Array<{ name: string; description?: string }> {
+export function componentCatalog(): Array<{
+  name: string
+  description?: string
+}> {
   return Object.entries(SPEC.components).map(([name, s]) => ({
     name,
     description: s.description,
@@ -125,5 +128,7 @@ export function componentSectionKeys(name: string): string[] {
   if (token.trim()) keys.push(token)
   return keys
     .map((t) => t.trim().split('?')[0].split(':')[0].trim())
-    .filter((k) => k && !['brand', 'nav', 'className', 'class', 'style'].includes(k))
+    .filter(
+      (k) => k && !['brand', 'nav', 'className', 'class', 'style'].includes(k),
+    )
 }

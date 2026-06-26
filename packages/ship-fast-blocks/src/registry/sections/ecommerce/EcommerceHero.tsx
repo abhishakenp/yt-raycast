@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * EcommerceHero — promotional split hero for a general online store. A two-column
@@ -17,7 +17,7 @@ import { Image } from "#/lib/img.tsx"
  * than a full-bleed editorial image.
  */
 export const EcommerceHero = defineComponent({
-  name: "EcommerceHero",
+  name: 'EcommerceHero',
   description:
     "Promotional split hero for a general online store: a two-column (lg:grid-cols-2) layout with a sale eyebrow pill, an oversized bold sans headline, a supporting subheading, dual CTAs (a solid primary 'Shop now' + an outlined 'Explore'), and a small trust row on the left, plus a large hero product Image in a rounded muted card with a floating price/discount badge overlay on the right. Every CTA routes through useNavigate and the product photo uses the alt-driven Image component. Use as the opening hero for general retail storefronts, marketplaces, deal/sale landing pages, or any promotional online shop that wants a balanced text + product-photo split rather than a full-bleed editorial image.",
   props: z.object({
@@ -33,27 +33,27 @@ export const EcommerceHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroEyebrow = props.eyebrow ?? "Summer Sale — Up to 50% Off"
-    const heroHeading = props.heading ?? "Everything you love, now for less"
+    const heroEyebrow = props.eyebrow ?? 'Summer Sale — Up to 50% Off'
+    const heroHeading = props.heading ?? 'Everything you love, now for less'
     const heroSub =
       props.subheading ??
-      "Shop thousands of top-rated products across every category. Fresh drops weekly, fast delivery, and prices you will actually love."
-    const heroPrimary = props.primaryCta ?? "Shop now"
-    const heroSecondary = props.secondaryCta ?? "Explore"
+      'Shop thousands of top-rated products across every category. Fresh drops weekly, fast delivery, and prices you will actually love.'
+    const heroPrimary = props.primaryCta ?? 'Shop now'
+    const heroSecondary = props.secondaryCta ?? 'Explore'
     const heroImageAlt =
       props.imageAlt ??
-      "Modern retail product flat-lay featuring a stylish gadget, accessories, and packaging on a clean neutral background"
-    const heroBadge = props.badgeText ?? "Save 40%"
+      'Modern retail product flat-lay featuring a stylish gadget, accessories, and packaging on a clean neutral background'
+    const heroBadge = props.badgeText ?? 'Save 40%'
     const heroTrust = props.trust ?? [
-      "Free shipping",
-      "Easy returns",
-      "Secure checkout",
+      'Free shipping',
+      'Easy returns',
+      'Secure checkout',
     ]
 
     return (
       <section
         aria-label="Hero"
-        className={cn("bg-background pt-16 lg:pt-20", props.className)}
+        className={cn('bg-background pt-16 lg:pt-20', props.className)}
       >
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:py-24">
           <div className="text-center lg:text-left">

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AutoDealershipFinancing — financing / pre-approval section for an auto
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * or auto sales groups. Renders fully with no props via baked-in defaults.
  */
 export const AutoDealershipFinancing = defineComponent({
-  name: "AutoDealershipFinancing",
+  name: 'AutoDealershipFinancing',
   description:
-    "Financing / pre-approval section for an auto dealership page: a two-column layout with a large rounded finance photo on one side and, on the other, a heading and lead, a vertical list of numbered step cards (Apply Online, Compare Offers, Drive Away), a 3-up APR stats panel (starting APR / max months / down options), and a solid primary CTA. The CTA routes through useNavigate and the photo uses the alt-driven Image component. Use as the financing / get-pre-approved section for car dealerships, used-car lots, or auto sales groups.",
+    'Financing / pre-approval section for an auto dealership page: a two-column layout with a large rounded finance photo on one side and, on the other, a heading and lead, a vertical list of numbered step cards (Apply Online, Compare Offers, Drive Away), a 3-up APR stats panel (starting APR / max months / down options), and a solid primary CTA. The CTA routes through useNavigate and the photo uses the alt-driven Image component. Use as the financing / get-pre-approved section for car dealerships, used-car lots, or auto sales groups.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -39,42 +39,42 @@ export const AutoDealershipFinancing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Flexible Financing Options"
+    const heading = props.heading ?? 'Flexible Financing Options'
     const description =
       props.description ??
-      "Get pre-approved in minutes with competitive rates from our network of 20+ lenders. We work with all credit situations to find the right payment plan for you."
+      'Get pre-approved in minutes with competitive rates from our network of 20+ lenders. We work with all credit situations to find the right payment plan for you.'
     const imageAlt =
       props.imageAlt ??
-      "Professional business handshake over desk with documents and calculator"
-    const cta = props.cta ?? "Get Pre-Approved Now"
+      'Professional business handshake over desk with documents and calculator'
+    const cta = props.cta ?? 'Get Pre-Approved Now'
     const steps = props.steps?.length
       ? props.steps
       : [
           {
-            title: "Apply Online",
+            title: 'Apply Online',
             description:
-              "Complete our secure 3-minute application. No impact to your credit score.",
+              'Complete our secure 3-minute application. No impact to your credit score.',
           },
           {
-            title: "Compare Offers",
+            title: 'Compare Offers',
             description:
-              "Review personalized rates from multiple lenders side by side.",
+              'Review personalized rates from multiple lenders side by side.',
           },
           {
-            title: "Drive Away",
-            description: "Sign electronically and take delivery the same day.",
+            title: 'Drive Away',
+            description: 'Sign electronically and take delivery the same day.',
           },
         ]
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "3.9%", label: "Starting APR" },
-          { value: "84", label: "Max Months" },
-          { value: "$0", label: "Down Options" },
+          { value: '3.9%', label: 'Starting APR' },
+          { value: '84', label: 'Max Months' },
+          { value: '$0', label: 'Down Options' },
         ]
 
     return (
-      <section className={cn("bg-card py-16 lg:py-24", props.className)}>
+      <section className={cn('bg-card py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="order-2 lg:order-1">

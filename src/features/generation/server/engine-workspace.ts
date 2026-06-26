@@ -25,7 +25,10 @@ const safeWorkspaceSegment = (value: string): string =>
     .replace(/^-+|-+$/g, '')
     .slice(0, 80) || 'session'
 
-const readOptionalTextFile = (workspace: string, fileName: string): string | undefined => {
+const readOptionalTextFile = (
+  workspace: string,
+  fileName: string,
+): string | undefined => {
   const filePath = join(workspace, fileName)
 
   return existsSync(filePath) ? readFileSync(filePath, 'utf8') : undefined
@@ -39,15 +42,19 @@ const parseTasks = (rawTasks: string | undefined): EngineWorkspaceTask[] => {
   return Array.isArray(parsed.tasks) ? parsed.tasks : []
 }
 
-export const createEngineWorkspacePath = (workspaceRoot: string, sessionId: string): string =>
-  join(workspaceRoot, safeWorkspaceSegment(sessionId))
+export const createEngineWorkspacePath = (
+  workspaceRoot: string,
+  sessionId: string,
+): string => join(workspaceRoot, safeWorkspaceSegment(sessionId))
 
 export const prepareEngineWorkspace = (workspace: string): void => {
   rmSync(workspace, { force: true, recursive: true })
   mkdirSync(workspace, { recursive: true })
 }
 
-export const readEngineWorkspaceArtifacts = (workspace: string): EngineWorkspaceArtifacts => {
+export const readEngineWorkspaceArtifacts = (
+  workspace: string,
+): EngineWorkspaceArtifacts => {
   const html = readOptionalTextFile(workspace, 'index.html')
 
   if (!html) {

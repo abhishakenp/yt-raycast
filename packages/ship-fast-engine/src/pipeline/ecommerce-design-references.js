@@ -45,14 +45,21 @@ export function readDesignReferenceFingerprintFromWorkspace(workspace) {
 
 export function writeDesignReferencesFile(workspace, urls = [], notes = '') {
   if (!workspace || !Array.isArray(urls) || !urls.length) return
-  const list = urls.map((u) => String(u || '').trim()).filter(Boolean).slice(0, 4)
+  const list = urls
+    .map((u) => String(u || '').trim())
+    .filter(Boolean)
+    .slice(0, 4)
   if (!list.length) return
   const n = String(notes || '')
     .trim()
     .slice(0, MAX_NOTES)
   const payload = { urls: list }
   if (n) payload.notes = n
-  writeFileSync(join(workspace, DESIGN_REFS_FILE), JSON.stringify(payload, null, 2), 'utf8')
+  writeFileSync(
+    join(workspace, DESIGN_REFS_FILE),
+    JSON.stringify(payload, null, 2),
+    'utf8',
+  )
 }
 
 export function readDesignReferenceUrlsFromWorkspace(workspace) {

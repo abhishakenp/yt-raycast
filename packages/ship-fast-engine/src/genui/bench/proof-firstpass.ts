@@ -42,7 +42,10 @@ for (const prompt of PROMPTS) {
   const source = `${page.statements.join('\n')}\nroot = PageSwitch(["Home"], [home])`
   let valid = false
   try {
-    await auditOpenUIProgram(source, { expectedRoot: 'PageSwitch', expectedPageIds: ['home'] })
+    await auditOpenUIProgram(source, {
+      expectedRoot: 'PageSwitch',
+      expectedPageIds: ['home'],
+    })
     valid = true
     validCount++
   } catch {
@@ -54,4 +57,6 @@ for (const prompt of PROMPTS) {
     `[${home.family.name}] timeToHome=${ms.toFixed(0)}ms valid=${valid} sections=${page.sectionIds.length} filledKeys=${filled} shortlist=[${shortlist.join(',')}] :: "${prompt.slice(0, 32)}"`,
   )
 }
-console.log(`\nMEDIAN time-to-homepage (1 pass): ${median(times).toFixed(0)}ms | valid ${validCount}/${PROMPTS.length}`)
+console.log(
+  `\nMEDIAN time-to-homepage (1 pass): ${median(times).toFixed(0)}ms | valid ${validCount}/${PROMPTS.length}`,
+)

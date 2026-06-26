@@ -1,13 +1,13 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 export const WeddingHero = defineComponent({
-  name: "WeddingHero",
+  name: 'WeddingHero',
   description:
-    "Romantic full-bleed wedding hero: an alt-driven golden-hour ceremony photograph behind a soft dark overlay, with an uppercase save-the-date eyebrow pill, a large serif couple-names headline, the wedding date and venue, and dual call-to-action buttons (RSVP plus Our Story). Use as the opening viewport of a wedding invitation or celebration site to set an elegant, heartfelt tone.",
+    'Romantic full-bleed wedding hero: an alt-driven golden-hour ceremony photograph behind a soft dark overlay, with an uppercase save-the-date eyebrow pill, a large serif couple-names headline, the wedding date and venue, and dual call-to-action buttons (RSVP plus Our Story). Use as the opening viewport of a wedding invitation or celebration site to set an elegant, heartfelt tone.',
   props: z.object({
     eyebrow: z.string().optional(),
     coupleNames: z.string().optional(),
@@ -24,22 +24,24 @@ export const WeddingHero = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? "We're getting married"
-    const coupleNames = props.coupleNames ?? "Ava & Liam"
-    const date = props.date ?? "September 14, 2025"
-    const venue = props.venue ?? "Willowbrook Gardens · Napa Valley"
+    const coupleNames = props.coupleNames ?? 'Ava & Liam'
+    const date = props.date ?? 'September 14, 2025'
+    const venue = props.venue ?? 'Willowbrook Gardens · Napa Valley'
     const subheading =
       props.subheading ??
-      "Two hearts, one beautiful beginning. Join us for an evening of vows, candlelight, and dancing under the stars."
-    const primaryCta = props.primaryCta ?? "RSVP"
-    const primaryTarget = props.primaryTarget ?? "RSVP"
-    const secondaryCta = props.secondaryCta ?? "Our Story"
-    const secondaryTarget = props.secondaryTarget ?? "Story"
+      'Two hearts, one beautiful beginning. Join us for an evening of vows, candlelight, and dancing under the stars.'
+    const primaryCta = props.primaryCta ?? 'RSVP'
+    const primaryTarget = props.primaryTarget ?? 'RSVP'
+    const secondaryCta = props.secondaryCta ?? 'Our Story'
+    const secondaryTarget = props.secondaryTarget ?? 'Story'
     const imageAlt =
       props.imageAlt ??
-      "romantic outdoor wedding ceremony at golden hour with floral arch and soft bokeh"
+      'romantic outdoor wedding ceremony at golden hour with floral arch and soft bokeh'
 
     return (
-      <section className={cn("relative isolate overflow-hidden", props.className)}>
+      <section
+        className={cn('relative isolate overflow-hidden', props.className)}
+      >
         <Image
           alt={imageAlt}
           w={1920}
@@ -47,7 +49,10 @@ export const WeddingHero = defineComponent({
           loading="lazy"
           className="absolute inset-0 -z-10 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 -z-10 bg-foreground/60" aria-hidden="true" />
+        <div
+          className="absolute inset-0 -z-10 bg-foreground/60"
+          aria-hidden="true"
+        />
         <div
           className="absolute inset-0 -z-10 bg-gradient-to-b from-foreground/40 via-transparent to-foreground/70"
           aria-hidden="true"
@@ -67,7 +72,9 @@ export const WeddingHero = defineComponent({
           </p>
           <p className="mt-2 text-base text-background/80">{venue}</p>
 
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-background/80">{subheading}</p>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-background/80">
+            {subheading}
+          </p>
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <button

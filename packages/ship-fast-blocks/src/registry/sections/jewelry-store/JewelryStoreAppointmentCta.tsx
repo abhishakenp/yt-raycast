@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * JewelryStoreAppointmentCta — private-appointment closing CTA for a luxury
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * engagement-ring boutiques, or high-jewelry maisons. Renders fully with no props.
  */
 export const JewelryStoreAppointmentCta = defineComponent({
-  name: "JewelryStoreAppointmentCta",
+  name: 'JewelryStoreAppointmentCta',
   description:
-    "Private-appointment closing CTA for a luxury jewelry maison: a muted band with a dimmed full-cover background image and a bottom-up fade-to-background gradient, fronting a centered column with a gold eyebrow, an oversized serif headline, a relaxed subheading, and dual CTAs (solid gold primary + bordered ghost). A bottom row lists boutique locations (city + address) in up to three columns. Both CTAs route through useNavigate. Use as the conversion-focused booking band for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.",
+    'Private-appointment closing CTA for a luxury jewelry maison: a muted band with a dimmed full-cover background image and a bottom-up fade-to-background gradient, fronting a centered column with a gold eyebrow, an oversized serif headline, a relaxed subheading, and dual CTAs (solid gold primary + bordered ghost). A bottom row lists boutique locations (city + address) in up to three columns. Both CTAs route through useNavigate. Use as the conversion-focused booking band for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -32,28 +32,28 @@ export const JewelryStoreAppointmentCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Begin Your Journey"
-    const heading = props.heading ?? "Experience Maison Noir"
+    const eyebrow = props.eyebrow ?? 'Begin Your Journey'
+    const heading = props.heading ?? 'Experience Maison Noir'
     const description =
       props.description ??
-      "Schedule a private appointment with our jewelry experts. Discover our collections in an intimate setting, or begin the journey to your bespoke creation."
-    const primaryCta = props.primaryCta ?? "Book Private Appointment"
-    const secondaryCta = props.secondaryCta ?? "Virtual Consultation"
+      'Schedule a private appointment with our jewelry experts. Discover our collections in an intimate setting, or begin the journey to your bespoke creation.'
+    const primaryCta = props.primaryCta ?? 'Book Private Appointment'
+    const secondaryCta = props.secondaryCta ?? 'Virtual Consultation'
     const imageAlt =
       props.imageAlt ??
-      "elegant jewelry display with pearls and diamonds in luxury boutique setting"
+      'elegant jewelry display with pearls and diamonds in luxury boutique setting'
     const locations = props.locations?.length
       ? props.locations
       : [
-          { city: "Paris", address: "Place Vendôme" },
-          { city: "New York", address: "Fifth Avenue" },
-          { city: "London", address: "Bond Street" },
+          { city: 'Paris', address: 'Place Vendôme' },
+          { city: 'New York', address: 'Fifth Avenue' },
+          { city: 'London', address: 'Bond Street' },
         ]
 
     return (
       <section
         className={cn(
-          "relative overflow-hidden bg-muted py-32",
+          'relative overflow-hidden bg-muted py-32',
           props.className,
         )}
       >

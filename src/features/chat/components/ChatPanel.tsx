@@ -24,7 +24,9 @@ export const ChatPanel = ({ sessionId }: ChatPanelProps) => {
     <div className="rounded-[var(--radius-xl)] bg-[var(--glass-bg)] p-4 shadow-[var(--glass-shadow)] border border-[var(--glass-border)] backdrop-blur-[12px]">
       <div className="mb-3 flex items-center gap-2 border-b border-[var(--border-primary)] pb-2">
         <MessageSquare className="size-4 text-cyan-200" />
-        <h2 className="m-0 font-sans text-sm font-semibold uppercase tracking-[0.1em] text-[var(--text-primary)]">Chat</h2>
+        <h2 className="m-0 font-sans text-sm font-semibold uppercase tracking-[0.1em] text-[var(--text-primary)]">
+          Chat
+        </h2>
       </div>
       <div className="mb-3 flex max-h-48 flex-col gap-2 overflow-y-auto [scrollbar-color:var(--border-primary)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-[3px] [&::-webkit-scrollbar-thumb]:bg-[var(--border-primary)]">
         {messages?.map((msg) => (
@@ -37,12 +39,16 @@ export const ChatPanel = ({ sessionId }: ChatPanelProps) => {
             )}
             key={msg.messageId}
           >
-            <p className="m-0 mb-1 text-[0.7rem] font-bold uppercase tracking-[0.1em] opacity-60">{msg.role}</p>
+            <p className="m-0 mb-1 text-[0.7rem] font-bold uppercase tracking-[0.1em] opacity-60">
+              {msg.role}
+            </p>
             <p className="mt-1">{msg.content}</p>
           </div>
         ))}
         {messages?.length === 0 && (
-          <p className="py-8 text-center text-sm italic text-[var(--text-muted)]">No messages yet. Start a conversation!</p>
+          <p className="py-8 text-center text-sm italic text-[var(--text-muted)]">
+            No messages yet. Start a conversation!
+          </p>
         )}
       </div>
       <form id="chat-form" onSubmit={handleSubmit}>
@@ -65,7 +71,11 @@ export const ChatPanel = ({ sessionId }: ChatPanelProps) => {
           </button>
         </div>
       </form>
-      {chatError && <p className="mt-3 rounded-[var(--radius-sm)] border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-400">{chatError}</p>}
+      {chatError && (
+        <p className="mt-3 rounded-[var(--radius-sm)] border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-400">
+          {chatError}
+        </p>
+      )}
     </div>
   )
 }

@@ -20,7 +20,9 @@ const CODE_LENGTH = 8
  * Math.random, which Convex seeds deterministically inside a mutation).
  * Injectable RNG keeps this unit-testable.
  */
-export const generateReferralCode = (random: () => number = Math.random): string => {
+export const generateReferralCode = (
+  random: () => number = Math.random,
+): string => {
   let code = ''
   for (let i = 0; i < CODE_LENGTH; i += 1) {
     code += CODE_ALPHABET[Math.floor(random() * CODE_ALPHABET.length)]

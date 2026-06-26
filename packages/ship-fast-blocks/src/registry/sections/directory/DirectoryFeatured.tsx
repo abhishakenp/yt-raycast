@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * DirectoryFeatured — featured-business listing gallery for a local-business
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * marketplaces, or review-and-discovery sites.
  */
 export const DirectoryFeatured = defineComponent({
-  name: "DirectoryFeatured",
+  name: 'DirectoryFeatured',
   description:
-    "Featured-business listing gallery for a local-business DIRECTORY: a background section with a header row (heading and description on the left, a View All link on the right) and a responsive 1-to-3-column grid of rated listing cards — each card has a 4:3 cover photo with an overlaid category pill and a primary star-rating badge, then the business name, address, an open-hours line with a clock icon, and a review count. Every card and the view-all link route through useNavigate; photos use the alt-driven Image component. Use to showcase top-rated or handpicked listings on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.",
+    'Featured-business listing gallery for a local-business DIRECTORY: a background section with a header row (heading and description on the left, a View All link on the right) and a responsive 1-to-3-column grid of rated listing cards — each card has a 4:3 cover photo with an overlaid category pill and a primary star-rating badge, then the business name, address, an open-hours line with a clock icon, and a review count. Every card and the view-all link route through useNavigate; photos use the alt-driven Image component. Use to showcase top-rated or handpicked listings on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -44,69 +44,69 @@ export const DirectoryFeatured = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Featured Businesses"
+    const heading = props.heading ?? 'Featured Businesses'
     const description =
-      props.description ?? "Top-rated local favorites handpicked by our team"
-    const viewAll = props.viewAll ?? "View All"
+      props.description ?? 'Top-rated local favorites handpicked by our team'
+    const viewAll = props.viewAll ?? 'View All'
     const items = props.items?.length
       ? props.items
       : [
           {
-            name: "Brew & Bloom Café",
-            category: "Coffee Shop",
-            rating: "4.9",
-            address: "142 Oak Street, Downtown",
-            hours: "Open 7am - 8pm",
-            reviews: "287 reviews",
+            name: 'Brew & Bloom Café',
+            category: 'Coffee Shop',
+            rating: '4.9',
+            address: '142 Oak Street, Downtown',
+            hours: 'Open 7am - 8pm',
+            reviews: '287 reviews',
             imageAlt:
-              "Modern minimalist coffee shop interior with exposed brick walls",
+              'Modern minimalist coffee shop interior with exposed brick walls',
           },
           {
-            name: "Shear Perfection Studio",
-            category: "Hair Salon",
-            rating: "4.8",
-            address: "385 Main Avenue, Westside",
-            hours: "Open 9am - 7pm",
-            reviews: "156 reviews",
+            name: 'Shear Perfection Studio',
+            category: 'Hair Salon',
+            rating: '4.8',
+            address: '385 Main Avenue, Westside',
+            hours: 'Open 9am - 7pm',
+            reviews: '156 reviews',
             imageAlt:
-              "Upscale hair salon with modern styling stations and mirrors",
+              'Upscale hair salon with modern styling stations and mirrors',
           },
           {
-            name: "Zenith Yoga Collective",
-            category: "Yoga Studio",
-            rating: "5.0",
-            address: "78 Wellness Lane, North Hills",
-            hours: "Open 6am - 9pm",
-            reviews: "203 reviews",
+            name: 'Zenith Yoga Collective',
+            category: 'Yoga Studio',
+            rating: '5.0',
+            address: '78 Wellness Lane, North Hills',
+            hours: 'Open 6am - 9pm',
+            reviews: '203 reviews',
             imageAlt:
-              "Professional yoga studio with wooden floors and natural lighting",
+              'Professional yoga studio with wooden floors and natural lighting',
           },
           {
-            name: "Rapid Flow Plumbing",
-            category: "Plumbing",
-            rating: "4.7",
-            address: "Serving Metro Area · 24/7",
-            hours: "Always Open",
-            reviews: "412 reviews",
-            imageAlt: "Modern plumbing service van with company branding",
+            name: 'Rapid Flow Plumbing',
+            category: 'Plumbing',
+            rating: '4.7',
+            address: 'Serving Metro Area · 24/7',
+            hours: 'Always Open',
+            reviews: '412 reviews',
+            imageAlt: 'Modern plumbing service van with company branding',
           },
           {
-            name: "Hive Workspace",
-            category: "Office Space",
-            rating: "4.6",
-            address: "220 Innovation Drive, Tech District",
-            hours: "Open 8am - 8pm",
-            reviews: "89 reviews",
-            imageAlt: "Contemporary co-working office space with modern desks",
+            name: 'Hive Workspace',
+            category: 'Office Space',
+            rating: '4.6',
+            address: '220 Innovation Drive, Tech District',
+            hours: 'Open 8am - 8pm',
+            reviews: '89 reviews',
+            imageAlt: 'Contemporary co-working office space with modern desks',
           },
           {
-            name: "Bright Smile Dental",
-            category: "Dentist",
-            rating: "4.9",
-            address: "56 Medical Plaza, Suite 200",
-            hours: "Mon-Fri 8am - 6pm",
-            reviews: "324 reviews",
-            imageAlt: "Modern dental clinic with state-of-the-art equipment",
+            name: 'Bright Smile Dental',
+            category: 'Dentist',
+            rating: '4.9',
+            address: '56 Medical Plaza, Suite 200',
+            hours: 'Mon-Fri 8am - 6pm',
+            reviews: '324 reviews',
+            imageAlt: 'Modern dental clinic with state-of-the-art equipment',
           },
         ]
 
@@ -137,7 +137,7 @@ export const DirectoryFeatured = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-16 lg:py-24", props.className)}>
+      <section className={cn('bg-background py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>

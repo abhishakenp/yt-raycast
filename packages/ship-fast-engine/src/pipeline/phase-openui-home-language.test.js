@@ -35,7 +35,10 @@ vi.mock('../spec/index.ts', () => ({
 }))
 
 vi.mock('../openui-ssr.js', () => ({
-  renderOpenUIToHTMLWithTheme: vi.fn(() => ({ html: '<main><h1>Hello</h1></main>', cssVars: '' })),
+  renderOpenUIToHTMLWithTheme: vi.fn(() => ({
+    html: '<main><h1>Hello</h1></main>',
+    cssVars: '',
+  })),
 }))
 
 vi.mock('../llm/translator.js', () => ({

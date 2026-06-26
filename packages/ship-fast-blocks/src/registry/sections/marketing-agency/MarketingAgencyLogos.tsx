@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * MarketingAgencyLogos — a horizontal client trust strip. A muted, border-banded
@@ -11,7 +11,7 @@ import { cn } from "#/lib/utils.ts"
  * Renders fully with no props via baked-in defaults.
  */
 export const MarketingAgencyLogos = defineComponent({
-  name: "MarketingAgencyLogos",
+  name: 'MarketingAgencyLogos',
   description:
     "Horizontal client trust strip: a muted, border-banded full-width band with a centered 'trusted by' caption above a responsive grid of client/brand wordmarks rendered as muted semibold text at reduced opacity (2-up mobile, 3-up tablet, 6-up desktop). Use directly beneath a hero to add social proof for marketing / growth agencies, SaaS products, or any B2B landing page.",
   props: z.object({
@@ -20,14 +20,14 @@ export const MarketingAgencyLogos = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Trusted by leading brands"
+    const heading = props.heading ?? 'Trusted by leading brands'
     const items = props.items?.length
       ? props.items
-      : ["Stripe", "Notion", "Figma", "Vercel", "Linear", "Webflow"]
+      : ['Stripe', 'Notion', 'Figma', 'Vercel', 'Linear', 'Webflow']
 
     return (
       <section
-        className={cn("border-y border-border bg-muted py-12", props.className)}
+        className={cn('border-y border-border bg-muted py-12', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="mb-8 text-center text-sm text-muted-foreground">

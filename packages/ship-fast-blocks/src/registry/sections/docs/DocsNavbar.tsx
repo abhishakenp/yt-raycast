@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * DocsNavbar — sticky site header for a developer DOCUMENTATION / API-reference
@@ -28,7 +28,7 @@ const StackedBlocksMark = ({ className }: { className?: string }) => (
 )
 
 export const DocsNavbar = defineComponent({
-  name: "DocsNavbar",
+  name: 'DocsNavbar',
   description:
     "Sticky developer DOCUMENTATION / API-reference site header built on the shared SiteNav composite: a clean stacked-blocks brand mark + product wordmark, desktop section links, a 'Get Started' CTA, and a real mobile drawer. Links route through useNavigate for page-switching and nav labels match site routes. Use as the sticky header for docs homes, API references, SDK guides, developer portals, or knowledge bases.",
   props: z.object({
@@ -47,15 +47,15 @@ export const DocsNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Getting Started", "API Reference", "SDKs", "Changelog"]
+      : ['Getting Started', 'API Reference', 'SDKs', 'Changelog']
     return (
       <SiteNav
-        brand={props.brand ?? "StackForge"}
+        brand={props.brand ?? 'StackForge'}
         brandMark={<StackedBlocksMark className="size-8 text-primary" />}
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Get Started",
-          target: props.ctaTarget ?? "Getting Started",
+          label: props.ctaLabel ?? 'Get Started',
+          target: props.ctaTarget ?? 'Getting Started',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
  * BlogNavbar — sticky editorial site header for a blog, magazine, newsroom, or
@@ -13,7 +13,7 @@ import { SiteNav } from "#/section-kit/SiteNav.tsx"
  */
 const QuillMark = ({ className }: { className?: string }) => (
   <span
-    className={`grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-sm ${className ?? ""}`}
+    className={`grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-sm ${className ?? ''}`}
   >
     <svg
       width="16"
@@ -34,7 +34,7 @@ const QuillMark = ({ className }: { className?: string }) => (
 )
 
 export const BlogNavbar = defineComponent({
-  name: "BlogNavbar",
+  name: 'BlogNavbar',
   description:
     "Sticky editorial site header for a blog, magazine, newsroom, or content hub built on the shared SiteNav composite: a clean wordmark beside a gradient brand tile + inline mark, horizontal desktop nav links with a home highlight, a 'Subscribe' CTA, and a real mobile drawer. No phone number — editorial publications don't show one. Use as the header for blogs, publications, journals, or any content site.",
   props: z.object({
@@ -53,16 +53,16 @@ export const BlogNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Home", "Design", "Engineering", "Product", "About"]
+      : ['Home', 'Design', 'Engineering', 'Product', 'About']
     return (
       <SiteNav
-        brand={props.brand ?? "Form & Function"}
+        brand={props.brand ?? 'Form & Function'}
         brandMark={<QuillMark className="size-8 text-primary" />}
         brandClassName="text-xl font-bold tracking-tight"
         nav={nav}
         cta={{
-          label: props.ctaLabel ?? "Subscribe",
-          target: props.ctaTarget ?? "Subscribe",
+          label: props.ctaLabel ?? 'Subscribe',
+          target: props.ctaTarget ?? 'Subscribe',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

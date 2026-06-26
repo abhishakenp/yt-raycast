@@ -1,11 +1,11 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 export const ProductDetailNavbar = defineComponent({
-  name: "ProductDetailNavbar",
+  name: 'ProductDetailNavbar',
   description:
-    "Top navigation header for the Product Detail page family, wrapping the shared SiteNav composite. Renders the Aurora brand mark, a focused in-page link set (Overview, Features, Reviews, FAQ), and a cart-style primary CTA (Add to Cart) for single-product flagship pages. Use as the first band of a premium product detail page; all content is prop-driven with sensible Aurora Pro Headphones defaults.",
+    'Top navigation header for the Product Detail page family, wrapping the shared SiteNav composite. Renders the Aurora brand mark, a focused in-page link set (Overview, Features, Reviews, FAQ), and a cart-style primary CTA (Add to Cart) for single-product flagship pages. Use as the first band of a premium product detail page; all content is prop-driven with sensible Aurora Pro Headphones defaults.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -18,9 +18,11 @@ export const ProductDetailNavbar = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Aurora"
-    const nav = props.nav?.length ? props.nav : ["Overview", "Features", "Reviews", "FAQ"]
-    const cta = props.cta ?? { label: "Add to Cart", target: "Overview" }
+    const brand = props.brand ?? 'Aurora'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Overview', 'Features', 'Reviews', 'FAQ']
+    const cta = props.cta ?? { label: 'Add to Cart', target: 'Overview' }
 
     const mark = (
       <svg
@@ -41,6 +43,14 @@ export const ProductDetailNavbar = defineComponent({
       </svg>
     )
 
-    return <SiteNav brand={brand} brandMark={mark} nav={nav} cta={cta} className={props.className} />
+    return (
+      <SiteNav
+        brand={brand}
+        brandMark={mark}
+        nav={nav}
+        cta={cta}
+        className={props.className}
+      />
+    )
   },
 })

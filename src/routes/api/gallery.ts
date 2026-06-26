@@ -5,7 +5,8 @@ import { createGalleryApiResponse } from '@/features/gallery/server/gallery-api-
 export const Route = createFileRoute('/api/gallery')({
   server: {
     handlers: {
-      GET: async ({ request }: { request: Request }) => await createGalleryApiResponse(request),
+      GET: async ({ request }: { request: Request }) =>
+        await createGalleryApiResponse(request),
     },
   },
 })

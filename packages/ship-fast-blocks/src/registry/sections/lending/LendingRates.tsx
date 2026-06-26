@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * LendingRates — a transparent rates-and-fees band plus a sample payment-schedule
@@ -13,9 +13,9 @@ import { cn } from "#/lib/utils.ts"
  * consolidation, or financing pages. Renders fully with no props via defaults.
  */
 export const LendingRates = defineComponent({
-  name: "LendingRates",
+  name: 'LendingRates',
   description:
-    "Transparent rates-and-fees band + sample payment-schedule table on a muted section for a lending or fintech marketing page: centered heading + description above a white card with a 3-up divided highlights row (big stat + label + note) and a muted check-listed guarantees footer; below it a separate card with a titled, horizontally-scrollable APR-by-credit-tier table and a fine-print disclaimer. Use to communicate honest pricing — starting APR, $0 fees, sample monthly payments — on personal-loan, debt-consolidation, or financing pages.",
+    'Transparent rates-and-fees band + sample payment-schedule table on a muted section for a lending or fintech marketing page: centered heading + description above a white card with a 3-up divided highlights row (big stat + label + note) and a muted check-listed guarantees footer; below it a separate card with a titled, horizontally-scrollable APR-by-credit-tier table and a fine-print disclaimer. Use to communicate honest pricing — starting APR, $0 fees, sample monthly payments — on personal-loan, debt-consolidation, or financing pages.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -38,7 +38,7 @@ export const LendingRates = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const ratesHeading = props.heading ?? "Transparent rates & terms"
+    const ratesHeading = props.heading ?? 'Transparent rates & terms'
     const ratesDesc =
       props.description ??
       "No surprises, no hidden fees. Know exactly what you're getting."
@@ -46,61 +46,85 @@ export const LendingRates = defineComponent({
       ? props.highlights
       : [
           {
-            value: "6.99%",
-            label: "Starting APR",
-            note: "For borrowers with excellent credit on 36-month terms",
+            value: '6.99%',
+            label: 'Starting APR',
+            note: 'For borrowers with excellent credit on 36-month terms',
           },
           {
-            value: "$0",
-            label: "Origination Fee",
-            note: "Unlike banks that charge up to 8%, we take zero fees upfront",
+            value: '$0',
+            label: 'Origination Fee',
+            note: 'Unlike banks that charge up to 8%, we take zero fees upfront',
           },
           {
-            value: "$0",
-            label: "Prepayment Penalty",
-            note: "Pay off your loan early anytime with no extra charges",
+            value: '$0',
+            label: 'Prepayment Penalty',
+            note: 'Pay off your loan early anytime with no extra charges',
           },
         ]
     const rateGuarantees = props.guarantees?.length
       ? props.guarantees
       : [
           {
-            title: "No late fees",
+            title: 'No late fees',
             note: "Life happens. We don't penalize honest mistakes.",
           },
           {
-            title: "No check fees",
-            note: "No extra charges for paper checks or payment methods.",
+            title: 'No check fees',
+            note: 'No extra charges for paper checks or payment methods.',
           },
           {
-            title: "No annual fees",
-            note: "Pay for your loan once, not every year.",
+            title: 'No annual fees',
+            note: 'Pay for your loan once, not every year.',
           },
         ]
-    const tableTitle = props.tableTitle ?? "Sample loan payment schedule"
+    const tableTitle = props.tableTitle ?? 'Sample loan payment schedule'
     const tableHead = props.tableHead?.length
       ? props.tableHead
       : [
-          "Credit Tier",
-          "APR Range",
-          "$10,000 / 36 mo",
-          "$25,000 / 48 mo",
-          "$40,000 / 60 mo",
+          'Credit Tier',
+          'APR Range',
+          '$10,000 / 36 mo',
+          '$25,000 / 48 mo',
+          '$40,000 / 60 mo',
         ]
     const tableRows = props.tableRows?.length
       ? props.tableRows
       : [
-          ["Excellent (750+)", "6.99% - 9.99%", "$308 - $323", "$563 - $621", "$782 - $889"],
-          ["Good (700-749)", "8.99% - 12.99%", "$318 - $337", "$597 - $666", "$835 - $956"],
-          ["Fair (650-699)", "12.99% - 16.99%", "$337 - $357", "$666 - $736", "$956 - $1,075"],
-          ["Average (600-649)", "16.99% - 24.99%", "$357 - $393", "$736 - $858", "$1,075 - $1,260"],
+          [
+            'Excellent (750+)',
+            '6.99% - 9.99%',
+            '$308 - $323',
+            '$563 - $621',
+            '$782 - $889',
+          ],
+          [
+            'Good (700-749)',
+            '8.99% - 12.99%',
+            '$318 - $337',
+            '$597 - $666',
+            '$835 - $956',
+          ],
+          [
+            'Fair (650-699)',
+            '12.99% - 16.99%',
+            '$337 - $357',
+            '$666 - $736',
+            '$956 - $1,075',
+          ],
+          [
+            'Average (600-649)',
+            '16.99% - 24.99%',
+            '$357 - $393',
+            '$736 - $858',
+            '$1,075 - $1,260',
+          ],
         ]
     const tableNote =
       props.tableNote ??
-      "* Rates shown are estimates. Your actual rate will be determined after application review. All loans subject to credit approval."
+      '* Rates shown are estimates. Your actual rate will be determined after application review. All loans subject to credit approval.'
 
     return (
-      <section className={cn("bg-muted py-24 lg:py-32", props.className)}>
+      <section className={cn('bg-muted py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -173,13 +197,13 @@ export const LendingRates = defineComponent({
                     <tr
                       key={row[0]}
                       className={cn(
-                        ri < tableRows.length - 1 && "border-b border-border",
+                        ri < tableRows.length - 1 && 'border-b border-border',
                       )}
                     >
                       {row.map((cell, ci) => (
                         <td
                           key={ci}
-                          className={cn("px-4 py-3", ci === 0 && "font-medium")}
+                          className={cn('px-4 py-3', ci === 0 && 'font-medium')}
                         >
                           {cell}
                         </td>

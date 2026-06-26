@@ -31,7 +31,10 @@ const session = convexRun('sessions:create', {
   anonymousClientId: `anon-verify-routes-${Date.now()}`,
 })
 const sessionId = session.sessionId
-assert(typeof sessionId === 'string', 'sessions:create did not return sessionId')
+assert(
+  typeof sessionId === 'string',
+  'sessions:create did not return sessionId',
+)
 
 convexRun('internal.sessions.completeGeneration', {
   sessionId,
@@ -47,34 +50,66 @@ convexRun('internal.sessions.completeGeneration', {
 })
 
 const sessionResponse = await requestJson(`/api/sessions/${sessionId}`)
-assert(sessionResponse.status === 200, `session route returned ${sessionResponse.status}`)
-assert(sessionResponse.json.sessionId === sessionId, 'session route returned wrong sessionId')
-assert(sessionResponse.json.status === 'preview_ready', 'session route did not report preview_ready')
+assert(
+  sessionResponse.status === 200,
+  `session route returned ${sessionResponse.status}`,
+)
+assert(
+  sessionResponse.json.sessionId === sessionId,
+  'session route returned wrong sessionId',
+)
+assert(
+  sessionResponse.json.status === 'preview_ready',
+  'session route did not report preview_ready',
+)
 assertNoBackendLeak(sessionResponse.body)
 
 const stream = await requestText(`/api/sessions/${sessionId}/stream`)
 assert(stream.status === 200, `stream route returned ${stream.status}`)
-assert(stream.contentType.includes('text/event-stream'), 'stream route was not SSE')
-assert(stream.body.includes('event: preview_ready'), 'stream did not replay preview_ready')
-assert(stream.body.includes('event: replay_complete'), 'stream did not replay replay_complete')
+assert(
+  stream.contentType.includes('text/event-stream'),
+  'stream route was not SSE',
+)
+assert(
+  stream.body.includes('event: preview_ready'),
+  'stream did not replay preview_ready',
+)
+assert(
+  stream.body.includes('event: replay_complete'),
+  'stream did not replay replay_complete',
+)
 assertNoBackendLeak(stream.body)
 
-const targetsBefore = convexRun('sessions:getExportTargets', { lookup: sessionId })
-assert(targetsBefore.previewReady === true, 'export targets did not see ready preview')
-assert(Array.isArray(targetsBefore.targets), 'export targets did not return targets')
+const targetsBefore = convexRun('sessions:getExportTargets', {
+  lookup: sessionId,
+})
+assert(
+  targetsBefore.previewReady === true,
+  'export targets did not see ready preview',
+)
+assert(
+  Array.isArray(targetsBefore.targets),
+  'export targets did not return targets',
+)
 
 const editedPrompt = `${prompt} edited`
-const edit = await requestJson(`/api/sessions/${sessionId}/preview-inline-text`, {
-  method: 'POST',
-  headers: {
-    'content-type': 'application/json',
-    'x-ship-fast-owner-secret': ownerSecret,
+const edit = await requestJson(
+  `/api/sessions/${sessionId}/preview-inline-text`,
+  {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-ship-fast-owner-secret': ownerSecret,
+    },
+    body: JSON.stringify({ beforeText: prompt, afterText: editedPrompt }),
   },
-  body: JSON.stringify({ beforeText: prompt, afterText: editedPrompt }),
-})
+)
 assert(edit.status === 200, `inline text edit returned ${edit.status}`)
 assert(edit.json.saved === true, 'inline text edit did not save')
-assert(edit.json.previewVersion === 2, 'inline text edit did not create preview version 2')
+assert(
+  edit.json.previewVersion === 2,
+  'inline text edit did not create preview version 2',
+)
 
 const historyAfterEdit = await waitForJson(
   `/api/sessions/${sessionId}/history`,
@@ -88,16 +123,22 @@ assert(
   'history did not include edited version',
 )
 
-const restore = await requestJson(`/api/sessions/${sessionId}/history/1/restore`, {
-  method: 'POST',
-  headers: {
-    'content-type': 'application/json',
-    'x-ship-fast-owner-secret': ownerSecret,
+const restore = await requestJson(
+  `/api/sessions/${sessionId}/history/1/restore`,
+  {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-ship-fast-owner-secret': ownerSecret,
+    },
+    body: JSON.stringify({ anonymousOwnerSecret: ownerSecret }),
   },
-  body: JSON.stringify({ anonymousOwnerSecret: ownerSecret }),
-})
+)
 assert(restore.status === 200, `history restore returned ${restore.status}`)
-assert(restore.json.previewVersion === 3, 'restore did not create preview version 3')
+assert(
+  restore.json.previewVersion === 3,
+  'restore did not create preview version 3',
+)
 
 const exportResponse = await requestJson(`/api/sessions/${sessionId}/export`, {
   method: 'POST',
@@ -107,14 +148,26 @@ const exportResponse = await requestJson(`/api/sessions/${sessionId}/export`, {
   },
   body: JSON.stringify({ target: 'html', anonymousOwnerSecret: ownerSecret }),
 })
-assert(exportResponse.status === 200, `export route returned ${exportResponse.status}`)
+assert(
+  exportResponse.status === 200,
+  `export route returned ${exportResponse.status}`,
+)
 assert(exportResponse.json.status === 'ready', 'export did not become ready')
-assert(exportResponse.json.previewVersion === 3, 'export did not use current preview version')
-assert(typeof exportResponse.json.downloadUrl === 'string', 'export did not return downloadUrl')
+assert(
+  exportResponse.json.previewVersion === 3,
+  'export did not use current preview version',
+)
+assert(
+  typeof exportResponse.json.downloadUrl === 'string',
+  'export did not return downloadUrl',
+)
 
 const download = await requestText(exportResponse.json.downloadUrl)
 assert(download.status === 200, `download route returned ${download.status}`)
-assert(download.contentType.includes('application/zip'), 'download route did not return ZIP')
+assert(
+  download.contentType.includes('application/zip'),
+  'download route did not return ZIP',
+)
 assert(download.body.length > 100, 'download ZIP was unexpectedly small')
 
 console.log(
@@ -138,11 +191,15 @@ function htmlFor(headline) {
 }
 
 function convexRun(functionName, payload) {
-  const output = execFileSync('bunx', ['convex', 'run', functionName, JSON.stringify(payload)], {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-    timeout: timeoutMs,
-  }).trim()
+  const output = execFileSync(
+    'bunx',
+    ['convex', 'run', functionName, JSON.stringify(payload)],
+    {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: timeoutMs,
+    },
+  ).trim()
   return parseJson(output || 'null', `Convex ${functionName}`)
 }
 
@@ -156,7 +213,9 @@ async function waitForJson(path, predicate) {
     if (predicate(response.json)) return response.json
     await sleep(250)
   }
-  throw new Error(`Timed out waiting for ${path}; last payload: ${JSON.stringify(lastPayload)}`)
+  throw new Error(
+    `Timed out waiting for ${path}; last payload: ${JSON.stringify(lastPayload)}`,
+  )
 }
 
 async function requestJson(path, init) {
@@ -178,7 +237,12 @@ async function requestText(path, init) {
   const body = contentType.includes('application/zip')
     ? Buffer.from(await response.arrayBuffer()).toString('binary')
     : await response.text()
-  return { status: response.status, contentType, headers: response.headers, body }
+  return {
+    status: response.status,
+    contentType,
+    headers: response.headers,
+    body,
+  }
 }
 
 function parseJson(value, label) {

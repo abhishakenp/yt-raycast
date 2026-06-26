@@ -1,9 +1,9 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * LinkInBioHero — the opening hero of a minimal "link in bio" / link-hub page,
@@ -21,7 +21,7 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props.
  */
 export const LinkInBioHero = defineComponent({
-  name: "LinkInBioHero",
+  name: 'LinkInBioHero',
   description:
     "Opening hero of a minimal LINK-IN-BIO / link-hub / bio-link page — a single centered narrow column with a calm, light, paper-toned aesthetic. Leads with a circular avatar headshot (ringed in the page color, with an online/available status dot), a name + role/tagline + short bio, then a compact set of headline (primary) link buttons (each with a leading icon tile, title + subtitle, and a trailing open-arrow or 'New' badge), and a centered row of round social icon buttons (Twitter/X, GitHub, Dribbble, LinkedIn). Use as the opening hero / profile head of a Linktree / Bento style personal landing page, creator or influencer link hub, freelancer/portfolio bio link, or social-profile splash; the full big-link button list belongs to a companion features section and featured content to a companion gallery section. Supply content only — brand/name, profile, primary links, socials; the section owns all layout and styling.",
   props: z.object({
@@ -41,7 +41,7 @@ export const LinkInBioHero = defineComponent({
       .array(
         z.object({
           /** Icon key: globe | shop | mail | calendar. */
-          icon: z.enum(["globe", "shop", "mail", "calendar"]),
+          icon: z.enum(['globe', 'shop', 'mail', 'calendar']),
           title: z.string(),
           subtitle: z.string(),
           /** Optional pill (e.g. "New") shown instead of the trailing arrow. */
@@ -54,7 +54,7 @@ export const LinkInBioHero = defineComponent({
       .array(
         z.object({
           /** Icon key: twitter | github | dribbble | linkedin. */
-          icon: z.enum(["twitter", "github", "dribbble", "linkedin"]),
+          icon: z.enum(['twitter', 'github', 'dribbble', 'linkedin']),
           label: z.string(),
         }),
       )
@@ -65,54 +65,54 @@ export const LinkInBioHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Sarah Chen"
+    const brand = props.brand ?? 'Sarah Chen'
 
     const avatarAlt =
       props.profile?.avatarAlt ??
-      "professional headshot of a smiling woman with dark hair wearing a minimal cream sweater"
-    const status = props.profile?.status ?? "Available for work"
-    const role = props.profile?.role ?? "Design Engineer at Notion"
+      'professional headshot of a smiling woman with dark hair wearing a minimal cream sweater'
+    const status = props.profile?.status ?? 'Available for work'
+    const role = props.profile?.role ?? 'Design Engineer at Notion'
     const bio =
       props.profile?.bio ??
-      "Crafting thoughtful interfaces. Writing about design systems, React, and the craft of digital products."
+      'Crafting thoughtful interfaces. Writing about design systems, React, and the craft of digital products.'
 
     const links = props.links?.length
       ? props.links
       : [
           {
-            icon: "globe" as const,
-            title: "Portfolio",
-            subtitle: "sarahchen.design",
+            icon: 'globe' as const,
+            title: 'Portfolio',
+            subtitle: 'sarahchen.design',
           },
           {
-            icon: "shop" as const,
-            title: "UI Kit Shop",
-            subtitle: "Figma templates & icons",
-            badge: "New",
+            icon: 'shop' as const,
+            title: 'UI Kit Shop',
+            subtitle: 'Figma templates & icons',
+            badge: 'New',
           },
           {
-            icon: "mail" as const,
-            title: "Newsletter",
-            subtitle: "12,400+ subscribers",
+            icon: 'mail' as const,
+            title: 'Newsletter',
+            subtitle: '12,400+ subscribers',
           },
           {
-            icon: "calendar" as const,
-            title: "Book a Call",
-            subtitle: "30 min consultation — $150",
+            icon: 'calendar' as const,
+            title: 'Book a Call',
+            subtitle: '30 min consultation — $150',
           },
         ]
 
     const linkTargets = props.linkTargets?.length
       ? props.linkTargets
-      : ["Portfolio", "UI Kit Shop", "Newsletter", "Book a Call"]
+      : ['Portfolio', 'UI Kit Shop', 'Newsletter', 'Book a Call']
 
     const socials = props.socials?.length
       ? props.socials
       : [
-          { icon: "twitter" as const, label: "Twitter" },
-          { icon: "github" as const, label: "GitHub" },
-          { icon: "dribbble" as const, label: "Dribbble" },
-          { icon: "linkedin" as const, label: "LinkedIn" },
+          { icon: 'twitter' as const, label: 'Twitter' },
+          { icon: 'github' as const, label: 'GitHub' },
+          { icon: 'dribbble' as const, label: 'Dribbble' },
+          { icon: 'linkedin' as const, label: 'LinkedIn' },
         ]
 
     const linkIcons: Record<string, ReactNode> = {
@@ -256,7 +256,7 @@ export const LinkInBioHero = defineComponent({
     return (
       <header
         className={cn(
-          "mx-auto max-w-md px-6 py-16 sm:py-20 lg:py-24",
+          'mx-auto max-w-md px-6 py-16 sm:py-20 lg:py-24',
           props.className,
         )}
       >

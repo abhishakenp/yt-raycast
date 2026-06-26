@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * VideoStreamingFooter — a rich, multi-column closing footer for a
@@ -24,9 +24,9 @@ const PlayMark = ({ className }: { className?: string }) => (
 )
 
 export const VideoStreamingFooter = defineComponent({
-  name: "VideoStreamingFooter",
+  name: 'VideoStreamingFooter',
   description:
-    "Rich, multi-column closing footer for a video-streaming site built on the shared SiteFooter composite: a bold wordmark + inline primary play-triangle mark, a tagline, a social row (Instagram, Twitter, TikTok, YouTube), and a responsive grid of link columns (Browse, Account, Company, Support); a bordered-top bottom bar holds an auto-updating copyright line. Use as the site-wide footer for streaming services, OTT apps, or on-demand video platforms.",
+    'Rich, multi-column closing footer for a video-streaming site built on the shared SiteFooter composite: a bold wordmark + inline primary play-triangle mark, a tagline, a social row (Instagram, Twitter, TikTok, YouTube), and a responsive grid of link columns (Browse, Account, Company, Support); a bordered-top bottom bar holds an auto-updating copyright line. Use as the site-wide footer for streaming services, OTT apps, or on-demand video platforms.',
   props: z.object({
     /** Streaming brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -50,45 +50,50 @@ export const VideoStreamingFooter = defineComponent({
     const social = props.social?.length
       ? props.social
       : [
-          { label: "Instagram" },
-          { label: "Twitter" },
-          { label: "TikTok" },
-          { label: "YouTube" },
+          { label: 'Instagram' },
+          { label: 'Twitter' },
+          { label: 'TikTok' },
+          { label: 'YouTube' },
         ]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Browse",
-            links: ["Shows", "Movies", "New & Popular", "Originals", "Kids"],
+            title: 'Browse',
+            links: ['Shows', 'Movies', 'New & Popular', 'Originals', 'Kids'],
           },
           {
-            title: "Account",
-            links: ["My List", "Profiles", "Devices", "Manage Plan"],
+            title: 'Account',
+            links: ['My List', 'Profiles', 'Devices', 'Manage Plan'],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Press", "Investors"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Press', 'Investors'],
           },
           {
-            title: "Support",
-            links: ["Help Center", "Contact Us", "Account Settings", "Gift Cards"],
+            title: 'Support',
+            links: [
+              'Help Center',
+              'Contact Us',
+              'Account Settings',
+              'Gift Cards',
+            ],
           },
         ]
 
     return (
       <SiteFooter
-        brand={props.brand ?? "Lumen"}
+        brand={props.brand ?? 'Lumen'}
         brandMark={<PlayMark className="size-7 text-primary" />}
         brandClassName="font-bold tracking-tight"
         tagline={
           props.tagline ??
-          "Thousands of shows and movies, ad-free, on every screen you own."
+          'Thousands of shows and movies, ad-free, on every screen you own.'
         }
         social={social}
         columns={columns}
-        legal={props.legal?.length ? props.legal : ["Privacy", "Terms"]}
-        note={props.note ?? "All rights reserved."}
+        legal={props.legal?.length ? props.legal : ['Privacy', 'Terms']}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

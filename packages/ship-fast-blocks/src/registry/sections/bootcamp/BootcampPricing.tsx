@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * BootcampPricing — 3-tier pricing / financing comparison for a coding bootcamp /
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * programs offering multiple payment options.
  */
 export const BootcampPricing = defineComponent({
-  name: "BootcampPricing",
+  name: 'BootcampPricing',
   description:
-    "3-tier pricing / financing comparison for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive 3-column grid of plan cards. Each card shows name, blurb, price, feature list with check-icon bullets, and a CTA button. One plan can be highlighted with a primary border and floating badge. A footnote row with a clickable CTA link sits below. All routes through useNavigate. Use as the pricing table for bootcamps, academies, or vocational programs offering multiple payment options.",
+    '3-tier pricing / financing comparison for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive 3-column grid of plan cards. Each card shows name, blurb, price, feature list with check-icon bullets, and a CTA button. One plan can be highlighted with a primary border and floating badge. A footnote row with a clickable CTA link sits below. All routes through useNavigate. Use as the pricing table for bootcamps, academies, or vocational programs offering multiple payment options.',
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -47,57 +47,57 @@ export const BootcampPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const pricingEyebrow = props.eyebrow ?? "Investment"
-    const pricingHeading = props.heading ?? "Flexible payment options"
+    const pricingEyebrow = props.eyebrow ?? 'Investment'
+    const pricingHeading = props.heading ?? 'Flexible payment options'
     const pricingDesc =
       props.description ??
-      "Choose the plan that works for your financial situation. All options include the same curriculum and job guarantee."
+      'Choose the plan that works for your financial situation. All options include the same curriculum and job guarantee.'
     const pricingItems = props.items?.length
       ? props.items
       : [
           {
-            name: "Upfront Payment",
-            blurb: "Pay in full before the cohort starts",
-            price: "$12,500",
-            unit: "one-time",
+            name: 'Upfront Payment',
+            blurb: 'Pay in full before the cohort starts',
+            price: '$12,500',
+            unit: 'one-time',
             features: [
-              "Save $2,000 vs. other options",
-              "No future payments",
-              "Job guarantee included",
+              'Save $2,000 vs. other options',
+              'No future payments',
+              'Job guarantee included',
             ],
-            cta: "Select Plan",
+            cta: 'Select Plan',
           },
           {
-            name: "Monthly Payment",
-            blurb: "Spread the cost over 12 months",
-            price: "$1,125",
-            unit: "/month",
+            name: 'Monthly Payment',
+            blurb: 'Spread the cost over 12 months',
+            price: '$1,125',
+            unit: '/month',
             features: [
-              "0% interest financing",
-              "No credit check required",
-              "Job guarantee included",
+              '0% interest financing',
+              'No credit check required',
+              'Job guarantee included',
             ],
-            cta: "Select Plan",
+            cta: 'Select Plan',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Income Share",
-            blurb: "Pay nothing until you earn $50k+",
-            price: "$0",
-            unit: "upfront",
+            name: 'Income Share',
+            blurb: 'Pay nothing until you earn $50k+',
+            price: '$0',
+            unit: 'upfront',
             features: [
-              "10% of income for 24 months",
-              "Capped at $16,500 total",
-              "Only pay if you succeed",
+              '10% of income for 24 months',
+              'Capped at $16,500 total',
+              'Only pay if you succeed',
             ],
-            cta: "Select Plan",
+            cta: 'Select Plan',
           },
         ]
     const pricingFootnote =
       props.footnote ??
-      "Scholarships available for underrepresented groups in tech."
-    const pricingFootnoteCta = props.footnoteCta ?? "Learn more →"
+      'Scholarships available for underrepresented groups in tech.'
+    const pricingFootnoteCta = props.footnoteCta ?? 'Learn more →'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -115,9 +115,7 @@ export const BootcampPricing = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-muted/40 py-20 lg:py-32", props.className)}
-      >
+      <section className={cn('bg-muted/40 py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">
@@ -133,10 +131,10 @@ export const BootcampPricing = defineComponent({
               <div
                 key={plan.name}
                 className={cn(
-                  "relative rounded-2xl bg-card p-8",
+                  'relative rounded-2xl bg-card p-8',
                   plan.featured
-                    ? "border-2 border-primary"
-                    : "border border-border",
+                    ? 'border-2 border-primary'
+                    : 'border border-border',
                 )}
               >
                 {plan.badge && (
@@ -168,10 +166,10 @@ export const BootcampPricing = defineComponent({
                   type="button"
                   onClick={() => go(`${plan.name} ${plan.cta}`)}
                   className={cn(
-                    "w-full rounded-lg py-3 font-medium transition-colors",
+                    'w-full rounded-lg py-3 font-medium transition-colors',
                     plan.featured
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "border border-border text-foreground hover:border-primary",
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      : 'border border-border text-foreground hover:border-primary',
                   )}
                 >
                   {plan.cta}
@@ -180,7 +178,7 @@ export const BootcampPricing = defineComponent({
             ))}
           </div>
           <p className="mt-8 text-center text-sm text-muted-foreground">
-            {pricingFootnote}{" "}
+            {pricingFootnote}{' '}
             <button
               type="button"
               onClick={() => go(pricingFootnoteCta)}

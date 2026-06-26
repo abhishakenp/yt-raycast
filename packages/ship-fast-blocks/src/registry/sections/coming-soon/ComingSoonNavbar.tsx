@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ComingSoonNavbar — minimal top navigation bar for a "launching soon" / waitlist
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Nexus" defaults.
  */
 export const ComingSoonNavbar = defineComponent({
-  name: "ComingSoonNavbar",
+  name: 'ComingSoonNavbar',
   description:
     "Minimal top navigation bar for a 'launching soon' / waitlist pre-launch landing page: clean airy header with the brand name on the left and two text-link nav items on the right (desktop), with the last nav item underlined as the active state. Links route through useNavigate for page-switching. Use as the site header for SaaS waitlists, app pre-launch pages, beta sign-up landers, or minimal coming-soon pages.",
   props: z.object({
@@ -25,15 +25,15 @@ export const ComingSoonNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Nexus"
+    const brand = props.brand ?? 'Nexus'
     const links = props.links?.length
       ? props.links
-      : ["Features", "Join Waitlist"]
+      : ['Features', 'Join Waitlist']
 
     return (
       <nav
         className={cn(
-          "w-full px-4 py-6 sm:px-6 lg:px-8 xl:px-12",
+          'w-full px-4 py-6 sm:px-6 lg:px-8 xl:px-12',
           props.className,
         )}
       >

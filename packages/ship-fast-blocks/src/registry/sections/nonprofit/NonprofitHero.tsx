@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * NonprofitHero — warm 2-column hero band for a nonprofit / charity landing
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * fully with no props via baked-in "Roots of Hope" defaults.
  */
 export const NonprofitHero = defineComponent({
-  name: "NonprofitHero",
+  name: 'NonprofitHero',
   description:
-    "Warm 2-column hero band for a nonprofit / charity landing page on a light neutral canvas: a left column with an uppercase eyebrow, a large headline with one highlighted phrase in the brand color, a supporting paragraph, dual pill CTAs (filled Donate + outlined Explore), and a row of check-marked trust badges; on the right a rounded hero photo with a floating quote card overlapping its bottom-left corner. Editorial, compassionate and donor-focused; CTAs route through useNavigate. Use as the opening hero for nonprofits, charities, NGOs, foundations, or humanitarian campaigns.",
+    'Warm 2-column hero band for a nonprofit / charity landing page on a light neutral canvas: a left column with an uppercase eyebrow, a large headline with one highlighted phrase in the brand color, a supporting paragraph, dual pill CTAs (filled Donate + outlined Explore), and a row of check-marked trust badges; on the right a rounded hero photo with a floating quote card overlapping its bottom-left corner. Editorial, compassionate and donor-focused; CTAs route through useNavigate. Use as the opening hero for nonprofits, charities, NGOs, foundations, or humanitarian campaigns.',
   props: z.object({
     /** Uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -44,24 +44,23 @@ export const NonprofitHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Established 2008 • Global Impact"
-    const headingBefore =
-      props.headingBefore ?? "Planting seeds of change for"
-    const highlight = props.highlight ?? "brighter tomorrows"
+    const eyebrow = props.eyebrow ?? 'Established 2008 • Global Impact'
+    const headingBefore = props.headingBefore ?? 'Planting seeds of change for'
+    const highlight = props.highlight ?? 'brighter tomorrows'
     const subheading =
       props.subheading ??
       "Roots of Hope empowers underserved communities through education, sustainable development, and compassionate support. Together, we've touched over 50,000 lives across 12 countries."
-    const primaryCta = props.primaryCta ?? "Make a Donation"
-    const secondaryCta = props.secondaryCta ?? "Explore Our Programs"
+    const primaryCta = props.primaryCta ?? 'Make a Donation'
+    const secondaryCta = props.secondaryCta ?? 'Explore Our Programs'
     const badges = props.badges?.length
       ? props.badges
-      : ["501(c)(3) Certified", "4-Star Charity Navigator"]
+      : ['501(c)(3) Certified', '4-Star Charity Navigator']
     const imageAlt =
       props.imageAlt ??
-      "Group of children in a classroom smiling and raising their hands enthusiastically"
+      'Group of children in a classroom smiling and raising their hands enthusiastically'
     const quote =
-      props.quote ?? "Every child deserves the chance to learn and dream."
-    const quoteAuthor = props.quoteAuthor ?? "— Maria Santos, Program Director"
+      props.quote ?? 'Every child deserves the chance to learn and dream.'
+    const quoteAuthor = props.quoteAuthor ?? '— Maria Santos, Program Director'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -95,7 +94,10 @@ export const NonprofitHero = defineComponent({
 
     return (
       <section
-        className={cn("relative overflow-hidden bg-background", props.className)}
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-7xl px-4 pb-24 pt-16 sm:px-6 lg:px-8 lg:pb-32 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -104,7 +106,7 @@ export const NonprofitHero = defineComponent({
                 {eyebrow}
               </p>
               <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                {headingBefore}{" "}
+                {headingBefore}{' '}
                 <span className="text-primary">{highlight}</span>
               </h1>
               <p className="mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground">

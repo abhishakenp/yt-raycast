@@ -3,16 +3,28 @@ import { extractFaqItems } from '../seo/extract-faq.ts'
 import { resolvePageSeo } from '../seo/resolve-page-seo.ts'
 import { cleanObject, joinUrl, normalizePath } from '../utils.ts'
 
-const SOFTWARE_SITE_TYPES = new Set(['software', 'saas', 'dashboard', 'landing', 'app'])
+const SOFTWARE_SITE_TYPES = new Set([
+  'software',
+  'saas',
+  'dashboard',
+  'landing',
+  'app',
+])
 
-function entitySignals(siteSpec: SiteSpecLike | null | undefined, page: SitePageLike | null | undefined) {
+function entitySignals(
+  siteSpec: SiteSpecLike | null | undefined,
+  page: SitePageLike | null | undefined,
+) {
   const pageSignals = page?.aeo?.entitySignals
   const homePage = (siteSpec?.pages || []).find((p) => p.route === '/')
   const homeSignals = homePage?.aeo?.entitySignals
   return { ...(homeSignals || {}), ...(pageSignals || {}) }
 }
 
-function inferBreadcrumbs(_siteSpec: SiteSpecLike | null | undefined, page: SitePageLike | null | undefined) {
+function inferBreadcrumbs(
+  _siteSpec: SiteSpecLike | null | undefined,
+  page: SitePageLike | null | undefined,
+) {
   if (Array.isArray(page?.breadcrumbs) && page.breadcrumbs.length) {
     return page.breadcrumbs
   }
@@ -36,13 +48,21 @@ function inferBreadcrumbs(_siteSpec: SiteSpecLike | null | undefined, page: Site
   return crumbs
 }
 
-function isProductPage(page: SitePageLike | null | undefined, _siteSpec: SiteSpecLike | null | undefined) {
+function isProductPage(
+  page: SitePageLike | null | undefined,
+  _siteSpec: SiteSpecLike | null | undefined,
+) {
   const route = normalizePath(page?.route || '/')
   if (route.includes('/product')) return true
-  return (page?.sections || []).some((section) => section.type === 'product-detail')
+  return (page?.sections || []).some(
+    (section) => section.type === 'product-detail',
+  )
 }
 
-export function buildStructuredData(siteSpec: SiteSpecLike | null | undefined, page: SitePageLike | null | undefined) {
+export function buildStructuredData(
+  siteSpec: SiteSpecLike | null | undefined,
+  page: SitePageLike | null | undefined,
+) {
   const seo = resolvePageSeo(siteSpec, page)
   const signals = entitySignals(siteSpec, page)
   const entries: Record<string, unknown>[] = []
@@ -86,21 +106,27 @@ export function buildStructuredData(siteSpec: SiteSpecLike | null | undefined, p
         applicationCategory: String(signals.category || 'BusinessApplication'),
         operatingSystem: 'Web',
         description: seo.description,
-        featureList: signals.benefits?.length ? signals.benefits : signals.useCases,
+        featureList: signals.benefits?.length
+          ? signals.benefits
+          : signals.useCases,
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       }) as Record<string, unknown>,
     )
   }
 
   if (siteType === 'ecommerce' && isProductPage(page, siteSpec)) {
-    const productSection = (page?.sections || []).find((section) => section.type === 'product-detail')
+    const productSection = (page?.sections || []).find(
+      (section) => section.type === 'product-detail',
+    )
     const productItem = productSection?.items?.[0]
     entries.push(
       cleanObject({
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: String(productItem?.title || page?.title || seo.title),
-        description: String(productItem?.body || page?.description || seo.description),
+        description: String(
+          productItem?.body || page?.description || seo.description,
+        ),
         url: seo.canonicalUrl,
         brand: { '@type': 'Brand', name: orgName || seo.siteName },
         offers: productItem?.price

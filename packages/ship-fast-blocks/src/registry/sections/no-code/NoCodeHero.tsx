@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NoCodeHero — two-column landing hero for a no-code / drag-and-drop app-builder
@@ -17,7 +17,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * page-builder / SaaS platform products. Renders fully with no props.
  */
 export const NoCodeHero = defineComponent({
-  name: "NoCodeHero",
+  name: 'NoCodeHero',
   description:
     "Two-column landing hero for a no-code / drag-and-drop app-builder SaaS on a bright neutral canvas: left column has a live-status pill (pulsing dot), a large two-tone headline (solid + muted accent), a supporting paragraph, dual CTAs (filled primary with arrow + outlined watch-demo with play icon), and checkmarked trust microcopy; right column shows a faux visual-EDITOR mockup with browser chrome traffic-light dots, a Components rail, a gridded drag-and-drop canvas with a selected block, a Properties panel, and a floating 'Published!' success toast. CTAs route through useNavigate. Use as the opening hero for no-code / website-builder / page-builder / app-builder / SaaS platform products.",
   props: z.object({
@@ -43,19 +43,19 @@ export const NoCodeHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Now with AI-powered components"
-    const headingTop = props.headingTop ?? "Build apps without code."
-    const headingAccent = props.headingAccent ?? "Drag, drop, launch."
+    const badge = props.badge ?? 'Now with AI-powered components'
+    const headingTop = props.headingTop ?? 'Build apps without code.'
+    const headingAccent = props.headingAccent ?? 'Drag, drop, launch.'
     const subheading =
       props.subheading ??
-      "Create stunning web and mobile apps in minutes. Choose from 200+ professionally designed templates, customize with our intuitive drag-and-drop builder, and publish instantly."
-    const primaryCta = props.primaryCta ?? "Start building free"
-    const secondaryCta = props.secondaryCta ?? "Watch demo"
+      'Create stunning web and mobile apps in minutes. Choose from 200+ professionally designed templates, customize with our intuitive drag-and-drop builder, and publish instantly.'
+    const primaryCta = props.primaryCta ?? 'Start building free'
+    const secondaryCta = props.secondaryCta ?? 'Watch demo'
     const trust = props.trust?.length
       ? props.trust
-      : ["No credit card required", "Free forever plan"]
-    const editorLabel = props.editorLabel ?? "Buildr Editor"
-    const toast = props.toast ?? "Published!"
+      : ['No credit card required', 'Free forever plan']
+    const editorLabel = props.editorLabel ?? 'Buildr Editor'
+    const toast = props.toast ?? 'Published!'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -110,10 +110,10 @@ export const NoCodeHero = defineComponent({
     )
 
     const iconTints = [
-      "bg-primary/10 text-primary",
-      "bg-secondary text-secondary-foreground",
-      "bg-accent text-accent-foreground",
-      "bg-chart-2/15 text-chart-2",
+      'bg-primary/10 text-primary',
+      'bg-secondary text-secondary-foreground',
+      'bg-accent text-accent-foreground',
+      'bg-chart-2/15 text-chart-2',
     ]
     const railIcons: ReactNode[] = [
       <svg
@@ -181,7 +181,7 @@ export const NoCodeHero = defineComponent({
 
     return (
       <section
-        className={cn("relative overflow-hidden", props.className)}
+        className={cn('relative overflow-hidden', props.className)}
         aria-labelledby="nc-hero"
       >
         <div className="mx-auto max-w-7xl px-4 pb-24 pt-20 sm:px-6 lg:px-8 lg:pb-40 lg:pt-32">
@@ -197,7 +197,7 @@ export const NoCodeHero = defineComponent({
                 id="nc-hero"
                 className="mb-6 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl"
               >
-                {headingTop}{" "}
+                {headingTop}{' '}
                 <span className="text-muted-foreground">{headingAccent}</span>
               </h1>
               <p className="mx-auto mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground lg:mx-0">
@@ -251,14 +251,14 @@ export const NoCodeHero = defineComponent({
                     <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Components
                     </div>
-                    {["Text", "Image", "Button", "Form"].map((c, i) => (
+                    {['Text', 'Image', 'Button', 'Form'].map((c, i) => (
                       <div
                         key={c}
                         className="flex items-center gap-3 rounded-lg border border-border bg-card p-2 shadow-sm"
                       >
                         <div
                           className={cn(
-                            "grid size-8 place-items-center rounded",
+                            'grid size-8 place-items-center rounded',
                             iconTints[i % iconTints.length],
                           )}
                         >
@@ -277,9 +277,9 @@ export const NoCodeHero = defineComponent({
                       className="absolute inset-0 opacity-40"
                       style={{
                         backgroundImage:
-                          "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)",
-                        backgroundSize: "20px 20px",
-                        color: "var(--border)",
+                          'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)',
+                        backgroundSize: '20px 20px',
+                        color: 'var(--border)',
                       }}
                     />
                     <div className="relative space-y-4">

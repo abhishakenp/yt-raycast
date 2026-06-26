@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * KidsEducationFooter — dark 5-column mega footer for a kids / family learning
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "WonderLearn" defaults.
  */
 export const KidsEducationFooter = defineComponent({
-  name: "KidsEducationFooter",
+  name: 'KidsEducationFooter',
   description:
     "Dark 5-column mega footer for a kids / family learning platform: a full-width dark (foreground) footer with a wide brand column (open-book mark + name, tagline, round social buttons) beside several link-list columns; a divider above a bottom bar with a dynamic-year copyright line and a legal-links row. Every link, social, and the logo route through useNavigate. Use as the closing site footer for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
   props: z.object({
@@ -38,39 +38,39 @@ export const KidsEducationFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "WonderLearn"
-    const homeTarget = props.homeTarget ?? "Activities"
+    const brand = props.brand ?? 'WonderLearn'
+    const homeTarget = props.homeTarget ?? 'Activities'
     const tagline =
       props.tagline ??
-      "Making learning an adventure for curious kids everywhere. Play-based activities for ages 4-12."
-    const note = props.note ?? "All rights reserved."
+      'Making learning an adventure for curious kids everywhere. Play-based activities for ages 4-12.'
+    const note = props.note ?? 'All rights reserved.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Product",
-            links: ["Activities", "Pricing", "For Schools", "Gift Cards"],
+            title: 'Product',
+            links: ['Activities', 'Pricing', 'For Schools', 'Gift Cards'],
           },
           {
-            title: "Company",
-            links: ["About Us", "Careers", "Blog", "Press"],
+            title: 'Company',
+            links: ['About Us', 'Careers', 'Blog', 'Press'],
           },
           {
-            title: "Support",
-            links: ["Help Center", "Contact Us", "Safety", "Privacy"],
+            title: 'Support',
+            links: ['Help Center', 'Contact Us', 'Safety', 'Privacy'],
           },
         ]
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Policy"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
     const socials = props.socials?.length
       ? props.socials
-      : ["Twitter", "Facebook", "Instagram"]
+      : ['Twitter', 'Facebook', 'Instagram']
 
     const BookMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-foreground",
+          'grid place-items-center rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -93,7 +93,7 @@ export const KidsEducationFooter = defineComponent({
     return (
       <footer
         className={cn(
-          "border-t border-border bg-foreground py-16 text-background",
+          'border-t border-border bg-foreground py-16 text-background',
           props.className,
         )}
       >
@@ -106,7 +106,9 @@ export const KidsEducationFooter = defineComponent({
                 className="mb-4 flex items-center gap-2"
               >
                 <BookMark className="size-10" />
-                <span className="text-xl font-bold text-background">{brand}</span>
+                <span className="text-xl font-bold text-background">
+                  {brand}
+                </span>
               </button>
               <p className="mb-6 max-w-sm text-background/70">{tagline}</p>
               <div className="flex gap-4">
@@ -118,7 +120,9 @@ export const KidsEducationFooter = defineComponent({
                     onClick={() => go(social)}
                     className="grid size-10 place-items-center rounded-full bg-background/10 text-background/70 transition-colors hover:bg-background/20 hover:text-background"
                   >
-                    <span className="text-xs font-semibold">{social.charAt(0)}</span>
+                    <span className="text-xs font-semibold">
+                      {social.charAt(0)}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -126,7 +130,9 @@ export const KidsEducationFooter = defineComponent({
 
             {columns.map((col) => (
               <div key={col.title}>
-                <h4 className="mb-4 font-semibold text-background">{col.title}</h4>
+                <h4 className="mb-4 font-semibold text-background">
+                  {col.title}
+                </h4>
                 <ul className="space-y-3">
                   {col.links.map((link) => (
                     <li key={link}>

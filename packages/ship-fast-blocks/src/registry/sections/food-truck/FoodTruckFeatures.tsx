@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * FoodTruckFeatures — a compact "why us" feature strip for a food-truck site. A
@@ -11,7 +11,7 @@ import { cn } from "#/lib/utils.ts"
  * sourcing, dietary options and catering capability.
  */
 export const FoodTruckFeatures = defineComponent({
-  name: "FoodTruckFeatures",
+  name: 'FoodTruckFeatures',
   description:
     "Compact 'why us' feature strip for a food-truck site: a top-bordered band holding a 3-up responsive grid of plain feature blocks, each with a rounded muted icon tile (sparkle glyph), a bold title and a muted supporting paragraph. No imagery or links — pure value-prop messaging. Use directly below the hero on food trucks, street-food vendors, taco / burger / bowl concepts or catering businesses to spell out sourcing, dietary options and catering capability.",
   props: z.object({
@@ -25,25 +25,25 @@ export const FoodTruckFeatures = defineComponent({
       ? props.features
       : [
           {
-            title: "Farm-to-Street",
+            title: 'Farm-to-Street',
             description:
-              "We source 80% of our ingredients from California farms within 150 miles. Seasonal menus change monthly.",
+              'We source 80% of our ingredients from California farms within 150 miles. Seasonal menus change monthly.',
           },
           {
-            title: "Dietary Friendly",
+            title: 'Dietary Friendly',
             description:
-              "Extensive vegan, vegetarian, and gluten-free options. Every item clearly labeled with allergen info.",
+              'Extensive vegan, vegetarian, and gluten-free options. Every item clearly labeled with allergen info.',
           },
           {
-            title: "Full-Service Catering",
+            title: 'Full-Service Catering',
             description:
-              "From office lunches to weddings. We bring the truck or drop off platters. Serving up to 500 guests.",
+              'From office lunches to weddings. We bring the truck or drop off platters. Serving up to 500 guests.',
           },
         ]
 
     return (
       <section
-        className={cn("border-t border-border px-6 py-16", props.className)}
+        className={cn('border-t border-border px-6 py-16', props.className)}
       >
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
           {features.map((f) => (

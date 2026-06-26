@@ -1,11 +1,19 @@
-import { normalizeBusinessProfile, buildHeuristicBusinessProfile } from '../spec/business-profile.js'
+import {
+  normalizeBusinessProfile,
+  buildHeuristicBusinessProfile,
+} from '../spec/business-profile.js'
 
 export function businessProfilePromptBlock(businessProfile = null) {
   if (!businessProfile || typeof businessProfile !== 'object') return ''
-  const p = normalizeBusinessProfile(businessProfile, buildHeuristicBusinessProfile({}))
+  const p = normalizeBusinessProfile(
+    businessProfile,
+    buildHeuristicBusinessProfile({}),
+  )
   const ic = p.industryCode || {}
   const codeLine =
-    ic.system && ic.code ? `${ic.system} ${ic.code}${ic.label ? ` — ${ic.label}` : ''}` : ''
+    ic.system && ic.code
+      ? `${ic.system} ${ic.code}${ic.label ? ` — ${ic.label}` : ''}`
+      : ''
 
   const lines = [
     'ORGANIZATION & BUSINESS TYPE (use for realistic copy, pricing tone, compliance hints, footer/legal context; do not fabricate registration numbers or fake certificates):',
@@ -17,7 +25,9 @@ export function businessProfilePromptBlock(businessProfile = null) {
     `- Segment: ${p.segment}`,
     `- Revenue model: ${p.revenueModel}`,
     `- Tax / invoicing note (high level): ${p.taxFootprint}`,
-    p.trustSignals?.length ? `- Trust / compliance hints: ${p.trustSignals.join('; ')}` : '',
+    p.trustSignals?.length
+      ? `- Trust / compliance hints: ${p.trustSignals.join('; ')}`
+      : '',
     '',
     'Business-type rules:',
     '- Reflect this profile in headlines, social proof, plan naming, and contact/privacy tone where relevant.',

@@ -43,7 +43,13 @@ async function groqFetch({
     { role: 'user', content: prompt },
   ]
 
-  const body = { model, messages, temperature, max_tokens: maxTokens, stream: false }
+  const body = {
+    model,
+    messages,
+    temperature,
+    max_tokens: maxTokens,
+    stream: false,
+  }
   if (reasoningEffort != null) body.reasoning_effort = reasoningEffort
   if (reasoningFormat != null) body.reasoning_format = reasoningFormat
   if (responseFormat) body.response_format = responseFormat
@@ -61,7 +67,12 @@ async function groqFetch({
   )
 
   const data = await res.json()
-  if (data.error) return { content: '', error: data.error.message ?? String(data.error), tps: 0 }
+  if (data.error)
+    return {
+      content: '',
+      error: data.error.message ?? String(data.error),
+      tps: 0,
+    }
 
   const usage = data.usage ?? {}
   const tps =
@@ -72,7 +83,12 @@ async function groqFetch({
   const inputTokens = usage.prompt_tokens ?? 0
   const outputTokens = usage.completion_tokens ?? 0
   const cachedInputTokens = usage.prompt_tokens_details?.cached_tokens ?? 0
-  const cost = calculateCost(model, inputTokens, outputTokens, cachedInputTokens)
+  const cost = calculateCost(
+    model,
+    inputTokens,
+    outputTokens,
+    cachedInputTokens,
+  )
   const rawContent = data.choices?.[0]?.message?.content ?? ''
 
   return {
@@ -116,8 +132,12 @@ export async function groqParallel(calls, opts = {}) {
       groqFetch({
         prompt: call.prompt,
         system: call.system,
-        temperature: call.temperature ?? opts.temperature ?? LLM_CONFIG.parallel.temperature,
-        maxTokens: call.maxTokens ?? opts.maxTokens ?? LLM_CONFIG.parallel.maxTokens,
+        temperature:
+          call.temperature ??
+          opts.temperature ??
+          LLM_CONFIG.parallel.temperature,
+        maxTokens:
+          call.maxTokens ?? opts.maxTokens ?? LLM_CONFIG.parallel.maxTokens,
         model: call.model ?? opts.model,
       }),
     ),

@@ -3,7 +3,9 @@ export const buildHomepageSpecSliceJson = (spec) => {
   const pages = spec.pages
   if (!Array.isArray(pages) || !pages.length) return ''
   const home =
-    pages.find((p) => p && (p.route === '/' || /^home$/i.test(String(p.name || '')))) ?? pages[0]
+    pages.find(
+      (p) => p && (p.route === '/' || /^home$/i.test(String(p.name || ''))),
+    ) ?? pages[0]
   const slice = {
     projectName: spec.projectName,
     slug: spec.slug,

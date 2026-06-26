@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MentalHealthFooter — a dark, multi-column footer for a therapy practice. On the
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * counselors, psychologists, psychiatrists or wellness centers.
  */
 export const MentalHealthFooter = defineComponent({
-  name: "MentalHealthFooter",
+  name: 'MentalHealthFooter',
   description:
     "Dark, multi-column footer for a therapy practice on the inverted foreground surface: a brand column (calming 'sun/wellness' mark + name + about blurb + round social icon buttons), a services link column, a company link column, and a contact column with address / phone / email / hours rows (each with a primary icon), plus a bottom bar with copyright + license note. Calm, trustworthy wellness aesthetic. Every brand button, link, phone and email routes through useNavigate. Use as the closing site footer for therapists, counselors, psychologists, psychiatrists or wellness centers.",
   props: z.object({
@@ -44,41 +44,39 @@ export const MentalHealthFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Stillpoint"
-    const homeTarget = props.homeTarget ?? "Services"
+    const brand = props.brand ?? 'Stillpoint'
+    const homeTarget = props.homeTarget ?? 'Services'
     const about =
       props.about ??
       "Professional mental health services in Portland's Pearl District. Licensed, compassionate care for individuals, couples, and families."
     const socials = props.socials?.length
       ? props.socials
-      : ["Facebook", "Instagram", "LinkedIn"]
-    const servicesTitle = props.servicesTitle ?? "Services"
+      : ['Facebook', 'Instagram', 'LinkedIn']
+    const servicesTitle = props.servicesTitle ?? 'Services'
     const servicesLinks = props.servicesLinks?.length
       ? props.servicesLinks
       : [
-          "Individual Therapy",
-          "Couples Therapy",
-          "Family Therapy",
-          "EMDR & Trauma",
-          "Psychiatry",
+          'Individual Therapy',
+          'Couples Therapy',
+          'Family Therapy',
+          'EMDR & Trauma',
+          'Psychiatry',
         ]
-    const servicesTarget = props.servicesTarget ?? "Services"
-    const companyTitle = props.companyTitle ?? "Company"
+    const servicesTarget = props.servicesTarget ?? 'Services'
+    const companyTitle = props.companyTitle ?? 'Company'
     const companyLinks = props.companyLinks?.length
       ? props.companyLinks
-      : ["About Us", "Our Team", "Careers", "Blog", "Privacy Policy"]
-    const contactTitle = props.contactTitle ?? "Contact"
-    const address =
-      props.address ?? "1234 NW Lovejoy St, Portland, OR 97209"
-    const phone = props.phone ?? "(503) 555-0147"
-    const email = props.email ?? "hello@stillpointtherapy.com"
-    const hours = props.hours ?? "Mon-Fri: 8am - 8pm"
-    const bookLabel = props.bookLabel ?? "Book Session"
+      : ['About Us', 'Our Team', 'Careers', 'Blog', 'Privacy Policy']
+    const contactTitle = props.contactTitle ?? 'Contact'
+    const address = props.address ?? '1234 NW Lovejoy St, Portland, OR 97209'
+    const phone = props.phone ?? '(503) 555-0147'
+    const email = props.email ?? 'hello@stillpointtherapy.com'
+    const hours = props.hours ?? 'Mon-Fri: 8am - 8pm'
+    const bookLabel = props.bookLabel ?? 'Book Session'
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Therapy, LLC. All rights reserved.`
-    const license =
-      props.license ?? "Licensed in Oregon • HIPAA Compliant"
+    const license = props.license ?? 'Licensed in Oregon • HIPAA Compliant'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -117,7 +115,7 @@ export const MentalHealthFooter = defineComponent({
     return (
       <footer
         className={cn(
-          "bg-foreground py-16 text-background/70",
+          'bg-foreground py-16 text-background/70',
           props.className,
         )}
       >

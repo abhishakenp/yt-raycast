@@ -1,9 +1,9 @@
-import { RefObject, useCallback, useEffect, useState, useRef } from "react";
-import { useWindowSize } from "react-use";
-import { FixedSizeList } from "react-window";
-import { useTableDensity } from "@common/features/data/lib/useTableDensity";
+import { RefObject, useCallback, useEffect, useState, useRef } from 'react'
+import { useWindowSize } from 'react-use'
+import { FixedSizeList } from 'react-window'
+import { useTableDensity } from '@common/features/data/lib/useTableDensity'
 
-const MIN_SCROLLBAR_SIZE = 64;
+const MIN_SCROLLBAR_SIZE = 64
 
 // The handlers returned by this hook were mostly copied/inspired by:
 // https://www.thisdot.co/blog/creating-custom-scrollbars-with-react
@@ -12,72 +12,72 @@ function useScrollbar(
   outerRef: RefObject<HTMLElement>,
   listRef: RefObject<FixedSizeList>,
 ) {
-  const { densityValues } = useTableDensity();
+  const { densityValues } = useTableDensity()
   // Recompute scrollbar size when window is resize by forcing a rerender.
-  useWindowSize();
+  useWindowSize()
 
-  const totalRowHeight = totalRowCount * densityValues.height;
+  const totalRowHeight = totalRowCount * densityValues.height
 
-  const { current: outerEl } = outerRef;
-  const { current: listEl } = listRef;
+  const { current: outerEl } = outerRef
+  const { current: listEl } = listRef
 
   const scrollbarHeight =
     !outerEl || totalRowHeight < outerEl.offsetHeight
       ? 0
-      : (outerEl.offsetHeight / totalRowHeight) * outerEl.offsetHeight;
+      : (outerEl.offsetHeight / totalRowHeight) * outerEl.offsetHeight
 
   const [scrollStartPosition, setScrollStartPosition] = useState<number | null>(
     null,
-  );
-  const [initialScrollTop, setInitialScrollTop] = useState<number>(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const rafIdRef = useRef<number>(0);
-  const lastMouseYRef = useRef<number | null>(null);
+  )
+  const [initialScrollTop, setInitialScrollTop] = useState<number>(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const rafIdRef = useRef<number>(0)
+  const lastMouseYRef = useRef<number | null>(null)
 
   const handleTrackClick = useCallback(
     (e: React.MouseEvent) => {
       if (outerEl && listEl) {
         // First, figure out where we clicked
-        const { clientY } = e;
+        const { clientY } = e
         // Next, figure out the distance between the top of the track and the top of the viewport
-        const target = e.target as HTMLDivElement;
-        const rect = target.getBoundingClientRect();
-        const trackTop = rect.top;
+        const target = e.target as HTMLDivElement
+        const rect = target.getBoundingClientRect()
+        const trackTop = rect.top
         // We want the middle of the thumb to jump to where we clicked, so we subtract half the thumb's height to offset the position
-        const thumbOffset = -(scrollbarHeight / 2);
+        const thumbOffset = -(scrollbarHeight / 2)
         // Find the ratio of the new position to the total content length using the thumb and track values...
         const clickRatio =
-          (clientY - trackTop + thumbOffset) / outerEl.clientHeight;
+          (clientY - trackTop + thumbOffset) / outerEl.clientHeight
         // ...so that you can compute where the content should scroll to.
         const scrollAmount = Math.floor(
           clickRatio * totalRowCount * densityValues.height,
-        );
+        )
         // And finally, scroll to the new position!
-        listEl.scrollTo(scrollAmount);
+        listEl.scrollTo(scrollAmount)
       }
     },
     [outerEl, listEl, scrollbarHeight, totalRowCount, densityValues.height],
-  );
+  )
   const handleThumbMousedown = useCallback(
     (e: MouseEvent) => {
-      setScrollStartPosition(e.clientY);
-      if (outerEl) setInitialScrollTop(outerEl.scrollTop);
-      setIsDragging(true);
+      setScrollStartPosition(e.clientY)
+      if (outerEl) setInitialScrollTop(outerEl.scrollTop)
+      setIsDragging(true)
     },
     [outerEl],
-  );
+  )
 
   const handleThumbMouseup = useCallback(() => {
     if (isDragging) {
-      setIsDragging(false);
+      setIsDragging(false)
 
       // Cancel any pending animation frame
       if (rafIdRef.current) {
-        cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = 0;
+        cancelAnimationFrame(rafIdRef.current)
+        rafIdRef.current = 0
       }
     }
-  }, [isDragging]);
+  }, [isDragging])
 
   const updateScrollPosition = useCallback(() => {
     if (
@@ -90,12 +90,12 @@ function useScrollbar(
       const {
         scrollHeight: contentScrollHeight,
         offsetHeight: contentOffsetHeight,
-      } = outerEl;
+      } = outerEl
 
       // Subtract the current mouse y position from where you started to get the pixel difference
       const deltaY =
         (lastMouseYRef.current - scrollStartPosition) *
-        (contentOffsetHeight / scrollbarHeight);
+        (contentOffsetHeight / scrollbarHeight)
 
       const newScrollTop = Math.max(
         0,
@@ -103,13 +103,13 @@ function useScrollbar(
           initialScrollTop + deltaY,
           contentScrollHeight - contentOffsetHeight,
         ),
-      );
+      )
 
       // Apply the scroll
-      listEl?.scrollTo(newScrollTop);
+      listEl?.scrollTo(newScrollTop)
 
       // Continue animation loop
-      rafIdRef.current = requestAnimationFrame(updateScrollPosition);
+      rafIdRef.current = requestAnimationFrame(updateScrollPosition)
     }
   }, [
     isDragging,
@@ -118,48 +118,48 @@ function useScrollbar(
     outerEl,
     listEl,
     initialScrollTop,
-  ]);
+  ])
 
   const handleThumbMousemove = useCallback(
     (e: MouseEvent) => {
       if (isDragging) {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault()
+        e.stopPropagation()
 
         // Store mouse position for animation frame
-        lastMouseYRef.current = e.clientY;
+        lastMouseYRef.current = e.clientY
 
         // Start animation frame if not already running
         if (!rafIdRef.current) {
-          rafIdRef.current = requestAnimationFrame(updateScrollPosition);
+          rafIdRef.current = requestAnimationFrame(updateScrollPosition)
         }
 
         // Add user-select: none to body during drag
-        document.body.style.userSelect = "none";
+        document.body.style.userSelect = 'none'
       }
     },
     [isDragging, updateScrollPosition],
-  );
+  )
 
   // Listen for mouse events to handle scrolling by dragging the thumb
   useEffect(() => {
-    document.addEventListener("mousemove", handleThumbMousemove);
-    document.addEventListener("mouseup", handleThumbMouseup);
-    document.addEventListener("mouseleave", handleThumbMouseup);
+    document.addEventListener('mousemove', handleThumbMousemove)
+    document.addEventListener('mouseup', handleThumbMouseup)
+    document.addEventListener('mouseleave', handleThumbMouseup)
     return () => {
-      document.removeEventListener("mousemove", handleThumbMousemove);
-      document.removeEventListener("mouseup", handleThumbMouseup);
-      document.removeEventListener("mouseleave", handleThumbMouseup);
+      document.removeEventListener('mousemove', handleThumbMousemove)
+      document.removeEventListener('mouseup', handleThumbMouseup)
+      document.removeEventListener('mouseleave', handleThumbMouseup)
 
       // Reset user-select
-      document.body.style.userSelect = "";
+      document.body.style.userSelect = ''
 
       // Clean up any ongoing animation frame
       if (rafIdRef.current) {
-        cancelAnimationFrame(rafIdRef.current);
+        cancelAnimationFrame(rafIdRef.current)
       }
-    };
-  }, [handleThumbMousemove, handleThumbMouseup]);
+    }
+  }, [handleThumbMousemove, handleThumbMouseup])
 
   return {
     listRef,
@@ -179,7 +179,7 @@ function useScrollbar(
     handleTrackClick,
     handleThumbMousedown,
     isDragging,
-  };
+  }
 }
 
 export function TableScrollbar({
@@ -187,9 +187,9 @@ export function TableScrollbar({
   outerRef,
   listRef,
 }: {
-  totalRowCount?: number;
-  outerRef: RefObject<HTMLElement>;
-  listRef: RefObject<FixedSizeList>;
+  totalRowCount?: number
+  outerRef: RefObject<HTMLElement>
+  listRef: RefObject<FixedSizeList>
 }) {
   const {
     scrollbarHeight,
@@ -197,15 +197,15 @@ export function TableScrollbar({
     handleTrackClick,
     handleThumbMousedown,
     isDragging,
-  } = useScrollbar(totalRowCount || 0, outerRef, listRef);
+  } = useScrollbar(totalRowCount || 0, outerRef, listRef)
 
   // Create a React handler from a native event handler, just for the types.
   const handleReactThumbMousedown = useCallback(
     (e: React.MouseEvent) => handleThumbMousedown(e.nativeEvent),
     [handleThumbMousedown],
-  );
+  )
 
-  const { densityValues } = useTableDensity();
+  const { densityValues } = useTableDensity()
   return scrollbarHeight > 0 ? (
     <div
       className="absolute -right-px w-3 border-t border-l bg-macosScrollbar-track/75 py-0.5"
@@ -236,12 +236,12 @@ export function TableScrollbar({
                 // to the top so it snaps to the top and bottom of the table.
                 Math.max(scrollbarTop - MIN_SCROLLBAR_SIZE, 0)
               : scrollbarTop,
-          cursor: isDragging ? "grabbing" : "grab",
+          cursor: isDragging ? 'grabbing' : 'grab',
         }}
         onMouseDown={handleReactThumbMousedown}
         className="fixed w-1.5 rounded-full transition-colors bg-macosScrollbar-thumb hover:bg-macosScrollbar-thumbHover ml-0.5"
       />
       {/* eslint-enable */}
     </div>
-  ) : null;
+  ) : null
 }

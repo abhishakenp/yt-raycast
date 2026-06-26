@@ -1,13 +1,13 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { StatGrid } from "#/section-kit/StatGrid.tsx"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { StatGrid } from '#/section-kit/StatGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { cn } from '#/lib/utils.ts'
 
 export const UniversityStats = defineComponent({
-  name: "UniversityStats",
+  name: 'UniversityStats',
   description:
-    "Institutional key-figures band for the University page family with a prestigious, collegiate aesthetic. Composes an optional SectionHeading above the shared StatGrid kit composite (four columns) to present headline metrics — total students, national ranking, distinguished faculty, and the worldwide alumni network. Use to convey scale and reputation between the hero and program sections of a university homepage.",
+    'Institutional key-figures band for the University page family with a prestigious, collegiate aesthetic. Composes an optional SectionHeading above the shared StatGrid kit composite (four columns) to present headline metrics — total students, national ranking, distinguished faculty, and the worldwide alumni network. Use to convey scale and reputation between the hero and program sections of a university homepage.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -18,24 +18,33 @@ export const UniversityStats = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "By the numbers"
-    const heading = props.heading ?? "A community of consequence"
+    const eyebrow = props.eyebrow ?? 'By the numbers'
+    const heading = props.heading ?? 'A community of consequence'
     const subheading =
       props.subheading ??
-      "Generations of scholarship, research, and achievement — measured across our campus and a global network of graduates."
+      'Generations of scholarship, research, and achievement — measured across our campus and a global network of graduates.'
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "18,000", label: "Students" },
-          { value: "Top 25", label: "National Ranking" },
-          { value: "1,200", label: "Distinguished Faculty" },
-          { value: "240,000+", label: "Alumni Worldwide" },
+          { value: '18,000', label: 'Students' },
+          { value: 'Top 25', label: 'National Ranking' },
+          { value: '1,200', label: 'Distinguished Faculty' },
+          { value: '240,000+', label: 'Alumni Worldwide' },
         ]
 
     return (
-      <section className={cn("bg-muted/30 py-20 text-foreground sm:py-24", props.className)}>
+      <section
+        className={cn(
+          'bg-muted/30 py-20 text-foreground sm:py-24',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <SectionHeading eyebrow={eyebrow} title={heading} subtitle={subheading} />
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={subheading}
+          />
           <div className="mt-14">
             <StatGrid stats={stats} columns={4} />
           </div>

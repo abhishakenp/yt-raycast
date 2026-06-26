@@ -11,7 +11,13 @@ const hookRe =
 
 export const scoreRalphHomepage = (
   html,
-  { prompt = '', refPath = '', minScore = 85, refTight = false, siteType = '' } = {},
+  {
+    prompt = '',
+    refPath = '',
+    minScore = 85,
+    refTight = false,
+    siteType = '',
+  } = {},
 ) => {
   const s = String(html || '')
   const siteSt = String(siteType || '').toLowerCase()
@@ -28,9 +34,17 @@ export const scoreRalphHomepage = (
   if (htmlLooksDegenerate(s, { prompt })) {
     const nova = explainNovaMarketingBarFailures(s)
     const bits = []
-    if (promptExpectsNovaDenseMarketing(prompt) && nova.length) bits.push(`Nova bar: ${nova.join('; ')}`)
-    bits.push('Also satisfy valid HTML, no repetition walls, adequate structure tags.')
-    return { ok: false, score: 0, reasons: ['htmlLooksDegenerate', ...nova], feedback: bits.join(' ') }
+    if (promptExpectsNovaDenseMarketing(prompt) && nova.length)
+      bits.push(`Nova bar: ${nova.join('; ')}`)
+    bits.push(
+      'Also satisfy valid HTML, no repetition walls, adequate structure tags.',
+    )
+    return {
+      ok: false,
+      score: 0,
+      reasons: ['htmlLooksDegenerate', ...nova],
+      feedback: bits.join(' '),
+    }
   }
 
   const reasons = []
@@ -39,16 +53,22 @@ export const scoreRalphHomepage = (
   else reasons.push(`html length ${s.length} (target >= 10000)`)
   const sections = (s.match(/<section\b/gi) || []).length
   const articles = (s.match(/<article\b/gi) || []).length
-  const semanticRegions = (s.match(/<(?:main|header|footer|aside)\b/gi) || []).length
+  const semanticRegions = (s.match(/<(?:main|header|footer|aside)\b/gi) || [])
+    .length
   let bands = sections + Math.min(articles || 0, 4)
-  if (siteSt === 'docs' && bands < 5 && semanticRegions >= 4) bands = semanticRegions
+  if (siteSt === 'docs' && bands < 5 && semanticRegions >= 4)
+    bands = semanticRegions
   const minBands = siteSt === 'docs' ? 5 : 6
   if (bands >= minBands) score += 30
   else reasons.push(`section bands ${bands} (target >= ${minBands})`)
-if (/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(s)) score += 25
+  if (/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(s))
+    score += 25
   else reasons.push('missing Tailwind runtime (/scripts/tailwind-browser.js)')
   if (hookRe.test(s)) score += 25
-  else reasons.push('missing wired data-* hooks (nav, accordion, tabs, carousel, counter, pricing toggle, or storefront cart)')
+  else
+    reasons.push(
+      'missing wired data-* hooks (nav, accordion, tabs, carousel, counter, pricing toggle, or storefront cart)',
+    )
 
   if (refPath && existsSync(refPath)) {
     const ref = readFileSync(refPath, 'utf8')
@@ -67,17 +87,23 @@ if (/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(s)) score 
       const needLen = Math.max(12000, Math.floor(ref.length * 0.34))
       if (s.length < needLen) {
         score -= 35
-        reasons.push(`need >=${needLen} chars (reference ${ref.length}); have ${s.length}`)
+        reasons.push(
+          `need >=${needLen} chars (reference ${ref.length}); have ${s.length}`,
+        )
       }
     } else {
       const floor = Math.max(5, Math.floor(refSections * 0.55))
       if (sections < floor) {
         score -= 12
-        reasons.push(`sections ${sections}; reference has ${refSections} (aim >= ${floor})`)
+        reasons.push(
+          `sections ${sections}; reference has ${refSections} (aim >= ${floor})`,
+        )
       }
       if (ref.length > 8000 && s.length < ref.length * 0.32) {
         score -= 8
-        reasons.push(`shorter than reference output (${s.length} vs ${ref.length} chars)`)
+        reasons.push(
+          `shorter than reference output (${s.length} vs ${ref.length} chars)`,
+        )
       }
     }
   }
@@ -89,7 +115,12 @@ if (/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(s)) score 
   return { ok, score, reasons, feedback }
 }
 
-export const passesHomepagePublicDesignVerification = (html, prompt, refPath, siteType = '') => {
+export const passesHomepagePublicDesignVerification = (
+  html,
+  prompt,
+  refPath,
+  siteType = '',
+) => {
   if (!refPath || !existsSync(refPath)) {
     const sc = scoreRalphHomepage(html, {
       prompt,
@@ -100,12 +131,21 @@ export const passesHomepagePublicDesignVerification = (html, prompt, refPath, si
     })
     if (!sc.ok) return { ok: false, feedback: sc.feedback }
     const audit = collectHomepageQualityIssues(html, { siteType, prompt })
-    if (audit.length) return { ok: false, feedback: `Quality audit: ${audit.join('; ')}` }
+    if (audit.length)
+      return { ok: false, feedback: `Quality audit: ${audit.join('; ')}` }
     return { ok: true, feedback: '' }
   }
-  const sc = scoreRalphHomepage(html, { prompt, refPath, minScore: 88, refTight: true, siteType })
-  if (!sc.ok) return { ok: false, feedback: sc.feedback || sc.reasons.join('; ') }
+  const sc = scoreRalphHomepage(html, {
+    prompt,
+    refPath,
+    minScore: 88,
+    refTight: true,
+    siteType,
+  })
+  if (!sc.ok)
+    return { ok: false, feedback: sc.feedback || sc.reasons.join('; ') }
   const audit = collectHomepageQualityIssues(html, { siteType, prompt })
-  if (audit.length) return { ok: false, feedback: `Quality audit: ${audit.join('; ')}` }
+  if (audit.length)
+    return { ok: false, feedback: `Quality audit: ${audit.join('; ')}` }
   return { ok: true, feedback: '' }
 }

@@ -1,11 +1,11 @@
-import { HeaderGroup } from "react-table";
-import { GenericDocument } from "convex/server";
-import classNames from "classnames";
-import omit from "lodash/omit";
-import { RefObject } from "react";
-import { ColumnHeader } from "@common/features/data/components/Table/ColumnHeader";
-import { DataCellProps } from "@common/features/data/components/Table/DataCell/DataCell";
-import { SchemaJson } from "@common/lib/format";
+import { HeaderGroup } from 'react-table'
+import { GenericDocument } from 'convex/server'
+import classNames from 'classnames'
+import omit from 'lodash/omit'
+import { RefObject } from 'react'
+import { ColumnHeader } from '@common/features/data/components/Table/ColumnHeader'
+import { DataCellProps } from '@common/features/data/components/Table/DataCell/DataCell'
+import { SchemaJson } from '@common/lib/format'
 
 export function TableHeader({
   headerGroups,
@@ -21,21 +21,21 @@ export function TableHeader({
   tableName,
   tableContainerRef,
 }: {
-  headerGroups: HeaderGroup<GenericDocument>[];
-  isResizingColumn?: string;
-  allRowsSelected: boolean | "indeterminate";
-  hasFilters: boolean;
-  isSelectionExhaustive: boolean;
-  toggleAll: () => void;
-  topBorderAnimation: boolean;
-  openContextMenu: DataCellProps["onOpenContextMenu"];
+  headerGroups: HeaderGroup<GenericDocument>[]
+  isResizingColumn?: string
+  allRowsSelected: boolean | 'indeterminate'
+  hasFilters: boolean
+  isSelectionExhaustive: boolean
+  toggleAll: () => void
+  topBorderAnimation: boolean
+  openContextMenu: DataCellProps['onOpenContextMenu']
   sort: {
-    order: "asc" | "desc";
-    field: string;
-  };
-  activeSchema: SchemaJson | null;
-  tableName: string;
-  tableContainerRef: RefObject<HTMLDivElement>;
+    order: 'asc' | 'desc'
+    field: string
+  }
+  activeSchema: SchemaJson | null
+  tableName: string
+  tableContainerRef: RefObject<HTMLDivElement>
 }) {
   return (
     <div className="group">
@@ -43,7 +43,7 @@ export function TableHeader({
       {headerGroups.map((headerGroup) => (
         <div
           key={headerGroup.getHeaderGroupProps().key}
-          {...omit(headerGroup.getHeaderGroupProps(), "key")}
+          {...omit(headerGroup.getHeaderGroupProps(), 'key')}
           // The FixedSizeList controlling the table width somehow adds an extra pixel to the data rows,
           // so add one here too.
           className="mr-px border-x border-x-transparent"
@@ -70,10 +70,10 @@ export function TableHeader({
       ))}
       <div
         className={classNames(
-          "h-[1px] bg-border-transparent",
-          topBorderAnimation && "animate-highlightBorder",
+          'h-[1px] bg-border-transparent',
+          topBorderAnimation && 'animate-highlightBorder',
         )}
       />
     </div>
-  );
+  )
 }

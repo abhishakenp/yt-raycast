@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * NewsFooter — fat multi-column closing footer for a news / editorial
@@ -29,9 +29,9 @@ const Masthead = ({ className }: { className?: string }) => (
 )
 
 export const NewsFooter = defineComponent({
-  name: "NewsFooter",
+  name: 'NewsFooter',
   description:
-    "Fat multi-column closing footer for a news / editorial publication built on the shared SiteFooter composite: a brand block (bold wordmark + newspaper-glyph mark + tagline + social row) alongside link columns (Sections / Company / Support / Legal), with a bordered-top bottom bar carrying an auto-updating copyright line and a row of legal links. Every brand, social and column link routes through useNavigate. Use as the closing footer of a newspaper, magazine or publication homepage.",
+    'Fat multi-column closing footer for a news / editorial publication built on the shared SiteFooter composite: a brand block (bold wordmark + newspaper-glyph mark + tagline + social row) alongside link columns (Sections / Company / Support / Legal), with a bordered-top bottom bar carrying an auto-updating copyright line and a row of legal links. Every brand, social and column link routes through useNavigate. Use as the closing footer of a newspaper, magazine or publication homepage.',
   props: z.object({
     /** Publication / masthead name shown beside the logo. */
     brand: z.string().optional(),
@@ -56,71 +56,71 @@ export const NewsFooter = defineComponent({
       ? props.columns
       : [
           {
-            title: "Sections",
+            title: 'Sections',
             links: [
-              "World News",
-              "Politics",
-              "Business",
-              "Technology",
-              "Science",
-              "Health",
+              'World News',
+              'Politics',
+              'Business',
+              'Technology',
+              'Science',
+              'Health',
             ],
           },
           {
-            title: "Company",
+            title: 'Company',
             links: [
-              "About Us",
-              "Careers",
-              "Code of Ethics",
-              "Press Center",
-              "Advertise",
+              'About Us',
+              'Careers',
+              'Code of Ethics',
+              'Press Center',
+              'Advertise',
             ],
           },
           {
-            title: "Support",
+            title: 'Support',
             links: [
-              "Help Center",
-              "Contact Us",
-              "Subscription",
-              "Accessibility",
-              "Apps",
+              'Help Center',
+              'Contact Us',
+              'Subscription',
+              'Accessibility',
+              'Apps',
             ],
           },
           {
-            title: "Legal",
+            title: 'Legal',
             links: [
-              "Privacy Policy",
-              "Terms of Service",
-              "Cookie Policy",
-              "Your Privacy Choices",
+              'Privacy Policy',
+              'Terms of Service',
+              'Cookie Policy',
+              'Your Privacy Choices',
             ],
           },
         ]
     const social = props.social?.length
       ? props.social
       : [
-          { label: "Twitter" },
-          { label: "Facebook" },
-          { label: "LinkedIn" },
-          { label: "Instagram" },
+          { label: 'Twitter' },
+          { label: 'Facebook' },
+          { label: 'LinkedIn' },
+          { label: 'Instagram' },
         ]
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy", "Terms", "Cookies", "Sitemap"]
+      : ['Privacy', 'Terms', 'Cookies', 'Sitemap']
 
     return (
       <SiteFooter
-        brand={props.brand ?? "The Chronicle"}
+        brand={props.brand ?? 'The Chronicle'}
         brandMark={<Masthead className="size-6 text-primary" />}
         brandClassName="text-lg font-bold"
         tagline={
           props.tagline ??
-          "Independent journalism since 1923. Committed to truth, accuracy, and the public interest."
+          'Independent journalism since 1923. Committed to truth, accuracy, and the public interest.'
         }
         columns={columns}
         social={social}
         legal={legal}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

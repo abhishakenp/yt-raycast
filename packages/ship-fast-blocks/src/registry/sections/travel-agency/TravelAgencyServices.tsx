@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const PlaneIcon = ({ className }: { className?: string }) => (
   <svg
@@ -67,9 +67,9 @@ const ShipIcon = ({ className }: { className?: string }) => (
 )
 
 export const TravelAgencyServices = defineComponent({
-  name: "TravelAgencyServices",
+  name: 'TravelAgencyServices',
   description:
-    "Premium services band for the Travel Agency page family. Composes the shared FeatureGrid kit composite into a four-column row covering Flights, Hotels, Packages, and Cruises, each with a token-styled inline icon and a concise benefit-led description. Use to summarize what a travel agency offers beneath the hero. All copy is prop-driven with wanderlust-themed defaults so it renders with no props.",
+    'Premium services band for the Travel Agency page family. Composes the shared FeatureGrid kit composite into a four-column row covering Flights, Hotels, Packages, and Cruises, each with a token-styled inline icon and a concise benefit-led description. Use to summarize what a travel agency offers beneath the hero. All copy is prop-driven with wanderlust-themed defaults so it renders with no props.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -89,22 +89,22 @@ export const TravelAgencyServices = defineComponent({
       ? props.services
       : [
           {
-            title: "Flights",
+            title: 'Flights',
             description:
-              "Best-fare routing in every cabin, with flexible dates and seamless rebooking handled by your dedicated advisor.",
+              'Best-fare routing in every cabin, with flexible dates and seamless rebooking handled by your dedicated advisor.',
           },
           {
-            title: "Hotels",
+            title: 'Hotels',
             description:
-              "Hand-picked boutique stays and five-star resorts, complete with upgrades, late checkout, and exclusive perks.",
+              'Hand-picked boutique stays and five-star resorts, complete with upgrades, late checkout, and exclusive perks.',
           },
           {
-            title: "Packages",
+            title: 'Packages',
             description:
-              "All-in-one itineraries that bundle flights, stays, and experiences into one effortless, beautifully priced trip.",
+              'All-in-one itineraries that bundle flights, stays, and experiences into one effortless, beautifully priced trip.',
           },
           {
-            title: "Cruises",
+            title: 'Cruises',
             description:
               "Ocean and river voyages to once-in-a-lifetime ports, curated with the suites and shore excursions you'll love.",
           },
@@ -115,10 +115,10 @@ export const TravelAgencyServices = defineComponent({
     }))
     return (
       <FeatureGrid
-        heading={props.heading ?? "Everything for your journey"}
+        heading={props.heading ?? 'Everything for your journey'}
         subheading={
           props.subheading ??
-          "One trusted team handling every detail, so you can simply look forward to the destination."
+          'One trusted team handling every detail, so you can simply look forward to the destination.'
         }
         features={features}
         columns={4}

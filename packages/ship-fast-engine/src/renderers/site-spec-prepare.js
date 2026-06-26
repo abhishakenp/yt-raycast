@@ -4,11 +4,14 @@ import { applyGeneratedSitePseoGuardrails } from './pseo-guardrails.js'
 import { pageUsesExactClone } from './shared.js'
 
 function countNonChromeSections(sections) {
-  return (sections || []).filter((s) => s && !['navbar', 'footer'].includes(s.type)).length
+  return (sections || []).filter(
+    (s) => s && !['navbar', 'footer'].includes(s.type),
+  ).length
 }
 
 function mergeMinimalHomeBodyFromFallback(siteSpec) {
-  const home = siteSpec.pages?.find((p) => p.route === '/') || siteSpec.pages?.[0]
+  const home =
+    siteSpec.pages?.find((p) => p.route === '/') || siteSpec.pages?.[0]
   if (!home || countNonChromeSections(home.sections) >= 2) return
   const pageNames = (siteSpec.pages || []).map((p) => p.name).filter(Boolean)
   const fb = buildFallbackSiteSpec({
@@ -25,15 +28,23 @@ function mergeMinimalHomeBodyFromFallback(siteSpec) {
   const fbHome = fb.pages?.[0]
   if (!fbHome?.sections?.length) return
   const existing = home.sections || []
-  const nav = existing.find((s) => s.type === 'navbar') || fbHome.sections.find((s) => s.type === 'navbar')
-  const foot = existing.find((s) => s.type === 'footer') || fbHome.sections.find((s) => s.type === 'footer')
-  const core = fbHome.sections.filter((s) => s.type !== 'navbar' && s.type !== 'footer')
+  const nav =
+    existing.find((s) => s.type === 'navbar') ||
+    fbHome.sections.find((s) => s.type === 'navbar')
+  const foot =
+    existing.find((s) => s.type === 'footer') ||
+    fbHome.sections.find((s) => s.type === 'footer')
+  const core = fbHome.sections.filter(
+    (s) => s.type !== 'navbar' && s.type !== 'footer',
+  )
   home.sections = [nav, ...core, foot].filter(Boolean)
 }
 
 function repairEmptyHeroSections(siteSpec) {
   const fallbackTitle = siteSpec.projectName || siteSpec.seo?.title || 'Welcome'
-  const fallbackBody = String(siteSpec.seo?.description || '').trim().slice(0, 280)
+  const fallbackBody = String(siteSpec.seo?.description || '')
+    .trim()
+    .slice(0, 280)
   for (const page of siteSpec.pages || []) {
     for (const sec of page.sections || []) {
       if (sec.type !== 'hero') continue
@@ -53,8 +64,11 @@ function stripUnstableExactClones(siteSpec) {
     const rb = page.renderBlueprint
     const doc =
       (rb?.originalHtmlDocument && String(rb.originalHtmlDocument)) ||
-      (rb?.bodyHtml ? `<!doctype html><html><body>${rb.bodyHtml}</body></html>` : '')
-    if (!htmlDocumentPassesPreviewQuality(doc, siteSpec)) page.renderBlueprint = null
+      (rb?.bodyHtml
+        ? `<!doctype html><html><body>${rb.bodyHtml}</body></html>`
+        : '')
+    if (!htmlDocumentPassesPreviewQuality(doc, siteSpec))
+      page.renderBlueprint = null
   }
 }
 

@@ -1,6 +1,10 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { HOME_OPENUI_FILE, OPENUI_MANIFEST_FILE, OPENUI_PAGES_DIR } from './openui-constants.js'
+import {
+  HOME_OPENUI_FILE,
+  OPENUI_MANIFEST_FILE,
+  OPENUI_PAGES_DIR,
+} from './openui-constants.js'
 import { slug, writeFile } from './workspace.js'
 
 export function routeToOpenUIFile(route = '/') {
@@ -17,12 +21,19 @@ export function routeToOpenUIFile(route = '/') {
 export function buildOpenUIManifest(siteSpec, entries = []) {
   const byRoute = new Map(entries.map((entry) => [entry.route || '/', entry]))
   const pages = (siteSpec?.pages || []).map((page, index) => {
-    const route = page.route || (index === 0 ? '/' : `/${slug(page.name || page.title || `page-${index}`)}`)
+    const route =
+      page.route ||
+      (index === 0
+        ? '/'
+        : `/${slug(page.name || page.title || `page-${index}`)}`)
     const file = routeToOpenUIFile(route)
     const entry = byRoute.get(route) || {}
     return {
       route,
-      title: page.title || page.name || (route === '/' ? 'Home' : route.replace(/^\/+/, '')),
+      title:
+        page.title ||
+        page.name ||
+        (route === '/' ? 'Home' : route.replace(/^\/+/, '')),
       file: entry.file || file,
       ready: Boolean(entry.ready),
     }
@@ -70,7 +81,9 @@ export function upsertOpenUIManifestEntry(workspace, siteSpec, entry) {
 export function readOpenUIFileForRoute(workspace, route = '/') {
   const manifest = readOpenUIManifest(workspace)
   const normalizedRoute = String(route || '/').trim() || '/'
-  const manifestEntry = manifest?.pages?.find((page) => page.route === normalizedRoute)
+  const manifestEntry = manifest?.pages?.find(
+    (page) => page.route === normalizedRoute,
+  )
   const rel = manifestEntry?.file || routeToOpenUIFile(normalizedRoute)
   const path = join(workspace, rel)
   if (!existsSync(path)) return null
@@ -85,11 +98,12 @@ export function openUIArtifactsReady(workspace, siteSpec) {
   if (!existsSync(join(workspace, HOME_OPENUI_FILE))) return false
   const manifest = readOpenUIManifest(workspace)
   if (!manifest) return true
-  const requiredRoutes = new Set((siteSpec?.pages || []).map((page) => page.route || '/'))
+  const requiredRoutes = new Set(
+    (siteSpec?.pages || []).map((page) => page.route || '/'),
+  )
   for (const route of requiredRoutes) {
     const entry = manifest.pages?.find((page) => page.route === route)
     if (!entry?.ready || !existsSync(join(workspace, entry.file))) return false
   }
   return true
 }
-

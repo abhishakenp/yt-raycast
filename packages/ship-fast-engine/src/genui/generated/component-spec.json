@@ -2066,7 +2066,7 @@
       "description": "Full-width classic indian government / PSU hero carousel of plant and infrastructure photos (auto-advancing with prev/next/dots) plus a thin royal-blue welcome and notice ticker. Official, civic, institutional mood for public sector, municipal, utility, power and electricity board portals that announce tenders and public notices. Use for the homepage banner of any classic government portal."
     },
     "GovernmentPortalNavbar": {
-      "signature": "GovernmentPortalNavbar(brand?: string, orgName?: string, sub?: string, address?: string, nav?: {label: string, children?: string[]}[], homeTarget?: string, className?: string)",
+      "signature": "GovernmentPortalNavbar(brand?: string, orgName?: string, sub?: string, address?: string, nav?: (string | {label: string, children?: string[]})[], homeTarget?: string, className?: string)",
       "description": "Three-tier classic indian government / PSU portal header: a light-blue (#0792D0) utility top bar (Career/Events, government emblem, A-/A/A+ font sizing, social icons), a white header band (org logo + official organisation name + Hindi subtitle + address), and a royal-blue (#3346B5) mega-nav with white 18px links and hover dropdowns. Built for public sector, civic, municipal, utility, electricity board and power-company sites with tender and notice menus. Use for the sticky official header of any classic indian government portal."
     },
     "GovernmentPortalServices": {

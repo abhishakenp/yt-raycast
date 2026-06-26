@@ -1,12 +1,12 @@
-import { GenericDocument } from "convex/server";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { GenericDocument } from 'convex/server'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { ValidatorJSON, Value } from "convex/values";
-import isPlainObject from "lodash/isPlainObject";
-import omitBy from "lodash/omitBy";
-import { UNDEFINED_PLACEHOLDER } from "system-udfs/convex/_system/frontend/lib/values";
-import { ObjectEditor } from "@common/elements/ObjectEditor/ObjectEditor";
-import { Button } from "@ui/Button";
+import { ValidatorJSON, Value } from 'convex/values'
+import isPlainObject from 'lodash/isPlainObject'
+import omitBy from 'lodash/omitBy'
+import { UNDEFINED_PLACEHOLDER } from 'system-udfs/convex/_system/frontend/lib/values'
+import { ObjectEditor } from '@common/elements/ObjectEditor/ObjectEditor'
+import { Button } from '@ui/Button'
 
 function isDocument(
   value: Value | undefined,
@@ -18,7 +18,7 @@ function isDocument(
       Array.isArray(value) &&
       value.length >= 1 &&
       value.every(isPlainObject))
-  );
+  )
 }
 
 export function JavascriptDocumentsForm({
@@ -30,82 +30,82 @@ export function JavascriptDocumentsForm({
   shouldSurfaceValidatorErrors = false,
   mode,
 }: {
-  validator?: ValidatorJSON;
-  shouldSurfaceValidatorErrors?: boolean;
-  documents: GenericDocument[];
-  setDocuments(documents: GenericDocument[]): void;
-  onSave(documents: GenericDocument[]): Promise<any>;
-  isDirty: boolean;
-  mode: "addDocuments" | "editDocument" | "patchDocuments";
+  validator?: ValidatorJSON
+  shouldSurfaceValidatorErrors?: boolean
+  documents: GenericDocument[]
+  setDocuments(documents: GenericDocument[]): void
+  onSave(documents: GenericDocument[]): Promise<any>
+  isDirty: boolean
+  mode: 'addDocuments' | 'editDocument' | 'patchDocuments'
 }) {
   const [value, setValue] = useState<Value | undefined>(
-    mode === "addDocuments" ? documents : documents[0],
-  );
-  const randomNumberRef = useRef<number>(Math.random());
+    mode === 'addDocuments' ? documents : documents[0],
+  )
+  const randomNumberRef = useRef<number>(Math.random())
 
   const onChange = useCallback(
     (newValue?: Value) => {
       const valueWithoutUndefined =
-        mode === "patchDocuments" || Array.isArray(newValue)
+        mode === 'patchDocuments' || Array.isArray(newValue)
           ? newValue
           : isPlainObject(newValue)
             ? (omitBy(
                 newValue as object,
                 (v) => v === UNDEFINED_PLACEHOLDER,
               ) as Value)
-            : newValue;
-      setValue(valueWithoutUndefined);
-      if (isDocument(valueWithoutUndefined, mode === "addDocuments")) {
+            : newValue
+      setValue(valueWithoutUndefined)
+      if (isDocument(valueWithoutUndefined, mode === 'addDocuments')) {
         setDocuments(
           Array.isArray(valueWithoutUndefined)
             ? valueWithoutUndefined
             : [valueWithoutUndefined],
-        );
+        )
       }
     },
     [mode, setDocuments],
-  );
+  )
 
-  const [isInvalidObject, setIsInvalidObject] = useState(false);
+  const [isInvalidObject, setIsInvalidObject] = useState(false)
 
-  let validationError;
+  let validationError
   if (isInvalidObject) {
-    validationError = "Please fix the errors above to continue.";
-  } else if (!isDocument(value, mode === "addDocuments")) {
+    validationError = 'Please fix the errors above to continue.'
+  } else if (!isDocument(value, mode === 'addDocuments')) {
     validationError =
-      mode === "addDocuments"
-        ? "Please enter a document or an array of documents to continue."
-        : "Please enter a document to continue.";
+      mode === 'addDocuments'
+        ? 'Please enter a document or an array of documents to continue.'
+        : 'Please enter a document to continue.'
   }
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSaving, setIsSaving] = useState(false)
   const [submitErrorMessage, setSubmitErrorMessage] = useState<
     string | undefined
-  >(undefined);
-  const validationMessage = validationError ?? submitErrorMessage;
+  >(undefined)
+  const validationMessage = validationError ?? submitErrorMessage
 
   useEffect(() => {
-    setSubmitErrorMessage(undefined);
-  }, [validationError, documents]);
+    setSubmitErrorMessage(undefined)
+  }, [validationError, documents])
 
   const disabled =
     validationError !== undefined ||
     isSaving ||
-    ((mode === "editDocument" || mode === "patchDocuments") && !isDirty);
+    ((mode === 'editDocument' || mode === 'patchDocuments') && !isDirty)
 
   const save = async () => {
     if (disabled) {
-      return;
+      return
     }
-    setSubmitErrorMessage(undefined);
-    setIsSaving(true);
+    setSubmitErrorMessage(undefined)
+    setIsSaving(true)
     try {
-      await onSave(documents);
+      await onSave(documents)
     } catch (e: any) {
-      setSubmitErrorMessage(e.message);
+      setSubmitErrorMessage(e.message)
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   return (
     <div className="flex grow flex-col overflow-y-hidden">
@@ -137,10 +137,10 @@ export function JavascriptDocumentsForm({
             </p>
           )}
           <Button disabled={disabled} onClick={save} loading={isSaving}>
-            {mode === "patchDocuments" ? "Apply" : "Save"}
+            {mode === 'patchDocuments' ? 'Apply' : 'Save'}
           </Button>
         </div>
       </div>
     </div>
-  );
+  )
 }

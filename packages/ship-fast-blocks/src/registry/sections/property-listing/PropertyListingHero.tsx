@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * PropertyListingHero — search-portal hero for a property marketplace. A split
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * property search portals and listing marketplaces. Renders fully with no props.
  */
 export const PropertyListingHero = defineComponent({
-  name: "PropertyListingHero",
+  name: 'PropertyListingHero',
   description:
-    "Search-portal hero for a property marketplace: a split layout with a left content column (eyebrow, bold headline, supporting line, a prominent search bar with location + type/beds/price filter inputs and a search button, plus popular-search chips) and a right image collage (one tall photo + two stacked photos). Imagery is alt-driven; search, chips, and the button route through useNavigate. Use as the opening hero for property search portals and listing marketplaces.",
+    'Search-portal hero for a property marketplace: a split layout with a left content column (eyebrow, bold headline, supporting line, a prominent search bar with location + type/beds/price filter inputs and a search button, plus popular-search chips) and a right image collage (one tall photo + two stacked photos). Imagery is alt-driven; search, chips, and the button route through useNavigate. Use as the opening hero for property search portals and listing marketplaces.',
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -40,26 +40,27 @@ export const PropertyListingHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "10,000+ live listings"
-    const heading = props.heading ?? "Search every home in one place"
+    const eyebrow = props.eyebrow ?? '10,000+ live listings'
+    const heading = props.heading ?? 'Search every home in one place'
     const subheading =
       props.subheading ??
-      "Browse verified listings for sale and rent, filter by what matters, and save the ones you love — all from one fast, clutter-free search."
-    const locationPlaceholder = props.locationPlaceholder ?? "Enter a city, area, or ZIP"
+      'Browse verified listings for sale and rent, filter by what matters, and save the ones you love — all from one fast, clutter-free search.'
+    const locationPlaceholder =
+      props.locationPlaceholder ?? 'Enter a city, area, or ZIP'
     const filters = props.filters?.length
       ? props.filters
-      : ["Any type", "Beds", "Price"]
-    const searchLabel = props.searchLabel ?? "Search"
-    const searchTarget = props.searchTarget ?? "For Sale"
+      : ['Any type', 'Beds', 'Price']
+    const searchLabel = props.searchLabel ?? 'Search'
+    const searchTarget = props.searchTarget ?? 'For Sale'
     const popular = props.popular?.length
       ? props.popular
-      : ["Apartments", "Houses", "Pet-friendly", "Under $2,000", "New builds"]
+      : ['Apartments', 'Houses', 'Pet-friendly', 'Under $2,000', 'New builds']
     const imageAlt =
       props.imageAlt ??
-      "bright modern apartment interior with floor-to-ceiling windows and city skyline view"
+      'bright modern apartment interior with floor-to-ceiling windows and city skyline view'
 
     return (
-      <section className={cn("bg-background py-16 lg:py-24", props.className)}>
+      <section className={cn('bg-background py-16 lg:py-24', props.className)}>
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:px-8">
           <div>
             <span className="inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-xs font-medium tracking-[0.15em] text-primary uppercase">

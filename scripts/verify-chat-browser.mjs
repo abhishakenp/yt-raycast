@@ -11,17 +11,27 @@ import {
 } from './verify-browser-helpers.mjs'
 
 const args = parseArgs()
-const baseUrl = (args.get('--base-url') ?? process.env.SHIP_FAST_BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '')
+const baseUrl = (
+  args.get('--base-url') ??
+  process.env.SHIP_FAST_BASE_URL ??
+  'http://localhost:3000'
+).replace(/\/$/, '')
 const timeoutMs = Number(args.get('--timeout-ms') ?? 180000)
 const stamp = Date.now()
 const ownerSecret = `owner-chat-browser-${stamp}`
 const sessionName = args.get('--browser-session') ?? `ship-fast-chat-${stamp}`
-const screenshotPath = args.get('--screenshot') ?? `/tmp/ship-fast-chat-browser-${stamp}.png`
-const browserExecutable = args.get('--executable-path') ?? process.env.AGENT_BROWSER_EXECUTABLE_PATH
+const screenshotPath =
+  args.get('--screenshot') ?? `/tmp/ship-fast-chat-browser-${stamp}.png`
+const browserExecutable =
+  args.get('--executable-path') ?? process.env.AGENT_BROWSER_EXECUTABLE_PATH
 const initialHeadline = 'Old headline'
 const refinedHeadline = 'Launch pastries faster'
 
-const agentBrowser = createAgentBrowser({ sessionName, timeoutMs, browserExecutable })
+const agentBrowser = createAgentBrowser({
+  sessionName,
+  timeoutMs,
+  browserExecutable,
+})
 const sessionId = createReadySession({
   prompt: `Chat browser verifier ${stamp}`,
   ownerSecret,
@@ -60,7 +70,8 @@ try {
       return { ok: input instanceof HTMLInputElement, hasInput: !!input, text: document.body.innerText.slice(0, 500) };
     }`,
   })
-  const chatResult = agentBrowser.evalJson(`(async () => {
+  const chatResult = agentBrowser.evalJson(
+    `(async () => {
     const input = document.querySelector('#chat-input');
     if (!(input instanceof HTMLInputElement)) return { ok: false, reason: 'chat input missing' };
     const content = ${JSON.stringify(`Change headline to "${refinedHeadline}"`)};
@@ -78,8 +89,13 @@ try {
     });
     const data = await response.json().catch(() => null);
     return { ok: response.ok, status: response.status, data };
-  })()`, timeoutMs)
-  assert(chatResult.ok === true, `browser chat route failed: ${JSON.stringify(chatResult)}`)
+  })()`,
+    timeoutMs,
+  )
+  assert(
+    chatResult.ok === true,
+    `browser chat route failed: ${JSON.stringify(chatResult)}`,
+  )
 
   waitForBrowserState({
     agentBrowser,
@@ -98,33 +114,62 @@ try {
   })
   agentBrowser(['screenshot', screenshotPath], { timeoutMs: 30000 })
 
-  const view = convexRun('sessions:getGenerationView', { lookup: sessionId }, timeoutMs)
-  const messages = convexRun('sessions:listChatMessages', { sessionId }, timeoutMs)
-  assert(view.latestPreview?.html?.includes(refinedHeadline), 'Convex preview missing refined headline')
-  assert(view.homeModule?.source?.includes(refinedHeadline), 'OpenUI source missing refined headline')
-  assert(view.siteSpec?.specJson?.includes(refinedHeadline), 'site spec missing refined headline')
+  const view = convexRun(
+    'sessions:getGenerationView',
+    { lookup: sessionId },
+    timeoutMs,
+  )
+  const messages = convexRun(
+    'sessions:listChatMessages',
+    { sessionId },
+    timeoutMs,
+  )
+  assert(
+    view.latestPreview?.html?.includes(refinedHeadline),
+    'Convex preview missing refined headline',
+  )
+  assert(
+    view.homeModule?.source?.includes(refinedHeadline),
+    'OpenUI source missing refined headline',
+  )
+  assert(
+    view.siteSpec?.specJson?.includes(refinedHeadline),
+    'site spec missing refined headline',
+  )
   assert(messages.length >= 2, 'chat messages were not persisted')
 
-  console.log(JSON.stringify({
-    ok: true,
-    baseUrl,
-    sessionId,
-    sessionName,
-    screenshotPath,
-    previewVersion: view.latestPreview?.version,
-    chatMessages: messages.length,
-    refinedHeadline,
-  }, null, 2))
+  console.log(
+    JSON.stringify(
+      {
+        ok: true,
+        baseUrl,
+        sessionId,
+        sessionName,
+        screenshotPath,
+        previewVersion: view.latestPreview?.version,
+        chatMessages: messages.length,
+        refinedHeadline,
+      },
+      null,
+      2,
+    ),
+  )
 } catch (error) {
   try {
     agentBrowser(['screenshot', screenshotPath], { timeoutMs: 10000 })
   } catch {}
-  console.error(JSON.stringify({
-    ok: false,
-    reason: error instanceof Error ? error.message : String(error),
-    sessionId,
-    sessionName,
-    screenshotPath,
-  }, null, 2))
+  console.error(
+    JSON.stringify(
+      {
+        ok: false,
+        reason: error instanceof Error ? error.message : String(error),
+        sessionId,
+        sessionName,
+        screenshotPath,
+      },
+      null,
+      2,
+    ),
+  )
   process.exit(1)
 }

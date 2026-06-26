@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * HotelResortCta — full-bleed image call-to-action band for a luxury hotel /
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in resort defaults.
  */
 export const HotelResortCta = defineComponent({
-  name: "HotelResortCta",
+  name: 'HotelResortCta',
   description:
-    "Full-bleed image call-to-action band for a luxury hotel / resort & spa site: a centered section over a full-cover background photo with a darkening token overlay, an uppercase eyebrow, a thin oversized headline, a light supporting paragraph, and dual CTAs (solid light primary + glassy outlined secondary, e.g. book + call). Cinematic and conversion-focused; CTAs route through useNavigate and the background uses the alt-driven Image component. Use as a closing booking push for hotels, resorts, spa retreats, villas, or boutique inns.",
+    'Full-bleed image call-to-action band for a luxury hotel / resort & spa site: a centered section over a full-cover background photo with a darkening token overlay, an uppercase eyebrow, a thin oversized headline, a light supporting paragraph, and dual CTAs (solid light primary + glassy outlined secondary, e.g. book + call). Cinematic and conversion-focused; CTAs route through useNavigate and the background uses the alt-driven Image component. Use as a closing booking push for hotels, resorts, spa retreats, villas, or boutique inns.',
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -35,21 +35,21 @@ export const HotelResortCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Limited Availability"
-    const heading = props.heading ?? "Begin your Azure Coast experience"
+    const eyebrow = props.eyebrow ?? 'Limited Availability'
+    const heading = props.heading ?? 'Begin your Azure Coast experience'
     const description =
       props.description ??
-      "Book direct for exclusive perks: complimentary room upgrade, late checkout, and a $100 resort credit. Summer availability is filling quickly."
-    const primaryCta = props.primaryCta ?? "Check Availability"
-    const secondaryCta = props.secondaryCta ?? "Call 1-800-555-1234"
+      'Book direct for exclusive perks: complimentary room upgrade, late checkout, and a $100 resort credit. Summer availability is filling quickly.'
+    const primaryCta = props.primaryCta ?? 'Check Availability'
+    const secondaryCta = props.secondaryCta ?? 'Call 1-800-555-1234'
     const imageAlt =
       props.imageAlt ??
-      "Sunset view over ocean from luxury resort balcony with warm golden lighting"
+      'Sunset view over ocean from luxury resort balcony with warm golden lighting'
 
     return (
       <section
         className={cn(
-          "relative overflow-hidden py-24 lg:py-32",
+          'relative overflow-hidden py-24 lg:py-32',
           props.className,
         )}
       >

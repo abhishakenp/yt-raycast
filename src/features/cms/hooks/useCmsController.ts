@@ -9,29 +9,33 @@ type CmsContentType = 'text' | 'richtext' | 'image' | 'link'
 
 export const useCmsController = (sessionId: string) => {
   const upsertContentEntry = useMutation(api.sessions.upsertCmsContentEntry)
-  const restoreContentRevision = useMutation(api.sessions.restoreCmsContentRevision)
-  const content = useQuery(api.sessions.listCmsContent, { sessionId: sessionId as Id<'sessions'> })
+  const restoreContentRevision = useMutation(
+    api.sessions.restoreCmsContentRevision,
+  )
+  const content = useQuery(api.sessions.listCmsContent, {
+    sessionId: sessionId as Id<'sessions'>,
+  })
   const [cmsError, setCmsError] = useState<string>()
   const [isSaving, setIsSaving] = useState(false)
   const [isRestoring, setIsRestoring] = useState(false)
 
-  const saveContent = async (
-    input: {
-      bindingId?: Id<'cmsBindings'>
-      selector?: string
-      type?: CmsContentType
-      field?: string
-      content: string
-      contentType?: string
-      beforeContent?: string
-    },
-  ) => {
+  const saveContent = async (input: {
+    bindingId?: Id<'cmsBindings'>
+    selector?: string
+    type?: CmsContentType
+    field?: string
+    content: string
+    contentType?: string
+    beforeContent?: string
+  }) => {
     setCmsError(undefined)
     setIsSaving(true)
 
     try {
       const anonymousOwnerSecret =
-        typeof window === 'undefined' ? undefined : readAnonymousOwnerSecret(window.localStorage, sessionId)
+        typeof window === 'undefined'
+          ? undefined
+          : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
       await upsertContentEntry({
         sessionId: sessionId as Id<'sessions'>,
@@ -51,7 +55,9 @@ export const useCmsController = (sessionId: string) => {
 
     try {
       const anonymousOwnerSecret =
-        typeof window === 'undefined' ? undefined : readAnonymousOwnerSecret(window.localStorage, sessionId)
+        typeof window === 'undefined'
+          ? undefined
+          : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
       await restoreContentRevision({
         sessionId: sessionId as Id<'sessions'>,

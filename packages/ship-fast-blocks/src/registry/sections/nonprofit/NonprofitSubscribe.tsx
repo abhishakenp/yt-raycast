@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * NonprofitSubscribe — warm get-involved / newsletter band for a nonprofit /
@@ -16,9 +16,9 @@ import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
  * Hope" defaults.
  */
 export const NonprofitSubscribe = defineComponent({
-  name: "NonprofitSubscribe",
+  name: 'NonprofitSubscribe',
   description:
-    "Warm get-involved / newsletter band for a nonprofit / charity / NGO page: a centered SectionHeading (eyebrow + title + subtitle) on a soft muted surface above a styled non-functional email-capture row with a submit button, plus a short row of secondary get-involved links (Volunteer, Fundraise, Partner with us). The submit button and links route through useNavigate. Use to grow the mailing list and surface ways to help on nonprofit, foundation, or humanitarian pages.",
+    'Warm get-involved / newsletter band for a nonprofit / charity / NGO page: a centered SectionHeading (eyebrow + title + subtitle) on a soft muted surface above a styled non-functional email-capture row with a submit button, plus a short row of secondary get-involved links (Volunteer, Fundraise, Partner with us). The submit button and links route through useNavigate. Use to grow the mailing list and surface ways to help on nonprofit, foundation, or humanitarian pages.',
   props: z.object({
     /** Small uppercase eyebrow above the title. */
     eyebrow: z.string().optional(),
@@ -40,22 +40,22 @@ export const NonprofitSubscribe = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Get involved"
-    const heading = props.heading ?? "Stay close to the change you make"
+    const eyebrow = props.eyebrow ?? 'Get involved'
+    const heading = props.heading ?? 'Stay close to the change you make'
     const subheading =
       props.subheading ??
       "Join our community and we'll send you stories from the field, updates on the programs you support, and simple ways to do more good."
-    const emailPlaceholder = props.emailPlaceholder ?? "you@example.com"
-    const submitCta = props.submitCta ?? "Join us"
+    const emailPlaceholder = props.emailPlaceholder ?? 'you@example.com'
+    const submitCta = props.submitCta ?? 'Join us'
     const submitTarget = props.submitTarget ?? submitCta
     const getInvolved = props.getInvolved?.length
       ? props.getInvolved
-      : ["Volunteer", "Fundraise", "Partner with us"]
+      : ['Volunteer', 'Fundraise', 'Partner with us']
     const footnote =
-      props.footnote ?? "No spam, ever. Unsubscribe with one click."
+      props.footnote ?? 'No spam, ever. Unsubscribe with one click.'
 
     return (
-      <section className={cn("py-20 lg:py-28", props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-2xl border border-border bg-muted/40 px-6 py-12 sm:px-12 lg:py-16">
             <SectionHeading

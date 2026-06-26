@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * HealthcareServices — medical services grid for a clinic / primary-care page.
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * pediatric, mental-health or telehealth clinic. Renders fully with no props.
  */
 export const HealthcareServices = defineComponent({
-  name: "HealthcareServices",
+  name: 'HealthcareServices',
   description:
     "Medical services grid for a clinic / primary-care page: a centered eyebrow chip, heading and intro above a responsive 1/2/3-column grid of bordered cards, each with a soft accent-tinted icon tile, title, description, and a chevron 'book' link routing through useNavigate. Cards lift on hover and a built-in set of medical icons (shield, video, heart, smiley, chart, beaker) rotates across them. Use for a services / 'what we treat' section of a doctors' office, family-medicine, women's-health, pediatric, mental-health or telehealth clinic.",
   props: z.object({
@@ -39,50 +39,50 @@ export const HealthcareServices = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Our Services"
+    const eyebrow = props.eyebrow ?? 'Our Services'
     const heading =
-      props.heading ?? "Comprehensive care for every stage of life"
+      props.heading ?? 'Comprehensive care for every stage of life'
     const description =
       props.description ??
-      "From routine checkups to specialized treatments, our board-certified physicians provide personalized care tailored to your unique health needs."
+      'From routine checkups to specialized treatments, our board-certified physicians provide personalized care tailored to your unique health needs.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Primary Care",
+            title: 'Primary Care',
             description:
-              "Comprehensive annual physicals, chronic disease management, and preventive screenings. We manage diabetes, hypertension, asthma, and more.",
-            cta: "Book primary care",
+              'Comprehensive annual physicals, chronic disease management, and preventive screenings. We manage diabetes, hypertension, asthma, and more.',
+            cta: 'Book primary care',
           },
           {
-            title: "Virtual Visits",
+            title: 'Virtual Visits',
             description:
-              "Connect with your doctor from home for follow-ups, medication refills, and minor concerns. HIPAA-compliant video appointments available same-day.",
-            cta: "Schedule virtual visit",
+              'Connect with your doctor from home for follow-ups, medication refills, and minor concerns. HIPAA-compliant video appointments available same-day.',
+            cta: 'Schedule virtual visit',
           },
           {
             title: "Women's Health",
             description:
-              "Annual well-woman exams, Pap smears, breast health screenings, family planning, menopause management, and hormone therapy consultations.",
+              'Annual well-woman exams, Pap smears, breast health screenings, family planning, menopause management, and hormone therapy consultations.',
             cta: "Book women's health visit",
           },
           {
-            title: "Pediatrics",
+            title: 'Pediatrics',
             description:
-              "Complete care for infants, children, and adolescents. Well-child visits, immunizations, school physicals, and developmental screenings.",
-            cta: "Schedule pediatric visit",
+              'Complete care for infants, children, and adolescents. Well-child visits, immunizations, school physicals, and developmental screenings.',
+            cta: 'Schedule pediatric visit',
           },
           {
-            title: "Mental Health",
+            title: 'Mental Health',
             description:
-              "Integrated behavioral health services including anxiety and depression screening, counseling referrals, and medication management.",
-            cta: "Book mental health visit",
+              'Integrated behavioral health services including anxiety and depression screening, counseling referrals, and medication management.',
+            cta: 'Book mental health visit',
           },
           {
-            title: "Lab & Diagnostics",
+            title: 'Lab & Diagnostics',
             description:
-              "On-site blood work, urine testing, EKGs, and rapid strep/flu tests. Most results available within 24-48 hours through your patient portal.",
-            cta: "Learn about labs",
+              'On-site blood work, urine testing, EKGs, and rapid strep/flu tests. Most results available within 24-48 hours through your patient portal.',
+            cta: 'Learn about labs',
           },
         ]
 
@@ -191,7 +191,7 @@ export const HealthcareServices = defineComponent({
 
     return (
       <section
-        className={cn("bg-muted py-20 lg:py-28", props.className)}
+        className={cn('bg-muted py-20 lg:py-28', props.className)}
         aria-labelledby="services-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

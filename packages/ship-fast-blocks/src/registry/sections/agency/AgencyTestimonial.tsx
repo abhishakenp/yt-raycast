@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AgencyTestimonial — oversized pull-quote testimonial band for a creative
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via a baked-in default quote + attribution.
  */
 export const AgencyTestimonial = defineComponent({
-  name: "AgencyTestimonial",
+  name: 'AgencyTestimonial',
   description:
-    "Oversized pull-quote testimonial band for a creative digital-agency page on a bordered muted band: centered round tinted quote-mark icon tile, a huge centered blockquote where one phrase is rendered in the accent color, and an attribution row with a round alt-driven avatar beside the name and role. Tokens-only, no links. Use for a single hero client testimonial, social-proof pull-quote, or featured customer endorsement.",
+    'Oversized pull-quote testimonial band for a creative digital-agency page on a bordered muted band: centered round tinted quote-mark icon tile, a huge centered blockquote where one phrase is rendered in the accent color, and an attribution row with a round alt-driven avatar beside the name and role. Tokens-only, no links. Use for a single hero client testimonial, social-proof pull-quote, or featured customer endorsement.',
   props: z.object({
     /** Full quote text. */
     quote: z.string().optional(),
@@ -33,10 +33,10 @@ export const AgencyTestimonial = defineComponent({
     const quote =
       props.quote ??
       "Studio Rise didn't just redesign our product — they redefined how our customers think about our brand. The results exceeded every KPI we set."
-    const highlight = props.highlight ?? "redefined how our customers think"
-    const name = props.name ?? "Sarah Chen"
-    const role = props.role ?? "CEO, Aurora Fintech"
-    const avatarAlt = props.avatarAlt ?? "Portrait of Sarah Chen, fintech CEO"
+    const highlight = props.highlight ?? 'redefined how our customers think'
+    const name = props.name ?? 'Sarah Chen'
+    const role = props.role ?? 'CEO, Aurora Fintech'
+    const avatarAlt = props.avatarAlt ?? 'Portrait of Sarah Chen, fintech CEO'
 
     const renderQuote = () => {
       const idx = highlight ? quote.indexOf(highlight) : -1
@@ -53,7 +53,7 @@ export const AgencyTestimonial = defineComponent({
     return (
       <section
         className={cn(
-          "border-y border-border bg-muted/30 py-24 sm:py-32",
+          'border-y border-border bg-muted/30 py-24 sm:py-32',
           props.className,
         )}
       >

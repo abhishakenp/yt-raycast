@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * BootcampCurriculum — 6-up curriculum / modules grid for a coding bootcamp /
@@ -12,7 +12,7 @@ import { cn } from "#/lib/utils.ts"
  * bootcamp's syllabus, course modules, or week-by-week curriculum breakdown.
  */
 export const BootcampCurriculum = defineComponent({
-  name: "BootcampCurriculum",
+  name: 'BootcampCurriculum',
   description:
     "6-up curriculum / modules grid for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive 1/2/3-column grid of rounded cards. Each card has a rotated inline line-icon tile in primary tint, a module title, a week-range description, and a bullet list of key skills. Cards subtly highlight on hover. Use to present a bootcamp's syllabus, course modules, or week-by-week curriculum breakdown.",
   props: z.object({
@@ -35,79 +35,79 @@ export const BootcampCurriculum = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const curriculumEyebrow = props.eyebrow ?? "The Curriculum"
+    const curriculumEyebrow = props.eyebrow ?? 'The Curriculum'
     const curriculumHeading =
-      props.heading ?? "Everything you need to ship production code"
+      props.heading ?? 'Everything you need to ship production code'
     const curriculumDesc =
       props.description ??
-      "Master the modern full-stack through hands-on projects. Build 12 real applications while learning from industry veterans."
+      'Master the modern full-stack through hands-on projects. Build 12 real applications while learning from industry veterans.'
     const curriculumItems = props.items?.length
       ? props.items
       : [
           {
-            title: "Frontend Foundations",
+            title: 'Frontend Foundations',
             description:
-              "Weeks 1-4: HTML5, CSS3, JavaScript ES6+, DOM manipulation, responsive design with Tailwind CSS.",
+              'Weeks 1-4: HTML5, CSS3, JavaScript ES6+, DOM manipulation, responsive design with Tailwind CSS.',
             points: [
-              "Semantic HTML & accessibility",
-              "CSS Grid & Flexbox mastery",
-              "Modern JavaScript patterns",
-              "Project: Portfolio website",
+              'Semantic HTML & accessibility',
+              'CSS Grid & Flexbox mastery',
+              'Modern JavaScript patterns',
+              'Project: Portfolio website',
             ],
           },
           {
-            title: "React & UI Engineering",
+            title: 'React & UI Engineering',
             description:
-              "Weeks 5-8: React 18, Hooks, state management with Redux Toolkit, component architecture.",
+              'Weeks 5-8: React 18, Hooks, state management with Redux Toolkit, component architecture.',
             points: [
-              "Component composition patterns",
-              "Context API & Redux Toolkit",
-              "React Query for server state",
-              "Project: E-commerce storefront",
+              'Component composition patterns',
+              'Context API & Redux Toolkit',
+              'React Query for server state',
+              'Project: E-commerce storefront',
             ],
           },
           {
-            title: "Backend & APIs",
+            title: 'Backend & APIs',
             description:
-              "Weeks 9-11: Node.js, Express, RESTful API design, authentication with JWT, middleware patterns.",
+              'Weeks 9-11: Node.js, Express, RESTful API design, authentication with JWT, middleware patterns.',
             points: [
-              "REST API design principles",
-              "JWT & session authentication",
-              "Express middleware patterns",
-              "Project: Task management API",
+              'REST API design principles',
+              'JWT & session authentication',
+              'Express middleware patterns',
+              'Project: Task management API',
             ],
           },
           {
-            title: "Databases & Storage",
+            title: 'Databases & Storage',
             description:
-              "Weeks 12-13: PostgreSQL, Prisma ORM, data modeling, migrations, indexing strategies.",
+              'Weeks 12-13: PostgreSQL, Prisma ORM, data modeling, migrations, indexing strategies.',
             points: [
-              "Relational data modeling",
-              "Prisma ORM fundamentals",
-              "Query optimization & indexing",
-              "Project: Social platform backend",
+              'Relational data modeling',
+              'Prisma ORM fundamentals',
+              'Query optimization & indexing',
+              'Project: Social platform backend',
             ],
           },
           {
-            title: "DevOps & Deployment",
+            title: 'DevOps & Deployment',
             description:
-              "Weeks 14-15: Docker, CI/CD pipelines, AWS/Vercel deployment, monitoring, security best practices.",
+              'Weeks 14-15: Docker, CI/CD pipelines, AWS/Vercel deployment, monitoring, security best practices.',
             points: [
-              "Docker containerization",
-              "GitHub Actions CI/CD",
-              "Cloud deployment strategies",
-              "Project: Full-stack deployment",
+              'Docker containerization',
+              'GitHub Actions CI/CD',
+              'Cloud deployment strategies',
+              'Project: Full-stack deployment',
             ],
           },
           {
-            title: "Career Services",
+            title: 'Career Services',
             description:
-              "Week 16: Interview prep, portfolio refinement, salary negotiation, and job placement support.",
+              'Week 16: Interview prep, portfolio refinement, salary negotiation, and job placement support.',
             points: [
-              "Technical interview coaching",
-              "Portfolio & GitHub review",
-              "Salary negotiation workshop",
-              "Direct employer introductions",
+              'Technical interview coaching',
+              'Portfolio & GitHub review',
+              'Salary negotiation workshop',
+              'Direct employer introductions',
             ],
           },
         ]
@@ -206,9 +206,7 @@ export const BootcampCurriculum = defineComponent({
     ]
 
     return (
-      <section
-        className={cn("bg-background py-20 lg:py-32", props.className)}
-      >
+      <section className={cn('bg-background py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">
@@ -217,9 +215,7 @@ export const BootcampCurriculum = defineComponent({
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
               {curriculumHeading}
             </h2>
-            <p className="text-lg text-muted-foreground">
-              {curriculumDesc}
-            </p>
+            <p className="text-lg text-muted-foreground">{curriculumDesc}</p>
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {curriculumItems.map((mod, i) => (
@@ -231,9 +227,7 @@ export const BootcampCurriculum = defineComponent({
                   {moduleIcons[i % moduleIcons.length]}
                 </div>
                 <h3 className="mb-3 text-xl font-semibold">{mod.title}</h3>
-                <p className="mb-4 text-muted-foreground">
-                  {mod.description}
-                </p>
+                <p className="mb-4 text-muted-foreground">{mod.description}</p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   {mod.points.map((p) => (
                     <li key={p} className="flex items-center gap-2">

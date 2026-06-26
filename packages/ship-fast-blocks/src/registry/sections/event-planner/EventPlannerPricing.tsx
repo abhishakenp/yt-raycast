@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * EventPlannerPricing — three-tier planning-packages block on a muted band. A
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * pricing for event/wedding planners or premium service businesses.
  */
 export const EventPlannerPricing = defineComponent({
-  name: "EventPlannerPricing",
+  name: 'EventPlannerPricing',
   description:
     "Three-tier planning-packages block on a muted band: a centered intro (uppercase eyebrow, thin light heading, lede) above a 3-up grid of rounded package cards; the 'popular' tier is filled with the primary color and lifted with a shadow plus a corner ribbon, while the others are plain cards. Each card shows name, tagline, large light price, a check-marked feature list, and a full-width pill CTA routed through useNavigate. Use to present tiered pricing (e.g. Essential, Signature, White Glove) for event/wedding planners or premium service businesses.",
   props: z.object({
@@ -37,53 +37,53 @@ export const EventPlannerPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const pricingEyebrow = props.eyebrow ?? "Investment"
-    const pricingHeading = props.heading ?? "Planning Packages"
+    const pricingEyebrow = props.eyebrow ?? 'Investment'
+    const pricingHeading = props.heading ?? 'Planning Packages'
     const pricingDesc =
       props.description ??
-      "Transparent pricing for weddings and celebrations. Custom quotes available for corporate and destination events."
-    const pricingPopular = props.popularLabel ?? "Most Popular"
-    const pricingCta = props.cta ?? "Inquire"
+      'Transparent pricing for weddings and celebrations. Custom quotes available for corporate and destination events.'
+    const pricingPopular = props.popularLabel ?? 'Most Popular'
+    const pricingCta = props.cta ?? 'Inquire'
     const pricingTiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Essential",
-            tagline: "Day-of coordination",
-            price: "$2,500",
+            name: 'Essential',
+            tagline: 'Day-of coordination',
+            price: '$2,500',
             features: [
-              "One month of pre-event support",
-              "Day-of timeline creation",
-              "Vendor coordination",
-              "On-site management (10 hours)",
-              "Setup and breakdown oversight",
+              'One month of pre-event support',
+              'Day-of timeline creation',
+              'Vendor coordination',
+              'On-site management (10 hours)',
+              'Setup and breakdown oversight',
             ],
           },
           {
-            name: "Signature",
-            tagline: "Partial planning",
-            price: "$5,500",
+            name: 'Signature',
+            tagline: 'Partial planning',
+            price: '$5,500',
             popular: true,
             features: [
-              "Everything in Essential, plus:",
-              "Six months of planning support",
-              "Vendor recommendations & referrals",
-              "Design concept & mood board",
-              "Two venue walkthroughs",
-              "Rehearsal coordination",
+              'Everything in Essential, plus:',
+              'Six months of planning support',
+              'Vendor recommendations & referrals',
+              'Design concept & mood board',
+              'Two venue walkthroughs',
+              'Rehearsal coordination',
             ],
           },
           {
-            name: "White Glove",
-            tagline: "Full-service planning",
-            price: "$12,000",
+            name: 'White Glove',
+            tagline: 'Full-service planning',
+            price: '$12,000',
             features: [
-              "Everything in Signature, plus:",
-              "Full planning from day one",
-              "Unlimited vendor meetings",
-              "Custom design & décor sourcing",
-              "Guest management & RSVP tracking",
-              "Dedicated lead planner + assistant",
+              'Everything in Signature, plus:',
+              'Full planning from day one',
+              'Unlimited vendor meetings',
+              'Custom design & décor sourcing',
+              'Guest management & RSVP tracking',
+              'Dedicated lead planner + assistant',
             ],
           },
         ]
@@ -108,7 +108,7 @@ export const EventPlannerPricing = defineComponent({
     return (
       <section
         className={cn(
-          "bg-muted px-4 py-20 sm:px-6 lg:px-8 lg:py-32",
+          'bg-muted px-4 py-20 sm:px-6 lg:px-8 lg:py-32',
           props.className,
         )}
       >
@@ -127,8 +127,8 @@ export const EventPlannerPricing = defineComponent({
               <article
                 key={tier.name}
                 className={cn(
-                  "relative rounded-2xl p-8 lg:p-10",
-                  tier.popular ? "bg-primary shadow-xl" : "bg-card shadow-sm",
+                  'relative rounded-2xl p-8 lg:p-10',
+                  tier.popular ? 'bg-primary shadow-xl' : 'bg-card shadow-sm',
                 )}
               >
                 {tier.popular && (
@@ -138,30 +138,30 @@ export const EventPlannerPricing = defineComponent({
                 )}
                 <h3
                   className={cn(
-                    "mb-2 text-xl font-medium",
+                    'mb-2 text-xl font-medium',
                     tier.popular
-                      ? "text-primary-foreground"
-                      : "text-card-foreground",
+                      ? 'text-primary-foreground'
+                      : 'text-card-foreground',
                   )}
                 >
                   {tier.name}
                 </h3>
                 <p
                   className={cn(
-                    "mb-6",
+                    'mb-6',
                     tier.popular
-                      ? "text-primary-foreground/70"
-                      : "text-muted-foreground",
+                      ? 'text-primary-foreground/70'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {tier.tagline}
                 </p>
                 <p
                   className={cn(
-                    "mb-8 text-4xl font-light",
+                    'mb-8 text-4xl font-light',
                     tier.popular
-                      ? "text-primary-foreground"
-                      : "text-card-foreground",
+                      ? 'text-primary-foreground'
+                      : 'text-card-foreground',
                   )}
                 >
                   {tier.price}
@@ -171,17 +171,17 @@ export const EventPlannerPricing = defineComponent({
                     <li key={feat} className="flex items-start gap-3">
                       <Check
                         className={cn(
-                          "mt-0.5 size-5 shrink-0",
+                          'mt-0.5 size-5 shrink-0',
                           tier.popular
-                            ? "text-primary-foreground/70"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground',
                         )}
                       />
                       <span
                         className={cn(
                           tier.popular
-                            ? "text-primary-foreground/90"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/90'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {feat}
@@ -193,10 +193,10 @@ export const EventPlannerPricing = defineComponent({
                   type="button"
                   onClick={() => go(`${pricingCta} ${tier.name}`)}
                   className={cn(
-                    "block w-full rounded-full px-6 py-3 text-center font-medium transition-colors",
+                    'block w-full rounded-full px-6 py-3 text-center font-medium transition-colors',
                     tier.popular
-                      ? "bg-background text-foreground hover:bg-muted"
-                      : "border border-border text-foreground hover:bg-muted",
+                      ? 'bg-background text-foreground hover:bg-muted'
+                      : 'border border-border text-foreground hover:bg-muted',
                   )}
                 >
                   {pricingCta}

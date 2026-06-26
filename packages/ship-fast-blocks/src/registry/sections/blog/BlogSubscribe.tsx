@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * BlogSubscribe — centered newsletter signup band for an editorial blog or
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * editorial landing pages to grow the mailing list.
  */
 export const BlogSubscribe = defineComponent({
-  name: "BlogSubscribe",
+  name: 'BlogSubscribe',
   description:
-    "Centered newsletter signup band for an editorial blog or publication: a rounded card with an eyebrow pill, a large headline, a supporting subtitle, and an email-capture form (email input plus submit button laid out as a responsive flex — stacked on mobile, inline on larger screens), followed by a small reassurance note. Submitting the form routes through useNavigate to a subscribe destination. Use as the Subscribe section near the foot of blog homepages, magazine indexes, or editorial landing pages to grow the mailing list.",
+    'Centered newsletter signup band for an editorial blog or publication: a rounded card with an eyebrow pill, a large headline, a supporting subtitle, and an email-capture form (email input plus submit button laid out as a responsive flex — stacked on mobile, inline on larger screens), followed by a small reassurance note. Submitting the form routes through useNavigate to a subscribe destination. Use as the Subscribe section near the foot of blog homepages, magazine indexes, or editorial landing pages to grow the mailing list.',
   props: z.object({
     /** Small uppercase pill above the heading. */
     eyebrow: z.string().optional(),
@@ -36,20 +36,20 @@ export const BlogSubscribe = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Newsletter"
-    const heading = props.heading ?? "Get our best essays in your inbox"
+    const eyebrow = props.eyebrow ?? 'Newsletter'
+    const heading = props.heading ?? 'Get our best essays in your inbox'
     const subheading =
       props.subheading ??
-      "Join 12,000+ readers. One thoughtful email a week — no noise."
-    const placeholder = props.placeholder ?? "you@example.com"
-    const ctaLabel = props.ctaLabel ?? "Subscribe"
-    const ctaTarget = props.ctaTarget ?? "Subscribe"
-    const note = props.note ?? "No spam. Unsubscribe anytime."
+      'Join 12,000+ readers. One thoughtful email a week — no noise.'
+    const placeholder = props.placeholder ?? 'you@example.com'
+    const ctaLabel = props.ctaLabel ?? 'Subscribe'
+    const ctaTarget = props.ctaTarget ?? 'Subscribe'
+    const note = props.note ?? 'No spam. Unsubscribe anytime.'
 
     return (
       <section
         aria-label="Newsletter signup"
-        className={cn("mx-auto w-full max-w-4xl px-6 py-16", props.className)}
+        className={cn('mx-auto w-full max-w-4xl px-6 py-16', props.className)}
       >
         <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:p-12">
           <span className="inline-flex items-center rounded-full bg-accent/10 px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-accent">

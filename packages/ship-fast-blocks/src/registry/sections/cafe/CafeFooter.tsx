@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CafeFooter — rich multi-column footer for a cozy cafe / coffee shop page on
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * via baked-in defaults.
  */
 export const CafeFooter = defineComponent({
-  name: "CafeFooter",
+  name: 'CafeFooter',
   description:
-    "Rich multi-column footer for a cozy cafe page on a dark inverted band: four columns with brand mark + blurb, quick links, business links, and plain-text contact lines. A bottom row holds an auto-updating copyright line and legal links. The owl brand mark is an inline SVG (currentColor → token), copied locally so the footer is self-contained. Every link routes through useNavigate. Use as the closing footer for cafes, bakeries, tea houses, or warm food-and-drink small businesses.",
+    'Rich multi-column footer for a cozy cafe page on a dark inverted band: four columns with brand mark + blurb, quick links, business links, and plain-text contact lines. A bottom row holds an auto-updating copyright line and legal links. The owl brand mark is an inline SVG (currentColor → token), copied locally so the footer is self-contained. Every link routes through useNavigate. Use as the closing footer for cafes, bakeries, tea houses, or warm food-and-drink small businesses.',
   props: z.object({
     /** Cafe / brand name shown with the owl mark. */
     brand: z.string().optional(),
@@ -36,28 +36,28 @@ export const CafeFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Little Owl Coffee"
+    const brand = props.brand ?? 'Little Owl Coffee'
     const blurb =
       props.blurb ??
-      "Specialty coffee, house-made pastries, and a space to slow down. Est. 2018 in Portland, Oregon."
+      'Specialty coffee, house-made pastries, and a space to slow down. Est. 2018 in Portland, Oregon.'
     const quickLinks = props.quickLinks?.length
       ? props.quickLinks
-      : ["Our Menu", "Our Story", "Location & Hours", "Careers"]
+      : ['Our Menu', 'Our Story', 'Location & Hours', 'Careers']
     const businessLinks = props.businessLinks?.length
       ? props.businessLinks
-      : ["Wholesale", "Catering", "Private Events", "Gift Cards"]
+      : ['Wholesale', 'Catering', 'Private Events', 'Gift Cards']
     const contactLines = props.contactLines?.length
       ? props.contactLines
       : [
-          "1242 NW Glisan Street",
-          "Portland, OR 97209",
-          "(503) 555-0192",
-          "hello@littleowlcoffee.com",
+          '1242 NW Glisan Street',
+          'Portland, OR 97209',
+          '(503) 555-0192',
+          'hello@littleowlcoffee.com',
         ]
     const legalLinks = props.legalLinks?.length
       ? props.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Accessibility"]
-    const note = props.note ?? "All rights reserved."
+      : ['Privacy Policy', 'Terms of Service', 'Accessibility']
+    const note = props.note ?? 'All rights reserved.'
 
     const OwlMark = ({ className }: { className?: string }) => (
       <svg
@@ -72,7 +72,10 @@ export const CafeFooter = defineComponent({
 
     return (
       <footer
-        className={cn("bg-foreground py-12 text-background/60", props.className)}
+        className={cn(
+          'bg-foreground py-12 text-background/60',
+          props.className,
+        )}
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mb-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">

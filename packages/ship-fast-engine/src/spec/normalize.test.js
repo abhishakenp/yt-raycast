@@ -84,7 +84,13 @@ describe('normalizeSiteSpec', () => {
               id: 'nav-home',
               type: 'navbar',
               headline: 'Acme',
-              styling: { brandLogo: { kind: 'remote', src: 'https://cdn/acme.png', alt: 'Acme' } },
+              styling: {
+                brandLogo: {
+                  kind: 'remote',
+                  src: 'https://cdn/acme.png',
+                  alt: 'Acme',
+                },
+              },
             },
             { id: 'foot-home', type: 'footer', headline: 'Acme', styling: {} },
           ],
@@ -98,7 +104,13 @@ describe('normalizeSiteSpec', () => {
               id: 'nav-about',
               type: 'navbar',
               headline: 'Acme Corporation',
-              styling: { brandLogo: { kind: 'remote', src: 'https://cdn/other.png', alt: 'Other' } },
+              styling: {
+                brandLogo: {
+                  kind: 'remote',
+                  src: 'https://cdn/other.png',
+                  alt: 'Other',
+                },
+              },
             },
             { id: 'foot-about', type: 'footer', headline: '', styling: {} },
           ],
@@ -110,7 +122,9 @@ describe('normalizeSiteSpec', () => {
       const result = normalizeSiteSpec(multiPage())
       const headlines = result.pages
         .flatMap((page) => page.sections)
-        .filter((section) => section.type === 'navbar' || section.type === 'footer')
+        .filter(
+          (section) => section.type === 'navbar' || section.type === 'footer',
+        )
         .map((section) => section.headline)
       expect(new Set(headlines)).toEqual(new Set(['Acme']))
     })
@@ -119,7 +133,9 @@ describe('normalizeSiteSpec', () => {
       const result = normalizeSiteSpec(multiPage())
       const logos = result.pages
         .flatMap((page) => page.sections)
-        .filter((section) => section.type === 'navbar' || section.type === 'footer')
+        .filter(
+          (section) => section.type === 'navbar' || section.type === 'footer',
+        )
         .map((section) => section.styling?.brandLogo?.src)
       expect(new Set(logos)).toEqual(new Set(['https://cdn/acme.png']))
     })
@@ -138,9 +154,15 @@ describe('normalizeSiteSpec', () => {
 
     it('does not touch headlines of non-brand sections', () => {
       const input = multiPage()
-      input.pages[0].sections.push({ id: 'hero', type: 'hero', headline: 'Welcome' })
+      input.pages[0].sections.push({
+        id: 'hero',
+        type: 'hero',
+        headline: 'Welcome',
+      })
       const result = normalizeSiteSpec(input)
-      const hero = result.pages[0].sections.find((section) => section.type === 'hero')
+      const hero = result.pages[0].sections.find(
+        (section) => section.type === 'hero',
+      )
       expect(hero.headline).toBe('Welcome')
     })
   })

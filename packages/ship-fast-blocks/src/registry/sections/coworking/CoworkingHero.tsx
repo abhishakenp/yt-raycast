@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CoworkingHero — split coworking landing hero with eyebrow, oversized headline,
@@ -14,7 +14,7 @@ import { Image } from "#/lib/img.tsx"
  * providers, or business centers.
  */
 export const CoworkingHero = defineComponent({
-  name: "CoworkingHero",
+  name: 'CoworkingHero',
   description:
     "Split hero section for a coworking / workspace landing page: eyebrow label, large multi-line headline with one phrase muted, a supporting paragraph, dual pill CTAs (filled primary + outlined secondary), a trust-check row with icons, a large rounded hero image, and an absolute-positioned floating 'members active' social-proof card with an avatar stack. CTAs route through useNavigate; images use the alt-driven Image component. Use as the opening section for coworking spaces, shared offices, flex-office providers, or workspace membership sites.",
   props: z.object({
@@ -45,28 +45,28 @@ export const CoworkingHero = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? "Portland's Premier Coworking Space"
-    const headingLead = props.headingLead ?? "Workspace that works"
-    const headingMuted = props.headingMuted ?? "as hard as you do"
+    const headingLead = props.headingLead ?? 'Workspace that works'
+    const headingMuted = props.headingMuted ?? 'as hard as you do'
     const subheading =
       props.subheading ??
       "Private offices, dedicated desks, and meeting rooms in the heart of the Pearl District. Join 400+ professionals who've made Northside their base."
-    const primaryCta = props.primaryCta ?? "Schedule a Tour"
-    const secondaryCta = props.secondaryCta ?? "View Memberships"
+    const primaryCta = props.primaryCta ?? 'Schedule a Tour'
+    const secondaryCta = props.secondaryCta ?? 'View Memberships'
     const checks = props.checks?.length
       ? props.checks
-      : ["No setup fees", "Month-to-month", "24/7 access"]
+      : ['No setup fees', 'Month-to-month', '24/7 access']
     const imageAlt =
       props.imageAlt ??
-      "Bright modern coworking space with floor-to-ceiling windows, wooden desks, and green plants"
-    const proofValue = props.proofValue ?? "400+ members"
-    const proofLabel = props.proofLabel ?? "Active this week"
+      'Bright modern coworking space with floor-to-ceiling windows, wooden desks, and green plants'
+    const proofValue = props.proofValue ?? '400+ members'
+    const proofLabel = props.proofLabel ?? 'Active this week'
     const proofAvatars = props.proofAvatars?.length
       ? props.proofAvatars
       : [
-          "Professional headshot of a smiling woman with brown hair",
-          "Professional headshot of a man with glasses and short hair",
-          "Professional headshot of a woman with blonde hair smiling",
-          "Professional headshot of a man with beard in casual attire",
+          'Professional headshot of a smiling woman with brown hair',
+          'Professional headshot of a man with glasses and short hair',
+          'Professional headshot of a woman with blonde hair smiling',
+          'Professional headshot of a man with beard in casual attire',
         ]
 
     const ArrowRight = ({ className }: { className?: string }) => (
@@ -100,7 +100,7 @@ export const CoworkingHero = defineComponent({
     )
 
     return (
-      <section className={cn("relative bg-muted/50", props.className)}>
+      <section className={cn('relative bg-muted/50', props.className)}>
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
@@ -108,7 +108,7 @@ export const CoworkingHero = defineComponent({
                 {eyebrow}
               </p>
               <h1 className="mb-6 text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                {headingLead}{" "}
+                {headingLead}{' '}
                 <span className="text-muted-foreground">{headingMuted}</span>
               </h1>
               <p className="mb-8 text-lg leading-relaxed text-muted-foreground sm:text-xl">

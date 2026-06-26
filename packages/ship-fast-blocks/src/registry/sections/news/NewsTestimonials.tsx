@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * NewsTestimonials — 3-up reader-review wall for a news / editorial site. Thin
@@ -13,7 +13,7 @@ import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const NewsTestimonials = defineComponent({
-  name: "NewsTestimonials",
+  name: 'NewsTestimonials',
   description:
     "3-up reader-review wall for a news / editorial site built on the shared TestimonialGrid composite: a centered heading + subheading above a responsive 3-column card grid where each card renders a star row, the reader's quote, and an avatar + name + role footer. Use to build trust on a newspaper, magazine or subscription publication homepage, typically before the subscribe CTA.",
   props: z.object({
@@ -35,34 +35,34 @@ export const NewsTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "What Readers Say"
+    const heading = props.heading ?? 'What Readers Say'
     const subheading =
-      props.subheading ?? "Trusted by over 2 million subscribers worldwide"
+      props.subheading ?? 'Trusted by over 2 million subscribers worldwide'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
               "The Chronicle's investigative reporting on climate policy helped me understand complex legislation better than any other source. Their journalists actually read the bills.",
-            name: "Prof. Robert Chen",
-            role: "Environmental Policy, Stanford",
+            name: 'Prof. Robert Chen',
+            role: 'Environmental Policy, Stanford',
             avatarAlt:
-              "Professional headshot of Professor Robert Chen with glasses",
+              'Professional headshot of Professor Robert Chen with glasses',
           },
           {
             quote:
               "I started my day with The Chronicle's briefing three years ago and haven't stopped. It's the perfect balance of depth and brevity for a busy executive.",
-            name: "Jennifer Walsh",
-            role: "CEO, Horizon Ventures",
+            name: 'Jennifer Walsh',
+            role: 'CEO, Horizon Ventures',
             avatarAlt:
-              "Professional headshot of Jennifer Walsh CEO in business attire",
+              'Professional headshot of Jennifer Walsh CEO in business attire',
           },
           {
             quote:
               "Finally, a news source that doesn't treat readers like attention-deficient children. Long-form journalism done right. Worth every penny of the subscription.",
-            name: "David Park",
-            role: "Software Architect, Seattle",
-            avatarAlt: "Professional headshot of David Park software engineer",
+            name: 'David Park',
+            role: 'Software Architect, Seattle',
+            avatarAlt: 'Professional headshot of David Park software engineer',
           },
         ]
 

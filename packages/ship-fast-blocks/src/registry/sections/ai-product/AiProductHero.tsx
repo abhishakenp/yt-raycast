@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AiProductHero — split, two-column hero for a clean, light AI SaaS / product
@@ -16,9 +16,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * tools. Renders fully with no props.
  */
 export const AiProductHero = defineComponent({
-  name: "AiProductHero",
+  name: 'AiProductHero',
   description:
-    "Split two-column hero for a clean, light AI SaaS / product landing page: a left column with a live-status pill (pulsing dot), a large two-line headline (second line muted), a supporting paragraph, dual CTAs (near-black filled primary with arrow + outlined watch-demo secondary with play glyph), and a check-marked trust microcopy row; a right column with a mocked AI chat/editor preview card featuring a macOS-style title bar, skeleton message rows, and a highlighted AI-suggestion block with action chips, framed by soft blurred glow orbs. CTAs and chips route through useNavigate. Use as the opening hero for AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or modern SaaS launch pages.",
+    'Split two-column hero for a clean, light AI SaaS / product landing page: a left column with a live-status pill (pulsing dot), a large two-line headline (second line muted), a supporting paragraph, dual CTAs (near-black filled primary with arrow + outlined watch-demo secondary with play glyph), and a check-marked trust microcopy row; a right column with a mocked AI chat/editor preview card featuring a macOS-style title bar, skeleton message rows, and a highlighted AI-suggestion block with action chips, framed by soft blurred glow orbs. CTAs and chips route through useNavigate. Use as the opening hero for AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or modern SaaS launch pages.',
   props: z.object({
     /** Live-status pill text. */
     badge: z.string().optional(),
@@ -46,18 +46,18 @@ export const AiProductHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Now with GPT-4 powered suggestions"
-    const headingTop = props.headingTop ?? "Write faster."
-    const headingBottom = props.headingBottom ?? "Think clearer."
+    const badge = props.badge ?? 'Now with GPT-4 powered suggestions'
+    const headingTop = props.headingTop ?? 'Write faster.'
+    const headingBottom = props.headingBottom ?? 'Think clearer.'
     const subheading =
       props.subheading ??
-      "WriteFlow AI understands your voice and helps you draft, edit, and polish content in minutes instead of hours. Trusted by 50,000+ writers at companies like Notion, Figma, and Stripe."
-    const primaryCta = props.primaryCta ?? "Start writing free"
-    const secondaryCta = props.secondaryCta ?? "Watch demo (2:34)"
+      'WriteFlow AI understands your voice and helps you draft, edit, and polish content in minutes instead of hours. Trusted by 50,000+ writers at companies like Notion, Figma, and Stripe.'
+    const primaryCta = props.primaryCta ?? 'Start writing free'
+    const secondaryCta = props.secondaryCta ?? 'Watch demo (2:34)'
     const trust = props.trust?.length
       ? props.trust
-      : ["No credit card required", "14-day free trial"]
-    const previewFile = props.previewFile ?? "blog-post-draft.md"
+      : ['No credit card required', '14-day free trial']
+    const previewFile = props.previewFile ?? 'blog-post-draft.md'
     const previewIntro =
       props.previewIntro ??
       "Here's a refined opening that hooks readers immediately:"
@@ -66,7 +66,7 @@ export const AiProductHero = defineComponent({
       "The blank page stares back. You've been here before—the cursor blinking, the deadline looming, the perfect words hiding just out of reach. What if writing didn't have to be this hard?"
     const previewActions = props.previewActions?.length
       ? props.previewActions
-      : ["Use this", "Try again", "Make shorter"]
+      : ['Use this', 'Try again', 'Make shorter']
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -103,9 +103,7 @@ export const AiProductHero = defineComponent({
     )
 
     return (
-      <section
-        className={cn("relative overflow-hidden", props.className)}
-      >
+      <section className={cn('relative overflow-hidden', props.className)}>
         <div className="mx-auto max-w-7xl px-4 pb-24 pt-16 sm:px-6 lg:px-8 lg:pb-32 lg:pt-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
@@ -213,10 +211,10 @@ export const AiProductHero = defineComponent({
                             type="button"
                             onClick={() => go(action)}
                             className={cn(
-                              "rounded px-3 py-1.5 text-xs font-medium transition-colors",
+                              'rounded px-3 py-1.5 text-xs font-medium transition-colors',
                               i === 0
-                                ? "bg-foreground text-background hover:bg-foreground/90"
-                                : "text-muted-foreground hover:text-foreground",
+                                ? 'bg-foreground text-background hover:bg-foreground/90'
+                                : 'text-muted-foreground hover:text-foreground',
                             )}
                           >
                             {action}

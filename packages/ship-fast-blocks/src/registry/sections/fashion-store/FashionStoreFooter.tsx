@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FashionStoreFooter — rich multi-column dark footer for a minimalist fashion
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * premium minimalist retail storefront.
  */
 export const FashionStoreFooter = defineComponent({
-  name: "FashionStoreFooter",
+  name: 'FashionStoreFooter',
   description:
     "Rich multi-column dark footer for a minimalist fashion store: a foreground-colored closing section with a brand block (serif wordmark + tagline + text social links) beside four link columns (Shop, Company, Customer Care, Legal), closed by a bottom bar with a dynamic-year copyright and a 'We accept' row of small payment-mark chips. Every link, social and the brand logo route through useNavigate. Use as the closing footer for clothing brands, boutiques, apparel and accessories shops, or any premium minimalist retail storefront.",
   props: z.object({
@@ -33,63 +33,69 @@ export const FashionStoreFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "NOIRE"
-    const homeTarget = props.homeTarget ?? "Collections"
+    const brand = props.brand ?? 'NOIRE'
+    const homeTarget = props.homeTarget ?? 'Collections'
     const footerTagline =
       props.tagline ??
-      "Timeless essentials for the modern wardrobe. Designed in Copenhagen, made with intention."
+      'Timeless essentials for the modern wardrobe. Designed in Copenhagen, made with intention.'
     const footerColumns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Shop",
+            title: 'Shop',
             links: [
-              "New Arrivals",
-              "Outerwear",
-              "Knitwear",
-              "Trousers",
-              "Shirts & Tops",
-              "Accessories",
-              "Sale",
+              'New Arrivals',
+              'Outerwear',
+              'Knitwear',
+              'Trousers',
+              'Shirts & Tops',
+              'Accessories',
+              'Sale',
             ],
           },
           {
-            title: "Company",
-            links: ["Our Story", "Sustainability", "Careers", "Press", "Stockists"],
-          },
-          {
-            title: "Customer Care",
+            title: 'Company',
             links: [
-              "Contact Us",
-              "Shipping & Returns",
-              "Size Guide",
-              "FAQ",
-              "Gift Cards",
+              'Our Story',
+              'Sustainability',
+              'Careers',
+              'Press',
+              'Stockists',
             ],
           },
           {
-            title: "Legal",
+            title: 'Customer Care',
             links: [
-              "Privacy Policy",
-              "Terms of Service",
-              "Cookie Policy",
-              "Accessibility",
+              'Contact Us',
+              'Shipping & Returns',
+              'Size Guide',
+              'FAQ',
+              'Gift Cards',
+            ],
+          },
+          {
+            title: 'Legal',
+            links: [
+              'Privacy Policy',
+              'Terms of Service',
+              'Cookie Policy',
+              'Accessibility',
             ],
           },
         ]
     const footerSocials = props.socials?.length
       ? props.socials
-      : ["Instagram", "Pinterest", "Twitter"]
-    const footerCopyright = props.copyright ?? "All rights reserved."
+      : ['Instagram', 'Pinterest', 'Twitter']
+    const footerCopyright = props.copyright ?? 'All rights reserved.'
     const footerPayments = props.payments?.length
       ? props.payments
-      : ["VISA", "MC", "AMEX", "Pay"]
+      : ['VISA', 'MC', 'AMEX', 'Pay']
 
     return (
       <footer
         aria-label="Footer"
         className={cn(
-          "bg-foreground py-16 text-background lg:py-20",
+          'bg-foreground py-16 text-background lg:py-20',
           props.className,
         )}
       >
@@ -125,7 +131,9 @@ export const FashionStoreFooter = defineComponent({
             {/* Link columns */}
             {footerColumns.map((col) => (
               <div key={col.title}>
-                <h4 className="mb-4 font-medium text-background">{col.title}</h4>
+                <h4 className="mb-4 font-medium text-background">
+                  {col.title}
+                </h4>
                 <ul className="space-y-3 text-sm text-background/60">
                   {col.links.map((link) => (
                     <li key={link}>

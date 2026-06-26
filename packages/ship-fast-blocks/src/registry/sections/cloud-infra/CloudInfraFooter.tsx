@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CloudInfraFooter — fat multi-column footer for a cloud-infrastructure / developer-
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Tokens-only. Renders fully on zero arguments.
  */
 export const CloudInfraFooter = defineComponent({
-  name: "CloudInfraFooter",
+  name: 'CloudInfraFooter',
   description:
-    "Fat multi-column footer for a cloud-infrastructure / developer-platform SaaS landing page: a bordered-top footer with a 5-column grid. The first two columns show a brand logo tile plus name, a tagline paragraph, and social icon buttons; the remaining columns list link groups (title + routable links). Every button routes through useNavigate. Use as the site footer for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.",
+    'Fat multi-column footer for a cloud-infrastructure / developer-platform SaaS landing page: a bordered-top footer with a 5-column grid. The first two columns show a brand logo tile plus name, a tagline paragraph, and social icon buttons; the remaining columns list link groups (title + routable links). Every button routes through useNavigate. Use as the site footer for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -36,35 +36,35 @@ export const CloudInfraFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "CloudShift"
+    const brand = props.brand ?? 'CloudShift'
     const tagline =
       props.tagline ??
-      "Elastic cloud infrastructure for modern engineering teams. Deploy globally in seconds."
+      'Elastic cloud infrastructure for modern engineering teams. Deploy globally in seconds.'
     const groups = props.groups?.length
       ? props.groups
       : [
           {
-            title: "Product",
+            title: 'Product',
             links: [
-              "Features",
-              "Pricing",
-              "Changelog",
-              "Documentation",
-              "API Reference",
+              'Features',
+              'Pricing',
+              'Changelog',
+              'Documentation',
+              'API Reference',
             ],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Contact", "Status"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Contact', 'Status'],
           },
           {
-            title: "Legal",
+            title: 'Legal',
             links: [
-              "Privacy Policy",
-              "Terms of Service",
-              "Cookie Policy",
-              "Security",
-              "Compliance",
+              'Privacy Policy',
+              'Terms of Service',
+              'Cookie Policy',
+              'Security',
+              'Compliance',
             ],
           },
         ]
@@ -73,16 +73,16 @@ export const CloudInfraFooter = defineComponent({
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
     const meta = props.meta?.length
       ? props.meta
-      : ["35 regions", "99.99% uptime", "SOC 2 certified"]
+      : ['35 regions', '99.99% uptime', 'SOC 2 certified']
     const socials = props.socials?.length
       ? props.socials
-      : ["Twitter", "GitHub", "Discord"]
-    const homeTarget = props.homeTarget ?? "Features"
+      : ['Twitter', 'GitHub', 'Discord']
+    const homeTarget = props.homeTarget ?? 'Features'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -119,7 +119,7 @@ export const CloudInfraFooter = defineComponent({
 
     return (
       <footer
-        className={cn("border-t border-border py-16", props.className)}
+        className={cn('border-t border-border py-16', props.className)}
         role="contentinfo"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -135,9 +135,7 @@ export const CloudInfraFooter = defineComponent({
                   {brand}
                 </span>
               </button>
-              <p className="mb-6 max-w-xs text-muted-foreground">
-                {tagline}
-              </p>
+              <p className="mb-6 max-w-xs text-muted-foreground">{tagline}</p>
               <div className="flex items-center gap-4">
                 {socials.map((social) => (
                   <button

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * SubscriptionBoxHero — bespoke split hero for a subscription-box brand built
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * Renders complete with no props.
  */
 export const SubscriptionBoxHero = defineComponent({
-  name: "SubscriptionBoxHero",
+  name: 'SubscriptionBoxHero',
   description:
     "Bespoke split hero for a subscription-box brand with a playful unboxing aesthetic: an eyebrow pill, a headline with a primary-tinted phrase, supporting copy, dual CTAs (primary 'Build your box' + secondary 'How it works'), and small delight badges over a framed alt-driven unboxing image. Use as the opening viewport for any curated monthly box or recurring-delivery brand.",
   props: z.object({
@@ -31,31 +31,34 @@ export const SubscriptionBoxHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "New boxes every month"
-    const headline = props.headline ?? "A little box of joy, delivered to"
-    const headlineAccent = props.headlineAccent ?? "your door"
+    const eyebrow = props.eyebrow ?? 'New boxes every month'
+    const headline = props.headline ?? 'A little box of joy, delivered to'
+    const headlineAccent = props.headlineAccent ?? 'your door'
     const subheading =
       props.subheading ??
-      "Hand-picked treats, gadgets, and surprises curated around what you love. Build a box, unwrap the delight, repeat every month."
-    const primaryCta = props.primaryCta ?? "Build your box"
-    const secondaryCta = props.secondaryCta ?? "How it works"
+      'Hand-picked treats, gadgets, and surprises curated around what you love. Build a box, unwrap the delight, repeat every month.'
+    const primaryCta = props.primaryCta ?? 'Build your box'
+    const secondaryCta = props.secondaryCta ?? 'How it works'
     const badges = props.badges?.length
       ? props.badges
-      : ["Free shipping", "Cancel anytime", "Skip a month"]
+      : ['Free shipping', 'Cancel anytime', 'Skip a month']
     const imageAlt =
-      props.imageAlt ?? "curated subscription box unboxing products"
+      props.imageAlt ?? 'curated subscription box unboxing products'
 
     return (
       <section
         className={cn(
-          "overflow-hidden bg-background py-20 text-foreground sm:py-24",
+          'overflow-hidden bg-background py-20 text-foreground sm:py-24',
           props.className,
         )}
       >
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 lg:px-8">
           <div>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-accent/10 px-4 py-2 text-sm font-medium text-accent">
-              <span className="size-2 rounded-full bg-accent" aria-hidden="true" />
+              <span
+                className="size-2 rounded-full bg-accent"
+                aria-hidden="true"
+              />
               {eyebrow}
             </div>
             <h1 className="text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">

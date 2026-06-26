@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * TourExperiencesHero — vivid, full-bleed adventure hero for a guided-tour /
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in "Wanderwild Tours" defaults.
  */
 export const TourExperiencesHero = defineComponent({
-  name: "TourExperiencesHero",
+  name: 'TourExperiencesHero',
   description:
     "Vivid full-bleed adventure hero for a guided-tour / expedition brand: a cinematic landscape photo behind a token-driven dark gradient overlay, with an eyebrow pill, a large headline, supporting copy, and dual CTAs ('Explore Tours' primary + 'How it works' outline) that route through useNavigate, plus a bottom trust strip of rating and tour stats. Use as the opening hero for tour operators, adventure outfitters, travel-experience marketplaces, and destination guides.",
   props: z.object({
@@ -43,30 +43,30 @@ export const TourExperiencesHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Small-group adventures since 2012"
-    const heading = props.heading ?? "Go beyond the guidebook"
+    const eyebrow = props.eyebrow ?? 'Small-group adventures since 2012'
+    const heading = props.heading ?? 'Go beyond the guidebook'
     const subheading =
       props.subheading ??
-      "Hand-crafted tours led by local guides who know the hidden trails, the best street food, and the viewpoints that never make the postcards. Big adventures, small footprints."
-    const primaryCta = props.primaryCta ?? "Explore Tours"
-    const primaryTarget = props.primaryTarget ?? "Tours"
-    const secondaryCta = props.secondaryCta ?? "How it works"
-    const secondaryTarget = props.secondaryTarget ?? "How it works"
+      'Hand-crafted tours led by local guides who know the hidden trails, the best street food, and the viewpoints that never make the postcards. Big adventures, small footprints.'
+    const primaryCta = props.primaryCta ?? 'Explore Tours'
+    const primaryTarget = props.primaryTarget ?? 'Tours'
+    const secondaryCta = props.secondaryCta ?? 'How it works'
+    const secondaryTarget = props.secondaryTarget ?? 'How it works'
     const imageAlt =
       props.imageAlt ??
-      "Epic mountain valley at golden hour with a group of travelers hiking a ridgeline trail toward a dramatic sunlit peak"
+      'Epic mountain valley at golden hour with a group of travelers hiking a ridgeline trail toward a dramatic sunlit peak'
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "4.9/5", label: "From 12,000+ travelers" },
-          { value: "180+", label: "Destinations worldwide" },
-          { value: "60", label: "Expert local guides" },
+          { value: '4.9/5', label: 'From 12,000+ travelers' },
+          { value: '180+', label: 'Destinations worldwide' },
+          { value: '60', label: 'Expert local guides' },
         ]
 
     return (
       <section
         className={cn(
-          "relative isolate overflow-hidden bg-foreground text-background",
+          'relative isolate overflow-hidden bg-foreground text-background',
           props.className,
         )}
       >

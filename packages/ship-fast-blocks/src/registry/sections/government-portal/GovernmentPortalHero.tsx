@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { useEffect, useState } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * GovernmentPortalHero — full-width classic indian government / PSU hero
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * with no props via baked-in Tenughat Vidyut Nigam Limited defaults.
  */
 export const GovernmentPortalHero = defineComponent({
-  name: "GovernmentPortalHero",
+  name: 'GovernmentPortalHero',
   description:
-    "Full-width classic indian government / PSU hero carousel of plant and infrastructure photos (auto-advancing with prev/next/dots) plus a thin royal-blue welcome and notice ticker. Official, civic, institutional mood for public sector, municipal, utility, power and electricity board portals that announce tenders and public notices. Use for the homepage banner of any classic government portal.",
+    'Full-width classic indian government / PSU hero carousel of plant and infrastructure photos (auto-advancing with prev/next/dots) plus a thin royal-blue welcome and notice ticker. Official, civic, institutional mood for public sector, municipal, utility, power and electricity board portals that announce tenders and public notices. Use for the homepage banner of any classic government portal.',
   props: z.object({
     /** Carousel slides — each with optional stock-photo alt, explicit img src, and caption. */
     slides: z
@@ -37,27 +37,27 @@ export const GovernmentPortalHero = defineComponent({
         ? props.slides
         : [
             {
-              alt: "Thermal power station with tall cooling towers and turbine hall at dusk, industrial infrastructure",
+              alt: 'Thermal power station with tall cooling towers and turbine hall at dusk, industrial infrastructure',
               caption:
-                "Tenughat Thermal Power Station, Lalpania — powering the state",
+                'Tenughat Thermal Power Station, Lalpania — powering the state',
             },
             {
-              alt: "High-voltage electricity transmission towers and power grid lines across rural landscape",
-              caption: "Reliable generation & transmission for every citizen",
+              alt: 'High-voltage electricity transmission towers and power grid lines across rural landscape',
+              caption: 'Reliable generation & transmission for every citizen',
             },
             {
-              alt: "Government engineers in safety helmets inspecting a power plant control room",
+              alt: 'Government engineers in safety helmets inspecting a power plant control room',
               caption:
-                "Operational excellence, public service, transparent governance",
+                'Operational excellence, public service, transparent governance',
             },
           ]
     const ticker =
       props.ticker && props.ticker.length > 0
         ? props.ticker
         : [
-            "Welcome to the official portal of Tenughat Vidyut Nigam Limited (A Govt. of Jharkhand Undertaking)",
-            "Latest tender notices and public notices are now available under the Tenders section",
-            "Citizen grievances may be filed online via the Info Desk",
+            'Welcome to the official portal of Tenughat Vidyut Nigam Limited (A Govt. of Jharkhand Undertaking)',
+            'Latest tender notices and public notices are now available under the Tenders section',
+            'Citizen grievances may be filed online via the Info Desk',
           ]
 
     const [slide, setSlide] = useState(0)
@@ -74,22 +74,22 @@ export const GovernmentPortalHero = defineComponent({
 
     return (
       <section
-        className={cn("w-full", props.className)}
+        className={cn('w-full', props.className)}
         style={{
           fontFamily: '"Alegreya Sans","Open Sans",system-ui,sans-serif',
-          color: "#333",
+          color: '#333',
         }}
       >
         <div className="relative overflow-hidden bg-[#0a1f44]">
           <div className="relative aspect-[1200/440] w-full">
             {slides.map((s, i) => {
               const layerClass = cn(
-                "absolute inset-0 size-full object-cover transition-opacity duration-700",
-                i === slide ? "opacity-100" : "opacity-0",
+                'absolute inset-0 size-full object-cover transition-opacity duration-700',
+                i === slide ? 'opacity-100' : 'opacity-0',
               )
               const fallbackAlt =
-                s.alt ?? s.caption ?? "government power infrastructure"
-              if (typeof s.img === "string" && s.img) {
+                s.alt ?? s.caption ?? 'government power infrastructure'
+              if (typeof s.img === 'string' && s.img) {
                 return (
                   <img
                     key={i}
@@ -125,7 +125,8 @@ export const GovernmentPortalHero = defineComponent({
                   aria-label="Previous slide"
                   onClick={() =>
                     setSlide(
-                      (current2) => (current2 - 1 + slides.length) % slides.length,
+                      (current2) =>
+                        (current2 - 1 + slides.length) % slides.length,
                     )
                   }
                   className="absolute left-3 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-white/25 text-white backdrop-blur hover:bg-white/40"
@@ -173,10 +174,10 @@ export const GovernmentPortalHero = defineComponent({
                       aria-label={`Go to slide ${i + 1}`}
                       onClick={() => setSlide(i)}
                       className={cn(
-                        "size-2.5 rounded-full",
+                        'size-2.5 rounded-full',
                         i === slide
-                          ? "bg-white"
-                          : "bg-white/45 hover:bg-white/70",
+                          ? 'bg-white'
+                          : 'bg-white/45 hover:bg-white/70',
                       )}
                     />
                   ))}
@@ -190,7 +191,7 @@ export const GovernmentPortalHero = defineComponent({
           <span className="shrink-0 rounded-sm bg-[#0792D0] px-2 py-0.5 text-[12px] font-semibold uppercase">
             Notice
           </span>
-          <p className="truncate">{ticker.join(" • ")}</p>
+          <p className="truncate">{ticker.join(' • ')}</p>
         </div>
       </section>
     )

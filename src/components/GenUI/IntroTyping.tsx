@@ -30,7 +30,7 @@ export function IntroTyping() {
     if (!isMounted) return
 
     const currentMessage = FUN_MESSAGES[messageIndex]
-    
+
     const type = () => {
       if (isDeleting) {
         if (charIndex > 0) {
@@ -70,7 +70,13 @@ export function IntroTyping() {
         isVisible && 'opacity-100',
       )}
     >
-      <span style={{ fontSize: '18px', color: '#ededef', fontFamily: 'ui-monospace, monospace' }}>
+      <span
+        style={{
+          fontSize: '18px',
+          color: '#ededef',
+          fontFamily: 'ui-monospace, monospace',
+        }}
+      >
         {text}
         <span className="animate-pulse">|</span>
       </span>

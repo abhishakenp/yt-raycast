@@ -23,9 +23,12 @@ export const Route = createFileRoute('/api/prompt-suggestions')({
         }
 
         const partial = typeof body.partial === 'string' ? body.partial : ''
-        const language = typeof body.language === 'string' ? body.language : undefined
+        const language =
+          typeof body.language === 'string' ? body.language : undefined
         try {
-          const suggestions = await getPartialPromptSuggestions(partial, { language })
+          const suggestions = await getPartialPromptSuggestions(partial, {
+            language,
+          })
           return json({ suggestions })
         } catch {
           return json({ suggestions: [] }, { status: 500 })

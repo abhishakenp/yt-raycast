@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CybersecurityLogos — enterprise trust-logo strip. A muted, top-and-bottom
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * baked-in enterprise-customer defaults.
  */
 export const CybersecurityLogos = defineComponent({
-  name: "CybersecurityLogos",
+  name: 'CybersecurityLogos',
   description:
-    "Enterprise trust-logo strip: a muted, top-and-bottom bordered band with a centered uppercase eyebrow line above a responsive 2-to-6 column grid of dimmed wordmark labels (styled text, not brand assets) that brighten on hover, each routing through useNavigate. Use directly under a hero to establish credibility for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.",
+    'Enterprise trust-logo strip: a muted, top-and-bottom bordered band with a centered uppercase eyebrow line above a responsive 2-to-6 column grid of dimmed wordmark labels (styled text, not brand assets) that brighten on hover, each routing through useNavigate. Use directly under a hero to establish credibility for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.',
   props: z.object({
     /** Uppercase eyebrow line above the logos. */
     heading: z.string().optional(),
@@ -26,14 +26,14 @@ export const CybersecurityLogos = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
     const heading =
-      props.heading ?? "Trusted by security teams at leading enterprises"
+      props.heading ?? 'Trusted by security teams at leading enterprises'
     const items = props.items?.length
       ? props.items
-      : ["Google", "Amazon", "Microsoft", "Apple", "Netflix", "Tesla"]
+      : ['Google', 'Amazon', 'Microsoft', 'Apple', 'Netflix', 'Tesla']
 
     return (
       <section
-        className={cn("border-y border-border bg-muted/50", props.className)}
+        className={cn('border-y border-border bg-muted/50', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">

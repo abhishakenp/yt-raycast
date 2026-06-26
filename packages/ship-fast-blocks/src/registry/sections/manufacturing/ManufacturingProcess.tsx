@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * ManufacturingProcess — a numbered quote-to-delivery process band for a
@@ -13,9 +13,9 @@ import { cn } from "#/lib/utils.ts"
  * props via baked-in defaults.
  */
 export const ManufacturingProcess = defineComponent({
-  name: "ManufacturingProcess",
+  name: 'ManufacturingProcess',
   description:
-    "A numbered quote-to-delivery process band for a precision-manufacturing site: a centered eyebrow + heading + description intro above a horizontal five-column step row (each step a numbered foreground circle with title and copy joined by connector lines on desktop), followed by a bordered lead-time stats panel with three big numbers. Clean, neutral, industrial. Use to explain the workflow from CAD upload to shipping on machine-shop, fabricator or contract-manufacturer pages.",
+    'A numbered quote-to-delivery process band for a precision-manufacturing site: a centered eyebrow + heading + description intro above a horizontal five-column step row (each step a numbered foreground circle with title and copy joined by connector lines on desktop), followed by a bordered lead-time stats panel with three big numbers. Clean, neutral, industrial. Use to explain the workflow from CAD upload to shipping on machine-shop, fabricator or contract-manufacturer pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -29,53 +29,50 @@ export const ManufacturingProcess = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Our Process"
-    const heading =
-      props.heading ?? "From Quote to Delivery in Five Steps"
+    const eyebrow = props.eyebrow ?? 'Our Process'
+    const heading = props.heading ?? 'From Quote to Delivery in Five Steps'
     const description =
       props.description ??
-      "Our streamlined workflow ensures clear communication, on-time delivery, and parts that meet your exact specifications."
+      'Our streamlined workflow ensures clear communication, on-time delivery, and parts that meet your exact specifications.'
     const steps = props.steps?.length
       ? props.steps
       : [
           {
-            title: "Upload & Quote",
+            title: 'Upload & Quote',
             description:
-              "Submit CAD files (STEP, IGES, SolidWorks) through our secure portal. Receive detailed quote within 24 hours.",
+              'Submit CAD files (STEP, IGES, SolidWorks) through our secure portal. Receive detailed quote within 24 hours.',
           },
           {
-            title: "DFM Review",
+            title: 'DFM Review',
             description:
-              "Our engineers review for manufacturability, suggest cost optimizations, and confirm materials and finishes.",
+              'Our engineers review for manufacturability, suggest cost optimizations, and confirm materials and finishes.',
           },
           {
-            title: "Production",
+            title: 'Production',
             description:
-              "Parts enter our production queue. Real-time status updates via customer portal with photos at key stages.",
+              'Parts enter our production queue. Real-time status updates via customer portal with photos at key stages.',
           },
           {
-            title: "Inspection",
+            title: 'Inspection',
             description:
-              "100% dimensional inspection with CMM. FAIR documentation, material certs, and test reports included.",
+              '100% dimensional inspection with CMM. FAIR documentation, material certs, and test reports included.',
           },
           {
-            title: "Ship & Support",
+            title: 'Ship & Support',
             description:
-              "Carefully packaged and shipped worldwide. Engineering support for assembly questions or design revisions.",
+              'Carefully packaged and shipped worldwide. Engineering support for assembly questions or design revisions.',
           },
         ]
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "24hr", label: "Standard Quote Turnaround" },
-          { value: "2-3 Days", label: "Prototype Lead Time" },
-          { value: "2-4 Weeks", label: "Production Lead Time" },
+          { value: '24hr', label: 'Standard Quote Turnaround' },
+          { value: '2-3 Days', label: 'Prototype Lead Time' },
+          { value: '2-4 Weeks', label: 'Production Lead Time' },
         ]
 
     return (
-      <section
-        className={cn("bg-background py-20 lg:py-28", props.className)}
-      >
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">

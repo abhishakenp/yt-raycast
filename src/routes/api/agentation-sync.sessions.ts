@@ -5,7 +5,8 @@ import { createAgentationSessionResponse } from '@/features/agentation/server/ag
 export const Route = createFileRoute('/api/agentation-sync/sessions')({
   server: {
     handlers: {
-      POST: async ({ request }) => await createAgentationSessionResponse(request),
+      POST: async ({ request }) =>
+        await createAgentationSessionResponse(request),
     },
   },
 })

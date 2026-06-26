@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CloudInfraLogos — "trusted by" logo wall for a cloud-infrastructure / developer-
@@ -11,9 +11,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * colors with subtle opacity. Renders fully on zero arguments.
  */
 export const CloudInfraLogos = defineComponent({
-  name: "CloudInfraLogos",
+  name: 'CloudInfraLogos',
   description:
-    "Trusted-by logo wall for a cloud-infrastructure / developer-platform SaaS landing page: a centered small-caps heading above a responsive grid of text-based logo buttons (2 cols mobile, 3 cols tablet, 6 cols desktop). Each item routes through useNavigate. Use for social proof / credibility bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.",
+    'Trusted-by logo wall for a cloud-infrastructure / developer-platform SaaS landing page: a centered small-caps heading above a responsive grid of text-based logo buttons (2 cols mobile, 3 cols tablet, 6 cols desktop). Each item routes through useNavigate. Use for social proof / credibility bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Heading text above the logo grid. */
     heading: z.string().optional(),
@@ -23,13 +23,13 @@ export const CloudInfraLogos = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Trusted by engineering teams at"
+    const heading = props.heading ?? 'Trusted by engineering teams at'
     const items = props.items?.length
       ? props.items
-      : ["Stripe", "Notion", "Figma", "Vercel", "Linear", "Raycast"]
+      : ['Stripe', 'Notion', 'Figma', 'Vercel', 'Linear', 'Raycast']
 
     return (
-      <section className={cn("border-b border-border py-16", props.className)}>
+      <section className={cn('border-b border-border py-16', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="mb-8 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
             {heading}

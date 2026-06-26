@@ -1,8 +1,8 @@
-import { displayObjectFieldSchema, prettier } from "@common/lib/format";
-import { ReadonlyCode } from "@common/elements/ReadonlyCode";
-import { Tooltip } from "@ui/Tooltip";
-import type { ObjectFieldType } from "convex/values";
-import React from "react";
+import { displayObjectFieldSchema, prettier } from '@common/lib/format'
+import { ReadonlyCode } from '@common/elements/ReadonlyCode'
+import { Tooltip } from '@ui/Tooltip'
+import type { ObjectFieldType } from 'convex/values'
+import React from 'react'
 
 export function ValidatorTooltip({
   fieldSchema,
@@ -10,19 +10,19 @@ export function ValidatorTooltip({
   children,
   disableTooltip = false,
 }: {
-  fieldSchema: ObjectFieldType;
-  columnName: string;
-  children?: React.ReactNode;
-  disableTooltip?: boolean;
+  fieldSchema: ObjectFieldType
+  columnName: string
+  children?: React.ReactNode
+  disableTooltip?: boolean
 }) {
   const validatorText = fieldSchema
     ? prettier(displayObjectFieldSchema(fieldSchema), 40).slice(0, -1)
-    : null;
+    : null
   const maxLineWidth = validatorText
     ? validatorText
-        .split("\n")
+        .split('\n')
         .reduce((max, line) => Math.max(max, line.length), 0)
-    : 0;
+    : 0
   const validatorTooltip = validatorText ? (
     <div className="min-w-fit animate-fadeInFromLoading p-2 text-left">
       <p className="mb-1 text-xs font-semibold whitespace-nowrap">
@@ -33,11 +33,11 @@ export function ValidatorTooltip({
           disableLineNumbers
           code={validatorText}
           path={`validator-${columnName}`}
-          height={{ type: "content", maxHeightRem: 20 }}
+          height={{ type: 'content', maxHeightRem: 20 }}
         />
       </div>
     </div>
-  ) : null;
+  ) : null
 
   return (
     <Tooltip
@@ -48,5 +48,5 @@ export function ValidatorTooltip({
     >
       {children}
     </Tooltip>
-  );
+  )
 }

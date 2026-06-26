@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * PropertyListingFooter — full sitewide footer for a property marketplace. A
@@ -12,7 +12,7 @@ import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
  * defaults.
  */
 export const PropertyListingFooter = defineComponent({
-  name: "PropertyListingFooter",
+  name: 'PropertyListingFooter',
   description:
     "Full sitewide footer for a property marketplace: a top region pairing a brand block (logo-tile wordmark, blurb, contact line) with several 'explore' link columns over a token surface, plus a bordered bottom row with social links and an auto-updating copyright. Wordmark and links route through useNavigate. Use as the closing footer for a property search portal or listing marketplace.",
   props: z.object({
@@ -33,27 +33,33 @@ export const PropertyListingFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Nestable"
+    const brand = props.brand ?? 'Nestable'
     const blurb =
       props.blurb ??
-      "The fast, clutter-free way to search verified homes for sale and rent across the country."
-    const contact = props.contact ?? "support@nestable.com · (888) 555-0190"
+      'The fast, clutter-free way to search verified homes for sale and rent across the country.'
+    const contact = props.contact ?? 'support@nestable.com · (888) 555-0190'
     const columns = props.columns?.length
       ? props.columns
       : [
-          { title: "Explore", links: ["For Sale", "For Rent", "New Builds", "Open Houses"] },
-          { title: "Search", links: ["Cities", "Neighborhoods", "Map Search", "Saved Alerts"] },
-          { title: "Company", links: ["About", "Agents", "Post a Listing", "Help Center"] },
+          {
+            title: 'Explore',
+            links: ['For Sale', 'For Rent', 'New Builds', 'Open Houses'],
+          },
+          {
+            title: 'Search',
+            links: ['Cities', 'Neighborhoods', 'Map Search', 'Saved Alerts'],
+          },
+          {
+            title: 'Company',
+            links: ['About', 'Agents', 'Post a Listing', 'Help Center'],
+          },
         ]
     const social = props.social?.length
       ? props.social
-      : ["Instagram", "Twitter", "LinkedIn"]
-    const note = props.note ?? "All rights reserved."
+      : ['Instagram', 'Twitter', 'LinkedIn']
+    const note = props.note ?? 'All rights reserved.'
 
-    const footerColumns = [
-      ...columns,
-      { title: "Contact", links: [contact] },
-    ]
+    const footerColumns = [...columns, { title: 'Contact', links: [contact] }]
 
     return (
       <SiteFooter

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CloudInfraTestimonials — 3-up star-rated testimonial grid for a cloud-infrastructure /
@@ -11,9 +11,9 @@ import { Image } from "#/lib/img.tsx"
  * Tokens-only. Renders fully on zero arguments.
  */
 export const CloudInfraTestimonials = defineComponent({
-  name: "CloudInfraTestimonials",
+  name: 'CloudInfraTestimonials',
   description:
-    "Three-up star-rated testimonial grid for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a responsive 3-column card grid. Each card has a 5-star rating row (chart-4 filled stars), a blockquote, and an attribution row with an alt-driven avatar image. Tokens-only. Use for social-proof, customer-endorsement bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.",
+    'Three-up star-rated testimonial grid for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a responsive 3-column card grid. Each card has a 5-star rating row (chart-4 filled stars), a blockquote, and an attribution row with an alt-driven avatar image. Tokens-only. Use for social-proof, customer-endorsement bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -33,35 +33,35 @@ export const CloudInfraTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Loved by engineering leaders"
+    const heading = props.heading ?? 'Loved by engineering leaders'
     const description =
-      props.description ??
-      "See what teams say about building on CloudShift."
+      props.description ?? 'See what teams say about building on CloudShift.'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
-              "We migrated our entire microservices stack from AWS to CloudShift and cut our infrastructure costs by 34%. The per-second billing made a huge difference for our batch processing workloads.",
-            name: "David Chen",
-            role: "VP Engineering, StripeScale",
+              'We migrated our entire microservices stack from AWS to CloudShift and cut our infrastructure costs by 34%. The per-second billing made a huge difference for our batch processing workloads.',
+            name: 'David Chen',
+            role: 'VP Engineering, StripeScale',
             avatarAlt:
-              "Professional headshot of David Chen, VP of Engineering at FinTech startup",
+              'Professional headshot of David Chen, VP of Engineering at FinTech startup',
           },
           {
             quote:
               "The serverless functions cold start at 89ms—faster than anything we've tested. Our API response times dropped from 400ms to under 120ms after switching to CloudShift's edge deployment.",
-            name: "Sarah Miller",
-            role: "CTO, NeuralPath AI",
-            avatarAlt: "Professional headshot of Sarah Miller, CTO at AI startup",
+            name: 'Sarah Miller',
+            role: 'CTO, NeuralPath AI',
+            avatarAlt:
+              'Professional headshot of Sarah Miller, CTO at AI startup',
           },
           {
             quote:
               "We needed HIPAA-compliant infrastructure for our healthcare platform. CloudShift's compliance documentation and BAA process was the smoothest we've experienced. Live in 2 days.",
-            name: "Dr. Marcus Johnson",
-            role: "Founder, CareSync Health",
+            name: 'Dr. Marcus Johnson',
+            role: 'Founder, CareSync Health',
             avatarAlt:
-              "Professional headshot of Dr. Marcus Johnson, founder of healthcare startup",
+              'Professional headshot of Dr. Marcus Johnson, founder of healthcare startup',
           },
         ]
 
@@ -77,15 +77,13 @@ export const CloudInfraTestimonials = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted/40 py-20 lg:py-32", props.className)}>
+      <section className={cn('bg-muted/40 py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {heading}
             </h2>
-            <p className="text-lg text-muted-foreground">
-              {description}
-            </p>
+            <p className="text-lg text-muted-foreground">{description}</p>
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((t) => (
@@ -113,9 +111,7 @@ export const CloudInfraTestimonials = defineComponent({
                     <p className="font-semibold text-card-foreground">
                       {t.name}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      {t.role}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t.role}</p>
                   </div>
                 </div>
               </article>

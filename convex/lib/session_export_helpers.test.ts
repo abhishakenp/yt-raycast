@@ -1229,8 +1229,7 @@ describe('prepareExportArtifactBuild', () => {
     expect(result).toMatchObject({
       themeName: 'noir',
       isDark: false,
-      source:
-        'root = SaasHero("Launch", ["Home"], {"heading":"Preview"})',
+      source: 'root = SaasHero("Launch", ["Home"], {"heading":"Preview"})',
     })
   })
 })

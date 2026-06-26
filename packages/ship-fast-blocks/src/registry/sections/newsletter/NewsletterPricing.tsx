@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NewsletterPricing — two-tier Free vs Paid pricing comparison for a newsletter.
@@ -17,7 +17,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * props via baked-in defaults.
  */
 export const NewsletterPricing = defineComponent({
-  name: "NewsletterPricing",
+  name: 'NewsletterPricing',
   description:
     "Two-tier Free vs Paid pricing comparison for a newsletter on a muted band bordered top and bottom: a centered serif heading + lede over a 2-up grid. The Free card is a light bordered panel with a serif price, tagline, a check-marked feature list, and its own inline email capture + solid submit; the Paid card is an inverted foreground panel with a 'Most Popular' badge, a serif price + period, tagline, a check-marked feature list, an inverted email capture + submit, and a small note. A centered footnote with an inline link (e.g. team/enterprise contact) closes the section. Each form submit and the footnote link route through useNavigate. Use for free/paid subscription tiers on newsletters, publications, blogs, or content creators.",
   props: z.object({
@@ -58,40 +58,39 @@ export const NewsletterPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Choose Your Experience"
+    const heading = props.heading ?? 'Choose Your Experience'
     const description =
       props.description ?? "Free to start. Upgrade when you're ready for more."
-    const emailPlaceholder = props.emailPlaceholder ?? "your@email.com"
-    const freePrice = props.free?.price ?? "Free"
-    const freeTagline = props.free?.tagline ?? "Perfect for getting started"
-    const freeSubmit = props.free?.submit ?? "Subscribe Free"
+    const emailPlaceholder = props.emailPlaceholder ?? 'your@email.com'
+    const freePrice = props.free?.price ?? 'Free'
+    const freeTagline = props.free?.tagline ?? 'Perfect for getting started'
+    const freeSubmit = props.free?.submit ?? 'Subscribe Free'
     const freeFeatures = props.free?.features?.length
       ? props.free.features
       : [
-          "Weekly essay in your inbox",
-          "Access to 3 months of archives",
-          "Reply to any issue",
+          'Weekly essay in your inbox',
+          'Access to 3 months of archives',
+          'Reply to any issue',
         ]
-    const paidBadge = props.paid?.badge ?? "Most Popular"
-    const paidPrice = props.paid?.price ?? "$8"
-    const paidPeriod = props.paid?.period ?? "/month"
-    const paidTagline = props.paid?.tagline ?? "For the dedicated reader"
-    const paidSubmit = props.paid?.submit ?? "Upgrade — $8/month"
-    const paidNote =
-      props.paid?.note ?? "Annual billing saves 20% ($76/year)"
+    const paidBadge = props.paid?.badge ?? 'Most Popular'
+    const paidPrice = props.paid?.price ?? '$8'
+    const paidPeriod = props.paid?.period ?? '/month'
+    const paidTagline = props.paid?.tagline ?? 'For the dedicated reader'
+    const paidSubmit = props.paid?.submit ?? 'Upgrade — $8/month'
+    const paidNote = props.paid?.note ?? 'Annual billing saves 20% ($76/year)'
     const paidFeatures = props.paid?.features?.length
       ? props.paid.features
       : [
-          "Everything in Free",
-          "Complete archive (156 issues)",
-          "Audio versions (podcast feed)",
-          "Private Discord community",
-          "Monthly AMA sessions",
-          "Support independent writing",
+          'Everything in Free',
+          'Complete archive (156 issues)',
+          'Audio versions (podcast feed)',
+          'Private Discord community',
+          'Monthly AMA sessions',
+          'Support independent writing',
         ]
-    const footnotePrefix = props.footnotePrefix ?? "Need a team subscription? "
-    const footnoteLink = props.footnoteLink ?? "Contact us"
-    const footnoteSuffix = props.footnoteSuffix ?? " for enterprise pricing."
+    const footnotePrefix = props.footnotePrefix ?? 'Need a team subscription? '
+    const footnoteLink = props.footnoteLink ?? 'Contact us'
+    const footnoteSuffix = props.footnoteSuffix ?? ' for enterprise pricing.'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -113,7 +112,7 @@ export const NewsletterPricing = defineComponent({
     return (
       <section
         className={cn(
-          "border-y border-border bg-muted/40 py-16 md:py-24 lg:py-32",
+          'border-y border-border bg-muted/40 py-16 md:py-24 lg:py-32',
           props.className,
         )}
       >

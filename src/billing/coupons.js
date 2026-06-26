@@ -23,7 +23,12 @@ function parseCouponList(raw) {
     return String(raw)
       .split(',')
       .map((entry) => {
-        const [code, percentOff, razorpayOfferId = '', stripePromotionCode = ''] = entry.split(':')
+        const [
+          code,
+          percentOff,
+          razorpayOfferId = '',
+          stripePromotionCode = '',
+        ] = entry.split(':')
         return { code, percentOff, razorpayOfferId, stripePromotionCode }
       })
   }
@@ -38,8 +43,13 @@ export function getPartnerCoupons(env = process.env) {
       {
         code,
         percentOff,
-        label: String(raw?.label || `${percentOff}% partner discount`).slice(0, 80),
-        razorpayOfferId: String(raw?.razorpayOfferId || raw?.razorpay_offer_id || '').trim(),
+        label: String(raw?.label || `${percentOff}% partner discount`).slice(
+          0,
+          80,
+        ),
+        razorpayOfferId: String(
+          raw?.razorpayOfferId || raw?.razorpay_offer_id || '',
+        ).trim(),
         stripePromotionCode: String(
           raw?.stripePromotionCode || raw?.stripe_promotion_code || '',
         ).trim(),
@@ -49,13 +59,20 @@ export function getPartnerCoupons(env = process.env) {
   })
 }
 
-export function validatePartnerCoupon(code, { provider = 'razorpay', env = process.env } = {}) {
+export function validatePartnerCoupon(
+  code,
+  { provider = 'razorpay', env = process.env } = {},
+) {
   const normalized = normalizeCode(code)
   if (!normalized) return { ok: false, code: '', error: 'Enter a coupon code.' }
-  const coupon = getPartnerCoupons(env).find((entry) => entry.code === normalized && entry.active)
-  if (!coupon) return { ok: false, code: normalized, error: 'Coupon code is not valid.' }
+  const coupon = getPartnerCoupons(env).find(
+    (entry) => entry.code === normalized && entry.active,
+  )
+  if (!coupon)
+    return { ok: false, code: normalized, error: 'Coupon code is not valid.' }
 
-  const providerKey = provider === 'stripe' ? 'stripePromotionCode' : 'razorpayOfferId'
+  const providerKey =
+    provider === 'stripe' ? 'stripePromotionCode' : 'razorpayOfferId'
   const providerValue = coupon[providerKey]
   if (!providerValue) {
     return {

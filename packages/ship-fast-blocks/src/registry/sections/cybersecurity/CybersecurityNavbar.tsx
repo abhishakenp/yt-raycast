@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CybersecurityNavbar — sticky, translucent top navigation bar for an
@@ -16,7 +16,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "SentinelGuard" defaults.
  */
 export const CybersecurityNavbar = defineComponent({
-  name: "CybersecurityNavbar",
+  name: 'CybersecurityNavbar',
   description:
     "Sticky translucent top navigation bar for an enterprise cybersecurity / security-platform site: backdrop-blurred, border-bottomed header pinned to the top with a shield-glyph logo + brand name on the left, horizontal nav links in the center (desktop), and a 'Contact Sales' text link plus a solid primary 'Get Demo' CTA on the right. Nav items, contact link and CTA route through useNavigate for page-switching. Use as the sticky site header for cybersecurity vendors, SOC/MDR/XDR/SIEM providers, zero-trust, cloud-security, or any authoritative B2B security SaaS landing page.",
   props: z.object({
@@ -34,13 +34,13 @@ export const CybersecurityNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "SentinelGuard"
+    const brand = props.brand ?? 'SentinelGuard'
     const nav = props.nav?.length
       ? props.nav
-      : ["Platform", "Solutions", "Pricing", "Resources"]
-    const contactLabel = props.contactLabel ?? "Contact Sales"
-    const ctaLabel = props.ctaLabel ?? "Get Demo"
-    const ctaTarget = props.ctaTarget ?? "Schedule Live Demo"
+      : ['Platform', 'Solutions', 'Pricing', 'Resources']
+    const contactLabel = props.contactLabel ?? 'Contact Sales'
+    const ctaLabel = props.ctaLabel ?? 'Get Demo'
+    const ctaTarget = props.ctaTarget ?? 'Schedule Live Demo'
 
     const ShieldMark = ({ className }: { className?: string }) => (
       <svg
@@ -60,7 +60,7 @@ export const CybersecurityNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

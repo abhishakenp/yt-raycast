@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * LawFirmStats — a dark full-width stats band on the primary surface. A
@@ -12,9 +12,9 @@ import { cn } from "#/lib/utils.ts"
  * Renders fully with no props via baked-in defaults.
  */
 export const LawFirmStats = defineComponent({
-  name: "LawFirmStats",
+  name: 'LawFirmStats',
   description:
-    "Dark full-width stats band on the primary surface: a responsive 2-up / 4-up row of credential metrics, each a large serif value above a tracked-uppercase muted label. High-contrast, restrained, authoritative editorial aesthetic. Use between content sections on law-firm, attorney, consulting, accounting or professional-services pages to surface firm credentials such as number of attorneys, years in practice, transactions closed and success rate.",
+    'Dark full-width stats band on the primary surface: a responsive 2-up / 4-up row of credential metrics, each a large serif value above a tracked-uppercase muted label. High-contrast, restrained, authoritative editorial aesthetic. Use between content sections on law-firm, attorney, consulting, accounting or professional-services pages to surface firm credentials such as number of attorneys, years in practice, transactions closed and success rate.',
   props: z.object({
     items: z
       .array(z.object({ value: z.string(), label: z.string() }))
@@ -25,16 +25,16 @@ export const LawFirmStats = defineComponent({
     const items = props.items?.length
       ? props.items
       : [
-          { value: "34", label: "Attorneys" },
-          { value: "37", label: "Years in Practice" },
-          { value: "$2.4B", label: "Transactions Closed" },
-          { value: "94%", label: "Success Rate" },
+          { value: '34', label: 'Attorneys' },
+          { value: '37', label: 'Years in Practice' },
+          { value: '$2.4B', label: 'Transactions Closed' },
+          { value: '94%', label: 'Success Rate' },
         ]
 
     return (
       <section
         className={cn(
-          "bg-primary py-20 text-primary-foreground",
+          'bg-primary py-20 text-primary-foreground',
           props.className,
         )}
       >

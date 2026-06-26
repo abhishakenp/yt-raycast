@@ -88,10 +88,10 @@ const isUsablePreviewHtml = (html: string | undefined): html is string => {
   const trimmed = html?.trim()
   return Boolean(
     trimmed &&
-    !/\bopenui-error\b/i.test(trimmed) &&
-    !/failed to render/i.test(trimmed) &&
-    !/\bship-fast-openui-source\b/i.test(trimmed) &&
-    !/generated openui source is ready/i.test(trimmed),
+      !/\bopenui-error\b/i.test(trimmed) &&
+      !/failed to render/i.test(trimmed) &&
+      !/\bship-fast-openui-source\b/i.test(trimmed) &&
+      !/generated openui source is ready/i.test(trimmed),
   )
 }
 

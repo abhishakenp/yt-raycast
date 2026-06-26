@@ -1,12 +1,21 @@
-import { getEcommerceGenerationGuidelines, GLOBAL_UI_CRAFT_GUIDELINES } from '../config.js'
+import {
+  getEcommerceGenerationGuidelines,
+  GLOBAL_UI_CRAFT_GUIDELINES,
+} from '../config.js'
 import { siteSpecSchema } from '../spec/schema.js'
 import { brandProfilePromptBlock } from './brand-profile.js'
-import { dnaSectionsBlock, mobbinDoctrineBlock, mobbinSessionBlock } from '../lib/mobbin/prompt-blocks.js'
+import {
+  dnaSectionsBlock,
+  mobbinDoctrineBlock,
+  mobbinSessionBlock,
+} from '../lib/mobbin/prompt-blocks.js'
 
 function mobbinSiteSpecBlock(anchor) {
   if (!anchor?.app) return ''
   const session = mobbinSessionBlock(anchor)
-  const accents = anchor.accents?.length ? anchor.accents : anchor.dna?.accents || []
+  const accents = anchor.accents?.length
+    ? anchor.accents
+    : anchor.dna?.accents || []
   const accentLine = accents.length
     ? `theme.colors.primary, accent, background, surface MUST be derived from these ${anchor.app} hex tokens: ${accents.join(', ')}. Use them verbatim — never substitute or "round".`
     : `theme palette MUST match the ${anchor.app} register described above.`
@@ -27,7 +36,9 @@ export function siteSpecPrompt({
   hasUserDesignReferences = false,
   mobbinAnchor = null,
 }) {
-  const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
+  const ecommerceGuidelines = getEcommerceGenerationGuidelines({
+    hasUserDesignReferences,
+  })
   const actionLine =
     mode === 'edit'
       ? 'Update the canonical site spec so the requested changes are reflected structurally.'

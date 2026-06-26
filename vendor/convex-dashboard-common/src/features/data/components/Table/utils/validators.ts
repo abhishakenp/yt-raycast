@@ -1,5 +1,5 @@
-import { ValidatorJSON } from "convex/values";
-import { SchemaJson } from "@common/lib/format";
+import { ValidatorJSON } from 'convex/values'
+import { SchemaJson } from '@common/lib/format'
 
 export function documentValidatorForTable(
   activeSchema: SchemaJson,
@@ -7,17 +7,17 @@ export function documentValidatorForTable(
 ) {
   const documentValidator = activeSchema.tables.find(
     (t) => t.tableName === tableName,
-  )?.documentType;
-  return documentValidator;
+  )?.documentType
+  return documentValidator
 }
 
 export function validatorForColumn(
-  documentValidator: SchemaJson["tables"][0]["documentType"],
+  documentValidator: SchemaJson['tables'][0]['documentType'],
   columnName: string,
 ): ValidatorJSON | undefined {
   const validator =
-    documentValidator?.type === "object"
+    documentValidator?.type === 'object'
       ? documentValidator.value[columnName]?.fieldType
-      : undefined;
-  return validator;
+      : undefined
+  return validator
 }

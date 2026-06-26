@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FintechHero — split hero for a fintech / neobank / digital-banking landing
@@ -17,7 +17,7 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in "Vault" defaults.
  */
 export const FintechHero = defineComponent({
-  name: "FintechHero",
+  name: 'FintechHero',
   description:
     "Split hero for a fintech / neobank / digital-banking landing page: a two-column band with a left column carrying a rounded trust badge pill, a large headline with one phrase in the primary highlight color, a supporting paragraph, dual CTAs ('Open an Account' primary pill + a ghost 'See how' link), and a row of compliance trust badges (FDIC insured, 256-bit encryption, SOC 2). The right column frames a banking app dashboard image inside a bordered card with a soft primary glow. CTAs route through useNavigate. Premium, trustworthy and conversion-focused; use as the opening hero for banking apps, wallets, payments, or lending products.",
   props: z.object({
@@ -45,24 +45,27 @@ export const FintechHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Banking reimagined for the modern world"
-    const heading = props.heading ?? "Money that moves at"
-    const highlight = props.highlight ?? "the speed of you"
+    const badge = props.badge ?? 'Banking reimagined for the modern world'
+    const heading = props.heading ?? 'Money that moves at'
+    const highlight = props.highlight ?? 'the speed of you'
     const subheading =
       props.subheading ??
-      "Open an account in minutes, send money instantly with zero fees, and grow your savings with industry-leading rates. All your finances, beautifully simple, in one secure place."
-    const primaryCta = props.primaryCta ?? "Open an Account"
+      'Open an account in minutes, send money instantly with zero fees, and grow your savings with industry-leading rates. All your finances, beautifully simple, in one secure place.'
+    const primaryCta = props.primaryCta ?? 'Open an Account'
     const primaryTarget = props.primaryTarget ?? primaryCta
-    const secondaryCta = props.secondaryCta ?? "See how"
+    const secondaryCta = props.secondaryCta ?? 'See how'
     const secondaryTarget = props.secondaryTarget ?? secondaryCta
     const trustBadges = props.trustBadges?.length
       ? props.trustBadges
-      : ["FDIC insured", "256-bit encryption", "SOC 2 compliant"]
-    const imageAlt = props.imageAlt ?? "fintech banking app dashboard"
+      : ['FDIC insured', '256-bit encryption', 'SOC 2 compliant']
+    const imageAlt = props.imageAlt ?? 'fintech banking app dashboard'
 
     return (
       <section
-        className={cn("relative overflow-hidden bg-background", props.className)}
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
       >
         <div
           aria-hidden="true"
@@ -71,7 +74,10 @@ export const FintechHero = defineComponent({
         <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-6 py-20 sm:px-8 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-28">
           <div className="flex flex-col items-start gap-6">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-sm font-medium text-muted-foreground">
-              <span className="size-2 rounded-full bg-primary" aria-hidden="true" />
+              <span
+                className="size-2 rounded-full bg-primary"
+                aria-hidden="true"
+              />
               {badge}
             </span>
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">

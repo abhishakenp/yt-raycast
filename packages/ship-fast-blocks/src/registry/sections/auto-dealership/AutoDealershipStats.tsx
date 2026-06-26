@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * AutoDealershipStats — bold full-bleed stats band for an auto dealership site.
@@ -11,9 +11,9 @@ import { cn } from "#/lib/utils.ts"
  * lots, or auto sales groups. Renders fully with no props via baked-in defaults.
  */
 export const AutoDealershipStats = defineComponent({
-  name: "AutoDealershipStats",
+  name: 'AutoDealershipStats',
   description:
-    "Bold full-bleed stats band for an auto dealership site: a solid primary-colored section with a responsive 2-up / 4-up grid of large metric figures (years in business, vehicles sold, Google rating, repeat customers) over softened captions. Static and content-only with no links. Use as a confidence / credibility band between sections for car dealerships, used-car lots, or auto sales groups.",
+    'Bold full-bleed stats band for an auto dealership site: a solid primary-colored section with a responsive 2-up / 4-up grid of large metric figures (years in business, vehicles sold, Google rating, repeat customers) over softened captions. Static and content-only with no links. Use as a confidence / credibility band between sections for car dealerships, used-car lots, or auto sales groups.',
   props: z.object({
     /** Metric figures shown in the band. */
     items: z
@@ -25,16 +25,16 @@ export const AutoDealershipStats = defineComponent({
     const items = props.items?.length
       ? props.items
       : [
-          { value: "15+", label: "Years in Business" },
-          { value: "8,500+", label: "Vehicles Sold" },
-          { value: "4.9", label: "Google Rating" },
-          { value: "78%", label: "Repeat Customers" },
+          { value: '15+', label: 'Years in Business' },
+          { value: '8,500+', label: 'Vehicles Sold' },
+          { value: '4.9', label: 'Google Rating' },
+          { value: '78%', label: 'Repeat Customers' },
         ]
 
     return (
       <section
         className={cn(
-          "bg-primary py-16 text-primary-foreground lg:py-20",
+          'bg-primary py-16 text-primary-foreground lg:py-20',
           props.className,
         )}
       >

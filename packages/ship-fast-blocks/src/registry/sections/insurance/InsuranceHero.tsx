@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * InsuranceHero — two-column hero band for an insurance / fintech landing page.
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * protection products. Renders fully with no props via baked-in defaults.
  */
 export const InsuranceHero = defineComponent({
-  name: "InsuranceHero",
+  name: 'InsuranceHero',
   description:
-    "Two-column hero band for an insurance / fintech landing page on a soft muted canvas: a left column with a star rating pill, a bold headline with one brand-accent highlighted word, a lede paragraph, dual CTAs (solid primary + outline secondary with a play icon), and an inline trust checklist; a right column with a tilted gradient panel behind a rounded family photo plus a floating social-proof card (overlapping customer avatars, happy-customer count, star rating). Links route through useNavigate; imagery is alt-driven Image. Use as the top-of-page hero for insurance carriers, insurtech startups, brokers, or financial-protection products.",
+    'Two-column hero band for an insurance / fintech landing page on a soft muted canvas: a left column with a star rating pill, a bold headline with one brand-accent highlighted word, a lede paragraph, dual CTAs (solid primary + outline secondary with a play icon), and an inline trust checklist; a right column with a tilted gradient panel behind a rounded family photo plus a floating social-proof card (overlapping customer avatars, happy-customer count, star rating). Links route through useNavigate; imagery is alt-driven Image. Use as the top-of-page hero for insurance carriers, insurtech startups, brokers, or financial-protection products.',
   props: z.object({
     /** Star rating pill above the headline. */
     ratingPill: z.string().optional(),
@@ -50,31 +50,31 @@ export const InsuranceHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const ratingPill = props.ratingPill ?? "Rated 4.9/5 by 12,000+ customers"
-    const headingBefore = props.headingBefore ?? "Insurance that actually"
-    const highlight = props.highlight ?? "protects"
-    const headingAfter = props.headingAfter ?? "what you value"
+    const ratingPill = props.ratingPill ?? 'Rated 4.9/5 by 12,000+ customers'
+    const headingBefore = props.headingBefore ?? 'Insurance that actually'
+    const highlight = props.highlight ?? 'protects'
+    const headingAfter = props.headingAfter ?? 'what you value'
     const subheading =
       props.subheading ??
-      "Get personalized coverage for your home, auto, life, and health in under 2 minutes. Join 50,000+ families who trust SecureLife to safeguard their future."
-    const primaryCta = props.primaryCta ?? "Get Your Free Quote"
-    const secondaryCta = props.secondaryCta ?? "See How It Works"
+      'Get personalized coverage for your home, auto, life, and health in under 2 minutes. Join 50,000+ families who trust SecureLife to safeguard their future.'
+    const primaryCta = props.primaryCta ?? 'Get Your Free Quote'
+    const secondaryCta = props.secondaryCta ?? 'See How It Works'
     const imageAlt =
       props.imageAlt ??
-      "Happy family standing in front of their modern home with garden"
+      'Happy family standing in front of their modern home with garden'
     const trustItems = props.trustItems?.length
       ? props.trustItems
-      : ["No credit check required", "Cancel anytime"]
+      : ['No credit check required', 'Cancel anytime']
     const proofAvatars = props.proofAvatars?.length
       ? props.proofAvatars
       : [
-          "Portrait headshot of a friendly woman, satisfied customer",
-          "Portrait headshot of a friendly man, satisfied customer",
-          "Portrait headshot of a smiling person, satisfied customer",
+          'Portrait headshot of a friendly woman, satisfied customer',
+          'Portrait headshot of a friendly man, satisfied customer',
+          'Portrait headshot of a smiling person, satisfied customer',
         ]
-    const proofCount = props.proofCount ?? "12,000+"
-    const proofLabel = props.proofLabel ?? "Happy customers"
-    const proofRating = props.proofRating ?? "4.9/5"
+    const proofCount = props.proofCount ?? '12,000+'
+    const proofLabel = props.proofLabel ?? 'Happy customers'
+    const proofRating = props.proofRating ?? '4.9/5'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -125,7 +125,7 @@ export const InsuranceHero = defineComponent({
 
     return (
       <section
-        className={cn("relative overflow-hidden bg-muted", props.className)}
+        className={cn('relative overflow-hidden bg-muted', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -135,8 +135,8 @@ export const InsuranceHero = defineComponent({
                 {ratingPill}
               </div>
               <h1 className="text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                {headingBefore} <span className="text-primary">{highlight}</span>{" "}
-                {headingAfter}
+                {headingBefore}{' '}
+                <span className="text-primary">{highlight}</span> {headingAfter}
               </h1>
               <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
                 {subheading}

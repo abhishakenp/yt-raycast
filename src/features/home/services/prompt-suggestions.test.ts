@@ -24,7 +24,11 @@ describe('prompt suggestions', () => {
 
     expect(suggestions).toHaveLength(4)
     expect(suggestions[0]).toContain('a blog about dogs with featured articles')
-    expect(suggestions.every((suggestion) => suggestion.startsWith('a blog about dogs'))).toBe(true)
+    expect(
+      suggestions.every((suggestion) =>
+        suggestion.startsWith('a blog about dogs'),
+      ),
+    ).toBe(true)
   })
 
   it('keeps only safe prefix-preserving cached suggestions', () => {

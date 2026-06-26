@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CrmHero — split, light-aesthetic hero band for a CRM / sales-platform landing
@@ -16,9 +16,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * tools or deal-tracking SaaS. Renders fully with no props.
  */
 export const CrmHero = defineComponent({
-  name: "CrmHero",
+  name: 'CrmHero',
   description:
-    "Split light-aesthetic hero band for a CRM / sales-platform landing page: a two-column grid over a soft muted surface with, on the left, a pulsing live-status pill, a bold tracking-tight headline, a supporting paragraph, dual CTAs (filled primary + outlined secondary) and a fine-print note; on the right an inline visual Kanban SALES PIPELINE mockup card with browser chrome, four stage columns of deal cards with dollar values and color-coded accents (a won deal shows a check), a pipeline-value/win-rate/active-deals stats bar, and a floating revenue-growth badge. Clean, professional and conversion-focused; CTAs route through useNavigate. Use as the opening hero for CRM products, sales-pipeline tools or deal-tracking SaaS.",
+    'Split light-aesthetic hero band for a CRM / sales-platform landing page: a two-column grid over a soft muted surface with, on the left, a pulsing live-status pill, a bold tracking-tight headline, a supporting paragraph, dual CTAs (filled primary + outlined secondary) and a fine-print note; on the right an inline visual Kanban SALES PIPELINE mockup card with browser chrome, four stage columns of deal cards with dollar values and color-coded accents (a won deal shows a check), a pipeline-value/win-rate/active-deals stats bar, and a floating revenue-growth badge. Clean, professional and conversion-focused; CTAs route through useNavigate. Use as the opening hero for CRM products, sales-pipeline tools or deal-tracking SaaS.',
   props: z.object({
     /** Pulsing live-status pill text. */
     badge: z.string().optional(),
@@ -63,67 +63,63 @@ export const CrmHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Now with AI-powered forecasting"
+    const badge = props.badge ?? 'Now with AI-powered forecasting'
     const heading =
       props.heading ??
-      "Close deals faster with a sales pipeline that actually works"
+      'Close deals faster with a sales pipeline that actually works'
     const subheading =
       props.subheading ??
       "Pipeline Pro gives your team a visual, intuitive way to track every opportunity from first contact to closed-won. Join 15,000+ sales teams who've transformed their process."
-    const primaryCta = props.primaryCta ?? "Start 14-day free trial"
-    const secondaryCta = props.secondaryCta ?? "Watch 2-min demo"
-    const note =
-      props.note ?? "No credit card required. Setup takes 3 minutes."
-    const mockupTitle = props.mockupTitle ?? "Sales Pipeline - Q2 2024"
+    const primaryCta = props.primaryCta ?? 'Start 14-day free trial'
+    const secondaryCta = props.secondaryCta ?? 'Watch 2-min demo'
+    const note = props.note ?? 'No credit card required. Setup takes 3 minutes.'
+    const mockupTitle = props.mockupTitle ?? 'Sales Pipeline - Q2 2024'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            label: "Lead",
+            label: 'Lead',
             deals: [
-              { name: "Acme Corp", value: "$24,000" },
-              { name: "TechFlow", value: "$18,500" },
+              { name: 'Acme Corp', value: '$24,000' },
+              { name: 'TechFlow', value: '$18,500' },
             ],
           },
           {
-            label: "Contact",
-            deals: [{ name: "StartupXYZ", value: "$45,000" }],
+            label: 'Contact',
+            deals: [{ name: 'StartupXYZ', value: '$45,000' }],
           },
           {
-            label: "Proposal",
+            label: 'Proposal',
             deals: [
-              { name: "GlobalTech", value: "$67,000" },
-              { name: "Nexus Inc", value: "$32,000" },
+              { name: 'GlobalTech', value: '$67,000' },
+              { name: 'Nexus Inc', value: '$32,000' },
             ],
           },
           {
-            label: "Closed",
-            deals: [{ name: "BrightCo", value: "$89,000", won: true }],
+            label: 'Closed',
+            deals: [{ name: 'BrightCo', value: '$89,000', won: true }],
           },
         ]
     const mockupStats = props.mockupStats?.length
       ? props.mockupStats
       : [
-          { value: "$275,500", label: "Pipeline Value" },
-          { value: "34%", label: "Win Rate" },
-          { value: "6 active", label: "Deals" },
+          { value: '$275,500', label: 'Pipeline Value' },
+          { value: '34%', label: 'Win Rate' },
+          { value: '6 active', label: 'Deals' },
         ]
-    const badgeValue = props.badgeValue ?? "+23% this month"
-    const badgeLabel = props.badgeLabel ?? "Revenue growth"
+    const badgeValue = props.badgeValue ?? '+23% this month'
+    const badgeLabel = props.badgeLabel ?? 'Revenue growth'
 
     const columnAccents = [
-      "bg-muted border-border",
-      "bg-chart-1/10 border-chart-1/30",
-      "bg-chart-4/10 border-chart-4/30",
-      "bg-chart-2/10 border-chart-2/30",
+      'bg-muted border-border',
+      'bg-chart-1/10 border-chart-1/30',
+      'bg-chart-4/10 border-chart-4/30',
+      'bg-chart-2/10 border-chart-2/30',
     ]
 
     return (
       <section
-        className={cn(
-          "relative overflow-hidden bg-muted/50",
-          props.className,
-        )}
+        className={cn('relative overflow-hidden bg-muted/50', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -181,7 +177,7 @@ export const CrmHero = defineComponent({
                           <div
                             key={deal.name}
                             className={cn(
-                              "rounded-lg border p-3",
+                              'rounded-lg border p-3',
                               columnAccents[ci % columnAccents.length],
                             )}
                           >
@@ -190,14 +186,14 @@ export const CrmHero = defineComponent({
                             </p>
                             <p
                               className={cn(
-                                "mt-1 text-xs",
+                                'mt-1 text-xs',
                                 deal.won
-                                  ? "font-medium text-chart-2"
-                                  : "text-muted-foreground",
+                                  ? 'font-medium text-chart-2'
+                                  : 'text-muted-foreground',
                               )}
                             >
                               {deal.value}
-                              {deal.won ? " ✓" : ""}
+                              {deal.won ? ' ✓' : ''}
                             </p>
                           </div>
                         ))}

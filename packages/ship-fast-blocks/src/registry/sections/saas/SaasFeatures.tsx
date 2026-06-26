@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * SaasFeatures — a centered-heading 3-column feature grid for a B2B SaaS /
@@ -63,7 +63,7 @@ const FeatureIcon = ({ glyph }: { glyph: ReactNode }) => (
 )
 
 export const SaasFeatures = defineComponent({
-  name: "SaasFeatures",
+  name: 'SaasFeatures',
   description:
     "Centered-heading 3-column feature grid for a B2B SaaS / AI-product landing page built on the shared FeatureGrid composite: a centered heading + supporting subheading above a responsive grid of feature cards, each pairing an inline stroke-SVG glyph (cycled per index) with a bold title and a muted blurb. Use to showcase a product's core capabilities — scheduling, integrations, analytics, security, automation, collaboration — beneath a SaaS hero.",
   props: z.object({
@@ -83,40 +83,40 @@ export const SaasFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Everything you need to ship faster"
+    const heading = props.heading ?? 'Everything you need to ship faster'
     const subheading =
       props.subheading ??
-      "A complete toolkit that adapts to how your team already works — no rip-and-replace, no steep learning curve, just measurable results from day one."
+      'A complete toolkit that adapts to how your team already works — no rip-and-replace, no steep learning curve, just measurable results from day one.'
     const features = props.features?.length
       ? props.features
       : [
           {
-            title: "AI scheduling",
+            title: 'AI scheduling',
             description:
-              "Let intelligent agents read your calendar and book meetings at the perfect time, automatically resolving conflicts before they happen.",
+              'Let intelligent agents read your calendar and book meetings at the perfect time, automatically resolving conflicts before they happen.',
           },
           {
-            title: "Native integrations",
+            title: 'Native integrations',
             description:
-              "Connect Slack, Notion, GitHub, and 80+ tools in a single click so your data and workflows stay perfectly in sync.",
+              'Connect Slack, Notion, GitHub, and 80+ tools in a single click so your data and workflows stay perfectly in sync.',
           },
           {
-            title: "Real-time analytics",
+            title: 'Real-time analytics',
             description:
-              "Track adoption, velocity, and ROI with live dashboards that turn raw activity into decisions your whole team can trust.",
+              'Track adoption, velocity, and ROI with live dashboards that turn raw activity into decisions your whole team can trust.',
           },
           {
-            title: "Enterprise security",
+            title: 'Enterprise security',
             description:
-              "SOC 2 Type II, SSO, and granular role-based access keep every byte encrypted and every action auditable end to end.",
+              'SOC 2 Type II, SSO, and granular role-based access keep every byte encrypted and every action auditable end to end.',
           },
           {
-            title: "Smart automation",
+            title: 'Smart automation',
             description:
-              "Trigger multi-step workflows from any event and let recurring busywork run itself while your team focuses on what matters.",
+              'Trigger multi-step workflows from any event and let recurring busywork run itself while your team focuses on what matters.',
           },
           {
-            title: "Team collaboration",
+            title: 'Team collaboration',
             description:
               "Shared spaces, inline comments, and live presence keep everyone aligned whether they're across the desk or across the globe.",
           },

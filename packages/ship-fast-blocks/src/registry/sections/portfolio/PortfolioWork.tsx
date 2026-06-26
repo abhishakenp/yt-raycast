@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * PortfolioWork — selected-work / project gallery for a dark creative portfolio.
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * work. Renders fully with no props via six baked-in default projects.
  */
 export const PortfolioWork = defineComponent({
-  name: "PortfolioWork",
+  name: 'PortfolioWork',
   description:
     "Selected-work / project gallery for a dark creative portfolio: a heading block (cyan uppercase label, big display title, lead paragraph) above a responsive 3-up grid of clickable project cards. Each card has a 16:10 alt-driven thumbnail that zooms on hover, a title, a short blurb, and a row of tool/tag chips, on a raised card surface that lifts and gains a cyan glow on hover. Cards route through useNavigate. Use to showcase a 3D artist, motion designer, or director's reel-style projects, case studies, or featured work.",
   props: z.object({
@@ -32,7 +32,7 @@ export const PortfolioWork = defineComponent({
           title: z.string(),
           description: z.string(),
           tags: z.array(z.string()),
-          alt: z.string().describe("short description of the project still"),
+          alt: z.string().describe('short description of the project still'),
         }),
       )
       .optional(),
@@ -42,61 +42,64 @@ export const PortfolioWork = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const label = props.label ?? "Selected Work"
-    const title = props.title ?? "Projects that pushed boundaries"
+    const label = props.label ?? 'Selected Work'
+    const title = props.title ?? 'Projects that pushed boundaries'
     const description =
       props.description ??
-      "A curated set of brand films, product launches, and title sequences built over the last three years."
-    const cardTarget = props.cardTarget ?? "Work"
+      'A curated set of brand films, product launches, and title sequences built over the last three years.'
+    const cardTarget = props.cardTarget ?? 'Work'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Neon Drift",
+            title: 'Neon Drift',
             description:
-              "Launch film for a cyberpunk racing title. High-speed camera logic, volumetric neons, and procedural city layouts built in C4D and rendered with Redshift.",
-            tags: ["C4D", "Redshift", "Brand Film"],
-            alt: "Neon Drift cyberpunk racing game brand film with neon-lit vehicles",
+              'Launch film for a cyberpunk racing title. High-speed camera logic, volumetric neons, and procedural city layouts built in C4D and rendered with Redshift.',
+            tags: ['C4D', 'Redshift', 'Brand Film'],
+            alt: 'Neon Drift cyberpunk racing game brand film with neon-lit vehicles',
           },
           {
-            title: "Aether",
+            title: 'Aether',
             description:
-              "Product reveal for a flagship noise-canceling headphone. Fluid sculpting, spectral lighting, and a restrained material palette in Houdini and Octane.",
-            tags: ["Houdini", "Octane", "Product"],
-            alt: "Aether abstract fluid sculptural forms for a luxury audio brand",
+              'Product reveal for a flagship noise-canceling headphone. Fluid sculpting, spectral lighting, and a restrained material palette in Houdini and Octane.',
+            tags: ['Houdini', 'Octane', 'Product'],
+            alt: 'Aether abstract fluid sculptural forms for a luxury audio brand',
           },
           {
-            title: "Pulse",
+            title: 'Pulse',
             description:
-              "Main title for a sci-fi thriller series. Kinetic typography, procedural corridor generation, and aggressive camera motion in Blender and After Effects.",
-            tags: ["Blender", "After Effects", "Title Sequence"],
-            alt: "Pulse kinetic typography and dark corridors for a streaming title sequence",
+              'Main title for a sci-fi thriller series. Kinetic typography, procedural corridor generation, and aggressive camera motion in Blender and After Effects.',
+            tags: ['Blender', 'After Effects', 'Title Sequence'],
+            alt: 'Pulse kinetic typography and dark corridors for a streaming title sequence',
           },
           {
-            title: "Meridian",
+            title: 'Meridian',
             description:
-              "Keynote opener for a cloud infrastructure platform. Real-time environmental storytelling with Lumen, Nanite, and cinematic sequencing in Unreal Engine 5.",
-            tags: ["Unreal Engine 5", "Real-Time", "Keynote"],
-            alt: "Meridian vast architectural landscape rendered in Unreal Engine 5",
+              'Keynote opener for a cloud infrastructure platform. Real-time environmental storytelling with Lumen, Nanite, and cinematic sequencing in Unreal Engine 5.',
+            tags: ['Unreal Engine 5', 'Real-Time', 'Keynote'],
+            alt: 'Meridian vast architectural landscape rendered in Unreal Engine 5',
           },
           {
-            title: "Chromatica",
+            title: 'Chromatica',
             description:
-              "Music video for an electronic artist. Particle sims, iridescent shaders, and beat-synced camera cuts driven by X-Particles and C4D.",
-            tags: ["C4D", "X-Particles", "Music Video"],
-            alt: "Chromatica iridescent particle fields for an electronic music video",
+              'Music video for an electronic artist. Particle sims, iridescent shaders, and beat-synced camera cuts driven by X-Particles and C4D.',
+            tags: ['C4D', 'X-Particles', 'Music Video'],
+            alt: 'Chromatica iridescent particle fields for an electronic music video',
           },
           {
-            title: "Silica",
+            title: 'Silica',
             description:
-              "Commercial for a sustainable architecture practice. Brutalist form language, natural daylighting, and restrained camera choreography in Blender and Redshift.",
-            tags: ["Blender", "Redshift", "Commercial"],
-            alt: "Silica brutalist concrete forms for a sustainable architecture firm",
+              'Commercial for a sustainable architecture practice. Brutalist form language, natural daylighting, and restrained camera choreography in Blender and Redshift.',
+            tags: ['Blender', 'Redshift', 'Commercial'],
+            alt: 'Silica brutalist concrete forms for a sustainable architecture firm',
           },
         ]
 
     return (
-      <section className={cn("py-24", props.className)} aria-labelledby="portfolio-work-heading">
+      <section
+        className={cn('py-24', props.className)}
+        aria-labelledby="portfolio-work-heading"
+      >
         <div className="mx-auto max-w-[1200px] px-6">
           <div className="mb-14 flex flex-col gap-3">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
@@ -108,7 +111,9 @@ export const PortfolioWork = defineComponent({
             >
               {title}
             </h2>
-            <p className="max-w-[560px] text-[1.05rem] text-muted-foreground">{description}</p>
+            <p className="max-w-[560px] text-[1.05rem] text-muted-foreground">
+              {description}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -130,7 +135,9 @@ export const PortfolioWork = defineComponent({
                 </div>
                 <div className="p-6">
                   <h3 className="mb-1.5 text-xl font-semibold">{item.title}</h3>
-                  <p className="text-sm leading-[1.6] text-muted-foreground">{item.description}</p>
+                  <p className="text-sm leading-[1.6] text-muted-foreground">
+                    {item.description}
+                  </p>
                   <div className="mt-3.5 flex flex-wrap gap-2">
                     {item.tags.map((tag) => (
                       <span

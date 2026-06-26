@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * VacationRentalHero — a full-bleed, immersive getaway hero for a vacation-rental
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in "Azure Cove Retreats" defaults.
  */
 export const VacationRentalHero = defineComponent({
-  name: "VacationRentalHero",
+  name: 'VacationRentalHero',
   description:
-    "Full-bleed, immersive getaway hero for a vacation-rental listing page: a beautiful property photo rendered through the alt-driven Image component fills the band beneath a soft token-dark overlay; centered over it are an eyebrow, a large airy headline, a supporting line, a location/rating row, and a glassy inline booking bar with Check in, Check out, and Guests cells plus a Check Availability button. Actions route through useNavigate. Inviting and conversion-focused; use as the opening hero for vacation rentals, beach houses, cabins, villas, or boutique short-stays.",
+    'Full-bleed, immersive getaway hero for a vacation-rental listing page: a beautiful property photo rendered through the alt-driven Image component fills the band beneath a soft token-dark overlay; centered over it are an eyebrow, a large airy headline, a supporting line, a location/rating row, and a glassy inline booking bar with Check in, Check out, and Guests cells plus a Check Availability button. Actions route through useNavigate. Inviting and conversion-focused; use as the opening hero for vacation rentals, beach houses, cabins, villas, or boutique short-stays.',
   props: z.object({
     /** Small eyebrow label above the headline. */
     eyebrow: z.string().optional(),
@@ -40,29 +40,29 @@ export const VacationRentalHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Your seaside escape awaits"
-    const heading = props.heading ?? "A bright, breezy home by the water"
+    const eyebrow = props.eyebrow ?? 'Your seaside escape awaits'
+    const heading = props.heading ?? 'A bright, breezy home by the water'
     const subheading =
       props.subheading ??
-      "Wake to ocean light, sip coffee on the deck, and unwind in a thoughtfully designed retreat made for slow mornings and golden evenings."
-    const location = props.location ?? "Carmel Bay, California"
-    const rating = props.rating ?? "4.97 · 248 reviews"
+      'Wake to ocean light, sip coffee on the deck, and unwind in a thoughtfully designed retreat made for slow mornings and golden evenings.'
+    const location = props.location ?? 'Carmel Bay, California'
+    const rating = props.rating ?? '4.97 · 248 reviews'
     const imageAlt =
       props.imageAlt ??
-      "Sunlit modern beach house with floor-to-ceiling windows overlooking a turquoise bay at golden hour"
-    const ctaLabel = props.ctaLabel ?? "Check Availability"
-    const ctaTarget = props.ctaTarget ?? "Book Now"
+      'Sunlit modern beach house with floor-to-ceiling windows overlooking a turquoise bay at golden hour'
+    const ctaLabel = props.ctaLabel ?? 'Check Availability'
+    const ctaTarget = props.ctaTarget ?? 'Book Now'
 
     const cells = [
-      { label: "Check in", value: "Add date" },
-      { label: "Check out", value: "Add date" },
-      { label: "Guests", value: "2 guests" },
+      { label: 'Check in', value: 'Add date' },
+      { label: 'Check out', value: 'Add date' },
+      { label: 'Guests', value: '2 guests' },
     ]
 
     return (
       <section
         className={cn(
-          "relative isolate overflow-hidden bg-background text-foreground",
+          'relative isolate overflow-hidden bg-background text-foreground',
           props.className,
         )}
       >

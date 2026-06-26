@@ -1,9 +1,9 @@
-import { GenericDocument } from "convex/server";
-import isEqual from "lodash/isEqual";
-import { useState } from "react";
-import { ValidatorJSON } from "convex/values";
-import { JavascriptDocumentsForm } from "@common/features/data/components/Table/EditDocumentPanel/JavascriptDocumentsForm";
-import { DataPanel } from "@common/features/data/components/DataPanel";
+import { GenericDocument } from 'convex/server'
+import isEqual from 'lodash/isEqual'
+import { useState } from 'react'
+import { ValidatorJSON } from 'convex/values'
+import { JavascriptDocumentsForm } from '@common/features/data/components/Table/EditDocumentPanel/JavascriptDocumentsForm'
+import { DataPanel } from '@common/features/data/components/DataPanel'
 
 export function EditFieldsPanel({
   tableName,
@@ -14,29 +14,29 @@ export function EditFieldsPanel({
   validator,
   shouldSurfaceValidatorErrors,
 }: {
-  tableName: string;
-  allRowsSelected: boolean;
-  numRowsSelected: number;
-  onClose: () => void;
-  onSave(documents: GenericDocument): Promise<any>;
-  validator?: ValidatorJSON;
-  shouldSurfaceValidatorErrors?: boolean;
+  tableName: string
+  allRowsSelected: boolean
+  numRowsSelected: number
+  onClose: () => void
+  onSave(documents: GenericDocument): Promise<any>
+  validator?: ValidatorJSON
+  shouldSurfaceValidatorErrors?: boolean
 }) {
-  const [fields, setFields] = useState(() => [{}]);
-  const isDirty = !isEqual(fields, [{}]);
+  const [fields, setFields] = useState(() => [{}])
+  const isDirty = !isEqual(fields, [{}])
 
   const closeWithConfirmation = () => {
     if (isDirty) {
       const shouldClose = window.confirm(
         `You have unsaved changes.
 Press "Cancel" to return to the editor, or "OK" to discard unsaved changes.`,
-      );
+      )
       if (!shouldClose) {
-        return;
+        return
       }
     }
-    onClose();
-  };
+    onClose()
+  }
 
   return (
     <DataPanel
@@ -49,7 +49,7 @@ Press "Cancel" to return to the editor, or "OK" to discard unsaved changes.`,
         <p>• Add new fields</p>
         <p>• Overwrite existing fields</p>
         <p>
-          • Remove existing fields by setting them to{" "}
+          • Remove existing fields by setting them to{' '}
           <code className="rounded-sm bg-background-tertiary p-[2px] text-content-primary">
             undefined
           </code>
@@ -59,8 +59,8 @@ Press "Cancel" to return to the editor, or "OK" to discard unsaved changes.`,
         documents={fields}
         setDocuments={setFields}
         onSave={async (array) => {
-          await onSave(array[0]);
-          onClose();
+          await onSave(array[0])
+          onClose()
         }}
         mode="patchDocuments"
         isDirty={isDirty}
@@ -68,13 +68,13 @@ Press "Cancel" to return to the editor, or "OK" to discard unsaved changes.`,
         shouldSurfaceValidatorErrors={shouldSurfaceValidatorErrors}
       />
     </DataPanel>
-  );
+  )
 }
 
 function documentsLabel(numDocuments: number, allRowsSelected: boolean) {
   return allRowsSelected && numDocuments !== 1
-    ? "all documents"
+    ? 'all documents'
     : numDocuments > 1
       ? `${numDocuments} documents`
-      : "document";
+      : 'document'
 }

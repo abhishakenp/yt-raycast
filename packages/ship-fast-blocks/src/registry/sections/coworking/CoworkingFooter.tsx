@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * CoworkingFooter — rich, multi-column closing footer for a coworking or shared-
@@ -22,9 +22,9 @@ const BrandTile = ({ letter }: { letter: string }) => (
 )
 
 export const CoworkingFooter = defineComponent({
-  name: "CoworkingFooter",
+  name: 'CoworkingFooter',
   description:
-    "Rich, multi-column closing footer for a coworking or shared-workspace site built on the shared SiteFooter composite: a brand block (rounded brand-initial logo tile + workspace name + tagline + social row) beside a responsive grid of link columns (Spaces, Company, Resources, Contact), with a bordered-top bottom bar holding an auto-updating copyright line. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for coworking spaces, shared offices, flex-office providers, or business centers.",
+    'Rich, multi-column closing footer for a coworking or shared-workspace site built on the shared SiteFooter composite: a brand block (rounded brand-initial logo tile + workspace name + tagline + social row) beside a responsive grid of link columns (Spaces, Company, Resources, Contact), with a bordered-top bottom bar holding an auto-updating copyright line. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for coworking spaces, shared offices, flex-office providers, or business centers.',
   props: z.object({
     /** Brand / workspace name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -43,36 +43,36 @@ export const CoworkingFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Northside"
+    const brand = props.brand ?? 'Northside'
     const social = props.social?.length
       ? props.social
-      : [{ label: "Instagram" }, { label: "LinkedIn" }, { label: "X" }]
+      : [{ label: 'Instagram' }, { label: 'LinkedIn' }, { label: 'X' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Spaces",
+            title: 'Spaces',
             links: [
-              "Hot Desks",
-              "Dedicated Desks",
-              "Private Offices",
-              "Meeting Rooms",
+              'Hot Desks',
+              'Dedicated Desks',
+              'Private Offices',
+              'Meeting Rooms',
             ],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Community", "Events"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Community', 'Events'],
           },
           {
-            title: "Resources",
-            links: ["Pricing", "Amenities", "Member Perks", "FAQ"],
+            title: 'Resources',
+            links: ['Pricing', 'Amenities', 'Member Perks', 'FAQ'],
           },
           {
-            title: "Contact",
+            title: 'Contact',
             links: [
-              "123 Pearl Street, Portland, OR 97209",
-              "(503) 555-0145",
-              "hello@northside.work",
+              '123 Pearl Street, Portland, OR 97209',
+              '(503) 555-0145',
+              'hello@northside.work',
             ],
           },
         ]
@@ -84,11 +84,11 @@ export const CoworkingFooter = defineComponent({
         brandClassName="text-lg font-semibold"
         tagline={
           props.tagline ??
-          "A bright, modern workspace where independent professionals and growing teams do their best work."
+          'A bright, modern workspace where independent professionals and growing teams do their best work.'
         }
         social={social}
         columns={columns}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ComingSoonTestimonials — early-access testimonial wall for a "launching soon" /
@@ -14,7 +14,7 @@ import { Image } from "#/lib/img.tsx"
  * with no props via three baked-in default testimonials.
  */
 export const ComingSoonTestimonials = defineComponent({
-  name: "ComingSoonTestimonials",
+  name: 'ComingSoonTestimonials',
   description:
     "Early-access testimonial wall for a 'launching soon' / waitlist pre-launch landing page: centered heading and lead paragraph above a responsive 1/2/3-column grid of bordered quote cards on a card-colored band. Each card shows a 5-star rating row, quote text, and an attribution row with a round alt-driven avatar beside reviewer name and role. Avatars use the alt-driven <Image> component. Use as social-proof / early-feedback section on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",
   props: z.object({
@@ -36,36 +36,36 @@ export const ComingSoonTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Early access feedback"
+    const heading = props.heading ?? 'Early access feedback'
     const description =
       props.description ??
-      "From design, engineering, and product teams already using Nexus"
+      'From design, engineering, and product teams already using Nexus'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
-              "Nexus replaced four tools in our stack. The unified workspace has transformed how our remote team collaborates.",
-            name: "Sarah Chen",
-            role: "Product Lead, Linear",
+              'Nexus replaced four tools in our stack. The unified workspace has transformed how our remote team collaborates.',
+            name: 'Sarah Chen',
+            role: 'Product Lead, Linear',
             avatarAlt:
-              "Professional headshot of Sarah Chen, a smiling product manager with dark hair",
+              'Professional headshot of Sarah Chen, a smiling product manager with dark hair',
           },
           {
             quote:
-              "The smart boards feature alone saved us 10 hours a week. Finally, a tool that thinks like designers do.",
-            name: "Marcus Williams",
-            role: "UX Director, Figma",
+              'The smart boards feature alone saved us 10 hours a week. Finally, a tool that thinks like designers do.',
+            name: 'Marcus Williams',
+            role: 'UX Director, Figma',
             avatarAlt:
-              "Professional headshot of Marcus Williams, a bearded UX designer in his 30s",
+              'Professional headshot of Marcus Williams, a bearded UX designer in his 30s',
           },
           {
             quote:
-              "Security was our top concern. Nexus exceeded every compliance requirement our enterprise clients demand.",
-            name: "David Park",
-            role: "CTO, Vercel",
+              'Security was our top concern. Nexus exceeded every compliance requirement our enterprise clients demand.',
+            name: 'David Park',
+            role: 'CTO, Vercel',
             avatarAlt:
-              "Professional headshot of David Park, a CTO wearing glasses with a confident smile",
+              'Professional headshot of David Park, a CTO wearing glasses with a confident smile',
           },
         ]
 
@@ -83,7 +83,7 @@ export const ComingSoonTestimonials = defineComponent({
     return (
       <section
         className={cn(
-          "w-full bg-card px-4 py-24 sm:px-6 sm:py-32 lg:px-8 xl:px-12",
+          'w-full bg-card px-4 py-24 sm:px-6 sm:py-32 lg:px-8 xl:px-12',
           props.className,
         )}
       >

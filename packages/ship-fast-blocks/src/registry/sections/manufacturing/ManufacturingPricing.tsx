@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ManufacturingPricing — a 3-tier pricing block for a precision-manufacturing
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * manufacturer pages. Renders fully with no props via baked-in defaults.
  */
 export const ManufacturingPricing = defineComponent({
-  name: "ManufacturingPricing",
+  name: 'ManufacturingPricing',
   description:
     "A 3-tier pricing block for a precision-manufacturing site: a centered eyebrow + heading + description intro above a three-column card row; the featured tier inverts to a foreground surface and carries a centered 'Most Popular' badge, each card showing a name, blurb, price (with optional /hr unit), a checklist of features and a full-width CTA routed through useNavigate. Clean, neutral, transparent. Use to present prototype/low-volume/production pricing on machine-shop or contract-manufacturer pages.",
   props: z.object({
@@ -39,55 +39,54 @@ export const ManufacturingPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Pricing"
-    const heading =
-      props.heading ?? "Transparent Pricing for Every Stage"
+    const eyebrow = props.eyebrow ?? 'Pricing'
+    const heading = props.heading ?? 'Transparent Pricing for Every Stage'
     const description =
       props.description ??
-      "No hidden fees. Volume discounts apply. All quotes include material, machining, inspection, and standard packaging."
+      'No hidden fees. Volume discounts apply. All quotes include material, machining, inspection, and standard packaging.'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Prototypes",
-            blurb: "1-10 parts for testing and validation",
-            price: "$95",
-            unit: "/hr",
+            name: 'Prototypes',
+            blurb: '1-10 parts for testing and validation',
+            price: '$95',
+            unit: '/hr',
             features: [
-              "2-3 day turnaround",
-              "Material certs included",
-              "DFM feedback",
-              "Photo documentation",
+              '2-3 day turnaround',
+              'Material certs included',
+              'DFM feedback',
+              'Photo documentation',
             ],
-            cta: "Get Prototype Quote",
+            cta: 'Get Prototype Quote',
           },
           {
-            name: "Low-Volume",
-            blurb: "11-100 parts for pilot runs",
-            price: "$75",
-            unit: "/hr",
+            name: 'Low-Volume',
+            blurb: '11-100 parts for pilot runs',
+            price: '$75',
+            unit: '/hr',
             features: [
-              "1-2 week turnaround",
-              "FAIR documentation",
-              "PPAP Level 3 available",
-              "CMM inspection reports",
-              "Priority scheduling",
+              '1-2 week turnaround',
+              'FAIR documentation',
+              'PPAP Level 3 available',
+              'CMM inspection reports',
+              'Priority scheduling',
             ],
-            cta: "Get Quote",
+            cta: 'Get Quote',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Production",
-            blurb: "100+ parts with volume pricing",
-            price: "Custom",
+            name: 'Production',
+            blurb: '100+ parts with volume pricing',
+            price: 'Custom',
             features: [
-              "Dedicated work cells",
-              "Blanket orders accepted",
-              "Kanban programs",
-              "Annual pricing agreements",
+              'Dedicated work cells',
+              'Blanket orders accepted',
+              'Kanban programs',
+              'Annual pricing agreements',
             ],
-            cta: "Contact Sales",
+            cta: 'Contact Sales',
           },
         ]
 
@@ -109,9 +108,7 @@ export const ManufacturingPricing = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-background py-20 lg:py-28", props.className)}
-      >
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
@@ -129,10 +126,10 @@ export const ManufacturingPricing = defineComponent({
                 <article
                   key={tier.name}
                   className={cn(
-                    "relative rounded-lg border p-6",
+                    'relative rounded-lg border p-6',
                     featured
-                      ? "border-border bg-foreground"
-                      : "border-border bg-muted",
+                      ? 'border-border bg-foreground'
+                      : 'border-border bg-muted',
                   )}
                 >
                   {tier.badge && (
@@ -142,34 +139,34 @@ export const ManufacturingPricing = defineComponent({
                   )}
                   <h3
                     className={cn(
-                      "text-lg font-semibold",
-                      featured ? "text-background" : "text-foreground",
+                      'text-lg font-semibold',
+                      featured ? 'text-background' : 'text-foreground',
                     )}
                   >
                     {tier.name}
                   </h3>
                   <p
                     className={cn(
-                      "mt-2 text-sm",
-                      featured ? "text-background/70" : "text-muted-foreground",
+                      'mt-2 text-sm',
+                      featured ? 'text-background/70' : 'text-muted-foreground',
                     )}
                   >
                     {tier.blurb}
                   </p>
                   <p
                     className={cn(
-                      "mt-4 text-3xl font-semibold",
-                      featured ? "text-background" : "text-foreground",
+                      'mt-4 text-3xl font-semibold',
+                      featured ? 'text-background' : 'text-foreground',
                     )}
                   >
                     {tier.price}
                     {tier.unit && (
                       <span
                         className={cn(
-                          "text-base font-normal",
+                          'text-base font-normal',
                           featured
-                            ? "text-background/60"
-                            : "text-muted-foreground",
+                            ? 'text-background/60'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {tier.unit}
@@ -178,15 +175,15 @@ export const ManufacturingPricing = defineComponent({
                   </p>
                   <ul
                     className={cn(
-                      "mt-6 space-y-3 text-sm",
-                      featured ? "text-background/80" : "text-muted-foreground",
+                      'mt-6 space-y-3 text-sm',
+                      featured ? 'text-background/80' : 'text-muted-foreground',
                     )}
                   >
                     {tier.features.map((feat) => (
                       <li key={feat} className="flex items-center gap-2">
                         <span
                           className={
-                            featured ? "text-background" : "text-chart-2"
+                            featured ? 'text-background' : 'text-chart-2'
                           }
                         >
                           <Check />
@@ -199,10 +196,10 @@ export const ManufacturingPricing = defineComponent({
                     type="button"
                     onClick={() => go(tier.cta)}
                     className={cn(
-                      "mt-6 w-full rounded-md py-2.5 font-medium transition-colors",
+                      'mt-6 w-full rounded-md py-2.5 font-medium transition-colors',
                       featured
-                        ? "bg-background text-foreground hover:bg-background/90"
-                        : "border border-border text-foreground hover:bg-accent",
+                        ? 'bg-background text-foreground hover:bg-background/90'
+                        : 'border border-border text-foreground hover:bg-accent',
                     )}
                   >
                     {tier.cta}

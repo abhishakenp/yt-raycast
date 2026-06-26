@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MentalHealthPricing — a transparent 3-tier pricing block for a therapy
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * present session rates for therapists, counselors, psychologists or psychiatry.
  */
 export const MentalHealthPricing = defineComponent({
-  name: "MentalHealthPricing",
+  name: 'MentalHealthPricing',
   description:
     "Transparent 3-tier pricing block for a therapy practice: a centered eyebrow + heading + intro above a 3-column grid of pricing cards; the 'most popular' tier is lifted with a primary border, raised card surface and a floating badge, while others sit on a muted surface. Each card shows name, cadence, big price + unit, a checkmarked feature list, and a rounded booking button, with a centered sliding-scale note below. Calm, reassuring wellness aesthetic. Buttons route through useNavigate. Use to present session rates for therapists, counselors, psychologists or psychiatry.",
   props: z.object({
@@ -41,61 +41,61 @@ export const MentalHealthPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Investment in You"
-    const heading = props.heading ?? "Transparent pricing"
+    const eyebrow = props.eyebrow ?? 'Investment in You'
+    const heading = props.heading ?? 'Transparent pricing'
     const description =
       props.description ??
-      "We believe mental health care should be accessible. We accept most major insurance plans and offer sliding scale options."
+      'We believe mental health care should be accessible. We accept most major insurance plans and offer sliding scale options.'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Individual Therapy",
-            cadence: "50-minute session",
-            price: "$175",
-            unit: "/session",
+            name: 'Individual Therapy',
+            cadence: '50-minute session',
+            price: '$175',
+            unit: '/session',
             features: [
-              "Licensed therapist",
-              "In-person or virtual",
-              "Insurance billing included",
-              "Between-session messaging",
+              'Licensed therapist',
+              'In-person or virtual',
+              'Insurance billing included',
+              'Between-session messaging',
             ],
-            cta: "Book Individual",
+            cta: 'Book Individual',
             popular: false,
           },
           {
-            name: "Couples Therapy",
-            cadence: "80-minute session",
-            price: "$250",
-            unit: "/session",
+            name: 'Couples Therapy',
+            cadence: '80-minute session',
+            price: '$250',
+            unit: '/session',
             features: [
-              "Gottman-trained therapist",
-              "Extended 80-minute format",
-              "Relationship assessment tools",
-              "Homework & resources included",
+              'Gottman-trained therapist',
+              'Extended 80-minute format',
+              'Relationship assessment tools',
+              'Homework & resources included',
             ],
-            cta: "Book Couples",
+            cta: 'Book Couples',
             popular: true,
           },
           {
-            name: "Psychiatry",
-            cadence: "Medication management",
-            price: "$350",
-            unit: "/initial",
+            name: 'Psychiatry',
+            cadence: 'Medication management',
+            price: '$350',
+            unit: '/initial',
             features: [
-              "Board-certified psychiatrist",
-              "60-minute initial evaluation",
-              "Follow-ups: $175 (30 min)",
-              "Prescription management",
+              'Board-certified psychiatrist',
+              '60-minute initial evaluation',
+              'Follow-ups: $175 (30 min)',
+              'Prescription management',
             ],
-            cta: "Book Psychiatry",
+            cta: 'Book Psychiatry',
             popular: false,
           },
         ]
     const note =
       props.note ??
-      "Sliding scale available: We reserve a limited number of reduced-rate slots for clients experiencing financial hardship. Contact us to inquire about availability."
-    const bookLabel = props.bookLabel ?? "Book Session"
+      'Sliding scale available: We reserve a limited number of reduced-rate slots for clients experiencing financial hardship. Contact us to inquire about availability.'
+    const bookLabel = props.bookLabel ?? 'Book Session'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -115,9 +115,7 @@ export const MentalHealthPricing = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-background py-20 lg:py-28", props.className)}
-      >
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-primary">
@@ -136,10 +134,10 @@ export const MentalHealthPricing = defineComponent({
               <div
                 key={tier.name}
                 className={cn(
-                  "relative rounded-2xl p-8",
+                  'relative rounded-2xl p-8',
                   tier.popular
-                    ? "border-2 border-primary bg-card shadow-xl"
-                    : "border border-border bg-muted/50",
+                    ? 'border-2 border-primary bg-card shadow-xl'
+                    : 'border border-border bg-muted/50',
                 )}
               >
                 {tier.popular ? (
@@ -171,10 +169,10 @@ export const MentalHealthPricing = defineComponent({
                   type="button"
                   onClick={() => go(bookLabel)}
                   className={cn(
-                    "block w-full rounded-full px-6 py-3 text-center font-medium transition-colors",
+                    'block w-full rounded-full px-6 py-3 text-center font-medium transition-colors',
                     tier.popular
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
                   )}
                 >
                   {tier.cta}

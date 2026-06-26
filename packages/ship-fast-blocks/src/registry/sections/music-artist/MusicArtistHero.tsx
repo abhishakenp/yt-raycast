@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MusicArtistHero — split, two-column hero for a music artist / band landing
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * or any artist promo page. Renders fully with no props via baked-in defaults.
  */
 export const MusicArtistHero = defineComponent({
-  name: "MusicArtistHero",
+  name: 'MusicArtistHero',
   description:
     "Split two-column hero for a music artist / band landing page: on the left a small uppercase eyebrow, a huge thin-weight album title, a descriptive blurb, and a pair of pill CTAs (a filled 'Listen Now' with an arrow and an outlined 'View Tour Dates'); on the right a large square album-cover image (stacked above the copy on mobile). Warm, airy editorial indie-folk aesthetic on a soft neutral canvas with generous whitespace. Both CTAs route through useNavigate; the cover uses the alt-driven Image component. Use as the opening hero for album releases, musicians, singers, bands, or any artist promo page.",
   props: z.object({
@@ -36,16 +36,16 @@ export const MusicArtistHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "New Album Out Now"
-    const title = props.title ?? "Northbound"
+    const eyebrow = props.eyebrow ?? 'New Album Out Now'
+    const title = props.title ?? 'Northbound'
     const description =
       props.description ??
-      "Twelve songs about distance, longing, and the road home. Recorded in a converted barn outside Portland during the quiet winter months."
-    const primaryCta = props.primaryCta ?? "Listen Now"
-    const secondaryCta = props.secondaryCta ?? "View Tour Dates"
+      'Twelve songs about distance, longing, and the road home. Recorded in a converted barn outside Portland during the quiet winter months.'
+    const primaryCta = props.primaryCta ?? 'Listen Now'
+    const secondaryCta = props.secondaryCta ?? 'View Tour Dates'
     const imageAlt =
       props.imageAlt ??
-      "Minimalist album cover showing a misty mountain landscape at dawn with soft neutral tones"
+      'Minimalist album cover showing a misty mountain landscape at dawn with soft neutral tones'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -68,7 +68,7 @@ export const MusicArtistHero = defineComponent({
     return (
       <section
         className={cn(
-          "px-6 pb-20 pt-32 lg:px-8 lg:pb-32 lg:pt-48",
+          'px-6 pb-20 pt-32 lg:px-8 lg:pb-32 lg:pt-48',
           props.className,
         )}
       >

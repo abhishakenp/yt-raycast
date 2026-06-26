@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FoodDeliveryCta — inverted app-download CTA panel for a food-delivery /
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * platforms. Renders fully with no props via baked-in defaults.
  */
 export const FoodDeliveryCta = defineComponent({
-  name: "FoodDeliveryCta",
+  name: 'FoodDeliveryCta',
   description:
-    "Inverted app-download CTA panel for a food-delivery / restaurant-marketplace site: a centered rounded foreground-on-background dark card with a heading, a supporting paragraph, and two app-store buttons (Apple App Store + Google Play, each with its brand glyph) on a light surface. Both buttons route through useNavigate. Use as a final conversion push to drive app installs for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.",
+    'Inverted app-download CTA panel for a food-delivery / restaurant-marketplace site: a centered rounded foreground-on-background dark card with a heading, a supporting paragraph, and two app-store buttons (Apple App Store + Google Play, each with its brand glyph) on a light surface. Both buttons route through useNavigate. Use as a final conversion push to drive app installs for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',
   props: z.object({
     /** CTA heading. */
     heading: z.string().optional(),
@@ -29,15 +29,15 @@ export const FoodDeliveryCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const ctaHeading = props.heading ?? "Ready to order?"
+    const ctaHeading = props.heading ?? 'Ready to order?'
     const ctaDesc =
       props.description ??
-      "Download the app and get your first delivery fee waived. Join over 2 million happy customers today."
-    const ctaAppStore = props.appStore ?? "App Store"
-    const ctaGooglePlay = props.googlePlay ?? "Google Play"
+      'Download the app and get your first delivery fee waived. Join over 2 million happy customers today.'
+    const ctaAppStore = props.appStore ?? 'App Store'
+    const ctaGooglePlay = props.googlePlay ?? 'Google Play'
 
     return (
-      <section className={cn("py-20 lg:py-28", props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-xl bg-foreground p-8 text-center sm:p-12 lg:p-16">
             <h2 className="text-3xl font-semibold tracking-tight text-background sm:text-4xl">

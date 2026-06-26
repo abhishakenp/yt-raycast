@@ -6,16 +6,16 @@
  * Single source of truth for the action contract is `./types.ts` (KitAction).
  */
 
-export { SiteNav } from "./SiteNav.tsx"
-export { SiteFooter } from "./SiteFooter.tsx"
-export { SectionHeading } from "./SectionHeading.tsx"
-export { CtaBand } from "./CtaBand.tsx"
-export { StarRating } from "./StarRating.tsx"
-export { StatGrid } from "./StatGrid.tsx"
-export { FeatureGrid } from "./FeatureGrid.tsx"
-export { PricingGrid } from "./PricingGrid.tsx"
-export { TestimonialGrid } from "./TestimonialGrid.tsx"
-export { GalleryGrid } from "./GalleryGrid.tsx"
+export { SiteNav } from './SiteNav.tsx'
+export { SiteFooter } from './SiteFooter.tsx'
+export { SectionHeading } from './SectionHeading.tsx'
+export { CtaBand } from './CtaBand.tsx'
+export { StarRating } from './StarRating.tsx'
+export { StatGrid } from './StatGrid.tsx'
+export { FeatureGrid } from './FeatureGrid.tsx'
+export { PricingGrid } from './PricingGrid.tsx'
+export { TestimonialGrid } from './TestimonialGrid.tsx'
+export { GalleryGrid } from './GalleryGrid.tsx'
 
-export type { KitAction } from "./types.ts"
-export { kitActionClasses } from "./types.ts"
+export type { KitAction } from './types.ts'
+export { kitActionClasses } from './types.ts'

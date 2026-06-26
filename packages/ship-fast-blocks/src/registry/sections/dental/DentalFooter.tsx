@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DentalFooter — rich 4-column footer for a dental practice site. A dark inverted
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * the closing footer for dentists, dental offices, orthodontists, or clinics.
  */
 export const DentalFooter = defineComponent({
-  name: "DentalFooter",
+  name: 'DentalFooter',
   description:
-    "Rich 4-column footer for a dental practice site: a dark inverted section on the foreground color with a brand block (mint tooth-glyph logo + practice name + tagline + initial-letter social buttons), a services link column, an office-hours column (day / time rows), and a contact column with pinned address, click-to-call phone, and email, closed by a copyright + legal bar. Every link, social, phone, and email routes through useNavigate. Use as the closing footer for dentists, dental offices, orthodontists, or clinics.",
+    'Rich 4-column footer for a dental practice site: a dark inverted section on the foreground color with a brand block (mint tooth-glyph logo + practice name + tagline + initial-letter social buttons), a services link column, an office-hours column (day / time rows), and a contact column with pinned address, click-to-call phone, and email, closed by a copyright + legal bar. Every link, social, phone, and email routes through useNavigate. Use as the closing footer for dentists, dental offices, orthodontists, or clinics.',
   props: z.object({
     /** Practice / brand name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -39,44 +39,44 @@ export const DentalFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Bright Smile"
-    const brandTagline = props.brandTagline ?? "Dental Care"
-    const homeTarget = props.homeTarget ?? "Services"
+    const brand = props.brand ?? 'Bright Smile'
+    const brandTagline = props.brandTagline ?? 'Dental Care'
+    const homeTarget = props.homeTarget ?? 'Services'
     const footerTagline =
       props.tagline ??
-      "Modern, compassionate dental care for the whole family. Your smile is our passion."
-    const footerServicesHeading = props.servicesHeading ?? "Services"
+      'Modern, compassionate dental care for the whole family. Your smile is our passion.'
+    const footerServicesHeading = props.servicesHeading ?? 'Services'
     const footerServiceLinks = props.serviceLinks?.length
       ? props.serviceLinks
       : [
-          "Preventive Care",
-          "Cosmetic Dentistry",
-          "Dental Implants",
-          "Orthodontics",
-          "Emergency Care",
+          'Preventive Care',
+          'Cosmetic Dentistry',
+          'Dental Implants',
+          'Orthodontics',
+          'Emergency Care',
         ]
-    const footerHoursHeading = props.hoursHeading ?? "Office Hours"
+    const footerHoursHeading = props.hoursHeading ?? 'Office Hours'
     const footerHours = props.hours?.length
       ? props.hours
       : [
-          { day: "Monday - Thursday", time: "8am - 6pm" },
-          { day: "Friday", time: "8am - 4pm" },
-          { day: "Saturday", time: "9am - 2pm" },
-          { day: "Sunday", time: "Closed" },
+          { day: 'Monday - Thursday', time: '8am - 6pm' },
+          { day: 'Friday', time: '8am - 4pm' },
+          { day: 'Saturday', time: '9am - 2pm' },
+          { day: 'Sunday', time: 'Closed' },
         ]
-    const footerContactHeading = props.contactHeading ?? "Contact"
+    const footerContactHeading = props.contactHeading ?? 'Contact'
     const footerAddress =
-      props.address ?? "1847 NW Lovejoy St, Portland, OR 97209"
-    const footerPhone = props.phone ?? "(503) 555-0142"
-    const footerEmail = props.email ?? "hello@brightsmiledental.com"
+      props.address ?? '1847 NW Lovejoy St, Portland, OR 97209'
+    const footerPhone = props.phone ?? '(503) 555-0142'
+    const footerEmail = props.email ?? 'hello@brightsmiledental.com'
     const footerSocials = props.socials?.length
       ? props.socials
-      : ["Facebook", "Instagram", "Google"]
+      : ['Facebook', 'Instagram', 'Google']
     const footerCopyright =
-      props.copyright ?? "Bright Smile Dental. All rights reserved."
+      props.copyright ?? 'Bright Smile Dental. All rights reserved.'
     const footerLegal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Accessibility"]
+      : ['Privacy Policy', 'Terms of Service', 'Accessibility']
 
     const ToothMark = () => (
       <svg
@@ -97,7 +97,7 @@ export const DentalFooter = defineComponent({
     const LogoBadge = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-xl bg-primary text-primary-foreground",
+          'grid place-items-center rounded-xl bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -123,7 +123,7 @@ export const DentalFooter = defineComponent({
 
     return (
       <footer
-        className={cn("bg-foreground py-16 text-background", props.className)}
+        className={cn('bg-foreground py-16 text-background', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4">

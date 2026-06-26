@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * IllustratorContactCta — a centered closing contact call-to-action for an
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * baked-in defaults.
  */
 export const IllustratorContactCta = defineComponent({
-  name: "IllustratorContactCta",
+  name: 'IllustratorContactCta',
   description:
     "Centered closing contact call-to-action for an illustrator / visual-artist portfolio: a large serif heading and supporting paragraph above dual CTAs (a filled primary email button with a mail icon + an outlined secondary action) and a centered row of text social links, all routing through useNavigate. Use as the final 'let's work together' band before the footer.",
   props: z.object({
@@ -31,21 +31,20 @@ export const IllustratorContactCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading =
-      props.heading ?? "Let's create something beautiful together"
+    const heading = props.heading ?? "Let's create something beautiful together"
     const description =
       props.description ??
       "Whether you're an editor with a manuscript, a brand seeking editorial work, or an art lover wanting the perfect print—I'd love to hear from you."
-    const email = props.email ?? "hello@mirachen.studio"
-    const secondaryCta = props.secondaryCta ?? "Download Portfolio PDF"
+    const email = props.email ?? 'hello@mirachen.studio'
+    const secondaryCta = props.secondaryCta ?? 'Download Portfolio PDF'
     const socials = props.socials?.length
       ? props.socials
-      : ["Instagram", "Pinterest", "Behance", "Dribbble"]
+      : ['Instagram', 'Pinterest', 'Behance', 'Dribbble']
 
     return (
       <section
         className={cn(
-          "bg-background px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36",
+          'bg-background px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36',
           props.className,
         )}
       >

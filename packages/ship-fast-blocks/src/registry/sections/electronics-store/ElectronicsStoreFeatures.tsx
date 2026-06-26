@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import type { ReactNode } from "react"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import type { ReactNode } from 'react'
 
 /**
  * ElectronicsStoreFeatures — a centered 3-up benefits / trust row for an
@@ -12,9 +12,9 @@ import type { ReactNode } from "react"
  * catalog that wants quick reassurance under the hero.
  */
 export const ElectronicsStoreFeatures = defineComponent({
-  name: "ElectronicsStoreFeatures",
+  name: 'ElectronicsStoreFeatures',
   description:
-    "Centered 3-up benefits / trust row for an electronics storefront: each cell stacks a rounded muted icon tile (check / box / refresh glyphs rotated across cells) above a bold title and a muted description. Use to surface shipping, authenticity and returns guarantees (e.g. Certified Authentic, Free Express Shipping, 30-Day Returns) on electronics stores, gadget shops, consumer-tech retailers, or any product catalog that wants quick reassurance beneath the hero.",
+    'Centered 3-up benefits / trust row for an electronics storefront: each cell stacks a rounded muted icon tile (check / box / refresh glyphs rotated across cells) above a bold title and a muted description. Use to surface shipping, authenticity and returns guarantees (e.g. Certified Authentic, Free Express Shipping, 30-Day Returns) on electronics stores, gadget shops, consumer-tech retailers, or any product catalog that wants quick reassurance beneath the hero.',
   props: z.object({
     /** Benefit cells. */
     features: z
@@ -27,19 +27,19 @@ export const ElectronicsStoreFeatures = defineComponent({
       ? props.features
       : [
           {
-            title: "Certified Authentic",
+            title: 'Certified Authentic',
             description:
-              "Every product is 100% genuine with full manufacturer warranty and support.",
+              'Every product is 100% genuine with full manufacturer warranty and support.',
           },
           {
-            title: "Free Express Shipping",
+            title: 'Free Express Shipping',
             description:
-              "Orders over $75 ship free within 2 business days to all 50 states.",
+              'Orders over $75 ship free within 2 business days to all 50 states.',
           },
           {
-            title: "30-Day Returns",
+            title: '30-Day Returns',
             description:
-              "Not satisfied? Return any item within 30 days for a full refund, no questions asked.",
+              'Not satisfied? Return any item within 30 days for a full refund, no questions asked.',
           },
         ]
 
@@ -86,7 +86,7 @@ export const ElectronicsStoreFeatures = defineComponent({
     ]
 
     return (
-      <section className={cn("py-16 lg:py-24", props.className)}>
+      <section className={cn('py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
             {features.map((f, i) => (

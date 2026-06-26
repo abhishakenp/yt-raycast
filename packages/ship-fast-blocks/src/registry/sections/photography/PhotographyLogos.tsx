@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * PhotographyLogos — a "Featured In" publication logo strip for a fine-art /
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * wedding-press defaults.
  */
 export const PhotographyLogos = defineComponent({
-  name: "PhotographyLogos",
+  name: 'PhotographyLogos',
   description:
     "A 'Featured In' publication logo strip for a fine-art / wedding photographer portfolio: a muted card band with a centered uppercase tracked label above a faded responsive grid of serif publication wordmarks (2 up on mobile, up to 6 on desktop), each routing through useNavigate. Use as a social-proof / press credibility band beneath a hero for photographers, studios, and editorial creatives.",
   props: z.object({
@@ -25,22 +25,22 @@ export const PhotographyLogos = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const label = props.label ?? "Featured In"
+    const label = props.label ?? 'Featured In'
     const items = props.items?.length
       ? props.items
       : [
-          "Vogue",
+          'Vogue',
           "Harper's Bazaar",
-          "The Knot",
-          "Martha Stewart Weddings",
-          "Style Me Pretty",
-          "Green Wedding Shoes",
+          'The Knot',
+          'Martha Stewart Weddings',
+          'Style Me Pretty',
+          'Green Wedding Shoes',
         ]
 
     return (
       <section
         className={cn(
-          "border-b border-border bg-card py-16 lg:py-20",
+          'border-b border-border bg-card py-16 lg:py-20',
           props.className,
         )}
         aria-label="Featured publications"
@@ -56,8 +56,8 @@ export const PhotographyLogos = defineComponent({
                 type="button"
                 onClick={() => go(logo)}
                 className={cn(
-                  "mx-auto font-serif text-lg font-medium tracking-tight text-muted-foreground transition-colors hover:text-foreground",
-                  i >= 4 && "hidden md:block",
+                  'mx-auto font-serif text-lg font-medium tracking-tight text-muted-foreground transition-colors hover:text-foreground',
+                  i >= 4 && 'hidden md:block',
                 )}
               >
                 {logo}

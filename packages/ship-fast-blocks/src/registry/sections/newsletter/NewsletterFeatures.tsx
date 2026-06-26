@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * NewsletterFeatures — "What You Get" value grid for an editorial newsletter.
@@ -13,7 +13,7 @@ import { cn } from "#/lib/utils.ts"
  * blogs, or content creators. Renders fully with no props via baked-in defaults.
  */
 export const NewsletterFeatures = defineComponent({
-  name: "NewsletterFeatures",
+  name: 'NewsletterFeatures',
   description:
     "'What You Get' value grid for an editorial newsletter: a centered serif heading + lede introduces a 3-up grid of feature cards, each with a rounded muted icon tile (rotating book / links / chat line icons), a serif title, and a relaxed description; a bordered divider then opens a 2-up / 4-up checklist of smaller perks, each a circular check badge beside a bold title and muted sub-line. Warm, calm, literary mood on a paper-toned surface. Use to explain what lands in subscribers' inbox for newsletters, publications, blogs, essayists, or content creators.",
   props: z.object({
@@ -32,7 +32,7 @@ export const NewsletterFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "What You Get"
+    const heading = props.heading ?? 'What You Get'
     const description =
       props.description ??
       "Every issue is crafted with care. Here's what lands in your inbox each Sunday."
@@ -40,17 +40,17 @@ export const NewsletterFeatures = defineComponent({
       ? props.items
       : [
           {
-            title: "One Deep Essay",
+            title: 'One Deep Essay',
             description:
               "A 1,500-2,000 word essay exploring a single topic with nuance. No listicles. No clickbait. Just thoughtful analysis on technology's impact on our lives.",
           },
           {
-            title: "Curated Links",
+            title: 'Curated Links',
             description:
-              "Five carefully selected articles, books, and podcasts that informed my thinking this week. Each with a personal note on why it matters.",
+              'Five carefully selected articles, books, and podcasts that informed my thinking this week. Each with a personal note on why it matters.',
           },
           {
-            title: "Community Replies",
+            title: 'Community Replies',
             description:
               "Every email is a conversation. Reply directly and I'll respond. The best reader insights get featured (anonymously) in the next issue.",
           },
@@ -58,10 +58,10 @@ export const NewsletterFeatures = defineComponent({
     const perks = props.perks?.length
       ? props.perks
       : [
-          { title: "Archive Access", description: "All 156 past issues" },
-          { title: "Audio Versions", description: "Listen on the go" },
-          { title: "No Ads", description: "Reader-supported only" },
-          { title: "Private Discord", description: "Join the conversation" },
+          { title: 'Archive Access', description: 'All 156 past issues' },
+          { title: 'Audio Versions', description: 'Listen on the go' },
+          { title: 'No Ads', description: 'Reader-supported only' },
+          { title: 'Private Discord', description: 'Join the conversation' },
         ]
 
     const Check = ({ className }: { className?: string }) => (
@@ -127,9 +127,7 @@ export const NewsletterFeatures = defineComponent({
     ]
 
     return (
-      <section
-        className={cn("py-16 md:py-24 lg:py-32", props.className)}
-      >
+      <section className={cn('py-16 md:py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center md:mb-20">
             <h2 className="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl">

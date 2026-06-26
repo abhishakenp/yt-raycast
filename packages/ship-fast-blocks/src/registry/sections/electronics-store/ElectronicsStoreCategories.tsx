@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * ElectronicsStoreCategories — a "Shop by Category" image-tile grid for an
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
 export const ElectronicsStoreCategories = defineComponent({
-  name: "ElectronicsStoreCategories",
+  name: 'ElectronicsStoreCategories',
   description:
-    "Shop by Category image-tile grid for an electronics storefront: a left-aligned heading above a 2-to-4 column grid of clickable 4:3 tiles, each a full-bleed image under a bottom-up foreground gradient with the category name and product count overlaid. Tiles route through useNavigate; imagery is alt-driven. Use to surface department navigation (Headphones, Smartwatches, Laptops, Cameras, Gaming, Smart Home, Accessories, etc.) on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.",
+    'Shop by Category image-tile grid for an electronics storefront: a left-aligned heading above a 2-to-4 column grid of clickable 4:3 tiles, each a full-bleed image under a bottom-up foreground gradient with the category name and product count overlaid. Tiles route through useNavigate; imagery is alt-driven. Use to surface department navigation (Headphones, Smartwatches, Laptops, Cameras, Gaming, Smart Home, Accessories, etc.) on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -33,59 +33,60 @@ export const ElectronicsStoreCategories = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Shop by Category"
+    const heading = props.heading ?? 'Shop by Category'
     const items = props.items?.length
       ? props.items
       : [
           {
-            name: "Headphones",
-            count: "124 products",
+            name: 'Headphones',
+            count: '124 products',
             imageAlt:
-              "Collection of premium over-ear headphones in various colors",
+              'Collection of premium over-ear headphones in various colors',
           },
           {
-            name: "Smartwatches",
-            count: "86 products",
+            name: 'Smartwatches',
+            count: '86 products',
             imageAlt:
-              "Collection of modern smartwatches with various watch faces and bands",
+              'Collection of modern smartwatches with various watch faces and bands',
           },
           {
-            name: "Laptops",
-            count: "52 products",
-            imageAlt: "Collection of laptop computers on clean workspace setup",
+            name: 'Laptops',
+            count: '52 products',
+            imageAlt: 'Collection of laptop computers on clean workspace setup',
           },
           {
-            name: "Cameras",
-            count: "38 products",
+            name: 'Cameras',
+            count: '38 products',
             imageAlt:
-              "Collection of mirrorless cameras and photography equipment",
+              'Collection of mirrorless cameras and photography equipment',
           },
           {
-            name: "Earbuds",
-            count: "96 products",
-            imageAlt: "Collection of wireless earbuds and charging cases",
+            name: 'Earbuds',
+            count: '96 products',
+            imageAlt: 'Collection of wireless earbuds and charging cases',
           },
           {
-            name: "Gaming",
-            count: "74 products",
+            name: 'Gaming',
+            count: '74 products',
             imageAlt:
-              "Gaming accessories including controllers and mechanical keyboards",
+              'Gaming accessories including controllers and mechanical keyboards',
           },
           {
-            name: "Smart Home",
-            count: "63 products",
+            name: 'Smart Home',
+            count: '63 products',
             imageAlt:
-              "Smart home devices including speakers and voice assistants",
+              'Smart home devices including speakers and voice assistants',
           },
           {
-            name: "Accessories",
-            count: "215 products",
-            imageAlt: "Cables, chargers, and tech accessories on white background",
+            name: 'Accessories',
+            count: '215 products',
+            imageAlt:
+              'Cables, chargers, and tech accessories on white background',
           },
         ]
 
     return (
-      <section className={cn("py-16 lg:py-24", props.className)}>
+      <section className={cn('py-16 lg:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="mb-8 text-2xl font-semibold text-foreground">
             {heading}

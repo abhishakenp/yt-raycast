@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BlogStoryGrid — responsive story-grid for an editorial blog / publication.
@@ -13,7 +13,7 @@ import { Image } from "#/lib/img.tsx"
  * section on blog homepages, magazine indexes, or editorial landing pages.
  */
 export const BlogStoryGrid = defineComponent({
-  name: "BlogStoryGrid",
+  name: 'BlogStoryGrid',
   description:
     "Responsive story-grid section for an editorial blog or publication: a section header with a heading and a 'view all' arrow-link above a 1/2/3-column grid of story cards. Each card has a tagged cover image that zooms on hover, a title, clamped excerpt, and an author/date footer. Cards and the view-all link route through useNavigate. Use as the story grid / latest-stories / article-listing section on blog homepages, magazine indexes, or editorial landing pages.",
   props: z.object({
@@ -43,66 +43,66 @@ export const BlogStoryGrid = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const title = props.title ?? "Latest stories"
-    const viewAll = props.viewAll ?? "View all"
-    const viewAllTarget = props.viewAllTarget ?? "View all"
-    const postTarget = props.postTarget ?? "Blog post"
+    const title = props.title ?? 'Latest stories'
+    const viewAll = props.viewAll ?? 'View all'
+    const viewAllTarget = props.viewAllTarget ?? 'View all'
+    const postTarget = props.postTarget ?? 'Blog post'
     const posts = props.posts?.length
       ? props.posts
       : [
           {
-            tag: "Engineering",
-            title: "Why We Moved to Edge-First Rendering",
+            tag: 'Engineering',
+            title: 'Why We Moved to Edge-First Rendering',
             excerpt:
-              "Latency matters more than raw throughput. Shifting rendering to the edge cut our time-to-interactive in half — and simplified our mental model.",
-            author: "Noah Reeves",
-            date: "May 25",
-            alt: "MacBook on a minimalist desk with a plant",
+              'Latency matters more than raw throughput. Shifting rendering to the edge cut our time-to-interactive in half — and simplified our mental model.',
+            author: 'Noah Reeves',
+            date: 'May 25',
+            alt: 'MacBook on a minimalist desk with a plant',
           },
           {
-            tag: "Product",
-            title: "Running Discovery Without a Brief",
+            tag: 'Product',
+            title: 'Running Discovery Without a Brief',
             excerpt:
-              "Some of the most useful research starts messy. A look at how unstructured conversations with users can reveal problems no survey ever would.",
-            author: "Ava Morales",
-            date: "May 22",
-            alt: "Colorful sticky notes on a glass wall during a workshop",
+              'Some of the most useful research starts messy. A look at how unstructured conversations with users can reveal problems no survey ever would.',
+            author: 'Ava Morales',
+            date: 'May 22',
+            alt: 'Colorful sticky notes on a glass wall during a workshop',
           },
           {
-            tag: "Design",
-            title: "Typography as Interface",
+            tag: 'Design',
+            title: 'Typography as Interface',
             excerpt:
-              "Type is not decoration — it is navigation, tone, and structure. Here is how we use hierarchy to guide attention without adding a single extra pixel.",
-            author: "Liam Park",
-            date: "May 19",
-            alt: "Wireframes on a tablet and printed sheets on a desk",
+              'Type is not decoration — it is navigation, tone, and structure. Here is how we use hierarchy to guide attention without adding a single extra pixel.',
+            author: 'Liam Park',
+            date: 'May 19',
+            alt: 'Wireframes on a tablet and printed sheets on a desk',
           },
           {
-            tag: "Engineering",
-            title: "Refactoring for Deletion",
+            tag: 'Engineering',
+            title: 'Refactoring for Deletion',
             excerpt:
-              "The best code is the code you do not have to maintain. A practical guide to shrinking surface area while keeping systems reliable.",
-            author: "Sofia Andersson",
-            date: "May 15",
-            alt: "Code editor on a dark theme with syntax highlighting",
+              'The best code is the code you do not have to maintain. A practical guide to shrinking surface area while keeping systems reliable.',
+            author: 'Sofia Andersson',
+            date: 'May 15',
+            alt: 'Code editor on a dark theme with syntax highlighting',
           },
           {
-            tag: "Technology",
-            title: "The Infrastructure Behind Real-Time Collaboration",
+            tag: 'Technology',
+            title: 'The Infrastructure Behind Real-Time Collaboration',
             excerpt:
-              "Operational transforms, CRDTs, and WebSockets — a plain-language tour of what keeps multiplayer documents in sync at scale.",
-            author: "Raj Patel",
-            date: "May 12",
-            alt: "Futuristic server room with blue ambient lighting",
+              'Operational transforms, CRDTs, and WebSockets — a plain-language tour of what keeps multiplayer documents in sync at scale.',
+            author: 'Raj Patel',
+            date: 'May 12',
+            alt: 'Futuristic server room with blue ambient lighting',
           },
           {
-            tag: "Design",
-            title: "Color Palettes That Respect Accessibility",
+            tag: 'Design',
+            title: 'Color Palettes That Respect Accessibility',
             excerpt:
-              "Contrast is not enough. Learn how to build flexible color scales that stay accessible across themes, modes, and devices.",
-            author: "Emma Lin",
-            date: "May 08",
-            alt: "Abstract geometric shapes in soft pastel colors",
+              'Contrast is not enough. Learn how to build flexible color scales that stay accessible across themes, modes, and devices.',
+            author: 'Emma Lin',
+            date: 'May 08',
+            alt: 'Abstract geometric shapes in soft pastel colors',
           },
         ]
 
@@ -127,10 +127,7 @@ export const BlogStoryGrid = defineComponent({
     return (
       <section
         aria-label="Latest articles"
-        className={cn(
-          "mx-auto w-full max-w-6xl px-6 pb-14",
-          props.className,
-        )}
+        className={cn('mx-auto w-full max-w-6xl px-6 pb-14', props.className)}
       >
         <div className="flex flex-col items-start gap-1.5 py-5 sm:flex-row sm:items-baseline sm:justify-between">
           <h2 className="font-serif text-2xl font-bold tracking-tight text-foreground">

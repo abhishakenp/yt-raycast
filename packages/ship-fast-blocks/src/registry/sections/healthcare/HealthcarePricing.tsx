@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * HealthcarePricing — transparent pricing table for a medical-clinic page. A
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * office or clinic. Renders fully with no props via baked-in visit-tier defaults.
  */
 export const HealthcarePricing = defineComponent({
-  name: "HealthcarePricing",
+  name: 'HealthcarePricing',
   description:
     "Transparent pricing table for a medical-clinic page: a centered eyebrow chip, heading and intro above a 3-column grid of plan cards, each with a name, tagline, big price with a unit, a check-marked feature list, and a full-width CTA routing through useNavigate. A featured plan gets a primary border, shadow and a floating 'Most Popular' badge plus a primary CTA. Below the grid sits a reassurance note with an inline 'verify coverage' link. Use for a self-pay / visit-pricing / membership section of a doctors' office or clinic.",
   props: z.object({
@@ -47,59 +47,59 @@ export const HealthcarePricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Transparent Pricing"
-    const heading = props.heading ?? "Simple, upfront pricing"
+    const eyebrow = props.eyebrow ?? 'Transparent Pricing'
+    const heading = props.heading ?? 'Simple, upfront pricing'
     const description =
       props.description ??
-      "No hidden fees or surprise bills. We accept most major insurance plans and offer transparent self-pay rates."
+      'No hidden fees or surprise bills. We accept most major insurance plans and offer transparent self-pay rates.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            name: "New Patient Visit",
-            tagline: "Comprehensive initial consultation",
-            price: "$180",
-            unit: "/visit",
+            name: 'New Patient Visit',
+            tagline: 'Comprehensive initial consultation',
+            price: '$180',
+            unit: '/visit',
             features: [
-              "60-minute consultation",
-              "Complete health history review",
-              "Personalized care plan",
-              "Patient portal access",
+              '60-minute consultation',
+              'Complete health history review',
+              'Personalized care plan',
+              'Patient portal access',
             ],
-            cta: "Book new patient visit",
+            cta: 'Book new patient visit',
           },
           {
-            name: "Follow-up Visit",
-            tagline: "For existing patients",
-            price: "$120",
-            unit: "/visit",
+            name: 'Follow-up Visit',
+            tagline: 'For existing patients',
+            price: '$120',
+            unit: '/visit',
             features: [
-              "30-minute consultation",
-              "Progress review & adjustments",
-              "Medication management",
-              "In-person or virtual",
+              '30-minute consultation',
+              'Progress review & adjustments',
+              'Medication management',
+              'In-person or virtual',
             ],
-            cta: "Book follow-up",
+            cta: 'Book follow-up',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Urgent Care",
-            tagline: "Same-day appointments",
-            price: "$150",
-            unit: "/visit",
+            name: 'Urgent Care',
+            tagline: 'Same-day appointments',
+            price: '$150',
+            unit: '/visit',
             features: [
-              "Same-day appointment",
-              "Acute illness treatment",
-              "Rapid testing available",
-              "Prescription refills",
+              'Same-day appointment',
+              'Acute illness treatment',
+              'Rapid testing available',
+              'Prescription refills',
             ],
-            cta: "Book urgent care",
+            cta: 'Book urgent care',
           },
         ]
     const note =
-      props.note ?? "Insurance typically covers 80-100% of visit costs."
-    const noteCta = props.noteCta ?? "Verify your coverage"
+      props.note ?? 'Insurance typically covers 80-100% of visit costs.'
+    const noteCta = props.noteCta ?? 'Verify your coverage'
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -121,7 +121,7 @@ export const HealthcarePricing = defineComponent({
     return (
       <section
         id="pricing"
-        className={cn("bg-muted py-20 lg:py-28", props.className)}
+        className={cn('bg-muted py-20 lg:py-28', props.className)}
         aria-labelledby="pricing-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -143,10 +143,10 @@ export const HealthcarePricing = defineComponent({
               <article
                 key={plan.name}
                 className={cn(
-                  "relative rounded-2xl bg-card p-8",
+                  'relative rounded-2xl bg-card p-8',
                   plan.featured
-                    ? "border-2 border-primary shadow-lg"
-                    : "border border-border",
+                    ? 'border-2 border-primary shadow-lg'
+                    : 'border border-border',
                 )}
               >
                 {plan.featured && plan.badge ? (
@@ -179,10 +179,10 @@ export const HealthcarePricing = defineComponent({
                   type="button"
                   onClick={() => go(plan.cta)}
                   className={cn(
-                    "block w-full rounded-xl px-6 py-3 text-center font-semibold transition-colors",
+                    'block w-full rounded-xl px-6 py-3 text-center font-semibold transition-colors',
                     plan.featured
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
                   )}
                 >
                   {plan.cta}
@@ -193,7 +193,7 @@ export const HealthcarePricing = defineComponent({
 
           <div className="mt-12 text-center">
             <p className="text-muted-foreground">
-              {note}{" "}
+              {note}{' '}
               <button
                 type="button"
                 onClick={() => go(noteCta)}

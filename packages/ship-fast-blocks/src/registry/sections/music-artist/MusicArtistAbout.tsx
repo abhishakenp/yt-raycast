@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MusicArtistAbout — split about-the-band section for a music artist / band
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * baked-in defaults.
  */
 export const MusicArtistAbout = defineComponent({
-  name: "MusicArtistAbout",
+  name: 'MusicArtistAbout',
   description:
-    "Split about-the-band section for a music artist / band page: on the left an eyebrow, a thin heading, several biography paragraphs, and a row of social-link buttons; on the right a pair of staggered portrait (3:4) member photos. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. Each social routes through useNavigate; photos use the alt-driven Image component. Use as the band-story / about section for musicians, singers, bands, or artist EPK pages.",
+    'Split about-the-band section for a music artist / band page: on the left an eyebrow, a thin heading, several biography paragraphs, and a row of social-link buttons; on the right a pair of staggered portrait (3:4) member photos. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. Each social routes through useNavigate; photos use the alt-driven Image component. Use as the band-story / about section for musicians, singers, bands, or artist EPK pages.',
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -35,8 +35,8 @@ export const MusicArtistAbout = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "About the Band"
-    const heading = props.heading ?? "Velvet Echo"
+    const eyebrow = props.eyebrow ?? 'About the Band'
+    const heading = props.heading ?? 'Velvet Echo'
     const paragraphs = props.paragraphs?.length
       ? props.paragraphs
       : [
@@ -46,18 +46,16 @@ export const MusicArtistAbout = defineComponent({
         ]
     const socials = props.socials?.length
       ? props.socials
-      : ["Instagram", "Twitter", "YouTube", "Spotify"]
+      : ['Instagram', 'Twitter', 'YouTube', 'Spotify']
     const imageAlt1 =
       props.imageAlt1 ??
-      "Maya Chen, lead vocalist and guitarist, performing with acoustic guitar on stage"
+      'Maya Chen, lead vocalist and guitarist, performing with acoustic guitar on stage'
     const imageAlt2 =
       props.imageAlt2 ??
       "James O'Brien and Sam Torres, band members playing bass and drums during rehearsal"
 
     return (
-      <section
-        className={cn("px-6 py-20 lg:px-8 lg:py-32", props.className)}
-      >
+      <section className={cn('px-6 py-20 lg:px-8 lg:py-32', props.className)}>
         <div className="mx-auto max-w-6xl">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div>

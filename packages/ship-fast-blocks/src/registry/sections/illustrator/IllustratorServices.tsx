@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * IllustratorServices — a centered-heading "what I create" services grid for an
@@ -14,7 +14,7 @@ import { cn } from "#/lib/utils.ts"
  * via baked-in defaults.
  */
 export const IllustratorServices = defineComponent({
-  name: "IllustratorServices",
+  name: 'IllustratorServices',
   description:
     "Centered-heading 'what I create' services grid for an illustrator / visual-artist portfolio: a serif section title and supporting paragraph above a responsive 3-up grid of bordered cards, each with a rounded tinted icon tile (rotating pastel accent tints) that scales on hover, a serif title, and a descriptive paragraph, with the card border tinting on hover. Use to outline an artist's offerings — children's books, editorial illustration, art prints & products, commissions.",
   props: z.object({
@@ -29,7 +29,7 @@ export const IllustratorServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "What I create"
+    const heading = props.heading ?? 'What I create'
     const description =
       props.description ??
       "From editorial spreads to children's adventures, each project receives the same careful attention to detail and storytelling."
@@ -42,33 +42,33 @@ export const IllustratorServices = defineComponent({
               'Full-page illustrations and character designs for picture books and middle-grade stories. Published works include "The Star Collector" and "Where Dragons Sleep."',
           },
           {
-            title: "Editorial Illustration",
+            title: 'Editorial Illustration',
             description:
-              "Magazine covers, article spot illustrations, and digital features for publications. Recent clients include The Atlantic, Kinfolk, and Afar Magazine.",
+              'Magazine covers, article spot illustrations, and digital features for publications. Recent clients include The Atlantic, Kinfolk, and Afar Magazine.',
           },
           {
-            title: "Art Prints & Products",
+            title: 'Art Prints & Products',
             description:
-              "Limited edition giclée prints, greeting cards, and stationery. All prints are signed, numbered, and produced on archival-quality paper.",
+              'Limited edition giclée prints, greeting cards, and stationery. All prints are signed, numbered, and produced on archival-quality paper.',
           },
         ]
 
     const accentText = [
-      "text-chart-1",
-      "text-chart-2",
-      "text-chart-3",
-      "text-chart-4",
+      'text-chart-1',
+      'text-chart-2',
+      'text-chart-3',
+      'text-chart-4',
     ]
     const accentBgSoft = [
-      "bg-chart-1/10",
-      "bg-chart-2/10",
-      "bg-chart-3/10",
-      "bg-chart-4/10",
+      'bg-chart-1/10',
+      'bg-chart-2/10',
+      'bg-chart-3/10',
+      'bg-chart-4/10',
     ]
     const accentBorderHover = [
-      "hover:border-chart-1/50",
-      "hover:border-chart-2/50",
-      "hover:border-chart-3/50",
+      'hover:border-chart-1/50',
+      'hover:border-chart-2/50',
+      'hover:border-chart-3/50',
     ]
 
     const icons: ReactNode[] = [
@@ -122,7 +122,7 @@ export const IllustratorServices = defineComponent({
     return (
       <section
         className={cn(
-          "px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36",
+          'px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36',
           props.className,
         )}
       >
@@ -138,13 +138,13 @@ export const IllustratorServices = defineComponent({
               <article
                 key={item.title}
                 className={cn(
-                  "group rounded-xl border border-border/60 bg-card p-8 transition-colors",
+                  'group rounded-xl border border-border/60 bg-card p-8 transition-colors',
                   accentBorderHover[i % accentBorderHover.length],
                 )}
               >
                 <div
                   className={cn(
-                    "mb-6 flex size-12 items-center justify-center rounded-lg transition-transform group-hover:scale-110",
+                    'mb-6 flex size-12 items-center justify-center rounded-lg transition-transform group-hover:scale-110',
                     accentBgSoft[i % accentBgSoft.length],
                     accentText[i % accentText.length],
                   )}

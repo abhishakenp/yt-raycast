@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * BootcampNavbar — sticky translucent top navigation bar for a coding bootcamp /
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * tech schools, or any cohort-based education brand.
  */
 export const BootcampNavbar = defineComponent({
-  name: "BootcampNavbar",
+  name: 'BootcampNavbar',
   description:
-    "Sticky translucent top navigation bar for a coding bootcamp / career-school landing page: blurred, border-bottomed header pinned to the top with a solid brand-initial logo tile + academy name on the left, horizontal nav links in the center (desktop), and a rounded primary CTA on the right. Brand button routes to homeTarget, nav links route to their own labels, and the CTA routes to ctaTarget through useNavigate. Use as the sticky site header for coding bootcamps, dev academies, vocational tech schools, or cohort-based education brands.",
+    'Sticky translucent top navigation bar for a coding bootcamp / career-school landing page: blurred, border-bottomed header pinned to the top with a solid brand-initial logo tile + academy name on the left, horizontal nav links in the center (desktop), and a rounded primary CTA on the right. Brand button routes to homeTarget, nav links route to their own labels, and the CTA routes to ctaTarget through useNavigate. Use as the sticky site header for coding bootcamps, dev academies, vocational tech schools, or cohort-based education brands.',
   props: z.object({
     /** Brand / academy name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -31,25 +31,25 @@ export const BootcampNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "CodeCraft Academy"
+    const brand = props.brand ?? 'CodeCraft Academy'
     const nav = props.nav?.length
       ? props.nav
-      : ["Curriculum", "Outcomes", "Mentors", "Pricing", "FAQ"]
+      : ['Curriculum', 'Outcomes', 'Mentors', 'Pricing', 'FAQ']
     const homeTarget = props.homeTarget ?? nav[0]
-    const ctaTarget = props.ctaTarget ?? "Start Your Application"
+    const ctaTarget = props.ctaTarget ?? 'Start Your Application'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
       >
         {brand
-          .split(" ")
+          .split(' ')
           .map((w) => w.charAt(0))
-          .join("")
+          .join('')
           .slice(0, 2)
           .toUpperCase()}
       </span>
@@ -58,7 +58,7 @@ export const BootcampNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * YogaStudioFooter — full footer for a yoga-studio site. Thin configuration over
@@ -13,9 +13,9 @@ import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
  * no props via baked-in defaults.
  */
 export const YogaStudioFooter = defineComponent({
-  name: "YogaStudioFooter",
+  name: 'YogaStudioFooter',
   description:
-    "Full footer for a yoga-studio site built on the shared SiteFooter composite: a wordmark + tagline with a social row, and a responsive grid of link columns where hours / location / contact details fold into a Visit column, closing with an auto-updating copyright row. The wordmark, social, and column links route through useNavigate. Use as the closing site footer for yoga studios, movement spaces, and mindfulness centers.",
+    'Full footer for a yoga-studio site built on the shared SiteFooter composite: a wordmark + tagline with a social row, and a responsive grid of link columns where hours / location / contact details fold into a Visit column, closing with an auto-updating copyright row. The wordmark, social, and column links route through useNavigate. Use as the closing site footer for yoga studios, movement spaces, and mindfulness centers.',
   props: z.object({
     /** Wordmark / brand name. */
     brand: z.string().optional(),
@@ -40,39 +40,39 @@ export const YogaStudioFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const hours = props.hours ?? "Open Daily · 6am–9pm"
-    const location = props.location ?? "48 Cedar Street, Portland, OR"
-    const contact = props.contact ?? "(503) 555-0163 · hello@groveyoga.com"
+    const hours = props.hours ?? 'Open Daily · 6am–9pm'
+    const location = props.location ?? '48 Cedar Street, Portland, OR'
+    const contact = props.contact ?? '(503) 555-0163 · hello@groveyoga.com'
     const social = props.social?.length
       ? props.social
-      : [{ label: "Instagram" }, { label: "Facebook" }, { label: "YouTube" }]
+      : [{ label: 'Instagram' }, { label: 'Facebook' }, { label: 'YouTube' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Visit",
+            title: 'Visit',
             links: [hours, location, contact],
           },
           {
-            title: "Practice",
-            links: ["Classes", "Schedule", "Pricing", "Trial"],
+            title: 'Practice',
+            links: ['Classes', 'Schedule', 'Pricing', 'Trial'],
           },
           {
-            title: "Studio",
-            links: ["Teachers", "About", "Workshops", "Contact"],
+            title: 'Studio',
+            links: ['Teachers', 'About', 'Workshops', 'Contact'],
           },
         ]
 
     return (
       <SiteFooter
-        brand={props.brand ?? "Grove Yoga"}
+        brand={props.brand ?? 'Grove Yoga'}
         brandClassName="text-xl font-bold tracking-tight"
         tagline={
-          props.tagline ?? "A welcoming studio to move, breathe, and belong."
+          props.tagline ?? 'A welcoming studio to move, breathe, and belong.'
         }
         social={social}
         columns={columns}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

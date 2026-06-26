@@ -4,10 +4,16 @@ import { writeFile } from './workspace.js'
 import { designBriefPrompt } from '../prompts/design-brief.js'
 import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references.js'
 
-export async function generateDesignBrief(prompt, workspace, log, indiaMode = null) {
+export async function generateDesignBrief(
+  prompt,
+  workspace,
+  log,
+  indiaMode = null,
+) {
   log('  design brief: generating with Groq gpt-oss-120b\u2026')
 
-  const hasUserDesignReferences = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
+  const hasUserDesignReferences =
+    readDesignReferenceUrlsFromWorkspace(workspace).length > 0
   const { system, user, model, temperature, maxTokens } = designBriefPrompt(
     prompt,
     indiaMode,

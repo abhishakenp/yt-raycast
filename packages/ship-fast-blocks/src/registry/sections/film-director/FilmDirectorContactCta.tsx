@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FilmDirectorContactCta — an inverted, near-black contact CTA band for a film
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * houses.
  */
 export const FilmDirectorContactCta = defineComponent({
-  name: "FilmDirectorContactCta",
+  name: 'FilmDirectorContactCta',
   description:
-    "Inverted, near-black contact CTA band for a film director or cinematographer: on a dark foreground band, a centered thin headline + muted lede, a pair of CTA buttons (a filled email button with mail icon and an outlined phone button with phone icon), and a bordered top divider leading into a 3-column detail row (studio address, representation, and a row of social links). All actions route through useNavigate. Use as the closing contact / booking call-to-action for filmmakers, directors, DPs, or production houses.",
+    'Inverted, near-black contact CTA band for a film director or cinematographer: on a dark foreground band, a centered thin headline + muted lede, a pair of CTA buttons (a filled email button with mail icon and an outlined phone button with phone icon), and a bordered top divider leading into a 3-column detail row (studio address, representation, and a row of social links). All actions route through useNavigate. Use as the closing contact / booking call-to-action for filmmakers, directors, DPs, or production houses.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -33,28 +33,28 @@ export const FilmDirectorContactCta = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
     const contactHeading =
-      props.heading ?? "Ready to create something remarkable?"
+      props.heading ?? 'Ready to create something remarkable?'
     const contactDesc =
       props.description ??
       "Let's discuss your project, timeline, and vision. I'm currently booking projects for Q3 2025."
-    const contactEmail = props.email ?? "hello@marcuschen.film"
-    const contactPhone = props.phone ?? "+1 (310) 555-1234"
-    const contactStudioLabel = props.studioLabel ?? "Studio"
+    const contactEmail = props.email ?? 'hello@marcuschen.film'
+    const contactPhone = props.phone ?? '+1 (310) 555-1234'
+    const contactStudioLabel = props.studioLabel ?? 'Studio'
     const contactStudio =
-      props.studio ?? "1247 Abbot Kinney Blvd, Venice, CA 90291"
-    const contactRepLabel = props.repLabel ?? "Representation"
+      props.studio ?? '1247 Abbot Kinney Blvd, Venice, CA 90291'
+    const contactRepLabel = props.repLabel ?? 'Representation'
     const contactRep =
       props.rep ??
-      "Samantha Wright, United Talent Agency, samantha.wright@uta.com"
-    const contactSocialLabel = props.socialLabel ?? "Social"
+      'Samantha Wright, United Talent Agency, samantha.wright@uta.com'
+    const contactSocialLabel = props.socialLabel ?? 'Social'
     const contactSocial = props.social?.length
       ? props.social
-      : ["Instagram", "Vimeo", "LinkedIn"]
+      : ['Instagram', 'Vimeo', 'LinkedIn']
 
     return (
       <section
         className={cn(
-          "bg-foreground py-20 text-background md:py-32",
+          'bg-foreground py-20 text-background md:py-32',
           props.className,
         )}
       >

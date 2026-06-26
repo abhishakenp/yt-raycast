@@ -1,13 +1,13 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CleaningServiceSteps — a "how it works" + "what's included" combo section for a home-cleaning / maid-service landing page. A muted-band background with a centered heading + lead paragraph above a responsive 3-column grid of numbered step cards (with connector lines on desktop), followed by a split-row card: left side shows a "what's included" checklist with checkmark icons, right side shows a 2x2 lazy-loaded photo grid. Use for process-explanation / expectations-setting blocks for residential cleaning companies, maid services, or home-service platforms. Renders fully with no props via baked-in defaults.
  */
 export const CleaningServiceSteps = defineComponent({
-  name: "CleaningServiceSteps",
+  name: 'CleaningServiceSteps',
   description:
     "A 'how it works' + 'what\'s included' combo section for a home-cleaning / maid-service landing page: muted-band background with centered heading + lead above a 3-column numbered step-card grid (with desktop connector lines), followed by a split-row card with a checklist on the left and a 2x2 lazy-loaded photo grid on the right. Use for process-explanation / expectations-setting blocks for residential cleaning, maid services, or home-service platforms.",
   props: z.object({
@@ -28,28 +28,27 @@ export const CleaningServiceSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading =
-      props.heading ?? "Book in minutes, clean in hours"
+    const heading = props.heading ?? 'Book in minutes, clean in hours'
     const description =
       props.description ??
-      "Our streamlined process gets your home cleaned with zero hassle."
+      'Our streamlined process gets your home cleaned with zero hassle.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Book Online",
+            title: 'Book Online',
             description:
-              "Select your service, home size, and preferred time slot. Get instant pricing with no hidden fees. Book as early as tomorrow or schedule recurring visits.",
+              'Select your service, home size, and preferred time slot. Get instant pricing with no hidden fees. Book as early as tomorrow or schedule recurring visits.',
           },
           {
-            title: "We Match & Clean",
+            title: 'We Match & Clean',
             description:
-              "Our algorithm matches you with a vetted, background-checked cleaner in your area. They arrive on time with all supplies and equipment.",
+              'Our algorithm matches you with a vetted, background-checked cleaner in your area. They arrive on time with all supplies and equipment.',
           },
           {
-            title: "Enjoy & Relax",
+            title: 'Enjoy & Relax',
             description:
-              "Come home to sparkling spaces. Rate your cleaner and schedule your next visit. We follow up to ensure everything exceeded expectations.",
+              'Come home to sparkling spaces. Rate your cleaner and schedule your next visit. We follow up to ensure everything exceeded expectations.',
           },
         ]
     const includedHeading =
@@ -57,22 +56,22 @@ export const CleaningServiceSteps = defineComponent({
     const included = props.included?.length
       ? props.included
       : [
-          "All rooms dusted & vacuumed",
-          "Bathrooms sanitized",
-          "Kitchen counters & appliances",
-          "Floors mopped & polished",
-          "Trash removed",
-          "Beds made & linens changed",
-          "Mirrors & glass cleaned",
-          "Supplies provided",
+          'All rooms dusted & vacuumed',
+          'Bathrooms sanitized',
+          'Kitchen counters & appliances',
+          'Floors mopped & polished',
+          'Trash removed',
+          'Beds made & linens changed',
+          'Mirrors & glass cleaned',
+          'Supplies provided',
         ]
     const gallery = props.gallery?.length
       ? props.gallery
       : [
-          "sparkling clean modern kitchen with white cabinets and marble countertops",
-          "clean bathroom with white tiles and glass shower door",
-          "tidied bedroom with made bed and natural light",
-          "organized living room with clean surfaces and vacuumed carpet",
+          'sparkling clean modern kitchen with white cabinets and marble countertops',
+          'clean bathroom with white tiles and glass shower door',
+          'tidied bedroom with made bed and natural light',
+          'organized living room with clean surfaces and vacuumed carpet',
         ]
 
     const Check = ({ className }: { className?: string }) => (
@@ -93,7 +92,7 @@ export const CleaningServiceSteps = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted/40 py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">

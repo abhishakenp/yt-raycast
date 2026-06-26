@@ -1,74 +1,74 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
-import { useQuery } from "convex/react";
-import udfs from "@common/udfs";
-import { SidebarDetailLayout } from "@common/layouts/SidebarDetailLayout";
-import { EmptyData } from "@common/features/data/components/EmptyData";
+import React, { useContext, useEffect, useMemo, useState } from 'react'
+import { useQuery } from 'convex/react'
+import udfs from '@common/udfs'
+import { SidebarDetailLayout } from '@common/layouts/SidebarDetailLayout'
+import { EmptyData } from '@common/features/data/components/EmptyData'
 import {
   DataContent,
   DataContentSkeleton,
-} from "@common/features/data/components/DataContent";
+} from '@common/features/data/components/DataContent'
 import {
   DataSidebar,
   DataSideBarSkeleton,
-} from "@common/features/data/components/DataSidebar";
-import { ShowSchema } from "@common/features/data/components/ShowSchema";
+} from '@common/features/data/components/DataSidebar'
+import { ShowSchema } from '@common/features/data/components/ShowSchema'
 import {
   DeploymentInfoContext,
   PermissionsContext,
-} from "@common/lib/deploymentContext";
-import { useTableMetadataAndUpdateURL } from "@common/lib/useTableMetadata";
-import { useNents } from "@common/lib/useNents";
-import { SchemaJson } from "@common/lib/format";
-import { useTableShapes } from "@common/lib/deploymentApi";
-import { Modal } from "@ui/Modal";
-import { LoadingTransition } from "@ui/Loading";
-import { DeploymentPageTitle } from "@common/elements/DeploymentPageTitle";
-import { NoPermissionMessage } from "@common/elements/NoPermissionMessage";
-import { useRouter } from "next/router";
-import omit from "lodash/omit";
-import { useDataPageSize } from "./Table/utils/useQueryFilteredTable";
+} from '@common/lib/deploymentContext'
+import { useTableMetadataAndUpdateURL } from '@common/lib/useTableMetadata'
+import { useNents } from '@common/lib/useNents'
+import { SchemaJson } from '@common/lib/format'
+import { useTableShapes } from '@common/lib/deploymentApi'
+import { Modal } from '@ui/Modal'
+import { LoadingTransition } from '@ui/Loading'
+import { DeploymentPageTitle } from '@common/elements/DeploymentPageTitle'
+import { NoPermissionMessage } from '@common/elements/NoPermissionMessage'
+import { useRouter } from 'next/router'
+import omit from 'lodash/omit'
+import { useDataPageSize } from './Table/utils/useQueryFilteredTable'
 
 export function DataView({
   onTableCreated,
   onDocumentsAdded,
 }: {
-  onTableCreated?: () => void;
-  onDocumentsAdded?: (count: number) => void;
+  onTableCreated?: () => void
+  onDocumentsAdded?: (count: number) => void
 }) {
   const { useCurrentDeployment, ErrorBoundary } = useContext(
     DeploymentInfoContext,
-  );
-  const { useIsOperationAllowed } = useContext(PermissionsContext);
+  )
+  const { useIsOperationAllowed } = useContext(PermissionsContext)
   const deployment = useCurrentDeployment() ?? {
     id: undefined,
     kind: undefined,
-  };
+  }
 
-  const deploymentId = deployment && "id" in deployment ? deployment.id : null;
+  const deploymentId = deployment && 'id' in deployment ? deployment.id : null
 
-  const router = useRouter();
-  const tableMetadata = useTableMetadataAndUpdateURL();
+  const router = useRouter()
+  const tableMetadata = useTableMetadataAndUpdateURL()
 
-  const canViewData = useIsOperationAllowed("ViewData");
+  const canViewData = useIsOperationAllowed('ViewData')
 
-  const componentId = useNents().selectedNent?.id;
+  const componentId = useNents().selectedNent?.id
   const schemas = useQuery(
     udfs.getSchemas.default,
-    canViewData ? { componentId: componentId ?? null } : "skip",
-  );
+    canViewData ? { componentId: componentId ?? null } : 'skip',
+  )
 
   const [currentPageSize, setPageSize] = useDataPageSize(
     componentId ?? null,
-    tableMetadata?.name ?? "",
-  );
+    tableMetadata?.name ?? '',
+  )
 
   const schemaValidationProgress = useQuery(
     udfs.getSchemas.schemaValidationProgress,
-    canViewData ? { componentId: componentId ?? null } : "skip",
-  );
+    canViewData ? { componentId: componentId ?? null } : 'skip',
+  )
 
   const { activeSchema, inProgressSchema } = useMemo(() => {
-    if (!schemas) return {};
+    if (!schemas) return {}
 
     return {
       activeSchema: schemas.active
@@ -77,12 +77,12 @@ export function DataView({
       inProgressSchema: schemas.inProgress
         ? (JSON.parse(schemas.inProgress) as SchemaJson)
         : null,
-    };
-  }, [schemas]);
+    }
+  }, [schemas])
 
-  const { tables, hadError } = useTableShapes();
+  const { tables, hadError } = useTableShapes()
 
-  const [isShowingSchema, setIsShowingSchema] = useState(false);
+  const [isShowingSchema, setIsShowingSchema] = useState(false)
   const showSchemaProps = useMemo(
     () =>
       activeSchema === undefined || inProgressSchema === undefined
@@ -92,21 +92,21 @@ export function DataView({
             showSchema: () => setIsShowingSchema(true),
           },
     [activeSchema, inProgressSchema, setIsShowingSchema],
-  );
+  )
 
   useEffect(() => {
-    if (router.query.showSchema === "true") {
-      setIsShowingSchema(true);
+    if (router.query.showSchema === 'true') {
+      setIsShowingSchema(true)
       void router.push(
         {
           pathname: router.pathname,
-          query: omit(router.query, "showSchema"),
+          query: omit(router.query, 'showSchema'),
         },
         undefined,
         { shallow: true },
-      );
+      )
     }
-  }, [router.query.showSchema, router]);
+  }, [router.query.showSchema, router])
 
   if (!canViewData) {
     return (
@@ -117,14 +117,14 @@ export function DataView({
           missingPermission="deployment:data:view"
         />
       </>
-    );
+    )
   }
 
   return (
     <>
       <DeploymentPageTitle
-        subtitle={tableMetadata?.name ? "Data" : undefined}
-        title={tableMetadata?.name || "Data"}
+        subtitle={tableMetadata?.name ? 'Data' : undefined}
+        title={tableMetadata?.name || 'Data'}
       />
       {schemas && tables && isShowingSchema && (
         <Modal
@@ -204,7 +204,7 @@ export function DataView({
         )}
       </LoadingTransition>
     </>
-  );
+  )
 }
 
 function HandleTimeout({
@@ -213,22 +213,22 @@ function HandleTimeout({
   setPageSize,
   currentPageSize,
 }: {
-  error: Error;
-  resetError(): void;
-  currentPageSize: number;
-  setPageSize: (pageSize: number) => void;
+  error: Error
+  resetError(): void
+  currentPageSize: number
+  setPageSize: (pageSize: number) => void
 }) {
   if (
     error.message.startsWith(
-      "[CONVEX Q(_system/frontend/paginatedTableDocuments:default)]",
+      '[CONVEX Q(_system/frontend/paginatedTableDocuments:default)]',
     ) &&
-    error.message.includes("Function execution timed out") &&
+    error.message.includes('Function execution timed out') &&
     currentPageSize !== 1
   ) {
-    setPageSize(Math.floor(Math.max(currentPageSize / 2, 1)));
-    resetError();
+    setPageSize(Math.floor(Math.max(currentPageSize / 2, 1)))
+    resetError()
   } else {
-    throw error;
+    throw error
   }
-  return null;
+  return null
 }

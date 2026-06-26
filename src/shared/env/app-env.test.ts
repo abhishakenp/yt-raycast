@@ -33,16 +33,24 @@ describe('app env', () => {
     expect(env.MEDUSA_ADMIN_URL).toBe('https://commerce.ship-fast.io/app')
     expect(env.MEDUSA_STOREFRONT_URL).toBe('https://store.ship-fast.io')
     expect(env.MEDUSA_PUBLISHABLE_KEY).toBe('pk_medusa')
-    expect(env.NEXT_PUBLIC_MEDUSA_BACKEND_URL).toBe('https://public-commerce.ship-fast.io')
+    expect(env.NEXT_PUBLIC_MEDUSA_BACKEND_URL).toBe(
+      'https://public-commerce.ship-fast.io',
+    )
     expect(env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY).toBe('pk_public_medusa')
-    expect(env.VITE_MEDUSA_BACKEND_URL).toBe('https://vite-commerce.ship-fast.io')
+    expect(env.VITE_MEDUSA_BACKEND_URL).toBe(
+      'https://vite-commerce.ship-fast.io',
+    )
     expect(env.VITE_MEDUSA_PUBLISHABLE_KEY).toBe('pk_vite_medusa')
   })
 
   it('rejects invalid URLs', () => {
     expect(() => parseAppEnv({ CONVEX_URL: 'invalid-url' })).toThrow()
-    expect(() => parseAppEnv({ CONVEX_SELF_HOSTED_URL: 'invalid-url' })).toThrow()
-    expect(() => parseAppEnv({ VITE_CONVEX_SELF_HOSTED_URL: 'invalid-url' })).toThrow()
+    expect(() =>
+      parseAppEnv({ CONVEX_SELF_HOSTED_URL: 'invalid-url' }),
+    ).toThrow()
+    expect(() =>
+      parseAppEnv({ VITE_CONVEX_SELF_HOSTED_URL: 'invalid-url' }),
+    ).toThrow()
   })
 
   it('detects empty configured values', () => {

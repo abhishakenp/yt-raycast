@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * InteriorDesignTestimonials — three-up client testimonials grid for an upscale
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * with no props via baked-in defaults.
  */
 export const InteriorDesignTestimonials = defineComponent({
-  name: "InteriorDesignTestimonials",
+  name: 'InteriorDesignTestimonials',
   description:
-    "Three-up client testimonials grid for an upscale interior-design / architecture studio: a centered uppercase eyebrow + light-weight heading above a responsive three-column grid of quote blocks, each with a five-star row, an italic relaxed quote and an author row pairing a round headshot with a name + role/project line. Editorial, warm and trust-building; headshots use the alt-driven Image component. Use as social proof for interior designers, design studios or architecture firms.",
+    'Three-up client testimonials grid for an upscale interior-design / architecture studio: a centered uppercase eyebrow + light-weight heading above a responsive three-column grid of quote blocks, each with a five-star row, an italic relaxed quote and an author row pairing a round headshot with a name + role/project line. Editorial, warm and trust-building; headshots use the alt-driven Image component. Use as social proof for interior designers, design studios or architecture firms.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -33,34 +33,34 @@ export const InteriorDesignTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Testimonials"
-    const heading = props.heading ?? "What our clients say"
+    const eyebrow = props.eyebrow ?? 'Testimonials'
+    const heading = props.heading ?? 'What our clients say'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
-              "Atelier transformed our Victorian into a space that honors its history while feeling completely contemporary. Their attention to detail and understanding of how we live made all the difference.",
-            name: "Sarah Chen",
-            role: "Pacific Heights Residence",
+              'Atelier transformed our Victorian into a space that honors its history while feeling completely contemporary. Their attention to detail and understanding of how we live made all the difference.',
+            name: 'Sarah Chen',
+            role: 'Pacific Heights Residence',
             avatarAlt:
-              "Professional headshot of a smiling woman with shoulder-length dark hair wearing a navy blazer",
+              'Professional headshot of a smiling woman with shoulder-length dark hair wearing a navy blazer',
           },
           {
             quote:
-              "The team at Atelier understood our brand immediately. Our new office space has transformed how we work and how clients perceive us. Truly exceptional work.",
-            name: "Michael Torres",
-            role: "CEO, Meridian Ventures",
+              'The team at Atelier understood our brand immediately. Our new office space has transformed how we work and how clients perceive us. Truly exceptional work.',
+            name: 'Michael Torres',
+            role: 'CEO, Meridian Ventures',
             avatarAlt:
-              "Professional headshot of a smiling man in his 40s with short gray hair wearing a crisp white dress shirt",
+              'Professional headshot of a smiling man in his 40s with short gray hair wearing a crisp white dress shirt',
           },
           {
             quote:
-              "Working with Atelier on our inn was a dream. They captured the essence of wine country elegance while creating spaces that feel intimate and welcoming.",
-            name: "Emma Richardson",
-            role: "Owner, Calistoga Inn",
+              'Working with Atelier on our inn was a dream. They captured the essence of wine country elegance while creating spaces that feel intimate and welcoming.',
+            name: 'Emma Richardson',
+            role: 'Owner, Calistoga Inn',
             avatarAlt:
-              "Professional headshot of a smiling woman with blonde hair wearing a sage green blouse and simple gold jewelry",
+              'Professional headshot of a smiling woman with blonde hair wearing a sage green blouse and simple gold jewelry',
           },
         ]
 
@@ -79,10 +79,7 @@ export const InteriorDesignTestimonials = defineComponent({
 
     return (
       <section
-        className={cn(
-          "px-4 py-20 sm:px-6 md:py-32 lg:px-8",
-          props.className,
-        )}
+        className={cn('px-4 py-20 sm:px-6 md:py-32 lg:px-8', props.className)}
       >
         <div className="mx-auto max-w-7xl">
           <div className="mx-auto mb-16 max-w-2xl text-center md:mb-24">

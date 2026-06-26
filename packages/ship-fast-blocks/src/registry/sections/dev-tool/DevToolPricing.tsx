@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DevToolPricing — a 3-tier pricing table for a developer tool / API platform.
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * tools, API platforms, backend-as-a-service, or technical SaaS.
  */
 export const DevToolPricing = defineComponent({
-  name: "DevToolPricing",
+  name: 'DevToolPricing',
   description:
     "3-tier pricing table for a developer tool / API platform: a muted-banded section with a centered heading + intro above a responsive 3-column grid of plan cards (name, tagline, big price + period, a checklist of features with brand checkmarks, and a CTA button). The featured tier gets a brand-colored border, shadow, and a floating 'Most Popular' pill. Every CTA routes through useNavigate. Use to present subscription tiers for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
   props: z.object({
@@ -37,55 +37,55 @@ export const DevToolPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Simple, transparent pricing"
+    const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
-      "Start free, scale as you grow. No hidden fees, no surprises."
-    const popularLabel = props.popularLabel ?? "Most Popular"
+      'Start free, scale as you grow. No hidden fees, no surprises.'
+    const popularLabel = props.popularLabel ?? 'Most Popular'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Starter",
-            tagline: "For side projects and learning",
-            price: "$0",
-            period: "/month",
+            name: 'Starter',
+            tagline: 'For side projects and learning',
+            price: '$0',
+            period: '/month',
             features: [
-              "10,000 API requests/month",
-              "1 GB storage",
-              "Community support",
-              "3 team members",
+              '10,000 API requests/month',
+              '1 GB storage',
+              'Community support',
+              '3 team members',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
             featured: false,
           },
           {
-            name: "Pro",
-            tagline: "For production applications",
-            price: "$29",
-            period: "/month",
+            name: 'Pro',
+            tagline: 'For production applications',
+            price: '$29',
+            period: '/month',
             features: [
-              "500,000 API requests/month",
-              "50 GB storage",
-              "Priority email support",
-              "15 team members",
-              "Custom domains & SSL",
+              '500,000 API requests/month',
+              '50 GB storage',
+              'Priority email support',
+              '15 team members',
+              'Custom domains & SSL',
             ],
-            cta: "Start Free Trial",
+            cta: 'Start Free Trial',
             featured: true,
           },
           {
-            name: "Enterprise",
-            tagline: "For large-scale teams",
-            price: "Custom",
+            name: 'Enterprise',
+            tagline: 'For large-scale teams',
+            price: 'Custom',
             features: [
-              "Unlimited API requests",
-              "Unlimited storage",
-              "24/7 phone & Slack support",
-              "Unlimited team members",
-              "SSO, audit logs, SLAs",
+              'Unlimited API requests',
+              'Unlimited storage',
+              '24/7 phone & Slack support',
+              'Unlimited team members',
+              'SSO, audit logs, SLAs',
             ],
-            cta: "Contact Sales",
+            cta: 'Contact Sales',
             featured: false,
           },
         ]
@@ -107,7 +107,7 @@ export const DevToolPricing = defineComponent({
 
     return (
       <section
-        className={cn("bg-muted/40 py-20 lg:py-28", props.className)}
+        className={cn('bg-muted/40 py-20 lg:py-28', props.className)}
         aria-labelledby="pricing-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -125,10 +125,10 @@ export const DevToolPricing = defineComponent({
               <article
                 key={tier.name}
                 className={cn(
-                  "relative rounded-2xl bg-background p-6 lg:p-8",
+                  'relative rounded-2xl bg-background p-6 lg:p-8',
                   tier.featured
-                    ? "border-2 border-primary shadow-lg"
-                    : "border border-border",
+                    ? 'border-2 border-primary shadow-lg'
+                    : 'border border-border',
                 )}
               >
                 {tier.featured ? (
@@ -151,9 +151,7 @@ export const DevToolPricing = defineComponent({
                     {tier.price}
                   </span>
                   {tier.period ? (
-                    <span className="text-muted-foreground">
-                      {tier.period}
-                    </span>
+                    <span className="text-muted-foreground">{tier.period}</span>
                   ) : null}
                 </div>
                 <ul className="mb-8 space-y-3 text-sm text-muted-foreground">
@@ -168,10 +166,10 @@ export const DevToolPricing = defineComponent({
                   type="button"
                   onClick={() => go(tier.cta)}
                   className={cn(
-                    "block w-full rounded-lg px-4 py-2.5 text-center font-medium transition-colors",
+                    'block w-full rounded-lg px-4 py-2.5 text-center font-medium transition-colors',
                     tier.featured
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "border border-input text-foreground hover:bg-muted",
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      : 'border border-input text-foreground hover:bg-muted',
                   )}
                 >
                   {tier.cta}

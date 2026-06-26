@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DatingAppNavbar — sticky, translucent top navigation for a dating / matchmaking
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * with no props via baked-in "HeartLink" defaults.
  */
 export const DatingAppNavbar = defineComponent({
-  name: "DatingAppNavbar",
+  name: 'DatingAppNavbar',
   description:
     "Sticky, translucent top navigation bar for a dating / matchmaking app landing page: backdrop-blurred, border-bottomed header pinned to the top with a rounded rose/primary heart-glyph logo tile + app name on the left, centered horizontal nav links (desktop), and a 'Log In' text button plus a pill-shaped primary 'Get the App' CTA on the right. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for dating apps, matchmaking services, singles platforms, friend-finders, or any friendly conversion-focused social-connection landing page.",
   props: z.object({
@@ -33,13 +33,13 @@ export const DatingAppNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "HeartLink"
+    const brand = props.brand ?? 'HeartLink'
     const nav = props.nav?.length
       ? props.nav
-      : ["How It Works", "Features", "Success Stories", "FAQ"]
-    const loginLabel = props.loginLabel ?? "Log In"
-    const cta = props.cta ?? "Get the App"
-    const ctaTarget = props.ctaTarget ?? "Download Free"
+      : ['How It Works', 'Features', 'Success Stories', 'FAQ']
+    const loginLabel = props.loginLabel ?? 'Log In'
+    const cta = props.cta ?? 'Get the App'
+    const ctaTarget = props.ctaTarget ?? 'Download Free'
 
     const HeartGlyph = ({ className }: { className?: string }) => (
       <svg
@@ -59,7 +59,7 @@ export const DatingAppNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >

@@ -1,9 +1,9 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AnalyticsSidebar — fixed left dashboard sidebar for a SaaS analytics / admin
@@ -17,9 +17,9 @@ import { Image } from "#/lib/img.tsx"
  * "DataFlow" defaults.
  */
 export const AnalyticsSidebar = defineComponent({
-  name: "AnalyticsSidebar",
+  name: 'AnalyticsSidebar',
   description:
-    "Fixed left dashboard sidebar for a SaaS analytics / admin product: a full-height bordered card column (hidden below lg) with a brand header (solid token logo tile + product name), a primary nav list with line-icons and an active first item, a count badge on the Notifications item, and a bottom user profile card (avatar, name, role). Every nav item and the profile route through useNavigate for page-switching. Use as the persistent left rail for analytics dashboards, admin panels, business-intelligence consoles, or any data-product control surface.",
+    'Fixed left dashboard sidebar for a SaaS analytics / admin product: a full-height bordered card column (hidden below lg) with a brand header (solid token logo tile + product name), a primary nav list with line-icons and an active first item, a count badge on the Notifications item, and a bottom user profile card (avatar, name, role). Every nav item and the profile route through useNavigate for page-switching. Use as the persistent left rail for analytics dashboards, admin panels, business-intelligence consoles, or any data-product control surface.',
   props: z.object({
     /** Brand / product name shown in the sidebar header. */
     brand: z.string().optional(),
@@ -39,30 +39,30 @@ export const AnalyticsSidebar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "DataFlow"
+    const brand = props.brand ?? 'DataFlow'
     const nav = props.nav?.length
       ? props.nav
       : [
-          "Dashboard",
-          "Customers",
-          "Analytics",
-          "Reports",
-          "Notifications",
-          "Settings",
+          'Dashboard',
+          'Customers',
+          'Analytics',
+          'Reports',
+          'Notifications',
+          'Settings',
         ]
-    const notificationCount = props.notificationCount ?? "3"
+    const notificationCount = props.notificationCount ?? '3'
 
-    const userName = props.user?.name ?? "Marcus Chen"
-    const userRole = props.user?.role ?? "Product Manager"
+    const userName = props.user?.name ?? 'Marcus Chen'
+    const userRole = props.user?.role ?? 'Product Manager'
     const userAvatarAlt =
       props.user?.avatarAlt ??
-      "Professional headshot of a product manager with short brown hair and a friendly smile"
+      'Professional headshot of a product manager with short brown hair and a friendly smile'
 
     // Brand logo tile — solid token mark with the brand initial (decorative).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary font-black text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary font-black text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -75,13 +75,13 @@ export const AnalyticsSidebar = defineComponent({
     const iconProps = {
       width: 20,
       height: 20,
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      stroke: 'currentColor',
       strokeWidth: 2,
-      strokeLinecap: "round" as const,
-      strokeLinejoin: "round" as const,
-      "aria-hidden": true,
+      strokeLinecap: 'round' as const,
+      strokeLinejoin: 'round' as const,
+      'aria-hidden': true,
     }
 
     const navIcons: Record<string, ReactNode> = {
@@ -121,7 +121,7 @@ export const AnalyticsSidebar = defineComponent({
     return (
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 hidden h-full w-64 flex-col border-r border-border bg-card lg:flex",
+          'fixed left-0 top-0 z-50 hidden h-full w-64 flex-col border-r border-border bg-card lg:flex',
           props.className,
         )}
       >
@@ -143,15 +143,15 @@ export const AnalyticsSidebar = defineComponent({
                 type="button"
                 onClick={() => go(label)}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                  'flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                   active
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted",
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted-foreground hover:bg-muted',
                 )}
               >
                 {navIcons[label] ?? navIcons.Dashboard}
                 <span>{label}</span>
-                {label === "Notifications" ? (
+                {label === 'Notifications' ? (
                   <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
                     {notificationCount}
                   </span>

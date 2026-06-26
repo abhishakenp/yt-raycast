@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MentalHealthTeam — a clinician team gallery for a therapy practice. A centered
@@ -14,7 +14,7 @@ import { Image } from "#/lib/img.tsx"
  * counselors, psychologists or psychiatrists at a mental-health practice.
  */
 export const MentalHealthTeam = defineComponent({
-  name: "MentalHealthTeam",
+  name: 'MentalHealthTeam',
   description:
     "Clinician team gallery for a therapy practice: a centered eyebrow + heading + intro above a responsive 1/2/4-column grid of clinician cards (rounded headshot photo that zooms on hover, name, primary-colored role, short bio), then a muted 'looking for a specific specialty?' band with a therapist-matching link. Calm, warm, sage-and-sand wellness aesthetic. The specialty link routes through useNavigate. Use to introduce therapists, counselors, psychologists or psychiatrists at a mental-health practice.",
   props: z.object({
@@ -40,55 +40,54 @@ export const MentalHealthTeam = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Our Team"
-    const heading =
-      props.heading ?? "Experienced, compassionate clinicians"
+    const eyebrow = props.eyebrow ?? 'Our Team'
+    const heading = props.heading ?? 'Experienced, compassionate clinicians'
     const description =
       props.description ??
-      "Our therapists are licensed professionals with advanced training in evidence-based approaches."
+      'Our therapists are licensed professionals with advanced training in evidence-based approaches.'
     const members = props.members?.length
       ? props.members
       : [
           {
-            name: "Dr. Sarah Chen, PsyD",
-            role: "Clinical Director",
-            bio: "Specializes in anxiety disorders, trauma, and EMDR. 12+ years experience. Licensed in Oregon since 2015.",
+            name: 'Dr. Sarah Chen, PsyD',
+            role: 'Clinical Director',
+            bio: 'Specializes in anxiety disorders, trauma, and EMDR. 12+ years experience. Licensed in Oregon since 2015.',
             imageAlt:
-              "Professional headshot of Dr. Sarah Chen, a licensed clinical psychologist with warm smile and professional attire",
+              'Professional headshot of Dr. Sarah Chen, a licensed clinical psychologist with warm smile and professional attire',
           },
           {
-            name: "Marcus Williams, LMFT",
-            role: "Couples & Family Specialist",
-            bio: "Gottman-certified couples therapist. Expert in family systems, divorce mediation, and co-parenting support.",
+            name: 'Marcus Williams, LMFT',
+            role: 'Couples & Family Specialist',
+            bio: 'Gottman-certified couples therapist. Expert in family systems, divorce mediation, and co-parenting support.',
             imageAlt:
-              "Professional headshot of Marcus Williams, a licensed marriage and family therapist with kind expression",
+              'Professional headshot of Marcus Williams, a licensed marriage and family therapist with kind expression',
           },
           {
-            name: "Dr. Elena Rodriguez, MD",
-            role: "Psychiatrist",
-            bio: "Board-certified psychiatrist. Medication management for depression, anxiety, bipolar, and ADHD. Available Thursdays.",
+            name: 'Dr. Elena Rodriguez, MD',
+            role: 'Psychiatrist',
+            bio: 'Board-certified psychiatrist. Medication management for depression, anxiety, bipolar, and ADHD. Available Thursdays.',
             imageAlt:
-              "Professional headshot of Dr. Elena Rodriguez, a psychiatrist with compassionate demeanor",
+              'Professional headshot of Dr. Elena Rodriguez, a psychiatrist with compassionate demeanor',
           },
           {
-            name: "Jennifer Park, LCSW",
-            role: "Anxiety & Life Transitions",
+            name: 'Jennifer Park, LCSW',
+            role: 'Anxiety & Life Transitions',
             bio: "CBT and mindfulness-based therapy. Special focus on young adults, career transitions, and women's mental health.",
             imageAlt:
-              "Professional headshot of Jennifer Park, a licensed clinical social worker with warm approachable presence",
+              'Professional headshot of Jennifer Park, a licensed clinical social worker with warm approachable presence',
           },
         ]
     const specialtyHeading =
-      props.specialtyHeading ?? "Looking for a specific specialty?"
+      props.specialtyHeading ?? 'Looking for a specific specialty?'
     const specialtyDescription =
       props.specialtyDescription ??
-      "We also have clinicians specializing in eating disorders, substance recovery, LGBTQ+ affirming care, and adolescent therapy."
+      'We also have clinicians specializing in eating disorders, substance recovery, LGBTQ+ affirming care, and adolescent therapy.'
     const specialtyCta =
-      props.specialtyCta ?? "Contact us for therapist matching"
-    const bookLabel = props.bookLabel ?? "Book Session"
+      props.specialtyCta ?? 'Contact us for therapist matching'
+    const bookLabel = props.bookLabel ?? 'Book Session'
 
     return (
-      <section className={cn("py-20 lg:py-28", props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <span className="text-sm font-medium uppercase tracking-wider text-primary">
@@ -131,9 +130,7 @@ export const MentalHealthTeam = defineComponent({
             <h3 className="mb-2 text-xl font-semibold text-foreground">
               {specialtyHeading}
             </h3>
-            <p className="mb-6 text-muted-foreground">
-              {specialtyDescription}
-            </p>
+            <p className="mb-6 text-muted-foreground">{specialtyDescription}</p>
             <button
               type="button"
               onClick={() => go(bookLabel)}

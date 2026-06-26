@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * YogaStudioHero — calm, full-bleed hero for a yoga-studio landing page. A warm
@@ -14,7 +14,7 @@ import { Image } from "#/lib/img.tsx"
  * pilates studios, and mindfulness centers. Renders fully with no props.
  */
 export const YogaStudioHero = defineComponent({
-  name: "YogaStudioHero",
+  name: 'YogaStudioHero',
   description:
     "Calm full-bleed hero for a yoga-studio landing page: a warm movement or studio-space photo fills the band under a soft token-based overlay so light text stays readable. Centered content has an uppercase eyebrow, a large headline, a grounding supporting paragraph, and dual CTAs (filled 'Try a Class' + outlined 'See Schedule'). CTAs route through useNavigate. Use as the opening hero for yoga studios, movement spaces, pilates studios, and mindfulness centers.",
   props: z.object({
@@ -38,21 +38,23 @@ export const YogaStudioHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Move · Breathe · Belong"
-    const heading = props.heading ?? "Find your flow, on and off the mat"
+    const eyebrow = props.eyebrow ?? 'Move · Breathe · Belong'
+    const heading = props.heading ?? 'Find your flow, on and off the mat'
     const subheading =
       props.subheading ??
-      "A welcoming studio for every body and every level. Roll out your mat, take a breath, and move through practice with teachers who meet you exactly where you are."
-    const primaryCta = props.primaryCta ?? "Try a Class"
-    const primaryTarget = props.primaryTarget ?? "Trial"
-    const secondaryCta = props.secondaryCta ?? "See Schedule"
-    const secondaryTarget = props.secondaryTarget ?? "Schedule"
+      'A welcoming studio for every body and every level. Roll out your mat, take a breath, and move through practice with teachers who meet you exactly where you are.'
+    const primaryCta = props.primaryCta ?? 'Try a Class'
+    const primaryTarget = props.primaryTarget ?? 'Trial'
+    const secondaryCta = props.secondaryCta ?? 'See Schedule'
+    const secondaryTarget = props.secondaryTarget ?? 'Schedule'
     const imageAlt =
       props.imageAlt ??
-      "warm sunlit yoga studio with wood floors and people moving through a flowing practice"
+      'warm sunlit yoga studio with wood floors and people moving through a flowing practice'
 
     return (
-      <section className={cn("relative isolate overflow-hidden", props.className)}>
+      <section
+        className={cn('relative isolate overflow-hidden', props.className)}
+      >
         <Image
           alt={imageAlt}
           w={1920}

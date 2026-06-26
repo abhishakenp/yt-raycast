@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * JewelryStoreHero — full-bleed cinematic hero for a luxury fine-jewelry
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * high-jewelry maisons. Renders fully with no props via baked-in defaults.
  */
 export const JewelryStoreHero = defineComponent({
-  name: "JewelryStoreHero",
+  name: 'JewelryStoreHero',
   description:
-    "Full-bleed cinematic hero for a luxury fine-jewelry boutique: a dimmed full-cover background image with a left-to-right fade-to-background gradient overlay, fronting a left-aligned column with a wide letter-spaced gold heritage eyebrow, an oversized two-line serif display headline, a relaxed subheading, and dual CTAs (solid gold primary + bordered ghost). A floating bottom-right featured-piece card shows a label, serif piece name, and price. Use as the opening hero for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.",
+    'Full-bleed cinematic hero for a luxury fine-jewelry boutique: a dimmed full-cover background image with a left-to-right fade-to-background gradient overlay, fronting a left-aligned column with a wide letter-spaced gold heritage eyebrow, an oversized two-line serif display headline, a relaxed subheading, and dual CTAs (solid gold primary + bordered ghost). A floating bottom-right featured-piece card shows a label, serif piece name, and price. Use as the opening hero for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.',
   props: z.object({
     eyebrow: z.string().optional(),
     headingTop: z.string().optional(),
@@ -34,25 +34,25 @@ export const JewelryStoreHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Est. 1892 • Paris"
-    const headingTop = props.headingTop ?? "The Art of"
-    const headingBottom = props.headingBottom ?? "Timeless Elegance"
+    const eyebrow = props.eyebrow ?? 'Est. 1892 • Paris'
+    const headingTop = props.headingTop ?? 'The Art of'
+    const headingBottom = props.headingBottom ?? 'Timeless Elegance'
     const subheading =
       props.subheading ??
-      "Discover our heirloom collection of ethically sourced diamonds and masterfully crafted pieces, each telling a story of enduring beauty."
-    const primaryCta = props.primaryCta ?? "Explore Collections"
-    const secondaryCta = props.secondaryCta ?? "Private Viewing"
-    const featuredLabel = props.featuredLabel ?? "Featured Piece"
-    const featuredName = props.featuredName ?? "Éternelle Diamond Pendant"
-    const featuredPrice = props.featuredPrice ?? "$12,500"
+      'Discover our heirloom collection of ethically sourced diamonds and masterfully crafted pieces, each telling a story of enduring beauty.'
+    const primaryCta = props.primaryCta ?? 'Explore Collections'
+    const secondaryCta = props.secondaryCta ?? 'Private Viewing'
+    const featuredLabel = props.featuredLabel ?? 'Featured Piece'
+    const featuredName = props.featuredName ?? 'Éternelle Diamond Pendant'
+    const featuredPrice = props.featuredPrice ?? '$12,500'
     const imageAlt =
       props.imageAlt ??
-      "elegant diamond necklace displayed on black velvet jewelry stand in luxury boutique lighting"
+      'elegant diamond necklace displayed on black velvet jewelry stand in luxury boutique lighting'
 
     return (
       <section
         className={cn(
-          "relative flex min-h-screen items-center bg-background",
+          'relative flex min-h-screen items-center bg-background',
           props.className,
         )}
       >

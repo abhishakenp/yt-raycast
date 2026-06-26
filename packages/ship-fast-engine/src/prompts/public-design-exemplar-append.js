@@ -2,7 +2,10 @@ import { readFileSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../public/designs')
+const ROOT = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../public/designs',
+)
 
 const SITE_TO_FILE = {
   saas: 'design-03-saas-homepage.html',

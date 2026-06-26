@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * PlumbingHvacHero — full-bleed, image-forward hero for a local plumbing & HVAC
@@ -17,7 +17,7 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const PlumbingHvacHero = defineComponent({
-  name: "PlumbingHvacHero",
+  name: 'PlumbingHvacHero',
   description:
     "Full-bleed image-forward hero for a local plumbing & HVAC trade site built around the 24/7 emergency angle: a photo of a uniformed technician at work fills the band edge to edge under a token-based dark overlay so light text stays readable. Content has an uppercase '24/7 Emergency Service' eyebrow pill, a large headline, a supporting paragraph, dual CTAs (filled 'Call Now' + outlined translucent 'Book Online'), and a trust-badge row (Licensed, Insured, years in business, star rating). CTAs route through useNavigate. Use as the opening hero for plumbers, HVAC contractors, drain/sewer pros, and water-heater installers.",
   props: z.object({
@@ -43,25 +43,32 @@ export const PlumbingHvacHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "24/7 Emergency Service"
+    const eyebrow = props.eyebrow ?? '24/7 Emergency Service'
     const heading =
-      props.heading ?? "Fast, reliable plumbing & HVAC — any hour, any day"
+      props.heading ?? 'Fast, reliable plumbing & HVAC — any hour, any day'
     const subheading =
       props.subheading ??
-      "Burst pipe at 2am? AC down in a heatwave? Our licensed technicians arrive on time, fix it right the first time, and leave your home cleaner than we found it. Upfront pricing, no surprises."
-    const primaryCta = props.primaryCta ?? "Call Now"
-    const primaryTarget = props.primaryTarget ?? "Contact"
-    const secondaryCta = props.secondaryCta ?? "Book Online"
-    const secondaryTarget = props.secondaryTarget ?? "Contact"
+      'Burst pipe at 2am? AC down in a heatwave? Our licensed technicians arrive on time, fix it right the first time, and leave your home cleaner than we found it. Upfront pricing, no surprises.'
+    const primaryCta = props.primaryCta ?? 'Call Now'
+    const primaryTarget = props.primaryTarget ?? 'Contact'
+    const secondaryCta = props.secondaryCta ?? 'Book Online'
+    const secondaryTarget = props.secondaryTarget ?? 'Contact'
     const imageAlt =
       props.imageAlt ??
-      "uniformed plumbing and HVAC technician repairing equipment under a kitchen sink with a toolbox nearby"
+      'uniformed plumbing and HVAC technician repairing equipment under a kitchen sink with a toolbox nearby'
     const badges = props.badges?.length
       ? props.badges
-      : ["Licensed & Bonded", "Fully Insured", "20+ Years Experience", "4.9★ Rated"]
+      : [
+          'Licensed & Bonded',
+          'Fully Insured',
+          '20+ Years Experience',
+          '4.9★ Rated',
+        ]
 
     return (
-      <section className={cn("relative isolate overflow-hidden", props.className)}>
+      <section
+        className={cn('relative isolate overflow-hidden', props.className)}
+      >
         <Image
           alt={imageAlt}
           w={1920}

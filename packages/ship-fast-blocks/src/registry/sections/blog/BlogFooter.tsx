@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * BlogFooter — a rich, multi-column closing footer for an editorial blog or
@@ -31,9 +31,9 @@ const PenMark = ({ className }: { className?: string }) => (
 )
 
 export const BlogFooter = defineComponent({
-  name: "BlogFooter",
+  name: 'BlogFooter',
   description:
-    "Rich, multi-column closing footer for an editorial blog or publication: a responsive grid with a brand block (wordmark + inline glyph mark + editorial tagline + social row) and link columns (Explore, Topics, More), plus a bordered-top bottom bar holding an auto-updating copyright line and a small legal link row. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for blogs, magazines, newsrooms, or content hubs.",
+    'Rich, multi-column closing footer for an editorial blog or publication: a responsive grid with a brand block (wordmark + inline glyph mark + editorial tagline + social row) and link columns (Explore, Topics, More), plus a bordered-top bottom bar holding an auto-updating copyright line and a small legal link row. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for blogs, magazines, newsrooms, or content hubs.',
   props: z.object({
     /** Publication / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -54,37 +54,37 @@ export const BlogFooter = defineComponent({
   component: ({ props }) => {
     const social = props.social?.length
       ? props.social
-      : [{ label: "Twitter" }, { label: "GitHub" }, { label: "RSS" }]
+      : [{ label: 'Twitter' }, { label: 'GitHub' }, { label: 'RSS' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Explore",
-            links: ["Latest", "Topics", "Authors", "Archive"],
+            title: 'Explore',
+            links: ['Latest', 'Topics', 'Authors', 'Archive'],
           },
           {
-            title: "Topics",
-            links: ["Design", "Engineering", "Product", "Culture"],
+            title: 'Topics',
+            links: ['Design', 'Engineering', 'Product', 'Culture'],
           },
           {
-            title: "More",
-            links: ["About", "Newsletter", "Contact"],
+            title: 'More',
+            links: ['About', 'Newsletter', 'Contact'],
           },
         ]
 
     return (
       <SiteFooter
-        brand={props.brand ?? "Form & Function"}
+        brand={props.brand ?? 'Form & Function'}
         brandMark={<PenMark className="size-8 text-primary" />}
         brandClassName="font-serif text-xl font-medium"
         tagline={
           props.tagline ??
-          "Essays on design, engineering, and the craft of building products."
+          'Essays on design, engineering, and the craft of building products.'
         }
         social={social}
         columns={columns}
-        legal={["Privacy", "Terms", "RSS"]}
-        note={props.note ?? "All rights reserved."}
+        legal={['Privacy', 'Terms', 'RSS']}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

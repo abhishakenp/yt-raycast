@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CafeProcess — dark "farm to cup" numbered process band for a cozy cafe /
@@ -12,7 +12,7 @@ import { cn } from "#/lib/utils.ts"
  * Renders fully with no props via baked-in defaults.
  */
 export const CafeProcess = defineComponent({
-  name: "CafeProcess",
+  name: 'CafeProcess',
   description:
     "Dark 'farm to cup' numbered process band for a cozy cafe page: full-bleed inverted section on bg-foreground with centered cap, serif heading, and description above a 4-up grid. Each step shows a circular tile with an outlined number (01–04), serif title, and description. No links. Use as a credibility / craft-process block for cafes, roasteries, bakeries, or artisan food brands.",
   props: z.object({
@@ -29,8 +29,8 @@ export const CafeProcess = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const cap = props.cap ?? "The Process"
-    const heading = props.heading ?? "From farm to cup"
+    const cap = props.cap ?? 'The Process'
+    const heading = props.heading ?? 'From farm to cup'
     const description =
       props.description ??
       "Every step matters. We obsess over the details so you don't have to."
@@ -38,30 +38,30 @@ export const CafeProcess = defineComponent({
       ? props.steps
       : [
           {
-            title: "Source",
+            title: 'Source',
             description:
-              "Direct relationships with small-lot farmers in coffee belt regions",
+              'Direct relationships with small-lot farmers in coffee belt regions',
           },
           {
-            title: "Roast",
+            title: 'Roast',
             description:
-              "Small-batch roasting on our Diedrich IR-12, profiles dialed to origin",
+              'Small-batch roasting on our Diedrich IR-12, profiles dialed to origin',
           },
           {
-            title: "Brew",
+            title: 'Brew',
             description:
-              "Precision extraction using refractometers and taste panels",
+              'Precision extraction using refractometers and taste panels',
           },
           {
-            title: "Serve",
+            title: 'Serve',
             description:
-              "Hand-delivered with care, every drink crafted to order",
+              'Hand-delivered with care, every drink crafted to order',
           },
         ]
 
     return (
       <section
-        className={cn("bg-foreground py-20 text-background", props.className)}
+        className={cn('bg-foreground py-20 text-background', props.className)}
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
@@ -79,15 +79,11 @@ export const CafeProcess = defineComponent({
               <div key={step.title} className="space-y-4 text-center">
                 <div className="mx-auto grid size-16 place-items-center rounded-full border border-background/20 bg-background/10">
                   <span className="font-serif text-2xl text-primary">
-                    {String(i + 1).padStart(2, "0")}
+                    {String(i + 1).padStart(2, '0')}
                   </span>
                 </div>
-                <h3 className="font-serif text-lg font-medium">
-                  {step.title}
-                </h3>
-                <p className="text-sm text-background/60">
-                  {step.description}
-                </p>
+                <h3 className="font-serif text-lg font-medium">{step.title}</h3>
+                <p className="text-sm text-background/60">{step.description}</p>
               </div>
             ))}
           </div>

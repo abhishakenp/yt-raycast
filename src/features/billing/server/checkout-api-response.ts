@@ -326,7 +326,7 @@ export const createCheckoutApiResponse = async (
   if (gateway === 'razorpay') {
     // Razorpay offers must be pre-created in the dashboard and referenced by id.
     const referralOfferId = referralUnlocked
-      ? ((env.RAZORPAY_REFERRAL_OFFER_ID ?? '').trim() || null)
+      ? (env.RAZORPAY_REFERRAL_OFFER_ID ?? '').trim() || null
       : null
     return await fetchRazorpayCheckout(
       env,

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * EventSpeakers — a featured-speakers grid for a conference or event page. A muted
@@ -13,7 +13,7 @@ import { Image } from "#/lib/img.tsx"
  * conference, summit, meetup, or festival pages.
  */
 export const EventSpeakers = defineComponent({
-  name: "EventSpeakers",
+  name: 'EventSpeakers',
   description:
     "Featured-speakers grid for a conference or event page: a muted band with a heading + description on the left and a 'view all' link (with arrow) on the right, above a responsive 4-up grid of bordered speaker cards. Each card shows a circular alt-driven headshot, the speaker name, role, and a short bio, and routes through useNavigate on click. Use to showcase keynote and session speakers on tech conference, summit, meetup, festival, or workshop pages.",
   props: z.object({
@@ -37,53 +37,53 @@ export const EventSpeakers = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Featured Speakers"
+    const heading = props.heading ?? 'Featured Speakers'
     const description =
       props.description ??
-      "Learn from the engineers and designers shaping the future of web development."
-    const viewAll = props.viewAll ?? "View full agenda"
+      'Learn from the engineers and designers shaping the future of web development.'
+    const viewAll = props.viewAll ?? 'View full agenda'
     const items = props.items?.length
       ? props.items
       : [
           {
-            name: "Sarah Chen",
-            role: "Design Systems Lead",
+            name: 'Sarah Chen',
+            role: 'Design Systems Lead',
             bio: 'Previously led design systems at Airbnb and Pinterest. Author of "Scaling Design Systems."',
           },
           {
-            name: "Marcus Rodriguez",
-            role: "Frontend Architect",
-            bio: "Core contributor to React and Next.js. Previously engineering lead at Vercel.",
+            name: 'Marcus Rodriguez',
+            role: 'Frontend Architect',
+            bio: 'Core contributor to React and Next.js. Previously engineering lead at Vercel.',
           },
           {
-            name: "Emily Watson",
-            role: "VP of Product Design",
-            bio: "Leading design at Linear. Previously built design teams at Dropbox and Figma.",
+            name: 'Emily Watson',
+            role: 'VP of Product Design',
+            bio: 'Leading design at Linear. Previously built design teams at Dropbox and Figma.',
           },
           {
-            name: "David Park",
-            role: "Staff Engineer",
-            bio: "Web performance expert at Shopify. Created widely-adopted performance tooling.",
+            name: 'David Park',
+            role: 'Staff Engineer',
+            bio: 'Web performance expert at Shopify. Created widely-adopted performance tooling.',
           },
           {
-            name: "James Mitchell",
-            role: "Design Engineering",
-            bio: "Pioneering design-to-code workflows at Framer. Formerly at Apple Special Projects.",
+            name: 'James Mitchell',
+            role: 'Design Engineering',
+            bio: 'Pioneering design-to-code workflows at Framer. Formerly at Apple Special Projects.',
           },
           {
-            name: "Priya Sharma",
-            role: "Accessibility Lead",
-            bio: "Accessibility advocate at Microsoft. W3C contributor and conference keynote speaker.",
+            name: 'Priya Sharma',
+            role: 'Accessibility Lead',
+            bio: 'Accessibility advocate at Microsoft. W3C contributor and conference keynote speaker.',
           },
           {
-            name: "Alex Thompson",
-            role: "Creative Developer",
-            bio: "Award-winning creative technologist. Awwwards Site of the Day x12 recipient.",
+            name: 'Alex Thompson',
+            role: 'Creative Developer',
+            bio: 'Award-winning creative technologist. Awwwards Site of the Day x12 recipient.',
           },
           {
-            name: "Lisa Nakamura",
-            role: "UX Research Director",
-            bio: "Leading user research at Notion. Stanford HCI PhD, published researcher.",
+            name: 'Lisa Nakamura',
+            role: 'UX Research Director',
+            bio: 'Leading user research at Notion. Stanford HCI PhD, published researcher.',
           },
         ]
 
@@ -105,7 +105,7 @@ export const EventSpeakers = defineComponent({
     )
 
     return (
-      <section className={cn("bg-muted py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>

@@ -1,9 +1,9 @@
-import { type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 const cardIcons: Record<string, ReactNode> = {
   power: (
@@ -70,9 +70,9 @@ const cardIcons: Record<string, ReactNode> = {
 }
 
 export const GovernmentPortalServices = defineComponent({
-  name: "GovernmentPortalServices",
+  name: 'GovernmentPortalServices',
   description:
-    "Row of four colored quick-link department cards (Power Generation #74C7A1, Business #E2CA96, Environment #E6AD97, Sustainability #94BEE0) with line icons, generalising to any classic indian government / PSU department set. Official, civic navigation tiles for public sector, municipal, utility, power and electricity board portals linking to tender, notice and service sections of a government portal. Use for the department quick-links band of a classic government portal.",
+    'Row of four colored quick-link department cards (Power Generation #74C7A1, Business #E2CA96, Environment #E6AD97, Sustainability #94BEE0) with line icons, generalising to any classic indian government / PSU department set. Official, civic navigation tiles for public sector, municipal, utility, power and electricity board portals linking to tender, notice and service sections of a government portal. Use for the department quick-links band of a classic government portal.',
   props: z.object({
     /** Optional small section heading shown above the cards. */
     heading: z.string().optional(),
@@ -83,7 +83,7 @@ export const GovernmentPortalServices = defineComponent({
           title: z.string(),
           href: z.string(),
           color: z.string(),
-          icon: z.enum(["power", "business", "environment", "sustainability"]),
+          icon: z.enum(['power', 'business', 'environment', 'sustainability']),
           desc: z.string().optional(),
         }),
       )
@@ -92,43 +92,42 @@ export const GovernmentPortalServices = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Citizen Services & Departments"
-    const cards =
-      props.cards?.length
-        ? props.cards
-        : [
-            {
-              title: "Power Generation",
-              href: "Power Generation",
-              color: "#74C7A1",
-              icon: "power" as const,
-              desc: "Thermal generation, installed capacity & plant performance",
-            },
-            {
-              title: "Business",
-              href: "Business",
-              color: "#E2CA96",
-              icon: "business" as const,
-              desc: "Tenders, procurement, vendor empanelment & bidding",
-            },
-            {
-              title: "Environment",
-              href: "Environment",
-              color: "#E6AD97",
-              icon: "environment" as const,
-              desc: "Ash utilisation, emissions & environment policy",
-            },
-            {
-              title: "Sustainability",
-              href: "Sustainability",
-              color: "#94BEE0",
-              icon: "sustainability" as const,
-              desc: "CSR, safety & community welfare initiatives",
-            },
-          ]
+    const heading = props.heading ?? 'Citizen Services & Departments'
+    const cards = props.cards?.length
+      ? props.cards
+      : [
+          {
+            title: 'Power Generation',
+            href: 'Power Generation',
+            color: '#74C7A1',
+            icon: 'power' as const,
+            desc: 'Thermal generation, installed capacity & plant performance',
+          },
+          {
+            title: 'Business',
+            href: 'Business',
+            color: '#E2CA96',
+            icon: 'business' as const,
+            desc: 'Tenders, procurement, vendor empanelment & bidding',
+          },
+          {
+            title: 'Environment',
+            href: 'Environment',
+            color: '#E6AD97',
+            icon: 'environment' as const,
+            desc: 'Ash utilisation, emissions & environment policy',
+          },
+          {
+            title: 'Sustainability',
+            href: 'Sustainability',
+            color: '#94BEE0',
+            icon: 'sustainability' as const,
+            desc: 'CSR, safety & community welfare initiatives',
+          },
+        ]
     return (
       <section
-        className={cn("w-full", props.className)}
+        className={cn('w-full', props.className)}
         style={{
           fontFamily: '"Alegreya Sans","Open Sans",system-ui,sans-serif',
         }}

@@ -46,11 +46,17 @@ ${loaded.content}
 }
 
 export function globalSpecRulesAppendix() {
-  return fencedRefAppendix('GLOBAL SITE SPEC RULES', loadContentPlanRef('global-spec-rules'))
+  return fencedRefAppendix(
+    'GLOBAL SITE SPEC RULES',
+    loadContentPlanRef('global-spec-rules'),
+  )
 }
 
 export function editSpecRulesAppendix() {
-  return fencedRefAppendix('EDIT MODE SPEC RULES', loadContentPlanRef('edit-mode-spec-rules'))
+  return fencedRefAppendix(
+    'EDIT MODE SPEC RULES',
+    loadContentPlanRef('edit-mode-spec-rules'),
+  )
 }
 
 export function siteSpecOutputContractAppendix(schemaVersion) {
@@ -58,7 +64,10 @@ export function siteSpecOutputContractAppendix(schemaVersion) {
   if (!loaded?.content) return ''
   const ver = schemaVersion ?? ''
   const content = loaded.content.replaceAll('{{SITE_SPEC_VERSION}}', ver)
-  return fencedRefAppendix('SITE SPEC OUTPUT CONTRACT', { name: loaded.name, content })
+  return fencedRefAppendix('SITE SPEC OUTPUT CONTRACT', {
+    name: loaded.name,
+    content,
+  })
 }
 
 export function thinSiteSpecOutputAppendix(schemaVersion) {
@@ -66,5 +75,8 @@ export function thinSiteSpecOutputAppendix(schemaVersion) {
   if (!loaded?.content) return ''
   const ver = schemaVersion ?? ''
   const content = loaded.content.replaceAll('{{SITE_SPEC_VERSION}}', ver)
-  return fencedRefAppendix('THIN SITE SPEC CONTRACT (PASS A)', { name: loaded.name, content })
+  return fencedRefAppendix('THIN SITE SPEC CONTRACT (PASS A)', {
+    name: loaded.name,
+    content,
+  })
 }

@@ -11,14 +11,17 @@ import { renderOpenUIToHTML } from '../../openui-ssr.js'
 import { DEFAULT_MODEL } from '../model-list.ts'
 
 const model = DEFAULT_MODEL
-const prompt = process.argv[2] || 'a modern SaaS analytics platform for product teams'
+const prompt =
+  process.argv[2] || 'a modern SaaS analytics platform for product teams'
 console.log('families discovered:', FAMILY_NAMES.length)
 
 const signal = new AbortController().signal
 const t0 = performance.now()
 const candidates = await classifyFamilies(prompt, model, signal)
 const classifyMs = performance.now() - t0
-console.log(`classified families = [${candidates.join(', ')}] (${classifyMs.toFixed(0)}ms)`)
+console.log(
+  `classified families = [${candidates.join(', ')}] (${classifyMs.toFixed(0)}ms)`,
+)
 
 const nav = ['Home', 'Product', 'Pricing', 'Contact']
 const brand = brandFromPrompt(prompt)
@@ -41,13 +44,19 @@ for (const seed of ['seed-A', 'seed-B', 'seed-C']) {
   let valid = false
   let err = ''
   try {
-    await auditOpenUIProgram(source, { expectedRoot: 'PageSwitch', expectedPageIds: ['home'] })
+    await auditOpenUIProgram(source, {
+      expectedRoot: 'PageSwitch',
+      expectedPageIds: ['home'],
+    })
     valid = true
   } catch (e) {
     err = e instanceof Error ? e.message : String(e)
   }
   const html = await renderOpenUIToHTML(source, undefined, 'en')
-  const textLen = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().length
+  const textLen = html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim().length
   const file = `/tmp/v2-${seed}.html`
   writeFileSync(file, html)
   console.log(

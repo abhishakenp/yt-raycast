@@ -9,8 +9,9 @@ import { sessionInternalReferences } from './lib/session_internal_references'
 import { completeGenerationArgs } from './lib/session_validators'
 
 const loadOpenUISSR = async () => {
-  const { renderOpenUIToHTMLWithTheme } =
-    await import('@ship-fast/engine/openui-ssr.js')
+  const { renderOpenUIToHTMLWithTheme } = await import(
+    '@ship-fast/engine/openui-ssr.js'
+  )
   return { renderOpenUIToHTMLWithTheme }
 }
 

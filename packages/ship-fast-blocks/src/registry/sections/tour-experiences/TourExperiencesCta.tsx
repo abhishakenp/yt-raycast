@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * TourExperiencesCta — closing call-to-action band for an adventure /
@@ -12,7 +12,7 @@ import { CtaBand } from "#/section-kit/CtaBand.tsx"
  * defaults.
  */
 export const TourExperiencesCta = defineComponent({
-  name: "TourExperiencesCta",
+  name: 'TourExperiencesCta',
   description:
     "Closing call-to-action band for an adventure / guided-tour brand. Composes the shared CtaBand composite on a primary-tone surface with an eyebrow, a bold 'Book your adventure' title, a supporting line, and two routable actions (primary 'Book a Tour' + outline 'Talk to a guide'). Use as the conversion band before the footer on tour-operator, expedition, and travel-experience landing pages.",
   props: z.object({
@@ -36,22 +36,22 @@ export const TourExperiencesCta = defineComponent({
     return (
       <CtaBand
         tone="primary"
-        eyebrow={props.eyebrow ?? "Limited seats each departure"}
-        title={props.title ?? "Book your adventure"}
+        eyebrow={props.eyebrow ?? 'Limited seats each departure'}
+        title={props.title ?? 'Book your adventure'}
         subtitle={
           props.subtitle ??
-          "Lock in your spot on a small-group tour led by local experts. Free cancellation up to 48 hours before you go."
+          'Lock in your spot on a small-group tour led by local experts. Free cancellation up to 48 hours before you go.'
         }
         actions={[
           {
-            label: props.primaryCta ?? "Book a Tour",
-            target: props.primaryTarget ?? "Book a Tour",
-            variant: "primary",
+            label: props.primaryCta ?? 'Book a Tour',
+            target: props.primaryTarget ?? 'Book a Tour',
+            variant: 'primary',
           },
           {
-            label: props.secondaryCta ?? "Talk to a guide",
-            target: props.secondaryTarget ?? "Contact",
-            variant: "outline",
+            label: props.secondaryCta ?? 'Talk to a guide',
+            target: props.secondaryTarget ?? 'Contact',
+            variant: 'outline',
           },
         ]}
         className={props.className}

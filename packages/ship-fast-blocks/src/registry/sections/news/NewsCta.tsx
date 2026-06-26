@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * NewsCta — "Support Independent Journalism" subscribe call-to-action band for
@@ -14,7 +14,7 @@ import { CtaBand } from "#/section-kit/CtaBand.tsx"
  * homepage. Renders fully with no props via baked-in defaults.
  */
 export const NewsCta = defineComponent({
-  name: "NewsCta",
+  name: 'NewsCta',
   description:
     "'Support Independent Journalism' subscribe call-to-action band for a news / editorial site built on the shared CtaBand composite at tone='primary': a membership eyebrow, a strong headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Subscribe Now' button plus an outlined 'View All Plans' button). Both CTAs route through useNavigate. Use as the subscription / membership CTA near the bottom of a newspaper, magazine or publication homepage.",
   props: z.object({
@@ -34,22 +34,22 @@ export const NewsCta = defineComponent({
     return (
       <CtaBand
         tone="primary"
-        eyebrow={props.eyebrow ?? "Become a member"}
-        title={props.heading ?? "Support Independent Journalism"}
+        eyebrow={props.eyebrow ?? 'Become a member'}
+        title={props.heading ?? 'Support Independent Journalism'}
         subtitle={
           props.subheading ??
-          "Subscribe today for unlimited access to award-winning reporting, expert analysis, and exclusive features. No paywalls on breaking news—ever."
+          'Subscribe today for unlimited access to award-winning reporting, expert analysis, and exclusive features. No paywalls on breaking news—ever.'
         }
         actions={[
           {
-            label: props.primaryCta ?? "Subscribe Now",
-            target: "Subscribe",
-            variant: "primary",
+            label: props.primaryCta ?? 'Subscribe Now',
+            target: 'Subscribe',
+            variant: 'primary',
           },
           {
-            label: props.secondaryCta ?? "View All Plans",
-            target: "Plans",
-            variant: "outline",
+            label: props.secondaryCta ?? 'View All Plans',
+            target: 'Plans',
+            variant: 'outline',
           },
         ]}
         className={props.className}

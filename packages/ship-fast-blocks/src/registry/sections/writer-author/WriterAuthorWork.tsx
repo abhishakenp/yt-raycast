@@ -1,9 +1,9 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * WriterAuthorWork — a "Selected works" books grid for a literary author site.
@@ -15,7 +15,7 @@ import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
  * Ships with five baked-in titles so it renders fully with no props.
  */
 export const WriterAuthorWork = defineComponent({
-  name: "WriterAuthorWork",
+  name: 'WriterAuthorWork',
   description:
     "A 'Selected works' books grid for a literary author website: a centered SectionHeading (uppercase 'Books' eyebrow over a serif title) above a responsive grid of book cards. Each card pairs a tall 2:3 cover image with the book title, publication year, and a 'Buy' link button that routes through useNavigate. Built for novelists, essayists, poets, and memoirists presenting a backlist with restrained, elegant serif typography. Renders fully with no props via five baked-in titles.",
   props: z.object({
@@ -40,50 +40,49 @@ export const WriterAuthorWork = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const buyLabel = props.buyLabel ?? "Buy"
-    const books =
-      props.books ?? [
-        {
-          title: "The Salt Houses",
-          year: "2023",
-          coverAlt:
-            "minimalist serif cover in muted ivory tones, literary fiction novel book cover",
-        },
-        {
-          title: "A Quiet Inheritance",
-          year: "2021",
-          coverAlt:
-            "moody seascape with hand-set type, contemporary literary fiction novel book cover",
-        },
-        {
-          title: "The Cartographer's Daughter",
-          year: "2018",
-          coverAlt:
-            "antique map detail under elegant serif lettering, historical literary fiction book cover",
-        },
-        {
-          title: "Letters to the North",
-          year: "2015",
-          coverAlt:
-            "weathered letter and pressed flower still life, epistolary literary fiction book cover",
-        },
-        {
-          title: "Where the Light Falls",
-          year: "2012",
-          coverAlt:
-            "soft window light across an empty chair, debut literary fiction novel book cover",
-        },
-      ]
+    const buyLabel = props.buyLabel ?? 'Buy'
+    const books = props.books ?? [
+      {
+        title: 'The Salt Houses',
+        year: '2023',
+        coverAlt:
+          'minimalist serif cover in muted ivory tones, literary fiction novel book cover',
+      },
+      {
+        title: 'A Quiet Inheritance',
+        year: '2021',
+        coverAlt:
+          'moody seascape with hand-set type, contemporary literary fiction novel book cover',
+      },
+      {
+        title: "The Cartographer's Daughter",
+        year: '2018',
+        coverAlt:
+          'antique map detail under elegant serif lettering, historical literary fiction book cover',
+      },
+      {
+        title: 'Letters to the North',
+        year: '2015',
+        coverAlt:
+          'weathered letter and pressed flower still life, epistolary literary fiction book cover',
+      },
+      {
+        title: 'Where the Light Falls',
+        year: '2012',
+        coverAlt:
+          'soft window light across an empty chair, debut literary fiction novel book cover',
+      },
+    ]
 
     return (
-      <section className={cn("bg-background py-20 sm:py-24", props.className)}>
+      <section className={cn('bg-background py-20 sm:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <SectionHeading
             eyebrow="Books"
-            title={props.heading ?? "Selected works"}
+            title={props.heading ?? 'Selected works'}
             subtitle={
               props.subheading ??
-              "A decade of novels exploring memory, place, and the quiet weight of family."
+              'A decade of novels exploring memory, place, and the quiet weight of family.'
             }
           />
 
@@ -102,7 +101,7 @@ export const WriterAuthorWork = defineComponent({
                 <p className="text-sm text-muted-foreground">{book.year}</p>
                 <button
                   type="button"
-                  onClick={() => go(book.target ?? "Books")}
+                  onClick={() => go(book.target ?? 'Books')}
                   className="mt-2 self-start text-sm font-medium text-primary hover:underline"
                 >
                   {buyLabel}

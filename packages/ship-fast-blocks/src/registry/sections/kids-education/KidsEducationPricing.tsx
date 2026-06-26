@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * KidsEducationPricing — friendly 3-tier pricing table for a kids / family
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const KidsEducationPricing = defineComponent({
-  name: "KidsEducationPricing",
+  name: 'KidsEducationPricing',
   description:
     "Friendly 3-tier pricing table for a kids / family learning platform: a centered eyebrow + heading + description intro above a responsive 3-up grid of rounded plan cards; the highlighted 'Most Popular' plan inverts to a dark surface, lifts on desktop, and shows a floating badge. Each card lists name, tagline, price + period, a checkmarked feature list, and a full-width pill CTA, with a reassurance note centered below. CTAs route through useNavigate. Use for subscription tiers on kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
   props: z.object({
@@ -46,58 +46,58 @@ export const KidsEducationPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Pricing"
-    const heading = props.heading ?? "Simple, Transparent Pricing"
+    const eyebrow = props.eyebrow ?? 'Pricing'
+    const heading = props.heading ?? 'Simple, Transparent Pricing'
     const description =
       props.description ??
-      "Choose the plan that works for your family. All plans include a 14-day free trial."
+      'Choose the plan that works for your family. All plans include a 14-day free trial.'
     const note =
       props.note ??
-      "All plans include a 14-day free trial. No credit card required."
+      'All plans include a 14-day free trial. No credit card required.'
     const plans = props.plans?.length
       ? props.plans
       : [
           {
-            name: "Starter",
-            tagline: "Perfect for trying out",
-            price: "$0",
-            period: "/month",
+            name: 'Starter',
+            tagline: 'Perfect for trying out',
+            price: '$0',
+            period: '/month',
             features: [
-              "3 activities per day",
-              "1 child profile",
-              "Basic progress tracking",
-              "Community support",
+              '3 activities per day',
+              '1 child profile',
+              'Basic progress tracking',
+              'Community support',
             ],
-            cta: "Get Started Free",
+            cta: 'Get Started Free',
           },
           {
-            name: "Family",
-            tagline: "Best for growing families",
-            price: "$12",
-            period: "/month",
+            name: 'Family',
+            tagline: 'Best for growing families',
+            price: '$12',
+            period: '/month',
             features: [
-              "Unlimited activities",
-              "Up to 4 child profiles",
-              "Detailed progress reports",
-              "Offline activity downloads",
-              "Priority email support",
+              'Unlimited activities',
+              'Up to 4 child profiles',
+              'Detailed progress reports',
+              'Offline activity downloads',
+              'Priority email support',
             ],
-            cta: "Start Free Trial",
+            cta: 'Start Free Trial',
             popular: true,
-            popularLabel: "Most Popular",
+            popularLabel: 'Most Popular',
           },
           {
-            name: "School",
-            tagline: "For classrooms & educators",
-            price: "$49",
-            period: "/month",
+            name: 'School',
+            tagline: 'For classrooms & educators',
+            price: '$49',
+            period: '/month',
             features: [
-              "Up to 30 student profiles",
-              "Teacher dashboard",
-              "Classroom management",
-              "Dedicated account manager",
+              'Up to 30 student profiles',
+              'Teacher dashboard',
+              'Classroom management',
+              'Dedicated account manager',
             ],
-            cta: "Contact Sales",
+            cta: 'Contact Sales',
           },
         ]
 
@@ -119,7 +119,7 @@ export const KidsEducationPricing = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-secondary">
@@ -136,32 +136,34 @@ export const KidsEducationPricing = defineComponent({
               <div
                 key={plan.name}
                 className={cn(
-                  "relative rounded-3xl p-8",
+                  'relative rounded-3xl p-8',
                   plan.popular
-                    ? "bg-foreground text-background shadow-2xl md:-translate-y-4"
-                    : "border border-border bg-muted/40 transition-colors hover:border-foreground/20",
+                    ? 'bg-foreground text-background shadow-2xl md:-translate-y-4'
+                    : 'border border-border bg-muted/40 transition-colors hover:border-foreground/20',
                 )}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                     <span className="rounded-full bg-primary px-4 py-1 text-sm font-semibold text-primary-foreground">
-                      {plan.popularLabel ?? "Most Popular"}
+                      {plan.popularLabel ?? 'Most Popular'}
                     </span>
                   </div>
                 )}
-                <div className={cn("mb-6", plan.popular && "pt-2")}>
+                <div className={cn('mb-6', plan.popular && 'pt-2')}>
                   <h3
                     className={cn(
-                      "mb-2 text-xl font-bold",
-                      plan.popular ? "text-background" : "text-foreground",
+                      'mb-2 text-xl font-bold',
+                      plan.popular ? 'text-background' : 'text-foreground',
                     )}
                   >
                     {plan.name}
                   </h3>
                   <p
                     className={cn(
-                      "text-sm",
-                      plan.popular ? "text-background/70" : "text-muted-foreground",
+                      'text-sm',
+                      plan.popular
+                        ? 'text-background/70'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {plan.tagline}
@@ -170,14 +172,18 @@ export const KidsEducationPricing = defineComponent({
                 <div className="mb-6">
                   <span
                     className={cn(
-                      "text-4xl font-bold",
-                      plan.popular ? "text-background" : "text-foreground",
+                      'text-4xl font-bold',
+                      plan.popular ? 'text-background' : 'text-foreground',
                     )}
                   >
                     {plan.price}
                   </span>
                   <span
-                    className={cn(plan.popular ? "text-background/70" : "text-muted-foreground")}
+                    className={cn(
+                      plan.popular
+                        ? 'text-background/70'
+                        : 'text-muted-foreground',
+                    )}
                   >
                     {plan.period}
                   </span>
@@ -187,13 +193,15 @@ export const KidsEducationPricing = defineComponent({
                     <li key={feat} className="flex items-start gap-3">
                       <CheckMark
                         className={cn(
-                          "mt-0.5 size-5 shrink-0",
-                          plan.popular ? "text-primary" : "text-secondary",
+                          'mt-0.5 size-5 shrink-0',
+                          plan.popular ? 'text-primary' : 'text-secondary',
                         )}
                       />
                       <span
                         className={cn(
-                          plan.popular ? "text-background/90" : "text-muted-foreground",
+                          plan.popular
+                            ? 'text-background/90'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {feat}
@@ -205,10 +213,10 @@ export const KidsEducationPricing = defineComponent({
                   type="button"
                   onClick={() => go(plan.cta)}
                   className={cn(
-                    "block w-full rounded-full py-3 text-center font-semibold transition-colors",
+                    'block w-full rounded-full py-3 text-center font-semibold transition-colors',
                     plan.popular
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "border-2 border-border bg-card text-foreground hover:bg-muted",
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      : 'border-2 border-border bg-card text-foreground hover:bg-muted',
                   )}
                 >
                   {plan.cta}

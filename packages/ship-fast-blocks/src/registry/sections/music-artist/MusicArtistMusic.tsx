@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MusicArtistMusic — latest-release track grid for a music artist / band page.
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * fully with no props via baked-in defaults.
  */
 export const MusicArtistMusic = defineComponent({
-  name: "MusicArtistMusic",
+  name: 'MusicArtistMusic',
   description:
     "Latest-release track grid for a music artist / band page: a centered eyebrow, thin heading and lead, then a responsive grid of bordered track cards (square cover thumbnail, title, duration, and a small 'Listen' play button), with a trailing 'view all tracks' link with an arrow. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. Each track's Listen button and the view-all link route through useNavigate; cover thumbnails use the alt-driven Image component. Use as the discography / latest-release showcase for musicians, singers, bands, or album-release pages.",
   props: z.object({
@@ -42,50 +42,50 @@ export const MusicArtistMusic = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Latest Release"
-    const heading = props.heading ?? "Northbound"
+    const eyebrow = props.eyebrow ?? 'Latest Release'
+    const heading = props.heading ?? 'Northbound'
     const description =
       props.description ??
-      "Twelve tracks exploring the quiet spaces between memory and movement. Released March 2026."
-    const viewAll = props.viewAll ?? "View all 12 tracks"
+      'Twelve tracks exploring the quiet spaces between memory and movement. Released March 2026.'
+    const viewAll = props.viewAll ?? 'View all 12 tracks'
     const tracks = props.tracks?.length
       ? props.tracks
       : [
           {
-            title: "The Long Way Home",
-            duration: "4:32",
+            title: 'The Long Way Home',
+            duration: '4:32',
             imageAlt:
-              "Atmospheric photo of vintage recording studio with warm amber lighting",
+              'Atmospheric photo of vintage recording studio with warm amber lighting',
           },
           {
-            title: "Winter Dust",
-            duration: "3:48",
+            title: 'Winter Dust',
+            duration: '3:48',
             imageAlt:
-              "Close-up photograph of acoustic guitar strings and fretboard in warm natural light",
+              'Close-up photograph of acoustic guitar strings and fretboard in warm natural light',
           },
           {
-            title: "Portland Rain",
-            duration: "5:12",
+            title: 'Portland Rain',
+            duration: '5:12',
             imageAlt:
-              "Vintage vinyl records stacked on wooden shelf with soft natural lighting",
+              'Vintage vinyl records stacked on wooden shelf with soft natural lighting',
           },
           {
-            title: "Highway 26",
-            duration: "4:15",
+            title: 'Highway 26',
+            duration: '4:15',
             imageAlt:
-              "Silhouette of musician performing on stage with atmospheric stage lighting",
+              'Silhouette of musician performing on stage with atmospheric stage lighting',
           },
           {
             title: "Grandmother's Piano",
-            duration: "3:56",
+            duration: '3:56',
             imageAlt:
-              "Close-up of piano keys with shallow depth of field in monochrome tones",
+              'Close-up of piano keys with shallow depth of field in monochrome tones',
           },
           {
-            title: "Miles to Go",
-            duration: "4:44",
+            title: 'Miles to Go',
+            duration: '4:44',
             imageAlt:
-              "Peaceful rural road stretching through misty countryside at golden hour",
+              'Peaceful rural road stretching through misty countryside at golden hour',
           },
         ]
 
@@ -119,9 +119,7 @@ export const MusicArtistMusic = defineComponent({
     )
 
     return (
-      <section
-        className={cn("px-6 py-20 lg:px-8 lg:py-32", props.className)}
-      >
+      <section className={cn('px-6 py-20 lg:px-8 lg:py-32', props.className)}>
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center lg:mb-24">
             <p className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">

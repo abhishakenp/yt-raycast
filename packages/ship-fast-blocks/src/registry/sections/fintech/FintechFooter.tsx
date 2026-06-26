@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * FintechFooter — multi-column site footer for a fintech / neobank landing
@@ -28,9 +28,9 @@ const ShieldMark = ({ className }: { className?: string }) => (
 )
 
 export const FintechFooter = defineComponent({
-  name: "FintechFooter",
+  name: 'FintechFooter',
   description:
-    "Multi-column fintech / neobank site footer built on the shared SiteFooter composite: an inline shield brand mark + wordmark, a tagline, Product / Company / Resources / Legal link columns, a social row, and a compliance note in the bottom bar. Every link routes through useNavigate. Use as the page footer for banking apps, wallets, payments, or lending products.",
+    'Multi-column fintech / neobank site footer built on the shared SiteFooter composite: an inline shield brand mark + wordmark, a tagline, Product / Company / Resources / Legal link columns, a social row, and a compliance note in the bottom bar. Every link routes through useNavigate. Use as the page footer for banking apps, wallets, payments, or lending products.',
   props: z.object({
     /** Brand / product name. */
     brand: z.string().optional(),
@@ -51,42 +51,38 @@ export const FintechFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Vault"
+    const brand = props.brand ?? 'Vault'
     const tagline =
       props.tagline ??
-      "Banking that puts you first. Send, save, and spend with confidence."
+      'Banking that puts you first. Send, save, and spend with confidence.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Security", "Pricing", "Cards", "Savings"],
+            title: 'Product',
+            links: ['Features', 'Security', 'Pricing', 'Cards', 'Savings'],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Press", "Blog"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Press', 'Blog'],
           },
           {
-            title: "Resources",
-            links: ["Help Center", "FAQ", "Community", "API Docs"],
+            title: 'Resources',
+            links: ['Help Center', 'FAQ', 'Community', 'API Docs'],
           },
           {
-            title: "Legal",
-            links: ["Privacy", "Terms", "Compliance", "Licenses"],
+            title: 'Legal',
+            links: ['Privacy', 'Terms', 'Compliance', 'Licenses'],
           },
         ]
     const social = props.social?.length
       ? props.social
-      : [
-          { label: "Twitter" },
-          { label: "LinkedIn" },
-          { label: "Instagram" },
-        ]
+      : [{ label: 'Twitter' }, { label: 'LinkedIn' }, { label: 'Instagram' }]
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
     const note =
-      props.note ?? "FDIC insured. Member-backed deposits up to $250,000."
+      props.note ?? 'FDIC insured. Member-backed deposits up to $250,000.'
 
     return (
       <SiteFooter

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BeautyStoreNewsletter — a dark newsletter CTA band for a beauty / skincare /
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * e-commerce, beauty boxes, or DTC personal-care brands.
  */
 export const BeautyStoreNewsletter = defineComponent({
-  name: "BeautyStoreNewsletter",
+  name: 'BeautyStoreNewsletter',
   description:
-    "Dark newsletter CTA band for a beauty / skincare / cosmetics storefront: a wide rounded-foreground card with a background image, centered eyebrow, serif heading, supporting paragraph, and a real email-capture form (email input + submit button). Form submit routes through useNavigate. Use as a list-building / first-order-discount conversion block for e-commerce, beauty boxes, or DTC personal-care brands.",
+    'Dark newsletter CTA band for a beauty / skincare / cosmetics storefront: a wide rounded-foreground card with a background image, centered eyebrow, serif heading, supporting paragraph, and a real email-capture form (email input + submit button). Form submit routes through useNavigate. Use as a list-building / first-order-discount conversion block for e-commerce, beauty boxes, or DTC personal-care brands.',
   props: z.object({
     /** Eyebrow text above heading. */
     eyebrow: z.string().optional(),
@@ -37,21 +37,21 @@ export const BeautyStoreNewsletter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Limited Time Offer"
-    const heading = props.heading ?? "Join Our Beauty Community"
+    const eyebrow = props.eyebrow ?? 'Limited Time Offer'
+    const heading = props.heading ?? 'Join Our Beauty Community'
     const description =
       props.description ??
-      "Subscribe to receive 15% off your first order, exclusive access to new arrivals, and personalized beauty recommendations."
-    const placeholder = props.placeholder ?? "Enter your email"
-    const submit = props.submit ?? "Get 15% Off"
-    const note = props.note ?? "No spam, ever. Unsubscribe anytime."
+      'Subscribe to receive 15% off your first order, exclusive access to new arrivals, and personalized beauty recommendations.'
+    const placeholder = props.placeholder ?? 'Enter your email'
+    const submit = props.submit ?? 'Get 15% Off'
+    const note = props.note ?? 'No spam, ever. Unsubscribe anytime.'
     const imageAlt =
       props.imageAlt ??
-      "luxury skincare products arranged on dark marble surface"
+      'luxury skincare products arranged on dark marble surface'
     const submitTarget = props.submitTarget ?? submit
 
     return (
-      <section className={cn("py-20 lg:py-28", props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-xl bg-foreground">
             <div aria-hidden="true" className="absolute inset-0 opacity-20">

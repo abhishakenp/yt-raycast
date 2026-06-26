@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * FintechFeatures — 6-up features grid for a digital-banking / fintech landing
@@ -13,9 +13,9 @@ import { cn } from "#/lib/utils.ts"
  * props via baked-in defaults.
  */
 export const FintechFeatures = defineComponent({
-  name: "FintechFeatures",
+  name: 'FintechFeatures',
   description:
-    "6-up features grid for a digital-banking / fintech landing page: centered section heading + description above a responsive 1/2/3-column grid of border-muted cards, each with a tokenized primary-colored icon tile (rotating inline line-icons), a title and a description. Use to showcase product capabilities (transfers, cards, savings, analytics, payments, business accounts). Tokens-only, no links.",
+    '6-up features grid for a digital-banking / fintech landing page: centered section heading + description above a responsive 1/2/3-column grid of border-muted cards, each with a tokenized primary-colored icon tile (rotating inline line-icons), a title and a description. Use to showcase product capabilities (transfers, cards, savings, analytics, payments, business accounts). Tokens-only, no links.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -28,43 +28,42 @@ export const FintechFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading =
-      props.heading ?? "Everything you need in one place"
+    const heading = props.heading ?? 'Everything you need in one place'
     const description =
       props.description ??
-      "From instant transfers to smart savings, Vault puts you in complete control of your money."
+      'From instant transfers to smart savings, Vault puts you in complete control of your money.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Instant Transfers",
+            title: 'Instant Transfers',
             description:
-              "Send money to anyone, anywhere in seconds. Zero fees between Vault accounts. Real-time notifications on every transaction.",
+              'Send money to anyone, anywhere in seconds. Zero fees between Vault accounts. Real-time notifications on every transaction.',
           },
           {
-            title: "Virtual & Physical Cards",
+            title: 'Virtual & Physical Cards',
             description:
-              "Generate unlimited virtual cards for online purchases. Order physical cards with customizable designs. Freeze instantly if lost.",
+              'Generate unlimited virtual cards for online purchases. Order physical cards with customizable designs. Freeze instantly if lost.',
           },
           {
-            title: "Smart Savings Goals",
+            title: 'Smart Savings Goals',
             description:
-              "Set custom savings goals with automatic round-ups. Earn 3.5% APY on your savings. No minimum balance required ever.",
+              'Set custom savings goals with automatic round-ups. Earn 3.5% APY on your savings. No minimum balance required ever.',
           },
           {
-            title: "Spending Analytics",
+            title: 'Spending Analytics',
             description:
-              "Beautiful charts show exactly where your money goes. Categorize transactions automatically. Get weekly spending insights.",
+              'Beautiful charts show exactly where your money goes. Categorize transactions automatically. Get weekly spending insights.',
           },
           {
-            title: "Global Payments",
+            title: 'Global Payments',
             description:
-              "Send money to 180+ countries with competitive exchange rates. Multi-currency accounts. SWIFT and local transfer options.",
+              'Send money to 180+ countries with competitive exchange rates. Multi-currency accounts. SWIFT and local transfer options.',
           },
           {
-            title: "Business Accounts",
+            title: 'Business Accounts',
             description:
-              "Separate business and personal finances effortlessly. Team access controls. Invoice generation and expense tracking built-in.",
+              'Separate business and personal finances effortlessly. Team access controls. Invoice generation and expense tracking built-in.',
           },
         ]
 
@@ -151,7 +150,7 @@ export const FintechFeatures = defineComponent({
     ]
 
     return (
-      <section className={cn("py-20 lg:py-32", props.className)}>
+      <section className={cn('py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">

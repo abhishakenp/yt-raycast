@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * IllustratorShop — an art-print shop section for an illustrator / visual-artist
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * illustrated goods. Renders fully with no props via baked-in defaults.
  */
 export const IllustratorShop = defineComponent({
-  name: "IllustratorShop",
+  name: 'IllustratorShop',
   description:
     "Art-print shop section for an illustrator / visual-artist portfolio: a centered uppercase accent eyebrow + serif heading + paragraph above a responsive 4-up grid of product cards, each with a square product image that zooms on hover, a serif title, small meta line, and a price beside a pill 'add to cart' button, plus a centered outlined 'visit full shop' CTA beneath. Add-to-cart and the shop CTA route through useNavigate. Use to sell limited-edition prints, greeting cards, and illustrated goods.",
   props: z.object({
@@ -43,35 +43,35 @@ export const IllustratorShop = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Art Shop"
-    const heading = props.heading ?? "Prints & Products"
+    const eyebrow = props.eyebrow ?? 'Art Shop'
+    const heading = props.heading ?? 'Prints & Products'
     const description =
       props.description ??
-      "Limited edition prints, greeting cards, and illustrated goods shipped worldwide from my Portland studio."
-    const cta = props.cta ?? "Visit Full Shop"
-    const addToCart = props.addToCart ?? "Add to Cart"
+      'Limited edition prints, greeting cards, and illustrated goods shipped worldwide from my Portland studio.'
+    const cta = props.cta ?? 'Visit Full Shop'
+    const addToCart = props.addToCart ?? 'Add to Cart'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Golden Hour Mountains",
+            title: 'Golden Hour Mountains',
             meta: 'Giclée print · 11"×14"',
-            price: "$48",
+            price: '$48',
           },
           {
-            title: "Botanical Dreams",
+            title: 'Botanical Dreams',
             meta: 'Giclée print · 8"×10"',
-            price: "$32",
+            price: '$32',
           },
           {
-            title: "Cozy Reading Corner",
+            title: 'Cozy Reading Corner',
             meta: 'Giclée print · 11"×14"',
-            price: "$48",
+            price: '$48',
           },
           {
-            title: "Seasonal Card Set",
-            meta: "8 cards + envelopes",
-            price: "$24",
+            title: 'Seasonal Card Set',
+            meta: '8 cards + envelopes',
+            price: '$24',
           },
         ]
 
@@ -95,7 +95,7 @@ export const IllustratorShop = defineComponent({
     return (
       <section
         className={cn(
-          "bg-background px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36",
+          'bg-background px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36',
           props.className,
         )}
       >

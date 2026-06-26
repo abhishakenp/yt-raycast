@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { PricingGrid } from "#/section-kit/PricingGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * YogaStudioPricing — membership-tier band for a yoga-studio page. Thin
@@ -12,9 +12,9 @@ import { PricingGrid } from "#/section-kit/PricingGrid.tsx"
  * membership options. Renders fully with no props via baked-in defaults.
  */
 export const YogaStudioPricing = defineComponent({
-  name: "YogaStudioPricing",
+  name: 'YogaStudioPricing',
   description:
-    "Membership-tier band for a yoga-studio page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of membership cards (name, price + billing period, checkmark perk bullets, and a CTA). The highlighted tier gets a primary border, shadow, and a floating pill, and every CTA routes through useNavigate. Use to present drop-in, monthly, and annual membership options.",
+    'Membership-tier band for a yoga-studio page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of membership cards (name, price + billing period, checkmark perk bullets, and a CTA). The highlighted tier gets a primary border, shadow, and a floating pill, and every CTA routes through useNavigate. Use to present drop-in, monthly, and annual membership options.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -36,52 +36,52 @@ export const YogaStudioPricing = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Memberships that fit your practice"
+    const heading = props.heading ?? 'Memberships that fit your practice'
     const subheading =
       props.subheading ??
-      "Come once or come every day. Pick the plan that matches your rhythm — no long contracts."
+      'Come once or come every day. Pick the plan that matches your rhythm — no long contracts.'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Drop-In",
-            price: "$22",
-            period: "/class",
+            name: 'Drop-In',
+            price: '$22',
+            period: '/class',
             features: [
-              "Single class access",
-              "Any style on the schedule",
-              "Mat & prop use included",
-              "No commitment",
+              'Single class access',
+              'Any style on the schedule',
+              'Mat & prop use included',
+              'No commitment',
             ],
-            cta: "Book a Class",
+            cta: 'Book a Class',
             highlighted: false,
           },
           {
-            name: "Monthly Unlimited",
-            price: "$139",
-            period: "/mo",
+            name: 'Monthly Unlimited',
+            price: '$139',
+            period: '/mo',
             features: [
-              "Unlimited classes",
-              "All styles & levels",
-              "Free mat & prop use",
-              "10% off workshops",
-              "Pause anytime",
+              'Unlimited classes',
+              'All styles & levels',
+              'Free mat & prop use',
+              '10% off workshops',
+              'Pause anytime',
             ],
-            cta: "Start Free Trial",
+            cta: 'Start Free Trial',
             highlighted: true,
           },
           {
-            name: "Annual Unlimited",
-            price: "$1,390",
-            period: "/yr",
+            name: 'Annual Unlimited',
+            price: '$1,390',
+            period: '/yr',
             features: [
-              "Unlimited classes all year",
-              "Two months free vs monthly",
-              "20% off workshops & retreats",
-              "Bring-a-friend passes",
-              "Priority event registration",
+              'Unlimited classes all year',
+              'Two months free vs monthly',
+              '20% off workshops & retreats',
+              'Bring-a-friend passes',
+              'Priority event registration',
             ],
-            cta: "Go Annual",
+            cta: 'Go Annual',
             highlighted: false,
           },
         ]

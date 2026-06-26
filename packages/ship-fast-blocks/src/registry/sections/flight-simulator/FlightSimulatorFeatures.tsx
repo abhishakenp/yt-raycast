@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * FlightSimulatorFeatures — a 3-up capability grid for a flight simulator
@@ -114,9 +114,9 @@ const VrIcon = ({ className }: { className?: string }) => (
 )
 
 export const FlightSimulatorFeatures = defineComponent({
-  name: "FlightSimulatorFeatures",
+  name: 'FlightSimulatorFeatures',
   description:
-    "3-up capability grid for a flight-simulator landing page built on the shared FeatureGrid composite: a centered heading above token-styled cards, each pairing an aviation line-icon tile with a title and description. Six baked features cover real flight physics, global photoreal scenery, live real-world weather, true-to-life multiplayer ATC, study-level aircraft systems, and VR support. Use to sell the depth of a flight sim, airliner / combat sim, or aviation training title.",
+    '3-up capability grid for a flight-simulator landing page built on the shared FeatureGrid composite: a centered heading above token-styled cards, each pairing an aviation line-icon tile with a title and description. Six baked features cover real flight physics, global photoreal scenery, live real-world weather, true-to-life multiplayer ATC, study-level aircraft systems, and VR support. Use to sell the depth of a flight sim, airliner / combat sim, or aviation training title.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -129,42 +129,42 @@ export const FlightSimulatorFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Built for true-to-life flight"
+    const heading = props.heading ?? 'Built for true-to-life flight'
     const defaults = [
       {
-        title: "Real flight physics",
+        title: 'Real flight physics',
         description:
-          "A high-fidelity aerodynamic model simulates lift, drag, and ground effect for every airframe — so a heavy jet handles nothing like a glider.",
+          'A high-fidelity aerodynamic model simulates lift, drag, and ground effect for every airframe — so a heavy jet handles nothing like a glider.',
         icon: <PhysicsIcon className="size-6" />,
       },
       {
-        title: "Global photoreal scenery",
+        title: 'Global photoreal scenery',
         description:
-          "Stream the entire planet in stunning detail, from city skylines and mountain ranges to the bush strip behind your hometown.",
+          'Stream the entire planet in stunning detail, from city skylines and mountain ranges to the bush strip behind your hometown.',
         icon: <SceneryIcon className="size-6" />,
       },
       {
-        title: "Live real-world weather",
+        title: 'Live real-world weather',
         description:
-          "Fly into the exact conditions happening right now — real winds aloft, pressure, cloud layers, and storm systems pulled from live data.",
+          'Fly into the exact conditions happening right now — real winds aloft, pressure, cloud layers, and storm systems pulled from live data.',
         icon: <WeatherIcon className="size-6" />,
       },
       {
-        title: "True-to-life multiplayer ATC",
+        title: 'True-to-life multiplayer ATC',
         description:
-          "Share busy airspace with thousands of live pilots and talk to real human controllers for authentic clearances and approaches.",
+          'Share busy airspace with thousands of live pilots and talk to real human controllers for authentic clearances and approaches.',
         icon: <AtcIcon className="size-6" />,
       },
       {
-        title: "Study-level aircraft systems",
+        title: 'Study-level aircraft systems',
         description:
-          "Cold-and-dark startups, modeled failures, and faithful avionics let you fly procedures exactly as the real flight crews do.",
+          'Cold-and-dark startups, modeled failures, and faithful avionics let you fly procedures exactly as the real flight crews do.',
         icon: <SystemsIcon className="size-6" />,
       },
       {
-        title: "VR support",
+        title: 'VR support',
         description:
-          "Step into the cockpit in full virtual reality with native headset support, room-scale tracking, and reach-out-and-touch controls.",
+          'Step into the cockpit in full virtual reality with native headset support, room-scale tracking, and reach-out-and-touch controls.',
         icon: <VrIcon className="size-6" />,
       },
     ]

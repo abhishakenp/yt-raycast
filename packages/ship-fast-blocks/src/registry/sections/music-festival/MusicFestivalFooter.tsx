@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MusicFestivalFooter — a four-column footer for a music / arts festival landing
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * multi-day ticketed event.
  */
 export const MusicFestivalFooter = defineComponent({
-  name: "MusicFestivalFooter",
+  name: 'MusicFestivalFooter',
   description:
-    "Four-column footer for a music / arts festival landing page: a top-bordered band with a brand block (bold wordmark + about paragraph), one or more link columns, and a social column of round initial-badge buttons that flip to primary on hover, above a bottom bar with a copyright note and legal links. Every link and social badge routes through useNavigate. Use as the closing site footer for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed event.",
+    'Four-column footer for a music / arts festival landing page: a top-bordered band with a brand block (bold wordmark + about paragraph), one or more link columns, and a social column of round initial-badge buttons that flip to primary on hover, above a bottom bar with a copyright note and legal links. Every link and social badge routes through useNavigate. Use as the closing site footer for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed event.',
   props: z.object({
     /** Festival / brand name shown in the footer. */
     brand: z.string().optional(),
@@ -37,35 +37,35 @@ export const MusicFestivalFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "HORIZON"
+    const brand = props.brand ?? 'HORIZON'
     const about =
       props.about ??
-      "Three days of music, art, and community in the Mojave Desert. August 15-17, 2025."
+      'Three days of music, art, and community in the Mojave Desert. August 15-17, 2025.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            heading: "Festival",
-            links: ["Lineup", "Schedule", "Experience", "Camping"],
+            heading: 'Festival',
+            links: ['Lineup', 'Schedule', 'Experience', 'Camping'],
           },
           {
-            heading: "Support",
-            links: ["FAQ", "Contact", "Accessibility", "Safety"],
+            heading: 'Support',
+            links: ['FAQ', 'Contact', 'Accessibility', 'Safety'],
           },
         ]
-    const socialLabel = props.socialLabel ?? "Connect"
+    const socialLabel = props.socialLabel ?? 'Connect'
     const socials = props.socials?.length
       ? props.socials
-      : ["Instagram", "Twitter", "TikTok", "YouTube"]
+      : ['Instagram', 'Twitter', 'TikTok', 'YouTube']
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Festival. All rights reserved.`
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service"]
+      : ['Privacy Policy', 'Terms of Service']
 
     return (
-      <footer className={cn("border-t border-border py-16", props.className)}>
+      <footer className={cn('border-t border-border py-16', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 grid gap-12 md:grid-cols-4">
             <div>

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * FitnessSchedule — scrollable weekly class-schedule table for a gym or fitness
@@ -11,9 +11,9 @@ import { cn } from "#/lib/utils.ts"
  * studios, yoga / pilates / boxing / spin studios, or class-booking sites.
  */
 export const FitnessSchedule = defineComponent({
-  name: "FitnessSchedule",
+  name: 'FitnessSchedule',
   description:
-    "Scrollable weekly class-schedule table for a gym or fitness studio on a muted card-surface band: a centered heading and lead paragraph above a horizontally-scrollable table with a Time column and one column per day, row-hover highlight, dashed empty slots dimmed, and a centered color-dot legend underneath. Use to publish a weekly timetable / class calendar on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios and class-booking sites.",
+    'Scrollable weekly class-schedule table for a gym or fitness studio on a muted card-surface band: a centered heading and lead paragraph above a horizontally-scrollable table with a Time column and one column per day, row-hover highlight, dashed empty slots dimmed, and a centered color-dot legend underneath. Use to publish a weekly timetable / class calendar on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios and class-booking sites.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -30,107 +30,107 @@ export const FitnessSchedule = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const scheduleHeading = props.heading ?? "Weekly Schedule"
+    const scheduleHeading = props.heading ?? 'Weekly Schedule'
     const scheduleDesc =
       props.description ??
-      "Book classes up to 7 days in advance through our app. Walk-ins welcome when space permits."
+      'Book classes up to 7 days in advance through our app. Walk-ins welcome when space permits.'
     const scheduleDays = props.days?.length
       ? props.days
       : [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday",
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
         ]
     const scheduleRows = props.rows?.length
       ? props.rows
       : [
           {
-            time: "6:00 AM",
-            slots: ["HIIT", "Cycle", "Strength", "HIIT", "Cycle", "—", "—"],
+            time: '6:00 AM',
+            slots: ['HIIT', 'Cycle', 'Strength', 'HIIT', 'Cycle', '—', '—'],
           },
           {
-            time: "7:30 AM",
+            time: '7:30 AM',
             slots: [
-              "Yoga Flow",
-              "Strength",
-              "Power Yoga",
-              "Strength",
-              "Yoga Flow",
-              "Strength",
-              "Yoga Flow",
+              'Yoga Flow',
+              'Strength',
+              'Power Yoga',
+              'Strength',
+              'Yoga Flow',
+              'Strength',
+              'Yoga Flow',
             ],
           },
           {
-            time: "9:00 AM",
+            time: '9:00 AM',
             slots: [
-              "Pilates",
-              "Boxing",
-              "Pilates",
-              "Boxing",
-              "Pilates",
-              "HIIT",
-              "Cycle",
+              'Pilates',
+              'Boxing',
+              'Pilates',
+              'Boxing',
+              'Pilates',
+              'HIIT',
+              'Cycle',
             ],
           },
           {
-            time: "12:00 PM",
+            time: '12:00 PM',
             slots: [
-              "Lunch HIIT",
-              "Yoga",
-              "Lunch HIIT",
-              "Yoga",
-              "Lunch HIIT",
-              "Open Gym",
-              "Open Gym",
+              'Lunch HIIT',
+              'Yoga',
+              'Lunch HIIT',
+              'Yoga',
+              'Lunch HIIT',
+              'Open Gym',
+              'Open Gym',
             ],
           },
           {
-            time: "5:30 PM",
-            slots: ["Strength", "Cycle", "HIIT", "Cycle", "Strength", "—", "—"],
+            time: '5:30 PM',
+            slots: ['Strength', 'Cycle', 'HIIT', 'Cycle', 'Strength', '—', '—'],
           },
           {
-            time: "6:45 PM",
+            time: '6:45 PM',
             slots: [
-              "Boxing",
-              "Power Yoga",
-              "Boxing",
-              "Power Yoga",
-              "—",
-              "—",
-              "—",
+              'Boxing',
+              'Power Yoga',
+              'Boxing',
+              'Power Yoga',
+              '—',
+              '—',
+              '—',
             ],
           },
           {
-            time: "8:00 PM",
+            time: '8:00 PM',
             slots: [
-              "Restorative Yoga",
-              "Open Gym",
-              "Restorative Yoga",
-              "Open Gym",
-              "—",
-              "—",
-              "—",
+              'Restorative Yoga',
+              'Open Gym',
+              'Restorative Yoga',
+              'Open Gym',
+              '—',
+              '—',
+              '—',
             ],
           },
         ]
     const scheduleLegend = props.legend?.length
       ? props.legend
-      : ["HIIT", "Strength", "Cycle", "Yoga", "Pilates", "Boxing"]
+      : ['HIIT', 'Strength', 'Cycle', 'Yoga', 'Pilates', 'Boxing']
     const legendDots = [
-      "bg-foreground",
-      "bg-foreground/70",
-      "bg-foreground/55",
-      "bg-muted-foreground",
-      "bg-muted-foreground/60",
-      "bg-foreground/85",
+      'bg-foreground',
+      'bg-foreground/70',
+      'bg-foreground/55',
+      'bg-muted-foreground',
+      'bg-muted-foreground/60',
+      'bg-foreground/85',
     ]
 
     return (
-      <section className={cn("bg-card py-20 md:py-32", props.className)}>
+      <section className={cn('bg-card py-20 md:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
@@ -166,10 +166,10 @@ export const FitnessSchedule = defineComponent({
                       <td
                         key={`${row.time}-${i}`}
                         className={cn(
-                          "px-4 py-4",
-                          slot === "—"
-                            ? "text-muted-foreground/60"
-                            : "text-muted-foreground",
+                          'px-4 py-4',
+                          slot === '—'
+                            ? 'text-muted-foreground/60'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {slot}
@@ -186,10 +186,10 @@ export const FitnessSchedule = defineComponent({
               <span key={label} className="flex items-center gap-2">
                 <span
                   className={cn(
-                    "size-3 rounded-full",
+                    'size-3 rounded-full',
                     legendDots[i % legendDots.length],
                   )}
-                />{" "}
+                />{' '}
                 {label}
               </span>
             ))}

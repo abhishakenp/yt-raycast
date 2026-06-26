@@ -1,5 +1,8 @@
 import { writeFile } from './workspace.js'
-import { materializeBrandfetchLogoToWorkspace, resolveBrandfetchBrandProfile } from '../brandfetch.js'
+import {
+  materializeBrandfetchLogoToWorkspace,
+  resolveBrandfetchBrandProfile,
+} from '../brandfetch.js'
 
 const SEARCH_API_URL = 'https://search.brave.com/search'
 const FETCH_TIMEOUT_MS = 7000
@@ -63,7 +66,9 @@ function normalizeText(value = '') {
 }
 
 function uniqueValues(values = []) {
-  return [...new Set(values.filter(Boolean).map((value) => String(value).trim()))]
+  return [
+    ...new Set(values.filter(Boolean).map((value) => String(value).trim())),
+  ]
 }
 
 function dedupeBy(values = [], keyFn = (value) => value) {
@@ -91,7 +96,9 @@ function decodeHtmlEntities(value = '') {
 function decodeJsString(value = '') {
   return decodeHtmlEntities(
     String(value)
-      .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(Number.parseInt(code, 16)))
+      .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) =>
+        String.fromCharCode(Number.parseInt(code, 16)),
+      )
       .replace(/\\"/g, '"')
       .replace(/\\'/g, "'")
       .replace(/\\\\/g, '\\')
@@ -113,7 +120,9 @@ function stripTags(value = '') {
 
 function parseAttributes(raw = '') {
   const attrs = {}
-  for (const match of String(raw).matchAll(/([a-zA-Z_:.-]+)\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g)) {
+  for (const match of String(raw).matchAll(
+    /([a-zA-Z_:.-]+)\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g,
+  )) {
     const key = String(match[1] || '').toLowerCase()
     const value = decodeHtmlEntities(match[3] ?? match[4] ?? match[5] ?? '')
     attrs[key] = value
@@ -184,7 +193,9 @@ function diceCoefficient(left = '', right = '') {
 function scoreSearchResult(result, brandName, domainCounts = new Map()) {
   const brandTokens = tokenizeBrandName(brandName)
   const hostname = getHostname(result.url)
-  const haystack = normalizeText([result.title, result.description, hostname].join(' '))
+  const haystack = normalizeText(
+    [result.title, result.description, hostname].join(' '),
+  )
   let score = 0
 
   for (const token of brandTokens) {
@@ -195,11 +206,20 @@ function scoreSearchResult(result, brandName, domainCounts = new Map()) {
   score += Math.round(diceCoefficient(brandName, hostname) * 3)
   score += Math.max(0, (domainCounts.get(hostname) || 0) - 1)
 
-  if (/(official|shop|boutique|wedding|bridal|store|legacy|heritage|contact)/i.test(result.description)) {
+  if (
+    /(official|shop|boutique|wedding|bridal|store|legacy|heritage|contact)/i.test(
+      result.description,
+    )
+  ) {
     score += 1
   }
   if (BLACKLISTED_PRIMARY_HOST_RE.test(`${hostname}.`)) score -= 6
-  if (/\/(posts?|reel|photo|videos?|collections?|products?)(\/|$)/i.test(result.url)) score -= 1
+  if (
+    /\/(posts?|reel|photo|videos?|collections?|products?)(\/|$)/i.test(
+      result.url,
+    )
+  )
+    score -= 1
 
   return score
 }
@@ -234,13 +254,16 @@ export function extractOrganizationCandidate(prompt = '') {
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean)
-  if (lines.length === 1 && lines[0].split(/\s+/).length <= 8) return trimCandidate(lines[0])
+  if (lines.length === 1 && lines[0].split(/\s+/).length <= 8)
+    return trimCandidate(lines[0])
 
   return ''
 }
 
 export function promptLooksBrandDriven(prompt = '') {
-  return Boolean(extractPromptUrl(prompt) || extractOrganizationCandidate(prompt))
+  return Boolean(
+    extractPromptUrl(prompt) || extractOrganizationCandidate(prompt),
+  )
 }
 
 async function fetchText(url, timeoutMs = FETCH_TIMEOUT_MS) {
@@ -252,7 +275,8 @@ async function fetchText(url, timeoutMs = FETCH_TIMEOUT_MS) {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        Accept:
+          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.8',
       },
       redirect: 'follow',
@@ -319,7 +343,9 @@ function extractMetaMap(html = '') {
   const meta = {}
   for (const match of html.matchAll(META_RE)) {
     const attrs = parseAttributes(match[1] || '')
-    const key = normalizeText(attrs.name || attrs.property || attrs.itemprop || '')
+    const key = normalizeText(
+      attrs.name || attrs.property || attrs.itemprop || '',
+    )
     const value = trimCandidate(attrs.content || '')
     if (!key || !value || meta[key]) continue
     meta[key] = value
@@ -360,9 +386,13 @@ function extractJsonLdItems(html = '') {
 }
 
 function isOrganizationLike(value) {
-  const types = Array.isArray(value?.['@type']) ? value['@type'] : [value?.['@type']]
+  const types = Array.isArray(value?.['@type'])
+    ? value['@type']
+    : [value?.['@type']]
   return types.some((type) =>
-    /organization|localbusiness|store|clothingstore|corporation|brand/i.test(String(type || '')),
+    /organization|localbusiness|store|clothingstore|corporation|brand/i.test(
+      String(type || ''),
+    ),
   )
 }
 
@@ -408,7 +438,10 @@ function extractImages(html = '', baseUrl = '') {
   const images = []
   for (const match of html.matchAll(IMG_RE)) {
     const attrs = parseAttributes(match[1] || '')
-    const src = toUrl(attrs.src || attrs['data-src'] || attrs['data-lazy-src'] || '', baseUrl)
+    const src = toUrl(
+      attrs.src || attrs['data-src'] || attrs['data-lazy-src'] || '',
+      baseUrl,
+    )
     if (!src || src.startsWith('data:')) continue
     images.push({
       src,
@@ -452,13 +485,24 @@ function canonicalizeSocialUrl(url = '') {
 
     let canonicalParts = parts
 
-    if (network === 'instagram' || network === 'facebook' || network === 'x' || network === 'twitter') {
+    if (
+      network === 'instagram' ||
+      network === 'facebook' ||
+      network === 'x' ||
+      network === 'twitter'
+    ) {
       canonicalParts = parts.slice(0, 1)
     } else if (network === 'youtube') {
-      canonicalParts = parts[0]?.startsWith('@') ? parts.slice(0, 1) : parts.slice(0, 2)
+      canonicalParts = parts[0]?.startsWith('@')
+        ? parts.slice(0, 1)
+        : parts.slice(0, 2)
     } else if (network === 'linkedin') {
       canonicalParts = parts.slice(0, 2)
-    } else if (network === 'pinterest' || network === 'threads' || network === 'tiktok') {
+    } else if (
+      network === 'pinterest' ||
+      network === 'threads' ||
+      network === 'tiktok'
+    ) {
       canonicalParts = parts.slice(0, 1)
     }
 
@@ -483,9 +527,9 @@ function extractSocialLinks(links = []) {
 
 function extractEmails(text = '') {
   return uniqueValues(
-    [...String(text).matchAll(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi)].map((match) =>
-      String(match[0]).toLowerCase(),
-    ),
+    [
+      ...String(text).matchAll(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi),
+    ].map((match) => String(match[0]).toLowerCase()),
   )
 }
 
@@ -505,9 +549,17 @@ function extractPhones(text = '') {
   return uniqueValues(phones)
 }
 
-function chooseBestLogo(images = [], organizations = [], meta = {}, baseUrl = '') {
+function chooseBestLogo(
+  images = [],
+  organizations = [],
+  meta = {},
+  baseUrl = '',
+) {
   for (const org of organizations) {
-    const logoUrl = toUrl(org.logo?.url || org.logo || org.image?.url || org.image || '', baseUrl)
+    const logoUrl = toUrl(
+      org.logo?.url || org.logo || org.image?.url || org.image || '',
+      baseUrl,
+    )
     if (logoUrl) return logoUrl
   }
 
@@ -516,13 +568,21 @@ function chooseBestLogo(images = [], organizations = [], meta = {}, baseUrl = ''
     if (/logo|brand|wordmark|header/i.test(signals)) return image.src
   }
 
-  const ogImage = toUrl(meta['og:image'] || meta['twitter:image'] || '', baseUrl)
+  const ogImage = toUrl(
+    meta['og:image'] || meta['twitter:image'] || '',
+    baseUrl,
+  )
   if (ogImage) return ogImage
 
   return ''
 }
 
-function chooseBestName(brandName = '', organizations = [], meta = {}, title = '') {
+function chooseBestName(
+  brandName = '',
+  organizations = [],
+  meta = {},
+  title = '',
+) {
   const candidates = [
     ...organizations.map((item) => trimCandidate(item.name || '')),
     trimCandidate(meta['og:site_name'] || ''),
@@ -534,7 +594,9 @@ function chooseBestName(brandName = '', organizations = [], meta = {}, title = '
 }
 
 function chooseBestDescription(organizations = [], meta = {}, paragraphs = []) {
-  const orgDescription = organizations.find((item) => item.description)?.description
+  const orgDescription = organizations.find(
+    (item) => item.description,
+  )?.description
   return (
     trimCandidate(orgDescription || '') ||
     trimCandidate(meta.description || meta['og:description'] || '') ||
@@ -576,7 +638,12 @@ function collectPageSignals(page, brandName = '') {
       ...extractEmails(plainText),
       ...links
         .filter((item) => item.href.startsWith('mailto:'))
-        .map((item) => item.href.replace(/^mailto:/i, '').trim().toLowerCase()),
+        .map((item) =>
+          item.href
+            .replace(/^mailto:/i, '')
+            .trim()
+            .toLowerCase(),
+        ),
     ]).filter(Boolean),
     phones: uniqueValues([
       ...organizations.map((item) => normalizePhone(item.telephone || '')),
@@ -588,10 +655,15 @@ function collectPageSignals(page, brandName = '') {
     addresses: uniqueValues([
       ...organizations.map((item) => formatAddress(item.address)),
       ...jsonLdItems
-        .map((item) => (item?.['@type'] === 'PostalAddress' ? formatAddress(item) : ''))
+        .map((item) =>
+          item?.['@type'] === 'PostalAddress' ? formatAddress(item) : '',
+        )
         .filter(Boolean),
     ]).filter(Boolean),
-    socials: dedupeBy([...extractSocialLinks(links), ...jsonLdSocials], (item) => item.url),
+    socials: dedupeBy(
+      [...extractSocialLinks(links), ...jsonLdSocials],
+      (item) => item.url,
+    ),
     relatedLinks: links
       .map((item) => item.href)
       .filter((href) => getOrigin(href) === getOrigin(page.url)),
@@ -601,7 +673,8 @@ function collectPageSignals(page, brandName = '') {
 function collectRelevantSourceUrls(homepage, searchResults = []) {
   const candidates = []
   const homepageOrigin = getOrigin(homepage.url)
-  const linkKeywords = /(about|story|legacy|contact|visit|store|location|reach|bridal|collections?)/i
+  const linkKeywords =
+    /(about|story|legacy|contact|visit|store|location|reach|bridal|collections?)/i
   const fallbackPaths = [
     '/pages/about-us',
     '/pages/contact',
@@ -652,13 +725,18 @@ function buildBrandProfile({
     .filter((item) => item.network)
 
   const officialName =
-    allSignals.find((item) => item.name && item.name.toLowerCase() !== 'home')?.name || brandName
-  const description = allSignals.find((item) => item.description)?.description || ''
+    allSignals.find((item) => item.name && item.name.toLowerCase() !== 'home')
+      ?.name || brandName
+  const description =
+    allSignals.find((item) => item.description)?.description || ''
   const logoUrl = allSignals.find((item) => item.logoUrl)?.logoUrl || ''
-  const faviconUrl = allSignals.find((item) => item.faviconUrl)?.faviconUrl || ''
+  const faviconUrl =
+    allSignals.find((item) => item.faviconUrl)?.faviconUrl || ''
   const emails = uniqueValues(allSignals.flatMap((item) => item.emails || []))
   const phones = uniqueValues(allSignals.flatMap((item) => item.phones || []))
-  const addresses = uniqueValues(allSignals.flatMap((item) => item.addresses || []))
+  const addresses = uniqueValues(
+    allSignals.flatMap((item) => item.addresses || []),
+  )
   const socials = dedupeBy(
     [...allSignals.flatMap((item) => item.socials || []), ...socialsFromSearch],
     (item) => item.url,
@@ -709,9 +787,14 @@ export async function enrichBrandProfile(prompt, workspace, log = () => {}) {
   const brandName = extractOrganizationCandidate(prompt) || explicitUrl
   if (!brandName && !explicitUrl) return null
 
-  log(`  brand-profile: resolving ${explicitUrl || `"${brandName}"`} from the web`)
+  log(
+    `  brand-profile: resolving ${explicitUrl || `"${brandName}"`} from the web`,
+  )
 
-  const brandfetch = await resolveBrandfetchBrandProfile({ query: brandName, timeoutMs: 5500 }).catch(() => null)
+  const brandfetch = await resolveBrandfetchBrandProfile({
+    query: brandName,
+    timeoutMs: 5500,
+  }).catch(() => null)
   if (brandfetch?.ok && brandfetch.logo?.src) {
     const profile = buildBrandProfile({
       brandName,
@@ -750,7 +833,9 @@ export async function enrichBrandProfile(prompt, workspace, log = () => {}) {
   if (!officialUrl) {
     searchResults = await searchBrave(brandName)
     selectedResult = selectOfficialResult(brandName, searchResults)
-    officialUrl = selectedResult ? getOrigin(selectedResult.url) || selectedResult.url : ''
+    officialUrl = selectedResult
+      ? getOrigin(selectedResult.url) || selectedResult.url
+      : ''
   }
 
   if (!officialUrl) {
@@ -770,8 +855,12 @@ export async function enrichBrandProfile(prompt, workspace, log = () => {}) {
 
   const homepageSignals = collectPageSignals(homepagePage, brandName)
   const sourceUrls = collectRelevantSourceUrls(homepageSignals, searchResults)
-  const extraPages = (await Promise.all(sourceUrls.map((url) => fetchText(url)))).filter(Boolean)
-  const extraSignals = extraPages.map((page) => collectPageSignals(page, brandName))
+  const extraPages = (
+    await Promise.all(sourceUrls.map((url) => fetchText(url)))
+  ).filter(Boolean)
+  const extraSignals = extraPages.map((page) =>
+    collectPageSignals(page, brandName),
+  )
 
   const profile = buildBrandProfile({
     brandName,
@@ -821,7 +910,9 @@ function buildFallbackBrandProfile(brandName) {
 function profileFromSignals(homepageSignals, extraSignals, brandName) {
   const all = [homepageSignals, ...(extraSignals || [])].filter(Boolean)
   const logoUrl = all.find((item) => item.logoUrl)?.logoUrl || ''
-  const officialName = all.find((item) => item.name && item.name.toLowerCase() !== 'home')?.name || brandName
+  const officialName =
+    all.find((item) => item.name && item.name.toLowerCase() !== 'home')?.name ||
+    brandName
   if (!logoUrl) return null
   return {
     kind: 'remote',
@@ -835,9 +926,15 @@ function profileFromSignals(homepageSignals, extraSignals, brandName) {
 function buildFallbackSvgLogo(name = '') {
   const safeName = String(name || '').trim() || 'Brand'
   const parts = safeName.split(/\s+/).filter(Boolean)
-  const initialsRaw = parts.slice(0, 2).map((p) => p[0] || '').join('')
+  const initialsRaw = parts
+    .slice(0, 2)
+    .map((p) => p[0] || '')
+    .join('')
   const initials = (initialsRaw || safeName.slice(0, 2)).toUpperCase()
-  const hash = Array.from(safeName).reduce((acc, ch) => (acc * 31 + ch.charCodeAt(0)) >>> 0, 7)
+  const hash = Array.from(safeName).reduce(
+    (acc, ch) => (acc * 31 + ch.charCodeAt(0)) >>> 0,
+    7,
+  )
   const hue = hash % 360
   const bg = `hsl(${hue} 78% 46%)`
   const fg = 'white'

@@ -35,6 +35,8 @@ describe('isIpWhitelisted', () => {
   })
 
   it('whitelists nothing when the env var is unset', () => {
-    expect(isIpWhitelisted('1.2.3.4', parseWhitelistedIps(undefined))).toBe(false)
+    expect(isIpWhitelisted('1.2.3.4', parseWhitelistedIps(undefined))).toBe(
+      false,
+    )
   })
 })

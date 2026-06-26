@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * PetVeterinaryHero — split, two-column hero for a veterinary clinic / pet
@@ -17,9 +17,9 @@ import { Image } from "#/lib/img.tsx"
  * animal hospitals, pet healthcare practices, or emergency animal care.
  */
 export const PetVeterinaryHero = defineComponent({
-  name: "PetVeterinaryHero",
+  name: 'PetVeterinaryHero',
   description:
-    "Split two-column hero for a veterinary clinic / pet healthcare landing page on a soft primary-tinted gradient band: a left text column with a pulsing now-accepting-new-patients pill, a big headline with an accented trailing phrase, a lede paragraph, a filled primary Schedule-a-Visit CTA plus an outlined Explore-Services button, and a social-proof row of overlapping staff avatars and a star-rating note; a right column with a rounded clinic photo and two floating info chips (same-day appointments / open 7 days). CTAs route through useNavigate; imagery uses the Image component. Use as the top hero for veterinary clinics, animal hospitals, pet healthcare practices, or emergency animal care.",
+    'Split two-column hero for a veterinary clinic / pet healthcare landing page on a soft primary-tinted gradient band: a left text column with a pulsing now-accepting-new-patients pill, a big headline with an accented trailing phrase, a lede paragraph, a filled primary Schedule-a-Visit CTA plus an outlined Explore-Services button, and a social-proof row of overlapping staff avatars and a star-rating note; a right column with a rounded clinic photo and two floating info chips (same-day appointments / open 7 days). CTAs route through useNavigate; imagery uses the Image component. Use as the top hero for veterinary clinics, animal hospitals, pet healthcare practices, or emergency animal care.',
   props: z.object({
     badge: z.string().optional(),
     headingTop: z.string().optional(),
@@ -47,36 +47,36 @@ export const PetVeterinaryHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroBadge = props.badge ?? "Now accepting new patients"
-    const heroHeadingTop = props.headingTop ?? "Expert care for your"
-    const heroHighlight = props.highlight ?? "beloved companions"
+    const heroBadge = props.badge ?? 'Now accepting new patients'
+    const heroHeadingTop = props.headingTop ?? 'Expert care for your'
+    const heroHighlight = props.highlight ?? 'beloved companions'
     const heroSub =
       props.subheading ??
-      "At Paws & Care Veterinary Clinic, we treat every pet like family. From routine checkups to advanced surgical procedures, our experienced team provides compassionate, comprehensive healthcare for dogs, cats, and exotic pets throughout Portland."
-    const heroPrimary = props.primaryCta ?? "Schedule a Visit"
-    const heroSecondary = props.secondaryCta ?? "Explore Services"
-    const staffCount = props.staffCount ?? "15+"
-    const staffNote = props.staffNote ?? "expert staff"
-    const rating = props.rating ?? "4.9/5"
-    const ratingNote = props.ratingNote ?? "from 2,400+ reviews"
+      'At Paws & Care Veterinary Clinic, we treat every pet like family. From routine checkups to advanced surgical procedures, our experienced team provides compassionate, comprehensive healthcare for dogs, cats, and exotic pets throughout Portland.'
+    const heroPrimary = props.primaryCta ?? 'Schedule a Visit'
+    const heroSecondary = props.secondaryCta ?? 'Explore Services'
+    const staffCount = props.staffCount ?? '15+'
+    const staffNote = props.staffNote ?? 'expert staff'
+    const rating = props.rating ?? '4.9/5'
+    const ratingNote = props.ratingNote ?? 'from 2,400+ reviews'
     const heroImageAlt =
       props.imageAlt ??
-      "golden retriever dog receiving gentle examination from a veterinarian in a modern clinic"
+      'golden retriever dog receiving gentle examination from a veterinarian in a modern clinic'
     const avatars = props.avatars?.length
       ? props.avatars
       : [
-          "professional headshot of Dr. Sarah Mitchell, lead veterinarian, a woman with warm smile wearing a white coat",
-          "professional headshot of Dr. James Chen, surgical specialist, a man with confident expression in medical scrubs",
-          "professional headshot of Dr. Emily Rodriguez, exotic pet specialist, a woman with friendly demeanor",
+          'professional headshot of Dr. Sarah Mitchell, lead veterinarian, a woman with warm smile wearing a white coat',
+          'professional headshot of Dr. James Chen, surgical specialist, a man with confident expression in medical scrubs',
+          'professional headshot of Dr. Emily Rodriguez, exotic pet specialist, a woman with friendly demeanor',
         ]
     const heroChips = props.chips?.length
       ? props.chips
       : [
           {
-            title: "Same-day appointments",
-            subtitle: "Available for urgent care",
+            title: 'Same-day appointments',
+            subtitle: 'Available for urgent care',
           },
-          { title: "Open 7 days", subtitle: "8AM - 8PM daily" },
+          { title: 'Open 7 days', subtitle: '8AM - 8PM daily' },
         ]
 
     const ArrowRight = ({ className }: { className?: string }) => (
@@ -130,7 +130,7 @@ export const PetVeterinaryHero = defineComponent({
     return (
       <section
         className={cn(
-          "relative overflow-hidden bg-gradient-to-b from-primary/10 to-background",
+          'relative overflow-hidden bg-gradient-to-b from-primary/10 to-background',
           props.className,
         )}
       >
@@ -144,7 +144,7 @@ export const PetVeterinaryHero = defineComponent({
                 </span>
               </div>
               <h1 className="mb-6 text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                {heroHeadingTop}{" "}
+                {heroHeadingTop}{' '}
                 <span className="text-primary">{heroHighlight}</span>
               </h1>
               <p className="mb-8 text-lg leading-relaxed text-muted-foreground lg:text-xl">
@@ -181,14 +181,14 @@ export const PetVeterinaryHero = defineComponent({
                     ))}
                   </div>
                   <span className="text-muted-foreground">
-                    <strong className="text-foreground">{staffCount}</strong>{" "}
+                    <strong className="text-foreground">{staffCount}</strong>{' '}
                     {staffNote}
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Star className="size-5 text-chart-4" />
                   <span className="text-muted-foreground">
-                    <strong className="text-foreground">{rating}</strong>{" "}
+                    <strong className="text-foreground">{rating}</strong>{' '}
                     {ratingNote}
                   </span>
                 </div>

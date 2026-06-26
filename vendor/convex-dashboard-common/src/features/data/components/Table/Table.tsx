@@ -1,5 +1,5 @@
-import { GenericDocument } from "convex/server";
-import classNames from "classnames";
+import { GenericDocument } from 'convex/server'
+import classNames from 'classnames'
 import {
   MutableRefObject,
   useCallback,
@@ -8,62 +8,62 @@ import {
   useReducer,
   useRef,
   useState,
-} from "react";
+} from 'react'
 import {
   Column,
   useBlockLayout,
   useColumnOrder,
   useResizeColumns,
   useTable,
-} from "react-table";
-import { FixedSizeList } from "react-window";
+} from 'react-table'
+import { FixedSizeList } from 'react-window'
 import {
   Filter,
   SchemaJson,
-} from "system-udfs/convex/_system/frontend/lib/filters";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+} from 'system-udfs/convex/_system/frontend/lib/filters'
+import { DndContext, closestCenter } from '@dnd-kit/core'
 import {
   SortableContext,
   horizontalListSortingStrategy,
-} from "@dnd-kit/sortable";
+} from '@dnd-kit/sortable'
 import {
   ImperativePanelHandle,
   Panel,
   PanelGroup,
-} from "react-resizable-panels";
-import { cn } from "@ui/cn";
-import { ResizeHandle } from "@common/layouts/SidebarDetailLayout";
-import { useTableDensity } from "@common/features/data/lib/useTableDensity";
-import { InfiniteScrollList } from "@common/elements/InfiniteScrollList";
-import { SelectionState } from "@common/features/data/lib/useSelectionState";
-import { usePatchDocumentField } from "@common/features/data/components/Table/utils/usePatchDocumentField";
-import { DataRow } from "@common/features/data/components/Table/DataRow";
-import { TableScrollbar } from "@common/features/data/components/Table/TableScrollbar";
-import { useTrackColumnWidths } from "@common/features/data/components/Table/utils/useTrackColumnWidths";
-import type { PopupState } from "@common/features/data/lib/useToolPopup";
-import { useMaintainScrollPositionOnChange } from "@common/features/data/components/Table/utils/useMaintainScrollPositionOnChange";
+} from 'react-resizable-panels'
+import { cn } from '@ui/cn'
+import { ResizeHandle } from '@common/layouts/SidebarDetailLayout'
+import { useTableDensity } from '@common/features/data/lib/useTableDensity'
+import { InfiniteScrollList } from '@common/elements/InfiniteScrollList'
+import { SelectionState } from '@common/features/data/lib/useSelectionState'
+import { usePatchDocumentField } from '@common/features/data/components/Table/utils/usePatchDocumentField'
+import { DataRow } from '@common/features/data/components/Table/DataRow'
+import { TableScrollbar } from '@common/features/data/components/Table/TableScrollbar'
+import { useTrackColumnWidths } from '@common/features/data/components/Table/utils/useTrackColumnWidths'
+import type { PopupState } from '@common/features/data/lib/useToolPopup'
+import { useMaintainScrollPositionOnChange } from '@common/features/data/components/Table/utils/useMaintainScrollPositionOnChange'
 import {
   TableContextMenu,
   useTableContextMenuState,
-} from "@common/features/data/components/Table/TableContextMenu";
-import { TableHeader } from "@common/features/data/components/Table/TableHeader";
-import { useStoredColumnOrder } from "@common/features/data/components/Table/utils/useDataColumns";
-import { ViewDocument } from "@common/features/data/components/Table/ViewDocument";
-import { useDataPageSize } from "@common/features/data/components/Table/utils/useQueryFilteredTable";
-import { LoadingLogo } from "@ui/Loading";
-import { PermissionsContext } from "@common/lib/deploymentContext";
-import { useNents } from "@common/lib/useNents";
-import { useColumnDragAndDrop } from "@common/features/data/components/Table/utils/useColumnDragAndDrop";
+} from '@common/features/data/components/Table/TableContextMenu'
+import { TableHeader } from '@common/features/data/components/Table/TableHeader'
+import { useStoredColumnOrder } from '@common/features/data/components/Table/utils/useDataColumns'
+import { ViewDocument } from '@common/features/data/components/Table/ViewDocument'
+import { useDataPageSize } from '@common/features/data/components/Table/utils/useQueryFilteredTable'
+import { LoadingLogo } from '@ui/Loading'
+import { PermissionsContext } from '@common/lib/deploymentContext'
+import { useNents } from '@common/lib/useNents'
+import { useColumnDragAndDrop } from '@common/features/data/components/Table/utils/useColumnDragAndDrop'
 
-const getRowId = (d: GenericDocument) => d._id as string;
+const getRowId = (d: GenericDocument) => d._id as string
 
-const pageThreshold = 25;
+const pageThreshold = 25
 
 export function Table({
   activeSchema,
   columns = [],
   data = [],
-  localStorageKey = "_disabled_",
+  localStorageKey = '_disabled_',
   areEditsAuthorized,
   authorizeEdits,
   hasFilters,
@@ -84,51 +84,51 @@ export function Table({
   hiddenColumns,
   onColumnOrderChange,
 }: {
-  activeSchema: SchemaJson | null;
-  areEditsAuthorized: boolean;
-  authorizeEdits?(): void;
-  columns: Column<GenericDocument>[];
-  data: GenericDocument[]; // array of row data so far
-  localStorageKey?: string;
-  tableName: string;
-  componentId: string | null;
-  isProtectedDeployment: boolean;
-  selectedRows: SelectionState;
-  totalRowCount?: number;
-  hasFilters: boolean;
-  loadMore: () => void;
-  listRef: MutableRefObject<FixedSizeList | null>;
-  patchDocument: ReturnType<typeof usePatchDocumentField>;
-  hasPopup: boolean;
-  setPopup: PopupState["setPopup"];
-  deleteRows: (rowIds: Set<string>) => Promise<void>;
-  onAddDraftFilter: (newFilter: Filter) => void;
-  defaultDocument: GenericDocument;
+  activeSchema: SchemaJson | null
+  areEditsAuthorized: boolean
+  authorizeEdits?(): void
+  columns: Column<GenericDocument>[]
+  data: GenericDocument[] // array of row data so far
+  localStorageKey?: string
+  tableName: string
+  componentId: string | null
+  isProtectedDeployment: boolean
+  selectedRows: SelectionState
+  totalRowCount?: number
+  hasFilters: boolean
+  loadMore: () => void
+  listRef: MutableRefObject<FixedSizeList | null>
+  patchDocument: ReturnType<typeof usePatchDocumentField>
+  hasPopup: boolean
+  setPopup: PopupState['setPopup']
+  deleteRows: (rowIds: Set<string>) => Promise<void>
+  onAddDraftFilter: (newFilter: Filter) => void
+  defaultDocument: GenericDocument
   sort: {
-    order: "asc" | "desc";
-    field: string;
-  };
-  hiddenColumns: string[];
-  onColumnOrderChange?: (newOrder: string[]) => void;
+    order: 'asc' | 'desc'
+    field: string
+  }
+  hiddenColumns: string[]
+  onColumnOrderChange?: (newOrder: string[]) => void
 }) {
-  const [pageSize] = useDataPageSize(componentId, tableName);
-  const { useIsOperationAllowed } = useContext(PermissionsContext);
-  const canManageTable = useIsOperationAllowed("WriteData");
+  const [pageSize] = useDataPageSize(componentId, tableName)
+  const { useIsOperationAllowed } = useContext(PermissionsContext)
+  const canManageTable = useIsOperationAllowed('WriteData')
 
-  const { selectedNent } = useNents();
+  const { selectedNent } = useNents()
 
   const isInUnmountedComponent = !!(
-    selectedNent && selectedNent.state !== "active"
-  );
+    selectedNent && selectedNent.state !== 'active'
+  )
 
   const [storedColumnOrder, setStoredColumnOrder] =
-    useStoredColumnOrder(localStorageKey);
+    useStoredColumnOrder(localStorageKey)
 
-  const dataColumnNames = columns.map((c) => c.Header as string);
+  const dataColumnNames = columns.map((c) => c.Header as string)
   // Filter out special columns like *select from ordering operations
   const orderableColumnNames = dataColumnNames.filter(
-    (name) => name !== "*select",
-  );
+    (name) => name !== '*select',
+  )
 
   // Filter out hidden columns (but never hide the checkbox column)
   // Use useMemo to avoid recreating the array on every render
@@ -136,10 +136,10 @@ export function Table({
     () =>
       columns.filter(
         (c) =>
-          c.Header === "*select" || !hiddenColumns.includes(c.Header as string),
+          c.Header === '*select' || !hiddenColumns.includes(c.Header as string),
       ),
     [columns, hiddenColumns],
-  );
+  )
 
   const {
     state,
@@ -157,55 +157,55 @@ export function Table({
       autoResetSortBy: false,
       initialState: {
         columnOrder: [
-          "*select",
+          '*select',
           ...(storedColumnOrder || orderableColumnNames),
         ],
       },
       stateReducer: (newState, action) => {
-        if (action.type === "setColumnOrder") {
+        if (action.type === 'setColumnOrder') {
           // Filter out *select when storing the column order
           const newOrder = newState.columnOrder.filter(
-            (col) => col !== "*select",
-          );
-          setStoredColumnOrder(newOrder);
+            (col) => col !== '*select',
+          )
+          setStoredColumnOrder(newOrder)
           // Notify parent component of the change
-          onColumnOrderChange?.(newOrder);
+          onColumnOrderChange?.(newOrder)
         }
 
-        return newState;
+        return newState
       },
     },
     useBlockLayout,
     useColumnOrder,
     useResizeColumns,
-  );
+  )
 
   trackDataColumnChanges(
     orderableColumnNames,
     storedColumnOrder,
     setColumnOrder,
-  );
+  )
 
   const reorderColumns = useCallback(
     (item: { index: number }, newIndex: number) => {
-      const { index: currentIndex } = item;
+      const { index: currentIndex } = item
 
-      const currentItem = state.columnOrder[currentIndex];
+      const currentItem = state.columnOrder[currentIndex]
 
-      const newColumnOrder = [...state.columnOrder];
-      newColumnOrder.splice(currentIndex, 1);
-      newColumnOrder.splice(newIndex, 0, currentItem);
+      const newColumnOrder = [...state.columnOrder]
+      newColumnOrder.splice(currentIndex, 1)
+      newColumnOrder.splice(newIndex, 0, currentItem)
 
       // Ensure *select always stays at the beginning
-      const filtered = newColumnOrder.filter((col) => col !== "*select");
-      setColumnOrder(["*select", ...filtered]);
+      const filtered = newColumnOrder.filter((col) => col !== '*select')
+      setColumnOrder(['*select', ...filtered])
     },
     [setColumnOrder, state.columnOrder],
-  );
+  )
 
-  const resetColumnWidths = useTrackColumnWidths(state, localStorageKey);
+  const resetColumnWidths = useTrackColumnWidths(state, localStorageKey)
 
-  const { isResizingColumn } = state.columnResizing;
+  const { isResizingColumn } = state.columnResizing
 
   const [
     ,
@@ -216,20 +216,20 @@ export function Table({
       all: allRowsSelected,
       isExhaustive: isSelectionExhaustive,
     },
-  ] = selectedRows;
+  ] = selectedRows
 
-  const outerRef = useRef<HTMLElement>(null);
-  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const outerRef = useRef<HTMLElement>(null)
+  const tableContainerRef = useRef<HTMLDivElement>(null)
 
-  const [, forceRerender] = useReducer((x) => x + 1, 0);
+  const [, forceRerender] = useReducer((x) => x + 1, 0)
 
-  const [topBorderAnimation, setTopBorderAnimation] = useState(false);
+  const [topBorderAnimation, setTopBorderAnimation] = useState(false)
   const animateTopBorder = useCallback(() => {
-    setTopBorderAnimation(true);
-    setTimeout(() => setTopBorderAnimation(false), 1000);
-  }, []);
+    setTopBorderAnimation(true)
+    setTimeout(() => setTopBorderAnimation(false), 1000)
+  }, [])
 
-  const { densityValues } = useTableDensity();
+  const { densityValues } = useTableDensity()
 
   useMaintainScrollPositionOnChange(
     data,
@@ -237,13 +237,13 @@ export function Table({
     getRowId,
     densityValues.height,
     animateTopBorder,
-  );
+  )
 
   const { contextMenuState, openContextMenu, closeContextMenu } =
-    useTableContextMenuState();
-  const [collapsed, setCollapsed] = useState(false);
+    useTableContextMenuState()
+  const [collapsed, setCollapsed] = useState(false)
 
-  const panelRef = useRef<ImperativePanelHandle>(null);
+  const panelRef = useRef<ImperativePanelHandle>(null)
 
   // Column drag and drop setup
   const {
@@ -259,18 +259,18 @@ export function Table({
     headerGroups,
     reorderColumns,
     columnOrder: state.columnOrder,
-  });
+  })
 
   const onEditDocument = useCallback(
     (document: GenericDocument) => {
       setPopup({
-        type: "editDocument",
+        type: 'editDocument',
         document,
         tableName,
-      });
+      })
     },
     [setPopup, tableName],
-  );
+  )
 
   return (
     <PanelGroup
@@ -298,13 +298,13 @@ export function Table({
               {...getTableProps()}
               ref={tableContainerRef}
               className={classNames(
-                "flex w-full h-full overflow-y-hidden",
-                "scrollbar",
+                'flex w-full h-full overflow-y-hidden',
+                'scrollbar',
               )}
             >
               <div className="flex flex-auto flex-col">
                 <TableHeader
-                  key={state.columnOrder.join(",")}
+                  key={state.columnOrder.join(',')}
                   headerGroups={headerGroups}
                   isResizingColumn={isResizingColumn}
                   allRowsSelected={allRowsSelected}
@@ -360,7 +360,7 @@ export function Table({
                     outerRef={outerRef}
                     onScroll={() => {
                       // Force a re-render so the TableScrollbar gets updated.
-                      forceRerender();
+                      forceRerender()
                     }}
                     itemKey={(idx) => (data[idx] as any)?._id || idx}
                   />
@@ -382,9 +382,9 @@ export function Table({
                 defaultDocument={defaultDocument}
                 canManageTable={canManageTable}
                 resetColumns={() => {
-                  setColumnOrder(["*select", ...orderableColumnNames]);
-                  setStoredColumnOrder(orderableColumnNames);
-                  resetColumnWidths();
+                  setColumnOrder(['*select', ...orderableColumnNames])
+                  setStoredColumnOrder(orderableColumnNames)
+                  resetColumnWidths()
                 }}
                 isProtectedDeployment={isProtectedDeployment}
               />
@@ -394,26 +394,25 @@ export function Table({
           {activeColumn &&
             activeColumnPosition !== null &&
             (() => {
-              const columnWidth = activeColumn.getHeaderProps().style?.width;
+              const columnWidth = activeColumn.getHeaderProps().style?.width
               const parsedWidth =
-                typeof columnWidth === "string"
+                typeof columnWidth === 'string'
                   ? parseFloat(columnWidth)
-                  : typeof columnWidth === "number"
+                  : typeof columnWidth === 'number'
                     ? columnWidth
-                    : 0;
+                    : 0
 
-              const containerWidth =
-                tableContainerRef.current?.offsetWidth || 0;
-              const scrollLeft = tableContainerRef.current?.scrollLeft || 0;
+              const containerWidth = tableContainerRef.current?.offsetWidth || 0
+              const scrollLeft = tableContainerRef.current?.scrollLeft || 0
 
               // Adjust for horizontal scroll
-              const unclamped = activeColumnPosition + dragOffset - scrollLeft;
+              const unclamped = activeColumnPosition + dragOffset - scrollLeft
 
               // Clamp the position so the column stays within bounds
               const left = Math.max(
                 0,
                 Math.min(unclamped, containerWidth - parsedWidth),
-              );
+              )
 
               return (
                 <div
@@ -421,10 +420,10 @@ export function Table({
                   style={{
                     left,
                     width: columnWidth,
-                    height: tableContainerRef.current?.offsetHeight || "100%",
+                    height: tableContainerRef.current?.offsetHeight || '100%',
                   }}
                 />
-              );
+              )
             })()}
         </DndContext>
       </Panel>
@@ -446,8 +445,8 @@ export function Table({
             onExpand={() => setCollapsed(false)}
             ref={panelRef}
             className={cn(
-              "max-h-full overflow-x-auto bg-background-primary",
-              !collapsed && "min-w-56",
+              'max-h-full overflow-x-auto bg-background-primary',
+              !collapsed && 'min-w-56',
             )}
           >
             <ViewDocument
@@ -466,7 +465,7 @@ export function Table({
         </>
       )}
     </PanelGroup>
-  );
+  )
 }
 
 export function TableSkeleton() {
@@ -474,7 +473,7 @@ export function TableSkeleton() {
     <div className="flex h-full items-center justify-center rounded-b-lg border bg-background-secondary">
       <LoadingLogo />
     </div>
-  );
+  )
 }
 
 // Checks if there are any new or removed columns in the data set
@@ -485,38 +484,38 @@ function trackDataColumnChanges(
   updateColumnOrder: (newOrder: string[]) => void,
 ) {
   if (!storedColumnOrder) {
-    return;
+    return
   }
 
   // Find columns that are not in the stored order and add them to the end
   const newColumns = columns
     .filter((c) => !storedColumnOrder.includes(c))
     // New columns should be sorted alphabetically after the existing sort order.
-    .sort((a, b) => a.localeCompare(b));
+    .sort((a, b) => a.localeCompare(b))
 
-  const existingColumns = storedColumnOrder.filter((c) => columns.includes(c));
+  const existingColumns = storedColumnOrder.filter((c) => columns.includes(c))
 
   // There are no new columns and no columns have been removed, so we don't need to make an update.
   if (
     newColumns.length === 0 &&
     existingColumns.length === storedColumnOrder.length
   ) {
-    return;
+    return
   }
 
-  const lastColumn = existingColumns[existingColumns.length - 1];
+  const lastColumn = existingColumns[existingColumns.length - 1]
 
   // If _creationTime is the last column, we should respect that and
   //  insert the new columns before it.
   const newOrder =
-    lastColumn === "_creationTime"
+    lastColumn === '_creationTime'
       ? [
-          ...existingColumns.filter((c) => c !== "_creationTime"),
+          ...existingColumns.filter((c) => c !== '_creationTime'),
           ...newColumns,
-          "_creationTime",
+          '_creationTime',
         ]
-      : [...existingColumns, ...newColumns];
+      : [...existingColumns, ...newColumns]
 
   // Prepend *select to ensure it's always first
-  updateColumnOrder(["*select", ...newOrder]);
+  updateColumnOrder(['*select', ...newOrder])
 }

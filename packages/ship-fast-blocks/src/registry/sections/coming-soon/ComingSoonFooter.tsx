@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ComingSoonFooter — slim two-row footer for a "launching soon" / waitlist
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * any minimal coming-soon page. Renders fully with no props via baked-in defaults.
  */
 export const ComingSoonFooter = defineComponent({
-  name: "ComingSoonFooter",
+  name: 'ComingSoonFooter',
   description:
     "Slim two-row footer for a 'launching soon' / waitlist pre-launch landing page: bordered-top footer with two rows (stacks on mobile). Top row has brand name + launch note on the left and social links on the right; bottom row has copyright on the left and legal links on the right. Every brand button, social, and legal link routes through useNavigate. Use as the closing site footer for SaaS waitlists, app pre-launch pages, beta sign-ups, or minimal coming-soon pages.",
   props: z.object({
@@ -31,19 +31,20 @@ export const ComingSoonFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Nexus"
-    const note = props.note ?? "Launching March 2025"
+    const brand = props.brand ?? 'Nexus'
+    const note = props.note ?? 'Launching March 2025'
     const socials = props.socials?.length
       ? props.socials
-      : ["Twitter", "LinkedIn", "GitHub"]
-    const legal = props.legal?.length ? props.legal : ["Privacy", "Terms"]
+      : ['Twitter', 'LinkedIn', 'GitHub']
+    const legal = props.legal?.length ? props.legal : ['Privacy', 'Terms']
     const copyright =
-      props.copyright ?? `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
+      props.copyright ??
+      `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
 
     return (
       <footer
         className={cn(
-          "w-full border-t border-border px-4 py-12 sm:px-6 lg:px-8 xl:px-12",
+          'w-full border-t border-border px-4 py-12 sm:px-6 lg:px-8 xl:px-12',
           props.className,
         )}
       >

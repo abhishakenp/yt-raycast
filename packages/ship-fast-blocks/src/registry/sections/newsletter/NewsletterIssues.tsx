@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * NewsletterIssues — recent-issues archive grid for an editorial newsletter.
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * blogs, or content creators. Renders fully with no props via baked-in defaults.
  */
 export const NewsletterIssues = defineComponent({
-  name: "NewsletterIssues",
+  name: 'NewsletterIssues',
   description:
     "Recent-issues archive grid for an editorial newsletter: a centered serif heading + lede over a 1/2/3-column grid of bordered article cards, each with a 16:10 cover photo that zooms on hover, an issue-number-and-date meta line, a serif title, a short blurb, and a 'Read issue' link with a trailing arrow; a centered outlined 'View all' button closes the section. Warm, calm, literary mood on a paper-toned surface. Covers use the alt-driven Image component; titles, read links, and the view-all button route through useNavigate. Use to showcase a back-catalog for newsletters, publications, blogs, or content creators.",
   props: z.object({
@@ -44,68 +44,68 @@ export const NewsletterIssues = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Recent Issues"
+    const heading = props.heading ?? 'Recent Issues'
     const description =
       props.description ??
-      "A selection of our most-read essays from the past few months."
-    const viewAll = props.viewAll ?? "View All 156 Issues"
-    const readLabel = props.readLabel ?? "Read issue"
+      'A selection of our most-read essays from the past few months.'
+    const viewAll = props.viewAll ?? 'View All 156 Issues'
+    const readLabel = props.readLabel ?? 'Read issue'
     const items = props.items?.length
       ? props.items
       : [
           {
-            number: "Issue #156",
-            date: "May 25, 2026",
-            title: "The Art of Digital Slowing",
+            number: 'Issue #156',
+            date: 'May 25, 2026',
+            title: 'The Art of Digital Slowing',
             blurb:
-              "On the paradox of building tools for focus in an age of infinite distraction—and why the answer might not be another app.",
+              'On the paradox of building tools for focus in an age of infinite distraction—and why the answer might not be another app.',
             imageAlt:
-              "minimal workspace desk with open notebook, coffee cup, and soft natural morning light",
+              'minimal workspace desk with open notebook, coffee cup, and soft natural morning light',
           },
           {
-            number: "Issue #155",
-            date: "May 18, 2026",
-            title: "When AI Writes the Code",
+            number: 'Issue #155',
+            date: 'May 18, 2026',
+            title: 'When AI Writes the Code',
             blurb:
-              "What happens to craft when the tools get too good? A meditation on writing, coding, and the value of struggle.",
+              'What happens to craft when the tools get too good? A meditation on writing, coding, and the value of struggle.',
             imageAlt:
-              "futuristic humanoid robot arm reaching toward glowing light representing AI and human interaction",
+              'futuristic humanoid robot arm reaching toward glowing light representing AI and human interaction',
           },
           {
-            number: "Issue #154",
-            date: "May 11, 2026",
-            title: "The Remote Work Bet",
+            number: 'Issue #154',
+            date: 'May 11, 2026',
+            title: 'The Remote Work Bet',
             blurb:
               "Five years in, the data is finally clear. What we got right, what we lost, and where we're headed next.",
             imageAlt:
-              "diverse group of colleagues collaborating around a table with laptops in a modern office space",
+              'diverse group of colleagues collaborating around a table with laptops in a modern office space',
           },
           {
-            number: "Issue #153",
-            date: "May 4, 2026",
-            title: "Writing as Thinking",
+            number: 'Issue #153',
+            date: 'May 4, 2026',
+            title: 'Writing as Thinking',
             blurb:
-              "The lost art of using prose to clarify thought. Why the best product minds I know are obsessive note-takers.",
+              'The lost art of using prose to clarify thought. Why the best product minds I know are obsessive note-takers.',
             imageAlt:
-              "vintage typewriter with blank page representing the craft of thoughtful writing",
+              'vintage typewriter with blank page representing the craft of thoughtful writing',
           },
           {
-            number: "Issue #152",
-            date: "April 27, 2026",
-            title: "Privacy After the Breach",
+            number: 'Issue #152',
+            date: 'April 27, 2026',
+            title: 'Privacy After the Breach',
             blurb:
-              "A personal account of having my data leaked—and the broader implications for how we build trust online.",
+              'A personal account of having my data leaked—and the broader implications for how we build trust online.',
             imageAlt:
-              "cybersecurity concept with digital lock and binary code overlay on dark background",
+              'cybersecurity concept with digital lock and binary code overlay on dark background',
           },
           {
-            number: "Issue #151",
-            date: "April 20, 2026",
-            title: "The Cult of Productivity",
+            number: 'Issue #151',
+            date: 'April 20, 2026',
+            title: 'The Cult of Productivity',
             blurb:
-              "Why optimizing every moment might be making us miserable. A case for intentional inefficiency.",
+              'Why optimizing every moment might be making us miserable. A case for intentional inefficiency.',
             imageAlt:
-              "serene mountain landscape at golden hour representing the search for meaning and perspective",
+              'serene mountain landscape at golden hour representing the search for meaning and perspective',
           },
         ]
 
@@ -127,9 +127,7 @@ export const NewsletterIssues = defineComponent({
     )
 
     return (
-      <section
-        className={cn("py-16 md:py-24 lg:py-32", props.className)}
-      >
+      <section className={cn('py-16 md:py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-12 max-w-2xl text-center md:mb-16">
             <h2 className="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl">

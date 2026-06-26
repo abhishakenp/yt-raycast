@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FoodDeliveryTestimonials — card-surfaced 3-up testimonials grid for a
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * no props via baked-in defaults.
  */
 export const FoodDeliveryTestimonials = defineComponent({
-  name: "FoodDeliveryTestimonials",
+  name: 'FoodDeliveryTestimonials',
   description:
-    "Card-surfaced 3-up testimonials grid for a food-delivery / restaurant-marketplace site: a centered heading + supporting paragraph above three soft-bordered review cards, each with a 5-star row, a quoted blurb, and an alt-driven circular avatar beside a name and location. Use to build trust with customer and partner social proof for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.",
+    'Card-surfaced 3-up testimonials grid for a food-delivery / restaurant-marketplace site: a centered heading + supporting paragraph above three soft-bordered review cards, each with a 5-star row, a quoted blurb, and an alt-driven circular avatar beside a name and location. Use to build trust with customer and partner social proof for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',
   props: z.object({
     /** Centered section heading. */
     heading: z.string().optional(),
@@ -35,36 +35,36 @@ export const FoodDeliveryTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const testimonialsHeading = props.heading ?? "What people are saying"
+    const testimonialsHeading = props.heading ?? 'What people are saying'
     const testimonialsDesc =
       props.description ??
-      "Real reviews from real customers across the country."
+      'Real reviews from real customers across the country.'
     const testimonialItems = props.items?.length
       ? props.items
       : [
           {
             quote:
-              "Nosh has completely changed how I order food. The tracking feature is incredible, and I have never had a late delivery. The app is so easy to use!",
-            name: "Sarah Mitchell",
-            location: "San Francisco, CA",
+              'Nosh has completely changed how I order food. The tracking feature is incredible, and I have never had a late delivery. The app is so easy to use!',
+            name: 'Sarah Mitchell',
+            location: 'San Francisco, CA',
             avatarAlt:
-              "Professional headshot of a smiling young woman with shoulder-length brown hair",
+              'Professional headshot of a smiling young woman with shoulder-length brown hair',
           },
           {
             quote:
-              "As a restaurant owner, partnering with Nosh increased our delivery orders by 40%. Their driver network is reliable and the commission rates are fair.",
-            name: "Marcus Chen",
-            location: "Owner, Sakura Sushi",
+              'As a restaurant owner, partnering with Nosh increased our delivery orders by 40%. Their driver network is reliable and the commission rates are fair.',
+            name: 'Marcus Chen',
+            location: 'Owner, Sakura Sushi',
             avatarAlt:
-              "Professional headshot of a smiling man in his 40s with short dark hair and glasses",
+              'Professional headshot of a smiling man in his 40s with short dark hair and glasses',
           },
           {
             quote:
-              "I use Nosh 3-4 times a week. The saved favorites feature makes reordering my usual lunch from work incredibly fast. Highly recommended!",
-            name: "David Rodriguez",
-            location: "Austin, TX",
+              'I use Nosh 3-4 times a week. The saved favorites feature makes reordering my usual lunch from work incredibly fast. Highly recommended!',
+            name: 'David Rodriguez',
+            location: 'Austin, TX',
             avatarAlt:
-              "Professional headshot of a smiling middle-aged man with beard and casual attire",
+              'Professional headshot of a smiling middle-aged man with beard and casual attire',
           },
         ]
 
@@ -79,9 +79,7 @@ export const FoodDeliveryTestimonials = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-card py-20 lg:py-28", props.className)}
-      >
+      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">

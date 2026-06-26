@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * FurnitureStorePress — a slim "featured in" press / publication-logo strip. A
@@ -12,7 +12,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * design-magazine press. Renders fully with no props via baked-in defaults.
  */
 export const FurnitureStorePress = defineComponent({
-  name: "FurnitureStorePress",
+  name: 'FurnitureStorePress',
   description:
     "Slim 'featured in' press / publication-logo strip: a bordered-bottom band with a centered caption above a horizontal wrapping row of serif wordmark buttons rendered as faded muted text that brighten on hover; each routes through useNavigate. Use beneath a hero as social-proof for furniture, home-decor, interiors, or any editorial retail brand citing design-magazine press.",
   props: z.object({
@@ -24,14 +24,14 @@ export const FurnitureStorePress = defineComponent({
     const go = useNavigate()
     const label =
       props.label ??
-      "Featured in Architectural Digest, Dwell, House Beautiful, Elle Decor, and Domino"
+      'Featured in Architectural Digest, Dwell, House Beautiful, Elle Decor, and Domino'
     const logos = props.logos?.length
       ? props.logos
-      : ["ArchDigest", "DWELL", "House Beautiful", "Elle Decor", "DOMINO"]
+      : ['ArchDigest', 'DWELL', 'House Beautiful', 'Elle Decor', 'DOMINO']
 
     return (
       <section
-        className={cn("border-b border-border py-12", props.className)}
+        className={cn('border-b border-border py-12', props.className)}
         aria-label="Featured in"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

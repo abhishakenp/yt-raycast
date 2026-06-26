@@ -16,8 +16,8 @@ export interface ClonePageNavItem {
 
 export interface ClonePageNavState {
   currentHtml: string | null
-  /** File-storage url for the home doc when it's too large for the inline html
-   *  field; render the iframe with `src={currentUrl}` instead of `srcDoc`. */
+  /** File-storage URL for the active clone doc when it's too large for inline
+   *  html; render the iframe with `src={currentUrl}` instead of `srcDoc`. */
   currentUrl: string | null
   currentPath: string
   pages: ClonePageNavItem[]
@@ -38,7 +38,6 @@ export function useClonePageNav(
       api.sessions.listClonePages,
       sessionId ? { sessionId: sessionId as Id<'sessions'> } : 'skip',
     ) ?? []
-
   const homePath = useMemo(() => {
     if (rows.length === 0) return ''
     const home = rows.find((row) => row.isHome)
@@ -64,9 +63,9 @@ export function useClonePageNav(
         setCurrentPath(path)
         return
       }
-      if (data.abs) {
-        window.open(data.abs, '_blank', 'noopener')
-      }
+      void data.abs
+      // Stay inside the cloned preview when a same-origin link was not captured
+      // in this crawl budget. Opening the original URL breaks deep-clone fidelity.
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
@@ -77,10 +76,19 @@ export function useClonePageNav(
     rows.find((row) => row.pathname === activePath) ??
     rows.find((row) => row.isHome) ??
     rows[0]
+  const activePreview = useQuery(
+    api.sessions.getCloneHomePreview,
+    sessionId
+      ? {
+          lookup: sessionId,
+          ...(activePath ? { pathname: activePath } : {}),
+        }
+      : 'skip',
+  )
 
   return {
-    currentHtml: currentRow?.html ?? null,
-    currentUrl: null, // File-storage URL support to be added when needed
+    currentHtml: currentRow?.html ?? activePreview?.html ?? null,
+    currentUrl: activePreview?.url ?? null,
     currentPath: activePath,
     pages: rows.map((row) => ({
       pathname: row.pathname,

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AnalyticsHero — bold, data-forward split hero for an analytics product
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * metrics, or data-product sites. Renders fully with no props.
  */
 export const AnalyticsHero = defineComponent({
-  name: "AnalyticsHero",
+  name: 'AnalyticsHero',
   description:
     "Bold, data-forward split hero for an analytics product landing page. The left column carries an eyebrow status pill, a large headline with one phrase in the primary highlight, a supporting paragraph, dual CTAs (filled-primary 'Start Free Trial' + outlined 'Book a demo'), and a compact three-stat proof strip; the right column frames a product dashboard screenshot inside a bordered card with a faux toolbar dot row. Sharp, marketing-grade and conversion-focused; CTAs route through useNavigate. Use as the opening hero for analytics, BI, dashboards, product metrics, or data-product sites.",
   props: z.object({
@@ -40,25 +40,28 @@ export const AnalyticsHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Real-time product analytics"
-    const heading = props.heading ?? "Turn raw events into"
-    const highlight = props.highlight ?? "decisions you can ship"
+    const eyebrow = props.eyebrow ?? 'Real-time product analytics'
+    const heading = props.heading ?? 'Turn raw events into'
+    const highlight = props.highlight ?? 'decisions you can ship'
     const subheading =
       props.subheading ??
-      "Pulse unifies every event, funnel, and cohort into one fast, queryable view — so your team stops guessing and starts shipping with confidence."
-    const primaryCta = props.primaryCta ?? "Start Free Trial"
-    const secondaryCta = props.secondaryCta ?? "Book a demo"
+      'Pulse unifies every event, funnel, and cohort into one fast, queryable view — so your team stops guessing and starts shipping with confidence.'
+    const primaryCta = props.primaryCta ?? 'Start Free Trial'
+    const secondaryCta = props.secondaryCta ?? 'Book a demo'
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "12B+", label: "Events / day" },
-          { value: "50ms", label: "Query latency" },
-          { value: "99.99%", label: "Uptime" },
+          { value: '12B+', label: 'Events / day' },
+          { value: '50ms', label: 'Query latency' },
+          { value: '99.99%', label: 'Uptime' },
         ]
 
     return (
       <section
-        className={cn("relative overflow-hidden bg-background", props.className)}
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
       >
         <div
           aria-hidden="true"

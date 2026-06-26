@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MobileAppPricing — a centered-intro, 3-tier pricing table for a clean,
@@ -16,7 +16,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * defaults.
  */
 export const MobileAppPricing = defineComponent({
-  name: "MobileAppPricing",
+  name: 'MobileAppPricing',
   description:
     "Centered-intro 3-tier pricing table for a clean, minimalist mobile-app marketing page: a centered heading + description over a responsive 3-column row of plan cards, where the featured plan inverts to the primary background, lifts slightly and carries a 'Most Popular' pill; each card has a name, tagline, big price + period, a checklist of features (check / cross icons, dimmed when excluded), and a full-width CTA button routing through useNavigate. Use as the plans / subscription section on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.",
   props: z.object({
@@ -41,7 +41,7 @@ export const MobileAppPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Simple, transparent pricing"
+    const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
       "Start free, upgrade when you're ready. No hidden fees, no surprises."
@@ -49,48 +49,48 @@ export const MobileAppPricing = defineComponent({
       ? props.tiers
       : [
           {
-            name: "Free",
-            tagline: "Perfect for getting started",
-            price: "$0",
-            period: "/month",
-            cta: "Get Started Free",
+            name: 'Free',
+            tagline: 'Perfect for getting started',
+            price: '$0',
+            period: '/month',
+            cta: 'Get Started Free',
             featured: false,
             features: [
-              { label: "Up to 3 habits", included: true },
-              { label: "Basic reminders", included: true },
-              { label: "7-day streak history", included: true },
-              { label: "Accountability groups", included: false },
-              { label: "Advanced insights", included: false },
+              { label: 'Up to 3 habits', included: true },
+              { label: 'Basic reminders', included: true },
+              { label: '7-day streak history', included: true },
+              { label: 'Accountability groups', included: false },
+              { label: 'Advanced insights', included: false },
             ],
           },
           {
-            name: "Pro",
-            tagline: "For serious habit builders",
-            price: "$4.99",
-            period: "/month",
-            cta: "Start 14-Day Free Trial",
+            name: 'Pro',
+            tagline: 'For serious habit builders',
+            price: '$4.99',
+            period: '/month',
+            cta: 'Start 14-Day Free Trial',
             featured: true,
             features: [
-              { label: "Unlimited habits", included: true },
-              { label: "Smart AI reminders", included: true },
-              { label: "Unlimited history", included: true },
-              { label: "Accountability groups", included: true },
-              { label: "Advanced insights & export", included: true },
+              { label: 'Unlimited habits', included: true },
+              { label: 'Smart AI reminders', included: true },
+              { label: 'Unlimited history', included: true },
+              { label: 'Accountability groups', included: true },
+              { label: 'Advanced insights & export', included: true },
             ],
           },
           {
-            name: "Teams",
-            tagline: "For organizations",
-            price: "$12",
-            period: "/user/month",
-            cta: "Contact Sales",
+            name: 'Teams',
+            tagline: 'For organizations',
+            price: '$12',
+            period: '/user/month',
+            cta: 'Contact Sales',
             featured: false,
             features: [
-              { label: "Everything in Pro", included: true },
-              { label: "Team challenges", included: true },
-              { label: "Admin dashboard", included: true },
-              { label: "SSO integration", included: true },
-              { label: "Priority support", included: true },
+              { label: 'Everything in Pro', included: true },
+              { label: 'Team challenges', included: true },
+              { label: 'Admin dashboard', included: true },
+              { label: 'SSO integration', included: true },
+              { label: 'Priority support', included: true },
             ],
           },
         ]
@@ -127,7 +127,7 @@ export const MobileAppPricing = defineComponent({
 
     return (
       <section
-        className={cn("py-20 lg:py-32", props.className)}
+        className={cn('py-20 lg:py-32', props.className)}
         aria-labelledby="mobileapp-pricing-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -145,10 +145,10 @@ export const MobileAppPricing = defineComponent({
               <div
                 key={tier.name}
                 className={cn(
-                  "relative rounded-2xl p-8",
+                  'relative rounded-2xl p-8',
                   tier.featured
-                    ? "bg-primary text-primary-foreground md:-mt-4 md:mb-4"
-                    : "border border-border bg-card text-card-foreground",
+                    ? 'bg-primary text-primary-foreground md:-mt-4 md:mb-4'
+                    : 'border border-border bg-card text-card-foreground',
                 )}
               >
                 {tier.featured && (
@@ -161,10 +161,10 @@ export const MobileAppPricing = defineComponent({
                 <h3 className="mb-2 text-lg font-semibold">{tier.name}</h3>
                 <p
                   className={cn(
-                    "mb-6 text-sm",
+                    'mb-6 text-sm',
                     tier.featured
-                      ? "text-primary-foreground/70"
-                      : "text-muted-foreground",
+                      ? 'text-primary-foreground/70'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {tier.tagline}
@@ -174,8 +174,8 @@ export const MobileAppPricing = defineComponent({
                   <span
                     className={cn(
                       tier.featured
-                        ? "text-primary-foreground/70"
-                        : "text-muted-foreground",
+                        ? 'text-primary-foreground/70'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {tier.period}
@@ -187,10 +187,10 @@ export const MobileAppPricing = defineComponent({
                       {f.included ? (
                         <CheckIcon
                           className={cn(
-                            "mt-0.5 size-5 shrink-0",
+                            'mt-0.5 size-5 shrink-0',
                             tier.featured
-                              ? "text-primary-foreground"
-                              : "text-primary",
+                              ? 'text-primary-foreground'
+                              : 'text-primary',
                           )}
                         />
                       ) : (
@@ -200,9 +200,9 @@ export const MobileAppPricing = defineComponent({
                         className={cn(
                           f.included
                             ? tier.featured
-                              ? "text-primary-foreground/90"
-                              : "text-muted-foreground"
-                            : "text-muted-foreground/60",
+                              ? 'text-primary-foreground/90'
+                              : 'text-muted-foreground'
+                            : 'text-muted-foreground/60',
                         )}
                       >
                         {f.label}
@@ -214,10 +214,10 @@ export const MobileAppPricing = defineComponent({
                   type="button"
                   onClick={() => go(tier.cta)}
                   className={cn(
-                    "w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                    'w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                     tier.featured
-                      ? "bg-background text-foreground hover:bg-muted"
-                      : "bg-muted text-foreground hover:bg-accent",
+                      ? 'bg-background text-foreground hover:bg-muted'
+                      : 'bg-muted text-foreground hover:bg-accent',
                   )}
                 >
                   {tier.cta}

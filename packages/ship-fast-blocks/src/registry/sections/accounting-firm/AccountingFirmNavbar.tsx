@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AccountingFirmNavbar — sticky, translucent top navigation bar for a CPA /
@@ -16,9 +16,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * practices. Renders fully with no props via baked-in "Northridge" defaults.
  */
 export const AccountingFirmNavbar = defineComponent({
-  name: "AccountingFirmNavbar",
+  name: 'AccountingFirmNavbar',
   description:
-    "Sticky translucent top navigation bar for a CPA / accounting-firm site: backdrop-blurred, border-bottomed header pinned to the top with a neutral brand-initial logo tile + firm name on the left, horizontal nav links in the center (desktop), and a filled Schedule-Consultation primary CTA plus a hamburger menu button on the right. Calm, trustworthy professional-services look; links and CTA route through useNavigate for page-switching. Use as the sticky site header for accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, audit/assurance firms, or financial advisory practices.",
+    'Sticky translucent top navigation bar for a CPA / accounting-firm site: backdrop-blurred, border-bottomed header pinned to the top with a neutral brand-initial logo tile + firm name on the left, horizontal nav links in the center (desktop), and a filled Schedule-Consultation primary CTA plus a hamburger menu button on the right. Calm, trustworthy professional-services look; links and CTA route through useNavigate for page-switching. Use as the sticky site header for accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, audit/assurance firms, or financial advisory practices.',
   props: z.object({
     /** Firm / brand name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -30,16 +30,16 @@ export const AccountingFirmNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Northridge"
+    const brand = props.brand ?? 'Northridge'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "About", "Team", "Pricing", "FAQ"]
-    const cta = props.cta ?? "Schedule Consultation"
+      : ['Services', 'About', 'Team', 'Pricing', 'FAQ']
+    const cta = props.cta ?? 'Schedule Consultation'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-md bg-primary font-bold text-primary-foreground",
+          'grid place-items-center rounded-md bg-primary font-bold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -51,7 +51,7 @@ export const AccountingFirmNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >

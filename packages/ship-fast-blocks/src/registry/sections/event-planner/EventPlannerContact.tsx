@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * EventPlannerContact — dark split contact section with a full inquiry form. A
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * service businesses.
  */
 export const EventPlannerContact = defineComponent({
-  name: "EventPlannerContact",
+  name: 'EventPlannerContact',
   description:
-    "Dark split contact section with a full inquiry form: a primary-colored two-column band with a left details column (uppercase eyebrow, thin light heading, lede, click-to-email / click-to-call buttons and an address row with inline icons) beside a right rounded card form (first/last name, email, event-type and guest-count selects, event date, vision textarea, and a full-width primary submit pill). Buttons and submit route through useNavigate. Use as the booking/inquiry section above the footer for event/wedding planners, gala organizers, or premium service businesses.",
+    'Dark split contact section with a full inquiry form: a primary-colored two-column band with a left details column (uppercase eyebrow, thin light heading, lede, click-to-email / click-to-call buttons and an address row with inline icons) beside a right rounded card form (first/last name, email, event-type and guest-count selects, event date, vision textarea, and a full-width primary submit pill). Buttons and submit route through useNavigate. Use as the booking/inquiry section above the footer for event/wedding planners, gala organizers, or premium service businesses.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -31,45 +31,44 @@ export const EventPlannerContact = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const contactEyebrow = props.eyebrow ?? "Start Your Journey"
+    const contactEyebrow = props.eyebrow ?? 'Start Your Journey'
     const contactHeading = props.heading ?? "Let's Create Something Beautiful"
     const contactDesc =
       props.description ??
       "Ready to begin planning your perfect event? We'd love to hear about your vision. Fill out the inquiry form and we'll be in touch within 24 hours to schedule your complimentary consultation."
-    const contactEmail = props.email ?? "hello@sereneevents.com"
-    const contactPhone = props.phone ?? "(415) 555-0147"
+    const contactEmail = props.email ?? 'hello@sereneevents.com'
+    const contactPhone = props.phone ?? '(415) 555-0147'
     const contactAddress =
-      props.address ??
-      "580 Market Street, Suite 800, San Francisco, CA 94104"
+      props.address ?? '580 Market Street, Suite 800, San Francisco, CA 94104'
     const eventTypes = props.eventTypes?.length
       ? props.eventTypes
       : [
-          "Select an event type",
-          "Wedding",
-          "Corporate Event",
-          "Private Celebration",
-          "Non-Profit Gala",
-          "Destination Event",
+          'Select an event type',
+          'Wedding',
+          'Corporate Event',
+          'Private Celebration',
+          'Non-Profit Gala',
+          'Destination Event',
         ]
     const guestRanges = props.guestRanges?.length
       ? props.guestRanges
       : [
-          "Select range",
-          "1-50 guests",
-          "51-100 guests",
-          "101-150 guests",
-          "151-200 guests",
-          "200+ guests",
+          'Select range',
+          '1-50 guests',
+          '51-100 guests',
+          '101-150 guests',
+          '151-200 guests',
+          '200+ guests',
         ]
-    const contactSubmit = props.submit ?? "Send Inquiry"
+    const contactSubmit = props.submit ?? 'Send Inquiry'
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-transparent focus:ring-2 focus:ring-ring"
+      'w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-transparent focus:ring-2 focus:ring-ring'
 
     return (
       <section
         className={cn(
-          "bg-primary px-4 py-20 sm:px-6 lg:px-8 lg:py-32",
+          'bg-primary px-4 py-20 sm:px-6 lg:px-8 lg:py-32',
           props.className,
         )}
       >
@@ -218,7 +217,7 @@ export const EventPlannerContact = defineComponent({
                   <select
                     id="ep-type"
                     required
-                    className={cn(inputCls, "appearance-none")}
+                    className={cn(inputCls, 'appearance-none')}
                   >
                     {eventTypes.map((opt) => (
                       <option key={opt} className="bg-background">
@@ -246,7 +245,7 @@ export const EventPlannerContact = defineComponent({
                     </label>
                     <select
                       id="ep-guests"
-                      className={cn(inputCls, "appearance-none")}
+                      className={cn(inputCls, 'appearance-none')}
                     >
                       {guestRanges.map((opt) => (
                         <option key={opt} className="bg-background">
@@ -267,7 +266,7 @@ export const EventPlannerContact = defineComponent({
                     id="ep-message"
                     rows={4}
                     placeholder="Share details about your dream event, preferred style, venues you're considering, or any questions you have..."
-                    className={cn(inputCls, "resize-none")}
+                    className={cn(inputCls, 'resize-none')}
                   />
                 </div>
                 <button

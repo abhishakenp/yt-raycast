@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * ArchitectureFirmLogos — "Featured in" publication strip for an
@@ -13,7 +13,7 @@ import { cn } from "#/lib/utils.ts"
  * fully with no props via baked-in publication defaults.
  */
 export const ArchitectureFirmLogos = defineComponent({
-  name: "ArchitectureFirmLogos",
+  name: 'ArchitectureFirmLogos',
   description:
     "Quiet 'Featured in' publication strip for an architecture-studio / design-practice page: a bordered band on a subtle card surface with a centered wide letter-spaced label above a wrapping, dimmed row of publication names rendered as light wordmarks. Calm, editorial, monochrome. Tokens-only, no links. Use as a press / 'as seen in' / featured social-proof strip for architecture firms, design studios, interior designers or any portfolio site wanting understated editorial credibility.",
   props: z.object({
@@ -24,22 +24,22 @@ export const ArchitectureFirmLogos = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const label = props.label ?? "Featured in"
+    const label = props.label ?? 'Featured in'
     const items = props.items?.length
       ? props.items
       : [
-          "Dezeen",
-          "ArchDaily",
-          "Dwell",
-          "Wallpaper*",
-          "Monocle",
-          "Architectural Digest",
+          'Dezeen',
+          'ArchDaily',
+          'Dwell',
+          'Wallpaper*',
+          'Monocle',
+          'Architectural Digest',
         ]
 
     return (
       <section
         aria-label="Featured publications"
-        className={cn("border-y border-border bg-card py-16", props.className)}
+        className={cn('border-y border-border bg-card py-16', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="mb-10 text-center text-xs uppercase tracking-widest text-muted-foreground">

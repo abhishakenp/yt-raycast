@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * SpaWellnessHero — tranquil full-bleed hero for a day-spa / wellness landing
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * massage and facial studios, and bathhouses. Renders fully with no props.
  */
 export const SpaWellnessHero = defineComponent({
-  name: "SpaWellnessHero",
+  name: 'SpaWellnessHero',
   description:
     "Tranquil full-bleed hero for a day-spa / wellness landing page: a serene treatment-room or natural-element photo fills the band under a soft token-based overlay so light serif text stays readable. Centered content has an uppercase eyebrow, a large serif headline, a calming supporting paragraph, dual CTAs (filled 'Book a Treatment' + outlined 'View Menu'), and a divider-separated hours / location strip. CTAs route through useNavigate. Use as the opening hero for spas, wellness retreats, massage and facial studios, and bathhouses.",
   props: z.object({
@@ -43,25 +43,27 @@ export const SpaWellnessHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Rest · Restore · Renew"
-    const heading = props.heading ?? "A calm escape for body and mind"
+    const eyebrow = props.eyebrow ?? 'Rest · Restore · Renew'
+    const heading = props.heading ?? 'A calm escape for body and mind'
     const subheading =
       props.subheading ??
-      "Step into a sanctuary of warm stone, soft light, and skilled hands. Our therapists craft each treatment around how you want to feel when you leave."
-    const primaryCta = props.primaryCta ?? "Book a Treatment"
-    const primaryTarget = props.primaryTarget ?? "Booking"
-    const secondaryCta = props.secondaryCta ?? "View Menu"
-    const secondaryTarget = props.secondaryTarget ?? "Treatments"
+      'Step into a sanctuary of warm stone, soft light, and skilled hands. Our therapists craft each treatment around how you want to feel when you leave.'
+    const primaryCta = props.primaryCta ?? 'Book a Treatment'
+    const primaryTarget = props.primaryTarget ?? 'Booking'
+    const secondaryCta = props.secondaryCta ?? 'View Menu'
+    const secondaryTarget = props.secondaryTarget ?? 'Treatments'
     const imageAlt =
       props.imageAlt ??
-      "serene candlelit spa treatment room with soft towels, smooth stones, and a tranquil natural palette"
-    const hours = props.hours ?? "Open Daily · 9am–8pm"
-    const location = props.location ?? "12 Willow Lane, Sausalito"
+      'serene candlelit spa treatment room with soft towels, smooth stones, and a tranquil natural palette'
+    const hours = props.hours ?? 'Open Daily · 9am–8pm'
+    const location = props.location ?? '12 Willow Lane, Sausalito'
 
     const infoItems = [hours, location].filter(Boolean)
 
     return (
-      <section className={cn("relative isolate overflow-hidden", props.className)}>
+      <section
+        className={cn('relative isolate overflow-hidden', props.className)}
+      >
         <Image
           alt={imageAlt}
           w={1920}

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MusicFestivalTickets — a three-tier tickets / pricing block for a music /
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * series, or any multi-day ticketed event.
  */
 export const MusicFestivalTickets = defineComponent({
-  name: "MusicFestivalTickets",
+  name: 'MusicFestivalTickets',
   description:
     "Three-tier tickets / pricing block for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three pass cards (GA, GA+, VIP) — each with a name, tagline, big price + unit, a checkmarked feature list and a primary CTA, with the popular tier highlighted by a primary ring and a floating 'Most Popular' badge — followed by a centered add-ons row of small bordered cards (camping, RV, glamping). Every tier CTA and add-on routes through useNavigate. Use to sell passes on music festivals, arts festivals, concert series, camping/desert events, or any multi-day ticketed event.",
   props: z.object({
@@ -49,75 +49,86 @@ export const MusicFestivalTickets = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Tickets"
-    const heading = props.heading ?? "Get Your Pass"
+    const eyebrow = props.eyebrow ?? 'Tickets'
+    const heading = props.heading ?? 'Get Your Pass'
     const description =
       props.description ??
-      "All passes include three-day festival access, camping, and free water refill stations. Payment plans available."
+      'All passes include three-day festival access, camping, and free water refill stations. Payment plans available.'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "General Admission",
-            tagline: "Full weekend access to all stages",
-            price: "$349",
-            unit: "/person",
+            name: 'General Admission',
+            tagline: 'Full weekend access to all stages',
+            price: '$349',
+            unit: '/person',
             features: [
-              "All 4 stages access",
-              "Car camping included",
-              "Free water stations",
-              "Mobile app access",
+              'All 4 stages access',
+              'Car camping included',
+              'Free water stations',
+              'Mobile app access',
             ],
-            cta: "Buy GA Pass",
+            cta: 'Buy GA Pass',
           },
           {
-            name: "GA+",
-            tagline: "Enhanced comfort & fast entry",
-            price: "$549",
-            unit: "/person",
+            name: 'GA+',
+            tagline: 'Enhanced comfort & fast entry',
+            price: '$549',
+            unit: '/person',
             features: [
-              "Everything in GA",
-              "Fast lane entry",
-              "Premium air-conditioned restrooms",
-              "GA+ lounge access",
-              "Complimentary lockers",
+              'Everything in GA',
+              'Fast lane entry',
+              'Premium air-conditioned restrooms',
+              'GA+ lounge access',
+              'Complimentary lockers',
             ],
-            cta: "Buy GA+ Pass",
+            cta: 'Buy GA+ Pass',
             popular: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "VIP",
-            tagline: "The ultimate festival experience",
-            price: "$899",
-            unit: "/person",
+            name: 'VIP',
+            tagline: 'The ultimate festival experience',
+            price: '$899',
+            unit: '/person',
             features: [
-              "Everything in GA+",
-              "VIP stage viewing areas",
-              "Open bars (beer, wine, cocktails)",
-              "Dedicated VIP entrance",
-              "Commemorative laminate & poster",
+              'Everything in GA+',
+              'VIP stage viewing areas',
+              'Open bars (beer, wine, cocktails)',
+              'Dedicated VIP entrance',
+              'Commemorative laminate & poster',
             ],
-            cta: "Buy VIP Pass",
+            cta: 'Buy VIP Pass',
           },
         ]
-    const addOnsLabel = props.addOnsLabel ?? "Add-Ons"
+    const addOnsLabel = props.addOnsLabel ?? 'Add-Ons'
     const addOns = props.addOns?.length
       ? props.addOns
       : [
-          { name: "Car Camping", price: "+ $75/vehicle" },
-          { name: "RV Camping", price: "+ $250/spot" },
-          { name: "Glamping Tent", price: "+ $599 (2-person)" },
+          { name: 'Car Camping', price: '+ $75/vehicle' },
+          { name: 'RV Camping', price: '+ $250/spot' },
+          { name: 'Glamping Tent', price: '+ $599 (2-person)' },
         ]
 
     const Check = () => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-primary" aria-hidden="true">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="shrink-0 text-primary"
+        aria-hidden="true"
+      >
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
 
     return (
-      <section className={cn("py-24 lg:py-32", props.className)}>
+      <section className={cn('py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
@@ -136,10 +147,10 @@ export const MusicFestivalTickets = defineComponent({
               <div
                 key={tier.name}
                 className={cn(
-                  "relative rounded-xl bg-card p-8 text-card-foreground",
+                  'relative rounded-xl bg-card p-8 text-card-foreground',
                   tier.popular
-                    ? "border-2 border-primary"
-                    : "border border-border",
+                    ? 'border-2 border-primary'
+                    : 'border border-border',
                 )}
               >
                 {tier.badge ? (

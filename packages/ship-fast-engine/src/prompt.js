@@ -1,5 +1,5 @@
-import { generatePrompt } from "@openuidev/lang-core"
-import componentSpec from "./generated/component-spec.json" with { type: "json" }
+import { generatePrompt } from '@openuidev/lang-core'
+import componentSpec from './generated/component-spec.json' with { type: 'json' }
 
 const SPEC = componentSpec
 
@@ -9,25 +9,25 @@ Invent realistic, specific content (names, numbers, copy) — never lorem ipsum 
 Favour clear visual hierarchy: Section/Stack/Grid for layout, Card to group, Heading/Text for copy.`
 
 export const ALWAYS_INCLUDE = [
-  "Stack",
-  "Grid",
-  "Box",
-  "Section",
-  "Spacer",
-  "Heading",
-  "Text",
-  "Button",
-  "Card",
-  "Badge",
-  "Tabs",
-  "Separator",
+  'Stack',
+  'Grid',
+  'Box',
+  'Section',
+  'Spacer',
+  'Heading',
+  'Text',
+  'Button',
+  'Card',
+  'Badge',
+  'Tabs',
+  'Separator',
 ]
 
 const RULES = [
-  "Break a multi-feature app into distinct PAGES/MODULES. Use Tabs at the top level to switch modules when there is more than one.",
-  "Prefer references over deep inlining: define a child on its own line and reference it by name for better streaming.",
-  "Every defined identifier (except root) MUST be referenced from root, directly or transitively.",
-  "Use Grid for card collections (stats, products, features); use Stack for vertical flow.",
+  'Break a multi-feature app into distinct PAGES/MODULES. Use Tabs at the top level to switch modules when there is more than one.',
+  'Prefer references over deep inlining: define a child on its own line and reference it by name for better streaming.',
+  'Every defined identifier (except root) MUST be referenced from root, directly or transitively.',
+  'Use Grid for card collections (stats, products, features); use Stack for vertical flow.',
 ]
 
 const EXAMPLES = [
@@ -68,7 +68,7 @@ export function filteredSystemPrompt(names) {
 }
 
 export function pageSystemPrompt(chosenBlock) {
-  return filteredSystemPrompt([chosenBlock, "PageSwitch"])
+  return filteredSystemPrompt([chosenBlock, 'PageSwitch'])
 }
 
 export function pageUser(brand, navLabels, page, tagline) {

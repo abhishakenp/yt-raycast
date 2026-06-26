@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CrmPricing — centered 3-tier pricing table for a CRM / SaaS landing page on a
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props.
  */
 export const CrmPricing = defineComponent({
-  name: "CrmPricing",
+  name: 'CrmPricing',
   description:
-    "Centered 3-tier pricing table for a CRM / SaaS landing page on a subtle muted band: a heading + supporting paragraph above a responsive 3-up grid of plan cards with name, blurb, large price + unit, a checklist of included features (green checks) plus optional crossed-out excluded features, and a full-width CTA; the featured plan inverts to a filled primary surface with a floating Most-Popular badge. CTAs route through useNavigate. Use to present tiered subscription pricing for CRM, sales-pipeline or B2B SaaS products.",
+    'Centered 3-tier pricing table for a CRM / SaaS landing page on a subtle muted band: a heading + supporting paragraph above a responsive 3-up grid of plan cards with name, blurb, large price + unit, a checklist of included features (green checks) plus optional crossed-out excluded features, and a full-width CTA; the featured plan inverts to a filled primary surface with a floating Most-Popular badge. CTAs route through useNavigate. Use to present tiered subscription pricing for CRM, sales-pipeline or B2B SaaS products.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -41,7 +41,7 @@ export const CrmPricing = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Simple, transparent pricing"
+    const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
       "No hidden fees. Start free, upgrade when you're ready. Annual plans save 20%."
@@ -49,48 +49,47 @@ export const CrmPricing = defineComponent({
       ? props.plans
       : [
           {
-            name: "Starter",
-            description: "For individuals and small teams getting started.",
-            price: "$19",
-            unit: "/user/month",
+            name: 'Starter',
+            description: 'For individuals and small teams getting started.',
+            price: '$19',
+            unit: '/user/month',
             features: [
-              "Up to 1,000 contacts",
-              "Visual pipeline",
-              "Basic reporting",
-              "Email integration",
+              'Up to 1,000 contacts',
+              'Visual pipeline',
+              'Basic reporting',
+              'Email integration',
             ],
-            excluded: ["API access"],
-            cta: "Start free trial",
+            excluded: ['API access'],
+            cta: 'Start free trial',
           },
           {
-            name: "Professional",
-            description:
-              "For growing teams that need automation and insights.",
-            price: "$49",
-            unit: "/user/month",
+            name: 'Professional',
+            description: 'For growing teams that need automation and insights.',
+            price: '$49',
+            unit: '/user/month',
             features: [
-              "Unlimited contacts",
-              "Custom pipeline stages",
-              "Workflow automation",
-              "Advanced analytics",
-              "API access + webhooks",
+              'Unlimited contacts',
+              'Custom pipeline stages',
+              'Workflow automation',
+              'Advanced analytics',
+              'API access + webhooks',
             ],
-            cta: "Start free trial",
+            cta: 'Start free trial',
             featured: true,
           },
           {
-            name: "Enterprise",
-            description: "For large organizations with custom needs.",
-            price: "$99",
-            unit: "/user/month",
+            name: 'Enterprise',
+            description: 'For large organizations with custom needs.',
+            price: '$99',
+            unit: '/user/month',
             features: [
-              "Everything in Professional",
-              "SSO & advanced security",
-              "Dedicated account manager",
-              "Custom integrations",
-              "SLA guarantee",
+              'Everything in Professional',
+              'SSO & advanced security',
+              'Dedicated account manager',
+              'Custom integrations',
+              'SLA guarantee',
             ],
-            cta: "Contact sales",
+            cta: 'Contact sales',
           },
         ]
 
@@ -125,9 +124,7 @@ export const CrmPricing = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-muted/50 py-20 lg:py-32", props.className)}
-      >
+      <section className={cn('bg-muted/50 py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
@@ -140,10 +137,10 @@ export const CrmPricing = defineComponent({
               <div
                 key={plan.name}
                 className={cn(
-                  "relative rounded-xl p-8 shadow-sm",
+                  'relative rounded-xl p-8 shadow-sm',
                   plan.featured
-                    ? "border border-primary bg-primary text-primary-foreground shadow-xl"
-                    : "border border-border bg-card",
+                    ? 'border border-primary bg-primary text-primary-foreground shadow-xl'
+                    : 'border border-border bg-card',
                 )}
               >
                 {plan.featured ? (
@@ -155,20 +152,20 @@ export const CrmPricing = defineComponent({
                 ) : null}
                 <h3
                   className={cn(
-                    "mb-2 text-xl font-semibold",
+                    'mb-2 text-xl font-semibold',
                     plan.featured
-                      ? "text-primary-foreground"
-                      : "text-card-foreground",
+                      ? 'text-primary-foreground'
+                      : 'text-card-foreground',
                   )}
                 >
                   {plan.name}
                 </h3>
                 <p
                   className={cn(
-                    "mb-6",
+                    'mb-6',
                     plan.featured
-                      ? "text-primary-foreground/70"
-                      : "text-muted-foreground",
+                      ? 'text-primary-foreground/70'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {plan.description}
@@ -176,10 +173,10 @@ export const CrmPricing = defineComponent({
                 <div className="mb-6">
                   <span
                     className={cn(
-                      "text-4xl font-bold",
+                      'text-4xl font-bold',
                       plan.featured
-                        ? "text-primary-foreground"
-                        : "text-card-foreground",
+                        ? 'text-primary-foreground'
+                        : 'text-card-foreground',
                     )}
                   >
                     {plan.price}
@@ -187,8 +184,8 @@ export const CrmPricing = defineComponent({
                   <span
                     className={cn(
                       plan.featured
-                        ? "text-primary-foreground/60"
-                        : "text-muted-foreground",
+                        ? 'text-primary-foreground/60'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {plan.unit}
@@ -199,17 +196,17 @@ export const CrmPricing = defineComponent({
                     <li key={feat} className="flex items-start gap-3">
                       <Check
                         className={cn(
-                          "mt-0.5 size-5 shrink-0",
+                          'mt-0.5 size-5 shrink-0',
                           plan.featured
-                            ? "text-primary-foreground/80"
-                            : "text-chart-2",
+                            ? 'text-primary-foreground/80'
+                            : 'text-chart-2',
                         )}
                       />
                       <span
                         className={cn(
                           plan.featured
-                            ? "text-primary-foreground/90"
-                            : "text-foreground/80",
+                            ? 'text-primary-foreground/90'
+                            : 'text-foreground/80',
                         )}
                       >
                         {feat}
@@ -227,10 +224,10 @@ export const CrmPricing = defineComponent({
                   type="button"
                   onClick={() => go(plan.cta)}
                   className={cn(
-                    "w-full rounded-lg py-3 font-semibold transition-colors",
+                    'w-full rounded-lg py-3 font-semibold transition-colors',
                     plan.featured
-                      ? "bg-background text-foreground hover:bg-muted"
-                      : "border border-border text-foreground hover:bg-muted",
+                      ? 'bg-background text-foreground hover:bg-muted'
+                      : 'border border-border text-foreground hover:bg-muted',
                   )}
                 >
                   {plan.cta}

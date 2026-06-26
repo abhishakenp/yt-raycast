@@ -8,71 +8,68 @@ import {
   ResetIcon,
   StopwatchIcon,
   TrashIcon,
-} from "@radix-ui/react-icons";
-import React, { useCallback, useContext, useState } from "react";
-import { GenericDocument } from "convex/server";
-import { Value, convexToJson } from "convex/values";
-import {
-  Filter,
-  typeOf,
-} from "system-udfs/convex/_system/frontend/lib/filters";
-import { UrlObject } from "url";
-import { Key } from "@ui/KeyboardShortcut";
-import { ContextMenu } from "@common/features/data/components/ContextMenu";
-import { PopupState } from "@common/features/data/lib/useToolPopup";
-import { operatorOptions } from "@common/features/data/components/FilterEditor/FilterEditor";
+} from '@radix-ui/react-icons'
+import React, { useCallback, useContext, useState } from 'react'
+import { GenericDocument } from 'convex/server'
+import { Value, convexToJson } from 'convex/values'
+import { Filter, typeOf } from 'system-udfs/convex/_system/frontend/lib/filters'
+import { UrlObject } from 'url'
+import { Key } from '@ui/KeyboardShortcut'
+import { ContextMenu } from '@common/features/data/components/ContextMenu'
+import { PopupState } from '@common/features/data/lib/useToolPopup'
+import { operatorOptions } from '@common/features/data/components/FilterEditor/FilterEditor'
 import {
   ActionHotkeysProps,
   OpenContextMenu,
   TableContextMenuState,
   useActionHotkeys,
-} from "@common/features/data/components/Table/DataCell/utils/cellActions";
-import { stringifyValue } from "@common/lib/stringifyValue";
-import { useNents } from "@common/lib/useNents";
-import { DeploymentInfoContext } from "@common/lib/deploymentContext";
-import { PermissionDeniedTip } from "@common/elements/NoPermissionMessage";
+} from '@common/features/data/components/Table/DataCell/utils/cellActions'
+import { stringifyValue } from '@common/lib/stringifyValue'
+import { useNents } from '@common/lib/useNents'
+import { DeploymentInfoContext } from '@common/lib/deploymentContext'
+import { PermissionDeniedTip } from '@common/elements/NoPermissionMessage'
 
 export function useTableContextMenuState(): {
-  contextMenuState: TableContextMenuState | null;
-  openContextMenu: OpenContextMenu;
-  closeContextMenu: () => void;
+  contextMenuState: TableContextMenuState | null
+  openContextMenu: OpenContextMenu
+  closeContextMenu: () => void
 } {
   const [contextMenuState, setContextMenuState] =
-    useState<TableContextMenuState | null>(null);
+    useState<TableContextMenuState | null>(null)
 
   const openContextMenu: OpenContextMenu = useCallback(
     (newTarget, rowId, cell) => {
       setContextMenuState({
         target: newTarget,
         selectedCell: cell === null ? null : { rowId, ...cell },
-      });
+      })
     },
     [],
-  );
+  )
 
   const closeContextMenu = useCallback(() => {
-    setContextMenuState(null);
-  }, []);
+    setContextMenuState(null)
+  }, [])
 
   return {
     contextMenuState,
     openContextMenu,
     closeContextMenu,
-  };
+  }
 }
 
 export type TableContextMenuProps = {
-  data: GenericDocument[];
-  state: TableContextMenuState | null;
-  close: () => void;
-  deleteRows: (rowIds: Set<string>) => Promise<void>;
-  setPopup: PopupState["setPopup"];
-  onAddDraftFilter: (newFilter: Filter) => void;
-  defaultDocument: GenericDocument;
-  resetColumns: () => void;
-  canManageTable: boolean;
-  isProtectedDeployment: boolean;
-};
+  data: GenericDocument[]
+  state: TableContextMenuState | null
+  close: () => void
+  deleteRows: (rowIds: Set<string>) => Promise<void>
+  setPopup: PopupState['setPopup']
+  onAddDraftFilter: (newFilter: Filter) => void
+  defaultDocument: GenericDocument
+  resetColumns: () => void
+  canManageTable: boolean
+  isProtectedDeployment: boolean
+}
 
 export function TableContextMenu({
   data,
@@ -86,55 +83,55 @@ export function TableContextMenu({
   canManageTable,
   isProtectedDeployment,
 }: TableContextMenuProps) {
-  const { selectedNent } = useNents();
+  const { selectedNent } = useNents()
   const isInUnmountedComponent = !!(
-    selectedNent && selectedNent.state !== "active"
-  );
+    selectedNent && selectedNent.state !== 'active'
+  )
 
-  const { captureMessage } = useContext(DeploymentInfoContext);
+  const { captureMessage } = useContext(DeploymentInfoContext)
 
-  const disableEditDoc = !canManageTable || isInUnmountedComponent;
+  const disableEditDoc = !canManageTable || isInUnmountedComponent
   const disableEdit =
-    state?.selectedCell?.column.startsWith("_") || disableEditDoc;
+    state?.selectedCell?.column.startsWith('_') || disableEditDoc
 
   const createActionHandler =
     (
       action:
-        | "edit"
-        | "copy"
-        | "view"
-        | "editDoc"
-        | "viewDoc"
-        | "copyDoc"
-        | "goToRef",
+        | 'edit'
+        | 'copy'
+        | 'view'
+        | 'editDoc'
+        | 'viewDoc'
+        | 'copyDoc'
+        | 'goToRef',
     ) =>
     () => {
-      if (!state?.selectedCell?.callbacks?.[action]) return;
+      if (!state?.selectedCell?.callbacks?.[action]) return
 
-      if (action === "editDoc" && disableEditDoc) return;
-      if (action === "edit" && disableEdit) return;
+      if (action === 'editDoc' && disableEditDoc) return
+      if (action === 'edit' && disableEdit) return
 
-      if (action === "editDoc" || action === "viewDoc") {
-        const selectedRowId = state.selectedCell?.rowId;
-        const document = data.find((row) => row._id === selectedRowId);
+      if (action === 'editDoc' || action === 'viewDoc') {
+        const selectedRowId = state.selectedCell?.rowId
+        const document = data.find((row) => row._id === selectedRowId)
         if (!document) {
           captureMessage(
-            "Can’t find the right-clicked document in data",
-            "error",
-          );
-          return;
+            'Can’t find the right-clicked document in data',
+            'error',
+          )
+          return
         }
       }
-      state.selectedCell.callbacks[action]();
-      close();
-    };
-  const editCb = createActionHandler("edit");
-  const editDocCb = createActionHandler("editDoc");
-  const viewDocCb = createActionHandler("viewDoc");
-  const copyDocCb = createActionHandler("copyDoc");
-  const goToDocCb = createActionHandler("goToRef");
-  const copyCb = createActionHandler("copy");
-  const viewCb = createActionHandler("view");
+      state.selectedCell.callbacks[action]()
+      close()
+    }
+  const editCb = createActionHandler('edit')
+  const editDocCb = createActionHandler('editDoc')
+  const viewDocCb = createActionHandler('viewDoc')
+  const copyDocCb = createActionHandler('copyDoc')
+  const goToDocCb = createActionHandler('goToRef')
+  const copyCb = createActionHandler('copy')
+  const viewCb = createActionHandler('view')
 
   return (
     <ContextMenu target={state ? state.target : null} onClose={close}>
@@ -193,42 +190,42 @@ export function TableContextMenu({
         </div>
       )}
     </ContextMenu>
-  );
+  )
 }
 
 function showFilter(
-  operator: (typeof operatorOptions)[number]["value"],
+  operator: (typeof operatorOptions)[number]['value'],
   value: Value | undefined,
   column: string,
 ) {
   // For falsy types, only provide direct comparisons
   if (value === undefined || value === null) {
-    return operator === "type" || operator === "notype";
+    return operator === 'type' || operator === 'notype'
   }
 
   // Remove order filters where it doesn’t make sense (objects, arrays, booleans)
   if (
-    (column === "_id" ||
-      ((typeof value === "object" || typeof value === "boolean") &&
+    (column === '_id' ||
+      ((typeof value === 'object' || typeof value === 'boolean') &&
         !(value instanceof ArrayBuffer))) &&
-    ["gt", "gte", "lt", "lte"].includes(operator)
+    ['gt', 'gte', 'lt', 'lte'].includes(operator)
   ) {
-    return false;
+    return false
   }
 
-  if (column === "_creationTime" && ["eq", "neq"].includes(operator)) {
-    return false;
+  if (column === '_creationTime' && ['eq', 'neq'].includes(operator)) {
+    return false
   }
 
   if (
-    ["_id", "_creationTime"].includes(column) &&
-    (operator === "type" || operator === "notype")
+    ['_id', '_creationTime'].includes(column) &&
+    (operator === 'type' || operator === 'notype')
   ) {
     // Remove type operators from the _id column
-    return false;
+    return false
   }
 
-  return true;
+  return true
 }
 
 function ActionHotkeys({
@@ -248,8 +245,8 @@ function ActionHotkeys({
     editCb,
     editDocCb,
     goToDocCb,
-  });
-  return null;
+  })
+  return null
 }
 
 function CellActions({
@@ -263,15 +260,15 @@ function CellActions({
   onAddDraftFilter,
   defaultDocument,
 }: {
-  state: TableContextMenuState;
-  copyCb: () => void;
-  viewCb: () => void;
-  editCb: () => void;
-  disableEdit: boolean;
-  canManageTable: boolean;
-  isInUnmountedComponent: boolean;
-  onAddDraftFilter: (newFilter: Filter) => void;
-  defaultDocument: GenericDocument;
+  state: TableContextMenuState
+  copyCb: () => void
+  viewCb: () => void
+  editCb: () => void
+  disableEdit: boolean
+  canManageTable: boolean
+  isInUnmountedComponent: boolean
+  onAddDraftFilter: (newFilter: Filter) => void
+  defaultDocument: GenericDocument
 }) {
   const filterAction = state.selectedCell?.rowId ? (
     <FilterWithSubmenu
@@ -280,7 +277,7 @@ function CellActions({
       defaultDocument={defaultDocument}
     />
   ) : (
-    state.selectedCell?.column !== "*select" && (
+    state.selectedCell?.column !== '*select' && (
       <ContextMenu.Item
         key={state.selectedCell?.column}
         icon={<MixerHorizontalIcon aria-hidden="true" />}
@@ -293,26 +290,26 @@ function CellActions({
           const value =
             state.selectedCell && state.selectedCell.column in defaultDocument
               ? defaultDocument[state.selectedCell.column]
-              : null;
+              : null
 
           onAddDraftFilter({
             id: Math.random().toString(),
             field: state.selectedCell?.column,
-            op: "eq",
+            op: 'eq',
             value: convexToJson(value),
             enabled: true,
-          });
+          })
         }}
       />
     )
-  );
+  )
 
   const isFileRef =
-    state.selectedCell?.callbacks?.docRefLink?.pathname?.endsWith("/files");
+    state.selectedCell?.callbacks?.docRefLink?.pathname?.endsWith('/files')
   const isScheduledFunctionRef =
     state.selectedCell?.callbacks?.docRefLink?.pathname?.endsWith(
-      "/schedules/functions",
-    );
+      '/schedules/functions',
+    )
 
   const cellActions =
     state.selectedCell?.rowId && state.selectedCell.callbacks
@@ -321,7 +318,7 @@ function CellActions({
             ? {
                 action: state.selectedCell.callbacks
                   .docRefLink satisfies UrlObject,
-                shortcut: ["CtrlOrCmd", "G"] satisfies Key[],
+                shortcut: ['CtrlOrCmd', 'G'] satisfies Key[],
                 icon: isFileRef ? (
                   <FileIcon aria-hidden="true" />
                 ) : isScheduledFunctionRef ? (
@@ -330,16 +327,16 @@ function CellActions({
                   <ExternalLinkIcon aria-hidden="true" />
                 ),
                 label: isFileRef
-                  ? "Go to File"
+                  ? 'Go to File'
                   : isScheduledFunctionRef
-                    ? "Go to Scheduled Functions"
-                    : "Go to Reference",
+                    ? 'Go to Scheduled Functions'
+                    : 'Go to Reference',
                 disabled: false,
                 tip: null,
               }
             : {
                 action: viewCb,
-                shortcut: ["Space"] satisfies Key[],
+                shortcut: ['Space'] satisfies Key[],
                 icon: <EnterFullScreenIcon aria-hidden="true" />,
                 label: (
                   <div className="flex items-center gap-1">
@@ -351,7 +348,7 @@ function CellActions({
               },
           {
             action: copyCb,
-            shortcut: ["CtrlOrCmd", "C"] satisfies Key[],
+            shortcut: ['CtrlOrCmd', 'C'] satisfies Key[],
             icon: <ClipboardCopyIcon aria-hidden="true" />,
             label: (
               <div className="flex items-center gap-1">
@@ -363,7 +360,7 @@ function CellActions({
           },
           {
             action: editCb,
-            shortcut: ["Return"] satisfies Key[],
+            shortcut: ['Return'] satisfies Key[],
             icon: <Pencil1Icon aria-hidden="true" />,
             label: (
               <div className="flex items-center gap-1">
@@ -372,7 +369,7 @@ function CellActions({
             ),
             disabled: disableEdit,
             tip: isInUnmountedComponent ? (
-              "Cannot edit documents in an unmounted component."
+              'Cannot edit documents in an unmounted component.'
             ) : !canManageTable ? (
               <PermissionDeniedTip
                 message="You do not have permission to edit data in this deployment."
@@ -381,7 +378,7 @@ function CellActions({
             ) : null,
           },
         ]
-      : null;
+      : null
 
   return (
     <>
@@ -399,7 +396,7 @@ function CellActions({
       ))}
       {filterAction}
     </>
-  );
+  )
 }
 
 function FilterWithSubmenu({
@@ -407,14 +404,14 @@ function FilterWithSubmenu({
   addDraftFilter,
   defaultDocument,
 }: {
-  state: TableContextMenuState;
-  addDraftFilter: (newFilter: Filter) => void;
-  defaultDocument: GenericDocument;
+  state: TableContextMenuState
+  addDraftFilter: (newFilter: Filter) => void
+  defaultDocument: GenericDocument
 }) {
-  const { captureMessage } = useContext(DeploymentInfoContext);
+  const { captureMessage } = useContext(DeploymentInfoContext)
   if (!state.selectedCell) {
-    captureMessage("No selected cell in FilterWithSubmenu", "error");
-    return null;
+    captureMessage('No selected cell in FilterWithSubmenu', 'error')
+    return null
   }
   return (
     <ContextMenu.Submenu
@@ -428,37 +425,37 @@ function FilterWithSubmenu({
         const value =
           state.selectedCell && state.selectedCell.column in defaultDocument
             ? defaultDocument[state.selectedCell.column]
-            : null;
+            : null
         addDraftFilter({
           id: Math.random().toString(),
           field: state.selectedCell?.column,
-          op: "eq",
+          op: 'eq',
           value: convexToJson(value),
-        });
+        })
       }}
     >
       {operatorOptions.map(({ value: operator, label: operatorLabel }) => {
-        const cell = state.selectedCell;
+        const cell = state.selectedCell
 
-        if (!cell) return null;
-        const selectedValue = cell.value;
+        if (!cell) return null
+        const selectedValue = cell.value
 
         if (!showFilter(operator, selectedValue, cell.column)) {
-          return null;
+          return null
         }
 
-        return operator === "type" || operator === "notype" ? (
+        return operator === 'type' || operator === 'notype' ? (
           // Type operator
           <ContextMenu.Item
             key={operator}
-            label={`${operatorLabel.replace(" type", "")} ${typeOf(selectedValue)}`}
+            label={`${operatorLabel.replace(' type', '')} ${typeOf(selectedValue)}`}
             action={() => {
               addDraftFilter({
                 id: Math.random().toString(),
                 field: cell.column,
                 op: operator,
                 value: typeOf(selectedValue),
-              });
+              })
             }}
           />
         ) : (
@@ -468,9 +465,9 @@ function FilterWithSubmenu({
               key={operator}
               label={
                 <>
-                  {operatorLabel}{" "}
+                  {operatorLabel}{' '}
                   <code>
-                    {cell.column === "_creationTime"
+                    {cell.column === '_creationTime'
                       ? new Date(selectedValue as number).toLocaleString()
                       : stringifyValue(selectedValue)}
                   </code>
@@ -485,14 +482,14 @@ function FilterWithSubmenu({
                     selectedValue === undefined
                       ? undefined
                       : convexToJson(selectedValue),
-                });
+                })
               }}
             />
           )
-        );
+        )
       })}
     </ContextMenu.Submenu>
-  );
+  )
 }
 
 function DocumentActions({
@@ -507,76 +504,76 @@ function DocumentActions({
   copyDocCb,
   isProtectedDeployment,
 }: {
-  state: TableContextMenuState;
-  setPopup: PopupState["setPopup"];
-  deleteRows: (rowIds: Set<string>) => Promise<void>;
-  disableEditDoc: boolean;
-  canManageTable: boolean;
-  isInUnmountedComponent: boolean;
-  editDocCb: () => void;
-  viewDocCb: () => void;
-  copyDocCb: () => void;
-  isProtectedDeployment: boolean;
+  state: TableContextMenuState
+  setPopup: PopupState['setPopup']
+  deleteRows: (rowIds: Set<string>) => Promise<void>
+  disableEditDoc: boolean
+  canManageTable: boolean
+  isInUnmountedComponent: boolean
+  editDocCb: () => void
+  viewDocCb: () => void
+  copyDocCb: () => void
+  isProtectedDeployment: boolean
 }) {
   if (!state?.selectedCell?.callbacks || !state?.selectedCell.callbacks)
-    return null;
+    return null
   const documentActions = [
     {
       icon: <EnterFullScreenIcon aria-hidden="true" />,
-      label: "View Document",
-      shortcut: ["Shift", "Space"] satisfies Key[],
+      label: 'View Document',
+      shortcut: ['Shift', 'Space'] satisfies Key[],
       action: viewDocCb,
     },
     {
       icon: <ClipboardCopyIcon aria-hidden="true" />,
-      label: "Copy Document",
-      tipSide: "right",
-      shortcut: ["Shift", "CtrlOrCmd", "C"] satisfies Key[],
+      label: 'Copy Document',
+      tipSide: 'right',
+      shortcut: ['Shift', 'CtrlOrCmd', 'C'] satisfies Key[],
       action: copyDocCb,
     },
     {
       icon: <Pencil1Icon aria-hidden="true" />,
-      label: "Edit Document",
-      shortcut: ["Shift", "Return"] satisfies Key[],
+      label: 'Edit Document',
+      shortcut: ['Shift', 'Return'] satisfies Key[],
       disabled: disableEditDoc,
       tip: isInUnmountedComponent
-        ? "Cannot edit documents in an unmounted component."
+        ? 'Cannot edit documents in an unmounted component.'
         : !canManageTable && (
             <PermissionDeniedTip
               message="You do not have permission to edit data in this deployment."
               action="deployment:data:write"
             />
           ),
-      tipSide: "right",
+      tipSide: 'right',
       action: editDocCb,
     },
     {
       icon: <TrashIcon aria-hidden="true" />,
-      label: "Delete Document",
+      label: 'Delete Document',
       disabled: disableEditDoc,
       tip: isInUnmountedComponent
-        ? "Cannot delete documents in an unmounted component."
+        ? 'Cannot delete documents in an unmounted component.'
         : !canManageTable && (
             <PermissionDeniedTip
               message="You do not have permission to delete data in this deployment."
               action="deployment:data:write"
             />
           ),
-      tipSide: "right",
+      tipSide: 'right',
       danger: true,
       action: () => {
-        if (!state.selectedCell?.rowId) return;
+        if (!state.selectedCell?.rowId) return
         if (isProtectedDeployment) {
           setPopup({
-            type: "deleteRows",
+            type: 'deleteRows',
             rowIds: new Set([state.selectedCell.rowId]),
-          });
+          })
         } else {
-          void deleteRows(new Set([state.selectedCell.rowId]));
+          void deleteRows(new Set([state.selectedCell.rowId]))
         }
       },
     },
-  ];
+  ]
 
   return (
     <>
@@ -591,9 +588,9 @@ function DocumentActions({
           disabled={action.disabled}
           tip={action.tip}
           tipSide="right"
-          variant={action.danger ? "danger" : "neutral"}
+          variant={action.danger ? 'danger' : 'neutral'}
         />
       ))}
     </>
-  );
+  )
 }

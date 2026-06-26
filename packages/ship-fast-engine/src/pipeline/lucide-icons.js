@@ -447,7 +447,8 @@ const LUCIDE_BOOTSTRAP = `
 
 function injectBeforeClosingTag(html, tagName, snippet) {
   const pattern = new RegExp(`</${tagName}>`, 'i')
-  if (pattern.test(html)) return html.replace(pattern, `${snippet}\n</${tagName}>`)
+  if (pattern.test(html))
+    return html.replace(pattern, `${snippet}\n</${tagName}>`)
   return `${html}\n${snippet}`
 }
 
@@ -460,8 +461,11 @@ function stripExistingBootstrap(html) {
   const bodyCloseIdx = next.search(/<\/body>/i)
   if (bodyCloseIdx === -1) {
     const afterOpen = orphanIndex + orphanMatch[0].length
-    const resume = next.slice(afterOpen).search(/<(?:main|section|aside|footer|div|\/html)\b/i)
-    if (resume >= 0) return `${next.slice(0, orphanIndex)}${next.slice(afterOpen + resume)}`
+    const resume = next
+      .slice(afterOpen)
+      .search(/<(?:main|section|aside|footer|div|\/html)\b/i)
+    if (resume >= 0)
+      return `${next.slice(0, orphanIndex)}${next.slice(afterOpen + resume)}`
     return next.slice(0, orphanIndex)
   }
   return `${next.slice(0, orphanIndex)}${next.slice(bodyCloseIdx)}`
@@ -470,14 +474,19 @@ function stripExistingBootstrap(html) {
 export function ensureLucideIconRuntime(html, log = null) {
   if (!html || typeof html !== 'string') return html
 
-  const needsLucide = LUCIDE_CDN_RE.test(html) || LUCIDE_PLACEHOLDER_RE.test(html)
+  const needsLucide =
+    LUCIDE_CDN_RE.test(html) || LUCIDE_PLACEHOLDER_RE.test(html)
   if (!needsLucide) return html
 
   let next = stripExistingBootstrap(html)
   let changed = next !== html
 
   if (!LUCIDE_CDN_RE.test(next)) {
-    next = injectBeforeClosingTag(next, 'head', `<script src="${LUCIDE_CDN_URL}"></script>`)
+    next = injectBeforeClosingTag(
+      next,
+      'head',
+      `<script src="${LUCIDE_CDN_URL}"></script>`,
+    )
     changed = true
   }
 

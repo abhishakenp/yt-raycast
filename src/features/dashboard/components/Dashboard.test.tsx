@@ -550,4 +550,19 @@ describe('Dashboard missing session state', () => {
     expect(source).toContain('<GitHubPanel sessionId={sessionId} />')
     expect(source).toContain('<DeploymentPanel sessionId={sessionId} />')
   })
+
+  it('allows storage-backed clone URLs to render without inline source html', () => {
+    const source = readFileSync(
+      'src/features/dashboard/components/Dashboard.tsx',
+      'utf8',
+    )
+
+    expect(source).toContain(
+      '(homeModule?.source || clonePageNav.currentUrl)',
+    )
+    expect(source).toContain('hasRenderableClonePage')
+    expect(source).toContain('hasRenderableHomeSource')
+    expect(source).toContain('sourceUrl={')
+    expect(source).toContain('clonePageNav.currentUrl')
+  })
 })

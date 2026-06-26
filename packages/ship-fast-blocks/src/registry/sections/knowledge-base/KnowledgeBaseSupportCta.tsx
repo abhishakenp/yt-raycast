@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * KnowledgeBaseSupportCta — contrasting "still need help?" support CTA band on
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * support. Renders fully with no props via baked-in defaults.
  */
 export const KnowledgeBaseSupportCta = defineComponent({
-  name: "KnowledgeBaseSupportCta",
+  name: 'KnowledgeBaseSupportCta',
   description:
     "Contrasting 'still need help?' support CTA band on the primary surface for a help center: a centered heading + supporting paragraph above two buttons (a filled inverted 'live chat' with a chat icon and an outlined 'email support' with a mail icon), with a bordered-top note line below stating availability / response times. High-contrast, calm and reassuring; both buttons route through useNavigate. Use near the end of a knowledge base, support portal or docs site to escalate visitors to human support.",
   props: z.object({
@@ -27,15 +27,15 @@ export const KnowledgeBaseSupportCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Still need help?"
+    const heading = props.heading ?? 'Still need help?'
     const description =
       props.description ??
-      "Our support team is available Monday through Friday, 9 AM to 6 PM EST. Enterprise customers have 24/7 priority support."
-    const primaryCta = props.primaryCta ?? "Start live chat"
-    const secondaryCta = props.secondaryCta ?? "Email support"
+      'Our support team is available Monday through Friday, 9 AM to 6 PM EST. Enterprise customers have 24/7 priority support.'
+    const primaryCta = props.primaryCta ?? 'Start live chat'
+    const secondaryCta = props.secondaryCta ?? 'Email support'
     const note =
       props.note ??
-      "Average response time: Under 2 hours for email, Instant for live chat"
+      'Average response time: Under 2 hours for email, Instant for live chat'
 
     const ChatIcon = ({ className }: { className?: string }) => (
       <svg
@@ -76,7 +76,7 @@ export const KnowledgeBaseSupportCta = defineComponent({
       <section
         id="kb-support"
         className={cn(
-          "bg-primary py-16 text-primary-foreground sm:py-20",
+          'bg-primary py-16 text-primary-foreground sm:py-20',
           props.className,
         )}
         aria-labelledby="kb-support-heading"

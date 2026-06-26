@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * LawFirmAttorneys — a centered-intro attorney / partner gallery for a law firm.
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * with no props via baked-in defaults.
  */
 export const LawFirmAttorneys = defineComponent({
-  name: "LawFirmAttorneys",
+  name: 'LawFirmAttorneys',
   description:
-    "Centered-intro attorney / partner gallery for a law firm: a tracked-uppercase eyebrow, serif heading and lead paragraph above a responsive 3-up grid of cards on the card surface, each with a tall headshot that gently zooms on hover, a serif name, muted title, bio and a row of LinkedIn + email icon links. Refined, authoritative editorial aesthetic; imagery uses the alt-driven Image component and the social links route through useNavigate. Use to introduce leadership, partners, attorneys or team members on law-firm, attorney, consulting, accounting or professional-services pages.",
+    'Centered-intro attorney / partner gallery for a law firm: a tracked-uppercase eyebrow, serif heading and lead paragraph above a responsive 3-up grid of cards on the card surface, each with a tall headshot that gently zooms on hover, a serif name, muted title, bio and a row of LinkedIn + email icon links. Refined, authoritative editorial aesthetic; imagery uses the alt-driven Image component and the social links route through useNavigate. Use to introduce leadership, partners, attorneys or team members on law-firm, attorney, consulting, accounting or professional-services pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -37,55 +37,55 @@ export const LawFirmAttorneys = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Our Team"
-    const heading = props.heading ?? "Leadership & Partners"
+    const eyebrow = props.eyebrow ?? 'Our Team'
+    const heading = props.heading ?? 'Leadership & Partners'
     const description =
       props.description ??
-      "Our senior partners bring decades of experience from top law firms, government service, and judicial clerkships. Each is recognized by Chambers, Best Lawyers, and Super Lawyers."
+      'Our senior partners bring decades of experience from top law firms, government service, and judicial clerkships. Each is recognized by Chambers, Best Lawyers, and Super Lawyers.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            name: "Margaret Chen",
-            title: "Managing Partner, Corporate",
-            bio: "Former SEC counsel with 24 years experience in M&A and securities law. Lead counsel on 47 public company transactions exceeding $8 billion in value.",
+            name: 'Margaret Chen',
+            title: 'Managing Partner, Corporate',
+            bio: 'Former SEC counsel with 24 years experience in M&A and securities law. Lead counsel on 47 public company transactions exceeding $8 billion in value.',
             imageAlt:
-              "Professional headshot of Margaret Chen, senior partner with confident expression and pearl necklace",
+              'Professional headshot of Margaret Chen, senior partner with confident expression and pearl necklace',
           },
           {
-            name: "James P. Reinhart",
-            title: "Founding Partner, Litigation",
-            bio: "Founded the firm in 1987. Argued 23 cases before the Supreme Court. Former law clerk to Justice Scalia. Chambers Band 1 ranking since 2005.",
+            name: 'James P. Reinhart',
+            title: 'Founding Partner, Litigation',
+            bio: 'Founded the firm in 1987. Argued 23 cases before the Supreme Court. Former law clerk to Justice Scalia. Chambers Band 1 ranking since 2005.',
             imageAlt:
-              "Professional headshot of James P. Reinhart, distinguished senior partner with silver hair and tailored suit",
+              'Professional headshot of James P. Reinhart, distinguished senior partner with silver hair and tailored suit',
           },
           {
-            name: "Sarah Mitchell",
-            title: "Partner, Employment & IP",
-            bio: "Dual expertise in employment law and intellectual property. Former General Counsel at two NASDAQ-listed technology companies. Registered patent attorney.",
+            name: 'Sarah Mitchell',
+            title: 'Partner, Employment & IP',
+            bio: 'Dual expertise in employment law and intellectual property. Former General Counsel at two NASDAQ-listed technology companies. Registered patent attorney.',
             imageAlt:
-              "Professional headshot of Sarah Mitchell, partner with warm confident smile and elegant professional attire",
+              'Professional headshot of Sarah Mitchell, partner with warm confident smile and elegant professional attire',
           },
           {
-            name: "David Okonkwo",
-            title: "Partner, Real Estate & Tax",
-            bio: "Structured over $1.2 billion in commercial real estate transactions. LL.M. in Taxation from NYU. Former IRS Office of Chief Counsel attorney.",
+            name: 'David Okonkwo',
+            title: 'Partner, Real Estate & Tax',
+            bio: 'Structured over $1.2 billion in commercial real estate transactions. LL.M. in Taxation from NYU. Former IRS Office of Chief Counsel attorney.',
             imageAlt:
-              "Professional headshot of David Okonkwo, partner in dark suit with professional demeanor and subtle confident expression",
+              'Professional headshot of David Okonkwo, partner in dark suit with professional demeanor and subtle confident expression',
           },
           {
-            name: "Elena Vasquez",
-            title: "Partner, Commercial Litigation",
-            bio: "First chair trial attorney with 89 jury trials to verdict. Former federal prosecutor, Southern District of New York. Won precedent-setting securities fraud case in 2023.",
+            name: 'Elena Vasquez',
+            title: 'Partner, Commercial Litigation',
+            bio: 'First chair trial attorney with 89 jury trials to verdict. Former federal prosecutor, Southern District of New York. Won precedent-setting securities fraud case in 2023.',
             imageAlt:
-              "Professional headshot of Elena Vasquez, partner with sophisticated style and assured professional expression",
+              'Professional headshot of Elena Vasquez, partner with sophisticated style and assured professional expression',
           },
           {
-            name: "Robert Thornton",
-            title: "Partner, Estate Planning",
-            bio: "Counsel to ultra-high-net-worth families on generational wealth transfer. Former Chair, New York State Bar Association Trusts and Estates Section. Author of 3 treatises.",
+            name: 'Robert Thornton',
+            title: 'Partner, Estate Planning',
+            bio: 'Counsel to ultra-high-net-worth families on generational wealth transfer. Former Chair, New York State Bar Association Trusts and Estates Section. Author of 3 treatises.',
             imageAlt:
-              "Professional headshot of Robert Thornton, partner with distinguished gray hair and professional business attire",
+              'Professional headshot of Robert Thornton, partner with distinguished gray hair and professional business attire',
           },
         ]
 
@@ -120,9 +120,7 @@ export const LawFirmAttorneys = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-background py-24 lg:py-32", props.className)}
-      >
+      <section className={cn('bg-background py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-20 max-w-3xl text-center">
             <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">

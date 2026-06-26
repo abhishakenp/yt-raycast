@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NewsroomTopics — an editorial "Browse by section" block for a digital
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props.
  */
 export const NewsroomTopics = defineComponent({
-  name: "NewsroomTopics",
+  name: 'NewsroomTopics',
   description:
     "Editorial 'Browse by section/topic' block for a digital newsroom or magazine: a serif heading + supporting subheading above a responsive 1/2/4-up grid of topic cards, each with an image band, the topic name in serif, a one-line blurb, the current top headline, and a small story-count badge; cards lift on hover and route through useNavigate. Use to let readers explore by section (Politics, World, Business, Technology, Science, Culture, Sport, Health) on a news or magazine homepage. Renders fully with no props.",
   props: z.object({
@@ -39,74 +39,77 @@ export const NewsroomTopics = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Explore by topic"
+    const heading = props.heading ?? 'Explore by topic'
     const subheading =
       props.subheading ??
-      "Follow the stories that matter to you. Browse our newsroom by section and dive into the latest reporting."
+      'Follow the stories that matter to you. Browse our newsroom by section and dive into the latest reporting.'
     const topics = props.topics?.length
       ? props.topics
       : [
           {
-            name: "Politics",
+            name: 'Politics',
             count: 248,
-            blurb: "Power, policy, and the decisions shaping the nation.",
-            topHeadline: "Senate clears sweeping reform bill after marathon debate",
-            imageAlt: "The dome of a national capitol building at dusk",
+            blurb: 'Power, policy, and the decisions shaping the nation.',
+            topHeadline:
+              'Senate clears sweeping reform bill after marathon debate',
+            imageAlt: 'The dome of a national capitol building at dusk',
           },
           {
-            name: "World",
+            name: 'World',
             count: 312,
-            blurb: "Global affairs, conflict, and diplomacy across borders.",
-            topHeadline: "Leaders gather for emergency summit on regional crisis",
-            imageAlt: "A row of international flags against a grey sky",
+            blurb: 'Global affairs, conflict, and diplomacy across borders.',
+            topHeadline:
+              'Leaders gather for emergency summit on regional crisis',
+            imageAlt: 'A row of international flags against a grey sky',
           },
           {
-            name: "Business",
+            name: 'Business',
             count: 196,
-            blurb: "Markets, mergers, and the engines of the economy.",
+            blurb: 'Markets, mergers, and the engines of the economy.',
             topHeadline: "Tech giant's earnings surprise lifts global markets",
-            imageAlt: "A glass financial district skyline at golden hour",
+            imageAlt: 'A glass financial district skyline at golden hour',
           },
           {
-            name: "Technology",
+            name: 'Technology',
             count: 174,
-            blurb: "Innovation, startups, and the future of the web.",
-            topHeadline: "New open model rewrites the rules of on-device AI",
-            imageAlt: "Close-up of a circuit board with glowing traces",
+            blurb: 'Innovation, startups, and the future of the web.',
+            topHeadline: 'New open model rewrites the rules of on-device AI',
+            imageAlt: 'Close-up of a circuit board with glowing traces',
           },
           {
-            name: "Science",
+            name: 'Science',
             count: 138,
-            blurb: "Discovery, research, and the frontiers of knowledge.",
-            topHeadline: "Astronomers capture sharpest image yet of a distant world",
-            imageAlt: "A radio telescope array under a starlit sky",
+            blurb: 'Discovery, research, and the frontiers of knowledge.',
+            topHeadline:
+              'Astronomers capture sharpest image yet of a distant world',
+            imageAlt: 'A radio telescope array under a starlit sky',
           },
           {
-            name: "Culture",
+            name: 'Culture',
             count: 221,
-            blurb: "Film, books, music, and the conversations of the moment.",
+            blurb: 'Film, books, music, and the conversations of the moment.',
             topHeadline: "A debut novelist's quiet masterpiece tops the charts",
-            imageAlt: "Rows of books on a warmly lit library shelf",
+            imageAlt: 'Rows of books on a warmly lit library shelf',
           },
           {
-            name: "Sport",
+            name: 'Sport',
             count: 287,
-            blurb: "Results, rivalries, and the drama of the game.",
-            topHeadline: "Underdogs stun champions in a final for the ages",
-            imageAlt: "A floodlit stadium packed with cheering fans",
+            blurb: 'Results, rivalries, and the drama of the game.',
+            topHeadline: 'Underdogs stun champions in a final for the ages',
+            imageAlt: 'A floodlit stadium packed with cheering fans',
           },
           {
-            name: "Health",
+            name: 'Health',
             count: 159,
-            blurb: "Medicine, wellbeing, and the science of living well.",
-            topHeadline: "Landmark trial points to a new approach in care",
-            imageAlt: "A bright modern hospital corridor",
+            blurb: 'Medicine, wellbeing, and the science of living well.',
+            topHeadline: 'Landmark trial points to a new approach in care',
+            imageAlt: 'A bright modern hospital corridor',
           },
         ]
 
     return (
       <section
-        className={cn("bg-background py-20 lg:py-28", props.className)}
+        className={cn('bg-background py-20 lg:py-28', props.className)}
         aria-labelledby="newsroom-topics-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AnalyticsHeader — sticky top header bar for a SaaS analytics dashboard. A
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in "Dashboard Overview" defaults.
  */
 export const AnalyticsHeader = defineComponent({
-  name: "AnalyticsHeader",
+  name: 'AnalyticsHeader',
   description:
-    "Sticky top header bar for a SaaS analytics dashboard: a backdrop-blurred, border-bottomed row pinned to the top with a mobile hamburger toggle plus page title and subtitle/greeting on the left, and an inline search field (md+), a date-filter icon button, and a solid primary Export action with a download glyph on the right. Every control routes through useNavigate and the search form submits to navigate. Use as the page-level toolbar above dashboard content for analytics overviews, admin panels, reporting consoles, or any data-product surface needing a title + search + export row.",
+    'Sticky top header bar for a SaaS analytics dashboard: a backdrop-blurred, border-bottomed row pinned to the top with a mobile hamburger toggle plus page title and subtitle/greeting on the left, and an inline search field (md+), a date-filter icon button, and a solid primary Export action with a download glyph on the right. Every control routes through useNavigate and the search form submits to navigate. Use as the page-level toolbar above dashboard content for analytics overviews, admin panels, reporting consoles, or any data-product surface needing a title + search + export row.',
   props: z.object({
     /** Page title shown on the left. */
     title: z.string().optional(),
@@ -33,30 +33,30 @@ export const AnalyticsHeader = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const headerTitle = props.title ?? "Dashboard Overview"
+    const headerTitle = props.title ?? 'Dashboard Overview'
     const headerSubtitle =
       props.subtitle ?? "Welcome back, here's what's happening"
-    const searchPlaceholder = props.searchPlaceholder ?? "Search analytics..."
-    const exportLabel = props.exportLabel ?? "Export"
-    const homeTarget = props.homeTarget ?? "Dashboard"
+    const searchPlaceholder = props.searchPlaceholder ?? 'Search analytics...'
+    const exportLabel = props.exportLabel ?? 'Export'
+    const homeTarget = props.homeTarget ?? 'Dashboard'
 
     // ---- Inline icons (decorative, currentColor) ----
     const iconProps = {
       width: 20,
       height: 20,
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      stroke: 'currentColor',
       strokeWidth: 2,
-      strokeLinecap: "round" as const,
-      strokeLinejoin: "round" as const,
-      "aria-hidden": true,
+      strokeLinecap: 'round' as const,
+      strokeLinejoin: 'round' as const,
+      'aria-hidden': true,
     }
 
     return (
       <header
         className={cn(
-          "sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md",
+          'sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >
@@ -105,7 +105,7 @@ export const AnalyticsHeader = defineComponent({
             <button
               type="button"
               aria-label="Date filter"
-              onClick={() => go("Date filter")}
+              onClick={() => go('Date filter')}
               className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted"
             >
               <svg {...iconProps}>

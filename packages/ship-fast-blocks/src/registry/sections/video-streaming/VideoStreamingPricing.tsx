@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { PricingGrid } from "#/section-kit/PricingGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
  * VideoStreamingPricing — a 3-tier plan band for a video-streaming landing
@@ -13,7 +13,7 @@ import { PricingGrid } from "#/section-kit/PricingGrid.tsx"
  * with no props via baked-in defaults.
  */
 export const VideoStreamingPricing = defineComponent({
-  name: "VideoStreamingPricing",
+  name: 'VideoStreamingPricing',
   description:
     "A 3-tier plan band for a video-streaming landing page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of plan cards (name, big monthly price, checkmark feature bullets, and a CTA). The highlighted middle tier (Standard) gets a primary border, shadow, and a 'Most popular' pill, and every CTA routes through useNavigate. Use to present subscription tiers — Basic, Standard, Premium — for a streaming service or OTT app.",
   props: z.object({
@@ -37,52 +37,52 @@ export const VideoStreamingPricing = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Pick your plan"
+    const heading = props.heading ?? 'Pick your plan'
     const subheading =
       props.subheading ??
-      "Every plan includes the full catalog and zero ads. Upgrade for sharper quality and more screens — cancel anytime."
+      'Every plan includes the full catalog and zero ads. Upgrade for sharper quality and more screens — cancel anytime.'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
           {
-            name: "Basic",
-            price: "$8",
-            period: "/mo",
+            name: 'Basic',
+            price: '$8',
+            period: '/mo',
             features: [
-              "Full catalog, zero ads",
-              "HD (720p) streaming",
-              "Watch on 1 screen",
-              "Offline downloads",
+              'Full catalog, zero ads',
+              'HD (720p) streaming',
+              'Watch on 1 screen',
+              'Offline downloads',
             ],
-            cta: "Choose plan",
+            cta: 'Choose plan',
             highlighted: false,
           },
           {
-            name: "Standard",
-            price: "$14",
-            period: "/mo",
+            name: 'Standard',
+            price: '$14',
+            period: '/mo',
             features: [
-              "Everything in Basic",
-              "Full HD (1080p) streaming",
-              "Watch on 2 screens at once",
-              "Up to 5 profiles",
-              "Offline on any device",
+              'Everything in Basic',
+              'Full HD (1080p) streaming',
+              'Watch on 2 screens at once',
+              'Up to 5 profiles',
+              'Offline on any device',
             ],
-            cta: "Choose plan",
+            cta: 'Choose plan',
             highlighted: true,
           },
           {
-            name: "Premium",
-            price: "$20",
-            period: "/mo",
+            name: 'Premium',
+            price: '$20',
+            period: '/mo',
             features: [
-              "Everything in Standard",
-              "4K Ultra HD + HDR",
-              "Watch on 4 screens at once",
-              "Dolby Atmos sound",
-              "Early access to originals",
+              'Everything in Standard',
+              '4K Ultra HD + HDR',
+              'Watch on 4 screens at once',
+              'Dolby Atmos sound',
+              'Early access to originals',
             ],
-            cta: "Choose plan",
+            cta: 'Choose plan',
             highlighted: false,
           },
         ]

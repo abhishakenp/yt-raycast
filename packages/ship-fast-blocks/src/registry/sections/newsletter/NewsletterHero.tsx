@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NewsletterHero — centered editorial hero for a newsletter / subscription
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * props via baked-in defaults.
  */
 export const NewsletterHero = defineComponent({
-  name: "NewsletterHero",
+  name: 'NewsletterHero',
   description:
-    "Centered editorial hero for a newsletter / subscription landing page on a generous paper-toned canvas: an uppercase eyebrow kicker, a large two-line serif display headline, a relaxed lede paragraph, an inline email subscribe form (rounded email input + solid foreground submit button that stacks on mobile), and a small social-proof line with emphasized brand names. Warm, calm, literary mood. The form submit routes through useNavigate. Use as the top-of-page hero for newsletters, Substack-style publications, blogs, essayists, or content creators.",
+    'Centered editorial hero for a newsletter / subscription landing page on a generous paper-toned canvas: an uppercase eyebrow kicker, a large two-line serif display headline, a relaxed lede paragraph, an inline email subscribe form (rounded email input + solid foreground submit button that stacks on mobile), and a small social-proof line with emphasized brand names. Warm, calm, literary mood. The form submit routes through useNavigate. Use as the top-of-page hero for newsletters, Substack-style publications, blogs, essayists, or content creators.',
   props: z.object({
     /** Uppercase eyebrow kicker above the headline. */
     eyebrow: z.string().optional(),
@@ -39,22 +39,22 @@ export const NewsletterHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Every Sunday Morning"
-    const headingTop = props.headingTop ?? "Essays that slow down"
-    const headingBottom = props.headingBottom ?? "the conversation"
+    const eyebrow = props.eyebrow ?? 'Every Sunday Morning'
+    const headingTop = props.headingTop ?? 'Essays that slow down'
+    const headingBottom = props.headingBottom ?? 'the conversation'
     const subheading =
       props.subheading ??
-      "A weekly newsletter exploring the intersection of technology, creativity, and human connection. Join 12,000+ readers who start their Sundays with insight, not noise."
-    const emailPlaceholder = props.emailPlaceholder ?? "your@email.com"
-    const submit = props.submit ?? "Subscribe Free"
+      'A weekly newsletter exploring the intersection of technology, creativity, and human connection. Join 12,000+ readers who start their Sundays with insight, not noise.'
+    const emailPlaceholder = props.emailPlaceholder ?? 'your@email.com'
+    const submit = props.submit ?? 'Subscribe Free'
     const proofPrefix =
-      props.proofPrefix ?? "No spam. Unsubscribe anytime. Read by teams at "
-    const proofBrands = props.proofBrands ?? "Notion, Figma, Stripe, and Vercel"
+      props.proofPrefix ?? 'No spam. Unsubscribe anytime. Read by teams at '
+    const proofBrands = props.proofBrands ?? 'Notion, Figma, Stripe, and Vercel'
 
     return (
       <section
         className={cn(
-          "pb-12 pt-16 md:pb-16 md:pt-24 lg:pb-24 lg:pt-32",
+          'pb-12 pt-16 md:pb-16 md:pt-24 lg:pb-24 lg:pt-32',
           props.className,
         )}
       >
@@ -97,7 +97,8 @@ export const NewsletterHero = defineComponent({
 
             <p className="text-sm text-muted-foreground">
               {proofPrefix}
-              <span className="font-medium text-foreground">{proofBrands}</span>.
+              <span className="font-medium text-foreground">{proofBrands}</span>
+              .
             </p>
           </div>
         </div>

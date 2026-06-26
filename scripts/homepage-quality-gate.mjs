@@ -18,7 +18,9 @@ const htmlPathArg =
 const minScore = Number(args.get('--min-score') ?? 80)
 const minSections = Number(args.get('--min-sections') ?? 4)
 const minWords = Number(args.get('--min-words') ?? 120)
-const writeReport = /^(1|true|yes)$/i.test(String(args.get('--write-report') ?? '0'))
+const writeReport = /^(1|true|yes)$/i.test(
+  String(args.get('--write-report') ?? '0'),
+)
 
 if (!htmlPathArg) {
   fail('Missing --html=<index.html> or --workspace=<generated workspace>.')
@@ -50,7 +52,9 @@ function resolveHtmlPath(value) {
   const candidate = resolve(value)
   if (!existsSync(candidate)) fail(`Path does not exist: ${candidate}`)
   const stat = statSync(candidate)
-  const resolved = stat.isDirectory() ? join(candidate, 'index.html') : candidate
+  const resolved = stat.isDirectory()
+    ? join(candidate, 'index.html')
+    : candidate
   if (!existsSync(resolved)) fail(`index.html not found: ${resolved}`)
   return resolved
 }
@@ -63,15 +67,22 @@ function fail(message) {
 function evaluateHomepage(html, options) {
   const stripped = stripTags(html)
   const words = stripped.match(/[\p{L}\p{N}][\p{L}\p{N}'-]{2,}/gu) ?? []
-  const sectionCount = countMatches(html, /<(section|article|main|header|footer)\b/gi)
+  const sectionCount = countMatches(
+    html,
+    /<(section|article|main|header|footer)\b/gi,
+  )
   const headings = countMatches(html, /<h[1-3]\b/gi)
   const links = countMatches(html, /<a\b[^>]*href=/gi)
   const buttons = countMatches(html, /<(button)\b/gi)
   const media = countMatches(html, /<(img|picture|video|canvas|svg)\b/gi)
   const hasTitle = /<title\b[^>]*>[^<]{4,}<\/title>/i.test(html)
   const hasDescription =
-    /<meta\b[^>]*name=["']description["'][^>]*content=["'][^"']{20,}["']/i.test(html) ||
-    /<meta\b[^>]*content=["'][^"']{20,}["'][^>]*name=["']description["']/i.test(html)
+    /<meta\b[^>]*name=["']description["'][^>]*content=["'][^"']{20,}["']/i.test(
+      html,
+    ) ||
+    /<meta\b[^>]*content=["'][^"']{20,}["'][^>]*name=["']description["']/i.test(
+      html,
+    )
   const hasViewport = /<meta\b[^>]*name=["']viewport["']/i.test(html)
   const hasPrimaryMain = /<main\b/i.test(html)
   const lowerHtml = html.toLowerCase()
@@ -123,7 +134,10 @@ function evaluateHomepage(html, options) {
     }),
   ]
 
-  const score = checks.reduce((sum, check) => sum + (check.pass ? check.points : 0), 0)
+  const score = checks.reduce(
+    (sum, check) => sum + (check.pass ? check.points : 0),
+    0,
+  )
   const total = checks.reduce((sum, check) => sum + check.points, 0)
   const normalizedScore = Math.round((score / total) * 100)
   const errors = checks

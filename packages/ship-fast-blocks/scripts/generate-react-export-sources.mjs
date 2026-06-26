@@ -224,7 +224,7 @@ const resolveBareImportFile = (specifier) => {
   const exported = exportedPackagePath(exportTarget, subpath)
   const candidate =
     exported ??
-    (subpath === '.' ? packageJson.module ?? packageJson.main : subpath)
+    (subpath === '.' ? (packageJson.module ?? packageJson.main) : subpath)
   if (!candidate) return null
   const resolved = fileWithExtension(join(packageRoot, candidate))
   if (resolved && !resolved.endsWith('/package.json')) return resolved
@@ -400,7 +400,11 @@ const includeVendorNamedExports = (entry, requestedNames, seen = new Set()) => {
     if (!ts.isImportDeclaration(statement)) continue
     const specifier = statement.moduleSpecifier
     const bindings = statement.importClause?.namedBindings
-    if (!ts.isStringLiteral(specifier) || !bindings || !ts.isNamespaceImport(bindings)) {
+    if (
+      !ts.isStringLiteral(specifier) ||
+      !bindings ||
+      !ts.isNamespaceImport(bindings)
+    ) {
       continue
     }
     namespaceImports.set(bindings.name.text, specifier.text)
@@ -410,7 +414,11 @@ const includeVendorNamedExports = (entry, requestedNames, seen = new Set()) => {
     if (!ts.isExportDeclaration(statement)) continue
     const exportClause = statement.exportClause
 
-    if (!exportClause && statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier)) {
+    if (
+      !exportClause &&
+      statement.moduleSpecifier &&
+      ts.isStringLiteral(statement.moduleSpecifier)
+    ) {
       const moduleName = statement.moduleSpecifier.text
       const target = moduleName.startsWith('.')
         ? resolveRelativeVendorFile(sourcePath, moduleName)

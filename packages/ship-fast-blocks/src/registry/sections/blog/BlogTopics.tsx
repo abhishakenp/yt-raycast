@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
  * BlogTopics — a clean, editorial "Browse by topic" grid for a blog or
@@ -16,7 +16,7 @@ import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
  * theme-token defaults (no hex, clean editorial aesthetic).
  */
 export const BlogTopics = defineComponent({
-  name: "BlogTopics",
+  name: 'BlogTopics',
   description:
     "Editorial 'Browse by topic' grid for a blog or publication home page: a quiet heading and short subheading above a responsive grid of topic cards, each with a small stroke icon in a primary-tinted tile, a category title, and a one-line description. Wraps the shared FeatureGrid composite at four columns and cycles a baked icon pool by index. Use to let readers browse blog categories/topics (design, engineering, product, culture, tutorials, careers, …). Renders fully with no props from theme-token defaults.",
   props: z.object({
@@ -38,32 +38,32 @@ export const BlogTopics = defineComponent({
         ? props.topics
         : [
             {
-              title: "Design",
+              title: 'Design',
               description:
-                "Craft, visual systems, and the thinking behind how things look and feel.",
+                'Craft, visual systems, and the thinking behind how things look and feel.',
             },
             {
-              title: "Engineering",
+              title: 'Engineering',
               description:
-                "Deep dives into the architecture, tooling, and code that ships our work.",
+                'Deep dives into the architecture, tooling, and code that ships our work.',
             },
             {
-              title: "Product",
+              title: 'Product',
               description:
-                "How we decide what to build, prioritize, and ship to real users.",
+                'How we decide what to build, prioritize, and ship to real users.',
             },
             {
-              title: "Culture",
+              title: 'Culture',
               description:
-                "Stories about how our team works, learns, and grows together.",
+                'Stories about how our team works, learns, and grows together.',
             },
             {
-              title: "Tutorials",
+              title: 'Tutorials',
               description:
-                "Step-by-step guides and practical walkthroughs you can follow along.",
+                'Step-by-step guides and practical walkthroughs you can follow along.',
             },
             {
-              title: "Careers",
+              title: 'Careers',
               description:
                 "Open roles, hiring notes, and what it's like to build here.",
             },
@@ -164,9 +164,9 @@ export const BlogTopics = defineComponent({
 
     return (
       <FeatureGrid
-        heading={props.heading ?? "Explore topics"}
+        heading={props.heading ?? 'Explore topics'}
         subheading={
-          props.subheading ?? "Dive into the subjects we write about most."
+          props.subheading ?? 'Dive into the subjects we write about most.'
         }
         columns={props.columns ?? 4}
         features={topics.map((t, i) => ({

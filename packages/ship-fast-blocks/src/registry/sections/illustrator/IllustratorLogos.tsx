@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * IllustratorLogos — a low-key "trusted by" publications / brands strip on a
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in publication defaults.
  */
 export const IllustratorLogos = defineComponent({
-  name: "IllustratorLogos",
+  name: 'IllustratorLogos',
   description:
     "Low-key 'trusted by' publications / brands strip on a subtle muted band with hairline top and bottom borders: a small uppercase caption above a centered, wrapping row of serif publication names at reduced opacity, each routing through useNavigate. Use directly beneath an illustrator or creative hero to establish credibility with the magazines, publishers, and brands the artist has worked with.",
   props: z.object({
@@ -25,22 +25,21 @@ export const IllustratorLogos = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading =
-      props.heading ?? "Trusted by leading publications & brands"
+    const heading = props.heading ?? 'Trusted by leading publications & brands'
     const names = props.names?.length
       ? props.names
       : [
-          "The New Yorker",
-          "Penguin Random House",
-          "Chronicle Books",
-          "Anthropologie",
-          "Patagonia",
+          'The New Yorker',
+          'Penguin Random House',
+          'Chronicle Books',
+          'Anthropologie',
+          'Patagonia',
         ]
 
     return (
       <section
         className={cn(
-          "border-y border-border/60 bg-muted/50 py-12 sm:py-16",
+          'border-y border-border/60 bg-muted/50 py-12 sm:py-16',
           props.className,
         )}
       >

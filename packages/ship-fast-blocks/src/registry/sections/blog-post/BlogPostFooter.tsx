@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * BlogPostFooter — a rich, multi-column closing footer for an editorial blog
@@ -29,9 +29,9 @@ const FeatherMark = ({ className }: { className?: string }) => (
 )
 
 export const BlogPostFooter = defineComponent({
-  name: "BlogPostFooter",
+  name: 'BlogPostFooter',
   description:
-    "Rich, multi-column closing footer for an editorial blog post / article detail page built on the shared SiteFooter composite: a feather/pen wordmark beside a tagline, a social row, a responsive grid of link columns (Explore, Company, Legal, …), and a bordered-top bottom bar with an auto-updating copyright line. Clean editorial voice. Use as the site-wide footer for a blog, magazine, journal, or any editorial publication.",
+    'Rich, multi-column closing footer for an editorial blog post / article detail page built on the shared SiteFooter composite: a feather/pen wordmark beside a tagline, a social row, a responsive grid of link columns (Explore, Company, Legal, …), and a bordered-top bottom bar with an auto-updating copyright line. Clean editorial voice. Use as the site-wide footer for a blog, magazine, journal, or any editorial publication.',
   props: z.object({
     /** Publication / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -55,31 +55,34 @@ export const BlogPostFooter = defineComponent({
     const columns = props.columns?.length
       ? props.columns
       : [
-          { title: "Explore", links: ["Latest", "Topics", "Archive", "Authors"] },
           {
-            title: "Company",
-            links: ["About", "Newsletter", "Contact", "RSS"],
+            title: 'Explore',
+            links: ['Latest', 'Topics', 'Archive', 'Authors'],
           },
-          { title: "Legal", links: ["Privacy", "Terms", "Cookies"] },
+          {
+            title: 'Company',
+            links: ['About', 'Newsletter', 'Contact', 'RSS'],
+          },
+          { title: 'Legal', links: ['Privacy', 'Terms', 'Cookies'] },
         ]
     const social = props.social?.length
       ? props.social
-      : [{ label: "Twitter" }, { label: "GitHub" }, { label: "RSS" }]
-    const legal = props.legal?.length ? props.legal : ["Privacy", "Terms"]
+      : [{ label: 'Twitter' }, { label: 'GitHub' }, { label: 'RSS' }]
+    const legal = props.legal?.length ? props.legal : ['Privacy', 'Terms']
 
     return (
       <SiteFooter
-        brand={props.brand ?? "The Editorial"}
+        brand={props.brand ?? 'The Editorial'}
         brandMark={<FeatherMark className="size-7 text-primary" />}
         brandClassName="text-xl font-semibold"
         tagline={
           props.tagline ??
-          "Thoughtful writing on design, code, and the craft of building."
+          'Thoughtful writing on design, code, and the craft of building.'
         }
         columns={columns}
         social={social}
         legal={legal}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

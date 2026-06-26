@@ -11,6 +11,7 @@ import { lazy, Suspense } from 'react'
 
 type GeneratedModulePreviewProps = {
   source: string
+  sourceUrl?: string | null
   sessionId: string
   siteSpecJson?: string
   locale?: string
@@ -121,6 +122,21 @@ export function HtmlModuleRenderer({
   )
 }
 
+export function HtmlModuleUrlRenderer({
+  sourceUrl,
+}: {
+  sourceUrl: string
+}) {
+  return (
+    <iframe
+      title="Generated website preview"
+      className="size-full border-0 bg-white"
+      sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts"
+      src={sourceUrl}
+    />
+  )
+}
+
 export function OpenUIModuleRenderer({
   source,
   sessionId,
@@ -154,6 +170,7 @@ export function OpenUIModuleRenderer({
 
 export function GeneratedModulePreview({
   source,
+  sourceUrl = null,
   sessionId,
   siteSpecJson,
   locale,
@@ -195,7 +212,9 @@ export function GeneratedModulePreview({
         styleOverrides={styleOverrides}
         textOverrides={textOverrides}
       >
-        {isHtmlDocumentSource(source) ? (
+        {sourceUrl ? (
+          <HtmlModuleUrlRenderer sourceUrl={sourceUrl} />
+        ) : isHtmlDocumentSource(source) ? (
           <HtmlModuleRenderer source={source} />
         ) : (
           <OpenUIModuleRenderer

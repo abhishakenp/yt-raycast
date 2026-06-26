@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AutoDealershipHero — split, two-column hero for an auto dealership / used-car
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * showrooms. Renders fully with no props via baked-in defaults.
  */
 export const AutoDealershipHero = defineComponent({
-  name: "AutoDealershipHero",
+  name: 'AutoDealershipHero',
   description:
-    "Split two-column hero for an auto dealership / used-car landing page on a soft muted band: left column has an uppercase eyebrow, a large headline, a lead paragraph, dual CTAs (solid primary + outlined secondary), and an inline KPI strip with divider rules (inventory count / starting APR / Google rating); right column has a large rounded showroom hero photo with a deep shadow. Both CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the top hero for car dealerships, used-car lots, certified pre-owned sellers, or EV/hybrid showrooms.",
+    'Split two-column hero for an auto dealership / used-car landing page on a soft muted band: left column has an uppercase eyebrow, a large headline, a lead paragraph, dual CTAs (solid primary + outlined secondary), and an inline KPI strip with divider rules (inventory count / starting APR / Google rating); right column has a large rounded showroom hero photo with a deep shadow. Both CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the top hero for car dealerships, used-car lots, certified pre-owned sellers, or EV/hybrid showrooms.',
   props: z.object({
     /** Uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -39,27 +39,27 @@ export const AutoDealershipHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Premium Pre-Owned Vehicles"
-    const heading = props.heading ?? "Find Your Perfect Drive"
+    const eyebrow = props.eyebrow ?? 'Premium Pre-Owned Vehicles'
+    const heading = props.heading ?? 'Find Your Perfect Drive'
     const subheading =
       props.subheading ??
-      "Over 200 certified pre-owned vehicles. Competitive financing from 3.9% APR. 7-day money-back guarantee on every purchase."
-    const primaryCta = props.primaryCta ?? "Browse Inventory"
-    const secondaryCta = props.secondaryCta ?? "Schedule Test Drive"
+      'Over 200 certified pre-owned vehicles. Competitive financing from 3.9% APR. 7-day money-back guarantee on every purchase.'
+    const primaryCta = props.primaryCta ?? 'Browse Inventory'
+    const secondaryCta = props.secondaryCta ?? 'Schedule Test Drive'
     const imageAlt =
       props.imageAlt ??
-      "Premium white sedan parked in modern showroom with floor-to-ceiling windows"
+      'Premium white sedan parked in modern showroom with floor-to-ceiling windows'
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "200+", label: "Vehicles in Stock" },
-          { value: "3.9%", label: "Starting APR" },
-          { value: "4.9", label: "Google Rating" },
+          { value: '200+', label: 'Vehicles in Stock' },
+          { value: '3.9%', label: 'Starting APR' },
+          { value: '4.9', label: 'Google Rating' },
         ]
 
     return (
       <section
-        className={cn("relative overflow-hidden bg-muted", props.className)}
+        className={cn('relative overflow-hidden bg-muted', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">

@@ -7,17 +7,31 @@ const MAX_QUALITY_REWRITE_ATTEMPTS = 3
 
 const resolveTargetLanguage = (languageMode) => {
   const language = languageMode?.language || languageMode
-  if (!language || String(language.code || '').toLowerCase() === 'en') return null
+  if (!language || String(language.code || '').toLowerCase() === 'en')
+    return null
   return {
     code: language.code || languageMode?.code || '',
-    name: language.name || languageMode?.name || language.code || languageMode?.code || 'target language',
-    nativeName: language.nativeName || languageMode?.nativeName || language.name || languageMode?.name || '',
+    name:
+      language.name ||
+      languageMode?.name ||
+      language.code ||
+      languageMode?.code ||
+      'target language',
+    nativeName:
+      language.nativeName ||
+      languageMode?.nativeName ||
+      language.name ||
+      languageMode?.name ||
+      '',
     script: language.script || languageMode?.script || '',
-    projectBrief: String(languageMode?.prompt || languageMode?.projectBrief || '').slice(0, 4000),
+    projectBrief: String(
+      languageMode?.prompt || languageMode?.projectBrief || '',
+    ).slice(0, 4000),
   }
 }
 
-const buildTextRecords = (texts) => texts.map((text, index) => ({ id: `t${index}`, text }))
+const buildTextRecords = (texts) =>
+  texts.map((text, index) => ({ id: `t${index}`, text }))
 
 const buildPageContext = (texts) => texts.join('\n').slice(0, 6000)
 
@@ -30,7 +44,8 @@ const parseTranslationResponse = (content, records) => {
   const out = {}
   for (const record of records) {
     const replacement = translatedById[record.id] || translatedById[record.text]
-    if (typeof replacement === 'string' && replacement.trim()) out[record.text] = replacement
+    if (typeof replacement === 'string' && replacement.trim())
+      out[record.text] = replacement
   }
   return out
 }
@@ -57,7 +72,8 @@ function extractTextNodes(html) {
       text.startsWith('http') ||
       text.startsWith('/') ||
       text.startsWith('#')
-    ) continue
+    )
+      continue
     seen.add(text)
     texts.push(text)
   }
@@ -247,7 +263,10 @@ Return ONLY valid JSON with:
       score: Number.isFinite(score) ? score : 11,
       reason: typeof parsed.reason === 'string' ? parsed.reason : '',
       weakIds: Array.isArray(parsed.weakIds) ? parsed.weakIds.map(String) : [],
-      translations: parseTranslationResponse(result.content, buildTextRecords(texts)),
+      translations: parseTranslationResponse(
+        result.content,
+        buildTextRecords(texts),
+      ),
     }
   } catch {
     return { score: 11, weakIds: [] }
@@ -255,13 +274,19 @@ Return ONLY valid JSON with:
 }
 
 const applySuggestedTranslations = (translations, suggestions) =>
-  suggestions && Object.keys(suggestions).length > 0 ? { ...translations, ...suggestions } : translations
+  suggestions && Object.keys(suggestions).length > 0
+    ? { ...translations, ...suggestions }
+    : translations
 
 async function rewriteWeakTranslations(texts, translations, language, quality) {
   if (!quality || quality.score >= 10.5) return translations
 
   const records = buildTextRecords(texts)
-  const weakIds = new Set(quality.weakIds?.length ? quality.weakIds : records.map((record) => record.id))
+  const weakIds = new Set(
+    quality.weakIds?.length
+      ? quality.weakIds
+      : records.map((record) => record.id),
+  )
   const items = records
     .filter((record) => weakIds.has(record.id))
     .map((record) => ({
@@ -282,7 +307,8 @@ async function rewriteWeakTranslations(texts, translations, language, quality) {
       },
       pageContext: buildPageContext(texts),
       projectBrief: language.projectBrief,
-      qualityFeedback: quality.reason || 'Output did not reach the 11/10 user-appeal bar.',
+      qualityFeedback:
+        quality.reason || 'Output did not reach the 11/10 user-appeal bar.',
       items,
     }),
     {
@@ -311,21 +337,27 @@ Return ONLY valid JSON:
 function replaceVisibleTextNodes(html, translations) {
   const protectedBlocks = []
   const placeholderPrefix = `__SHIP_FAST_TRANSLATION_BLOCK_${Date.now()}_`
-  const withoutProtectedBlocks = html.replace(/<(script|style)[\s\S]*?<\/\1>/gi, (block) => {
-    const placeholder = `${placeholderPrefix}${protectedBlocks.length}__`
-    protectedBlocks.push(block)
-    return placeholder
-  })
+  const withoutProtectedBlocks = html.replace(
+    /<(script|style)[\s\S]*?<\/\1>/gi,
+    (block) => {
+      const placeholder = `${placeholderPrefix}${protectedBlocks.length}__`
+      protectedBlocks.push(block)
+      return placeholder
+    },
+  )
 
-  const translated = withoutProtectedBlocks.replace(/>([^<]+)</g, (match, text) => {
-    let replaced = text
-    for (const [original, replacement] of Object.entries(translations)) {
-      if (!replacement || replacement === original) continue
-      const escaped = original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      replaced = replaced.replace(new RegExp(escaped, 'g'), replacement)
-    }
-    return `>${replaced}<`
-  })
+  const translated = withoutProtectedBlocks.replace(
+    />([^<]+)</g,
+    (match, text) => {
+      let replaced = text
+      for (const [original, replacement] of Object.entries(translations)) {
+        if (!replacement || replacement === original) continue
+        const escaped = original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        replaced = replaced.replace(new RegExp(escaped, 'g'), replacement)
+      }
+      return `>${replaced}<`
+    },
+  )
 
   return protectedBlocks.reduce(
     (acc, block, index) => acc.replace(`${placeholderPrefix}${index}__`, block),
@@ -347,25 +379,39 @@ export async function translateHtml(html, languageMode) {
   }
 
   const draftTranslations = await translateTexts(texts, language)
-  const polishedTranslations = await polishTranslations(texts, draftTranslations, language)
+  const polishedTranslations = await polishTranslations(
+    texts,
+    draftTranslations,
+    language,
+  )
   let translations = polishedTranslations
   let finalQuality = await scoreTranslations(texts, translations, language)
   for (
     let attempt = 0;
-    finalQuality.score < QUALITY_TARGET_SCORE && attempt < MAX_QUALITY_REWRITE_ATTEMPTS;
+    finalQuality.score < QUALITY_TARGET_SCORE &&
+    attempt < MAX_QUALITY_REWRITE_ATTEMPTS;
     attempt += 1
   ) {
-    const suggested = applySuggestedTranslations(translations, finalQuality.translations)
+    const suggested = applySuggestedTranslations(
+      translations,
+      finalQuality.translations,
+    )
     const rewritten =
       suggested === translations
-        ? await rewriteWeakTranslations(texts, translations, language, finalQuality)
+        ? await rewriteWeakTranslations(
+            texts,
+            translations,
+            language,
+            finalQuality,
+          )
         : suggested
     if (rewritten === translations) break
     translations = rewritten
     finalQuality = await scoreTranslations(texts, translations, language)
   }
   const translatedCount = Object.values(translations).filter(Boolean).length
-  if (translatedCount === 0) return { content: html, error: 'no translations returned' }
+  if (translatedCount === 0)
+    return { content: html, error: 'no translations returned' }
 
   const translated = replaceVisibleTextNodes(html, translations)
 
@@ -389,11 +435,15 @@ export async function translateHtmlSequential(htmlArray, indiaMode) {
       if (result?.content && !result.error) {
         out.push(result.content)
       } else {
-        console.error(`  translation failed for page ${i + 1}: ${result?.error ?? 'empty'} — keeping English`)
+        console.error(
+          `  translation failed for page ${i + 1}: ${result?.error ?? 'empty'} — keeping English`,
+        )
         out.push(htmlArray[i])
       }
     } catch (err) {
-      console.error(`  translation error for page ${i + 1}: ${err.message} — keeping English`)
+      console.error(
+        `  translation error for page ${i + 1}: ${err.message} — keeping English`,
+      )
       out.push(htmlArray[i])
     }
   }

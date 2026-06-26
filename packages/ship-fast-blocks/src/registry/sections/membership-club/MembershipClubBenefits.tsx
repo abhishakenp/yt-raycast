@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * MembershipClubBenefits — 6-up member-benefits grid for a private membership club
@@ -14,9 +14,9 @@ import { cn } from "#/lib/utils.ts"
  * with no props.
  */
 export const MembershipClubBenefits = defineComponent({
-  name: "MembershipClubBenefits",
+  name: 'MembershipClubBenefits',
   description:
-    "6-up member-benefits grid for a private membership club / exclusive community page: a centered eyebrow + thin heading + supporting line above a responsive 3-column grid of rounded bordered cards, each with a muted rounded icon tile (introductions, clubhouses, events, retreats, library, community), a medium title and a relaxed description. Use to explain what a membership includes for members clubs, founders/social clubs, professional networks, curated communities or coworking/clubhouse memberships.",
+    '6-up member-benefits grid for a private membership club / exclusive community page: a centered eyebrow + thin heading + supporting line above a responsive 3-column grid of rounded bordered cards, each with a muted rounded icon tile (introductions, clubhouses, events, retreats, library, community), a medium title and a relaxed description. Use to explain what a membership includes for members clubs, founders/social clubs, professional networks, curated communities or coworking/clubhouse memberships.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -27,44 +27,44 @@ export const MembershipClubBenefits = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Member Benefits"
+    const eyebrow = props.eyebrow ?? 'Member Benefits'
     const heading =
-      props.heading ?? "Everything you need to connect, grow, and thrive"
+      props.heading ?? 'Everything you need to connect, grow, and thrive'
     const description =
       props.description ??
-      "Membership includes access to our full ecosystem of events, spaces, and private community channels."
+      'Membership includes access to our full ecosystem of events, spaces, and private community channels.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Curated Introductions",
+            title: 'Curated Introductions',
             description:
-              "Our member success team facilitates 1-on-1 introductions based on your goals, interests, and industry. Average 4 quality matches per month.",
+              'Our member success team facilitates 1-on-1 introductions based on your goals, interests, and industry. Average 4 quality matches per month.',
           },
           {
-            title: "Private Clubhouses",
+            title: 'Private Clubhouses',
             description:
-              "Access to 8 private clubhouses across NYC, SF, London, Berlin, and Tokyo. Open 7am–10pm daily with meeting rooms, lounges, and cafés.",
+              'Access to 8 private clubhouses across NYC, SF, London, Berlin, and Tokyo. Open 7am–10pm daily with meeting rooms, lounges, and cafés.',
           },
           {
-            title: "Weekly Events",
+            title: 'Weekly Events',
             description:
-              "50+ events monthly: founder dinners, skill-sharing workshops, wellness mornings, and member-led sessions. Members can also host their own.",
+              '50+ events monthly: founder dinners, skill-sharing workshops, wellness mornings, and member-led sessions. Members can also host their own.',
           },
           {
-            title: "Global Retreats",
+            title: 'Global Retreats',
             description:
-              "Quarterly 3-day retreats in locations like Joshua Tree, Tulum, and Lisbon. Includes accommodation, programming, and meals. 40–60 members per retreat.",
+              'Quarterly 3-day retreats in locations like Joshua Tree, Tulum, and Lisbon. Includes accommodation, programming, and meals. 40–60 members per retreat.',
           },
           {
-            title: "Resource Library",
+            title: 'Resource Library',
             description:
-              "Exclusive templates, playbooks, and guides contributed by members. Covering fundraising, hiring, design systems, and operations.",
+              'Exclusive templates, playbooks, and guides contributed by members. Covering fundraising, hiring, design systems, and operations.',
           },
           {
-            title: "Private Community",
+            title: 'Private Community',
             description:
-              "Active Slack workspace with channels for advice, hiring, housing, creative collaboration, and city-specific coordination. 95% daily active rate.",
+              'Active Slack workspace with channels for advice, hiring, housing, creative collaboration, and city-specific coordination. 95% daily active rate.',
           },
         ]
 
@@ -157,10 +157,7 @@ export const MembershipClubBenefits = defineComponent({
 
     return (
       <section
-        className={cn(
-          "w-full bg-background py-20 lg:py-32",
-          props.className,
-        )}
+        className={cn('w-full bg-background py-20 lg:py-32', props.className)}
         aria-labelledby="benefits-heading"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

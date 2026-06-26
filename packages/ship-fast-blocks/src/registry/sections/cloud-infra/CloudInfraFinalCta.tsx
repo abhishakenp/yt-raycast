@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CloudInfraFinalCta — dark inverted final call-to-action band for a cloud-
@@ -11,9 +11,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * CTAs route through useNavigate. Renders fully on zero arguments.
  */
 export const CloudInfraFinalCta = defineComponent({
-  name: "CloudInfraFinalCta",
+  name: 'CloudInfraFinalCta',
   description:
-    "Dark inverted final call-to-action band for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description on a primary background with primary-foreground text, dual pill CTAs (dark filled primary with arrow and ghost outlined secondary), and a row of trust checkmarks. CTAs route through useNavigate. Use as the closing conversion band for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.",
+    'Dark inverted final call-to-action band for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description on a primary background with primary-foreground text, dual pill CTAs (dark filled primary with arrow and ghost outlined secondary), and a row of trust checkmarks. CTAs route through useNavigate. Use as the closing conversion band for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -29,15 +29,15 @@ export const CloudInfraFinalCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to deploy your first app?"
+    const heading = props.heading ?? 'Ready to deploy your first app?'
     const description =
       props.description ??
-      "Join 12,000+ developers building on CloudShift. Start with $500 in free credits—no credit card required."
-    const primaryCta = props.primaryCta ?? "Create free account"
-    const secondaryCta = props.secondaryCta ?? "Schedule demo"
+      'Join 12,000+ developers building on CloudShift. Start with $500 in free credits—no credit card required.'
+    const primaryCta = props.primaryCta ?? 'Create free account'
+    const secondaryCta = props.secondaryCta ?? 'Schedule demo'
     const trust = props.trust?.length
       ? props.trust
-      : ["$500 free credits", "No credit card required", "Cancel anytime"]
+      : ['$500 free credits', 'No credit card required', 'Cancel anytime']
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -72,7 +72,12 @@ export const CloudInfraFinalCta = defineComponent({
     )
 
     return (
-      <section className={cn("bg-primary py-20 text-primary-foreground lg:py-32", props.className)}>
+      <section
+        className={cn(
+          'bg-primary py-20 text-primary-foreground lg:py-32',
+          props.className,
+        )}
+      >
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-3xl font-semibold tracking-tight sm:text-4xl">
             {heading}

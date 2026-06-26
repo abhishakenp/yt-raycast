@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MusicArtistTour — long tour-date list for a music artist / band page. A
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in defaults.
  */
 export const MusicArtistTour = defineComponent({
-  name: "MusicArtistTour",
+  name: 'MusicArtistTour',
   description:
     "Long tour-date list for a music artist / band page: a centered eyebrow, thin heading and lead over a soft muted band, then a stacked list of date rows (month/day block, venue and city, price/status, and a 'Get Tickets' pill that disables for sold-out shows), with a trailing 'view all' link with an arrow. Warm, airy editorial indie-folk aesthetic. Each ticket link and the view-all link route through useNavigate. Use as the live-dates / tour schedule section for musicians, bands, indie/folk acts, or tour-promotion pages.",
   props: z.object({
@@ -43,71 +43,71 @@ export const MusicArtistTour = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "On Tour"
-    const heading = props.heading ?? "Tour Dates 2026"
+    const eyebrow = props.eyebrow ?? 'On Tour'
+    const heading = props.heading ?? 'Tour Dates 2026'
     const description =
       props.description ??
-      "Join us for an evening of intimate folk melodies and stories."
-    const viewAll = props.viewAll ?? "View all tour dates"
+      'Join us for an evening of intimate folk melodies and stories.'
+    const viewAll = props.viewAll ?? 'View all tour dates'
     const dates = props.dates?.length
       ? props.dates
       : [
           {
-            month: "Jun",
-            day: "14",
-            venue: "Crystal Ballroom",
-            city: "Portland, OR",
-            price: "Sold Out",
+            month: 'Jun',
+            day: '14',
+            venue: 'Crystal Ballroom',
+            city: 'Portland, OR',
+            price: 'Sold Out',
             soldOut: true,
           },
           {
-            month: "Jun",
-            day: "18",
-            venue: "The Showbox",
-            city: "Seattle, WA",
-            price: "$28",
+            month: 'Jun',
+            day: '18',
+            venue: 'The Showbox',
+            city: 'Seattle, WA',
+            price: '$28',
           },
           {
-            month: "Jun",
-            day: "22",
-            venue: "Revolution Hall",
-            city: "Portland, OR",
-            price: "$28",
+            month: 'Jun',
+            day: '22',
+            venue: 'Revolution Hall',
+            city: 'Portland, OR',
+            price: '$28',
           },
           {
-            month: "Jul",
-            day: "03",
-            venue: "The Fillmore",
-            city: "San Francisco, CA",
-            price: "$32",
+            month: 'Jul',
+            day: '03',
+            venue: 'The Fillmore',
+            city: 'San Francisco, CA',
+            price: '$32',
           },
           {
-            month: "Jul",
-            day: "08",
-            venue: "Hollywood Bowl",
-            city: "Los Angeles, CA",
-            price: "Selling Fast",
+            month: 'Jul',
+            day: '08',
+            venue: 'Hollywood Bowl',
+            city: 'Los Angeles, CA',
+            price: 'Selling Fast',
           },
           {
-            month: "Jul",
-            day: "15",
-            venue: "Red Rocks Amphitheatre",
-            city: "Morrison, CO",
-            price: "$45",
+            month: 'Jul',
+            day: '15',
+            venue: 'Red Rocks Amphitheatre',
+            city: 'Morrison, CO',
+            price: '$45',
           },
           {
-            month: "Jul",
-            day: "22",
-            venue: "First Avenue",
-            city: "Minneapolis, MN",
-            price: "$28",
+            month: 'Jul',
+            day: '22',
+            venue: 'First Avenue',
+            city: 'Minneapolis, MN',
+            price: '$28',
           },
           {
-            month: "Aug",
-            day: "05",
-            venue: "Bowery Ballroom",
-            city: "New York, NY",
-            price: "Sold Out",
+            month: 'Aug',
+            day: '05',
+            venue: 'Bowery Ballroom',
+            city: 'New York, NY',
+            price: 'Sold Out',
             soldOut: true,
           },
         ]
@@ -132,10 +132,7 @@ export const MusicArtistTour = defineComponent({
 
     return (
       <section
-        className={cn(
-          "bg-muted px-6 py-20 lg:px-8 lg:py-32",
-          props.className,
-        )}
+        className={cn('bg-muted px-6 py-20 lg:px-8 lg:py-32', props.className)}
       >
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center lg:mb-24">
@@ -153,8 +150,8 @@ export const MusicArtistTour = defineComponent({
               <div
                 key={`${date.venue}-${date.day}`}
                 className={cn(
-                  "group flex flex-col gap-4 py-6 transition-all hover:bg-card hover:px-6 sm:flex-row sm:items-center sm:gap-8",
-                  i < dates.length - 1 && "border-b border-border",
+                  'group flex flex-col gap-4 py-6 transition-all hover:bg-card hover:px-6 sm:flex-row sm:items-center sm:gap-8',
+                  i < dates.length - 1 && 'border-b border-border',
                 )}
               >
                 <div className="w-20 shrink-0 text-center">
@@ -172,10 +169,10 @@ export const MusicArtistTour = defineComponent({
                 <div className="flex items-center gap-4">
                   <span
                     className={cn(
-                      "text-sm",
+                      'text-sm',
                       date.soldOut
-                        ? "text-muted-foreground/60"
-                        : "text-muted-foreground",
+                        ? 'text-muted-foreground/60'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {date.price}

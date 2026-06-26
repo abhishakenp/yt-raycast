@@ -1,9 +1,9 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * KidsEducationActivities — playful activities / features grid for a kids /
@@ -17,7 +17,7 @@ import { Image } from "#/lib/img.tsx"
  * apps. Renders fully with no props via baked-in defaults.
  */
 export const KidsEducationActivities = defineComponent({
-  name: "KidsEducationActivities",
+  name: 'KidsEducationActivities',
   description:
     "Playful activities / features grid for a kids / family learning platform: a centered eyebrow + heading + description intro above a responsive 3-up grid of rounded cards; each card has a photo with a floating count badge, a rotating soft-tint icon tile (science, art, coding, math, reading, nature), a title, a description, and an arrow 'explore' link, lifting and zooming the photo on hover. Explore links route through useNavigate. Use to showcase course categories / subjects for kids-education startups, children's e-learning platforms, STEM programs, and family learning apps.",
   props: z.object({
@@ -43,97 +43,163 @@ export const KidsEducationActivities = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Activities"
-    const heading = props.heading ?? "Explore, Create, Learn"
+    const eyebrow = props.eyebrow ?? 'Activities'
+    const heading = props.heading ?? 'Explore, Create, Learn'
     const description =
       props.description ??
-      "Hundreds of age-appropriate activities across science, art, math, reading, and more. New content added weekly."
+      'Hundreds of age-appropriate activities across science, art, math, reading, and more. New content added weekly.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Science Lab",
+            title: 'Science Lab',
             description:
-              "Hands-on experiments exploring chemistry, physics, biology, and the natural world. From volcano eruptions to stargazing guides.",
-            badge: "150+ Activities",
-            cta: "Explore Science",
+              'Hands-on experiments exploring chemistry, physics, biology, and the natural world. From volcano eruptions to stargazing guides.',
+            badge: '150+ Activities',
+            cta: 'Explore Science',
             imageAlt:
-              "Child conducting a colorful volcano science experiment with baking soda and vinegar",
+              'Child conducting a colorful volcano science experiment with baking soda and vinegar',
           },
           {
-            title: "Art Studio",
+            title: 'Art Studio',
             description:
-              "Drawing, painting, sculpture, and digital art projects. Learn techniques from professional artists while expressing creativity.",
-            badge: "200+ Projects",
-            cta: "Explore Art",
+              'Drawing, painting, sculpture, and digital art projects. Learn techniques from professional artists while expressing creativity.',
+            badge: '200+ Projects',
+            cta: 'Explore Art',
             imageAlt:
-              "Child painting with bright watercolors on a large canvas in a sunny art studio",
+              'Child painting with bright watercolors on a large canvas in a sunny art studio',
           },
           {
-            title: "Coding Adventures",
+            title: 'Coding Adventures',
             description:
-              "Game-based programming for beginners. Build animations, games, and interactive stories with drag-and-drop blocks.",
-            badge: "100+ Games",
-            cta: "Explore Coding",
+              'Game-based programming for beginners. Build animations, games, and interactive stories with drag-and-drop blocks.',
+            badge: '100+ Games',
+            cta: 'Explore Coding',
             imageAlt:
-              "Young child using a tablet to learn coding with colorful visual programming blocks",
+              'Young child using a tablet to learn coding with colorful visual programming blocks',
           },
           {
-            title: "Math Magic",
+            title: 'Math Magic',
             description:
-              "Puzzles, games, and real-world math problems. From basic counting to early algebra concepts made fun and visual.",
-            badge: "180+ Challenges",
-            cta: "Explore Math",
+              'Puzzles, games, and real-world math problems. From basic counting to early algebra concepts made fun and visual.',
+            badge: '180+ Challenges',
+            cta: 'Explore Math',
             imageAlt:
-              "Colorful wooden math manipulatives and counting blocks arranged for learning",
+              'Colorful wooden math manipulatives and counting blocks arranged for learning',
           },
           {
-            title: "Story World",
+            title: 'Story World',
             description:
-              "Interactive stories, phonics games, and creative writing prompts. Build vocabulary and a lifelong love of reading.",
-            badge: "500+ Stories",
-            cta: "Explore Reading",
+              'Interactive stories, phonics games, and creative writing prompts. Build vocabulary and a lifelong love of reading.',
+            badge: '500+ Stories',
+            cta: 'Explore Reading',
             imageAlt:
-              "Child reading a colorful picture book with whimsical illustrations",
+              'Child reading a colorful picture book with whimsical illustrations',
           },
           {
-            title: "Nature Explorer",
+            title: 'Nature Explorer',
             description:
-              "Outdoor adventures, gardening guides, animal facts, and environmental science. Connect with the natural world.",
-            badge: "120+ Explorations",
-            cta: "Explore Nature",
+              'Outdoor adventures, gardening guides, animal facts, and environmental science. Connect with the natural world.',
+            badge: '120+ Explorations',
+            cta: 'Explore Nature',
             imageAlt:
-              "Children exploring nature outdoors with magnifying glass examining leaves and insects",
+              'Children exploring nature outdoors with magnifying glass examining leaves and insects',
           },
         ]
 
     const activityIcons: ReactNode[] = [
-      <svg key="science" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="science"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
       </svg>,
-      <svg key="art" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="art"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
       </svg>,
-      <svg key="coding" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="coding"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
       </svg>,
-      <svg key="math" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="math"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
       </svg>,
-      <svg key="reading" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="reading"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
       </svg>,
-      <svg key="nature" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="nature"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>,
     ]
     const iconTints = [
-      "bg-accent/15 text-accent-foreground",
-      "bg-primary/15 text-primary",
-      "bg-secondary/15 text-secondary-foreground",
-      "bg-primary/15 text-primary",
-      "bg-accent/15 text-accent-foreground",
-      "bg-secondary/15 text-secondary-foreground",
+      'bg-accent/15 text-accent-foreground',
+      'bg-primary/15 text-primary',
+      'bg-secondary/15 text-secondary-foreground',
+      'bg-primary/15 text-primary',
+      'bg-accent/15 text-accent-foreground',
+      'bg-secondary/15 text-secondary-foreground',
     ]
 
     const ArrowRight = ({ className }: { className?: string }) => (
@@ -154,7 +220,7 @@ export const KidsEducationActivities = defineComponent({
     )
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <span className="mb-3 inline-block text-sm font-semibold uppercase tracking-wider text-secondary">
@@ -186,13 +252,15 @@ export const KidsEducationActivities = defineComponent({
                 </div>
                 <div
                   className={cn(
-                    "mb-4 grid size-12 place-items-center rounded-xl",
+                    'mb-4 grid size-12 place-items-center rounded-xl',
                     iconTints[i % iconTints.length],
                   )}
                 >
                   {activityIcons[i % activityIcons.length]}
                 </div>
-                <h3 className="mb-2 text-xl font-bold text-foreground">{item.title}</h3>
+                <h3 className="mb-2 text-xl font-bold text-foreground">
+                  {item.title}
+                </h3>
                 <p className="mb-4 text-muted-foreground">{item.description}</p>
                 <button
                   type="button"

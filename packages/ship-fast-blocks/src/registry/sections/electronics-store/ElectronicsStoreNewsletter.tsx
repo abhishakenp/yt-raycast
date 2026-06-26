@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ElectronicsStoreNewsletter — a dark inverted, centered newsletter CTA band for
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * catalog.
  */
 export const ElectronicsStoreNewsletter = defineComponent({
-  name: "ElectronicsStoreNewsletter",
+  name: 'ElectronicsStoreNewsletter',
   description:
     "Dark inverted, centered newsletter CTA band for an electronics storefront: a bold heading, a muted supporting paragraph, an inline email capture form (translucent input + solid submit button that stacks on mobile), and a fine-print disclaimer beneath. The form submit routes through useNavigate. Use as a closing email-capture / discount-incentive band (e.g. 'Get 10% Off Your First Order') on electronics stores, gadget shops, consumer-tech retailers, or any product catalog.",
   props: z.object({
@@ -31,20 +31,20 @@ export const ElectronicsStoreNewsletter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Get 10% Off Your First Order"
+    const heading = props.heading ?? 'Get 10% Off Your First Order'
     const description =
       props.description ??
-      "Subscribe to our newsletter for exclusive deals, new product announcements, and expert tech tips delivered to your inbox."
-    const placeholder = props.placeholder ?? "Enter your email"
-    const submit = props.submit ?? "Subscribe"
+      'Subscribe to our newsletter for exclusive deals, new product announcements, and expert tech tips delivered to your inbox.'
+    const placeholder = props.placeholder ?? 'Enter your email'
+    const submit = props.submit ?? 'Subscribe'
     const disclaimer =
       props.disclaimer ??
-      "By subscribing, you agree to our Privacy Policy. Unsubscribe anytime."
+      'By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.'
 
     return (
       <section
         className={cn(
-          "bg-foreground py-16 text-background lg:py-24",
+          'bg-foreground py-16 text-background lg:py-24',
           props.className,
         )}
       >

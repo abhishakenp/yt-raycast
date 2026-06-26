@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NoCodeCta — bold closing call-to-action band rendered on the inverse
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props.
  */
 export const NoCodeCta = defineComponent({
-  name: "NoCodeCta",
+  name: 'NoCodeCta',
   description:
-    "Bold closing call-to-action band rendered on the inverse foreground surface: a centered narrow column with a large heading, a muted supporting paragraph, dual CTAs (a filled background-surface primary with arrow + an outlined secondary with play icon), and a small reassurance note beneath. CTAs route through useNavigate. Use as the final conversion band before the footer on a no-code / app-builder SaaS or product landing page.",
+    'Bold closing call-to-action band rendered on the inverse foreground surface: a centered narrow column with a large heading, a muted supporting paragraph, dual CTAs (a filled background-surface primary with arrow + an outlined secondary with play icon), and a small reassurance note beneath. CTAs route through useNavigate. Use as the final conversion band before the footer on a no-code / app-builder SaaS or product landing page.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -31,15 +31,15 @@ export const NoCodeCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to build something amazing?"
+    const heading = props.heading ?? 'Ready to build something amazing?'
     const description =
       props.description ??
-      "Join 50,000+ creators who are already building with Buildr. Start for free, no credit card required."
-    const primaryCta = props.primaryCta ?? "Start building free"
-    const secondaryCta = props.secondaryCta ?? "Watch 2-min demo"
+      'Join 50,000+ creators who are already building with Buildr. Start for free, no credit card required.'
+    const primaryCta = props.primaryCta ?? 'Start building free'
+    const secondaryCta = props.secondaryCta ?? 'Watch 2-min demo'
     const note =
       props.note ??
-      "Free forever plan available • 14-day Pro trial • Cancel anytime"
+      'Free forever plan available • 14-day Pro trial • Cancel anytime'
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -78,10 +78,7 @@ export const NoCodeCta = defineComponent({
 
     return (
       <section
-        className={cn(
-          "bg-foreground py-24 text-background",
-          props.className,
-        )}
+        className={cn('bg-foreground py-24 text-background', props.className)}
         aria-labelledby="nc-cta"
       >
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">

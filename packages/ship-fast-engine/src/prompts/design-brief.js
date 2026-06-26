@@ -5,13 +5,18 @@ import {
   MOTION_DEV_DOCS_REACT,
 } from '../config.js'
 import { inferSiteTypeHint } from '../lib/infer-site-type.js'
-import { mobbinDoctrineBlock, mobbinSessionBlock } from '../lib/mobbin/prompt-blocks.js'
+import {
+  mobbinDoctrineBlock,
+  mobbinSessionBlock,
+} from '../lib/mobbin/prompt-blocks.js'
 
 function mobbinAnchorAppendix(anchor) {
   if (!anchor?.app) return { systemAppend: '', userAppend: '' }
   const session = mobbinSessionBlock(anchor)
   const doctrine = mobbinDoctrineBlock()
-  const accents = anchor.accents?.length ? anchor.accents : anchor.dna?.accents || []
+  const accents = anchor.accents?.length
+    ? anchor.accents
+    : anchor.dna?.accents || []
   const accentLine = accents.length
     ? `Required palette base — the design.md palette MUST inherit from ${anchor.app}'s sampled hex values: ${accents.join(', ')}. Use these as the literal hex tokens in your tailwind.config (background / surface / primary / accent slots). DO NOT substitute or "round" them.`
     : ''
@@ -31,7 +36,9 @@ export function designBriefPrompt(
   mobbinAnchor = null,
 ) {
   const effectiveSiteType = siteType || inferSiteTypeHint(prompt)
-  const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
+  const ecommerceGuidelines = getEcommerceGenerationGuidelines({
+    hasUserDesignReferences,
+  })
   const { systemAppend, userAppend } = mobbinAnchorAppendix(mobbinAnchor)
   return {
     system: `You are an award-caliber product designer. You ship design systems that look unmistakably crafted — bold type, memorable color, and layout tension — never generic purple-gradient SaaS slop. Typography-first dark UIs. ${GLOBAL_UI_CRAFT_GUIDELINES} Output ONLY markdown. No preamble.${systemAppend}`,

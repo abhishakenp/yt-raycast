@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FilmDirectorWork — an inverted, near-black "Selected Work" reel grid for a
@@ -17,7 +17,7 @@ import { Image } from "#/lib/img.tsx"
  * or production houses.
  */
 export const FilmDirectorWork = defineComponent({
-  name: "FilmDirectorWork",
+  name: 'FilmDirectorWork',
   description:
     "Inverted, near-black 'Selected Work' reel grid for a film director / cinematographer portfolio: on a dark foreground band, a header row pairing a thin heading + muted lede with a set of filter pill buttons (first outlined/active), a responsive 1/2/3-column grid of 16:9 project cards each with an overlaid darkening scrim, a centered circular play button that brightens on hover, and bottom-anchored category tag / title / role captions, plus a centered outlined load-more button. Cards, filters, and load-more route through useNavigate; imagery uses the Image component. Use as a cinematic portfolio / reel showcase for directors, cinematographers, DPs, or production houses.",
   props: z.object({
@@ -39,77 +39,77 @@ export const FilmDirectorWork = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const workHeading = props.heading ?? "Selected Work"
+    const workHeading = props.heading ?? 'Selected Work'
     const workDesc =
       props.description ??
-      "A curated selection of recent projects across commercial, narrative, and documentary filmmaking."
+      'A curated selection of recent projects across commercial, narrative, and documentary filmmaking.'
     const workFilters = props.filters?.length
       ? props.filters
-      : ["All", "Commercial", "Narrative", "Documentary"]
-    const workLoadMore = props.loadMore ?? "Load More Projects"
+      : ['All', 'Commercial', 'Narrative', 'Documentary']
+    const workLoadMore = props.loadMore ?? 'Load More Projects'
     const workItems = props.items?.length
       ? props.items
       : [
           {
-            tag: "Commercial",
-            title: "Velocity Automotive",
-            role: "Director / DP",
+            tag: 'Commercial',
+            title: 'Velocity Automotive',
+            role: 'Director / DP',
             imageAlt:
-              "dramatic cinematic still from a luxury car commercial showing a sleek vehicle on a winding coastal road at golden hour",
+              'dramatic cinematic still from a luxury car commercial showing a sleek vehicle on a winding coastal road at golden hour',
           },
           {
-            tag: "Narrative",
-            title: "Echoes of Rain",
-            role: "Short Film — 2024",
+            tag: 'Narrative',
+            title: 'Echoes of Rain',
+            role: 'Short Film — 2024',
             imageAlt:
-              "atmospheric still from an independent film scene showing two actors in intimate conversation at a rain-soaked diner booth",
+              'atmospheric still from an independent film scene showing two actors in intimate conversation at a rain-soaked diner booth',
           },
           {
-            tag: "Documentary",
-            title: "The North Face: Boundless",
-            role: "Director",
+            tag: 'Documentary',
+            title: 'The North Face: Boundless',
+            role: 'Director',
             imageAlt:
-              "stunning mountain landscape cinematography shot for outdoor brand campaign showing hiker silhouetted against dramatic alpine peaks",
+              'stunning mountain landscape cinematography shot for outdoor brand campaign showing hiker silhouetted against dramatic alpine peaks',
           },
           {
-            tag: "Music Video",
-            title: "Midnight Bloom — Aurora",
-            role: "Director / Cinematographer",
+            tag: 'Music Video',
+            title: 'Midnight Bloom — Aurora',
+            role: 'Director / Cinematographer',
             imageAlt:
-              "dynamic concert photography still from a music video shoot showing a performer on stage with dramatic purple and blue stage lighting",
+              'dynamic concert photography still from a music video shoot showing a performer on stage with dramatic purple and blue stage lighting',
           },
           {
-            tag: "Fashion Film",
-            title: "Maison Lumière SS24",
-            role: "Director",
+            tag: 'Fashion Film',
+            title: 'Maison Lumière SS24',
+            role: 'Director',
             imageAlt:
-              "elegant product cinematography still from a fashion brand film showing model in flowing silk dress against minimalist white background with soft lighting",
+              'elegant product cinematography still from a fashion brand film showing model in flowing silk dress against minimalist white background with soft lighting',
           },
           {
-            tag: "Corporate",
-            title: "Notion — Work Reimagined",
-            role: "Director / DP",
+            tag: 'Corporate',
+            title: 'Notion — Work Reimagined',
+            role: 'Director / DP',
             imageAlt:
-              "candid documentary-style photograph from a tech startup culture film showing diverse team collaborating in modern glass-walled office space",
+              'candid documentary-style photograph from a tech startup culture film showing diverse team collaborating in modern glass-walled office space',
           },
           {
-            tag: "Documentary",
+            tag: 'Documentary',
             title: "Chef's Table: Origins",
-            role: "Cinematographer — Ep. 3, 5, 7",
+            role: 'Cinematographer — Ep. 3, 5, 7',
             imageAlt:
-              "artistic food cinematography still from a culinary documentary showing chef hands plating an exquisite dish in professional kitchen with steam rising",
+              'artistic food cinematography still from a culinary documentary showing chef hands plating an exquisite dish in professional kitchen with steam rising',
           },
           {
-            tag: "Live Event",
-            title: "Electric Forest 2024",
-            role: "Director of Photography",
+            tag: 'Live Event',
+            title: 'Electric Forest 2024',
+            role: 'Director of Photography',
             imageAlt:
-              "vibrant electronic music festival scene with crowd silhouettes against massive LED stage displays and laser light show",
+              'vibrant electronic music festival scene with crowd silhouettes against massive LED stage displays and laser light show',
           },
           {
-            tag: "Narrative",
+            tag: 'Narrative',
             title: "The Watchmaker's Son",
-            role: "Short Film — Festival Circuit",
+            role: 'Short Film — Festival Circuit',
             imageAlt:
               "intimate close-up still from a narrative film showing an elderly actor's weathered hands holding a vintage pocket watch in soft window light",
           },
@@ -133,7 +133,7 @@ export const FilmDirectorWork = defineComponent({
     return (
       <section
         className={cn(
-          "bg-foreground py-20 text-background md:py-32",
+          'bg-foreground py-20 text-background md:py-32',
           props.className,
         )}
       >
@@ -152,10 +152,10 @@ export const FilmDirectorWork = defineComponent({
                   type="button"
                   onClick={() => go(f)}
                   className={cn(
-                    "rounded-md px-4 py-2 transition-colors",
+                    'rounded-md px-4 py-2 transition-colors',
                     i === 0
-                      ? "border border-background hover:bg-background hover:text-foreground"
-                      : "text-background/70 hover:text-background",
+                      ? 'border border-background hover:bg-background hover:text-foreground'
+                      : 'text-background/70 hover:text-background',
                   )}
                 >
                   {f}

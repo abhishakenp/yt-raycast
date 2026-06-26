@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BlogHero — split featured-post card for an editorial blog / publication index.
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * on blog homepages, magazine indexes, or editorial landing pages.
  */
 export const BlogHero = defineComponent({
-  name: "BlogHero",
+  name: 'BlogHero',
   description:
-    "Split featured-post card for an editorial blog or publication index: a two-column article card with a large cover image on the left that zooms on hover, a badge label, and a rich text panel on the right with a topic label, serif headline, excerpt, author meta row, and a read-link. Every interactive element routes through useNavigate. Use as the lead featured-article section above the story grid on blog homepages, magazine indexes, or editorial landing pages.",
+    'Split featured-post card for an editorial blog or publication index: a two-column article card with a large cover image on the left that zooms on hover, a badge label, and a rich text panel on the right with a topic label, serif headline, excerpt, author meta row, and a read-link. Every interactive element routes through useNavigate. Use as the lead featured-article section above the story grid on blog homepages, magazine indexes, or editorial landing pages.',
   props: z.object({
     /** Cover-image alt text (drives Image search). */
     alt: z.string().optional(),
@@ -43,19 +43,18 @@ export const BlogHero = defineComponent({
     const go = useNavigate()
     const alt =
       props.alt ??
-      "A tidy desk with a laptop, notebook, and coffee bathed in warm morning light"
-    const topic = props.topic ?? "Systems & Craft"
-    const badge = props.badge ?? "Featured"
-    const title =
-      props.title ?? "Design Systems That Survive Change"
+      'A tidy desk with a laptop, notebook, and coffee bathed in warm morning light'
+    const topic = props.topic ?? 'Systems & Craft'
+    const badge = props.badge ?? 'Featured'
+    const title = props.title ?? 'Design Systems That Survive Change'
     const excerpt =
       props.excerpt ??
       "Great design systems aren't libraries of components — they're agreements about how teams think, communicate, and ship. Here is how to build one that lasts."
-    const author = props.author ?? "Miles Chen"
-    const readTime = props.readTime ?? "12 min read"
-    const date = props.date ?? "May 28, 2026"
-    const readLabel = props.readLabel ?? "Read the story"
-    const postTarget = props.postTarget ?? "Blog post"
+    const author = props.author ?? 'Miles Chen'
+    const readTime = props.readTime ?? '12 min read'
+    const date = props.date ?? 'May 28, 2026'
+    const readLabel = props.readLabel ?? 'Read the story'
+    const postTarget = props.postTarget ?? 'Blog post'
 
     const Arrow = () => (
       <svg
@@ -79,7 +78,7 @@ export const BlogHero = defineComponent({
       <section
         aria-label="Featured post"
         className={cn(
-          "mx-auto w-full max-w-6xl px-6 pt-12 pb-7",
+          'mx-auto w-full max-w-6xl px-6 pt-12 pb-7',
           props.className,
         )}
       >

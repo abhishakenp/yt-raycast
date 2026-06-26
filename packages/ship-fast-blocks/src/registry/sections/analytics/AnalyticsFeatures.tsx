@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const ICONS = {
   realtime: (
@@ -83,9 +83,9 @@ const ICONS = {
  * Renders fully with no props via baked-in defaults.
  */
 export const AnalyticsFeatures = defineComponent({
-  name: "AnalyticsFeatures",
+  name: 'AnalyticsFeatures',
   description:
-    "Four-up capability grid for an analytics product, composing the shared FeatureGrid kit composite inside a padded section. An optional centered SectionHeading sits above four token-styled feature cards with inline stroke icons: real-time event tracking, custom dashboards, smart alerting, and integrations. Sharp, data-forward and marketing-grade. Use to explain the core capabilities of any analytics, BI, or data-product site.",
+    'Four-up capability grid for an analytics product, composing the shared FeatureGrid kit composite inside a padded section. An optional centered SectionHeading sits above four token-styled feature cards with inline stroke icons: real-time event tracking, custom dashboards, smart alerting, and integrations. Sharp, data-forward and marketing-grade. Use to explain the core capabilities of any analytics, BI, or data-product site.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -96,34 +96,34 @@ export const AnalyticsFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Everything you need"
-    const heading = props.heading ?? "One platform for the whole funnel"
+    const eyebrow = props.eyebrow ?? 'Everything you need'
+    const heading = props.heading ?? 'One platform for the whole funnel'
     const subheading =
       props.subheading ??
-      "Capture, model, and act on your data without stitching together five different tools."
+      'Capture, model, and act on your data without stitching together five different tools.'
     const defaults = [
       {
-        title: "Real-time tracking",
+        title: 'Real-time tracking',
         description:
-          "Stream every event the moment it happens and watch metrics update live — no batch delays, no stale dashboards.",
+          'Stream every event the moment it happens and watch metrics update live — no batch delays, no stale dashboards.',
         icon: ICONS.realtime,
       },
       {
-        title: "Custom dashboards",
+        title: 'Custom dashboards',
         description:
-          "Drag, drop, and pivot any metric into shareable boards your whole team can read at a glance.",
+          'Drag, drop, and pivot any metric into shareable boards your whole team can read at a glance.',
         icon: ICONS.dashboards,
       },
       {
-        title: "Smart alerts",
+        title: 'Smart alerts',
         description:
-          "Anomaly detection pings you in Slack or email the instant a metric drifts outside its expected band.",
+          'Anomaly detection pings you in Slack or email the instant a metric drifts outside its expected band.',
         icon: ICONS.alerts,
       },
       {
-        title: "Integrations",
+        title: 'Integrations',
         description:
-          "Plug into your warehouse, CDP, and ad platforms in minutes with first-class connectors and a clean API.",
+          'Plug into your warehouse, CDP, and ad platforms in minutes with first-class connectors and a clean API.',
         icon: ICONS.integrations,
       },
     ]
@@ -135,7 +135,7 @@ export const AnalyticsFeatures = defineComponent({
       : defaults
 
     return (
-      <section className={cn("bg-background py-20 sm:py-24", props.className)}>
+      <section className={cn('bg-background py-20 sm:py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <SectionHeading
             eyebrow={eyebrow}

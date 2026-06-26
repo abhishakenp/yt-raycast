@@ -1,23 +1,23 @@
-import { Loading } from "@ui/Loading";
+import { Loading } from '@ui/Loading'
 import {
   TableSchemaContainer,
   useSingleTableSchemaStatus,
-} from "@common/features/data/components/TableSchema";
-import { DataPanel } from "@common/features/data/components/DataPanel";
-import { Link } from "@ui/Link";
+} from '@common/features/data/components/TableSchema'
+import { DataPanel } from '@common/features/data/components/DataPanel'
+import { Link } from '@ui/Link'
 
 export function TableSchemaPanel({
   tableName,
   onClose,
 }: {
-  tableName: string;
-  onClose: () => void;
+  tableName: string
+  onClose: () => void
 }) {
   return (
     <DataPanel
       title={
         <>
-          Schema for table{" "}
+          Schema for table{' '}
           <span className="font-mono text-[1.0625rem]">{tableName}</span>
         </>
       }
@@ -25,13 +25,13 @@ export function TableSchemaPanel({
     >
       <SchemaBody tableName={tableName} />
     </DataPanel>
-  );
+  )
 }
 
 function SchemaBody({ tableName }: { tableName: string }) {
-  const tableSchemaStatus = useSingleTableSchemaStatus(tableName);
+  const tableSchemaStatus = useSingleTableSchemaStatus(tableName)
   if (tableSchemaStatus === undefined) {
-    return <Loading />;
+    return <Loading />
   }
   return (
     <>
@@ -43,16 +43,16 @@ function SchemaBody({ tableName }: { tableName: string }) {
         <TableSchemaContainer tableName={tableName} />
       </div>
     </>
-  );
+  )
 }
 
 function LearnMoreLink({ name, link }: { name: string; link: string }) {
   return (
     <div className="mb-2 px-4 text-xs text-content-primary sm:px-6">
-      Learn more about{" "}
+      Learn more about{' '}
       <Link passHref href={link} target="_blank" externalIcon>
         {name}
       </Link>
     </div>
-  );
+  )
 }

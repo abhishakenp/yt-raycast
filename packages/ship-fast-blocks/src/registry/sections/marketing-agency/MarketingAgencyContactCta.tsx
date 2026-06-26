@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MarketingAgencyContactCta — a high-contrast dark closing call-to-action band. A
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * marketing / growth agency or B2B services page. Renders fully with no props.
  */
 export const MarketingAgencyContactCta = defineComponent({
-  name: "MarketingAgencyContactCta",
+  name: 'MarketingAgencyContactCta',
   description:
-    "High-contrast dark closing call-to-action band on the primary surface: a centered block with a large heading, a supporting paragraph, dual rounded-pill CTAs (a filled booking button with a calendar icon + an outlined email/contact button), and a row of inline reassurance checkmarks below. Links route through useNavigate; the email button routes to a separate contactTarget. Use as the final conversion band before the footer on a marketing / growth agency or B2B services landing page.",
+    'High-contrast dark closing call-to-action band on the primary surface: a centered block with a large heading, a supporting paragraph, dual rounded-pill CTAs (a filled booking button with a calendar icon + an outlined email/contact button), and a row of inline reassurance checkmarks below. Links route through useNavigate; the email button routes to a separate contactTarget. Use as the final conversion band before the footer on a marketing / growth agency or B2B services landing page.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -29,16 +29,16 @@ export const MarketingAgencyContactCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to Scale Your Growth?"
+    const heading = props.heading ?? 'Ready to Scale Your Growth?'
     const description =
       props.description ??
       "Book a free 30-minute strategy call. We'll audit your current marketing, identify quick wins, and build a roadmap for sustainable growth."
-    const primaryCta = props.primaryCta ?? "Book Your Free Call"
-    const email = props.email ?? "hello@nexusgrowth.com"
-    const contactTarget = props.contactTarget ?? "Get Started"
+    const primaryCta = props.primaryCta ?? 'Book Your Free Call'
+    const email = props.email ?? 'hello@nexusgrowth.com'
+    const contactTarget = props.contactTarget ?? 'Get Started'
     const reassurances = props.reassurances?.length
       ? props.reassurances
-      : ["30 minutes", "No pitch, just strategy", "Recording shared after"]
+      : ['30 minutes', 'No pitch, just strategy', 'Recording shared after']
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -58,7 +58,7 @@ export const MarketingAgencyContactCta = defineComponent({
     return (
       <section
         className={cn(
-          "bg-primary py-24 text-primary-foreground",
+          'bg-primary py-24 text-primary-foreground',
           props.className,
         )}
       >

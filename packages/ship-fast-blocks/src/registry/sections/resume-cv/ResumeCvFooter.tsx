@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * ResumeCvFooter — a clean, multi-column closing footer for a personal resume /
@@ -14,7 +14,7 @@ import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
  * "Jordan Avery" defaults.
  */
 export const ResumeCvFooter = defineComponent({
-  name: "ResumeCvFooter",
+  name: 'ResumeCvFooter',
   description:
     "Clean, multi-column closing footer for a personal resume / CV / portfolio site: a brand block (initials monogram + person's name + tagline + social row of LinkedIn / GitHub / Email) and a responsive grid of link columns (Navigate, Connect), with a bordered-top bottom bar holding an auto-updating copyright line and a short note. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for personal portfolios, online résumés, designer or developer profiles, or any individual's professional landing page.",
   props: z.object({
@@ -39,33 +39,27 @@ export const ResumeCvFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const initials = props.initials ?? "JA"
+    const initials = props.initials ?? 'JA'
     const social = props.social?.length
       ? props.social
-      : [
-          { label: "LinkedIn" },
-          { label: "GitHub" },
-          { label: "Email" },
-        ]
+      : [{ label: 'LinkedIn' }, { label: 'GitHub' }, { label: 'Email' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Navigate",
-            links: ["About", "Experience", "Skills", "Projects"],
+            title: 'Navigate',
+            links: ['About', 'Experience', 'Skills', 'Projects'],
           },
           {
-            title: "Connect",
-            links: ["LinkedIn", "GitHub", "Twitter", "Contact"],
+            title: 'Connect',
+            links: ['LinkedIn', 'GitHub', 'Twitter', 'Contact'],
           },
         ]
-    const legal = props.legal?.length
-      ? props.legal
-      : ["Privacy", "Imprint"]
+    const legal = props.legal?.length ? props.legal : ['Privacy', 'Imprint']
 
     return (
       <SiteFooter
-        brand={props.brand ?? "Jordan Avery"}
+        brand={props.brand ?? 'Jordan Avery'}
         brandMark={
           <span
             aria-hidden="true"
@@ -77,12 +71,12 @@ export const ResumeCvFooter = defineComponent({
         brandClassName="text-lg font-semibold tracking-tight"
         tagline={
           props.tagline ??
-          "Senior product designer crafting calm, useful interfaces."
+          'Senior product designer crafting calm, useful interfaces.'
         }
         social={social}
         columns={columns}
         legal={legal}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

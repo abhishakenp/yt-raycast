@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect } from "react";
-import { Wand2, X, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from 'react'
+import { Wand2, X, Loader2 } from 'lucide-react'
 
 interface AIPromptBoxProps {
-  text: string;
-  rect: DOMRect;
-  onSubmit: (instruction: string) => void;
-  onCancel: () => void;
-  isLoading?: boolean;
+  text: string
+  rect: DOMRect
+  onSubmit: (instruction: string) => void
+  onCancel: () => void
+  isLoading?: boolean
 }
 
 export function AIPromptBox({
@@ -16,30 +16,30 @@ export function AIPromptBox({
   onCancel,
   isLoading,
 }: AIPromptBoxProps) {
-  const [instruction, setInstruction] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [instruction, setInstruction] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    inputRef.current?.focus()
+  }, [])
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
-    };
-    document.addEventListener("keydown", handleEsc);
-    return () => document.removeEventListener("keydown", handleEsc);
-  }, [onCancel]);
+      if (e.key === 'Escape') onCancel()
+    }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [onCancel])
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (instruction.trim() && !isLoading) {
-      onSubmit(instruction.trim());
+      onSubmit(instruction.trim())
     }
-  };
+  }
 
-  const left = rect.left + rect.width / 2;
-  const top = rect.bottom + 8;
+  const left = rect.left + rect.width / 2
+  const top = rect.bottom + 8
 
   return (
     <div
@@ -47,14 +47,13 @@ export function AIPromptBox({
       style={{
         left: `${left}px`,
         top: `${top}px`,
-        transform: "translateX(-50%)",
+        transform: 'translateX(-50%)',
         minWidth: 280,
         maxWidth: 400,
       }}
     >
       <div className="max-h-[60px] overflow-hidden text-xs text-muted-foreground">
-        <span className="font-medium text-foreground">Selected:</span>{" "}
-        "{text}"
+        <span className="font-medium text-foreground">Selected:</span> "{text}"
       </div>
 
       <form onSubmit={handleSubmit} className="flex items-center gap-2">
@@ -92,8 +91,8 @@ export function AIPromptBox({
 
       <div
         className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-border bg-background"
-        style={{ pointerEvents: "none" }}
+        style={{ pointerEvents: 'none' }}
       />
     </div>
-  );
+  )
 }

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * DocsFooter — a clean, multi-column closing footer for a developer platform or
@@ -31,9 +31,9 @@ const LogoMark = ({ className }: { className?: string }) => (
 )
 
 export const DocsFooter = defineComponent({
-  name: "DocsFooter",
+  name: 'DocsFooter',
   description:
-    "Clean, multi-column closing footer for a developer platform or documentation site: a responsive grid with a brand block (stacked-cube mark + wordmark + product tagline + social row of GitHub/Discord/Twitter) and link columns (Docs, Resources, Community, Company); a bordered-top bottom bar holds an auto-updating copyright line and Privacy/Terms/Security legal links. Every brand, social, column, and legal link routes through useNavigate. Use as the site-wide footer for developer docs, API platforms, SDKs, CLIs, or any technical product landing page.",
+    'Clean, multi-column closing footer for a developer platform or documentation site: a responsive grid with a brand block (stacked-cube mark + wordmark + product tagline + social row of GitHub/Discord/Twitter) and link columns (Docs, Resources, Community, Company); a bordered-top bottom bar holds an auto-updating copyright line and Privacy/Terms/Security legal links. Every brand, social, column, and legal link routes through useNavigate. Use as the site-wide footer for developer docs, API platforms, SDKs, CLIs, or any technical product landing page.',
   props: z.object({
     /** Product / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -54,40 +54,40 @@ export const DocsFooter = defineComponent({
   component: ({ props }) => {
     const social = props.social?.length
       ? props.social
-      : [{ label: "GitHub" }, { label: "Discord" }, { label: "Twitter" }]
+      : [{ label: 'GitHub' }, { label: 'Discord' }, { label: 'Twitter' }]
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Docs",
-            links: ["Getting Started", "API Reference", "SDKs", "Changelog"],
+            title: 'Docs',
+            links: ['Getting Started', 'API Reference', 'SDKs', 'Changelog'],
           },
           {
-            title: "Resources",
-            links: ["Guides", "Tutorials", "Examples", "Status"],
+            title: 'Resources',
+            links: ['Guides', 'Tutorials', 'Examples', 'Status'],
           },
           {
-            title: "Community",
-            links: ["GitHub", "Discord", "Support", "Roadmap"],
+            title: 'Community',
+            links: ['GitHub', 'Discord', 'Support', 'Roadmap'],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Contact"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Contact'],
           },
         ]
 
     return (
       <SiteFooter
-        brand={props.brand ?? "StackForge"}
+        brand={props.brand ?? 'StackForge'}
         brandMark={<LogoMark className="size-8 text-primary" />}
         tagline={
           props.tagline ??
-          "The developer platform for building, shipping, and scaling APIs."
+          'The developer platform for building, shipping, and scaling APIs.'
         }
         social={social}
         columns={columns}
-        legal={["Privacy", "Terms", "Security"]}
-        note={props.note ?? "All rights reserved."}
+        legal={['Privacy', 'Terms', 'Security']}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

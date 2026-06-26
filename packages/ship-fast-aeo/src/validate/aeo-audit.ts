@@ -8,7 +8,10 @@ export type AeoAuditIssue = {
   pageRoute?: string
 }
 
-export function auditSiteSpecAeo(siteSpec: SiteSpecLike, htmlByRoute: Record<string, string> = {}): AeoAuditIssue[] {
+export function auditSiteSpecAeo(
+  siteSpec: SiteSpecLike,
+  htmlByRoute: Record<string, string> = {},
+): AeoAuditIssue[] {
   const issues: AeoAuditIssue[] = []
   const pages = siteSpec.pages || []
 
@@ -17,19 +20,32 @@ export function auditSiteSpecAeo(siteSpec: SiteSpecLike, htmlByRoute: Record<str
     const seo = resolvePageSeo(siteSpec, page)
 
     if (!seo.title) {
-      issues.push({ level: 'error', code: 'missing_title', message: 'Page is missing SEO title', pageRoute: route })
+      issues.push({
+        level: 'error',
+        code: 'missing_title',
+        message: 'Page is missing SEO title',
+        pageRoute: route,
+      })
     }
     if (!seo.description) {
-      issues.push({ level: 'error', code: 'missing_description', message: 'Page is missing meta description', pageRoute: route })
+      issues.push({
+        level: 'error',
+        code: 'missing_description',
+        message: 'Page is missing meta description',
+        pageRoute: route,
+      })
     }
 
     if (route === '/') {
-      const hasDirectAnswer = (page.sections || []).some((section) => section.type === 'direct-answer')
+      const hasDirectAnswer = (page.sections || []).some(
+        (section) => section.type === 'direct-answer',
+      )
       if (!hasDirectAnswer) {
         issues.push({
           level: 'warn',
           code: 'missing_direct_answer',
-          message: 'Home page should include a direct-answer section near the top',
+          message:
+            'Home page should include a direct-answer section near the top',
           pageRoute: route,
         })
       }
@@ -64,7 +80,9 @@ export function auditSiteSpecAeo(siteSpec: SiteSpecLike, htmlByRoute: Record<str
   )
 
   for (const { page, section } of faqSections) {
-    const visibleCount = (section.items || []).filter((item) => item.title && item.body).length
+    const visibleCount = (section.items || []).filter(
+      (item) => item.title && item.body,
+    ).length
     if (visibleCount < 3) {
       issues.push({
         level: 'warn',
@@ -78,7 +96,9 @@ export function auditSiteSpecAeo(siteSpec: SiteSpecLike, htmlByRoute: Record<str
   return issues
 }
 
-export function homePageFromSpec(siteSpec: SiteSpecLike): SitePageLike | undefined {
+export function homePageFromSpec(
+  siteSpec: SiteSpecLike,
+): SitePageLike | undefined {
   return (siteSpec.pages || []).find((page) => (page.route || '/') === '/')
 }
 

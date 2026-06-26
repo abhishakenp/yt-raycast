@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * KidsEducationNavbar — sticky, translucent top navigation bar for a bright,
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "WonderLearn" defaults.
  */
 export const KidsEducationNavbar = defineComponent({
-  name: "KidsEducationNavbar",
+  name: 'KidsEducationNavbar',
   description:
     "Sticky translucent top navigation bar for a bright, playful kids / family learning platform: backdrop-blurred header with an animated open-book brand mark + platform name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a rounded pill primary CTA on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for kids-education startups, children's e-learning platforms, family learning apps, tutoring or homeschool services, and playful course marketplaces.",
   props: z.object({
@@ -35,19 +35,19 @@ export const KidsEducationNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "WonderLearn"
+    const brand = props.brand ?? 'WonderLearn'
     const nav = props.nav?.length
       ? props.nav
-      : ["Activities", "How It Works", "Pricing", "Stories", "FAQ"]
+      : ['Activities', 'How It Works', 'Pricing', 'Stories', 'FAQ']
     const homeTarget = props.homeTarget ?? nav[0]
-    const signInLabel = props.signInLabel ?? "Sign In"
-    const ctaLabel = props.ctaLabel ?? "Start Free Trial"
-    const ctaTarget = props.ctaTarget ?? "Start Free 14-Day Trial"
+    const signInLabel = props.signInLabel ?? 'Sign In'
+    const ctaLabel = props.ctaLabel ?? 'Start Free Trial'
+    const ctaTarget = props.ctaTarget ?? 'Start Free 14-Day Trial'
 
     const BookMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-foreground",
+          'grid place-items-center rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -70,7 +70,7 @@ export const KidsEducationNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md",
+          'sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md',
           props.className,
         )}
       >

@@ -13,9 +13,21 @@
   overflow: hidden;
   isolation: isolate;
   background:
-    radial-gradient(circle at 70% 30%, rgba(28, 171, 255, 0.16), transparent 29rem),
-    radial-gradient(circle at 88% 26%, rgba(255, 55, 221, 0.12), transparent 25rem),
-    radial-gradient(circle at 36% 84%, rgba(45, 217, 255, 0.08), transparent 32rem),
+    radial-gradient(
+      circle at 70% 30%,
+      rgba(28, 171, 255, 0.16),
+      transparent 29rem
+    ),
+    radial-gradient(
+      circle at 88% 26%,
+      rgba(255, 55, 221, 0.12),
+      transparent 25rem
+    ),
+    radial-gradient(
+      circle at 36% 84%,
+      rgba(45, 217, 255, 0.08),
+      transparent 32rem
+    ),
     linear-gradient(135deg, #020413 0%, #050822 44%, #12051f 100%);
 }
 
@@ -26,8 +38,16 @@
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 67% 39%, rgba(28, 206, 255, 0.18), transparent 30rem),
-    radial-gradient(circle at 78% 28%, rgba(255, 55, 221, 0.12), transparent 24rem);
+    radial-gradient(
+      circle at 67% 39%,
+      rgba(28, 206, 255, 0.18),
+      transparent 30rem
+    ),
+    radial-gradient(
+      circle at 78% 28%,
+      rgba(255, 55, 221, 0.12),
+      transparent 24rem
+    );
   opacity: 0.58;
   filter: blur(7px) saturate(1.4);
   animation: heroAuraOnly 5.5s ease-in-out infinite alternate;

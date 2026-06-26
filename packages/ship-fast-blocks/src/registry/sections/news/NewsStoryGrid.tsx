@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * NewsStoryGrid — latest stories grid for a news / editorial outlet. On a subtle
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * fully with no props via baked-in defaults.
  */
 export const NewsStoryGrid = defineComponent({
-  name: "NewsStoryGrid",
+  name: 'NewsStoryGrid',
   description:
     "Latest stories grid for a news outlet on a subtle muted band: a 'Latest Stories' heading with a row of filter chips (All / News / Opinion / Analysis) on the right, then a responsive grid of recent article cards (sm:grid-cols-2 lg:grid-cols-3) — each a bordered card with a 4:3 photo on top, a rotating-accent category label + timestamp, headline, excerpt and author/read-time byline — closing with a centered 'Load More' button. Cards, filters and the load-more button route through useNavigate. Use as the latest-articles grid of a newspaper, magazine or publication homepage.",
   props: z.object({
@@ -44,97 +44,97 @@ export const NewsStoryGrid = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Latest Stories"
+    const heading = props.heading ?? 'Latest Stories'
     const filters = props.filters?.length
       ? props.filters
-      : ["All", "News", "Opinion", "Analysis"]
-    const loadMore = props.loadMore ?? "Load More Stories"
+      : ['All', 'News', 'Opinion', 'Analysis']
+    const loadMore = props.loadMore ?? 'Load More Stories'
     const stories = props.stories?.length
       ? props.stories
       : [
           {
-            category: "Business",
-            time: "2 hours ago",
+            category: 'Business',
+            time: '2 hours ago',
             title:
-              "Global Markets Rally as Inflation Data Shows Promising Slowdown",
+              'Global Markets Rally as Inflation Data Shows Promising Slowdown',
             excerpt:
-              "S&P 500 reaches new all-time high as consumer price index rises just 2.8% annually, below economist expectations of 3.1%.",
-            author: "By Michael Torres",
-            readTime: "8 min read",
+              'S&P 500 reaches new all-time high as consumer price index rises just 2.8% annually, below economist expectations of 3.1%.',
+            author: 'By Michael Torres',
+            readTime: '8 min read',
             imageAlt:
-              "Stock market trading floor with multiple monitors showing charts",
+              'Stock market trading floor with multiple monitors showing charts',
           },
           {
-            category: "Health",
-            time: "3 hours ago",
+            category: 'Health',
+            time: '3 hours ago',
             title:
               "New Alzheimer's Drug Shows Promise in Phase 3 Clinical Trials",
             excerpt:
-              "Donanemab reduces cognitive decline by 35% in early-stage patients, offering new hope for millions of families worldwide.",
-            author: "By Dr. Emily Chen",
-            readTime: "10 min read",
+              'Donanemab reduces cognitive decline by 35% in early-stage patients, offering new hope for millions of families worldwide.',
+            author: 'By Dr. Emily Chen',
+            readTime: '10 min read',
             imageAlt:
-              "Medical research laboratory with scientist examining samples",
+              'Medical research laboratory with scientist examining samples',
           },
           {
-            category: "Travel",
-            time: "5 hours ago",
+            category: 'Travel',
+            time: '5 hours ago',
             title:
               "Switzerland's Hidden Alpine Villages: A Complete Guide to Off-Peak Exploration",
             excerpt:
-              "Skip the crowds at Zermatt and discover these pristine mountain communities where traditional cheese-making still thrives.",
-            author: "By James Whitmore",
-            readTime: "15 min read",
-            imageAlt: "Dramatic mountain landscape with snow peaks at sunrise",
+              'Skip the crowds at Zermatt and discover these pristine mountain communities where traditional cheese-making still thrives.',
+            author: 'By James Whitmore',
+            readTime: '15 min read',
+            imageAlt: 'Dramatic mountain landscape with snow peaks at sunrise',
           },
           {
-            category: "Tech",
-            time: "Yesterday",
+            category: 'Tech',
+            time: 'Yesterday',
             title:
               "NVIDIA's Blackwell Chips Promise 30x Performance Leap for AI Workloads",
             excerpt:
-              "Next-generation GPUs reduce training time for large language models from months to days, reshaping the competitive landscape.",
-            author: "By Lisa Park",
-            readTime: "12 min read",
+              'Next-generation GPUs reduce training time for large language models from months to days, reshaping the competitive landscape.',
+            author: 'By Lisa Park',
+            readTime: '12 min read',
             imageAlt:
-              "Advanced computer processor chip with intricate circuit patterns",
+              'Advanced computer processor chip with intricate circuit patterns',
           },
           {
-            category: "Culture",
-            time: "Yesterday",
+            category: 'Culture',
+            time: 'Yesterday',
             title:
-              "Indie Films Dominate Oscar Shortlists in Historic First for Streaming",
+              'Indie Films Dominate Oscar Shortlists in Historic First for Streaming',
             excerpt:
-              "Netflix and A24 lead nominations as traditional studios struggle to compete with bold, auteur-driven storytelling.",
-            author: "By Alexandra Reed",
-            readTime: "7 min read",
+              'Netflix and A24 lead nominations as traditional studios struggle to compete with bold, auteur-driven storytelling.',
+            author: 'By Alexandra Reed',
+            readTime: '7 min read',
             imageAlt:
-              "Film director reviewing footage on monitors in production studio",
+              'Film director reviewing footage on monitors in production studio',
           },
           {
-            category: "Climate",
-            time: "2 days ago",
+            category: 'Climate',
+            time: '2 days ago',
             title:
-              "Renewable Energy Surpasses Coal for First Time in U.S. History",
+              'Renewable Energy Surpasses Coal for First Time in U.S. History',
             excerpt:
-              "Wind and solar now generate 22% of American electricity, marking a historic milestone in the clean energy transition.",
-            author: "By David Martinez",
-            readTime: "9 min read",
+              'Wind and solar now generate 22% of American electricity, marking a historic milestone in the clean energy transition.',
+            author: 'By David Martinez',
+            readTime: '9 min read',
             imageAlt:
-              "Wind turbines on green hills against dramatic sky at sunset",
+              'Wind turbines on green hills against dramatic sky at sunset',
           },
         ]
 
     // Rotate category labels through theme accent tokens (no raw palette colors).
     const catTones = [
-      "text-primary",
-      "text-secondary-foreground",
-      "text-accent-foreground",
-      "text-chart-1",
-      "text-chart-2",
-      "text-chart-3",
-      "text-chart-4",
-      "text-chart-5",
+      'text-primary',
+      'text-secondary-foreground',
+      'text-accent-foreground',
+      'text-chart-1',
+      'text-chart-2',
+      'text-chart-3',
+      'text-chart-4',
+      'text-chart-5',
     ]
     const toneFor = (key: string) => {
       let h = 0
@@ -143,7 +143,7 @@ export const NewsStoryGrid = defineComponent({
     }
 
     return (
-      <section className={cn("bg-muted/40 py-8 lg:py-12", props.className)}>
+      <section className={cn('bg-muted/40 py-8 lg:py-12', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex items-center justify-between">
             <h2 className="text-xl font-bold text-foreground lg:text-2xl">
@@ -156,10 +156,10 @@ export const NewsStoryGrid = defineComponent({
                   type="button"
                   onClick={() => go(f)}
                   className={cn(
-                    "rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+                    'rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
                     i === 0
-                      ? "border-border bg-card text-foreground"
-                      : "border-transparent text-muted-foreground hover:border-border hover:bg-card hover:text-foreground",
+                      ? 'border-border bg-card text-foreground'
+                      : 'border-transparent text-muted-foreground hover:border-border hover:bg-card hover:text-foreground',
                   )}
                 >
                   {f}
@@ -192,7 +192,7 @@ export const NewsStoryGrid = defineComponent({
                     <div className="mb-2 flex items-center gap-2">
                       <span
                         className={cn(
-                          "text-xs font-semibold uppercase tracking-wider",
+                          'text-xs font-semibold uppercase tracking-wider',
                           toneFor(story.category),
                         )}
                       >

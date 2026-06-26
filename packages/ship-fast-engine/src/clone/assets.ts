@@ -1,7 +1,7 @@
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
-import type { CapturedPage } from "./types.ts"
-import { assertPublicUrl } from "./security.ts"
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
+import type { CapturedPage } from './types.ts'
+import { assertPublicUrl } from './security.ts'
 
 // Download + rehost reference images/logo into session workspace; rewrite URLs to local
 
@@ -10,39 +10,39 @@ const MAX_ASSET_SIZE = 10 * 1024 * 1024 // 10MB
 
 // Only rehost real image types. Anything else (html, js, svgz, ...) is rejected.
 const ALLOWED_EXTENSIONS = new Set([
-  "png",
-  "jpg",
-  "jpeg",
-  "webp",
-  "svg",
-  "gif",
-  "avif",
+  'png',
+  'jpg',
+  'jpeg',
+  'webp',
+  'svg',
+  'gif',
+  'avif',
 ])
 
 // Map an image Content-Type to a safe lowercase extension in the allowlist, or
 // null. Used to validate the actual bytes served, independent of the requested
 // URL pathname (which can lie or redirect to a non-image).
 const CONTENT_TYPE_TO_EXT: Record<string, string> = {
-  "image/png": "png",
-  "image/jpeg": "jpg",
-  "image/jpg": "jpg",
-  "image/webp": "webp",
-  "image/svg+xml": "svg",
-  "image/gif": "gif",
-  "image/avif": "avif",
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/webp': 'webp',
+  'image/svg+xml': 'svg',
+  'image/gif': 'gif',
+  'image/avif': 'avif',
 }
 
 function extFromContentType(contentType: string | null): string | null {
   if (!contentType) return null
-  const mime = contentType.split(";")[0].trim().toLowerCase()
+  const mime = contentType.split(';')[0].trim().toLowerCase()
   return CONTENT_TYPE_TO_EXT[mime] || null
 }
 
 // Derive a safe lowercase extension from a URL pathname, or null if it is not
 // in the image allowlist.
 function allowedExtension(pathname: string): string | null {
-  const last = pathname.split("/").pop() || ""
-  const dot = last.lastIndexOf(".")
+  const last = pathname.split('/').pop() || ''
+  const dot = last.lastIndexOf('.')
   if (dot < 0) return null
   const ext = last.slice(dot + 1).toLowerCase()
   return ALLOWED_EXTENSIONS.has(ext) ? ext : null
@@ -61,15 +61,16 @@ async function fetchNoRedirectToPrivate(
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
     await assertPublicUrl(current)
     const response = await fetch(current, {
-      redirect: "manual",
+      redirect: 'manual',
       signal,
       headers: {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
       },
     })
     // Redirect status: validate the next hop before following it.
     if (response.status >= 300 && response.status < 400) {
-      const location = response.headers.get("location")
+      const location = response.headers.get('location')
       if (!location) return null
       // Resolve relative redirects against the current URL.
       current = new URL(location, current).toString()
@@ -115,7 +116,7 @@ export async function downloadAsset(
     await assertPublicUrl(response.url || url)
     const finalUrl = response.url || url
     const finalExt = allowedExtension(new URL(finalUrl).pathname)
-    const ctExt = extFromContentType(response.headers.get("content-type"))
+    const ctExt = extFromContentType(response.headers.get('content-type'))
     const ext = ctExt || finalExt
     if (!ext) {
       console.warn(
@@ -124,7 +125,7 @@ export async function downloadAsset(
       return null
     }
     // If a Content-Type is present it MUST be an allowed image type.
-    if (response.headers.get("content-type") && !ctExt) {
+    if (response.headers.get('content-type') && !ctExt) {
       console.warn(
         `Asset Content-Type not an allowed image, skipping: ${finalUrl}`,
       )
@@ -132,9 +133,11 @@ export async function downloadAsset(
     }
 
     // Content-Length precheck: bail before downloading anything oversized.
-    const declared = Number(response.headers.get("content-length"))
+    const declared = Number(response.headers.get('content-length'))
     if (Number.isFinite(declared) && declared > MAX_ASSET_SIZE) {
-      console.warn(`Asset declared too large (${declared} bytes), skipping: ${url}`)
+      console.warn(
+        `Asset declared too large (${declared} bytes), skipping: ${url}`,
+      )
       return null
     }
 
@@ -161,7 +164,7 @@ export async function downloadAsset(
     const filename = `asset_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
 
     // Ensure assets directory exists
-    const assetsDir = join(workspace, "assets")
+    const assetsDir = join(workspace, 'assets')
     await mkdir(assetsDir, { recursive: true })
 
     // Write file
@@ -213,14 +216,20 @@ export async function downloadPageAssets(
 }
 
 // Rewrite asset URLs in HTML to local paths
-export function rewriteAssetUrls(html: string, assetMap: Map<string, string>): string {
+export function rewriteAssetUrls(
+  html: string,
+  assetMap: Map<string, string>,
+): string {
   let result = html
   for (const [originalUrl, localPath] of assetMap.entries()) {
-    result = result.replace(new RegExp(escapeRegExp(originalUrl), "g"), localPath)
+    result = result.replace(
+      new RegExp(escapeRegExp(originalUrl), 'g'),
+      localPath,
+    )
   }
   return result
 }
 
 function escapeRegExp(string: string): string {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }

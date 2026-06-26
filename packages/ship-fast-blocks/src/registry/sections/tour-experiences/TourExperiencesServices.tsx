@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { FeatureGrid } from "#/section-kit/FeatureGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /** Inline icon set — currentColor → theme token, adventurous line art. */
 const CityIcon = ({ className }: { className?: string }) => (
@@ -70,9 +70,9 @@ const CultureIcon = ({ className }: { className?: string }) => (
  * defaults.
  */
 export const TourExperiencesServices = defineComponent({
-  name: "TourExperiencesServices",
+  name: 'TourExperiencesServices',
   description:
-    "Tour-category showcase for an adventure / guided-tour brand. Composes the shared FeatureGrid composite as a 4-up grid of tour types (City Tours, Food Tours, Adventure Tours, Cultural Tours), each with an inline line icon, a title, and a vivid one-line description. Use to help visitors self-select the kind of experience they want on tour-operator, expedition, and travel-experience landing pages.",
+    'Tour-category showcase for an adventure / guided-tour brand. Composes the shared FeatureGrid composite as a 4-up grid of tour types (City Tours, Food Tours, Adventure Tours, Cultural Tours), each with an inline line icon, a title, and a vivid one-line description. Use to help visitors self-select the kind of experience they want on tour-operator, expedition, and travel-experience landing pages.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -87,25 +87,25 @@ export const TourExperiencesServices = defineComponent({
   component: ({ props }) => {
     const defaults = [
       {
-        title: "City Tours",
+        title: 'City Tours',
         description:
-          "Weave through hidden lanes, rooftop bars, and landmark icons with a guide who lives there.",
+          'Weave through hidden lanes, rooftop bars, and landmark icons with a guide who lives there.',
         icon: <CityIcon className="size-6" />,
       },
       {
-        title: "Food Tours",
+        title: 'Food Tours',
         description:
-          "Graze your way through markets and family kitchens, tasting the dishes locals actually eat.",
+          'Graze your way through markets and family kitchens, tasting the dishes locals actually eat.',
         icon: <FoodIcon className="size-6" />,
       },
       {
-        title: "Adventure Tours",
+        title: 'Adventure Tours',
         description:
-          "Summit ridgelines, paddle hidden coves, and chase waterfalls on guided outdoor escapes.",
+          'Summit ridgelines, paddle hidden coves, and chase waterfalls on guided outdoor escapes.',
         icon: <AdventureIcon className="size-6" />,
       },
       {
-        title: "Cultural Tours",
+        title: 'Cultural Tours',
         description:
           "Step inside temples, workshops, and living traditions for stories you won't find online.",
         icon: <CultureIcon className="size-6" />,
@@ -125,10 +125,10 @@ export const TourExperiencesServices = defineComponent({
       <section className="bg-background px-6 py-20 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <FeatureGrid
-            heading={props.heading ?? "Find your kind of adventure"}
+            heading={props.heading ?? 'Find your kind of adventure'}
             subheading={
               props.subheading ??
-              "Every traveler chases something different. Pick the experience that matches your pace, your appetite, and your sense of wonder."
+              'Every traveler chases something different. Pick the experience that matches your pace, your appetite, and your sense of wonder.'
             }
             features={features}
             columns={4}

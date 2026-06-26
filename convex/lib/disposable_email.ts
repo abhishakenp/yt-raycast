@@ -156,7 +156,11 @@ const EMAIL_RE = /^[^\s@]+@([^\s@]+)$/
  * Returns `null` for anything that is not shaped like an email.
  */
 export const extractEmailDomain = (email: string): string | null => {
-  const match = EMAIL_RE.exec(String(email ?? '').trim().toLowerCase())
+  const match = EMAIL_RE.exec(
+    String(email ?? '')
+      .trim()
+      .toLowerCase(),
+  )
   return match ? match[1] : null
 }
 
@@ -187,8 +191,15 @@ export const isValidEmail = (email: string): boolean =>
  */
 export const classifyReferralEmail = (
   email: string | null | undefined,
-): { email: string; valid: boolean; disposable: boolean; acceptable: boolean } => {
-  const normalized = String(email ?? '').trim().toLowerCase()
+): {
+  email: string
+  valid: boolean
+  disposable: boolean
+  acceptable: boolean
+} => {
+  const normalized = String(email ?? '')
+    .trim()
+    .toLowerCase()
   const valid = isValidEmail(normalized)
   const disposable = isDisposableEmail(normalized)
   return {

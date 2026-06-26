@@ -1,6 +1,11 @@
 import { brandProfilePromptBlock } from './brand-profile.js'
 
-export function contextPrompt(prompt, designBrief, siteType, brandProfile = null) {
+export function contextPrompt(
+  prompt,
+  designBrief,
+  siteType,
+  brandProfile = null,
+) {
   const briefBlock = designBrief
     ? `\n\nDesign system reference (use this for mood, colors, typography, and style decisions):\n${designBrief}\n`
     : ''

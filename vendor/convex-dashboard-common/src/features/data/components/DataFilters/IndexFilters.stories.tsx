@@ -1,17 +1,17 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
-import { DeploymentInfoContext } from "@common/lib/deploymentContext";
-import { mockDeploymentInfo } from "@common/lib/mockDeploymentInfo";
-import { mockConvexReactClient } from "@common/lib/mockConvexReactClient";
-import { ConvexProvider } from "convex/react";
-import udfs from "@common/udfs";
-import { SearchIndexFilter } from "system-udfs/convex/_system/frontend/lib/filters";
-import { fn } from "storybook/test";
-import { IndexFilters } from "./IndexFilters";
-import { Sheet } from "@ui/Sheet";
+import type { Meta, StoryObj } from '@storybook/nextjs'
+import { DeploymentInfoContext } from '@common/lib/deploymentContext'
+import { mockDeploymentInfo } from '@common/lib/mockDeploymentInfo'
+import { mockConvexReactClient } from '@common/lib/mockConvexReactClient'
+import { ConvexProvider } from 'convex/react'
+import udfs from '@common/udfs'
+import { SearchIndexFilter } from 'system-udfs/convex/_system/frontend/lib/filters'
+import { fn } from 'storybook/test'
+import { IndexFilters } from './IndexFilters'
+import { Sheet } from '@ui/Sheet'
 
 const mockClient = mockConvexReactClient()
   .registerQueryFake(udfs.components.list, () => [])
-  .registerQueryFake(udfs.getTableMapping.default, () => ({}));
+  .registerQueryFake(udfs.getTableMapping.default, () => ({}))
 
 const meta: Meta<typeof IndexFilters> = {
   component: IndexFilters,
@@ -20,97 +20,97 @@ const meta: Meta<typeof IndexFilters> = {
     shownFilters: {
       clauses: [],
       index: {
-        name: "by_creation_time",
+        name: 'by_creation_time',
         clauses: [
           {
-            type: "indexRange",
+            type: 'indexRange',
             enabled: false,
-            lowerOp: "gte",
+            lowerOp: 'gte',
             lowerValue: new Date().getTime(),
           },
         ],
       },
-      order: "asc",
+      order: 'asc',
     },
     defaultDocument: {
-      _id: "123",
+      _id: '123',
       _creationTime: new Date().getTime(),
-      name: "Sample Document",
-      status: "active",
+      name: 'Sample Document',
+      status: 'active',
     },
     indexes: [
       {
-        name: "by_status",
-        fields: ["status"],
+        name: 'by_status',
+        fields: ['status'],
         staged: false,
         backfill: {
-          state: "done",
+          state: 'done',
         },
       },
       {
-        name: "by_name_status",
-        fields: ["name", "status"],
+        name: 'by_name_status',
+        fields: ['name', 'status'],
         staged: false,
         backfill: {
-          state: "done",
+          state: 'done',
         },
       },
       {
-        name: "by_name",
+        name: 'by_name',
         fields: {
-          searchField: "name",
+          searchField: 'name',
           filterFields: [],
         },
         staged: false,
         backfill: {
-          state: "done",
+          state: 'done',
         },
       },
       {
-        name: "by_name_filtered_by_status",
+        name: 'by_name_filtered_by_status',
         fields: {
-          searchField: "name",
-          filterFields: ["status"],
+          searchField: 'name',
+          filterFields: ['status'],
         },
         staged: false,
         backfill: {
-          state: "done",
+          state: 'done',
         },
       },
     ],
-    tableName: "users",
+    tableName: 'users',
     activeSchema: {
       schemaValidation: true,
       tables: [
         {
-          tableName: "users",
+          tableName: 'users',
           indexes: [
             {
-              indexDescriptor: "by_status",
-              fields: ["status"],
+              indexDescriptor: 'by_status',
+              fields: ['status'],
             },
             {
-              indexDescriptor: "by_name_status",
-              fields: ["name", "status"],
+              indexDescriptor: 'by_name_status',
+              fields: ['name', 'status'],
             },
           ],
           searchIndexes: [
             {
-              indexDescriptor: "by_name",
-              searchField: "name",
+              indexDescriptor: 'by_name',
+              searchField: 'name',
               filterFields: [],
             },
             {
-              indexDescriptor: "by_name_filtered_by_status",
-              searchField: "name",
-              filterFields: ["status"],
+              indexDescriptor: 'by_name_filtered_by_status',
+              searchField: 'name',
+              filterFields: ['status'],
             },
           ],
           documentType: null,
         },
       ],
     },
-    getValidatorForField: () => ({ type: "string" }),
+    getValidatorForField: () => ({ type: 'string' }),
     onFiltersChange: fn(),
     applyFiltersWithHistory: fn(),
     setDraftFilters: fn(),
@@ -130,152 +130,152 @@ const meta: Meta<typeof IndexFilters> = {
       </DeploymentInfoContext.Provider>
     </ConvexProvider>
   ),
-  parameters: { a11y: { test: "todo" } },
-};
+  parameters: { a11y: { test: 'todo' } },
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
-export const SystemIndexByCreationTime: Story = {};
+export const SystemIndexByCreationTime: Story = {}
 
 export const SystemIndexById: Story = {
   args: {
     shownFilters: {
       clauses: [],
       index: {
-        name: "by_id",
+        name: 'by_id',
         clauses: [
           {
-            type: "indexEq",
+            type: 'indexEq',
             enabled: true,
-            value: "j57d6s1z8s9t2v3w4x5y6z7a8b9c0d1e",
+            value: 'j57d6s1z8s9t2v3w4x5y6z7a8b9c0d1e',
           },
         ],
       },
-      order: "asc",
+      order: 'asc',
     },
     defaultDocument: {
-      _id: "j57d6s1z8s9t2v3w4x5y6z7a8b9c0d1e",
+      _id: 'j57d6s1z8s9t2v3w4x5y6z7a8b9c0d1e',
       _creationTime: new Date().getTime(),
-      name: "Sample Document",
-      status: "active",
+      name: 'Sample Document',
+      status: 'active',
     },
   },
-};
+}
 
 export const DatabaseIndex: Story = {
   args: {
     shownFilters: {
       clauses: [],
       index: {
-        name: "by_name_status",
+        name: 'by_name_status',
         clauses: [
           {
-            type: "indexEq",
+            type: 'indexEq',
             enabled: true,
-            value: "John Doe",
+            value: 'John Doe',
           },
           {
-            type: "indexEq",
+            type: 'indexEq',
             enabled: true,
-            value: "active",
+            value: 'active',
           },
         ],
       },
-      order: "desc",
+      order: 'desc',
     },
     defaultDocument: {
-      _id: "123",
+      _id: '123',
       _creationTime: new Date().getTime(),
-      name: "John Doe",
-      status: "active",
+      name: 'John Doe',
+      status: 'active',
     },
   },
-};
+}
 
 export const DatabaseIndexPartialFilter: Story = {
   args: {
     shownFilters: {
       clauses: [],
       index: {
-        name: "by_name_status",
+        name: 'by_name_status',
         clauses: [
           {
-            type: "indexEq",
+            type: 'indexEq',
             enabled: true,
-            value: "John Doe",
+            value: 'John Doe',
           },
           {
-            type: "indexEq",
+            type: 'indexEq',
             enabled: false,
-            value: "",
+            value: '',
           },
         ],
       },
-      order: "asc",
+      order: 'asc',
     },
     defaultDocument: {
-      _id: "456",
+      _id: '456',
       _creationTime: new Date().getTime(),
-      name: "John Doe",
-      status: "pending",
+      name: 'John Doe',
+      status: 'pending',
     },
   },
-};
+}
 
 export const SearchIndexWithoutFilters: Story = {
   args: {
     shownFilters: {
       clauses: [],
       index: {
-        name: "by_name",
-        search: "Hello world",
+        name: 'by_name',
+        search: 'Hello world',
         clauses: [],
       } satisfies SearchIndexFilter,
-      order: "asc",
+      order: 'asc',
     },
   },
-};
+}
 
 export const SearchIndexWithFilters: Story = {
   args: {
     shownFilters: {
       clauses: [],
       index: {
-        name: "by_name_filtered_by_status",
-        search: "Hello world",
+        name: 'by_name_filtered_by_status',
+        search: 'Hello world',
         clauses: [
           {
-            field: "status",
-            value: "active",
+            field: 'status',
+            value: 'active',
             enabled: false,
           },
         ],
       } satisfies SearchIndexFilter,
-      order: "asc",
+      order: 'asc',
     },
   },
-};
+}
 
 export const WithError: Story = {
   args: {
     hasInvalidFilters: true,
     invalidFilters: {
-      "index/0": "Invalid value format",
+      'index/0': 'Invalid value format',
     },
     shownFilters: {
       clauses: [],
       index: {
-        name: "by_status",
+        name: 'by_status',
         clauses: [
           {
-            type: "indexEq",
+            type: 'indexEq',
             enabled: true,
-            value: "",
+            value: '',
           },
         ],
       },
-      order: "asc",
+      order: 'asc',
     },
   },
-};
+}

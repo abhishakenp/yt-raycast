@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * HealthcareInsurers — accepted-insurance logo strip for a medical-clinic page.
@@ -13,7 +13,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in major-insurer defaults.
  */
 export const HealthcareInsurers = defineComponent({
-  name: "HealthcareInsurers",
+  name: 'HealthcareInsurers',
   description:
     "Accepted-insurance logo strip for a medical-clinic page: a slim bordered band with a small uppercase caption centered above a responsive 2/3/6-column grid of insurer wordmarks rendered as muted, lightly-faded buttons that brighten on hover. Each routes through useNavigate. Use as a trust / social-proof strip under the hero of a doctors' office, primary-care practice, telehealth or urgent-care clinic to show accepted insurance plans.",
   props: z.object({
@@ -25,15 +25,15 @@ export const HealthcareInsurers = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const label = props.label ?? "Accepted insurance plans"
+    const label = props.label ?? 'Accepted insurance plans'
     const items = props.items?.length
       ? props.items
-      : ["Blue Shield", "Aetna", "Cigna", "UnitedHealth", "Kaiser", "Medicare"]
+      : ['Blue Shield', 'Aetna', 'Cigna', 'UnitedHealth', 'Kaiser', 'Medicare']
 
     return (
       <section
         className={cn(
-          "border-y border-border bg-background py-12",
+          'border-y border-border bg-background py-12',
           props.className,
         )}
         aria-label="Insurance partners"

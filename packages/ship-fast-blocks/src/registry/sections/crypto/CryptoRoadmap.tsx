@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CryptoRoadmap — vertical phased timeline for a crypto / DeFi development
@@ -12,9 +12,9 @@ import { cn } from "#/lib/utils.ts"
  * or infrastructure platforms.
  */
 export const CryptoRoadmap = defineComponent({
-  name: "CryptoRoadmap",
+  name: 'CryptoRoadmap',
   description:
-    "Vertical phased timeline for a crypto / DeFi development roadmap: centered heading + description, then a vertical timeline with colored status nodes (Completed/In Progress/Planned), connecting lines, status chips with quarter labels, bold titles, and descriptive paragraphs. Completed nodes show a check mark; others show the quarter prefix. Use as a product roadmap for protocols, chains, token projects, or infrastructure platforms.",
+    'Vertical phased timeline for a crypto / DeFi development roadmap: centered heading + description, then a vertical timeline with colored status nodes (Completed/In Progress/Planned), connecting lines, status chips with quarter labels, bold titles, and descriptive paragraphs. Completed nodes show a check mark; others show the quarter prefix. Use as a product roadmap for protocols, chains, token projects, or infrastructure platforms.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -24,7 +24,7 @@ export const CryptoRoadmap = defineComponent({
     items: z
       .array(
         z.object({
-          status: z.enum(["Completed", "In Progress", "Planned"]),
+          status: z.enum(['Completed', 'In Progress', 'Planned']),
           quarter: z.string(),
           title: z.string(),
           description: z.string(),
@@ -34,54 +34,54 @@ export const CryptoRoadmap = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Development Roadmap"
+    const heading = props.heading ?? 'Development Roadmap'
     const description =
       props.description ??
-      "Our phased approach to building the infrastructure layer for the next generation of DeFi."
+      'Our phased approach to building the infrastructure layer for the next generation of DeFi.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            status: "Completed" as const,
-            quarter: "Q1 2024",
-            title: "Mainnet Launch v1.0",
+            status: 'Completed' as const,
+            quarter: 'Q1 2024',
+            title: 'Mainnet Launch v1.0',
             description:
-              "Genesis block production began January 15, 2024. Initial validator set of 64 nodes with 100,000 TPS capacity. Bridge contracts deployed to Ethereum, Solana, and Arbitrum.",
+              'Genesis block production began January 15, 2024. Initial validator set of 64 nodes with 100,000 TPS capacity. Bridge contracts deployed to Ethereum, Solana, and Arbitrum.',
           },
           {
-            status: "Completed" as const,
-            quarter: "Q2 2024",
-            title: "NEX Token Launch",
+            status: 'Completed' as const,
+            quarter: 'Q2 2024',
+            title: 'NEX Token Launch',
             description:
-              "Public sale completed April 8, 2024. $42M raised from 12,400 participants. Token listed on Binance, Coinbase, and Kraken. Staking rewards activated with 12% APY.",
+              'Public sale completed April 8, 2024. $42M raised from 12,400 participants. Token listed on Binance, Coinbase, and Kraken. Staking rewards activated with 12% APY.',
           },
           {
-            status: "Completed" as const,
-            quarter: "Q3 2024",
-            title: "Institutional Custody Partnership",
+            status: 'Completed' as const,
+            quarter: 'Q3 2024',
+            title: 'Institutional Custody Partnership',
             description:
-              "Strategic partnership with Fireblocks and Anchorage Digital. $890M in institutional assets onboarded. SOC 2 Type II certification achieved.",
+              'Strategic partnership with Fireblocks and Anchorage Digital. $890M in institutional assets onboarded. SOC 2 Type II certification achieved.',
           },
           {
-            status: "In Progress" as const,
-            quarter: "Q4 2024",
-            title: "ZK-Rollup Integration",
+            status: 'In Progress' as const,
+            quarter: 'Q4 2024',
+            title: 'ZK-Rollup Integration',
             description:
-              "Zero-knowledge proof verification for cross-chain transactions. Testing with 47 protocols. Expected 10x reduction in bridge confirmation times.",
+              'Zero-knowledge proof verification for cross-chain transactions. Testing with 47 protocols. Expected 10x reduction in bridge confirmation times.',
           },
           {
-            status: "Planned" as const,
-            quarter: "Q1 2025",
-            title: "Enterprise SDK Release",
+            status: 'Planned' as const,
+            quarter: 'Q1 2025',
+            title: 'Enterprise SDK Release',
             description:
-              "Complete TypeScript and Python SDKs with white-label wallet components. Fiat on/off-ramp integrations with Stripe and Circle.",
+              'Complete TypeScript and Python SDKs with white-label wallet components. Fiat on/off-ramp integrations with Stripe and Circle.',
           },
           {
-            status: "Planned" as const,
-            quarter: "Q2 2025",
-            title: "Validator Expansion",
+            status: 'Planned' as const,
+            quarter: 'Q2 2025',
+            title: 'Validator Expansion',
             description:
-              "Validator set expansion to 500 nodes with permissionless entry. Expected throughput increase to 100,000 TPS.",
+              'Validator set expansion to 500 nodes with permissionless entry. Expected throughput increase to 100,000 TPS.',
           },
         ]
 
@@ -100,31 +100,31 @@ export const CryptoRoadmap = defineComponent({
       </svg>
     )
 
-    const statusStyle = (status: "Completed" | "In Progress" | "Planned") => {
-      if (status === "Completed")
+    const statusStyle = (status: 'Completed' | 'In Progress' | 'Planned') => {
+      if (status === 'Completed')
         return {
-          node: "bg-primary/15 text-primary",
-          line: "bg-primary/30",
-          chip: "text-primary bg-primary/10",
+          node: 'bg-primary/15 text-primary',
+          line: 'bg-primary/30',
+          chip: 'text-primary bg-primary/10',
           showCheck: true,
         }
-      if (status === "In Progress")
+      if (status === 'In Progress')
         return {
-          node: "bg-accent text-accent-foreground",
-          line: "bg-border",
-          chip: "text-accent-foreground bg-accent",
+          node: 'bg-accent text-accent-foreground',
+          line: 'bg-border',
+          chip: 'text-accent-foreground bg-accent',
           showCheck: false,
         }
       return {
-        node: "bg-muted text-muted-foreground",
-        line: "bg-border",
-        chip: "text-muted-foreground bg-muted",
+        node: 'bg-muted text-muted-foreground',
+        line: 'bg-border',
+        chip: 'text-muted-foreground bg-muted',
         showCheck: false,
       }
     }
 
     return (
-      <section className={cn("py-20 lg:py-32", props.className)}>
+      <section className={cn('py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -141,7 +141,7 @@ export const CryptoRoadmap = defineComponent({
                   <div className="flex flex-col items-center">
                     <div
                       className={cn(
-                        "grid size-10 place-items-center rounded-full",
+                        'grid size-10 place-items-center rounded-full',
                         s.node,
                       )}
                     >
@@ -149,19 +149,19 @@ export const CryptoRoadmap = defineComponent({
                         <Check className="size-5" />
                       ) : (
                         <span className="text-sm font-medium">
-                          {item.quarter.split(" ")[0]}
+                          {item.quarter.split(' ')[0]}
                         </span>
                       )}
                     </div>
                     {!isLast && (
-                      <div className={cn("mt-2 h-full w-px", s.line)} />
+                      <div className={cn('mt-2 h-full w-px', s.line)} />
                     )}
                   </div>
-                  <div className={cn("flex-1", !isLast && "pb-8")}>
+                  <div className={cn('flex-1', !isLast && 'pb-8')}>
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       <span
                         className={cn(
-                          "rounded px-2 py-1 text-sm font-medium",
+                          'rounded px-2 py-1 text-sm font-medium',
                           s.chip,
                         )}
                       >
@@ -171,9 +171,7 @@ export const CryptoRoadmap = defineComponent({
                         {item.quarter}
                       </span>
                     </div>
-                    <h3 className="mb-2 text-lg font-semibold">
-                      {item.title}
-                    </h3>
+                    <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
                     <p className="text-sm leading-relaxed text-muted-foreground">
                       {item.description}
                     </p>

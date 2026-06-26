@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /** Inline compass brand mark — adventurous, currentColor → theme token. */
 const CompassMark = ({ className }: { className?: string }) => (
@@ -33,7 +33,7 @@ const CompassMark = ({ className }: { className?: string }) => (
  * defaults.
  */
 export const TourExperiencesNavbar = defineComponent({
-  name: "TourExperiencesNavbar",
+  name: 'TourExperiencesNavbar',
   description:
     "Sticky site header for an adventure / guided-tour brand. Composes the shared SiteNav composite — inline compass brand mark + name, desktop nav links, phone, a pill 'Book a Tour' CTA, and a real mobile drawer — with vivid travel-ready defaults. Every nav label and the CTA route through the shared navigation so labels drive page-switching. Use as the top navigation for tour operators, expedition companies, day-trip outfitters, and travel-experience landing pages.",
   props: z.object({
@@ -54,16 +54,16 @@ export const TourExperiencesNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Tours", "Destinations", "Pricing", "Reviews", "Book a Tour"]
+      : ['Tours', 'Destinations', 'Pricing', 'Reviews', 'Book a Tour']
     return (
       <SiteNav
-        brand={props.brand ?? "Wanderwild Tours"}
+        brand={props.brand ?? 'Wanderwild Tours'}
         brandMark={<CompassMark className="size-8 text-primary" />}
         nav={nav}
-        phone={props.phone ?? "(415) 555-0188"}
+        phone={props.phone ?? '(415) 555-0188'}
         cta={{
-          label: props.ctaLabel ?? "Book a Tour",
-          target: props.ctaTarget ?? "Book a Tour",
+          label: props.ctaLabel ?? 'Book a Tour',
+          target: props.ctaTarget ?? 'Book a Tour',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

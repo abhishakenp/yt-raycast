@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MobileAppNavbar — a fixed, backdrop-blurred top navigation bar for a clean,
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "DailyFlow" defaults.
  */
 export const MobileAppNavbar = defineComponent({
-  name: "MobileAppNavbar",
+  name: 'MobileAppNavbar',
   description:
     "Fixed, backdrop-blurred top navigation bar for a clean, minimalist mobile-app / consumer-product marketing site: a bordered-bottom header pinned to the top with a check-in-circle logo mark + app name on the left, horizontal nav links in the center, and a primary pill CTA button (e.g. 'Download App') plus a mobile hamburger on the right. The brand button, links and CTA route through useNavigate for page-switching. Use as the sticky site header for a habit tracker, fitness / wellness / meditation app, productivity or to-do app, or any App-Store-distributed consumer product landing page.",
   props: z.object({
@@ -31,18 +31,18 @@ export const MobileAppNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "DailyFlow"
+    const brand = props.brand ?? 'DailyFlow'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "How It Works", "Pricing", "Reviews"]
-    const ctaLabel = props.ctaLabel ?? "Download App"
-    const homeTarget = props.homeTarget ?? "Features"
+      : ['Features', 'How It Works', 'Pricing', 'Reviews']
+    const ctaLabel = props.ctaLabel ?? 'Download App'
+    const homeTarget = props.homeTarget ?? 'Features'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 32 32"
         fill="none"
-        className={cn("text-foreground", className)}
+        className={cn('text-foreground', className)}
         aria-hidden="true"
       >
         <circle cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="2" />
@@ -59,7 +59,7 @@ export const MobileAppNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >
@@ -74,7 +74,9 @@ export const MobileAppNavbar = defineComponent({
               className="flex items-center gap-2"
             >
               <LogoMark className="size-8" />
-              <span className="text-xl font-semibold tracking-tight">{brand}</span>
+              <span className="text-xl font-semibold tracking-tight">
+                {brand}
+              </span>
             </button>
             <div className="hidden items-center gap-8 md:flex">
               {nav.map((label) => (
@@ -102,7 +104,16 @@ export const MobileAppNavbar = defineComponent({
                 onClick={() => go(homeTarget)}
                 className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-6"
+                  aria-hidden="true"
+                >
                   <path d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>

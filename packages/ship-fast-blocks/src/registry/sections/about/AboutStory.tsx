@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * AboutStory — "our story" split band for a modern company / ABOUT page. A
@@ -16,7 +16,7 @@ import { Image } from "#/lib/img.tsx"
  * "Kinetic Labs" defaults.
  */
 export const AboutStory = defineComponent({
-  name: "AboutStory",
+  name: 'AboutStory',
   description:
     "'Our story' split band for a modern company / ABOUT page: a left-aligned eyebrow pill + heading + lead above a two-column layout with an alt-driven 4:3 photo in a soft-shadowed token card and a floating 'founded' badge pill (calendar icon) on the left, and one or more narrative paragraphs plus an indigo-accented left-bordered pull-quote on the right. Tokens-only, no links. Use for an about page's origin story / company history / mission narrative paired with a team or office photo.",
   props: z.object({
@@ -37,24 +37,23 @@ export const AboutStory = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Our Story"
+    const eyebrow = props.eyebrow ?? 'Our Story'
     const heading =
-      props.heading ?? "From a garage experiment to a global studio"
+      props.heading ?? 'From a garage experiment to a global studio'
     const description =
       props.description ??
-      "What started as late-night prototypes turned into a team obsessed with one question: how do we make software feel effortless?"
+      'What started as late-night prototypes turned into a team obsessed with one question: how do we make software feel effortless?'
     const imageAlt =
       props.imageAlt ??
-      "Team collaborating at a long table in a bright modern office"
-    const badge = props.badge ?? "Founded in 2016"
+      'Team collaborating at a long table in a bright modern office'
+    const badge = props.badge ?? 'Founded in 2016'
     const paragraphs = props.paragraphs?.length
       ? props.paragraphs
       : [
           "In 2016, we were three designers and engineers shipping side projects out of a small garage in Portland. We didn't have a playbook—just a shared belief that great products are built at the intersection of deep user empathy and technical excellence.",
           "Today, Kinetic Labs is a distributed team of strategists, designers, and engineers across 12 time zones. We've shipped products used by millions, but our process remains the same: start with people, iterate with data, and polish until it feels inevitable.",
         ]
-    const quote =
-      props.quote ?? "We don't chase trends. We chase outcomes."
+    const quote = props.quote ?? "We don't chase trends. We chase outcomes."
 
     // Reusable eyebrow pill — indigo soft chip with optional icon.
     const Eyebrow = ({
@@ -87,7 +86,7 @@ export const AboutStory = defineComponent({
     )
 
     return (
-      <section className={cn("py-16 sm:py-20 lg:py-24", props.className)}>
+      <section className={cn('py-16 sm:py-20 lg:py-24', props.className)}>
         <div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
           <div className="mb-10 max-w-2xl">
             <Eyebrow
@@ -131,8 +130,8 @@ export const AboutStory = defineComponent({
                 <p
                   key={i}
                   className={cn(
-                    "leading-relaxed text-muted-foreground",
-                    i > 0 && "mt-4",
+                    'leading-relaxed text-muted-foreground',
+                    i > 0 && 'mt-4',
                   )}
                 >
                   {para}

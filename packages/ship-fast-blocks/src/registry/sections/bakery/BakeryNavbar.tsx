@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * BakeryNavbar — sticky, blurred top navigation bar for an artisan-bakery /
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * Renders fully with no props via baked-in "Flour & Stone" defaults.
  */
 export const BakeryNavbar = defineComponent({
-  name: "BakeryNavbar",
+  name: 'BakeryNavbar',
   description:
     "Sticky, backdrop-blurred top navigation bar for an artisan-bakery / craft-bread shop site: a border-bottomed header pinned to the top with the bakery name as a wordmark on the left, horizontal nav links in the center (desktop), and an 'Order Online' pill CTA on the right plus a hamburger menu button on mobile. Warm, editorial, light aesthetic on neutral card surfaces; links and CTA route through useNavigate for page-switching. Use as the sticky site header for bakeries, patisseries, sourdough/artisan-bread shops, cafes, pastry kitchens, dessert and cake studios, or any local food maker.",
   props: z.object({
@@ -31,17 +31,17 @@ export const BakeryNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Flour & Stone"
+    const brand = props.brand ?? 'Flour & Stone'
     const nav = props.nav?.length
       ? props.nav
-      : ["Menu", "Our Story", "Gallery", "Order", "Visit"]
-    const orderCta = props.orderCta ?? "Order Online"
-    const orderTarget = props.orderTarget ?? "Order"
+      : ['Menu', 'Our Story', 'Gallery', 'Order', 'Visit']
+    const orderCta = props.orderCta ?? 'Order Online'
+    const orderTarget = props.orderTarget ?? 'Order'
 
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm',
           props.className,
         )}
       >

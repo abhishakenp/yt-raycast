@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * FilmDirectorLogos — a minimal "trusted by" brand-logo strip for a film
@@ -11,7 +11,7 @@ import { cn } from "#/lib/utils.ts"
  * cinematographers, DPs, or production houses.
  */
 export const FilmDirectorLogos = defineComponent({
-  name: "FilmDirectorLogos",
+  name: 'FilmDirectorLogos',
   description:
     "Minimal 'trusted by' brand-logo strip for a film director / cinematographer portfolio: a bordered (top + bottom) band with a small centered muted caption above a responsive 2/4/6-column grid of slightly dimmed wordmark-style brand names rendered as bold tracked text. Use as a social-proof / client-roster band beneath the hero for filmmakers, directors, cinematographers, DPs, or production houses.",
   props: z.object({
@@ -20,15 +20,14 @@ export const FilmDirectorLogos = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const logosLabel =
-      props.label ?? "Trusted by leading brands and agencies"
+    const logosLabel = props.label ?? 'Trusted by leading brands and agencies'
     const logoBrands = props.brands?.length
       ? props.brands
-      : ["NIKE", "APPLE", "SONY", "NETFLIX", "SPOTIFY", "ADOBE"]
+      : ['NIKE', 'APPLE', 'SONY', 'NETFLIX', 'SPOTIFY', 'ADOBE']
 
     return (
       <section
-        className={cn("border-y border-border py-16 md:py-24", props.className)}
+        className={cn('border-y border-border py-16 md:py-24', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="mb-12 text-center text-sm text-muted-foreground">

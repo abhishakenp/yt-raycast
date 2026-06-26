@@ -183,7 +183,8 @@ function inferFrenchFromPartial(partial) {
   const words = lower.match(/\b[a-zàâçéèêëîïôûùüÿœæ]{2,}\b/g) || []
   if (words.length < 4) return false
   const accented = /[àâçéèêëîïôûùüÿœæ]/i.test(lower)
-  const hits = words.filter((word) => FRENCH_MARKERS.has(word)).length + (accented ? 2 : 0)
+  const hits =
+    words.filter((word) => FRENCH_MARKERS.has(word)).length + (accented ? 2 : 0)
   return hits >= 3 && hits / words.length >= 0.16
 }
 
@@ -248,7 +249,8 @@ function joinPartialTail(partial, tail) {
   const prefix = String(partial ?? '').trim()
   const suffix = String(tail ?? '').trim()
   if (!prefix || !suffix) return prefix
-  if (/\s$/.test(prefix) || /^[,.;:!?।،۔]/.test(suffix)) return `${prefix}${suffix}`
+  if (/\s$/.test(prefix) || /^[,.;:!?।،۔]/.test(suffix))
+    return `${prefix}${suffix}`
   return `${prefix} ${suffix}`
 }
 
@@ -276,7 +278,8 @@ export function getFallbackPromptSuggestions(partial, language) {
 
 function languageInstructionFor(partial, language) {
   const inferred = inferLanguageFromPartial(partial, language)
-  if (!inferred || inferred === 'en') return 'Match the user language and script.'
+  if (!inferred || inferred === 'en')
+    return 'Match the user language and script.'
   const label = LANGUAGE_NAMES[inferred] || inferred
   if (inferred === 'hinglish') {
     return 'Continue in mixed Hindi-English/Hinglish when the partial uses that style, preserving code-switching and the exact prefix.'
@@ -307,7 +310,8 @@ export async function getPartialPromptSuggestions(partial, options = {}) {
     maxTokens: 700,
   })
 
-  if (r.error || !r.content) return getFallbackPromptSuggestions(p, options.language)
+  if (r.error || !r.content)
+    return getFallbackPromptSuggestions(p, options.language)
 
   const cleaned = trimInlineAiText(r.content)
   const data = extractJsonObject(cleaned)
@@ -329,5 +333,7 @@ export async function getPartialPromptSuggestions(partial, options = {}) {
     out.push(s)
     if (out.length >= OUT_MAX) break
   }
-  return out.length > 0 ? out : getFallbackPromptSuggestions(p, options.language)
+  return out.length > 0
+    ? out
+    : getFallbackPromptSuggestions(p, options.language)
 }

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const CompassMark = ({ className }: { className?: string }) => (
   <svg
@@ -19,7 +19,7 @@ const CompassMark = ({ className }: { className?: string }) => (
 )
 
 export const TravelAgencyNavbar = defineComponent({
-  name: "TravelAgencyNavbar",
+  name: 'TravelAgencyNavbar',
   description:
     "Premium, wanderlust-themed navigation header for the Travel Agency page family. Composes the shared SiteNav kit composite with a travel-forward brand, compass brandmark, destination-led links, a contact phone, and a prominent 'Plan a Trip' call to action. Use as the first band of a travel agency page or whenever a generated travel site needs a polished, token-styled top navigation without hand-rolled markup.",
   props: z.object({
@@ -34,16 +34,16 @@ export const TravelAgencyNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Destinations", "Flights", "Hotels", "Packages", "Plan a Trip"]
+      : ['Destinations', 'Flights', 'Hotels', 'Packages', 'Plan a Trip']
     return (
       <SiteNav
-        brand={props.brand ?? "Voyage & Co"}
+        brand={props.brand ?? 'Voyage & Co'}
         brandMark={<CompassMark className="size-8 text-primary" />}
         nav={nav}
-        phone={props.phone ?? "+1 (800) 555-0182"}
+        phone={props.phone ?? '+1 (800) 555-0182'}
         cta={{
-          label: props.ctaLabel ?? "Plan a Trip",
-          target: props.ctaTarget ?? "Plan a Trip",
+          label: props.ctaLabel ?? 'Plan a Trip',
+          target: props.ctaTarget ?? 'Plan a Trip',
         }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}

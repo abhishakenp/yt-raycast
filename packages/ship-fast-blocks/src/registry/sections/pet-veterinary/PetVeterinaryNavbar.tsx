@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const brandMark = (
   <span
@@ -23,7 +23,7 @@ const brandMark = (
 )
 
 export const PetVeterinaryNavbar = defineComponent({
-  name: "PetVeterinaryNavbar",
+  name: 'PetVeterinaryNavbar',
   description:
     "Warm, caring navigation header for a veterinary clinic / pet-healthcare site, composing the shared SiteNav kit composite. Renders a friendly paw-glyph brand mark in a rounded primary tile, the clinic wordmark, a desktop link row (Services, Pricing, Our Team, Reviews, Contact), an optional click-to-call phone number, and a filled primary 'Book Appointment' CTA — with a real mobile drawer on small screens. All links and the CTA route via SiteNav's useNavigate wiring. Use it as the sticky site header for veterinary clinics, animal hospitals, pet healthcare practices, vet offices, or emergency animal care.",
   props: z.object({
@@ -42,12 +42,12 @@ export const PetVeterinaryNavbar = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Paws & Care"
+    const brand = props.brand ?? 'Paws & Care'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Pricing", "Our Team", "Reviews", "Contact"]
-    const cta = props.cta ?? "Book Appointment"
-    const ctaTarget = props.ctaTarget ?? "Contact"
+      : ['Services', 'Pricing', 'Our Team', 'Reviews', 'Contact']
+    const cta = props.cta ?? 'Book Appointment'
+    const ctaTarget = props.ctaTarget ?? 'Contact'
 
     return (
       <SiteNav
@@ -55,8 +55,8 @@ export const PetVeterinaryNavbar = defineComponent({
         brandMark={brandMark}
         brandClassName="font-semibold"
         nav={nav}
-        phone={props.phone ?? "(555) 123-4567"}
-        cta={{ label: cta, target: ctaTarget, variant: "primary" }}
+        phone={props.phone ?? '(555) 123-4567'}
+        cta={{ label: cta, target: ctaTarget, variant: 'primary' }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}
       />

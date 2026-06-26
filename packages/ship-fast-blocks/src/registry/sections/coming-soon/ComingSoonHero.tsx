@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * ComingSoonHero — centered hero band for a "launching soon" / waitlist pre-launch
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * baked-in "Nexus" defaults.
  */
 export const ComingSoonHero = defineComponent({
-  name: "ComingSoonHero",
+  name: 'ComingSoonHero',
   description:
     "Centered hero band for a 'launching soon' / waitlist pre-launch landing page: launch-date eyebrow label, large multi-line headline with one phrase in normal weight for emphasis, supporting paragraph, four-cell countdown timer (Days/Hours/Minutes/Seconds), and an inline email-capture form with primary submit button and disclaimer. Form submit routes through useNavigate. Use as the opening hero for SaaS waitlists, app pre-launch pages, beta sign-ups, or countdown / 'notify me' landing pages.",
   props: z.object({
@@ -41,35 +41,35 @@ export const ComingSoonHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Launching March 15, 2025"
-    const headingTop = props.headingTop ?? "The future of"
-    const headingEmphasis = props.headingEmphasis ?? "collaborative work"
+    const eyebrow = props.eyebrow ?? 'Launching March 15, 2025'
+    const headingTop = props.headingTop ?? 'The future of'
+    const headingEmphasis = props.headingEmphasis ?? 'collaborative work'
     const subheading =
       props.subheading ??
       "Nexus brings your team's documents, conversations, and workflows into one beautiful, unified space. Join 12,000+ teams on the waitlist."
-    const emailPlaceholder = props.emailPlaceholder ?? "Enter your email"
-    const submit = props.submit ?? "Join Waitlist"
+    const emailPlaceholder = props.emailPlaceholder ?? 'Enter your email'
+    const submit = props.submit ?? 'Join Waitlist'
     const disclaimer =
       props.disclaimer ??
-      "Early access members receive 50% off for 6 months. No spam, unsubscribe anytime."
+      'Early access members receive 50% off for 6 months. No spam, unsubscribe anytime.'
     const countdown = props.countdown?.length
       ? props.countdown
       : [
-          { value: "00", label: "Days" },
-          { value: "00", label: "Hours" },
-          { value: "00", label: "Minutes" },
-          { value: "00", label: "Seconds" },
+          { value: '00', label: 'Days' },
+          { value: '00', label: 'Hours' },
+          { value: '00', label: 'Minutes' },
+          { value: '00', label: 'Seconds' },
         ]
 
     const inputCls =
-      "flex-1 rounded-lg border border-input bg-background px-5 py-3.5 text-sm text-foreground placeholder-muted-foreground transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+      'flex-1 rounded-lg border border-input bg-background px-5 py-3.5 text-sm text-foreground placeholder-muted-foreground transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring'
     const submitCls =
-      "whitespace-nowrap rounded-lg bg-primary px-8 py-3.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+      'whitespace-nowrap rounded-lg bg-primary px-8 py-3.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
 
     return (
       <header
         className={cn(
-          "w-full px-4 pb-24 pt-16 sm:px-6 sm:pb-32 sm:pt-24 lg:px-8 lg:pb-40 lg:pt-32 xl:px-12",
+          'w-full px-4 pb-24 pt-16 sm:px-6 sm:pb-32 sm:pt-24 lg:px-8 lg:pb-40 lg:pt-32 xl:px-12',
           props.className,
         )}
       >
@@ -79,7 +79,7 @@ export const ComingSoonHero = defineComponent({
           </p>
           <h1 className="mb-8 text-4xl font-light leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl xl:text-7xl">
             {headingTop}
-            <br className="hidden sm:block" />{" "}
+            <br className="hidden sm:block" />{' '}
             <span className="font-normal">{headingEmphasis}</span>
           </h1>
           <p className="mx-auto mb-12 max-w-2xl text-lg font-light leading-relaxed text-muted-foreground sm:text-xl">

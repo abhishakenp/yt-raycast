@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * BootcampMentors — world-class mentors gallery for a coding bootcamp / career-
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * cohort-based education programs.
  */
 export const BootcampMentors = defineComponent({
-  name: "BootcampMentors",
+  name: 'BootcampMentors',
   description:
-    "World-class mentors gallery for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive grid of clickable headshot cards. Each card features an alt-driven square portrait with a bottom company overlay, plus name and role beneath. Below the cards sits a 3-column row of classroom photos. Cards route through useNavigate. Use to showcase instructor credibility for bootcamps, academies, or cohort-based education programs.",
+    'World-class mentors gallery for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive grid of clickable headshot cards. Each card features an alt-driven square portrait with a bottom company overlay, plus name and role beneath. Below the cards sits a 3-column row of classroom photos. Cards route through useNavigate. Use to showcase instructor credibility for bootcamps, academies, or cohort-based education programs.',
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -40,9 +40,9 @@ export const BootcampMentors = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const mentorsEyebrow = props.eyebrow ?? "World-Class Mentors"
+    const mentorsEyebrow = props.eyebrow ?? 'World-Class Mentors'
     const mentorsHeading =
-      props.heading ?? "Learn from engineers at top tech companies"
+      props.heading ?? 'Learn from engineers at top tech companies'
     const mentorsDesc =
       props.description ??
       "Daily 1:1 mentorship and code reviews from senior developers who've built systems serving millions."
@@ -50,38 +50,36 @@ export const BootcampMentors = defineComponent({
       ? props.items
       : [
           {
-            name: "Sarah Chen",
-            role: "Senior Staff Engineer • 8 years experience",
-            company: "Google",
+            name: 'Sarah Chen',
+            role: 'Senior Staff Engineer • 8 years experience',
+            company: 'Google',
           },
           {
-            name: "Marcus Johnson",
-            role: "Principal Engineer • 12 years experience",
-            company: "Stripe",
+            name: 'Marcus Johnson',
+            role: 'Principal Engineer • 12 years experience',
+            company: 'Stripe',
           },
           {
-            name: "Priya Sharma",
-            role: "Engineering Manager • 10 years experience",
-            company: "Netflix",
+            name: 'Priya Sharma',
+            role: 'Engineering Manager • 10 years experience',
+            company: 'Netflix',
           },
           {
-            name: "David Kim",
-            role: "Tech Lead • 9 years experience",
-            company: "Airbnb",
+            name: 'David Kim',
+            role: 'Tech Lead • 9 years experience',
+            company: 'Airbnb',
           },
         ]
     const mentorPhotos = props.photos?.length
       ? props.photos
       : [
-          "coding bootcamp classroom with students learning on laptops",
-          "students collaborating on a group programming project",
-          "modern tech workspace with developers working at standing desks",
+          'coding bootcamp classroom with students learning on laptops',
+          'students collaborating on a group programming project',
+          'modern tech workspace with developers working at standing desks',
         ]
 
     return (
-      <section
-        className={cn("bg-background py-20 lg:py-32", props.className)}
-      >
+      <section className={cn('bg-background py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
             <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">

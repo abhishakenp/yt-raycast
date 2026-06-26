@@ -1,20 +1,20 @@
-import { Value } from "convex/values";
+import { Value } from 'convex/values'
 
-import { DetailPanel } from "@common/elements/DetailPanel";
-import { ReadonlyCode } from "@common/elements/ReadonlyCode";
-import { stringifyValue } from "@common/lib/stringifyValue";
+import { DetailPanel } from '@common/elements/DetailPanel'
+import { ReadonlyCode } from '@common/elements/ReadonlyCode'
+import { stringifyValue } from '@common/lib/stringifyValue'
 
 export function DataDetail({
   value,
   header,
   onClose,
 }: {
-  value: Value;
-  header: React.ReactNode;
-  onClose: () => void;
+  value: Value
+  header: React.ReactNode
+  onClose: () => void
 }) {
   // Only stringify non-string values.
-  const content = stringifyValue(value, true);
+  const content = stringifyValue(value, true)
   return (
     <DetailPanel
       onClose={onClose}
@@ -25,5 +25,5 @@ export function DataDetail({
         </div>
       }
     />
-  );
+  )
 }

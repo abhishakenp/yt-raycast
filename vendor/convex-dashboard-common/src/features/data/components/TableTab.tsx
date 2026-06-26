@@ -1,11 +1,11 @@
-import { useRef } from "react";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import omit from "lodash/omit";
-import { sidebarLinkClassNames } from "@common/elements/Sidebar";
-import { Tooltip } from "@ui/Tooltip";
-import { useIsOverflowing } from "@common/lib/useIsOverflowing";
-import { cn } from "@ui/cn";
+import { useRef } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import omit from 'lodash/omit'
+import { sidebarLinkClassNames } from '@common/elements/Sidebar'
+import { Tooltip } from '@ui/Tooltip'
+import { useIsOverflowing } from '@common/lib/useIsOverflowing'
+import { cn } from '@ui/cn'
 
 export function TableTab({
   selectedTable,
@@ -13,14 +13,14 @@ export function TableTab({
   onSelectTable,
   isMissingFromSchema,
 }: {
-  selectedTable: string | null;
-  table: string;
-  onSelectTable?: () => void;
-  isMissingFromSchema?: boolean;
+  selectedTable: string | null
+  table: string
+  onSelectTable?: () => void
+  isMissingFromSchema?: boolean
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isOverflowing = useIsOverflowing(ref);
-  const { pathname, query } = useRouter();
+  const ref = useRef<HTMLDivElement>(null)
+  const isOverflowing = useIsOverflowing(ref)
+  const { pathname, query } = useRouter()
 
   return (
     <Tooltip
@@ -39,7 +39,7 @@ export function TableTab({
       <div className="relative">
         <Tooltip
           tip={
-            isMissingFromSchema && "This table is not defined in your schema."
+            isMissingFromSchema && 'This table is not defined in your schema.'
           }
           className="flex w-full items-start gap-0.5"
           side="right"
@@ -49,7 +49,7 @@ export function TableTab({
             href={{
               pathname,
               query: {
-                ...omit(query, "filters"),
+                ...omit(query, 'filters'),
                 table,
               },
             }}
@@ -59,7 +59,7 @@ export function TableTab({
                 isActive: selectedTable === table,
                 small: true,
               }),
-              "py-1",
+              'py-1',
             )}
             onClick={() => onSelectTable?.()}
           >
@@ -75,5 +75,5 @@ export function TableTab({
         </Tooltip>
       </div>
     </Tooltip>
-  );
+  )
 }

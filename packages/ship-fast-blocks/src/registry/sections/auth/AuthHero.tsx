@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * AuthHero — bespoke two-column developer hero for Authly, an authentication-as-a-service
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * APIs, login SDKs, or any developer-first SaaS. Renders fully with no props.
  */
 export const AuthHero = defineComponent({
-  name: "AuthHero",
+  name: 'AuthHero',
   description:
     "Bespoke two-column developer hero for a developer-auth product (Authly, an authentication-as-a-service like Clerk / Auth0). Left column: an uppercase eyebrow pill, a large sharp headline 'Authentication for developers', a supporting paragraph, dual CTAs (filled 'Start Building' routing to sign-up + outlined 'Docs'), and a small trust line. Right column: a presentational faux-editor preview card with a window dot-bar and token-styled, font-mono SDK code lines. CTAs route through useNavigate; the preview is purely decorative. Use as the opening hero for auth platforms, identity APIs, login SDKs, or developer-first SaaS pages.",
   props: z.object({
@@ -41,32 +41,33 @@ export const AuthHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Auth-as-a-service"
-    const heading = props.heading ?? "Authentication for developers"
+    const eyebrow = props.eyebrow ?? 'Auth-as-a-service'
+    const heading = props.heading ?? 'Authentication for developers'
     const subheading =
       props.subheading ??
-      "Drop in secure sign-in, SSO, MFA, and user management with a few lines of code. Authly handles sessions, tokens, and compliance so you can ship features instead of building auth."
-    const primaryCta = props.primaryCta ?? "Start Building"
-    const primaryTarget = props.primaryTarget ?? "Sign Up"
-    const secondaryCta = props.secondaryCta ?? "Docs"
-    const secondaryTarget = props.secondaryTarget ?? "Docs"
+      'Drop in secure sign-in, SSO, MFA, and user management with a few lines of code. Authly handles sessions, tokens, and compliance so you can ship features instead of building auth.'
+    const primaryCta = props.primaryCta ?? 'Start Building'
+    const primaryTarget = props.primaryTarget ?? 'Sign Up'
+    const secondaryCta = props.secondaryCta ?? 'Docs'
+    const secondaryTarget = props.secondaryTarget ?? 'Docs'
     const trustLine =
-      props.trustLine ?? "Free up to 10,000 monthly active users · No credit card required"
+      props.trustLine ??
+      'Free up to 10,000 monthly active users · No credit card required'
     const codeLines = props.codeLines?.length
       ? props.codeLines
       : [
           'import { Auth } from "@authly/sdk"',
-          "",
-          "const auth = new Auth({",
+          '',
+          'const auth = new Auth({',
           '  apiKey: process.env.AUTHLY_KEY,',
-          "})",
-          "",
-          "// protect any route",
-          "export const session = await auth.verify(req)",
+          '})',
+          '',
+          '// protect any route',
+          'export const session = await auth.verify(req)',
         ]
 
     return (
-      <section className={cn("bg-background", props.className)}>
+      <section className={cn('bg-background', props.className)}>
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 py-20 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-28">
           <div className="flex flex-col">
             <span className="inline-flex w-fit items-center rounded-full border border-border bg-primary/10 px-4 py-1.5 text-xs font-medium tracking-[0.18em] text-accent uppercase">
@@ -104,9 +105,18 @@ export const AuthHero = defineComponent({
           <div className="relative">
             <div className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
               <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-3">
-                <span aria-hidden="true" className="size-3 rounded-full bg-border" />
-                <span aria-hidden="true" className="size-3 rounded-full bg-border" />
-                <span aria-hidden="true" className="size-3 rounded-full bg-border" />
+                <span
+                  aria-hidden="true"
+                  className="size-3 rounded-full bg-border"
+                />
+                <span
+                  aria-hidden="true"
+                  className="size-3 rounded-full bg-border"
+                />
+                <span
+                  aria-hidden="true"
+                  className="size-3 rounded-full bg-border"
+                />
                 <span className="ml-3 font-mono text-xs text-muted-foreground">
                   auth.ts
                 </span>
@@ -118,9 +128,9 @@ export const AuthHero = defineComponent({
                       aria-hidden="true"
                       className="mr-4 select-none text-muted-foreground"
                     >
-                      {String(i + 1).padStart(2, " ")}
+                      {String(i + 1).padStart(2, ' ')}
                     </span>
-                    <span>{line || " "}</span>
+                    <span>{line || ' '}</span>
                   </div>
                 ))}
               </pre>

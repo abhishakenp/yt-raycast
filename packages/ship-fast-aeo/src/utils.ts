@@ -1,10 +1,16 @@
 export function uniqueStrings(values: string[] = []): string[] {
-  return [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))]
+  return [
+    ...new Set(
+      values.map((value) => String(value || '').trim()).filter(Boolean),
+    ),
+  ]
 }
 
 export function cleanObject<T>(value: T): T | undefined {
   if (Array.isArray(value)) {
-    const cleaned = value.map(cleanObject).filter((entry) => entry !== undefined)
+    const cleaned = value
+      .map(cleanObject)
+      .filter((entry) => entry !== undefined)
     return (cleaned.length ? cleaned : undefined) as T | undefined
   }
 
@@ -12,7 +18,9 @@ export function cleanObject<T>(value: T): T | undefined {
     const entries = Object.entries(value as Record<string, unknown>)
       .map(([key, entry]) => [key, cleanObject(entry)])
       .filter(([, entry]) => entry !== undefined)
-    return (entries.length ? Object.fromEntries(entries) : undefined) as T | undefined
+    return (entries.length ? Object.fromEntries(entries) : undefined) as
+      | T
+      | undefined
   }
 
   if (value === '' || value == null) return undefined
@@ -52,5 +60,8 @@ export function escapeHtml(value = ''): string {
 }
 
 export function serializeStructuredData(data: unknown[]): string {
-  return JSON.stringify(data.length === 1 ? data[0] : data).replace(/</g, '\\u003c')
+  return JSON.stringify(data.length === 1 ? data[0] : data).replace(
+    /</g,
+    '\\u003c',
+  )
 }

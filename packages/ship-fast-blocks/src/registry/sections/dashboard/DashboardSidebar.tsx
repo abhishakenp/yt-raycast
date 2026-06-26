@@ -1,9 +1,9 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * DashboardSidebar — a fixed left navigation rail for a SaaS admin dashboard. A
@@ -18,7 +18,7 @@ import { Image } from "#/lib/img.tsx"
  * baked-in "Orbit" defaults.
  */
 export const DashboardSidebar = defineComponent({
-  name: "DashboardSidebar",
+  name: 'DashboardSidebar',
   description:
     "A fixed left navigation rail for a SaaS admin dashboard: a full-height bordered card column (hidden below md, with a slide-in mobile drawer + scrim toggled by an exposed hamburger button) holding an indigo brand tile + product name, a primary line-icon nav group with an active state and a count badge on the Orders item, a 'Support' sub-group, and a bottom user footer (avatar, name, email, sign-out). Every nav item, the brand and sign-out route through useNavigate for page-switching. Use as the persistent left rail for an authenticated admin area, back office, analytics console, CRM or internal SaaS tool.",
   props: z.object({
@@ -48,29 +48,29 @@ export const DashboardSidebar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Orbit"
+    const brand = props.brand ?? 'Orbit'
     const nav = props.nav?.length
       ? props.nav
       : [
-          "Dashboard",
-          "Orders",
-          "Customers",
-          "Products",
-          "Analytics",
-          "Finance",
-          "Tickets",
-          "Settings",
+          'Dashboard',
+          'Orders',
+          'Customers',
+          'Products',
+          'Analytics',
+          'Finance',
+          'Tickets',
+          'Settings',
         ]
     const primaryCount = props.primaryCount ?? 6
     const primaryNav = nav.slice(0, primaryCount)
     const supportNav = nav.slice(primaryCount)
-    const supportLabel = props.supportLabel ?? "Support"
-    const badgeLabel = props.badgeLabel ?? "Orders"
-    const badgeCount = props.badgeCount ?? "24"
-    const signOutTarget = props.signOutTarget ?? "Logout"
+    const supportLabel = props.supportLabel ?? 'Support'
+    const badgeLabel = props.badgeLabel ?? 'Orders'
+    const badgeCount = props.badgeCount ?? '24'
+    const signOutTarget = props.signOutTarget ?? 'Logout'
 
-    const userName = props.user?.name ?? "Alex Morgan"
-    const userEmail = props.user?.email ?? "alex@orbit.dev"
+    const userName = props.user?.name ?? 'Alex Morgan'
+    const userEmail = props.user?.email ?? 'alex@orbit.dev'
     const userAvatarAlt =
       props.user?.avatarAlt ??
       `portrait headshot of ${userName}, friendly professional`
@@ -82,7 +82,7 @@ export const DashboardSidebar = defineComponent({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm",
+          'grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm',
           className,
         )}
         aria-hidden="true"
@@ -176,10 +176,10 @@ export const DashboardSidebar = defineComponent({
             go(label)
           }}
           className={cn(
-            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+            'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
             active
-              ? "bg-primary/10 font-semibold text-primary"
-              : "text-muted-foreground hover:bg-primary/10 hover:text-primary",
+              ? 'bg-primary/10 font-semibold text-primary'
+              : 'text-muted-foreground hover:bg-primary/10 hover:text-primary',
           )}
         >
           <svg

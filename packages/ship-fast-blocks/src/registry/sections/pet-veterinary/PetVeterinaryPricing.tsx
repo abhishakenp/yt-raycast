@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { PricingGrid } from "#/section-kit/PricingGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 const DEFAULT_TIERS: {
   name: string
@@ -12,53 +12,53 @@ const DEFAULT_TIERS: {
   highlighted?: boolean
 }[] = [
   {
-    name: "Basic Wellness",
-    price: "$29",
-    period: "/month",
+    name: 'Basic Wellness',
+    price: '$29',
+    period: '/month',
     features: [
-      "Annual wellness exam",
-      "Core vaccinations",
-      "Heartworm test",
-      "10% off additional services",
+      'Annual wellness exam',
+      'Core vaccinations',
+      'Heartworm test',
+      '10% off additional services',
     ],
-    cta: "Choose Basic",
-    ctaTarget: "Contact",
+    cta: 'Choose Basic',
+    ctaTarget: 'Contact',
   },
   {
-    name: "Plus Care",
-    price: "$49",
-    period: "/month",
+    name: 'Plus Care',
+    price: '$49',
+    period: '/month',
     features: [
-      "Everything in Basic",
-      "Two wellness exams a year",
-      "Dental check & cleaning",
-      "Flea, tick & heartworm prevention",
-      "15% off additional services",
+      'Everything in Basic',
+      'Two wellness exams a year',
+      'Dental check & cleaning',
+      'Flea, tick & heartworm prevention',
+      '15% off additional services',
     ],
-    cta: "Choose Plus",
-    ctaTarget: "Contact",
+    cta: 'Choose Plus',
+    ctaTarget: 'Contact',
     highlighted: true,
   },
   {
-    name: "Complete Care",
-    price: "$79",
-    period: "/month",
+    name: 'Complete Care',
+    price: '$79',
+    period: '/month',
     features: [
-      "Everything in Plus",
-      "Unlimited wellness visits",
-      "Routine bloodwork & labs",
-      "Priority emergency access",
-      "20% off additional services",
+      'Everything in Plus',
+      'Unlimited wellness visits',
+      'Routine bloodwork & labs',
+      'Priority emergency access',
+      '20% off additional services',
     ],
-    cta: "Choose Complete",
-    ctaTarget: "Contact",
+    cta: 'Choose Complete',
+    ctaTarget: 'Contact',
   },
 ]
 
 export const PetVeterinaryPricing = defineComponent({
-  name: "PetVeterinaryPricing",
+  name: 'PetVeterinaryPricing',
   description:
-    "Transparent wellness-plan pricing band for a veterinary clinic site, composing the PricingGrid kit composite into membership tiers. Renders a Basic Wellness plan, a highlighted Plus Care plan marked as most popular, and a Complete Care plan — each with a friendly feature list and a routed CTA. Accepts a public `tiers` prop to override the plans. Use it to give pet parents clear, no-surprises options for keeping their companions healthy year-round.",
+    'Transparent wellness-plan pricing band for a veterinary clinic site, composing the PricingGrid kit composite into membership tiers. Renders a Basic Wellness plan, a highlighted Plus Care plan marked as most popular, and a Complete Care plan — each with a friendly feature list and a routed CTA. Accepts a public `tiers` prop to override the plans. Use it to give pet parents clear, no-surprises options for keeping their companions healthy year-round.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -78,16 +78,25 @@ export const PetVeterinaryPricing = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Wellness plans made simple"
+    const heading = props.heading ?? 'Wellness plans made simple'
     const subheading =
       props.subheading ??
-      "Affordable monthly care that spreads the cost of keeping your pet healthy — no hidden fees, ever."
+      'Affordable monthly care that spreads the cost of keeping your pet healthy — no hidden fees, ever.'
     const tiers = props.tiers?.length ? props.tiers : DEFAULT_TIERS
 
     return (
-      <section className={"bg-background py-20 sm:py-24" + (props.className ? " " + props.className : "")}>
+      <section
+        className={
+          'bg-background py-20 sm:py-24' +
+          (props.className ? ' ' + props.className : '')
+        }
+      >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <PricingGrid heading={heading} subheading={subheading} tiers={tiers} />
+          <PricingGrid
+            heading={heading}
+            subheading={subheading}
+            tiers={tiers}
+          />
         </div>
       </section>
     )

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CommunityForumHero — centered hero band for a community-platform / discussion-forum
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * products.
  */
 export const CommunityForumHero = defineComponent({
-  name: "CommunityForumHero",
+  name: 'CommunityForumHero',
   description:
-    "Centered hero band for a community-platform / discussion-forum landing page: a live-status pill dot, a large tracking-tight headline split across two lines, a supporting paragraph, dual CTAs (primary filled + secondary outlined), and a trust-checkmark chip strip beneath. Clean, calm, light slate-toned SaaS aesthetic; CTAs route through useNavigate. Use as the opening hero for community platforms, online forums, discussion boards, or membership SaaS products.",
+    'Centered hero band for a community-platform / discussion-forum landing page: a live-status pill dot, a large tracking-tight headline split across two lines, a supporting paragraph, dual CTAs (primary filled + secondary outlined), and a trust-checkmark chip strip beneath. Clean, calm, light slate-toned SaaS aesthetic; CTAs route through useNavigate. Use as the opening hero for community platforms, online forums, discussion boards, or membership SaaS products.',
   props: z.object({
     /** Status pill text. */
     badge: z.string().optional(),
@@ -35,18 +35,17 @@ export const CommunityForumHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge =
-      props.badge ?? "Over 12,000 communities already connected"
-    const headingTop = props.headingTop ?? "Where conversations"
-    const headingBottom = props.headingBottom ?? "actually matter"
+    const badge = props.badge ?? 'Over 12,000 communities already connected'
+    const headingTop = props.headingTop ?? 'Where conversations'
+    const headingBottom = props.headingBottom ?? 'actually matter'
     const subheading =
       props.subheading ??
-      "Threadloom brings professionals, creators, and enthusiasts together in structured, searchable discussions. No noise. No algorithms. Just genuine exchange."
-    const primaryCta = props.primaryCta ?? "Start Your Community"
-    const secondaryCta = props.secondaryCta ?? "See How It Works"
+      'Threadloom brings professionals, creators, and enthusiasts together in structured, searchable discussions. No noise. No algorithms. Just genuine exchange.'
+    const primaryCta = props.primaryCta ?? 'Start Your Community'
+    const secondaryCta = props.secondaryCta ?? 'See How It Works'
     const trust = props.trust?.length
       ? props.trust
-      : ["Free 14-day trial", "No credit card required", "Cancel anytime"]
+      : ['Free 14-day trial', 'No credit card required', 'Cancel anytime']
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -66,7 +65,7 @@ export const CommunityForumHero = defineComponent({
     return (
       <section
         className={cn(
-          "relative overflow-hidden pb-24 pt-20 lg:pb-40 lg:pt-32",
+          'relative overflow-hidden pb-24 pt-20 lg:pb-40 lg:pt-32',
           props.className,
         )}
       >

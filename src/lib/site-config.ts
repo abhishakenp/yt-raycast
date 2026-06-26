@@ -1,8 +1,14 @@
 const trimSlash = (u: string) => u.replace(/\/+$/, '')
 
-export const SITE_NAME = (process.env.NEXT_PUBLIC_SITE_NAME ?? 'Ship Fast').trim()
-export const SITE_URL = trimSlash(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ship-fast.io')
-export const BASE_DOMAIN = (process.env.NEXT_PUBLIC_BASE_DOMAIN ?? 'ship-fast.io').trim()
+export const SITE_NAME = (
+  process.env.NEXT_PUBLIC_SITE_NAME ?? 'Ship Fast'
+).trim()
+export const SITE_URL = trimSlash(
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ship-fast.io',
+)
+export const BASE_DOMAIN = (
+  process.env.NEXT_PUBLIC_BASE_DOMAIN ?? 'ship-fast.io'
+).trim()
 export const PLAUSIBLE_DOMAIN =
   process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN ?? new URL(SITE_URL).hostname
 

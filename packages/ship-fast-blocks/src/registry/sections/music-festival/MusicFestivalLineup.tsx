@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * MusicFestivalLineup — a lineup section for a music / arts festival landing
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * any multi-day live-music event.
  */
 export const MusicFestivalLineup = defineComponent({
-  name: "MusicFestivalLineup",
+  name: 'MusicFestivalLineup',
   description:
     "Lineup section for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three headliner photo cards (each with a dark gradient overlay carrying a day label, artist name and genre), a featured-artist grid of bordered name/genre cards (2/4/6-up responsive), and a centered 'more artists' pill button. Headliner cards, featured cards and the more button all route through useNavigate; photos use the alt-driven Image component. Use to showcase performers on music festivals, arts festivals, concert series, raves, or any multi-day live-music event.",
   props: z.object({
@@ -50,58 +50,58 @@ export const MusicFestivalLineup = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "The Artists"
-    const heading = props.heading ?? "2025 Lineup"
+    const eyebrow = props.eyebrow ?? 'The Artists'
+    const heading = props.heading ?? '2025 Lineup'
     const description =
       props.description ??
-      "Three days of unforgettable performances across four uniquely designed stages. From indie rock to electronic, hip-hop to folk — discover your next favorite artist."
-    const headlinersLabel = props.headlinersLabel ?? "Headliners"
+      'Three days of unforgettable performances across four uniquely designed stages. From indie rock to electronic, hip-hop to folk — discover your next favorite artist.'
+    const headlinersLabel = props.headlinersLabel ?? 'Headliners'
     const headliners = props.headliners?.length
       ? props.headliners
       : [
           {
-            day: "Friday Headliner",
-            name: "Arctic Monkeys",
-            genre: "Indie Rock • UK",
+            day: 'Friday Headliner',
+            name: 'Arctic Monkeys',
+            genre: 'Indie Rock • UK',
             imageAlt:
-              "Arctic Monkeys performing on stage with dramatic purple and blue lighting",
+              'Arctic Monkeys performing on stage with dramatic purple and blue lighting',
           },
           {
-            day: "Saturday Headliner",
-            name: "Tame Impala",
-            genre: "Psychedelic Pop • Australia",
+            day: 'Saturday Headliner',
+            name: 'Tame Impala',
+            genre: 'Psychedelic Pop • Australia',
             imageAlt:
-              "Tame Impala psychedelic light show with a silhouetted performer",
+              'Tame Impala psychedelic light show with a silhouetted performer',
           },
           {
-            day: "Sunday Headliner",
-            name: "LCD Soundsystem",
-            genre: "Dance-Punk • USA",
+            day: 'Sunday Headliner',
+            name: 'LCD Soundsystem',
+            genre: 'Dance-Punk • USA',
             imageAlt:
-              "LCD Soundsystem live performance with a vocalist at the microphone",
+              'LCD Soundsystem live performance with a vocalist at the microphone',
           },
         ]
-    const featuredLabel = props.featuredLabel ?? "Featured Artists"
+    const featuredLabel = props.featuredLabel ?? 'Featured Artists'
     const featured = props.featured?.length
       ? props.featured
       : [
-          { name: "Bon Iver", genre: "Folk" },
-          { name: "Khruangbin", genre: "Psychedelic" },
-          { name: "Rosalia", genre: "Flamenco Pop" },
-          { name: "Fred Again..", genre: "Electronic" },
-          { name: "Big Thief", genre: "Indie Folk" },
-          { name: "Four Tet", genre: "Electronic" },
-          { name: "FKA Twigs", genre: "Art Pop" },
-          { name: "Parcels", genre: "Disco" },
-          { name: "Caroline Polachek", genre: "Art Pop" },
-          { name: "Jungle", genre: "Neo-Soul" },
-          { name: "Beach House", genre: "Dream Pop" },
-          { name: "Bicep", genre: "Electronic" },
+          { name: 'Bon Iver', genre: 'Folk' },
+          { name: 'Khruangbin', genre: 'Psychedelic' },
+          { name: 'Rosalia', genre: 'Flamenco Pop' },
+          { name: 'Fred Again..', genre: 'Electronic' },
+          { name: 'Big Thief', genre: 'Indie Folk' },
+          { name: 'Four Tet', genre: 'Electronic' },
+          { name: 'FKA Twigs', genre: 'Art Pop' },
+          { name: 'Parcels', genre: 'Disco' },
+          { name: 'Caroline Polachek', genre: 'Art Pop' },
+          { name: 'Jungle', genre: 'Neo-Soul' },
+          { name: 'Beach House', genre: 'Dream Pop' },
+          { name: 'Bicep', genre: 'Electronic' },
         ]
-    const more = props.more ?? "+ 64 More Artists"
+    const more = props.more ?? '+ 64 More Artists'
 
     return (
-      <section className={cn("py-24 lg:py-32", props.className)}>
+      <section className={cn('py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
             <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
@@ -175,7 +175,17 @@ export const MusicFestivalLineup = defineComponent({
               className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 font-medium transition-colors hover:bg-accent"
             >
               {more}
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <path d="M19 9l-7 7-7-7" />
               </svg>
             </button>

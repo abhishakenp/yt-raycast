@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CryptoHero — split-layout hero section for a crypto / DeFi infrastructure
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * layer-1/layer-2 chains, bridges, or token projects.
  */
 export const CryptoHero = defineComponent({
-  name: "CryptoHero",
+  name: 'CryptoHero',
   description:
-    "Split-layout hero section for a crypto / DeFi infrastructure landing page: left side has a pulsing mainnet-live status pill, bold multi-line headline, supporting paragraph, dual CTAs (filled primary + outlined secondary), and trust chips with check-circle icons; right side shows a live token price card with token details, mini decorative bar chart, and alt-driven background chart image. Use as the opening hero for crypto protocols, DeFi platforms, layer-1/layer-2 chains, bridges, or token projects.",
+    'Split-layout hero section for a crypto / DeFi infrastructure landing page: left side has a pulsing mainnet-live status pill, bold multi-line headline, supporting paragraph, dual CTAs (filled primary + outlined secondary), and trust chips with check-circle icons; right side shows a live token price card with token details, mini decorative bar chart, and alt-driven background chart image. Use as the opening hero for crypto protocols, DeFi platforms, layer-1/layer-2 chains, bridges, or token projects.',
   props: z.object({
     /** Status pill text (e.g. 'Mainnet Live • v2.4 Released'). */
     badge: z.string().optional(),
@@ -48,28 +48,27 @@ export const CryptoHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const badge = props.badge ?? "Mainnet Live • v2.4 Released"
+    const badge = props.badge ?? 'Mainnet Live • v2.4 Released'
     const heading =
-      props.heading ??
-      "The infrastructure layer for decentralized finance"
+      props.heading ?? 'The infrastructure layer for decentralized finance'
     const subheading =
       props.subheading ??
-      "NexusChain provides enterprise-grade infrastructure for DeFi protocols, cross-chain bridges, and institutional tokenization. Process 50,000+ TPS with sub-second finality."
-    const primaryCta = props.primaryCta ?? "Start Building"
-    const secondaryCta = props.secondaryCta ?? "View Documentation"
+      'NexusChain provides enterprise-grade infrastructure for DeFi protocols, cross-chain bridges, and institutional tokenization. Process 50,000+ TPS with sub-second finality.'
+    const primaryCta = props.primaryCta ?? 'Start Building'
+    const secondaryCta = props.secondaryCta ?? 'View Documentation'
     const trust = props.trust?.length
       ? props.trust
-      : ["Audited by OpenZeppelin", "$2.4B TVL Secured"]
+      : ['Audited by OpenZeppelin', '$2.4B TVL Secured']
     const token = props.token ?? {
-      name: "NEX Token",
-      kind: "Utility & Governance",
-      change: "+12.4%",
-      price: "$4.28",
-      marketCap: "$856M",
+      name: 'NEX Token',
+      kind: 'Utility & Governance',
+      change: '+12.4%',
+      price: '$4.28',
+      marketCap: '$856M',
       imageAlt:
-        "Abstract data visualization showing upward trending financial chart with gradient glow",
-      volume: "24h Volume: $48.2M",
-      supply: "Circulating: 200M NEX",
+        'Abstract data visualization showing upward trending financial chart with gradient glow',
+      volume: '24h Volume: $48.2M',
+      supply: 'Circulating: 200M NEX',
     }
 
     const CheckCircle = ({ className }: { className?: string }) => (
@@ -90,9 +89,7 @@ export const CryptoHero = defineComponent({
     const heroBars = [40, 55, 45, 70, 60, 85, 100]
 
     return (
-      <section
-        className={cn("relative overflow-hidden", props.className)}
-      >
+      <section className={cn('relative overflow-hidden', props.className)}>
         <div className="mx-auto max-w-7xl px-4 pb-24 pt-20 sm:px-6 lg:px-8 lg:pb-40 lg:pt-32">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="max-w-2xl">
@@ -178,9 +175,7 @@ export const CryptoHero = defineComponent({
                     <p className="mb-1 text-xs text-muted-foreground">
                       Market Cap
                     </p>
-                    <p className="text-xl font-semibold">
-                      {token.marketCap}
-                    </p>
+                    <p className="text-xl font-semibold">{token.marketCap}</p>
                   </div>
                 </div>
                 <div className="relative h-32 overflow-hidden rounded-lg bg-muted">
@@ -197,10 +192,10 @@ export const CryptoHero = defineComponent({
                         <div
                           key={i}
                           className={cn(
-                            "w-3 rounded-t",
+                            'w-3 rounded-t',
                             i === heroBars.length - 1
-                              ? "bg-foreground"
-                              : "bg-muted-foreground/60",
+                              ? 'bg-foreground'
+                              : 'bg-muted-foreground/60',
                           )}
                           style={{ height: `${h}%` }}
                         />

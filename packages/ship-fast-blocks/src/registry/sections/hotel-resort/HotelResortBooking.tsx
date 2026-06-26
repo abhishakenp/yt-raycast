@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * HotelResortBooking — split booking section for a luxury hotel / resort & spa
@@ -14,9 +14,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in resort defaults.
  */
 export const HotelResortBooking = defineComponent({
-  name: "HotelResortBooking",
+  name: 'HotelResortBooking',
   description:
-    "Split booking section for a luxury hotel / resort & spa site: a dark foreground-surface band with an uppercase eyebrow + thin heading + paragraph, then a two-column layout pairing numbered how-it-works steps on the left with a raised light availability form on the right (check-in / check-out date inputs, guests and room-type selects, a full-width submit, and a reassurance note). The form submit routes through useNavigate. Use to drive reservations for hotels, resorts, spa retreats, villas, or boutique inns.",
+    'Split booking section for a luxury hotel / resort & spa site: a dark foreground-surface band with an uppercase eyebrow + thin heading + paragraph, then a two-column layout pairing numbered how-it-works steps on the left with a raised light availability form on the right (check-in / check-out date inputs, guests and room-type selects, a full-width submit, and a reassurance note). The form submit routes through useNavigate. Use to drive reservations for hotels, resorts, spa retreats, villas, or boutique inns.',
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -42,49 +42,54 @@ export const HotelResortBooking = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Reservations"
-    const heading = props.heading ?? "Book your escape"
+    const eyebrow = props.eyebrow ?? 'Reservations'
+    const heading = props.heading ?? 'Book your escape'
     const description =
       props.description ??
-      "Secure your preferred dates in just a few steps. Flexible cancellation up to 48 hours before arrival."
+      'Secure your preferred dates in just a few steps. Flexible cancellation up to 48 hours before arrival.'
     const steps = props.steps?.length
       ? props.steps
       : [
           {
-            title: "Choose Your Dates",
+            title: 'Choose Your Dates',
             description:
-              "Select your check-in and check-out dates. Peak season runs June through August; book early for best availability.",
+              'Select your check-in and check-out dates. Peak season runs June through August; book early for best availability.',
           },
           {
-            title: "Select Your Suite",
+            title: 'Select Your Suite',
             description:
-              "Browse our room categories and choose the perfect accommodation for your stay. Filter by view, size, and amenities.",
+              'Browse our room categories and choose the perfect accommodation for your stay. Filter by view, size, and amenities.',
           },
           {
-            title: "Confirm & Enjoy",
+            title: 'Confirm & Enjoy',
             description:
-              "Complete your reservation with our secure checkout. Receive instant confirmation and start planning your experience.",
+              'Complete your reservation with our secure checkout. Receive instant confirmation and start planning your experience.',
           },
         ]
-    const formHeading = props.formHeading ?? "Check Availability"
-    const submit = props.submit ?? "Check Availability"
+    const formHeading = props.formHeading ?? 'Check Availability'
+    const submit = props.submit ?? 'Check Availability'
     const note =
-      props.note ??
-      "Best rate guarantee • Free cancellation up to 48 hours"
+      props.note ?? 'Best rate guarantee • Free cancellation up to 48 hours'
     const guestOptions = props.guestOptions?.length
       ? props.guestOptions
-      : ["2 Adults", "2 Adults, 1 Child", "2 Adults, 2 Children", "3 Adults", "4 Adults"]
+      : [
+          '2 Adults',
+          '2 Adults, 1 Child',
+          '2 Adults, 2 Children',
+          '3 Adults',
+          '4 Adults',
+        ]
     const roomOptions = props.roomOptions?.length
       ? props.roomOptions
-      : ["All Room Types", "Coastal Suite", "Azure Suite", "Coastal Villa"]
+      : ['All Room Types', 'Coastal Suite', 'Azure Suite', 'Coastal Villa']
 
     const inputCls =
-      "w-full rounded-md border border-input bg-background px-4 py-3 text-sm text-foreground transition-colors focus:border-ring focus:outline-none"
+      'w-full rounded-md border border-input bg-background px-4 py-3 text-sm text-foreground transition-colors focus:border-ring focus:outline-none'
 
     return (
       <section
         className={cn(
-          "bg-foreground py-24 text-background lg:py-32",
+          'bg-foreground py-24 text-background lg:py-32',
           props.className,
         )}
       >
@@ -171,7 +176,10 @@ export const HotelResortBooking = defineComponent({
                   >
                     Room Type
                   </label>
-                  <select id="hotel-resort-booking-roomtype" className={inputCls}>
+                  <select
+                    id="hotel-resort-booking-roomtype"
+                    className={inputCls}
+                  >
                     {roomOptions.map((opt) => (
                       <option key={opt} className="bg-background">
                         {opt}

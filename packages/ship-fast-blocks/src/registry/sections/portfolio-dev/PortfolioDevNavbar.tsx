@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const CodeMark = ({ className }: { className?: string }) => (
   <svg
@@ -19,7 +19,7 @@ const CodeMark = ({ className }: { className?: string }) => (
 )
 
 export const PortfolioDevNavbar = defineComponent({
-  name: "PortfolioDevNavbar",
+  name: 'PortfolioDevNavbar',
   description:
     "Sticky developer-portfolio header built on the shared SiteNav composite: a mono wordmark beside an inline </> code mark, centered desktop nav links, and a 'Hire Me' CTA that routes to Contact. Includes a real mobile drawer on small screens and omits the phone slot, matching how engineers, freelancers, and indie hackers present themselves. Use as the site-wide header for developer, engineer, or freelancer portfolios; renders fully with no props via baked-in 'alex.dev' defaults.",
   props: z.object({
@@ -38,14 +38,17 @@ export const PortfolioDevNavbar = defineComponent({
   component: ({ props }) => {
     const nav = props.nav?.length
       ? props.nav
-      : ["Work", "Services", "About", "Contact"]
+      : ['Work', 'Services', 'About', 'Contact']
     return (
       <SiteNav
-        brand={props.brand ?? "alex.dev"}
+        brand={props.brand ?? 'alex.dev'}
         brandMark={<CodeMark className="size-7 text-primary" />}
         brandClassName="font-mono text-lg font-semibold"
         nav={nav}
-        cta={{ label: props.ctaLabel ?? "Hire Me", target: props.ctaTarget ?? "Contact" }}
+        cta={{
+          label: props.ctaLabel ?? 'Hire Me',
+          target: props.ctaTarget ?? 'Contact',
+        }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}
       />

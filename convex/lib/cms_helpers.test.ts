@@ -23,8 +23,7 @@ import {
 
 describe('escapeHtml', () => {
   it('escapes all five HTML special characters', () => {
-    expect(escapeHtml('&<>"\''))
-      .toBe('&amp;&lt;&gt;&quot;&#39;')
+    expect(escapeHtml('&<>"\'')).toBe('&amp;&lt;&gt;&quot;&#39;')
   })
 
   it('returns empty string unchanged', () => {
@@ -36,8 +35,9 @@ describe('escapeHtml', () => {
   })
 
   it('handles multiple occurrences', () => {
-    expect(escapeHtml('<a href="x">&</a>'))
-      .toBe('&lt;a href=&quot;x&quot;&gt;&amp;&lt;/a&gt;')
+    expect(escapeHtml('<a href="x">&</a>')).toBe(
+      '&lt;a href=&quot;x&quot;&gt;&amp;&lt;/a&gt;',
+    )
   })
 })
 
@@ -107,13 +107,13 @@ describe('applyPreviewTextEdit', () => {
 
 describe('stripHtml', () => {
   it('strips HTML tags and normalizes whitespace', () => {
-    expect(stripHtml('<p>Hello <strong>World</strong></p>'))
-      .toBe('Hello World')
+    expect(stripHtml('<p>Hello <strong>World</strong></p>')).toBe('Hello World')
   })
 
   it('removes script and style blocks entirely', () => {
-    expect(stripHtml('<script>alert(1)</script><p>Text</p><style>body{}</style>'))
-      .toBe('Text')
+    expect(
+      stripHtml('<script>alert(1)</script><p>Text</p><style>body{}</style>'),
+    ).toBe('Text')
   })
 
   it('handles empty string', () => {
@@ -127,11 +127,15 @@ describe('stripHtml', () => {
 
 describe('readHtmlAttribute', () => {
   it('extracts attribute value with double quotes', () => {
-    expect(readHtmlAttribute(' src="image.png" alt="x"', 'src')).toBe('image.png')
+    expect(readHtmlAttribute(' src="image.png" alt="x"', 'src')).toBe(
+      'image.png',
+    )
   })
 
   it('extracts attribute value with single quotes', () => {
-    expect(readHtmlAttribute(" href='https://example.com'", 'href')).toBe('https://example.com')
+    expect(readHtmlAttribute(" href='https://example.com'", 'href')).toBe(
+      'https://example.com',
+    )
   })
 
   it('returns undefined when attribute not found', () => {
@@ -180,7 +184,12 @@ describe('replaceCmsBoundAttribute', () => {
 
   it('replaces href on data-cms tagged element', () => {
     const html = '<a data-cms="main-link" href="https://old.com">Click</a>'
-    const result = replaceCmsBoundAttribute(html, 'main-link', 'href', 'https://new.com')
+    const result = replaceCmsBoundAttribute(
+      html,
+      'main-link',
+      'href',
+      'https://new.com',
+    )
     expect(result.replaced).toBe(true)
     expect(result.html).toContain('href="https://new.com"')
   })
@@ -282,7 +291,11 @@ describe('addCmsSiteSpecLeafCandidate', () => {
 
   it('normalizes whitespace in value', () => {
     const candidates: CmsBindingCandidate[] = []
-    addCmsSiteSpecLeafCandidate(candidates, ['hero', 'headline'], '  Hello   World  ')
+    addCmsSiteSpecLeafCandidate(
+      candidates,
+      ['hero', 'headline'],
+      '  Hello   World  ',
+    )
     expect(candidates[0].content).toBe('Hello World')
   })
 })
@@ -444,7 +457,8 @@ describe('extractCmsBindingCandidatesFromHtml', () => {
   })
 
   it('deduplicates by selector (paired tag wins)', () => {
-    const html = '<a data-cms="link1" href="/path">Text</a><a data-cms="link1" href="/other">Other</a>'
+    const html =
+      '<a data-cms="link1" href="/path">Text</a><a data-cms="link1" href="/other">Other</a>'
     const candidates = extractCmsBindingCandidatesFromHtml(html)
     // The first paired match should win
     expect(candidates.filter((c) => c.selector === 'link1')).toHaveLength(1)
@@ -459,17 +473,37 @@ describe('extractCmsBindingCandidatesFromSiteSpec', () => {
       tagline: 'A great site',
     })
     const candidates = extractCmsBindingCandidatesFromSiteSpec(spec)
-    expect(candidates.some((c) => c.field === 'brand.name' && c.content === 'MyBrand')).toBe(true)
-    expect(candidates.some((c) => c.field === 'site.title' && c.content === 'My Site')).toBe(true)
-    expect(candidates.some((c) => c.field === 'site.tagline' && c.content === 'A great site')).toBe(true)
+    expect(
+      candidates.some(
+        (c) => c.field === 'brand.name' && c.content === 'MyBrand',
+      ),
+    ).toBe(true)
+    expect(
+      candidates.some(
+        (c) => c.field === 'site.title' && c.content === 'My Site',
+      ),
+    ).toBe(true)
+    expect(
+      candidates.some(
+        (c) => c.field === 'site.tagline' && c.content === 'A great site',
+      ),
+    ).toBe(true)
   })
 
   it('extracts hero fields', () => {
     const spec = JSON.stringify({
-      hero: { headline: 'Big Headline', subheadline: 'Sub text', cta: 'Click Me' },
+      hero: {
+        headline: 'Big Headline',
+        subheadline: 'Sub text',
+        cta: 'Click Me',
+      },
     })
     const candidates = extractCmsBindingCandidatesFromSiteSpec(spec)
-    expect(candidates.some((c) => c.field === 'hero.headline' && c.content === 'Big Headline')).toBe(true)
+    expect(
+      candidates.some(
+        (c) => c.field === 'hero.headline' && c.content === 'Big Headline',
+      ),
+    ).toBe(true)
     expect(candidates.some((c) => c.field === 'hero.cta')).toBe(true)
   })
 
@@ -486,7 +520,11 @@ describe('extractCmsBindingCandidatesFromSiteSpec', () => {
       pages: [{ title: 'Home Page', description: 'Welcome home' }],
     })
     const candidates = extractCmsBindingCandidatesFromSiteSpec(spec)
-    expect(candidates.some((c) => c.field === 'home.title' && c.content === 'Home Page')).toBe(true)
+    expect(
+      candidates.some(
+        (c) => c.field === 'home.title' && c.content === 'Home Page',
+      ),
+    ).toBe(true)
   })
 })
 

@@ -20,11 +20,19 @@ function formatPaletteLine(palette = []) {
 }
 
 function paletteRoleHint(palette = []) {
-  const norm = palette.map((h) => h.toLowerCase()).filter((h) => /^#[0-9a-f]{6}$/.test(h))
+  const norm = palette
+    .map((h) => h.toLowerCase())
+    .filter((h) => /^#[0-9a-f]{6}$/.test(h))
   if (norm.length < 3) return ''
   const sorted = [...norm].sort((a, b) => {
-    const la = parseInt(a.slice(1, 3), 16) + parseInt(a.slice(3, 5), 16) + parseInt(a.slice(5, 7), 16)
-    const lb = parseInt(b.slice(1, 3), 16) + parseInt(b.slice(3, 5), 16) + parseInt(b.slice(5, 7), 16)
+    const la =
+      parseInt(a.slice(1, 3), 16) +
+      parseInt(a.slice(3, 5), 16) +
+      parseInt(a.slice(5, 7), 16)
+    const lb =
+      parseInt(b.slice(1, 3), 16) +
+      parseInt(b.slice(3, 5), 16) +
+      parseInt(b.slice(5, 7), 16)
     return la - lb
   })
   const background = sorted[0]
@@ -57,7 +65,9 @@ function dnaImperatives(dna, app) {
     for (const line of dna.doctrine) out.push(`Required move: ${line}`)
   }
   if (Array.isArray(dna.avoid)) {
-    out.push(`Anti-patterns to reject (${app} would never ship these): ${dna.avoid.join('; ')}`)
+    out.push(
+      `Anti-patterns to reject (${app} would never ship these): ${dna.avoid.join('; ')}`,
+    )
   }
   return out
 }
@@ -75,7 +85,9 @@ function dnaCompositionBlock(dna, app) {
 export function dnaSectionsBlock(dna, app) {
   if (!Array.isArray(dna?.sections) || !dna.sections.length) return ''
   const lines = []
-  lines.push(`Section pattern for ${app}'s homepage (use these section types + variants in pages[].sections[] — DO NOT substitute generic SaaS sections):`)
+  lines.push(
+    `Section pattern for ${app}'s homepage (use these section types + variants in pages[].sections[] — DO NOT substitute generic SaaS sections):`,
+  )
   for (const sec of dna.sections) {
     if (!sec?.type) continue
     const variant = sec.variant ? ` | variant: "${sec.variant}"` : ''
@@ -111,12 +123,18 @@ export function mobbinSessionBlock(anchor) {
   lines.push('── MOBBIN PRO DESIGN DNA (session anchor) ──')
   lines.push(`ANCHOR: ${app}${category ? ` (${category})` : ''}`)
 
-  const accents = palette?.length ? palette : Array.isArray(dna?.accents) ? dna.accents : []
+  const accents = palette?.length
+    ? palette
+    : Array.isArray(dna?.accents)
+      ? dna.accents
+      : []
   if (accents.length) {
     lines.push(`  Palette: ${formatPaletteLine(accents)}`)
     const hint = paletteRoleHint(accents)
     if (hint) {
-      lines.push(`  Role assignment: ${hint}. Plug these directly into tailwind.config.theme.extend.colors — DO NOT invent your own brand palette.`)
+      lines.push(
+        `  Role assignment: ${hint}. Plug these directly into tailwind.config.theme.extend.colors — DO NOT invent your own brand palette.`,
+      )
     }
   }
 
@@ -129,12 +147,18 @@ export function mobbinSessionBlock(anchor) {
   if (copyExamples) {
     if (copyExamples.headlines?.length) {
       lines.push(
-        `  Real ${app} headline shapes (match this register; DO NOT copy verbatim): ${copyExamples.headlines.slice(0, 3).map((h) => `"${h}"`).join(' | ')}`,
+        `  Real ${app} headline shapes (match this register; DO NOT copy verbatim): ${copyExamples.headlines
+          .slice(0, 3)
+          .map((h) => `"${h}"`)
+          .join(' | ')}`,
       )
     }
     if (copyExamples.subs?.length) {
       lines.push(
-        `  Real ${app} sub-headline shapes: ${copyExamples.subs.slice(0, 2).map((s) => `"${s}"`).join(' | ')}`,
+        `  Real ${app} sub-headline shapes: ${copyExamples.subs
+          .slice(0, 2)
+          .map((s) => `"${s}"`)
+          .join(' | ')}`,
       )
     }
     if (copyExamples.products?.length) {
@@ -145,16 +169,30 @@ export function mobbinSessionBlock(anchor) {
   }
 
   if (dna?._synthesized) {
-    lines.push(`  Note: ${app} is not in the curated DNA bank — descriptor above was synthesized from the supplied palette alone. Lean on palette + register.`)
+    lines.push(
+      `  Note: ${app} is not in the curated DNA bank — descriptor above was synthesized from the supplied palette alone. Lean on palette + register.`,
+    )
   }
 
   lines.push('')
-  lines.push(`Inheritance contract for this session — the generated site must read as if it could ship from the ${app} brand team. Specifically:`)
-  lines.push(`  • Palette hex strings above MUST appear LITERALLY in tailwind.config.theme.extend.colors AND in inline style attributes on hero/card surfaces. Do not "round" or substitute.`)
-  lines.push(`  • Hero h1 typeface + weight + size MUST match ${app}'s display-type register. Body paragraphs MUST use the named body family.`)
-  lines.push(`  • At least 3 of ${app}'s "Required move" lines from the doctrine above must be visible in the rendered output.`)
-  lines.push(`  • None of ${app}'s anti-patterns may appear anywhere on the page.`)
-  lines.push(`  • The output should be indistinguishable at thumbnail-glance from a real ${app}-family marketing site.`)
+  lines.push(
+    `Inheritance contract for this session — the generated site must read as if it could ship from the ${app} brand team. Specifically:`,
+  )
+  lines.push(
+    `  • Palette hex strings above MUST appear LITERALLY in tailwind.config.theme.extend.colors AND in inline style attributes on hero/card surfaces. Do not "round" or substitute.`,
+  )
+  lines.push(
+    `  • Hero h1 typeface + weight + size MUST match ${app}'s display-type register. Body paragraphs MUST use the named body family.`,
+  )
+  lines.push(
+    `  • At least 3 of ${app}'s "Required move" lines from the doctrine above must be visible in the rendered output.`,
+  )
+  lines.push(
+    `  • None of ${app}'s anti-patterns may appear anywhere on the page.`,
+  )
+  lines.push(
+    `  • The output should be indistinguishable at thumbnail-glance from a real ${app}-family marketing site.`,
+  )
 
   return lines.join('\n')
 }

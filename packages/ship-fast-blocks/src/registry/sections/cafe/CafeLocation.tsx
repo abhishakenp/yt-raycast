@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CafeLocation — visit / location block for a cozy cafe / coffee shop page,
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * with no props via baked-in defaults.
  */
 export const CafeLocation = defineComponent({
-  name: "CafeLocation",
+  name: 'CafeLocation',
   description:
     "Visit / location block for a cozy cafe page on a card-colored band: centered cap, serif heading, and description above a two-column layout. Left side shows address, hours, and contact tiles with inline icons; a social row; and a flex-wrap amenities chip row. Right side shows a large map image with an overlay 'Open in Google Maps' button. Social links and the map button route through useNavigate. Use for cafes, bakeries, tea houses, or any local business visit block.",
   props: z.object({
@@ -47,41 +47,41 @@ export const CafeLocation = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const cap = props.cap ?? "Visit Us"
-    const heading = props.heading ?? "Find your spot"
+    const cap = props.cap ?? 'Visit Us'
+    const heading = props.heading ?? 'Find your spot'
     const description =
       props.description ??
       "In the heart of Portland's Pearl District. Street parking available, bike friendly, and steps from the Streetcar."
     const addressLines = props.addressLines?.length
       ? props.addressLines
-      : ["1242 NW Glisan Street", "Portland, OR 97209"]
+      : ['1242 NW Glisan Street', 'Portland, OR 97209']
     const hoursLines = props.hoursLines?.length
       ? props.hoursLines
       : [
-          "Monday – Friday: 7am – 7pm",
-          "Saturday – Sunday: 8am – 6pm",
-          "Holiday hours may vary",
+          'Monday – Friday: 7am – 7pm',
+          'Saturday – Sunday: 8am – 6pm',
+          'Holiday hours may vary',
         ]
-    const phone = props.phone ?? "(503) 555-0192"
-    const email = props.email ?? "hello@littleowlcoffee.com"
+    const phone = props.phone ?? '(503) 555-0192'
+    const email = props.email ?? 'hello@littleowlcoffee.com'
     const socials = props.socials?.length
       ? props.socials
-      : ["Instagram", "Facebook"]
+      : ['Instagram', 'Facebook']
     const amenities = props.amenities?.length
       ? props.amenities
       : [
-          "Free WiFi",
-          "Outdoor Seating",
-          "Dog Friendly",
-          "Wheelchair Accessible",
-          "Bike Parking",
-          "Work-Friendly",
+          'Free WiFi',
+          'Outdoor Seating',
+          'Dog Friendly',
+          'Wheelchair Accessible',
+          'Bike Parking',
+          'Work-Friendly',
         ]
     const mapAlt =
       props.mapAlt ??
-      "Aerial map view showing Portland Pearl District with NW Glisan Street location marked, surrounded by city blocks and streets"
-    const mapCta = props.mapCta ?? "Open in Google Maps"
-    const mapTarget = props.mapTarget ?? "Location"
+      'Aerial map view showing Portland Pearl District with NW Glisan Street location marked, surrounded by city blocks and streets'
+    const mapCta = props.mapCta ?? 'Open in Google Maps'
+    const mapTarget = props.mapTarget ?? 'Location'
 
     const MapPin = ({ className }: { className?: string }) => (
       <svg
@@ -158,17 +158,25 @@ export const CafeLocation = defineComponent({
     )
 
     const locationInfo = [
-      { icon: <MapPin className="size-6" />, title: "Address", lines: addressLines },
-      { icon: <ClockIcon className="size-6" />, title: "Hours", lines: hoursLines },
+      {
+        icon: <MapPin className="size-6" />,
+        title: 'Address',
+        lines: addressLines,
+      },
+      {
+        icon: <ClockIcon className="size-6" />,
+        title: 'Hours',
+        lines: hoursLines,
+      },
       {
         icon: <PhoneIcon className="size-6" />,
-        title: "Contact",
+        title: 'Contact',
         lines: [phone, email],
       },
     ]
 
     return (
-      <section className={cn("bg-card py-20 lg:py-32", props.className)}>
+      <section className={cn('bg-card py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <p className="mb-3 text-sm font-medium uppercase tracking-wider text-primary">
@@ -224,9 +232,7 @@ export const CafeLocation = defineComponent({
 
               {/* Amenities */}
               <div className="border-t border-border pt-8">
-                <h4 className="mb-4 font-medium text-foreground">
-                  Amenities
-                </h4>
+                <h4 className="mb-4 font-medium text-foreground">Amenities</h4>
                 <div className="flex flex-wrap gap-3">
                   {amenities.map((a) => (
                     <span

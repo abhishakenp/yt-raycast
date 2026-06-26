@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * HealthcareFooter — rich multi-column footer for a medical-clinic page. A
@@ -15,7 +15,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * medical groups. Renders fully with no props via baked-in clinic defaults.
  */
 export const HealthcareFooter = defineComponent({
-  name: "HealthcareFooter",
+  name: 'HealthcareFooter',
   description:
     "Rich multi-column footer for a medical-clinic page: a dark foreground-colored band with a brand column (heart-in-tile mark + clinic name, tagline, social buttons), a Services links column, a Company links column, and a Contact column with icon-prefixed address / phone / email rows, all above a bordered bottom row pairing an auto-updating copyright line with legal links. The brand button, socials, links, phone and email route through useNavigate. Use as the closing site footer for doctors' offices, primary-care practices, telehealth or urgent-care clinics, hospitals or medical groups.",
   props: z.object({
@@ -51,45 +51,45 @@ export const HealthcareFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Vitality Health Partners"
-    const homeTarget = props.homeTarget ?? "Services"
+    const brand = props.brand ?? 'Vitality Health Partners'
+    const homeTarget = props.homeTarget ?? 'Services'
     const tagline =
       props.tagline ??
-      "Modern primary care and wellness services for the whole family. Serving San Francisco since 2015."
+      'Modern primary care and wellness services for the whole family. Serving San Francisco since 2015.'
     const socials = props.socials?.length
       ? props.socials
-      : ["Facebook", "Instagram", "LinkedIn"]
-    const servicesHeading = props.servicesHeading ?? "Services"
+      : ['Facebook', 'Instagram', 'LinkedIn']
+    const servicesHeading = props.servicesHeading ?? 'Services'
     const servicesLinks = props.servicesLinks?.length
       ? props.servicesLinks
       : [
-          "Primary Care",
-          "Virtual Visits",
+          'Primary Care',
+          'Virtual Visits',
           "Women's Health",
-          "Pediatrics",
-          "Mental Health",
-          "Lab & Diagnostics",
+          'Pediatrics',
+          'Mental Health',
+          'Lab & Diagnostics',
         ]
-    const companyHeading = props.companyHeading ?? "Company"
+    const companyHeading = props.companyHeading ?? 'Company'
     const companyLinks = props.companyLinks?.length
       ? props.companyLinks
-      : ["Our Doctors", "About Us", "Careers", "Blog", "Press"]
-    const contactHeading = props.contactHeading ?? "Contact"
+      : ['Our Doctors', 'About Us', 'Careers', 'Blog', 'Press']
+    const contactHeading = props.contactHeading ?? 'Contact'
     const address =
-      props.address ?? "1234 Mission Street, San Francisco, CA 94103"
-    const phone = props.phone ?? "(415) 555-1234"
-    const email = props.email ?? "hello@vitalityhealth.com"
+      props.address ?? '1234 Mission Street, San Francisco, CA 94103'
+    const phone = props.phone ?? '(415) 555-1234'
+    const email = props.email ?? 'hello@vitalityhealth.com'
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
     const legalLinks = props.legalLinks?.length
       ? props.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Accessibility"]
+      : ['Privacy Policy', 'Terms of Service', 'Accessibility']
 
     const HeartMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-xl bg-primary text-primary-foreground",
+          'grid place-items-center rounded-xl bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -112,7 +112,7 @@ export const HealthcareFooter = defineComponent({
     return (
       <footer
         className={cn(
-          "bg-foreground py-16 text-background/70",
+          'bg-foreground py-16 text-background/70',
           props.className,
         )}
         role="contentinfo"

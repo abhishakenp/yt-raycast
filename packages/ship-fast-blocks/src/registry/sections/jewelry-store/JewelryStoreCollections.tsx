@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * JewelryStoreCollections — curated collections grid for a luxury jewelry
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * engagement-ring boutiques. Renders fully with no props via baked-in defaults.
  */
 export const JewelryStoreCollections = defineComponent({
-  name: "JewelryStoreCollections",
+  name: 'JewelryStoreCollections',
   description:
-    "Curated collections grid for a luxury jewelry boutique: a centered gold eyebrow + serif heading + description introduce a responsive grid (1/2/3 cols) of clickable collection cards, each a tall 4:5 image that zooms on hover, a wide letter-spaced gold tag, a serif title, and a muted meta line (piece count • from price). Every card routes through useNavigate. Use to showcase distinct jewelry collections (Bridal, Daily Luxury, Statement, Heritage) for fine jewelers, diamond houses, or engagement-ring boutiques.",
+    'Curated collections grid for a luxury jewelry boutique: a centered gold eyebrow + serif heading + description introduce a responsive grid (1/2/3 cols) of clickable collection cards, each a tall 4:5 image that zooms on hover, a wide letter-spaced gold tag, a serif title, and a muted meta line (piece count • from price). Every card routes through useNavigate. Use to showcase distinct jewelry collections (Bridal, Daily Luxury, Statement, Heritage) for fine jewelers, diamond houses, or engagement-ring boutiques.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -36,56 +36,56 @@ export const JewelryStoreCollections = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Curated Collections"
-    const heading = props.heading ?? "Extraordinary by Design"
+    const eyebrow = props.eyebrow ?? 'Curated Collections'
+    const heading = props.heading ?? 'Extraordinary by Design'
     const description =
       props.description ??
-      "Each collection represents a distinct vision of elegance, crafted for those who appreciate the exceptional."
+      'Each collection represents a distinct vision of elegance, crafted for those who appreciate the exceptional.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            tag: "Bridal",
-            title: "Éternelle Engagement",
-            meta: "18 pieces • From $3,200",
+            tag: 'Bridal',
+            title: 'Éternelle Engagement',
+            meta: '18 pieces • From $3,200',
             imageAlt:
-              "solitaire diamond engagement ring with platinum band on black velvet",
+              'solitaire diamond engagement ring with platinum band on black velvet',
           },
           {
-            tag: "Daily Luxury",
-            title: "Lumière Essentials",
-            meta: "24 pieces • From $850",
+            tag: 'Daily Luxury',
+            title: 'Lumière Essentials',
+            meta: '24 pieces • From $850',
             imageAlt:
-              "delicate gold chain necklace with small diamond pendant on marble surface",
+              'delicate gold chain necklace with small diamond pendant on marble surface',
           },
           {
-            tag: "Statement",
-            title: "Grand Gala",
-            meta: "12 pieces • From $8,500",
-            imageAlt: "statement sapphire and diamond cocktail ring on hand",
+            tag: 'Statement',
+            title: 'Grand Gala',
+            meta: '12 pieces • From $8,500',
+            imageAlt: 'statement sapphire and diamond cocktail ring on hand',
           },
           {
-            tag: "Heritage",
-            title: "Archive Revival",
-            meta: "16 pieces • From $4,800",
-            imageAlt: "vintage-inspired pearl drop earrings with gold filigree",
+            tag: 'Heritage',
+            title: 'Archive Revival',
+            meta: '16 pieces • From $4,800',
+            imageAlt: 'vintage-inspired pearl drop earrings with gold filigree',
           },
           {
-            tag: "Icons",
-            title: "Maison Classics",
-            meta: "20 pieces • From $5,200",
-            imageAlt: "emerald cut diamond tennis bracelet on wrist",
+            tag: 'Icons',
+            title: 'Maison Classics',
+            meta: '20 pieces • From $5,200',
+            imageAlt: 'emerald cut diamond tennis bracelet on wrist',
           },
           {
-            tag: "Masculine",
+            tag: 'Masculine',
             title: "Gentleman's Edit",
-            meta: "14 pieces • From $1,200",
-            imageAlt: "mens signet ring with black onyx stone in yellow gold",
+            meta: '14 pieces • From $1,200',
+            imageAlt: 'mens signet ring with black onyx stone in yellow gold',
           },
         ]
 
     return (
-      <section className={cn("bg-background py-32", props.className)}>
+      <section className={cn('bg-background py-32', props.className)}>
         <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="mx-auto mb-20 max-w-2xl text-center">
             <p className="mb-4 text-sm uppercase tracking-[0.3em] text-primary">

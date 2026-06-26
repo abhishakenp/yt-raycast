@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { buildOpenUIVariationBlock } from './openui-variation.js'
 
 describe('buildOpenUIVariationBlock', () => {
-  const prompt = 'Build a healthcare patient portal with appointments and records.'
+  const prompt =
+    'Build a healthcare patient portal with appointments and records.'
 
   it('is stable for the same seed and prompt', () => {
     const a = buildOpenUIVariationBlock('sess-1', prompt)

@@ -1,8 +1,8 @@
-import { useState, type FormEvent } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { useState, type FormEvent } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * GovernmentPortalContact — classic Indian-government / public-sector (PSU)
@@ -15,9 +15,9 @@ import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
  * classic government, civic, municipal, PSU, utility or public-sector portal.
  */
 export const GovernmentPortalContact = defineComponent({
-  name: "GovernmentPortalContact",
+  name: 'GovernmentPortalContact',
   description:
-    "Classic Indian-government / public-sector (PSU) Contact us band: Head Office + Plant Office address cards (address, phone, email) beside a working grievance / enquiry form (name, email, subject, message) in useState that calls an optional onSubmit callback, plus an optional officials directory table (Name / Designation / Email). Handles citizen grievances, tender / notice queries and general enquiries. Gov-blue #3346B5 panel headers, #640032 directory accents, #333 body. Use for the official Contact us, head-office, plant-office, grievance or staff-directory section of any classic government, civic, municipal, PSU, utility or public-sector portal.",
+    'Classic Indian-government / public-sector (PSU) Contact us band: Head Office + Plant Office address cards (address, phone, email) beside a working grievance / enquiry form (name, email, subject, message) in useState that calls an optional onSubmit callback, plus an optional officials directory table (Name / Designation / Email). Handles citizen grievances, tender / notice queries and general enquiries. Gov-blue #3346B5 panel headers, #640032 directory accents, #333 body. Use for the official Contact us, head-office, plant-office, grievance or staff-directory section of any classic government, civic, municipal, PSU, utility or public-sector portal.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -45,49 +45,49 @@ export const GovernmentPortalContact = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Contact Us"
+    const heading = props.heading ?? 'Contact Us'
     const offices = props.offices?.length
       ? props.offices
       : [
           {
-            name: "Head Office",
+            name: 'Head Office',
             address:
-              "JUPMI Building Premises, ABD Area\nRanchi Smart City, P.O & P.S — Dhurwa\nDist. Ranchi, Jharkhand — 834004",
-            phone: "+91 651 244 0000",
-            email: "info@gov-portal.in",
+              'JUPMI Building Premises, ABD Area\nRanchi Smart City, P.O & P.S — Dhurwa\nDist. Ranchi, Jharkhand — 834004',
+            phone: '+91 651 244 0000',
+            email: 'info@gov-portal.in',
           },
           {
-            name: "Plant Office",
+            name: 'Plant Office',
             address:
-              "Thermal Power Station, P.O — Lalpania\nDist. Bokaro, Jharkhand — 829149",
-            phone: "+91 6549 270 000",
-            email: "plant@gov-portal.in",
+              'Thermal Power Station, P.O — Lalpania\nDist. Bokaro, Jharkhand — 829149',
+            phone: '+91 6549 270 000',
+            email: 'plant@gov-portal.in',
           },
         ]
     const directory = props.directory?.length
       ? props.directory
       : [
           {
-            name: "Shri Anil Kumar Sharma",
-            designation: "Managing Director",
-            email: "md@gov-portal.in",
+            name: 'Shri Anil Kumar Sharma',
+            designation: 'Managing Director',
+            email: 'md@gov-portal.in',
           },
           {
-            name: "Shri Ghanshyam Kumar",
-            designation: "ESE (Commercial)",
-            email: "ese.comm@gov-portal.in",
+            name: 'Shri Ghanshyam Kumar',
+            designation: 'ESE (Commercial)',
+            email: 'ese.comm@gov-portal.in',
           },
           {
-            name: "Shri Dipak Kumar Singh",
-            designation: "Company Secretary",
-            email: "cs@gov-portal.in",
+            name: 'Shri Dipak Kumar Singh',
+            designation: 'Company Secretary',
+            email: 'cs@gov-portal.in',
           },
         ]
 
-    const [name, setName] = useState("")
-    const [email, setEmail] = useState("")
-    const [subject, setSubject] = useState("")
-    const [message, setMessage] = useState("")
+    const [name, setName] = useState('')
+    const [email, setEmail] = useState('')
+    const [subject, setSubject] = useState('')
+    const [message, setMessage] = useState('')
     const [sent, setSent] = useState(false)
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -96,19 +96,19 @@ export const GovernmentPortalContact = defineComponent({
       // realtime HOC (withSectionRealtime), which is where a real grievance/
       // enquiry submission persists. No JSON-incompatible callback props.
       setSent(true)
-      setName("")
-      setEmail("")
-      setSubject("")
-      setMessage("")
+      setName('')
+      setEmail('')
+      setSubject('')
+      setMessage('')
     }
 
     const fieldClass =
-      "w-full rounded-sm border border-[#ccc] bg-white px-3 py-2 text-[14px] text-[#333] outline-none transition-colors focus:border-[#0792D0]"
-    const labelClass = "mb-1 block text-[13px] font-medium text-[#555]"
+      'w-full rounded-sm border border-[#ccc] bg-white px-3 py-2 text-[14px] text-[#333] outline-none transition-colors focus:border-[#0792D0]'
+    const labelClass = 'mb-1 block text-[13px] font-medium text-[#555]'
 
     return (
       <section
-        className={cn("px-6 py-12 lg:px-8", props.className)}
+        className={cn('px-6 py-12 lg:px-8', props.className)}
         style={{ fontFamily: '"Open Sans", "Alegreya Sans", sans-serif' }}
         aria-label={heading}
       >
@@ -136,7 +136,7 @@ export const GovernmentPortalContact = defineComponent({
                     {office.phone ? (
                       <li>
                         <span className="font-medium text-[#640032]">
-                          Phone:{" "}
+                          Phone:{' '}
                         </span>
                         <a
                           href={`tel:${office.phone}`}
@@ -149,7 +149,7 @@ export const GovernmentPortalContact = defineComponent({
                     {office.email ? (
                       <li>
                         <span className="font-medium text-[#640032]">
-                          Email:{" "}
+                          Email:{' '}
                         </span>
                         <a
                           href={`mailto:${office.email}`}
@@ -223,7 +223,7 @@ export const GovernmentPortalContact = defineComponent({
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Message"
-                    className={cn(fieldClass, "min-h-28 resize-y")}
+                    className={cn(fieldClass, 'min-h-28 resize-y')}
                   />
                 </div>
                 <div className="flex items-center gap-3">
@@ -288,7 +288,7 @@ export const GovernmentPortalContact = defineComponent({
                               {row.email}
                             </a>
                           ) : (
-                            ""
+                            ''
                           )}
                         </td>
                       </tr>

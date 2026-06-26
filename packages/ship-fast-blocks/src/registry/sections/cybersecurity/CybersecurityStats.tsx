@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CybersecurityStats — dark, full-bleed real-time threat-intelligence stats
@@ -13,9 +13,9 @@ import { cn } from "#/lib/utils.ts"
  * threat-intelligence defaults.
  */
 export const CybersecurityStats = defineComponent({
-  name: "CybersecurityStats",
+  name: 'CybersecurityStats',
   description:
-    "Dark full-bleed real-time threat-intelligence stats band: a high-contrast brand-surface section with a centered heading + subheading, a 2-to-4 column grid of big numeric stats (value, label, colored delta/note), and a bordered-top 3-up row of secondary metrics. Pure display, no links. Use as an authority/social-proof band between hero and features for cybersecurity vendors, SOC/MDR providers, or any metrics-driven B2B security SaaS.",
+    'Dark full-bleed real-time threat-intelligence stats band: a high-contrast brand-surface section with a centered heading + subheading, a 2-to-4 column grid of big numeric stats (value, label, colored delta/note), and a bordered-top 3-up row of secondary metrics. Pure display, no links. Use as an authority/social-proof band between hero and features for cybersecurity vendors, SOC/MDR providers, or any metrics-driven B2B security SaaS.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -38,55 +38,54 @@ export const CybersecurityStats = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Real-time threat intelligence"
+    const heading = props.heading ?? 'Real-time threat intelligence'
     const description =
       props.description ??
-      "Our global security network processes billions of events daily"
+      'Our global security network processes billions of events daily'
     const items = props.items?.length
       ? props.items
       : [
           {
-            value: "2.4M+",
-            label: "Threats blocked this quarter",
-            note: "+18% vs last quarter",
+            value: '2.4M+',
+            label: 'Threats blocked this quarter',
+            note: '+18% vs last quarter',
           },
           {
-            value: "847ms",
-            label: "Average threat response time",
-            note: "-23% improvement",
+            value: '847ms',
+            label: 'Average threat response time',
+            note: '-23% improvement',
           },
           {
-            value: "99.99%",
-            label: "Platform uptime SLA",
-            note: "24/7/365 monitoring",
+            value: '99.99%',
+            label: 'Platform uptime SLA',
+            note: '24/7/365 monitoring',
           },
           {
-            value: "156",
-            label: "Countries protected",
-            note: "Global SOC coverage",
+            value: '156',
+            label: 'Countries protected',
+            note: 'Global SOC coverage',
           },
         ]
     const secondary = props.secondary?.length
       ? props.secondary
       : [
           {
-            value: "$4.2M",
-            label: "Average customer cost savings from prevented breaches (2024)",
+            value: '$4.2M',
+            label:
+              'Average customer cost savings from prevented breaches (2024)',
           },
           {
-            value: "3,847",
-            label: "Zero-day vulnerabilities discovered and patched",
+            value: '3,847',
+            label: 'Zero-day vulnerabilities discovered and patched',
           },
           {
-            value: "12TB",
-            label: "Threat intelligence data processed daily",
+            value: '12TB',
+            label: 'Threat intelligence data processed daily',
           },
         ]
 
     return (
-      <section
-        className={cn("bg-foreground text-background", props.className)}
-      >
+      <section className={cn('bg-foreground text-background', props.className)}>
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>

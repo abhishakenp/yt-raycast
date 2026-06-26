@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FoodTruckTestimonials — a customer-reviews section with a press-logo strip. A
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * food trucks, restaurants, caterers or street-food vendors showing reviews and press.
  */
 export const FoodTruckTestimonials = defineComponent({
-  name: "FoodTruckTestimonials",
+  name: 'FoodTruckTestimonials',
   description:
-    "Customer-reviews section with a press-logo strip: a centered eyebrow + heading above a 3-up grid of muted quote cards, each with a five-star row, a quote and an avatar + name + role byline, followed by a centered row of clickable press / publication logos. Avatars use the alt-driven Image component; logos route through useNavigate. Use as the social-proof / testimonials section for food trucks, restaurants, caterers or street-food vendors showing reviews and press mentions.",
+    'Customer-reviews section with a press-logo strip: a centered eyebrow + heading above a 3-up grid of muted quote cards, each with a five-star row, a quote and an avatar + name + role byline, followed by a centered row of clickable press / publication logos. Avatars use the alt-driven Image component; logos route through useNavigate. Use as the social-proof / testimonials section for food trucks, restaurants, caterers or street-food vendors showing reviews and press mentions.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -34,37 +34,38 @@ export const FoodTruckTestimonials = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const testEyebrow = props.eyebrow ?? "Reviews"
-    const testHeading = props.heading ?? "What People Say"
+    const testEyebrow = props.eyebrow ?? 'Reviews'
+    const testHeading = props.heading ?? 'What People Say'
     const testItems = props.items?.length
       ? props.items
       : [
           {
             quote:
-              "Had them cater our company lunch for 80 people. The Korean short rib tacos were the hit of the day. Everyone asked where we found them. Will definitely book again!",
-            name: "Sarah Chen",
-            role: "VP Marketing, TechFlow Inc.",
+              'Had them cater our company lunch for 80 people. The Korean short rib tacos were the hit of the day. Everyone asked where we found them. Will definitely book again!',
+            name: 'Sarah Chen',
+            role: 'VP Marketing, TechFlow Inc.',
             avatarAlt:
-              "Professional headshot of Sarah Chen, a marketing executive",
+              'Professional headshot of Sarah Chen, a marketing executive',
           },
           {
             quote:
               "Best food truck in LA hands down. I've been tracking them for months. The cauliflower tacos are so good I dream about them. Worth driving across town for.",
-            name: "Marcus Johnson",
-            role: "Food Blogger @LAEats",
-            avatarAlt: "Professional headshot of Marcus Johnson, a food blogger",
+            name: 'Marcus Johnson',
+            role: 'Food Blogger @LAEats',
+            avatarAlt:
+              'Professional headshot of Marcus Johnson, a food blogger',
           },
           {
             quote:
-              "Hired them for my wedding reception. They were professional, punctual, and the food was absolutely incredible. Our guests are still talking about it three months later!",
-            name: "Emily Rodriguez",
-            role: "Wedding Client",
-            avatarAlt: "Professional headshot of Emily Rodriguez, a bride",
+              'Hired them for my wedding reception. They were professional, punctual, and the food was absolutely incredible. Our guests are still talking about it three months later!',
+            name: 'Emily Rodriguez',
+            role: 'Wedding Client',
+            avatarAlt: 'Professional headshot of Emily Rodriguez, a bride',
           },
         ]
     const pressLogos = props.pressLogos?.length
       ? props.pressLogos
-      : ["Eater LA", "LA Times Food", "The Infatuation"]
+      : ['Eater LA', 'LA Times Food', 'The Infatuation']
 
     const Star = ({ className }: { className?: string }) => (
       <svg
@@ -80,7 +81,7 @@ export const FoodTruckTestimonials = defineComponent({
     )
 
     return (
-      <section className={cn("px-6 py-20", props.className)}>
+      <section className={cn('px-6 py-20', props.className)}>
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 space-y-4 text-center">
             <span className="text-sm uppercase tracking-widest text-muted-foreground">

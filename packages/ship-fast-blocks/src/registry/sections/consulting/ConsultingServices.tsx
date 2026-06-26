@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * ConsultingServices — 6-up services / capabilities grid with icon tiles for a
@@ -14,9 +14,9 @@ import { cn } from "#/lib/utils.ts"
  * baked-in default services.
  */
 export const ConsultingServices = defineComponent({
-  name: "ConsultingServices",
+  name: 'ConsultingServices',
   description:
-    "6-up services / capabilities grid with icon tiles for a management-consulting firm page: a centered section heading and lead paragraph above a responsive 3-column grid of bordered cards, each with a rounded primary icon tile (rotating inline line-icons), a title and a description. Tokens-only, no links. Use to present consulting offerings (corporate strategy, digital transformation, M&A advisory, operations, organization, risk) or any professional-services capabilities block.",
+    '6-up services / capabilities grid with icon tiles for a management-consulting firm page: a centered section heading and lead paragraph above a responsive 3-column grid of bordered cards, each with a rounded primary icon tile (rotating inline line-icons), a title and a description. Tokens-only, no links. Use to present consulting offerings (corporate strategy, digital transformation, M&A advisory, operations, organization, risk) or any professional-services capabilities block.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -29,43 +29,42 @@ export const ConsultingServices = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading =
-      props.heading ?? "Comprehensive Consulting Services"
+    const heading = props.heading ?? 'Comprehensive Consulting Services'
     const description =
       props.description ??
-      "From strategy formulation to implementation, we partner with you at every stage of your transformation journey."
+      'From strategy formulation to implementation, we partner with you at every stage of your transformation journey.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Corporate Strategy",
+            title: 'Corporate Strategy',
             description:
-              "Develop winning strategies that define your competitive position, prioritize growth initiatives, and allocate resources for maximum impact. Our approach combines rigorous analysis with creative problem-solving.",
+              'Develop winning strategies that define your competitive position, prioritize growth initiatives, and allocate resources for maximum impact. Our approach combines rigorous analysis with creative problem-solving.',
           },
           {
-            title: "Digital Transformation",
+            title: 'Digital Transformation',
             description:
-              "Navigate the digital landscape with confidence. We help organizations leverage technology to reimagine operations, enhance customer experiences, and build new digital business models.",
+              'Navigate the digital landscape with confidence. We help organizations leverage technology to reimagine operations, enhance customer experiences, and build new digital business models.',
           },
           {
-            title: "M&A Advisory",
+            title: 'M&A Advisory',
             description:
-              "From target identification to post-merger integration, we guide clients through complex transactions. Our team has advised on over 400 deals worth more than $180 billion in total value.",
+              'From target identification to post-merger integration, we guide clients through complex transactions. Our team has advised on over 400 deals worth more than $180 billion in total value.',
           },
           {
-            title: "Operations Excellence",
+            title: 'Operations Excellence',
             description:
-              "Optimize your end-to-end operations to reduce costs, improve quality, and accelerate delivery. We specialize in supply chain transformation, lean manufacturing, and process automation.",
+              'Optimize your end-to-end operations to reduce costs, improve quality, and accelerate delivery. We specialize in supply chain transformation, lean manufacturing, and process automation.',
           },
           {
-            title: "Organization & Change",
+            title: 'Organization & Change',
             description:
-              "Build high-performing organizations and lead successful transformations. We help you redesign structures, develop talent, and manage cultural change to support your strategic objectives.",
+              'Build high-performing organizations and lead successful transformations. We help you redesign structures, develop talent, and manage cultural change to support your strategic objectives.',
           },
           {
-            title: "Risk & Compliance",
+            title: 'Risk & Compliance',
             description:
-              "Navigate regulatory complexity and protect your enterprise. We help organizations identify, assess, and mitigate risks while ensuring compliance with evolving standards and regulations.",
+              'Navigate regulatory complexity and protect your enterprise. We help organizations identify, assess, and mitigate risks while ensuring compliance with evolving standards and regulations.',
           },
         ]
 
@@ -157,7 +156,7 @@ export const ConsultingServices = defineComponent({
     ]
 
     return (
-      <section className={cn("bg-background py-24", props.className)}>
+      <section className={cn('bg-background py-24', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">

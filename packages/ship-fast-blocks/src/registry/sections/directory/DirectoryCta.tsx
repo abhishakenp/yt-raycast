@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DirectoryCta — dark inverted conversion CTA band for a local-business
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * marketplaces, or find-a-service platforms.
  */
 export const DirectoryCta = defineComponent({
-  name: "DirectoryCta",
+  name: 'DirectoryCta',
   description:
-    "Dark inverted conversion CTA band for a local-business DIRECTORY: a foreground-on-background inverted section with a large centered headline, a supporting paragraph in muted inverted text, and a centered pair of CTAs (a filled background-surface primary button plus an outlined secondary button). Both CTAs route through useNavigate. Use as the closing list-your-business or sign-up conversion band on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.",
+    'Dark inverted conversion CTA band for a local-business DIRECTORY: a foreground-on-background inverted section with a large centered headline, a supporting paragraph in muted inverted text, and a centered pair of CTAs (a filled background-surface primary button plus an outlined secondary button). Both CTAs route through useNavigate. Use as the closing list-your-business or sign-up conversion band on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
   props: z.object({
     /** CTA heading. */
     heading: z.string().optional(),
@@ -29,17 +29,17 @@ export const DirectoryCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Ready to Grow Your Business?"
+    const heading = props.heading ?? 'Ready to Grow Your Business?'
     const description =
       props.description ??
-      "Join 12,000+ local businesses already connecting with customers on LocalFindr. Start your free listing today."
-    const primaryCta = props.primaryCta ?? "List Your Business Free"
-    const secondaryCta = props.secondaryCta ?? "Contact Sales"
+      'Join 12,000+ local businesses already connecting with customers on LocalFindr. Start your free listing today.'
+    const primaryCta = props.primaryCta ?? 'List Your Business Free'
+    const secondaryCta = props.secondaryCta ?? 'Contact Sales'
 
     return (
       <section
         className={cn(
-          "bg-foreground py-16 text-background lg:py-24",
+          'bg-foreground py-16 text-background lg:py-24',
           props.className,
         )}
       >

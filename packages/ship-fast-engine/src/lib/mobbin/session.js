@@ -13,7 +13,8 @@ export const SUPABASE_COOKIE_PREFIX = 'sb-ujasntkfphywizsdaapi-auth-token'
 export const DEFAULT_AUTH_FILE = join(homedir(), '.mobbin-mcp', 'auth.json')
 export const COOKIE_CHUNK_SIZE = 3180
 
-const FALLBACK_PUBLISHABLE_KEY = 'sb_publishable_YptnKskI90SD2g25sAvVxQ_tZltjYFE'
+const FALLBACK_PUBLISHABLE_KEY =
+  'sb_publishable_YptnKskI90SD2g25sAvVxQ_tZltjYFE'
 const SEARCHABLE_APPS_TTL_MS = 60 * 60 * 1000
 
 let _authCache = null
@@ -52,7 +53,10 @@ export function importSessionFromBrowserCookie(cookieHeader) {
   const raw = String(cookieHeader || '').trim()
   if (!raw) return null
 
-  const pairs = raw.split(';').map((part) => part.trim()).filter(Boolean)
+  const pairs = raw
+    .split(';')
+    .map((part) => part.trim())
+    .filter(Boolean)
   const chunks = []
   for (const pair of pairs) {
     const eq = pair.indexOf('=')
@@ -66,7 +70,9 @@ export function importSessionFromBrowserCookie(cookieHeader) {
 
   chunks.sort((a, b) => a.index - b.index)
   const joined = chunks.map((c) => c.value).join('')
-  const encoded = joined.startsWith('base64-') ? joined.slice('base64-'.length) : joined
+  const encoded = joined.startsWith('base64-')
+    ? joined.slice('base64-'.length)
+    : joined
   let session
   try {
     session = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'))
@@ -105,15 +111,18 @@ async function refreshTokenIfNeeded() {
   _refreshPromise = (async () => {
     try {
       const anonKey = await fetchAnonKey()
-      const res = await fetch(`${MOBBIN_SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: anonKey,
-          Authorization: `Bearer ${anonKey}`,
+      const res = await fetch(
+        `${MOBBIN_SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: anonKey,
+            Authorization: `Bearer ${anonKey}`,
+          },
+          body: JSON.stringify({ refresh_token: _authCache.refresh_token }),
         },
-        body: JSON.stringify({ refresh_token: _authCache.refresh_token }),
-      })
+      )
       if (!res.ok) return _authCache
       const next = await res.json()
       _authCache = {
@@ -215,11 +224,17 @@ function mapPreviewScreen(appName, screen) {
 }
 
 /** Fetch popular apps grouped by category with preview screenshots. */
-export async function fetchPopularMobbinApps({ platform = 'web', limitPerCategory = 4 } = {}) {
-  const json = await mobbinApiFetch('/api/popular-apps/fetch-popular-apps-with-preview-screens', {
-    method: 'POST',
-    body: { platform, limitPerCategory },
-  })
+export async function fetchPopularMobbinApps({
+  platform = 'web',
+  limitPerCategory = 4,
+} = {}) {
+  const json = await mobbinApiFetch(
+    '/api/popular-apps/fetch-popular-apps-with-preview-screens',
+    {
+      method: 'POST',
+      body: { platform, limitPerCategory },
+    },
+  )
   const value = json?.value
   if (!value || typeof value !== 'object') return []
   return Object.values(value).flat().filter(Boolean)
@@ -249,7 +264,8 @@ function flattenPopularScreens(apps, limit) {
 /** Cached searchable app index for a platform (~1000 apps). */
 export async function fetchSearchableApps(platform = 'web') {
   const cached = _searchableAppsCache.get(platform)
-  if (cached && Date.now() - cached.at < SEARCHABLE_APPS_TTL_MS) return cached.apps
+  if (cached && Date.now() - cached.at < SEARCHABLE_APPS_TTL_MS)
+    return cached.apps
 
   const json = await mobbinApiFetch(`/api/searchable-apps/${platform}`)
   const apps = Array.isArray(json) ? json : []
@@ -274,7 +290,10 @@ export async function autocompleteMobbinApp(query, { platform = 'web' } = {}) {
 }
 
 /** Resolve a named app via searchable index + autocomplete fallback. */
-export async function resolveMobbinAppByName(appName, { platform = 'web' } = {}) {
+export async function resolveMobbinAppByName(
+  appName,
+  { platform = 'web' } = {},
+) {
   const name = String(appName || '').trim()
   if (!name) return null
 
@@ -309,20 +328,27 @@ export async function fetchMobbinScreens({
 }
 
 /** Validate Pro session by hitting popular-apps and returning sample app names. */
-export async function validateMobbinSession({ platform = 'web', limitPerCategory = 2 } = {}) {
+export async function validateMobbinSession({
+  platform = 'web',
+  limitPerCategory = 2,
+} = {}) {
   const apps = await fetchPopularMobbinApps({ platform, limitPerCategory })
   if (!apps.length) return { ok: false, apps: [], screens: [] }
 
-  const sampleApps = [...new Set(apps.map((entry) => entry?.app_name || entry?.appName).filter(Boolean))].slice(
-    0,
-    6,
-  )
+  const sampleApps = [
+    ...new Set(
+      apps.map((entry) => entry?.app_name || entry?.appName).filter(Boolean),
+    ),
+  ].slice(0, 6)
   const screens = flattenPopularScreens(apps, 3)
   return { ok: true, apps: sampleApps, screens }
 }
 
 /** Pick live Mobbin preview screens for a named anchor app (best-effort). */
-export async function fetchLiveScreensForApp(appName, { limit = 3, platform = 'web' } = {}) {
+export async function fetchLiveScreensForApp(
+  appName,
+  { limit = 3, platform = 'web' } = {},
+) {
   const name = String(appName || '').trim()
   if (!name) return []
 
@@ -330,7 +356,9 @@ export async function fetchLiveScreensForApp(appName, { limit = 3, platform = 'w
   if (!app) return []
 
   const previews = Array.isArray(app.previewScreens) ? app.previewScreens : []
-  return previews.slice(0, limit).map((screen) => mapPreviewScreen(app.appName || name, screen))
+  return previews
+    .slice(0, limit)
+    .map((screen) => mapPreviewScreen(app.appName || name, screen))
 }
 
 export async function mobbinSessionStatus() {
@@ -344,5 +372,8 @@ export async function mobbinSessionStatus() {
 }
 
 export function isMobbinLiveEnabled() {
-  return process.env.SHIPFAST_MOBBIN_LIVE === '1' || process.env.SHIPFAST_MOBBIN_LIVE === 'true'
+  return (
+    process.env.SHIPFAST_MOBBIN_LIVE === '1' ||
+    process.env.SHIPFAST_MOBBIN_LIVE === 'true'
+  )
 }

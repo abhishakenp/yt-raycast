@@ -1,13 +1,13 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CleaningServiceNavbar — sticky, translucent top navigation bar for a home-cleaning / maid-service landing page. A blurred, border-bottomed header pinned to the top with a brand sparkle-mark logo tile + company name on the left, a horizontal row of service-section nav links on the desktop center, and a phone number + pill-shaped "Book Cleaning" CTA on the right. Every brand click, nav link, phone button, and CTA routes through useNavigate. Use as the sticky site header for residential cleaning companies, maid services, housekeeping platforms, janitorial businesses, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
  */
 export const CleaningServiceNavbar = defineComponent({
-  name: "CleaningServiceNavbar",
+  name: 'CleaningServiceNavbar',
   description:
     "Sticky translucent top navigation bar for a home-cleaning / maid-service landing page: blurred border-bottomed header with a brand sparkle-mark logo tile + company name on the left, horizontal nav links on desktop center, and a phone number + pill-shaped 'Book Cleaning' CTA on the right. Brand click, nav links, phone button, and CTA route through useNavigate. Use as the sticky site header for residential cleaning companies, maid services, housekeeping, janitorial, or local home-service brands.",
   props: z.object({
@@ -27,19 +27,19 @@ export const CleaningServiceNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "PureSpace"
+    const brand = props.brand ?? 'PureSpace'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "How It Works", "Pricing", "Reviews", "FAQ"]
+      : ['Services', 'How It Works', 'Pricing', 'Reviews', 'FAQ']
     const homeTarget = props.homeTarget ?? nav[0]
-    const ctaLabel = props.ctaLabel ?? "Book Cleaning"
-    const ctaTarget = props.ctaTarget ?? "Book Your Cleaning"
-    const phone = props.phone ?? "(555) 123-4567"
+    const ctaLabel = props.ctaLabel ?? 'Book Cleaning'
+    const ctaTarget = props.ctaTarget ?? 'Book Your Cleaning'
+    const phone = props.phone ?? '(555) 123-4567'
 
     const SparkleMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -79,7 +79,7 @@ export const CleaningServiceNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

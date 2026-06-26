@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * NewsroomFooter — refined editorial footer for a digital newsroom or online
@@ -16,9 +16,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * "The Daily Ledger" defaults.
  */
 export const NewsroomFooter = defineComponent({
-  name: "NewsroomFooter",
+  name: 'NewsroomFooter',
   description:
-    "Refined editorial newspaper-style footer for a digital newsroom or online magazine: a large serif wordmark and a one-line tagline above a wide multi-column set of link groups (Sections, Company, Help, Legal, Follow) — each a heading plus several routed links — an optional slim newsletter mini-capture line, and a divided bottom bar with social handles, an auto-updating copyright line, legal links (Privacy, Terms, Cookies) and a subtle Back-to-top affordance. The wordmark and every link route through useNavigate. Use as the closing footer for newspapers, magazines, publishing houses or any editorial publication.",
+    'Refined editorial newspaper-style footer for a digital newsroom or online magazine: a large serif wordmark and a one-line tagline above a wide multi-column set of link groups (Sections, Company, Help, Legal, Follow) — each a heading plus several routed links — an optional slim newsletter mini-capture line, and a divided bottom bar with social handles, an auto-updating copyright line, legal links (Privacy, Terms, Cookies) and a subtle Back-to-top affordance. The wordmark and every link route through useNavigate. Use as the closing footer for newspapers, magazines, publishing houses or any editorial publication.',
   props: z.object({
     /** Large serif wordmark / publication name. */
     brand: z.string().optional(),
@@ -38,54 +38,54 @@ export const NewsroomFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "The Daily Ledger"
+    const brand = props.brand ?? 'The Daily Ledger'
     const blurb =
       props.blurb ??
-      "Independent journalism, dispatches and long reads for the curious — delivered with rigor every morning."
+      'Independent journalism, dispatches and long reads for the curious — delivered with rigor every morning.'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            heading: "Sections",
-            links: ["World", "Politics", "Business", "Culture", "Opinion"],
+            heading: 'Sections',
+            links: ['World', 'Politics', 'Business', 'Culture', 'Opinion'],
           },
           {
-            heading: "Company",
-            links: ["About", "Masthead", "Careers", "Advertise", "Contact"],
+            heading: 'Company',
+            links: ['About', 'Masthead', 'Careers', 'Advertise', 'Contact'],
           },
           {
-            heading: "Help",
+            heading: 'Help',
             links: [
-              "Subscribe",
-              "Newsletters",
-              "Gift a Subscription",
-              "FAQ",
-              "Support",
+              'Subscribe',
+              'Newsletters',
+              'Gift a Subscription',
+              'FAQ',
+              'Support',
             ],
           },
           {
-            heading: "Legal",
-            links: ["Privacy", "Terms", "Cookies", "Accessibility", "Ethics"],
+            heading: 'Legal',
+            links: ['Privacy', 'Terms', 'Cookies', 'Accessibility', 'Ethics'],
           },
           {
-            heading: "Follow",
-            links: ["Twitter", "Instagram", "Facebook", "RSS", "Apple News"],
+            heading: 'Follow',
+            links: ['Twitter', 'Instagram', 'Facebook', 'RSS', 'Apple News'],
           },
         ]
     const social = props.social?.length
       ? props.social
-      : ["@dailyledger", "facebook.com/dailyledger", "instagram/dailyledger"]
+      : ['@dailyledger', 'facebook.com/dailyledger', 'instagram/dailyledger']
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Media. All rights reserved.`
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy", "Terms", "Cookies"]
+      : ['Privacy', 'Terms', 'Cookies']
 
     return (
       <footer
         className={cn(
-          "border-t border-border bg-background py-16",
+          'border-t border-border bg-background py-16',
           props.className,
         )}
       >
@@ -119,7 +119,7 @@ export const NewsroomFooter = defineComponent({
                 />
                 <button
                   type="button"
-                  onClick={() => go("Subscribe")}
+                  onClick={() => go('Subscribe')}
                   className="h-10 shrink-0 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
                 >
                   Subscribe

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * BarNightclubNavbar — fixed, translucent top navigation bar for a moody
@@ -16,7 +16,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * fully with no props via baked-in "NOIR" defaults.
  */
 export const BarNightclubNavbar = defineComponent({
-  name: "BarNightclubNavbar",
+  name: 'BarNightclubNavbar',
   description:
     "Fixed translucent top navigation bar for a moody cocktail-bar / nightclub site: backdrop-blurred, hairline border-bottomed header pinned to the top with a light-weight wide letter-spaced uppercase brand wordmark on the left, horizontal muted nav links in the center (desktop), an outlined 'book a table' CTA on the right, and a hamburger menu button on mobile. Brand routes to the first nav target, the CTA to the last, and every link routes through useNavigate for page-switching. Use as the sticky site header for cocktail bars, nightclubs, lounges, speakeasies, or any dark premium after-dark venue page.",
   props: z.object({
@@ -30,16 +30,16 @@ export const BarNightclubNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "NOIR"
+    const brand = props.brand ?? 'NOIR'
     const nav = props.nav?.length
       ? props.nav
-      : ["Events", "Menu", "Gallery", "Reservations"]
-    const cta = props.cta ?? "Book a Table"
+      : ['Events', 'Menu', 'Gallery', 'Reservations']
+    const cta = props.cta ?? 'Book a Table'
 
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md',
           props.className,
         )}
       >

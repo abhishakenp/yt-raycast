@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * CommunityForumFeatures — capabilities grid for a community-platform / discussion-forum
@@ -12,9 +12,9 @@ import { cn } from "#/lib/utils.ts"
  * search, permissions, real-time updates, insights, and rich text editing.
  */
 export const CommunityForumFeatures = defineComponent({
-  name: "CommunityForumFeatures",
+  name: 'CommunityForumFeatures',
   description:
-    "Capabilities grid for a community-platform / discussion-forum landing page: a centered section heading and description above a responsive 3-column grid of rounded card tiles, each with a tinted inline SVG icon, a title, and a description; cards slightly lift on hover. No links — presentation only. Use as the feature section for community platforms, forums, knowledge bases, or SaaS products showcasing organized topics, search, permissions, real-time updates, insights, and rich text editing.",
+    'Capabilities grid for a community-platform / discussion-forum landing page: a centered section heading and description above a responsive 3-column grid of rounded card tiles, each with a tinted inline SVG icon, a title, and a description; cards slightly lift on hover. No links — presentation only. Use as the feature section for community platforms, forums, knowledge bases, or SaaS products showcasing organized topics, search, permissions, real-time updates, insights, and rich text editing.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -28,74 +28,134 @@ export const CommunityForumFeatures = defineComponent({
   }),
   component: ({ props }) => {
     const heading =
-      props.heading ?? "Everything you need for thriving discussions"
+      props.heading ?? 'Everything you need for thriving discussions'
     const description =
       props.description ??
-      "Purpose-built features that make community management effortless and conversations delightful."
+      'Purpose-built features that make community management effortless and conversations delightful.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Organized Topics",
+            title: 'Organized Topics',
             description:
-              "Create unlimited categories and subcategories. Keep discussions structured so members can find exactly what they need without endless scrolling.",
+              'Create unlimited categories and subcategories. Keep discussions structured so members can find exactly what they need without endless scrolling.',
           },
           {
-            title: "Powerful Search",
+            title: 'Powerful Search',
             description:
-              "Instant full-text search across all posts, comments, and member profiles. Find that specific conversation from months ago in seconds.",
+              'Instant full-text search across all posts, comments, and member profiles. Find that specific conversation from months ago in seconds.',
           },
           {
-            title: "Granular Permissions",
+            title: 'Granular Permissions',
             description:
-              "Control who can view, post, moderate, and manage. Create private spaces for premium members or open discussions for everyone.",
+              'Control who can view, post, moderate, and manage. Create private spaces for premium members or open discussions for everyone.',
           },
           {
-            title: "Real-time Updates",
+            title: 'Real-time Updates',
             description:
-              "See new posts and replies instantly without refreshing. Stay in the flow of conversation with live notifications and typing indicators.",
+              'See new posts and replies instantly without refreshing. Stay in the flow of conversation with live notifications and typing indicators.',
           },
           {
-            title: "Community Insights",
+            title: 'Community Insights',
             description:
-              "Track engagement metrics, popular topics, member growth, and activity patterns. Make data-driven decisions to nurture your community.",
+              'Track engagement metrics, popular topics, member growth, and activity patterns. Make data-driven decisions to nurture your community.',
           },
           {
-            title: "Rich Text Editor",
+            title: 'Rich Text Editor',
             description:
-              "Compose beautiful posts with markdown support, code blocks, embeds, and file attachments. Express ideas clearly with formatting that just works.",
+              'Compose beautiful posts with markdown support, code blocks, embeds, and file attachments. Express ideas clearly with formatting that just works.',
           },
         ]
 
     const featureIcons: ReactNode[] = [
       // organized topics — list/lines
-      <svg key="topics" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+      <svg
+        key="topics"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
         <path d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
       </svg>,
       // powerful search
-      <svg key="search" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+      <svg
+        key="search"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
         <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>,
       // granular permissions — lock
-      <svg key="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+      <svg
+        key="lock"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
         <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
       </svg>,
       // real-time updates — bolt
-      <svg key="bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+      <svg
+        key="bolt"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
         <path d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>,
       // community insights — chart
-      <svg key="chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+      <svg
+        key="chart"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
         <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>,
       // rich text editor — lines
-      <svg key="editor" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+      <svg
+        key="editor"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
         <path d="M10 20l4-16m2 16l4-16M6 9h14M4 15h14" />
       </svg>,
     ]
 
     return (
-      <section className={cn("py-24 lg:py-32", props.className)}>
+      <section className={cn('py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">

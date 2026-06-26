@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * NoCodeSteps — centered-header 3-step "how it works" flow on a subtle muted
@@ -13,7 +13,7 @@ import { Image } from "#/lib/img.tsx"
  * no props.
  */
 export const NoCodeSteps = defineComponent({
-  name: "NoCodeSteps",
+  name: 'NoCodeSteps',
   description:
     "Centered-header 3-step 'how it works' flow on a subtle muted band: a muted eyebrow, heading, and paragraph above a 1-to-3 column grid of numbered steps, each with a large inverse rounded number badge, a card holding a 16:9 image, a centered title, and a description, plus a connecting dotted line between steps on desktop. Use as the 'from idea to live' / onboarding flow on a no-code / app-builder SaaS or product landing page.",
   props: z.object({
@@ -36,40 +36,39 @@ export const NoCodeSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "How It Works"
-    const heading =
-      props.heading ?? "From idea to live app in 3 simple steps"
+    const eyebrow = props.eyebrow ?? 'How It Works'
+    const heading = props.heading ?? 'From idea to live app in 3 simple steps'
     const description =
       props.description ??
-      "No coding required. No setup headaches. Just pure creation."
+      'No coding required. No setup headaches. Just pure creation.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Choose a Template",
+            title: 'Choose a Template',
             description:
-              "Browse 200+ professionally designed templates. Filter by category, style, or industry to find your perfect starting point.",
-            imageAlt: "Designer browsing template gallery on laptop screen",
+              'Browse 200+ professionally designed templates. Filter by category, style, or industry to find your perfect starting point.',
+            imageAlt: 'Designer browsing template gallery on laptop screen',
           },
           {
-            title: "Customize Everything",
+            title: 'Customize Everything',
             description:
-              "Drag, drop, and edit with our visual builder. Change colors, fonts, images, and content to match your brand perfectly.",
+              'Drag, drop, and edit with our visual builder. Change colors, fonts, images, and content to match your brand perfectly.',
             imageAlt:
-              "Person customizing app interface with drag and drop editor",
+              'Person customizing app interface with drag and drop editor',
           },
           {
-            title: "Publish & Grow",
+            title: 'Publish & Grow',
             description:
-              "Hit publish and your app goes live instantly. Get a custom domain, analytics, and scale as your audience grows.",
+              'Hit publish and your app goes live instantly. Get a custom domain, analytics, and scale as your audience grows.',
             imageAlt:
-              "Live analytics dashboard showing app performance metrics",
+              'Live analytics dashboard showing app performance metrics',
           },
         ]
 
     return (
       <section
-        className={cn("bg-muted/40 py-24", props.className)}
+        className={cn('bg-muted/40 py-24', props.className)}
         aria-labelledby="nc-steps"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

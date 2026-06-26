@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteNav } from "#/section-kit/SiteNav.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const Mark = ({ className }: { className?: string }) => (
   <svg
@@ -20,9 +20,9 @@ const Mark = ({ className }: { className?: string }) => (
 )
 
 export const WeddingNavbar = defineComponent({
-  name: "WeddingNavbar",
+  name: 'WeddingNavbar',
   description:
-    "Elegant sticky wedding header built on the shared SiteNav composite: serif couple wordmark, interlocking-rings brand mark, romantic nav links (Story, Gallery, Details, RSVP), and an RSVP call to action. Use as the page header for a wedding invitation or celebration site, or as the top band of any generated wedding page family.",
+    'Elegant sticky wedding header built on the shared SiteNav composite: serif couple wordmark, interlocking-rings brand mark, romantic nav links (Story, Gallery, Details, RSVP), and an RSVP call to action. Use as the page header for a wedding invitation or celebration site, or as the top band of any generated wedding page family.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -32,14 +32,19 @@ export const WeddingNavbar = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const nav = props.nav?.length ? props.nav : ["Story", "Gallery", "Details", "RSVP"]
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Story', 'Gallery', 'Details', 'RSVP']
     return (
       <SiteNav
-        brand={props.brand ?? "Ava & Liam"}
+        brand={props.brand ?? 'Ava & Liam'}
         brandMark={<Mark className="size-8 text-primary" />}
         brandClassName="font-serif text-xl font-medium"
         nav={nav}
-        cta={{ label: props.ctaLabel ?? "RSVP", target: props.ctaTarget ?? "RSVP" }}
+        cta={{
+          label: props.ctaLabel ?? 'RSVP',
+          target: props.ctaTarget ?? 'RSVP',
+        }}
         homeTarget={props.homeTarget ?? nav[0]}
         className={props.className}
       />

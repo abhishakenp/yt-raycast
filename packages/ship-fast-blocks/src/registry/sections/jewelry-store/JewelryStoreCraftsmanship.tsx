@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * JewelryStoreCraftsmanship — split craftsmanship / values band for a luxury
@@ -15,9 +15,9 @@ import { Image } from "#/lib/img.tsx"
  * diamond houses, or high-jewelry maisons. Renders fully with no props.
  */
 export const JewelryStoreCraftsmanship = defineComponent({
-  name: "JewelryStoreCraftsmanship",
+  name: 'JewelryStoreCraftsmanship',
   description:
-    "Split craftsmanship / values band for a luxury jewelry maison on a subtle muted band: a left column with a gold eyebrow, serif heading, lead paragraph, and a stacked list of value props (each a circular gold icon chip + serif title + description, icons rotated from a local check-badge / star / shield / sparkle set), and a right column with a staggered two-column photo collage of atelier images (mixed 3:4 / square aspect ratios, one column nudged down). Use to communicate ethical sourcing, master artisanship, lifetime warranty, and bespoke design for fine jewelers, diamond houses, or high-jewelry maisons.",
+    'Split craftsmanship / values band for a luxury jewelry maison on a subtle muted band: a left column with a gold eyebrow, serif heading, lead paragraph, and a stacked list of value props (each a circular gold icon chip + serif title + description, icons rotated from a local check-badge / star / shield / sparkle set), and a right column with a staggered two-column photo collage of atelier images (mixed 3:4 / square aspect ratios, one column nudged down). Use to communicate ethical sourcing, master artisanship, lifetime warranty, and bespoke design for fine jewelers, diamond houses, or high-jewelry maisons.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -29,42 +29,42 @@ export const JewelryStoreCraftsmanship = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Our Difference"
-    const heading = props.heading ?? "Crafted Without Compromise"
+    const eyebrow = props.eyebrow ?? 'Our Difference'
+    const heading = props.heading ?? 'Crafted Without Compromise'
     const description =
       props.description ??
-      "For over 130 years, Maison Noir has upheld an unwavering commitment to excellence. Each piece that bears our name represents countless hours of meticulous craftsmanship."
+      'For over 130 years, Maison Noir has upheld an unwavering commitment to excellence. Each piece that bears our name represents countless hours of meticulous craftsmanship.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Conflict-Free Guarantee",
+            title: 'Conflict-Free Guarantee',
             description:
-              "Every diamond is ethically sourced and certified by the Kimberley Process. We trace each stone from mine to masterpiece.",
+              'Every diamond is ethically sourced and certified by the Kimberley Process. We trace each stone from mine to masterpiece.',
           },
           {
-            title: "Master Artisans",
+            title: 'Master Artisans',
             description:
-              "Our atelier employs 47 master jewelers with a combined 840 years of experience, each trained in traditional techniques passed through generations.",
+              'Our atelier employs 47 master jewelers with a combined 840 years of experience, each trained in traditional techniques passed through generations.',
           },
           {
-            title: "Lifetime Warranty",
+            title: 'Lifetime Warranty',
             description:
-              "Every Maison Noir piece includes complimentary cleaning, inspection, and repairs for life. We stand behind our craft eternally.",
+              'Every Maison Noir piece includes complimentary cleaning, inspection, and repairs for life. We stand behind our craft eternally.',
           },
           {
-            title: "Bespoke Design",
+            title: 'Bespoke Design',
             description:
-              "Commission a one-of-a-kind creation. Our designers will transform your vision into a timeless treasure, from sketch to finished piece.",
+              'Commission a one-of-a-kind creation. Our designers will transform your vision into a timeless treasure, from sketch to finished piece.',
           },
         ]
     const imageAlts = props.imageAlts?.length
       ? props.imageAlts
       : [
-          "jeweler hands using precision tools to set diamond in ring",
-          "close-up of diamond grading equipment and loose diamonds on velvet",
-          "goldsmith polishing finished gold ring at workbench",
-          "collection of finished diamond jewelry pieces displayed on black slate",
+          'jeweler hands using precision tools to set diamond in ring',
+          'close-up of diamond grading equipment and loose diamonds on velvet',
+          'goldsmith polishing finished gold ring at workbench',
+          'collection of finished diamond jewelry pieces displayed on black slate',
         ]
 
     const CheckBadge = () => (
@@ -130,7 +130,7 @@ export const JewelryStoreCraftsmanship = defineComponent({
     const icons = [CheckBadge, StarIcon, ShieldIcon, SparkleIcon]
 
     return (
-      <section className={cn("bg-muted py-32", props.className)}>
+      <section className={cn('bg-muted py-32', props.className)}>
         <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="grid items-center gap-20 lg:grid-cols-2">
             <div>

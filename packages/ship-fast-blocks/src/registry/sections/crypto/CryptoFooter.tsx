@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CryptoFooter — rich multi-column footer for a crypto / DeFi infrastructure
@@ -13,9 +13,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * sites.
  */
 export const CryptoFooter = defineComponent({
-  name: "CryptoFooter",
+  name: 'CryptoFooter',
   description:
-    "Rich multi-column footer for a crypto / DeFi infrastructure landing page: bg-foreground footer with brand bolt icon + protocol name, description, social-link buttons with first-letter avatars, a multi-column link grid, auto-updating copyright line, and legal links. All buttons route through useNavigate. Use as the closing site footer for crypto protocols, chains, bridges, DeFi platforms, or Web3 infrastructure sites.",
+    'Rich multi-column footer for a crypto / DeFi infrastructure landing page: bg-foreground footer with brand bolt icon + protocol name, description, social-link buttons with first-letter avatars, a multi-column link grid, auto-updating copyright line, and legal links. All buttons route through useNavigate. Use as the closing site footer for crypto protocols, chains, bridges, DeFi platforms, or Web3 infrastructure sites.',
   props: z.object({
     /** Brand / protocol name shown beside the logo icon. */
     brand: z.string().optional(),
@@ -42,47 +42,42 @@ export const CryptoFooter = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "NexusChain"
+    const brand = props.brand ?? 'NexusChain'
     const description =
       props.description ??
-      "Enterprise-grade infrastructure for DeFi protocols, cross-chain bridges, and institutional tokenization."
-    const homeTarget = props.homeTarget ?? "Features"
+      'Enterprise-grade infrastructure for DeFi protocols, cross-chain bridges, and institutional tokenization.'
+    const homeTarget = props.homeTarget ?? 'Features'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            heading: "Product",
+            heading: 'Product',
+            links: ['Infrastructure', 'Bridge', 'Analytics', 'SDK', 'Pricing'],
+          },
+          {
+            heading: 'Developers',
             links: [
-              "Infrastructure",
-              "Bridge",
-              "Analytics",
-              "SDK",
-              "Pricing",
+              'Documentation',
+              'API Reference',
+              'GitHub',
+              'Status',
+              'Bug Bounty',
             ],
           },
           {
-            heading: "Developers",
-            links: [
-              "Documentation",
-              "API Reference",
-              "GitHub",
-              "Status",
-              "Bug Bounty",
-            ],
-          },
-          {
-            heading: "Company",
-            links: ["About", "Careers", "Blog", "Press", "Contact"],
+            heading: 'Company',
+            links: ['About', 'Careers', 'Blog', 'Press', 'Contact'],
           },
         ]
     const socials = props.socials?.length
       ? props.socials
-      : ["Twitter", "GitHub", "LinkedIn", "Discord"]
+      : ['Twitter', 'GitHub', 'LinkedIn', 'Discord']
     const note =
-      props.note ?? `© ${new Date().getFullYear()} ${brand} Foundation. All rights reserved.`
+      props.note ??
+      `© ${new Date().getFullYear()} ${brand} Foundation. All rights reserved.`
     const legal = props.legal?.length
       ? props.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Policy"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
 
     const BoltIcon = ({ className }: { className?: string }) => (
       <svg
@@ -104,7 +99,7 @@ export const CryptoFooter = defineComponent({
     return (
       <footer
         className={cn(
-          "border-t border-border bg-foreground text-background",
+          'border-t border-border bg-foreground text-background',
           props.className,
         )}
       >

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CommunityForumTopics — colorful topic / category directory grid for a
@@ -12,9 +12,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * community platforms, forums, or discussion-board products.
  */
 export const CommunityForumTopics = defineComponent({
-  name: "CommunityForumTopics",
+  name: 'CommunityForumTopics',
   description:
-    "Colorful topic / category directory grid for a community-platform landing page: a centered heading and description above a responsive 4-column grid of rounded card tiles, each with a tinted emoji circle, a title, and an active-discussion count; cards route through useNavigate on click. Use as the topic-browse / category-directory section for community platforms, forums, or discussion-board products.",
+    'Colorful topic / category directory grid for a community-platform landing page: a centered heading and description above a responsive 4-column grid of rounded card tiles, each with a tinted emoji circle, a title, and an active-discussion count; cards route through useNavigate on click. Use as the topic-browse / category-directory section for community platforms, forums, or discussion-board products.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -34,36 +34,64 @@ export const CommunityForumTopics = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading = props.heading ?? "Explore active communities"
+    const heading = props.heading ?? 'Explore active communities'
     const description =
       props.description ??
-      "Join thousands of ongoing conversations across diverse topics and interests."
+      'Join thousands of ongoing conversations across diverse topics and interests.'
     const items = props.items?.length
       ? props.items
       : [
-          { emoji: "💻", title: "Software Engineering", count: "2,847 active discussions" },
-          { emoji: "🎨", title: "Design & UX", count: "1,523 active discussions" },
-          { emoji: "📊", title: "Data Science", count: "956 active discussions" },
-          { emoji: "🚀", title: "Startups", count: "1,104 active discussions" },
-          { emoji: "📷", title: "Photography", count: "742 active discussions" },
-          { emoji: "🌱", title: "Sustainability", count: "628 active discussions" },
-          { emoji: "💼", title: "Remote Work", count: "1,891 active discussions" },
-          { emoji: "🎵", title: "Music Production", count: "534 active discussions" },
+          {
+            emoji: '💻',
+            title: 'Software Engineering',
+            count: '2,847 active discussions',
+          },
+          {
+            emoji: '🎨',
+            title: 'Design & UX',
+            count: '1,523 active discussions',
+          },
+          {
+            emoji: '📊',
+            title: 'Data Science',
+            count: '956 active discussions',
+          },
+          { emoji: '🚀', title: 'Startups', count: '1,104 active discussions' },
+          {
+            emoji: '📷',
+            title: 'Photography',
+            count: '742 active discussions',
+          },
+          {
+            emoji: '🌱',
+            title: 'Sustainability',
+            count: '628 active discussions',
+          },
+          {
+            emoji: '💼',
+            title: 'Remote Work',
+            count: '1,891 active discussions',
+          },
+          {
+            emoji: '🎵',
+            title: 'Music Production',
+            count: '534 active discussions',
+          },
         ]
 
     const topicTints = [
-      "bg-primary/10 text-primary",
-      "bg-secondary text-secondary-foreground",
-      "bg-accent text-accent-foreground",
-      "bg-chart-1/15 text-chart-1",
-      "bg-chart-2/15 text-chart-2",
-      "bg-chart-3/15 text-chart-3",
-      "bg-chart-4/15 text-chart-4",
-      "bg-chart-5/15 text-chart-5",
+      'bg-primary/10 text-primary',
+      'bg-secondary text-secondary-foreground',
+      'bg-accent text-accent-foreground',
+      'bg-chart-1/15 text-chart-1',
+      'bg-chart-2/15 text-chart-2',
+      'bg-chart-3/15 text-chart-3',
+      'bg-chart-4/15 text-chart-4',
+      'bg-chart-5/15 text-chart-5',
     ]
 
     return (
-      <section className={cn("bg-muted py-24 lg:py-32", props.className)}>
+      <section className={cn('bg-muted py-24 lg:py-32', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
@@ -81,7 +109,7 @@ export const CommunityForumTopics = defineComponent({
               >
                 <div
                   className={cn(
-                    "mb-4 flex size-10 items-center justify-center rounded-lg text-xl",
+                    'mb-4 flex size-10 items-center justify-center rounded-lg text-xl',
                     topicTints[i % topicTints.length],
                   )}
                 >

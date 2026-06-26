@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 
 /**
  * FoodDeliveryFeatures — centered 3-up features grid for a food-delivery /
@@ -13,9 +13,9 @@ import { cn } from "#/lib/utils.ts"
  * Renders fully with no props via baked-in defaults.
  */
 export const FoodDeliveryFeatures = defineComponent({
-  name: "FoodDeliveryFeatures",
+  name: 'FoodDeliveryFeatures',
   description:
-    "Centered 3-up features grid for a food-delivery / restaurant-marketplace site: a centered heading + supporting paragraph above three soft-bordered card panels, each with a rounded muted icon tile (clock / check-badge / heart line icons), a title and a body paragraph. Use to explain core value props like real-time GPS tracking, curated/vetted selection, and saved favorites for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.",
+    'Centered 3-up features grid for a food-delivery / restaurant-marketplace site: a centered heading + supporting paragraph above three soft-bordered card panels, each with a rounded muted icon tile (clock / check-badge / heart line icons), a title and a body paragraph. Use to explain core value props like real-time GPS tracking, curated/vetted selection, and saved favorites for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',
   props: z.object({
     /** Centered section heading. */
     heading: z.string().optional(),
@@ -28,27 +28,27 @@ export const FoodDeliveryFeatures = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const featuresHeading = props.heading ?? "Everything you need"
+    const featuresHeading = props.heading ?? 'Everything you need'
     const featuresDesc =
       props.description ??
-      "We have thought through every detail to make your food delivery experience effortless."
+      'We have thought through every detail to make your food delivery experience effortless.'
     const featureItems = props.items?.length
       ? props.items
       : [
           {
-            title: "Real-Time Tracking",
+            title: 'Real-Time Tracking',
             description:
-              "Know exactly where your order is with live GPS tracking from restaurant to your doorstep. Get updates at every step.",
+              'Know exactly where your order is with live GPS tracking from restaurant to your doorstep. Get updates at every step.',
           },
           {
-            title: "Curated Selection",
+            title: 'Curated Selection',
             description:
-              "Every restaurant is vetted for quality. We partner only with kitchens that meet our high standards for food and service.",
+              'Every restaurant is vetted for quality. We partner only with kitchens that meet our high standards for food and service.',
           },
           {
-            title: "Saved Favorites",
+            title: 'Saved Favorites',
             description:
-              "Reorder your go-to meals in seconds. Your favorite dishes and restaurants are always just one tap away.",
+              'Reorder your go-to meals in seconds. Your favorite dishes and restaurants are always just one tap away.',
           },
         ]
 
@@ -98,15 +98,13 @@ export const FoodDeliveryFeatures = defineComponent({
     ]
 
     return (
-      <section className={cn("py-20 lg:py-28", props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {featuresHeading}
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
-              {featuresDesc}
-            </p>
+            <p className="mt-4 text-lg text-muted-foreground">{featuresDesc}</p>
           </div>
           <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
             {featureItems.map((item, i) => (

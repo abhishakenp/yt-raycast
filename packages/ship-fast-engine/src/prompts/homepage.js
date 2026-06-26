@@ -10,11 +10,21 @@ import {
 } from '../config.js'
 import { slug } from '../pipeline/workspace.js'
 
-export function homepagePrompt(prompt, ctx, designBrief, hasUserDesignReferences = false) {
+export function homepagePrompt(
+  prompt,
+  ctx,
+  designBrief,
+  hasUserDesignReferences = false,
+) {
   const st = ctx?.site_type ?? 'saas'
-  const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
-  const otherPages = (ctx?.pages ?? []).filter((p) => !HOME_LABELS.includes(p.toLowerCase()))
-  const isOnePager = ['landing', 'portfolio', 'game'].includes(st) || otherPages.length === 0
+  const ecommerceGuidelines = getEcommerceGenerationGuidelines({
+    hasUserDesignReferences,
+  })
+  const otherPages = (ctx?.pages ?? []).filter(
+    (p) => !HOME_LABELS.includes(p.toLowerCase()),
+  )
+  const isOnePager =
+    ['landing', 'portfolio', 'game'].includes(st) || otherPages.length === 0
 
   const navLinks = (ctx?.pages ?? [])
     .map((p) => {
@@ -63,11 +73,14 @@ DO NOT:
   const featuresBlock = ctx?.features?.length
     ? `\nProduct features (MUST showcase these on the homepage):\n${ctx.features.map((f) => `- ${f}`).join('\n')}\n`
     : ''
-  const entitiesBlock = ctx?.entities?.length ? `\nKey entities: ${ctx.entities.join(', ')}\n` : ''
+  const entitiesBlock = ctx?.entities?.length
+    ? `\nKey entities: ${ctx.entities.join(', ')}\n`
+    : ''
   const taglineBlock = ctx?.tagline ? `\nTagline: "${ctx.tagline}"\n` : ''
 
-  const ecommerceBlock = st === 'ecommerce'
-    ? `\n${ecommerceGuidelines}
+  const ecommerceBlock =
+    st === 'ecommerce'
+      ? `\n${ecommerceGuidelines}
 
 E-COMMERCE INTEGRATION (Medusa):
 This site uses Medusa.js as the e-commerce backend per ${ECOMMERCE_MEDUSA_DOCS_LEARN}. The generated Next.js export includes lib/medusa.js with these SDK functions:
@@ -84,7 +97,7 @@ Homepage must match the structural depth in the ecommerce block above (patterns 
 - Product cards: onClick handlers that call addLineItem(); Intl.NumberFormat for money; hover: image zoom, add-to-cart reveal
 - ${MOTION_REACT_GUIDELINES} Next.js export includes \`framer-motion\`; import from \`framer-motion\` (${MOTION_DEV_DOCS_REACT}) for marquees, cart, cards, and section motion.
 - Use data-carousel for testimonials if needed; data-counter for stat percentages; mobile nav pattern from BUILD RULES\n`
-    : ''
+      : ''
 
   const dynamicUiRule =
     st === 'game'

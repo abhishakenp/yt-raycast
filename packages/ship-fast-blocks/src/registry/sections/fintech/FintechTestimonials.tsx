@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * FintechTestimonials — social-proof section for a fintech / neobank landing
@@ -12,9 +12,9 @@ import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
  * "Vault" defaults.
  */
 export const FintechTestimonials = defineComponent({
-  name: "FintechTestimonials",
+  name: 'FintechTestimonials',
   description:
-    "Social-proof section for a fintech / neobank landing page: a padded section wrapping the shared TestimonialGrid composite with a heading and three customer quotes, each with a star rating, name, and role/company. The capsule supplies the section wrapper and container padding around the layout-only grid.",
+    'Social-proof section for a fintech / neobank landing page: a padded section wrapping the shared TestimonialGrid composite with a heading and three customer quotes, each with a star rating, name, and role/company. The capsule supplies the section wrapper and container padding around the layout-only grid.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -36,44 +36,44 @@ export const FintechTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Loved by millions of customers"
+    const heading = props.heading ?? 'Loved by millions of customers'
     const subheading =
       props.subheading ??
-      "See why people are switching to Vault for everyday banking."
+      'See why people are switching to Vault for everyday banking.'
     const items = props.items?.length
       ? props.items
       : [
           {
             quote:
               "Switching to Vault was the best financial decision I've made. Transfers are instant, the app is gorgeous, and I'm finally earning real interest on my savings.",
-            name: "Maya Thompson",
-            role: "Freelance Designer",
-            company: "Self-employed",
+            name: 'Maya Thompson',
+            role: 'Freelance Designer',
+            company: 'Self-employed',
             rating: 5,
-            avatarAlt: "smiling young woman portrait",
+            avatarAlt: 'smiling young woman portrait',
           },
           {
             quote:
-              "Running my business banking through Vault has saved me hours every week. Invoicing, expense tracking, and team cards all live in one place.",
-            name: "Daniel Okafor",
-            role: "Founder",
-            company: "Northbridge Studio",
+              'Running my business banking through Vault has saved me hours every week. Invoicing, expense tracking, and team cards all live in one place.',
+            name: 'Daniel Okafor',
+            role: 'Founder',
+            company: 'Northbridge Studio',
             rating: 5,
-            avatarAlt: "professional man portrait",
+            avatarAlt: 'professional man portrait',
           },
           {
             quote:
-              "I travel constantly and the fee-free global withdrawals have paid for themselves many times over. Support is genuinely responsive too.",
-            name: "Elena Vasquez",
-            role: "Travel Writer",
-            company: "Wanderlines",
+              'I travel constantly and the fee-free global withdrawals have paid for themselves many times over. Support is genuinely responsive too.',
+            name: 'Elena Vasquez',
+            role: 'Travel Writer',
+            company: 'Wanderlines',
             rating: 5,
-            avatarAlt: "woman traveler portrait",
+            avatarAlt: 'woman traveler portrait',
           },
         ]
 
     return (
-      <section className={cn("bg-muted/30 py-20 lg:py-28", props.className)}>
+      <section className={cn('bg-muted/30 py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <TestimonialGrid
             heading={heading}

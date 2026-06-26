@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * EventPlannerHero — calm editorial split hero for a luxury event-planning agency.
@@ -14,9 +14,9 @@ import { Image } from "#/lib/img.tsx"
  * wedding/event planners, gala and celebration organizers, or premium hospitality.
  */
 export const EventPlannerHero = defineComponent({
-  name: "EventPlannerHero",
+  name: 'EventPlannerHero',
   description:
-    "Calm editorial split hero for a luxury event-planning agency: a two-column layout pairing a left text column (uppercase eyebrow, large thin light headline, relaxed lede, dual pill CTAs and a top-bordered KPI/stats strip) with a tall rounded hero photo on the right carrying a floating planner-team card (stacked avatar circles, lead-planner name/role and an italic quote). Dual CTAs route through useNavigate; all imagery is alt-driven. Use as the opening hero for wedding/event planners, party, gala and celebration organizers, corporate-event companies, or premium hospitality services.",
+    'Calm editorial split hero for a luxury event-planning agency: a two-column layout pairing a left text column (uppercase eyebrow, large thin light headline, relaxed lede, dual pill CTAs and a top-bordered KPI/stats strip) with a tall rounded hero photo on the right carrying a floating planner-team card (stacked avatar circles, lead-planner name/role and an italic quote). Dual CTAs route through useNavigate; all imagery is alt-driven. Use as the opening hero for wedding/event planners, party, gala and celebration organizers, corporate-event companies, or premium hospitality services.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -35,38 +35,38 @@ export const EventPlannerHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heroEyebrow = props.eyebrow ?? "Est. 2012 • San Francisco"
-    const heroHeading = props.heading ?? "Crafting Moments That Last Forever"
+    const heroEyebrow = props.eyebrow ?? 'Est. 2012 • San Francisco'
+    const heroHeading = props.heading ?? 'Crafting Moments That Last Forever'
     const heroSub =
       props.subheading ??
-      "We transform your vision into extraordinary experiences. From intimate gatherings to grand celebrations, every detail is thoughtfully designed and flawlessly executed."
-    const heroPrimary = props.primaryCta ?? "Start Planning"
-    const heroSecondary = props.secondaryCta ?? "View Our Work"
+      'We transform your vision into extraordinary experiences. From intimate gatherings to grand celebrations, every detail is thoughtfully designed and flawlessly executed.'
+    const heroPrimary = props.primaryCta ?? 'Start Planning'
+    const heroSecondary = props.secondaryCta ?? 'View Our Work'
     const heroImageAlt =
       props.imageAlt ??
-      "Elegant wedding reception table with floral centerpiece in warm candlelight"
-    const heroCardTitle = props.cardTitle ?? "Sarah & Team"
-    const heroCardRole = props.cardRole ?? "Lead Planners"
-    const heroCardQuote = props.cardQuote ?? "Your dream, our expertise."
+      'Elegant wedding reception table with floral centerpiece in warm candlelight'
+    const heroCardTitle = props.cardTitle ?? 'Sarah & Team'
+    const heroCardRole = props.cardRole ?? 'Lead Planners'
+    const heroCardQuote = props.cardQuote ?? 'Your dream, our expertise.'
     const heroAvatars = props.teamAvatars?.length
       ? props.teamAvatars
       : [
-          "Professional headshot of event planner Sarah Chen with warm smile",
-          "Professional headshot of event coordinator Michael Torres",
-          "Professional headshot of senior planner Emma Williams",
+          'Professional headshot of event planner Sarah Chen with warm smile',
+          'Professional headshot of event coordinator Michael Torres',
+          'Professional headshot of senior planner Emma Williams',
         ]
     const heroStats = props.stats?.length
       ? props.stats
       : [
-          { value: "500+", label: "Events Planned" },
-          { value: "12", label: "Years Experience" },
-          { value: "98%", label: "Client Satisfaction" },
+          { value: '500+', label: 'Events Planned' },
+          { value: '12', label: 'Years Experience' },
+          { value: '98%', label: 'Client Satisfaction' },
         ]
 
     return (
       <section
         className={cn(
-          "px-4 pb-20 pt-32 sm:px-6 lg:px-8 lg:pb-32 lg:pt-48",
+          'px-4 pb-20 pt-32 sm:px-6 lg:px-8 lg:pb-32 lg:pt-48',
           props.className,
         )}
       >

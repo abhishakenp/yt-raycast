@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * HotelResortNavbar — fixed, translucent top navigation bar for a luxury
@@ -15,9 +15,9 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * destinations. Renders fully with no props via baked-in "Azure Coast" defaults.
  */
 export const HotelResortNavbar = defineComponent({
-  name: "HotelResortNavbar",
+  name: 'HotelResortNavbar',
   description:
-    "Fixed translucent top navigation bar for a luxury hotel / resort & spa site: backdrop-blurred, border-bottomed header pinned to the top with a circular brand-initial logo mark + resort name on the left, horizontal nav links in the center (desktop), and a phone number plus a solid Book Now CTA on the right, with a hamburger menu button on mobile. Links, phone and CTA route through useNavigate for page-switching. Use as the sticky site header for hotels, beach or coastal resorts, spa retreats, boutique inns, villas, or wellness destinations.",
+    'Fixed translucent top navigation bar for a luxury hotel / resort & spa site: backdrop-blurred, border-bottomed header pinned to the top with a circular brand-initial logo mark + resort name on the left, horizontal nav links in the center (desktop), and a phone number plus a solid Book Now CTA on the right, with a hamburger menu button on mobile. Links, phone and CTA route through useNavigate for page-switching. Use as the sticky site header for hotels, beach or coastal resorts, spa retreats, boutique inns, villas, or wellness destinations.',
   props: z.object({
     /** Resort / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -33,18 +33,18 @@ export const HotelResortNavbar = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Azure Coast"
+    const brand = props.brand ?? 'Azure Coast'
     const nav = props.nav?.length
       ? props.nav
-      : ["Rooms & Suites", "Amenities", "Gallery", "Dining", "Contact"]
-    const phone = props.phone ?? "1-800-555-1234"
-    const cta = props.cta ?? "Book Now"
-    const bookTarget = props.bookTarget ?? "Check Availability"
+      : ['Rooms & Suites', 'Amenities', 'Gallery', 'Dining', 'Contact']
+    const phone = props.phone ?? '1-800-555-1234'
+    const cta = props.cta ?? 'Book Now'
+    const bookTarget = props.bookTarget ?? 'Check Availability'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-full font-light",
+          'grid place-items-center rounded-full font-light',
           className,
         )}
         aria-hidden="true"
@@ -56,7 +56,7 @@ export const HotelResortNavbar = defineComponent({
     return (
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
           props.className,
         )}
       >

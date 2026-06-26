@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * EcommerceFooter — clean, light multi-column footer for a general online store.
@@ -23,9 +23,9 @@ const LogoTile = ({ brand }: { brand: string }) => (
 )
 
 export const EcommerceFooter = defineComponent({
-  name: "EcommerceFooter",
+  name: 'EcommerceFooter',
   description:
-    "Clean, light multi-column footer for a general online store built on the shared SiteFooter composite: a brand block (logo tile + bold wordmark + tagline + a row of social links) beside four link columns (Shop, Help, Company, Legal), closed by a bottom bar with a dynamic-year copyright. Every link, social, and the brand logo route through useNavigate. Use as the closing footer for online stores, marketplaces, retail shops, ecommerce sites, or any general storefront that needs a bright, modern footer (lighter alternative to the dark FashionStoreFooter).",
+    'Clean, light multi-column footer for a general online store built on the shared SiteFooter composite: a brand block (logo tile + bold wordmark + tagline + a row of social links) beside four link columns (Shop, Help, Company, Legal), closed by a bottom bar with a dynamic-year copyright. Every link, social, and the brand logo route through useNavigate. Use as the closing footer for online stores, marketplaces, retail shops, ecommerce sites, or any general storefront that needs a bright, modern footer (lighter alternative to the dark FashionStoreFooter).',
   props: z.object({
     /** Brand / store name shown as the bold wordmark. */
     brand: z.string().optional(),
@@ -44,51 +44,57 @@ export const EcommerceFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Marketplace"
+    const brand = props.brand ?? 'Marketplace'
     const columns = props.columns?.length
       ? props.columns
       : [
           {
-            title: "Shop",
+            title: 'Shop',
             links: [
-              "New Arrivals",
-              "Best Sellers",
-              "Deals",
-              "Gift Cards",
-              "Categories",
+              'New Arrivals',
+              'Best Sellers',
+              'Deals',
+              'Gift Cards',
+              'Categories',
             ],
           },
           {
-            title: "Help",
+            title: 'Help',
             links: [
-              "Contact Us",
-              "Shipping",
-              "Returns & Exchanges",
-              "Track Order",
-              "FAQ",
+              'Contact Us',
+              'Shipping',
+              'Returns & Exchanges',
+              'Track Order',
+              'FAQ',
             ],
           },
           {
-            title: "Company",
-            links: ["About Us", "Careers", "Sustainability", "Press", "Affiliates"],
+            title: 'Company',
+            links: [
+              'About Us',
+              'Careers',
+              'Sustainability',
+              'Press',
+              'Affiliates',
+            ],
           },
           {
-            title: "Legal",
+            title: 'Legal',
             links: [
-              "Privacy Policy",
-              "Terms of Service",
-              "Cookie Policy",
-              "Accessibility",
+              'Privacy Policy',
+              'Terms of Service',
+              'Cookie Policy',
+              'Accessibility',
             ],
           },
         ]
     const social = props.social?.length
       ? props.social
       : [
-          { label: "Instagram" },
-          { label: "Facebook" },
-          { label: "Twitter" },
-          { label: "TikTok" },
+          { label: 'Instagram' },
+          { label: 'Facebook' },
+          { label: 'Twitter' },
+          { label: 'TikTok' },
         ]
 
     return (
@@ -98,11 +104,11 @@ export const EcommerceFooter = defineComponent({
         brandClassName="text-lg font-bold"
         tagline={
           props.tagline ??
-          "Everyday essentials and the brands you love — quality you can trust at prices that make sense."
+          'Everyday essentials and the brands you love — quality you can trust at prices that make sense.'
         }
         columns={columns}
         social={social}
-        note={props.note ?? "All rights reserved."}
+        note={props.note ?? 'All rights reserved.'}
         className={props.className}
       />
     )

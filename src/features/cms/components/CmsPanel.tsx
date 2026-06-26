@@ -32,8 +32,17 @@ const labelFromField = (field: string): string =>
     .join(' ')
 
 export const CmsPanel = ({ sessionId, prompt = '' }: CmsPanelProps) => {
-  const { cmsError, content, isRestoring, isSaving, restoreRevision, saveContent } = useCmsController(sessionId)
-  const [historyEntryId, setHistoryEntryId] = useState<Id<'cmsEntries'> | null>(null)
+  const {
+    cmsError,
+    content,
+    isRestoring,
+    isSaving,
+    restoreRevision,
+    saveContent,
+  } = useCmsController(sessionId)
+  const [historyEntryId, setHistoryEntryId] = useState<Id<'cmsEntries'> | null>(
+    null,
+  )
   const revisions = useQuery(
     api.sessions.listCmsEntryRevisions,
     historyEntryId === null
@@ -114,8 +123,12 @@ export const CmsPanel = ({ sessionId, prompt = '' }: CmsPanelProps) => {
       <div className="flex items-center gap-2 border-b border-white/10 pb-3">
         <Database className="size-4 text-cyan-200" />
         <div>
-          <h2 className="m-0 text-sm font-semibold uppercase tracking-[0.1em] text-white">Content</h2>
-          <p className="m-0 mt-1 text-xs leading-5 text-white/48">First-party Convex content entries for this generated site.</p>
+          <h2 className="m-0 text-sm font-semibold uppercase tracking-[0.1em] text-white">
+            Content
+          </h2>
+          <p className="m-0 mt-1 text-xs leading-5 text-white/48">
+            First-party Convex content entries for this generated site.
+          </p>
         </div>
       </div>
 
@@ -132,7 +145,9 @@ export const CmsPanel = ({ sessionId, prompt = '' }: CmsPanelProps) => {
                   className="min-h-24 w-full resize-none rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm normal-case leading-6 tracking-normal text-white outline-none"
                   data-cms-field={draft.field}
                   disabled={isSaving}
-                  onChange={(event) => updateDraft(draft.field, event.target.value)}
+                  onChange={(event) =>
+                    updateDraft(draft.field, event.target.value)
+                  }
                   value={draft.value}
                 />
               ) : (
@@ -140,8 +155,14 @@ export const CmsPanel = ({ sessionId, prompt = '' }: CmsPanelProps) => {
                   className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm normal-case tracking-normal text-white outline-none"
                   data-cms-field={draft.field}
                   disabled={isSaving}
-                  onChange={(event) => updateDraft(draft.field, event.target.value)}
-                  type={draft.type === 'image' || draft.type === 'link' ? 'url' : 'text'}
+                  onChange={(event) =>
+                    updateDraft(draft.field, event.target.value)
+                  }
+                  type={
+                    draft.type === 'image' || draft.type === 'link'
+                      ? 'url'
+                      : 'text'
+                  }
                   value={draft.value}
                 />
               )}
@@ -163,7 +184,7 @@ export const CmsPanel = ({ sessionId, prompt = '' }: CmsPanelProps) => {
                 disabled={isRestoring}
                 onClick={() =>
                   setHistoryEntryId((current) =>
-                    current === draft.entryId ? null : draft.entryId ?? null,
+                    current === draft.entryId ? null : (draft.entryId ?? null),
                   )
                 }
                 type="button"
@@ -175,9 +196,13 @@ export const CmsPanel = ({ sessionId, prompt = '' }: CmsPanelProps) => {
             {historyEntryId === draft.entryId && (
               <div className="grid gap-2 rounded-xl border border-white/10 bg-black/18 p-2">
                 {revisions === undefined ? (
-                  <p className="m-0 px-1 py-2 text-xs text-white/42">Loading revisions...</p>
+                  <p className="m-0 px-1 py-2 text-xs text-white/42">
+                    Loading revisions...
+                  </p>
                 ) : revisions.length === 0 ? (
-                  <p className="m-0 px-1 py-2 text-xs text-white/42">No previous revisions.</p>
+                  <p className="m-0 px-1 py-2 text-xs text-white/42">
+                    No previous revisions.
+                  </p>
                 ) : (
                   revisions.map((revision) => (
                     <button
@@ -188,7 +213,9 @@ export const CmsPanel = ({ sessionId, prompt = '' }: CmsPanelProps) => {
                       type="button"
                     >
                       <span className="flex items-center justify-between gap-2 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-white/38">
-                        <span>{new Date(revision.createdAt).toLocaleString()}</span>
+                        <span>
+                          {new Date(revision.createdAt).toLocaleString()}
+                        </span>
                         <RotateCcw className="size-3.5" />
                       </span>
                       <span className="line-clamp-2 text-xs leading-5 text-white/68">

@@ -1,7 +1,7 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CrmSteps — centered 3-step onboarding flow for a CRM / SaaS landing page on a
@@ -13,9 +13,9 @@ import { Image } from "#/lib/img.tsx"
  * or B2B SaaS products. Renders fully with no props.
  */
 export const CrmSteps = defineComponent({
-  name: "CrmSteps",
+  name: 'CrmSteps',
   description:
-    "Centered 3-step onboarding flow for a CRM / SaaS landing page on a subtle muted band: a heading + supporting paragraph above a responsive (1/3-up) row of numbered step cards, each a circular primary number badge above a bordered card with a centered title, description and an alt-driven image, joined by thin connector lines on desktop. Reassuring and guided. Use to explain getting-started / setup / how-it-works flows for CRM, sales-pipeline or B2B SaaS products.",
+    'Centered 3-step onboarding flow for a CRM / SaaS landing page on a subtle muted band: a heading + supporting paragraph above a responsive (1/3-up) row of numbered step cards, each a circular primary number badge above a bordered card with a centered title, description and an alt-driven image, joined by thin connector lines on desktop. Reassuring and guided. Use to explain getting-started / setup / how-it-works flows for CRM, sales-pipeline or B2B SaaS products.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -34,40 +34,38 @@ export const CrmSteps = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Get started in minutes, not months"
+    const heading = props.heading ?? 'Get started in minutes, not months'
     const description =
       props.description ??
-      "Our guided setup process helps you import data, configure your pipeline, and start closing deals quickly."
+      'Our guided setup process helps you import data, configure your pipeline, and start closing deals quickly.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Import your data",
+            title: 'Import your data',
             description:
-              "Connect your existing tools or upload a CSV. We automatically map fields and detect duplicates during import.",
+              'Connect your existing tools or upload a CSV. We automatically map fields and detect duplicates during import.',
             imageAlt:
-              "computer screen showing data migration interface with progress bars",
+              'computer screen showing data migration interface with progress bars',
           },
           {
-            title: "Customize pipeline",
+            title: 'Customize pipeline',
             description:
-              "Define your stages, set probability weights, and create custom fields that match your unique sales process.",
+              'Define your stages, set probability weights, and create custom fields that match your unique sales process.',
             imageAlt:
-              "digital kanban board showing workflow columns on tablet screen",
+              'digital kanban board showing workflow columns on tablet screen',
           },
           {
-            title: "Close more deals",
+            title: 'Close more deals',
             description:
-              "Start tracking opportunities, automate follow-ups, and watch your conversion rates improve week over week.",
+              'Start tracking opportunities, automate follow-ups, and watch your conversion rates improve week over week.',
             imageAlt:
-              "business professionals shaking hands in modern office meeting room",
+              'business professionals shaking hands in modern office meeting room',
           },
         ]
 
     return (
-      <section
-        className={cn("bg-muted/50 py-20 lg:py-32", props.className)}
-      >
+      <section className={cn('bg-muted/50 py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">

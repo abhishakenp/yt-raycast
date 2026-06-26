@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
  * NutritionFooter — multi-column site footer for a nutrition-coaching or
@@ -12,9 +12,9 @@ import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
  * meal-plan subscriptions, diet / wellness programs or healthy-eating apps.
  */
 export const NutritionFooter = defineComponent({
-  name: "NutritionFooter",
+  name: 'NutritionFooter',
   description:
-    "Multi-column site footer for a nutrition-coaching or wellness site, built on the shared SiteFooter kit composite: a fresh, energetic brand block (leaf mark + wordmark + tagline + social row), four link columns (Programs, Company, Resources, Legal), and a bottom bar with copyright and a closing note. Use as the closing site footer on nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs or healthy-eating apps.",
+    'Multi-column site footer for a nutrition-coaching or wellness site, built on the shared SiteFooter kit composite: a fresh, energetic brand block (leaf mark + wordmark + tagline + social row), four link columns (Programs, Company, Resources, Legal), and a bottom bar with copyright and a closing note. Use as the closing site footer on nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs or healthy-eating apps.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -28,10 +28,10 @@ export const NutritionFooter = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const brand = props.brand ?? "Nourish"
+    const brand = props.brand ?? 'Nourish'
     const tagline =
       props.tagline ??
-      "Fresh, science-backed nutrition coaching that helps you eat well and feel energized—for life."
+      'Fresh, science-backed nutrition coaching that helps you eat well and feel energized—for life.'
 
     const LeafMark = (
       <svg
@@ -54,32 +54,32 @@ export const NutritionFooter = defineComponent({
       ? props.columns
       : [
           {
-            title: "Programs",
-            links: ["Meal Plans", "Coaching", "Recipes", "Pricing"],
+            title: 'Programs',
+            links: ['Meal Plans', 'Coaching', 'Recipes', 'Pricing'],
           },
           {
-            title: "Company",
-            links: ["About", "Our Coaches", "Careers", "Stories"],
+            title: 'Company',
+            links: ['About', 'Our Coaches', 'Careers', 'Stories'],
           },
           {
-            title: "Resources",
-            links: ["Blog", "Nutrition Guides", "FAQ", "Support"],
+            title: 'Resources',
+            links: ['Blog', 'Nutrition Guides', 'FAQ', 'Support'],
           },
           {
-            title: "Legal",
-            links: ["Privacy", "Terms", "Cookies"],
+            title: 'Legal',
+            links: ['Privacy', 'Terms', 'Cookies'],
           },
         ]
 
     const social = props.social?.length
       ? props.social
       : [
-          { label: "Instagram", href: "#" },
-          { label: "TikTok", href: "#" },
-          { label: "YouTube", href: "#" },
+          { label: 'Instagram', href: '#' },
+          { label: 'TikTok', href: '#' },
+          { label: 'YouTube', href: '#' },
         ]
 
-    const note = props.note ?? "Eat fresh. Feel alive."
+    const note = props.note ?? 'Eat fresh. Feel alive.'
 
     return (
       <SiteFooter
@@ -88,7 +88,7 @@ export const NutritionFooter = defineComponent({
         tagline={tagline}
         columns={columns}
         social={social}
-        legal={["Privacy", "Terms", "Cookies"]}
+        legal={['Privacy', 'Terms', 'Cookies']}
         note={note}
         className={props.className}
       />

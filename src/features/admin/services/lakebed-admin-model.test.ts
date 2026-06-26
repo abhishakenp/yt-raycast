@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { createLakebedAdminTables, parseAdminValue, previewAdminValue } from './lakebed-admin-model'
+import {
+  createLakebedAdminTables,
+  parseAdminValue,
+  previewAdminValue,
+} from './lakebed-admin-model'
 
 describe('lakebed admin model', () => {
   it('infers array fields as editable data tables', () => {

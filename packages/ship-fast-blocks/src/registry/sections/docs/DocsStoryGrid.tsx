@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * DocsStoryGrid — bespoke, token-styled "popular guides" cards grid for a
@@ -17,7 +17,7 @@ import { SectionHeading } from "#/section-kit/SectionHeading.tsx"
  * knowledge bases. Renders fully with no props via baked-in defaults.
  */
 export const DocsStoryGrid = defineComponent({
-  name: "DocsStoryGrid",
+  name: 'DocsStoryGrid',
   description:
     "Bespoke, token-styled 'popular guides' cards grid for a developer DOCUMENTATION site. Opens with a SectionHeading ('Popular' eyebrow + 'Popular guides' title + subtitle), then a responsive grid of clean, text-forward guide cards (no cover images): each card is a routable button with a small category pill, a bold guide title, a one-line description, and a footer meta row showing read-time plus an arrow that slides on hover. Every card routes through useNavigate keyed on its title so PageSwitch can swap pages. Use as the 'most-read guides' / 'popular docs' band on docs homes, API references, SDK guides, developer portals, or knowledge bases.",
   props: z.object({
@@ -28,7 +28,7 @@ export const DocsStoryGrid = defineComponent({
     /** Supporting subtitle under the title. */
     subtitle: z.string().optional(),
     /** Heading alignment. */
-    align: z.enum(["center", "left"]).optional(),
+    align: z.enum(['center', 'left']).optional(),
     /** Guide cards. Each routes through useNavigate keyed on its title. */
     guides: z
       .array(
@@ -44,60 +44,61 @@ export const DocsStoryGrid = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Popular"
-    const title = props.title ?? "Popular guides"
-    const subtitle =
-      props.subtitle ?? "The guides developers reach for most."
-    const align = props.align ?? "left"
+    const eyebrow = props.eyebrow ?? 'Popular'
+    const title = props.title ?? 'Popular guides'
+    const subtitle = props.subtitle ?? 'The guides developers reach for most.'
+    const align = props.align ?? 'left'
     const guides = props.guides?.length
       ? props.guides
       : [
           {
-            category: "Guides",
-            title: "Authentication",
+            category: 'Guides',
+            title: 'Authentication',
             description:
-              "Issue API keys, exchange tokens, and secure every request with OAuth 2.0.",
-            readTime: "5 min read",
+              'Issue API keys, exchange tokens, and secure every request with OAuth 2.0.',
+            readTime: '5 min read',
           },
           {
-            category: "API",
-            title: "Webhooks",
+            category: 'API',
+            title: 'Webhooks',
             description:
-              "Subscribe to events and verify signed payloads delivered in real time.",
-            readTime: "7 min read",
+              'Subscribe to events and verify signed payloads delivered in real time.',
+            readTime: '7 min read',
           },
           {
-            category: "Guides",
-            title: "Rate Limiting",
+            category: 'Guides',
+            title: 'Rate Limiting',
             description:
-              "Understand request quotas, read rate-limit headers, and back off gracefully.",
-            readTime: "4 min read",
+              'Understand request quotas, read rate-limit headers, and back off gracefully.',
+            readTime: '4 min read',
           },
           {
-            category: "Tutorial",
-            title: "Pagination",
+            category: 'Tutorial',
+            title: 'Pagination',
             description:
-              "Page through large collections with cursor-based and offset strategies.",
-            readTime: "6 min read",
+              'Page through large collections with cursor-based and offset strategies.',
+            readTime: '6 min read',
           },
           {
-            category: "Guides",
-            title: "Error Handling",
+            category: 'Guides',
+            title: 'Error Handling',
             description:
-              "Map status codes to error types and build resilient retry logic.",
-            readTime: "5 min read",
+              'Map status codes to error types and build resilient retry logic.',
+            readTime: '5 min read',
           },
           {
-            category: "Tutorial",
-            title: "Deploying",
+            category: 'Tutorial',
+            title: 'Deploying',
             description:
-              "Ship to production with environment configs, secrets, and zero-downtime rollouts.",
-            readTime: "8 min read",
+              'Ship to production with environment configs, secrets, and zero-downtime rollouts.',
+            readTime: '8 min read',
           },
         ]
 
     return (
-      <section className={cn("mx-auto w-full max-w-6xl px-6 py-16", props.className)}>
+      <section
+        className={cn('mx-auto w-full max-w-6xl px-6 py-16', props.className)}
+      >
         <SectionHeading
           eyebrow={eyebrow}
           title={title}

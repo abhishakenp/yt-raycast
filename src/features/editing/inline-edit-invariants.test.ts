@@ -55,7 +55,7 @@ describe('inline edit — preview does not remount per edit (Dashboard key)', ()
     expect(src).not.toContain(
       'key={`${generationView.session.previewVersion}:${homeModule.updatedAt}`}',
     )
-    expect(src).toContain('key={`${homeModule.updatedAt')
+    expect(src).toContain('key={`${homeModule?.updatedAt')
   })
 
   it('builds image, style, and text override maps from recorded edits', () => {
@@ -120,10 +120,14 @@ describe('inline edit — server anchors & persistence (convex)', () => {
   })
 
   it('all edit types (text, image, style) skip artifact mutation and use override pattern', () => {
-    expect(editMutationHelpers).toContain('All edit types now use the same pattern')
+    expect(editMutationHelpers).toContain(
+      'All edit types now use the same pattern',
+    )
     expect(editMutationHelpers).toContain('snapshotCurrentArtifacts')
     // The function still exists for legacy reasons but is no longer called
-    expect(editMutationHelpers).toContain('artifactSnapshot = await snapshotCurrentArtifacts')
+    expect(editMutationHelpers).toContain(
+      'artifactSnapshot = await snapshotCurrentArtifacts',
+    )
   })
 
   it('records every edit (incl. image) with its occurrenceIndex for override rebuild', () => {

@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
  * WriterAuthorTestimonials — 3-up critical-praise wall for a literary author
@@ -15,7 +15,7 @@ import { TestimonialGrid } from "#/section-kit/TestimonialGrid.tsx"
  * The Guardian, and Booklist.
  */
 export const WriterAuthorTestimonials = defineComponent({
-  name: "WriterAuthorTestimonials",
+  name: 'WriterAuthorTestimonials',
   description:
     "3-up critical-praise wall for a literary author page: a centered serif heading and subheading above a responsive card grid. Each card renders a filled star row matching the rating, a pull-quote blurb, and an attribution row pairing the critic's name with the publication that ran the review (The New York Times, The Guardian, Booklist). Use for review pull-quotes and social-proof on novelist, poet, essayist, or memoirist sites.",
   props: z.object({
@@ -37,30 +37,30 @@ export const WriterAuthorTestimonials = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const heading = props.heading ?? "Praise"
-    const subheading = props.subheading ?? "What critics say"
+    const heading = props.heading ?? 'Praise'
+    const subheading = props.subheading ?? 'What critics say'
     const reviews = props.reviews?.length
       ? props.reviews
       : [
           {
             quote:
-              "Vance writes sentences you want to read aloud. This is a novel of rare grace — patient, luminous, and quietly devastating. A landmark in contemporary fiction.",
-            name: "Margaret Holloway",
-            company: "The New York Times",
+              'Vance writes sentences you want to read aloud. This is a novel of rare grace — patient, luminous, and quietly devastating. A landmark in contemporary fiction.',
+            name: 'Margaret Holloway',
+            company: 'The New York Times',
             rating: 5,
           },
           {
             quote:
-              "A spellbinding storyteller at the height of her powers. Every chapter turns on a perfectly observed detail, and the ending lingers for days. Unmissable.",
-            name: "Daniel Okafor",
-            company: "The Guardian",
+              'A spellbinding storyteller at the height of her powers. Every chapter turns on a perfectly observed detail, and the ending lingers for days. Unmissable.',
+            name: 'Daniel Okafor',
+            company: 'The Guardian',
             rating: 5,
           },
           {
             quote:
               "Richly imagined and beautifully told, Vance's latest confirms her place among the finest novelists working today. Hand this to every reader you know.",
-            name: "Susan Whitfield",
-            company: "Booklist",
+            name: 'Susan Whitfield',
+            company: 'Booklist',
             rating: 5,
           },
         ]

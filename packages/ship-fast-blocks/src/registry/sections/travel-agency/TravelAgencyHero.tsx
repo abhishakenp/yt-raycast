@@ -1,11 +1,11 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 export const TravelAgencyHero = defineComponent({
-  name: "TravelAgencyHero",
+  name: 'TravelAgencyHero',
   description:
     "Bespoke, full-bleed wanderlust hero for the Travel Agency page family. Renders a breathtaking destination image behind a token-based dark overlay, with an eyebrow, an oversized aspirational heading, supporting copy, and an inline destination search affordance (Where to? / Dates / Travelers cells plus a 'Find your trip' button wired through useNavigate). Use as the opening viewport of a premium travel agency page. All content is prop-driven with baked defaults so it renders with no props.",
   props: z.object({
@@ -22,23 +22,23 @@ export const TravelAgencyHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Where will you go next"
-    const heading = props.heading ?? "Journeys worth a lifetime of stories"
+    const eyebrow = props.eyebrow ?? 'Where will you go next'
+    const heading = props.heading ?? 'Journeys worth a lifetime of stories'
     const subheading =
       props.subheading ??
       "Hand-crafted itineraries to the world's most breathtaking destinations, designed around the way you love to travel."
     const imageAlt =
-      props.imageAlt ?? "Breathtaking premium travel destination at golden hour"
-    const destinationPlaceholder = props.destinationPlaceholder ?? "Where to?"
-    const datesPlaceholder = props.datesPlaceholder ?? "Dates"
-    const travelersPlaceholder = props.travelersPlaceholder ?? "Travelers"
-    const searchLabel = props.searchLabel ?? "Find your trip"
-    const searchTarget = props.searchTarget ?? "Plan a Trip"
+      props.imageAlt ?? 'Breathtaking premium travel destination at golden hour'
+    const destinationPlaceholder = props.destinationPlaceholder ?? 'Where to?'
+    const datesPlaceholder = props.datesPlaceholder ?? 'Dates'
+    const travelersPlaceholder = props.travelersPlaceholder ?? 'Travelers'
+    const searchLabel = props.searchLabel ?? 'Find your trip'
+    const searchTarget = props.searchTarget ?? 'Plan a Trip'
 
     return (
       <section
         className={cn(
-          "relative isolate overflow-hidden bg-background text-foreground",
+          'relative isolate overflow-hidden bg-background text-foreground',
           props.className,
         )}
       >

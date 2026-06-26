@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { CtaBand } from "#/section-kit/CtaBand.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
  * WriterAuthorCta — a bold, centered book-purchase band for a literary author
@@ -15,7 +15,7 @@ import { CtaBand } from "#/section-kit/CtaBand.tsx"
  * fully with no props via baked-in "Eleanor Vance" defaults.
  */
 export const WriterAuthorCta = defineComponent({
-  name: "WriterAuthorCta",
+  name: 'WriterAuthorCta',
   description:
     "Bold, centered book-purchase band for a literary author home page: a full-width primary-toned section with an 'Out now' eyebrow, a serif headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Buy the Book' button plus an outlined 'Find a Store' button). Both CTAs route through useNavigate. Use near the bottom of an author, novelist, poet, or book-launch page to drive book sales.",
   props: z.object({
@@ -36,15 +36,15 @@ export const WriterAuthorCta = defineComponent({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const eyebrow = props.eyebrow ?? "Out now"
-    const title = props.title ?? "Get your copy today"
+    const eyebrow = props.eyebrow ?? 'Out now'
+    const title = props.title ?? 'Get your copy today'
     const subtitle =
       props.subtitle ??
       "Eleanor Vance's latest novel is available now wherever books are sold."
-    const primaryLabel = props.primaryLabel ?? "Buy the Book"
-    const primaryTarget = props.primaryTarget ?? "Books"
-    const secondaryLabel = props.secondaryLabel ?? "Find a Store"
-    const secondaryTarget = props.secondaryTarget ?? "Stores"
+    const primaryLabel = props.primaryLabel ?? 'Buy the Book'
+    const primaryTarget = props.primaryTarget ?? 'Books'
+    const secondaryLabel = props.secondaryLabel ?? 'Find a Store'
+    const secondaryTarget = props.secondaryTarget ?? 'Stores'
 
     return (
       <CtaBand
@@ -53,11 +53,11 @@ export const WriterAuthorCta = defineComponent({
         title={title}
         subtitle={subtitle}
         actions={[
-          { label: primaryLabel, target: primaryTarget, variant: "primary" },
+          { label: primaryLabel, target: primaryTarget, variant: 'primary' },
           {
             label: secondaryLabel,
             target: secondaryTarget,
-            variant: "outline",
+            variant: 'outline',
           },
         ]}
         className={props.className}

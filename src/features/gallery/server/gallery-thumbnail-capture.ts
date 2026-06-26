@@ -11,7 +11,13 @@
  *   Use: the gallery-thumb route serves the cached PNG and only falls back to
  *     the deterministic SVG while a capture is still pending.
  */
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -54,7 +60,10 @@ const cacheThumbPath = (sessionId: string, version: number): string =>
 export const isGalleryThumbCaptureEnabled = (): boolean =>
   process.env.GALLERY_THUMB_DISABLE !== '1'
 
-export const readCachedGalleryThumb = (sessionId: string, version: number): Buffer | null => {
+export const readCachedGalleryThumb = (
+  sessionId: string,
+  version: number,
+): Buffer | null => {
   const path = cacheThumbPath(sessionId, version)
   if (!existsSync(path)) return null
   try {
@@ -68,7 +77,9 @@ export const readCachedGalleryThumb = (sessionId: string, version: number): Buff
  * Optional external screenshot worker.
  * POST JSON `{ url, width, height }`; expect raw image bytes or `{ imageBase64 }`.
  */
-const captureViaExternalService = async (previewUrl: string): Promise<Buffer | null> => {
+const captureViaExternalService = async (
+  previewUrl: string,
+): Promise<Buffer | null> => {
   const endpoint = (process.env.GALLERY_THUMB_CAPTURE_URL || '').trim()
   if (!endpoint) return null
 
@@ -82,7 +93,11 @@ const captureViaExternalService = async (previewUrl: string): Promise<Buffer | n
   const res = await fetch(endpoint, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ url: previewUrl, width: CAPTURE_WIDTH, height: CAPTURE_HEIGHT }),
+    body: JSON.stringify({
+      url: previewUrl,
+      width: CAPTURE_WIDTH,
+      height: CAPTURE_HEIGHT,
+    }),
     signal: AbortSignal.timeout(CAPTURE_TIMEOUT_MS),
   })
   if (!res.ok) throw new Error(`capture service ${res.status}`)
@@ -132,7 +147,10 @@ export const captureGalleryThumb = async (
           return external
         }
       } catch (err) {
-        console.warn(`[gallery-thumb] external capture failed for ${sessionId}:`, (err as Error)?.message ?? err)
+        console.warn(
+          `[gallery-thumb] external capture failed for ${sessionId}:`,
+          (err as Error)?.message ?? err,
+        )
       }
 
       return null
@@ -155,5 +173,7 @@ export const queueGalleryThumbCapture = (
 ): void => {
   if (!isGalleryThumbCaptureEnabled()) return
   if (readCachedGalleryThumb(sessionId, version)) return
-  void captureGalleryThumb(sessionId, version, previewUrl).catch(() => undefined)
+  void captureGalleryThumb(sessionId, version, previewUrl).catch(
+    () => undefined,
+  )
 }

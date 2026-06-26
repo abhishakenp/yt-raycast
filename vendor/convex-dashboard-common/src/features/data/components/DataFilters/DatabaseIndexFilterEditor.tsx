@@ -1,31 +1,31 @@
-import { ValidatorJSON, Value, convexToJson } from "convex/values";
-import React, { useCallback, useState } from "react";
+import { ValidatorJSON, Value, convexToJson } from 'convex/values'
+import React, { useCallback, useState } from 'react'
 import {
   DatabaseIndexFilterClause,
   FilterByIndex,
   FilterByIndexRange,
-} from "system-udfs/convex/_system/frontend/lib/filters";
-import { Checkbox } from "@ui/Checkbox";
-import { Combobox, Option } from "@ui/Combobox";
-import { DateTimePicker } from "@common/features/data/components/FilterEditor/DateTimePicker";
-import { cn } from "@ui/cn";
-import { Tooltip } from "@ui/Tooltip";
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
-import { ObjectEditorWithPlaceholder } from "./ObjectEditorWithPlaceholder";
+} from 'system-udfs/convex/_system/frontend/lib/filters'
+import { Checkbox } from '@ui/Checkbox'
+import { Combobox, Option } from '@ui/Combobox'
+import { DateTimePicker } from '@common/features/data/components/FilterEditor/DateTimePicker'
+import { cn } from '@ui/cn'
+import { Tooltip } from '@ui/Tooltip'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { ObjectEditorWithPlaceholder } from './ObjectEditorWithPlaceholder'
 
 // Options for the filter type combobox
 const filterTypeOptions: Option<string>[] = [
-  { value: "equals", label: "equals" },
-  { value: "lt", label: "<" },
-  { value: "lte", label: "<=" },
-  { value: "gt", label: ">" },
-  { value: "gte", label: ">=" },
-  { value: "between", label: "is between" },
-];
+  { value: 'equals', label: 'equals' },
+  { value: 'lt', label: '<' },
+  { value: 'lte', label: '<=' },
+  { value: 'gt', label: '>' },
+  { value: 'gte', label: '>=' },
+  { value: 'between', label: 'is between' },
+]
 
 // Define a constant for the error message
 const RANGE_ERROR_MESSAGE =
-  "The lower bound of this range is currently set to a value that is higher than the upper bound. This filter would never match any documents.";
+  'The lower bound of this range is currently set to a value that is higher than the upper bound. This filter would never match any documents.'
 
 export function DatabaseIndexFilterEditor({
   idx,
@@ -41,127 +41,127 @@ export function DatabaseIndexFilterEditor({
   previousFiltersEnabled,
   nextFiltersEnabled = [],
 }: {
-  idx: number;
-  field: string;
-  error: string | undefined;
-  onChange(filter: DatabaseIndexFilterClause, idx: number): void;
-  onApplyFilters(): void;
-  onError(idx: number, errors: string[]): void;
-  filter: DatabaseIndexFilterClause;
-  autoFocusValueEditor?: boolean;
-  documentValidator?: ValidatorJSON;
-  shouldSurfaceValidatorErrors?: boolean;
-  previousFiltersEnabled: boolean[];
-  nextFiltersEnabled?: boolean[];
+  idx: number
+  field: string
+  error: string | undefined
+  onChange(filter: DatabaseIndexFilterClause, idx: number): void
+  onApplyFilters(): void
+  onError(idx: number, errors: string[]): void
+  filter: DatabaseIndexFilterClause
+  autoFocusValueEditor?: boolean
+  documentValidator?: ValidatorJSON
+  shouldSurfaceValidatorErrors?: boolean
+  previousFiltersEnabled: boolean[]
+  nextFiltersEnabled?: boolean[]
 }) {
   const [prevIsLastEnabledFilter, setPrevIsLastEnabledFilter] = useState<
     boolean | null
-  >(null);
+  >(null)
 
   // Check if all previous filters are enabled
-  const canBeEnabled = previousFiltersEnabled.every((enabled) => enabled);
+  const canBeEnabled = previousFiltersEnabled.every((enabled) => enabled)
 
   // Check if any subsequent filters are enabled
-  const canBeDisabled = !nextFiltersEnabled.some((enabled) => enabled);
+  const canBeDisabled = !nextFiltersEnabled.some((enabled) => enabled)
 
   // Check if this is the last enabled filter
   const isLastEnabledFilter =
-    filter.enabled && nextFiltersEnabled.every((enabled) => !enabled);
+    filter.enabled && nextFiltersEnabled.every((enabled) => !enabled)
 
   // Convert to equals filter if no longer the last enabled filter
   React.useEffect(() => {
     // Skip on first render or if the filter is not enabled
     if (prevIsLastEnabledFilter === null || !filter.enabled) {
-      setPrevIsLastEnabledFilter(isLastEnabledFilter);
-      return;
+      setPrevIsLastEnabledFilter(isLastEnabledFilter)
+      return
     }
 
     // If it was the last enabled filter but is no longer
     if (prevIsLastEnabledFilter && !isLastEnabledFilter) {
       // Convert to equals filter
-      if (!("value" in filter)) {
+      if (!('value' in filter)) {
         // Determine which value to use
-        let newValue = null;
+        let newValue = null
         if (
-          "lowerValue" in filter &&
+          'lowerValue' in filter &&
           filter.lowerValue !== null &&
           filter.lowerValue !== undefined
         ) {
-          newValue = filter.lowerValue;
+          newValue = filter.lowerValue
         } else if (
-          "upperValue" in filter &&
+          'upperValue' in filter &&
           filter.upperValue !== null &&
           filter.upperValue !== undefined
         ) {
-          newValue = filter.upperValue;
+          newValue = filter.upperValue
         }
 
         const regularFilter: FilterByIndex = {
-          type: "indexEq",
+          type: 'indexEq',
           enabled: filter.enabled,
           value: convexToJson(newValue),
-        };
-        onChange(regularFilter, idx);
+        }
+        onChange(regularFilter, idx)
       }
     }
 
-    setPrevIsLastEnabledFilter(isLastEnabledFilter);
-  }, [isLastEnabledFilter, filter, idx, onChange, prevIsLastEnabledFilter]);
+    setPrevIsLastEnabledFilter(isLastEnabledFilter)
+  }, [isLastEnabledFilter, filter, idx, onChange, prevIsLastEnabledFilter])
 
   // Determine if this is a range filter
-  const isRangeFilter = filter.type === "indexRange";
+  const isRangeFilter = filter.type === 'indexRange'
 
   // Check if this is a _creationTime field
-  const isCreationTimeField = field === "_creationTime";
+  const isCreationTimeField = field === '_creationTime'
 
   // Determine the current operator
   const getCurrentOperator = (): string => {
     if (!isRangeFilter) {
-      return "equals";
+      return 'equals'
     }
 
     if (
-      "lowerOp" in filter &&
-      "upperOp" in filter &&
+      'lowerOp' in filter &&
+      'upperOp' in filter &&
       filter.lowerOp !== undefined &&
       filter.upperOp !== undefined
     ) {
-      return "between";
+      return 'between'
     }
 
-    if ("lowerOp" in filter && filter.lowerOp) {
-      return filter.lowerOp;
+    if ('lowerOp' in filter && filter.lowerOp) {
+      return filter.lowerOp
     }
 
-    if ("upperOp" in filter && filter.upperOp) {
-      return filter.upperOp;
+    if ('upperOp' in filter && filter.upperOp) {
+      return filter.upperOp
     }
 
-    return "between";
-  };
+    return 'between'
+  }
 
-  const currentOperator = getCurrentOperator();
+  const currentOperator = getCurrentOperator()
 
   // Handle changes to the filter's enabled state
   const handleEnabledChange = useCallback(
     (event: React.SyntheticEvent<HTMLInputElement>) => {
-      const enabled = (event.target as HTMLInputElement).checked;
+      const enabled = (event.target as HTMLInputElement).checked
 
       // If trying to disable and subsequent filters are enabled, prevent the change
       if (!enabled && !canBeDisabled) {
-        return;
+        return
       }
 
-      onChange({ ...filter, enabled }, idx);
+      onChange({ ...filter, enabled }, idx)
     },
     [filter, idx, onChange, canBeDisabled],
-  );
+  )
 
   // Handle changes to the filter's value
   const handleValueChange = useCallback(
     (value?: Value) => {
-      if (filter.type !== "indexEq") {
-        throw new Error("Called handleValueChange for non-equals filter");
+      if (filter.type !== 'indexEq') {
+        throw new Error('Called handleValueChange for non-equals filter')
       }
       onChange(
         {
@@ -169,88 +169,88 @@ export function DatabaseIndexFilterEditor({
           value: value === undefined ? undefined : convexToJson(value),
         },
         idx,
-      );
+      )
     },
     [filter, idx, onChange],
-  );
+  )
 
   // Handle date change for _creationTime
   const handleDateChange = useCallback(
     (date: Date) => {
-      const timestamp = date.getTime();
+      const timestamp = date.getTime()
 
-      if (filter.type === "indexEq") {
-        onChange({ ...filter, value: timestamp }, idx);
-      } else if (currentOperator === "lt" || currentOperator === "lte") {
+      if (filter.type === 'indexEq') {
+        onChange({ ...filter, value: timestamp }, idx)
+      } else if (currentOperator === 'lt' || currentOperator === 'lte') {
         // For less than operators, update the upperValue since they are upper bounds
-        onChange({ ...filter, upperValue: timestamp }, idx);
-      } else if (currentOperator === "gt" || currentOperator === "gte") {
+        onChange({ ...filter, upperValue: timestamp }, idx)
+      } else if (currentOperator === 'gt' || currentOperator === 'gte') {
         // For greater than operators, update the lowerValue since they are lower bounds
-        onChange({ ...filter, lowerValue: timestamp }, idx);
+        onChange({ ...filter, lowerValue: timestamp }, idx)
       }
     },
     [filter, idx, onChange, currentOperator],
-  );
+  )
 
   // Handle lower date change for _creationTime between
   const handleLowerDateChange = useCallback(
     (date: Date) => {
-      const timestamp = date.getTime();
-      if ("lowerValue" in filter) {
-        onChange({ ...filter, lowerValue: timestamp }, idx);
+      const timestamp = date.getTime()
+      if ('lowerValue' in filter) {
+        onChange({ ...filter, lowerValue: timestamp }, idx)
 
         // Check if lowerValue is greater than upperValue
         if (
-          filter.type === "indexRange" &&
-          typeof filter.upperValue === "number" &&
+          filter.type === 'indexRange' &&
+          typeof filter.upperValue === 'number' &&
           timestamp > filter.upperValue
         ) {
-          onError(idx, [RANGE_ERROR_MESSAGE]);
+          onError(idx, [RANGE_ERROR_MESSAGE])
         } else if (error === RANGE_ERROR_MESSAGE) {
-          onError(idx, []);
+          onError(idx, [])
         }
       }
     },
     [filter, idx, onChange, onError, error],
-  );
+  )
 
   // Handle upper date change for _creationTime between
   const handleUpperDateChange = useCallback(
     (date: Date) => {
-      const timestamp = date.getTime();
-      if ("upperValue" in filter) {
-        onChange({ ...filter, upperValue: timestamp }, idx);
+      const timestamp = date.getTime()
+      if ('upperValue' in filter) {
+        onChange({ ...filter, upperValue: timestamp }, idx)
 
         // Check if upperValue is less than lowerValue
         if (
-          filter.type === "indexRange" &&
-          typeof filter.lowerValue === "number" &&
+          filter.type === 'indexRange' &&
+          typeof filter.lowerValue === 'number' &&
           timestamp < filter.lowerValue
         ) {
-          onError(idx, [RANGE_ERROR_MESSAGE]);
+          onError(idx, [RANGE_ERROR_MESSAGE])
         } else if (error === RANGE_ERROR_MESSAGE) {
-          onError(idx, []);
+          onError(idx, [])
         }
       }
     },
     [filter, idx, onChange, onError, error],
-  );
+  )
 
   // Handle changes to range filter values
   const handleLowerValueChange = useCallback(
     (value?: Value) => {
-      if ("lowerValue" in filter) {
+      if ('lowerValue' in filter) {
         onChange(
           {
             ...filter,
             lowerValue: value === undefined ? undefined : convexToJson(value),
           },
           idx,
-        );
+        )
 
         // Check if lowerValue is greater than upperValue
         if (
-          filter.type === "indexRange" &&
+          filter.type === 'indexRange' &&
           value !== null &&
           value !== undefined &&
           filter.upperValue !== null &&
@@ -258,27 +258,27 @@ export function DatabaseIndexFilterEditor({
           typeof value === typeof filter.upperValue &&
           value > filter.upperValue
         ) {
-          onError(idx, [RANGE_ERROR_MESSAGE]);
+          onError(idx, [RANGE_ERROR_MESSAGE])
         }
       }
     },
     [filter, idx, onChange, onError],
-  );
+  )
 
   const handleUpperValueChange = useCallback(
     (value?: Value) => {
-      if ("upperValue" in filter) {
+      if ('upperValue' in filter) {
         onChange(
           {
             ...filter,
             upperValue: value === undefined ? undefined : convexToJson(value),
           },
           idx,
-        );
+        )
 
         // Check if upperValue is less than lowerValue
         if (
-          filter.type === "indexRange" &&
+          filter.type === 'indexRange' &&
           value !== null &&
           value !== undefined &&
           filter.lowerValue !== null &&
@@ -286,137 +286,137 @@ export function DatabaseIndexFilterEditor({
           typeof value === typeof filter.lowerValue &&
           value < filter.lowerValue
         ) {
-          onError(idx, [RANGE_ERROR_MESSAGE]);
+          onError(idx, [RANGE_ERROR_MESSAGE])
         }
       }
     },
     [filter, idx, onChange, onError],
-  );
+  )
 
   // Convert to range filter
   const convertToRangeFilter = useCallback(() => {
-    if (filter.type === "indexEq") {
+    if (filter.type === 'indexEq') {
       const rangeFilter: FilterByIndexRange = {
-        type: "indexRange",
+        type: 'indexRange',
         enabled: filter.enabled,
-        lowerOp: "gte",
+        lowerOp: 'gte',
         lowerValue: filter.value,
-        upperOp: "lte",
+        upperOp: 'lte',
         upperValue: filter.value,
-      };
-      onChange(rangeFilter, idx);
-    } else if (filter.type === "indexRange") {
+      }
+      onChange(rangeFilter, idx)
+    } else if (filter.type === 'indexRange') {
       // Handle conversion from single operator range filter to between range filter
-      let value = null;
+      let value = null
 
       // Try to get a value from the existing filter
       if (
-        "lowerValue" in filter &&
+        'lowerValue' in filter &&
         filter.lowerValue !== null &&
         filter.lowerValue !== undefined
       ) {
-        value = filter.lowerValue;
+        value = filter.lowerValue
       } else if (
-        "upperValue" in filter &&
+        'upperValue' in filter &&
         filter.upperValue !== null &&
         filter.upperValue !== undefined
       ) {
-        value = filter.upperValue;
+        value = filter.upperValue
       }
 
       const rangeFilter: FilterByIndexRange = {
-        type: "indexRange",
+        type: 'indexRange',
         enabled: filter.enabled,
-        lowerOp: "gte",
+        lowerOp: 'gte',
         lowerValue: value,
-        upperOp: "lte",
+        upperOp: 'lte',
         upperValue: value,
-      };
+      }
 
-      onChange(rangeFilter, idx);
+      onChange(rangeFilter, idx)
     }
-  }, [filter, idx, onChange]);
+  }, [filter, idx, onChange])
 
   // Convert to regular filter
   const convertToRegularFilter = useCallback(() => {
-    if ("lowerValue" in filter) {
+    if ('lowerValue' in filter) {
       const regularFilter: FilterByIndex = {
-        type: "indexEq",
+        type: 'indexEq',
         enabled: filter.enabled,
         value: filter.lowerValue ?? null,
-      };
-      onChange(regularFilter, idx);
+      }
+      onChange(regularFilter, idx)
     }
-  }, [filter, idx, onChange]);
+  }, [filter, idx, onChange])
 
   // Convert to single operator range filter
   const convertToSingleOperatorFilter = useCallback(
-    (op: "lt" | "lte" | "gt" | "gte") => {
-      let value = null;
+    (op: 'lt' | 'lte' | 'gt' | 'gte') => {
+      let value = null
 
       // Try to preserve the current value
-      if (filter.type === "indexEq") {
-        value = filter.value;
+      if (filter.type === 'indexEq') {
+        value = filter.value
       } else if (
-        filter.type === "indexRange" &&
-        (op === "lt" || op === "lte") &&
-        "upperValue" in filter &&
+        filter.type === 'indexRange' &&
+        (op === 'lt' || op === 'lte') &&
+        'upperValue' in filter &&
         filter.upperValue !== null &&
         filter.upperValue !== undefined
       ) {
         // When switching to lt/lte, preserve the upperValue if it exists
-        value = filter.upperValue;
+        value = filter.upperValue
       } else if (
-        filter.type === "indexRange" &&
-        (op === "gt" || op === "gte") &&
-        "lowerValue" in filter &&
+        filter.type === 'indexRange' &&
+        (op === 'gt' || op === 'gte') &&
+        'lowerValue' in filter &&
         filter.lowerValue !== null &&
         filter.lowerValue !== undefined
       ) {
         // When switching to gt/gte, preserve the lowerValue if it exists
-        value = filter.lowerValue;
+        value = filter.lowerValue
       } else if (
-        "lowerValue" in filter &&
+        'lowerValue' in filter &&
         filter.lowerValue !== null &&
         filter.lowerValue !== undefined
       ) {
-        value = filter.lowerValue;
+        value = filter.lowerValue
       } else if (
-        "upperValue" in filter &&
+        'upperValue' in filter &&
         filter.upperValue !== null &&
         filter.upperValue !== undefined
       ) {
-        value = filter.upperValue;
+        value = filter.upperValue
       }
 
       // Create a new range filter with ONLY the properties needed for the current operator
       const rangeFilter: FilterByIndexRange = {
-        type: "indexRange",
+        type: 'indexRange',
         enabled: filter.enabled,
         // For gt/gte operators, set only lowerOp and lowerValue
-        lowerOp: op === "gt" || op === "gte" ? op : undefined,
-        lowerValue: op === "gt" || op === "gte" ? value : null,
+        lowerOp: op === 'gt' || op === 'gte' ? op : undefined,
+        lowerValue: op === 'gt' || op === 'gte' ? value : null,
         // For lt/lte operators, set only upperOp and upperValue
-        upperOp: op === "lt" || op === "lte" ? op : undefined,
-        upperValue: op === "lt" || op === "lte" ? value : null,
-      };
+        upperOp: op === 'lt' || op === 'lte' ? op : undefined,
+        upperValue: op === 'lt' || op === 'lte' ? value : null,
+      }
 
-      onChange(rangeFilter, idx);
+      onChange(rangeFilter, idx)
     },
     [filter, idx, onChange],
-  );
+  )
 
   // Handle filter type change
   const handleFilterTypeChange = useCallback(
     (option: string | null) => {
-      if (!option) return;
+      if (!option) return
 
-      if (option === "equals") {
-        convertToRegularFilter();
-      } else if (option === "between") {
-        convertToRangeFilter();
-      } else if (["lt", "lte", "gt", "gte"].includes(option)) {
-        convertToSingleOperatorFilter(option as "lt" | "lte" | "gt" | "gte");
+      if (option === 'equals') {
+        convertToRegularFilter()
+      } else if (option === 'between') {
+        convertToRangeFilter()
+      } else if (['lt', 'lte', 'gt', 'gte'].includes(option)) {
+        convertToSingleOperatorFilter(option as 'lt' | 'lte' | 'gt' | 'gte')
       }
     },
     [
@@ -424,50 +424,50 @@ export function DatabaseIndexFilterEditor({
       convertToRangeFilter,
       convertToSingleOperatorFilter,
     ],
-  );
+  )
 
   // Handle errors from ObjectEditor
   const handleError = useCallback(
     (newErrors: string[]) => {
-      onError(idx, newErrors);
+      onError(idx, newErrors)
     },
     [idx, onError],
-  );
+  )
 
   // Helper to get timestamp value or default to current time
   const getTimestampValue = (value: any): Date => {
-    if (typeof value === "number") {
-      return new Date(value);
+    if (typeof value === 'number') {
+      return new Date(value)
     }
-    return new Date();
-  };
+    return new Date()
+  }
 
   // Reusable DateTimePicker component
   const renderDateTimePicker = (
     value: any,
     onChangeHandler: (date: Date) => void,
-    className = "",
+    className = '',
   ) => (
     <DateTimePicker
       date={getTimestampValue(value)}
       onChange={onChangeHandler}
       aria-label="Creation time"
       disabled={!filter.enabled}
-      className={cn("align-top", className)}
+      className={cn('align-top', className)}
     />
-  );
+  )
 
   // Render the appropriate value editor based on the filter type
   const renderValueEditor = () => {
     // Regular filter (equals)
-    if (filter.type === "indexEq") {
+    if (filter.type === 'indexEq') {
       return (
         <div className="-ml-px min-w-0 flex-1">
           {isCreationTimeField ? (
             renderDateTimePicker(
               filter.value,
               handleDateChange,
-              "text-xs border p-1 rounded-r",
+              'text-xs border p-1 rounded-r',
             )
           ) : (
             <ObjectEditorWithPlaceholder
@@ -484,27 +484,27 @@ export function DatabaseIndexFilterEditor({
             />
           )}
         </div>
-      );
+      )
     }
 
     // Single operator range filter (lt, lte, gt, gte)
     if (
       isRangeFilter &&
-      (currentOperator === "lt" ||
-        currentOperator === "lte" ||
-        currentOperator === "gt" ||
-        currentOperator === "gte")
+      (currentOperator === 'lt' ||
+        currentOperator === 'lte' ||
+        currentOperator === 'gt' ||
+        currentOperator === 'gte')
     ) {
       // Fix: Use the correct value based on the operator
       // lt/lte operators use upperValue, gt/gte operators use lowerValue
       const value =
-        currentOperator === "lt" || currentOperator === "lte"
+        currentOperator === 'lt' || currentOperator === 'lte'
           ? filter.upperValue
-          : filter.lowerValue;
+          : filter.lowerValue
       const handler =
-        currentOperator === "lt" || currentOperator === "lte"
+        currentOperator === 'lt' || currentOperator === 'lte'
           ? handleUpperValueChange
-          : handleLowerValueChange;
+          : handleLowerValueChange
 
       return (
         <div className="-ml-px flex-1">
@@ -512,7 +512,7 @@ export function DatabaseIndexFilterEditor({
             renderDateTimePicker(
               value,
               handleDateChange,
-              "text-xs border p-1 rounded-r",
+              'text-xs border p-1 rounded-r',
             )
           ) : (
             <ObjectEditorWithPlaceholder
@@ -529,11 +529,11 @@ export function DatabaseIndexFilterEditor({
             />
           )}
         </div>
-      );
+      )
     }
 
     // Between range filter
-    if (isRangeFilter && currentOperator === "between") {
+    if (isRangeFilter && currentOperator === 'between') {
       return (
         <div className="-ml-px flex w-full min-w-0 flex-1 grow flex-col items-center">
           {/* Lower bound value */}
@@ -542,7 +542,7 @@ export function DatabaseIndexFilterEditor({
               renderDateTimePicker(
                 filter.lowerValue,
                 handleLowerDateChange,
-                "text-xs border p-1 rounded-tr",
+                'text-xs border p-1 rounded-tr',
               )
             ) : (
               <ObjectEditorWithPlaceholder
@@ -566,7 +566,7 @@ export function DatabaseIndexFilterEditor({
               renderDateTimePicker(
                 filter.upperValue,
                 handleUpperDateChange,
-                "rounded-br text-xs border border-t-0 p-1",
+                'rounded-br text-xs border border-t-0 p-1',
               )
             ) : (
               <ObjectEditorWithPlaceholder
@@ -583,11 +583,11 @@ export function DatabaseIndexFilterEditor({
             )}
           </div>
         </div>
-      );
+      )
     }
 
-    return null;
-  };
+    return null
+  }
 
   return (
     <div className="flex min-w-0 items-center gap-2">
@@ -597,9 +597,9 @@ export function DatabaseIndexFilterEditor({
           <Tooltip
             tip={
               filter.enabled && !canBeDisabled
-                ? "Cannot disable this index filter because subsequent filters are enabled."
+                ? 'Cannot disable this index filter because subsequent filters are enabled.'
                 : !filter.enabled && !canBeEnabled
-                  ? "Cannot enable this index filter because previous filters are disabled."
+                  ? 'Cannot enable this index filter because previous filters are disabled.'
                   : undefined
             }
             side="right"
@@ -617,16 +617,16 @@ export function DatabaseIndexFilterEditor({
         <Tooltip
           tip={
             filter.enabled
-              ? "You cannot edit this field because it is a part of the definition of the selected index."
+              ? 'You cannot edit this field because it is a part of the definition of the selected index.'
               : undefined
           }
         >
           <div
             className={cn(
-              "flex h-full max-w-48 min-w-4 cursor-not-allowed items-center truncate rounded-l border bg-background-secondary px-2 py-1 text-xs",
+              'flex h-full max-w-48 min-w-4 cursor-not-allowed items-center truncate rounded-l border bg-background-secondary px-2 py-1 text-xs',
               filter.enabled
-                ? "bg-background-secondary"
-                : "bg-background-tertiary text-content-secondary",
+                ? 'bg-background-secondary'
+                : 'bg-background-tertiary text-content-secondary',
             )}
           >
             {field}
@@ -650,28 +650,28 @@ export function DatabaseIndexFilterEditor({
           <Tooltip
             tip={
               filter.enabled &&
-              "In an index filter, you can only change the operator of the last enabled filter."
+              'In an index filter, you can only change the operator of the last enabled filter.'
             }
           >
             <div
               className={cn(
-                "-ml-px flex w-fit cursor-not-allowed items-center border px-1.5 py-1 text-xs",
+                '-ml-px flex w-fit cursor-not-allowed items-center border px-1.5 py-1 text-xs',
                 filter.enabled
-                  ? "bg-background-secondary"
-                  : "bg-background-tertiary text-content-secondary",
+                  ? 'bg-background-secondary'
+                  : 'bg-background-tertiary text-content-secondary',
               )}
             >
-              {currentOperator === "between"
-                ? "is between"
-                : currentOperator === "lt"
-                  ? "<"
-                  : currentOperator === "lte"
-                    ? "<="
-                    : currentOperator === "gt"
-                      ? ">"
-                      : currentOperator === "gte"
-                        ? ">="
-                        : "equals"}
+              {currentOperator === 'between'
+                ? 'is between'
+                : currentOperator === 'lt'
+                  ? '<'
+                  : currentOperator === 'lte'
+                    ? '<='
+                    : currentOperator === 'gt'
+                      ? '>'
+                      : currentOperator === 'gte'
+                        ? '>='
+                        : 'equals'}
             </div>
           </Tooltip>
         )}
@@ -687,5 +687,5 @@ export function DatabaseIndexFilterEditor({
         )}
       </div>
     </div>
-  );
+  )
 }

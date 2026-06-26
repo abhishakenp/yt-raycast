@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * DatingAppDownloadCta — a bold app-download CTA band for a dating / matchmaking
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * landing page. Renders fully with no props via baked-in "HeartLink" defaults.
  */
 export const DatingAppDownloadCta = defineComponent({
-  name: "DatingAppDownloadCta",
+  name: 'DatingAppDownloadCta',
   description:
     "Bold app-download CTA band for a dating / matchmaking app: a dark foreground-surfaced two-column band — left has a big heading, a supporting paragraph, and App Store + Google Play store buttons (each with its glyph and two-line label); right has a tilted phone mockup with an overlaid in-app profile card and a floating 'New Match!' notification chip. Store buttons route through useNavigate; mockup imagery is alt-driven <Image>. Use as the final conversion / install push for dating apps, singles platforms, or any mobile app landing page.",
   props: z.object({
@@ -35,22 +35,22 @@ export const DatingAppDownloadCta = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const downloadHeading = props.heading ?? "Your perfect match is waiting"
+    const downloadHeading = props.heading ?? 'Your perfect match is waiting'
     const downloadDesc =
       props.description ??
-      "Download HeartLink today and join 2 million singles already finding meaningful connections. Your next great conversation starts with a single tap."
-    const appStore = props.appStore ?? "App Store"
-    const googlePlay = props.googlePlay ?? "Google Play"
+      'Download HeartLink today and join 2 million singles already finding meaningful connections. Your next great conversation starts with a single tap.'
+    const appStore = props.appStore ?? 'App Store'
+    const googlePlay = props.googlePlay ?? 'Google Play'
     const mockupAlt =
       props.mockupAlt ??
-      "app interface showing matching screen with profile cards"
-    const mockupProfileName = props.mockupProfileName ?? "Alex, 26"
-    const mockupProfileMeta = props.mockupProfileMeta ?? "Software Engineer"
+      'app interface showing matching screen with profile cards'
+    const mockupProfileName = props.mockupProfileName ?? 'Alex, 26'
+    const mockupProfileMeta = props.mockupProfileMeta ?? 'Software Engineer'
     const mockupProfileImageAlt =
       props.mockupProfileImageAlt ??
-      "profile photo of Alex a 26 year old software engineer"
-    const floatTitle = props.floatTitle ?? "New Match!"
-    const floatMeta = props.floatMeta ?? "Jessica liked you"
+      'profile photo of Alex a 26 year old software engineer'
+    const floatTitle = props.floatTitle ?? 'New Match!'
+    const floatMeta = props.floatMeta ?? 'Jessica liked you'
 
     const HeartGlyph = ({ className }: { className?: string }) => (
       <svg
@@ -84,7 +84,7 @@ export const DatingAppDownloadCta = defineComponent({
 
     return (
       <section
-        className={cn("bg-foreground py-24 text-background", props.className)}
+        className={cn('bg-foreground py-24 text-background', props.className)}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2">
@@ -186,7 +186,9 @@ export const DatingAppDownloadCta = defineComponent({
                       <p className="text-sm font-semibold text-card-foreground">
                         {floatTitle}
                       </p>
-                      <p className="text-xs text-muted-foreground">{floatMeta}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {floatMeta}
+                      </p>
                     </div>
                   </div>
                 </div>

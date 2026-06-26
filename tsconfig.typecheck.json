@@ -34,9 +34,7 @@
       "#/*": ["./src/*"],
       "@/*": ["./src/*"],
       "@ship-fast/blocks": ["./types/typecheck/ship-fast-blocks.d.ts"],
-      "@ship-fast/blocks/runtime": [
-        "./types/typecheck/ship-fast-blocks.d.ts"
-      ],
+      "@ship-fast/blocks/runtime": ["./types/typecheck/ship-fast-blocks.d.ts"],
       "@ship-fast/blocks/generated": [
         "./types/typecheck/ship-fast-blocks.d.ts"
       ],

@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * FoodDeliveryRestaurants — popular-restaurants gallery band for a food-delivery
@@ -16,9 +16,9 @@ import { Image } from "#/lib/img.tsx"
  * no props via baked-in defaults.
  */
 export const FoodDeliveryRestaurants = defineComponent({
-  name: "FoodDeliveryRestaurants",
+  name: 'FoodDeliveryRestaurants',
   description:
-    "Popular-restaurants gallery band for a food-delivery marketplace: a card-surfaced section with a left-aligned heading + subhead and a right-aligned View all link, above a responsive 2/4-up grid of clickable cuisine cards. Each card shows an alt-driven food photo (zoom-on-hover) with an overlaid cuisine chip and rating badge, then a name, a category line, and a delivery-time / delivery-fee row. Card clicks and the view-all link route through useNavigate. Use to showcase restaurant discovery for food-delivery apps, restaurant aggregators, online-ordering platforms, or grocery/takeout services.",
+    'Popular-restaurants gallery band for a food-delivery marketplace: a card-surfaced section with a left-aligned heading + subhead and a right-aligned View all link, above a responsive 2/4-up grid of clickable cuisine cards. Each card shows an alt-driven food photo (zoom-on-hover) with an overlaid cuisine chip and rating badge, then a name, a category line, and a delivery-time / delivery-fee row. Card clicks and the view-all link route through useNavigate. Use to showcase restaurant discovery for food-delivery apps, restaurant aggregators, online-ordering platforms, or grocery/takeout services.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -44,93 +44,92 @@ export const FoodDeliveryRestaurants = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const restaurantsHeading = props.heading ?? "Popular restaurants"
+    const restaurantsHeading = props.heading ?? 'Popular restaurants'
     const restaurantsDesc =
-      props.description ?? "Top-rated spots in your neighborhood"
-    const restaurantsViewAll =
-      props.viewAll ?? "View all 240+ restaurants"
+      props.description ?? 'Top-rated spots in your neighborhood'
+    const restaurantsViewAll = props.viewAll ?? 'View all 240+ restaurants'
     const restaurantItems = props.items?.length
       ? props.items
       : [
           {
             name: "Mario's Pizzeria",
-            cuisine: "Italian",
-            category: "Pizza, Pasta, Italian",
-            rating: "4.8",
-            time: "25-35 min",
-            delivery: "$2.49 delivery",
+            cuisine: 'Italian',
+            category: 'Pizza, Pasta, Italian',
+            rating: '4.8',
+            time: '25-35 min',
+            delivery: '$2.49 delivery',
             imageAlt:
-              "Wood-fired Neapolitan pizza with melted mozzarella and fresh basil on rustic wooden table",
+              'Wood-fired Neapolitan pizza with melted mozzarella and fresh basil on rustic wooden table',
           },
           {
-            name: "Sakura Sushi Bar",
-            cuisine: "Japanese",
-            category: "Sushi, Ramen, Japanese",
-            rating: "4.9",
-            time: "30-45 min",
-            delivery: "$3.99 delivery",
+            name: 'Sakura Sushi Bar',
+            cuisine: 'Japanese',
+            category: 'Sushi, Ramen, Japanese',
+            rating: '4.9',
+            time: '30-45 min',
+            delivery: '$3.99 delivery',
             imageAlt:
-              "Fresh salmon sushi rolls and sashimi platter on black slate serving board",
+              'Fresh salmon sushi rolls and sashimi platter on black slate serving board',
           },
           {
-            name: "The Burger Joint",
-            cuisine: "American",
-            category: "Burgers, Fries, Shakes",
-            rating: "4.7",
-            time: "20-30 min",
-            delivery: "Free delivery",
+            name: 'The Burger Joint',
+            cuisine: 'American',
+            category: 'Burgers, Fries, Shakes',
+            rating: '4.7',
+            time: '20-30 min',
+            delivery: 'Free delivery',
             imageAlt:
-              "Juicy gourmet beef burger with melted cheese and caramelized onions on brioche bun",
+              'Juicy gourmet beef burger with melted cheese and caramelized onions on brioche bun',
           },
           {
-            name: "Thai Orchid",
-            cuisine: "Thai",
-            category: "Thai, Noodles, Curry",
-            rating: "4.6",
-            time: "35-50 min",
-            delivery: "$2.99 delivery",
+            name: 'Thai Orchid',
+            cuisine: 'Thai',
+            category: 'Thai, Noodles, Curry',
+            rating: '4.6',
+            time: '35-50 min',
+            delivery: '$2.99 delivery',
             imageAlt:
-              "Steaming bowl of authentic Thai pad thai with shrimp and crushed peanuts",
+              'Steaming bowl of authentic Thai pad thai with shrimp and crushed peanuts',
           },
           {
-            name: "Olive Garden",
-            cuisine: "Mediterranean",
-            category: "Mediterranean, Greek",
-            rating: "4.8",
-            time: "25-40 min",
-            delivery: "$2.49 delivery",
+            name: 'Olive Garden',
+            cuisine: 'Mediterranean',
+            category: 'Mediterranean, Greek',
+            rating: '4.8',
+            time: '25-40 min',
+            delivery: '$2.49 delivery',
             imageAlt:
-              "Colorful Mediterranean mezze platter with hummus falafel and pita bread",
+              'Colorful Mediterranean mezze platter with hummus falafel and pita bread',
           },
           {
-            name: "Wing King",
-            cuisine: "Wings",
-            category: "Chicken Wings, BBQ",
-            rating: "4.5",
-            time: "20-35 min",
-            delivery: "$1.99 delivery",
+            name: 'Wing King',
+            cuisine: 'Wings',
+            category: 'Chicken Wings, BBQ',
+            rating: '4.5',
+            time: '20-35 min',
+            delivery: '$1.99 delivery',
             imageAlt:
-              "Crispy golden fried chicken wings with buffalo sauce and celery sticks",
+              'Crispy golden fried chicken wings with buffalo sauce and celery sticks',
           },
           {
-            name: "Curry House",
-            cuisine: "Indian",
-            category: "Indian, Curry, Tandoori",
-            rating: "4.7",
-            time: "40-55 min",
-            delivery: "$3.49 delivery",
+            name: 'Curry House',
+            cuisine: 'Indian',
+            category: 'Indian, Curry, Tandoori',
+            rating: '4.7',
+            time: '40-55 min',
+            delivery: '$3.49 delivery',
             imageAlt:
-              "Rich creamy Indian butter chicken curry with naan bread and rice",
+              'Rich creamy Indian butter chicken curry with naan bread and rice',
           },
           {
-            name: "Sweet Treats Bakery",
-            cuisine: "Desserts",
-            category: "Cakes, Pastries, Coffee",
-            rating: "4.9",
-            time: "15-25 min",
-            delivery: "$2.99 delivery",
+            name: 'Sweet Treats Bakery',
+            cuisine: 'Desserts',
+            category: 'Cakes, Pastries, Coffee',
+            rating: '4.9',
+            time: '15-25 min',
+            delivery: '$2.99 delivery',
             imageAlt:
-              "Decadent chocolate cake with berries and powdered sugar dusting",
+              'Decadent chocolate cake with berries and powdered sugar dusting',
           },
         ]
 
@@ -150,9 +149,7 @@ export const FoodDeliveryRestaurants = defineComponent({
     )
 
     return (
-      <section
-        className={cn("bg-card py-20 lg:py-28", props.className)}
-      >
+      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>

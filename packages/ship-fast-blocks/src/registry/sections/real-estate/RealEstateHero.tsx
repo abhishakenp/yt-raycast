@@ -1,8 +1,8 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * RealEstateHero — full-bleed property hero for a premium brokerage. A striking
@@ -15,7 +15,7 @@ import { Image } from "#/lib/img.tsx"
  * Renders fully with no props via baked-in defaults.
  */
 export const RealEstateHero = defineComponent({
-  name: "RealEstateHero",
+  name: 'RealEstateHero',
   description:
     "Full-bleed property hero for a premium brokerage: a striking home photo fills the band under a token-based dark overlay so light text reads cleanly. Centered content has an uppercase eyebrow, a large serif headline, a supporting paragraph, dual CTAs ('Search Homes' filled + 'Talk to an Agent' outlined), and a search-bar affordance card with location / type / price inputs and a search button. CTAs and search route through useNavigate. Use as the opening hero for real-estate brokerages, agent sites, and listing portals.",
   props: z.object({
@@ -49,26 +49,29 @@ export const RealEstateHero = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const eyebrow = props.eyebrow ?? "Trusted since 1998"
-    const heading = props.heading ?? "Find the home that fits your life"
+    const eyebrow = props.eyebrow ?? 'Trusted since 1998'
+    const heading = props.heading ?? 'Find the home that fits your life'
     const subheading =
       props.subheading ??
-      "From first keys to forever homes, our agents guide you through every street, every showing, and every signature with confidence."
-    const primaryCta = props.primaryCta ?? "Search Homes"
-    const primaryTarget = props.primaryTarget ?? "Buy"
-    const secondaryCta = props.secondaryCta ?? "Talk to an Agent"
-    const secondaryTarget = props.secondaryTarget ?? "Agents"
+      'From first keys to forever homes, our agents guide you through every street, every showing, and every signature with confidence.'
+    const primaryCta = props.primaryCta ?? 'Search Homes'
+    const primaryTarget = props.primaryTarget ?? 'Buy'
+    const secondaryCta = props.secondaryCta ?? 'Talk to an Agent'
+    const secondaryTarget = props.secondaryTarget ?? 'Agents'
     const imageAlt =
       props.imageAlt ??
-      "modern luxury suburban home at dusk with warm interior lighting, manicured lawn, and a long stone driveway"
-    const locationPlaceholder = props.locationPlaceholder ?? "City, neighborhood, or ZIP"
-    const typePlaceholder = props.typePlaceholder ?? "Property type"
-    const pricePlaceholder = props.pricePlaceholder ?? "Max price"
-    const searchLabel = props.searchLabel ?? "Search Homes"
-    const searchTarget = props.searchTarget ?? "Buy"
+      'modern luxury suburban home at dusk with warm interior lighting, manicured lawn, and a long stone driveway'
+    const locationPlaceholder =
+      props.locationPlaceholder ?? 'City, neighborhood, or ZIP'
+    const typePlaceholder = props.typePlaceholder ?? 'Property type'
+    const pricePlaceholder = props.pricePlaceholder ?? 'Max price'
+    const searchLabel = props.searchLabel ?? 'Search Homes'
+    const searchTarget = props.searchTarget ?? 'Buy'
 
     return (
-      <section className={cn("relative isolate overflow-hidden", props.className)}>
+      <section
+        className={cn('relative isolate overflow-hidden', props.className)}
+      >
         <Image
           alt={imageAlt}
           w={1920}
@@ -76,7 +79,10 @@ export const RealEstateHero = defineComponent({
           loading="lazy"
           className="absolute inset-0 -z-10 size-full object-cover"
         />
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-foreground/55" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-foreground/55"
+        />
         <div
           aria-hidden="true"
           className="absolute inset-0 -z-10 bg-gradient-to-t from-foreground/70 via-foreground/25 to-foreground/45"

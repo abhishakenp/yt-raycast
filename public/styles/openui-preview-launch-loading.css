@@ -82,7 +82,8 @@
 .sf-openui-launch-logo.is-settled {
   transform: scale(1.1);
   margin-top: -6vh;
-  animation: sfLaunchRocketLaunch 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+  animation: sfLaunchRocketLaunch 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97)
+    forwards;
 }
 
 @keyframes sfLaunchRocketShake {
