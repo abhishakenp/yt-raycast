@@ -38,6 +38,7 @@ import { GlassDefs, GlassPillAnchor, GlassPillButton } from './GlassPill'
 import { CloseIcon, LogoMark, SearchIcon, ZapIcon } from './HomeIcons'
 import { PrivateGenerationModal } from './PrivateGenerationModal'
 import { handleShareClick, ShareBonusPanel } from './ShareBonusPanel'
+import { WaitlistGate } from './WaitlistGate'
 
 const LANGUAGE_OPTIONS = [
   ['en', 'English'],
@@ -419,9 +420,8 @@ export const HomePage = () => {
       void (async () => {
         const currentPrompt = prompt.trim()
         if (currentPrompt.length < PROMPT_LANG_DETECT_MIN_CHARS) return
-        const { detectSnippetLanguageBcp47 } = await import(
-          '@/lib/home/prompt-language-core'
-        )
+        const { detectSnippetLanguageBcp47 } =
+          await import('@/lib/home/prompt-language-core')
         const detectedLanguage = await detectSnippetLanguageBcp47(
           currentPrompt.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX),
         )
@@ -729,347 +729,353 @@ export const HomePage = () => {
 
             <div className="relative z-[1] flex min-h-0 w-full flex-col items-stretch justify-start">
               <div className="relative z-[8] mx-auto flex w-full max-w-none flex-col gap-0 max-[1100px]:w-[min(100%,680px)]">
-                <div
-                  className="hero-card launch-prompt-card relative isolate w-full overflow-hidden rounded-[26px] bg-[linear-gradient(145deg,rgba(7,15,38,0.78),rgba(4,6,18,0.62)),radial-gradient(circle_at_50%_0%,rgba(38,231,255,0.2),transparent_32rem)] p-px shadow-[0_0_0_1px_rgba(38,231,255,0.26),0_0_0_5px_rgba(38,231,255,0.04),0_24px_70px_rgba(0,0,0,0.42),0_0_70px_rgba(32,136,255,0.18)] backdrop-blur-[22px] backdrop-saturate-[1.6] before:pointer-events-none before:absolute before:inset-[-1px] before:z-0 before:rounded-[inherit] before:bg-[radial-gradient(ellipse_82%_70%_at_50%_0%,rgba(38,231,255,0.24),transparent_58%),linear-gradient(120deg,rgba(38,231,255,0.28),transparent_24%,rgba(223,53,255,0.2)_76%,transparent)] before:opacity-70 after:pointer-events-none after:absolute after:bottom-0 after:left-[6%] after:right-[6%] after:z-[1] after:h-px after:bg-[linear-gradient(90deg,transparent,rgba(38,231,255,0.66),rgba(223,53,255,0.55),transparent)]"
-                  id="hero-card"
-                  onPointerMove={handleHeroCardPointerMove}
-                  onPointerLeave={handleHeroCardPointerLeave}
-                >
-                  <div className="hero-card-inner relative z-[2] min-w-0 overflow-hidden rounded-[25px] bg-transparent p-[clamp(22px,2.1vw,30px)]">
-                    <form
-                      id="prompt-form"
-                      className="flex w-full min-w-0 flex-col gap-[11px]"
-                      onSubmit={handleSubmit}
-                    >
-                      <label className="sr-only" htmlFor="prompt-input">
-                        Describe the website you want to build
-                      </label>
-                      <div className="relative w-full [--prompt-caption-block:calc(11px*1.25)] [--prompt-caption-gap:8px] [--prompt-inset-bottom:48px] [--prompt-inset-top:16px] [--prompt-inset-x:16px] [--prompt-text-start:calc(var(--prompt-inset-top)+var(--prompt-caption-block)+var(--prompt-caption-gap))]">
-                        <textarea
-                          className="min-h-[clamp(142px,14vw,166px)] w-full resize-y rounded-[var(--radius-lg)] border border-[rgba(38,231,255,0.2)] bg-[rgba(0,8,22,0.72)] px-[var(--prompt-inset-x)] pt-[var(--prompt-text-start)] pb-[var(--prompt-inset-bottom)] font-sans text-[15px] leading-[1.6] text-[#f6fdff] caret-[var(--accent-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),inset_0_-22px_70px_rgba(32,136,255,0.08)] outline-none transition-all duration-300 placeholder:text-transparent hover:border-[rgba(38,231,255,0.62)] focus:border-[rgba(38,231,255,0.62)] focus:shadow-[0_0_0_3px_rgba(38,231,255,0.11),0_0_35px_rgba(38,231,255,0.13),inset_0_-22px_70px_rgba(32,136,255,0.1)]"
-                          id="prompt-input"
-                          name="prompt"
-                          placeholder=""
-                          autoFocus
-                          autoComplete="off"
-                          required
-                          rows={3}
-                          maxLength={5000}
-                          value={prompt}
-                          aria-activedescendant={
-                            promptSuggestionsOpen
-                              ? `prompt-suggest-${promptSuggestActive}`
-                              : undefined
-                          }
-                          aria-autocomplete="list"
-                          aria-controls="prompt-suggestions-list"
-                          onBlur={() => {
-                            window.setTimeout(() => {
-                              setPromptFocused(false)
-                              closePromptSuggestions()
-                            }, 120)
-                          }}
-                          onChange={(event) => {
-                            setPromptFocused(true)
-                            setPrompt(event.currentTarget.value)
-                          }}
-                          onClick={() => setPromptFocused(true)}
-                          onFocus={() => setPromptFocused(true)}
-                          onInput={() => setPromptFocused(true)}
-                          onPointerDown={() => setPromptFocused(true)}
-                          onKeyDown={handlePromptKeyDown}
-                        />
-                        <div
-                          className="pointer-events-none absolute bottom-[var(--prompt-inset-bottom)] left-[var(--prompt-inset-x)] right-[var(--prompt-inset-x)] top-[var(--prompt-inset-top)] flex flex-col items-start gap-[var(--prompt-caption-gap)] text-left transition-opacity duration-200"
-                          id="prompt-placeholder"
-                          aria-hidden="true"
-                        >
-                          <span className="block font-sans text-[11px] font-semibold uppercase leading-[1.25] tracking-[0.1em] text-[rgba(38,231,255,0.88)]">
-                            {promptCaption}
-                          </span>
-                          {!prompt ? (
-                            <span className="block max-h-[calc(1.6em*3)] max-w-full overflow-hidden text-[15px] leading-[1.6] text-[rgba(219,237,255,0.48)] [mask-image:linear-gradient(180deg,#000_70%,transparent)]">
-                              <span id="prompt-placeholder-text">
-                                {visiblePlaceholder}
-                              </span>
-                              <span className="ml-0.5 inline-block h-5 w-px animate-pulse bg-cyan-200/60 align-middle" />
-                            </span>
-                          ) : null}
-                        </div>
-                        <div
-                          className={cn(
-                            'prompt-suggestions',
-                            promptSuggestionsOpen && 'is-open',
-                          )}
-                          id="prompt-suggestions"
-                          hidden={!promptSuggestionsOpen}
-                        >
-                          <ul
-                            className="prompt-suggestions-list"
-                            id="prompt-suggestions-list"
-                            role="listbox"
-                            aria-label="Prompt ideas"
-                          >
-                            {promptSuggestions.map((suggestion, index) => (
-                              <li
-                                className={cn(
-                                  'prompt-suggestions-item',
-                                  index === promptSuggestActive && 'is-active',
-                                )}
-                                id={`prompt-suggest-${index}`}
-                                key={suggestion}
-                                role="option"
-                                aria-selected={index === promptSuggestActive}
-                                onMouseDown={(event) => {
-                                  event.preventDefault()
-                                  applyPromptSuggestion(suggestion)
-                                }}
-                              >
-                                <span>
-                                  {suggestion.slice(0, prompt.trim().length)}
-                                </span>
-                                <mark>
-                                  {suggestion.slice(prompt.trim().length)}
-                                </mark>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div
-                          className={cn(
-                            'prompt-language-row',
-                            !languageRowVisible && 'is-hidden',
-                          )}
-                          id="prompt-language-row"
-                        >
-                          <label className="sr-only" htmlFor="prompt-language">
-                            Preferred generation language
-                          </label>
-                          <select
-                            className="prompt-language-select"
-                            id="prompt-language"
-                            name="prompt-language"
-                            aria-label="Preferred generation language"
-                            value={preferredLanguage}
-                            onChange={(event) =>
-                              handlePreferredLanguageChange(
-                                event.currentTarget.value,
-                              )
+                <WaitlistGate>
+                  <div
+                    className="hero-card launch-prompt-card relative isolate w-full overflow-hidden rounded-[26px] bg-[linear-gradient(145deg,rgba(7,15,38,0.78),rgba(4,6,18,0.62)),radial-gradient(circle_at_50%_0%,rgba(38,231,255,0.2),transparent_32rem)] p-px shadow-[0_0_0_1px_rgba(38,231,255,0.26),0_0_0_5px_rgba(38,231,255,0.04),0_24px_70px_rgba(0,0,0,0.42),0_0_70px_rgba(32,136,255,0.18)] backdrop-blur-[22px] backdrop-saturate-[1.6] before:pointer-events-none before:absolute before:inset-[-1px] before:z-0 before:rounded-[inherit] before:bg-[radial-gradient(ellipse_82%_70%_at_50%_0%,rgba(38,231,255,0.24),transparent_58%),linear-gradient(120deg,rgba(38,231,255,0.28),transparent_24%,rgba(223,53,255,0.2)_76%,transparent)] before:opacity-70 after:pointer-events-none after:absolute after:bottom-0 after:left-[6%] after:right-[6%] after:z-[1] after:h-px after:bg-[linear-gradient(90deg,transparent,rgba(38,231,255,0.66),rgba(223,53,255,0.55),transparent)]"
+                    id="hero-card"
+                    onPointerMove={handleHeroCardPointerMove}
+                    onPointerLeave={handleHeroCardPointerLeave}
+                  >
+                    <div className="hero-card-inner relative z-[2] min-w-0 overflow-hidden rounded-[25px] bg-transparent p-[clamp(22px,2.1vw,30px)]">
+                      <form
+                        id="prompt-form"
+                        className="flex w-full min-w-0 flex-col gap-[11px]"
+                        onSubmit={handleSubmit}
+                      >
+                        <label className="sr-only" htmlFor="prompt-input">
+                          Describe the website you want to build
+                        </label>
+                        <div className="relative w-full [--prompt-caption-block:calc(11px*1.25)] [--prompt-caption-gap:8px] [--prompt-inset-bottom:48px] [--prompt-inset-top:16px] [--prompt-inset-x:16px] [--prompt-text-start:calc(var(--prompt-inset-top)+var(--prompt-caption-block)+var(--prompt-caption-gap))]">
+                          <textarea
+                            className="min-h-[clamp(142px,14vw,166px)] w-full resize-y rounded-[var(--radius-lg)] border border-[rgba(38,231,255,0.2)] bg-[rgba(0,8,22,0.72)] px-[var(--prompt-inset-x)] pt-[var(--prompt-text-start)] pb-[var(--prompt-inset-bottom)] font-sans text-[15px] leading-[1.6] text-[#f6fdff] caret-[var(--accent-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),inset_0_-22px_70px_rgba(32,136,255,0.08)] outline-none transition-all duration-300 placeholder:text-transparent hover:border-[rgba(38,231,255,0.62)] focus:border-[rgba(38,231,255,0.62)] focus:shadow-[0_0_0_3px_rgba(38,231,255,0.11),0_0_35px_rgba(38,231,255,0.13),inset_0_-22px_70px_rgba(32,136,255,0.1)]"
+                            id="prompt-input"
+                            name="prompt"
+                            placeholder=""
+                            autoFocus
+                            autoComplete="off"
+                            required
+                            rows={3}
+                            maxLength={5000}
+                            value={prompt}
+                            aria-activedescendant={
+                              promptSuggestionsOpen
+                                ? `prompt-suggest-${promptSuggestActive}`
+                                : undefined
                             }
+                            aria-autocomplete="list"
+                            aria-controls="prompt-suggestions-list"
+                            onBlur={() => {
+                              window.setTimeout(() => {
+                                setPromptFocused(false)
+                                closePromptSuggestions()
+                              }, 120)
+                            }}
+                            onChange={(event) => {
+                              setPromptFocused(true)
+                              setPrompt(event.currentTarget.value)
+                            }}
+                            onClick={() => setPromptFocused(true)}
+                            onFocus={() => setPromptFocused(true)}
+                            onInput={() => setPromptFocused(true)}
+                            onPointerDown={() => setPromptFocused(true)}
+                            onKeyDown={handlePromptKeyDown}
+                          />
+                          <div
+                            className="pointer-events-none absolute bottom-[var(--prompt-inset-bottom)] left-[var(--prompt-inset-x)] right-[var(--prompt-inset-x)] top-[var(--prompt-inset-top)] flex flex-col items-start gap-[var(--prompt-caption-gap)] text-left transition-opacity duration-200"
+                            id="prompt-placeholder"
+                            aria-hidden="true"
                           >
-                            {languageOptions.map(([code, name]) => (
-                              <option key={code} value={code}>
-                                {name}
-                              </option>
-                            ))}
-                          </select>
+                            <span className="block font-sans text-[11px] font-semibold uppercase leading-[1.25] tracking-[0.1em] text-[rgba(38,231,255,0.88)]">
+                              {promptCaption}
+                            </span>
+                            {!prompt ? (
+                              <span className="block max-h-[calc(1.6em*3)] max-w-full overflow-hidden text-[15px] leading-[1.6] text-[rgba(219,237,255,0.48)] [mask-image:linear-gradient(180deg,#000_70%,transparent)]">
+                                <span id="prompt-placeholder-text">
+                                  {visiblePlaceholder}
+                                </span>
+                                <span className="ml-0.5 inline-block h-5 w-px animate-pulse bg-cyan-200/60 align-middle" />
+                              </span>
+                            ) : null}
+                          </div>
+                          <div
+                            className={cn(
+                              'prompt-suggestions',
+                              promptSuggestionsOpen && 'is-open',
+                            )}
+                            id="prompt-suggestions"
+                            hidden={!promptSuggestionsOpen}
+                          >
+                            <ul
+                              className="prompt-suggestions-list"
+                              id="prompt-suggestions-list"
+                              role="listbox"
+                              aria-label="Prompt ideas"
+                            >
+                              {promptSuggestions.map((suggestion, index) => (
+                                <li
+                                  className={cn(
+                                    'prompt-suggestions-item',
+                                    index === promptSuggestActive &&
+                                      'is-active',
+                                  )}
+                                  id={`prompt-suggest-${index}`}
+                                  key={suggestion}
+                                  role="option"
+                                  aria-selected={index === promptSuggestActive}
+                                  onMouseDown={(event) => {
+                                    event.preventDefault()
+                                    applyPromptSuggestion(suggestion)
+                                  }}
+                                >
+                                  <span>
+                                    {suggestion.slice(0, prompt.trim().length)}
+                                  </span>
+                                  <mark>
+                                    {suggestion.slice(prompt.trim().length)}
+                                  </mark>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div
+                            className={cn(
+                              'prompt-language-row',
+                              !languageRowVisible && 'is-hidden',
+                            )}
+                            id="prompt-language-row"
+                          >
+                            <label
+                              className="sr-only"
+                              htmlFor="prompt-language"
+                            >
+                              Preferred generation language
+                            </label>
+                            <select
+                              className="prompt-language-select"
+                              id="prompt-language"
+                              name="prompt-language"
+                              aria-label="Preferred generation language"
+                              value={preferredLanguage}
+                              onChange={(event) =>
+                                handlePreferredLanguageChange(
+                                  event.currentTarget.value,
+                                )
+                              }
+                            >
+                              {languageOptions.map(([code, name]) => (
+                                <option key={code} value={code}>
+                                  {name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
-                      </div>
+
+                        <div
+                          className={cn(
+                            'rounded-2xl border border-white/10 bg-white/[0.03] p-3',
+                            designRefOpen ? 'grid gap-3' : 'hidden',
+                          )}
+                          id="design-ref-panel"
+                        >
+                          <div className="relative flex items-center gap-2 rounded-xl border border-white/10 bg-black/25 px-3 py-2">
+                            <SearchIcon />
+                            <input
+                              className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35"
+                              type="text"
+                              id="design-ref-search"
+                              name="design-ref-search"
+                              autoComplete="off"
+                              placeholder="Search a site or paste an HTTPS URL"
+                            />
+                          </div>
+                          <div
+                            className="hidden items-center gap-3 rounded-xl border border-white/10 bg-black/25 p-2"
+                            id="design-ref-preview"
+                          >
+                            <img
+                              className="size-5 rounded"
+                              id="design-ref-preview-favicon"
+                              alt=""
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div
+                                className="truncate text-sm text-white"
+                                id="design-ref-preview-title"
+                              />
+                              <div
+                                className="truncate text-xs text-white/45"
+                                id="design-ref-preview-url"
+                              />
+                            </div>
+                            <GlassPillButton
+                              className="size-7 min-h-7 min-w-7 p-0"
+                              id="design-ref-preview-remove"
+                              ariaLabel="Remove"
+                            >
+                              <CloseIcon />
+                            </GlassPillButton>
+                          </div>
+
+                          <p className="m-0 text-xs leading-relaxed text-white/40">
+                            Use a site you have rights to reference. Ship Fast
+                            creates an original layout.
+                          </p>
+                        </div>
+
+                        <input
+                          type="hidden"
+                          id="design-ref-url-1"
+                          name="design-ref-url-1"
+                          value=""
+                        />
+                        <input
+                          type="hidden"
+                          id="design-ref-url-2"
+                          name="design-ref-url-2"
+                          value=""
+                        />
+                        <input
+                          type="hidden"
+                          id="design-ref-notes"
+                          name="design-ref-notes"
+                          value=""
+                        />
+
+                        <div className="mt-1.5 flex w-full flex-wrap items-center justify-between gap-3">
+                          <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex shrink-0 items-center gap-2.5">
+                              <input
+                                type="checkbox"
+                                className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-white/20 bg-white/[0.08] outline-none transition-all duration-300 checked:border-cyan-300/50 checked:bg-cyan-300/25 before:absolute before:left-0.5 before:top-0.5 before:size-3.5 before:rounded-full before:bg-white/40 before:transition-all checked:before:translate-x-4 checked:before:bg-cyan-200"
+                                id="design-ref-toggle"
+                                checked={designRefOpen}
+                                onChange={(event) =>
+                                  setDesignRefOpen(event.currentTarget.checked)
+                                }
+                              />
+                              <label
+                                className="text-sm text-[rgba(219,237,255,0.75)]"
+                                htmlFor="design-ref-toggle"
+                              >
+                                Layout inspiration
+                              </label>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2.5">
+                              <input
+                                type="checkbox"
+                                className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-white/20 bg-white/[0.08] outline-none transition-all duration-300 checked:border-violet-300/55 checked:bg-violet-300/25 before:absolute before:left-0.5 before:top-0.5 before:size-3.5 before:rounded-full before:bg-white/40 before:transition-all checked:before:translate-x-4 checked:before:bg-violet-200"
+                                id="engine-v2-toggle"
+                                name="engine-version-v2"
+                                checked={engineVersion === 'v2'}
+                                onChange={(event) =>
+                                  setEngineVersion(
+                                    event.currentTarget.checked ? 'v2' : 'v1',
+                                  )
+                                }
+                              />
+                              <label
+                                className="text-sm text-[rgba(219,237,255,0.75)]"
+                                htmlFor="engine-v2-toggle"
+                              >
+                                Method 2 engine
+                              </label>
+                            </div>
+                          </div>
+                          <GlassPillButton
+                            type="submit"
+                            className={cn(
+                              'submit-btn min-h-11 px-[22px] py-2.5 text-sm font-extrabold text-[#00121a] shadow-[0_0_0_1px_rgba(255,255,255,0.35)_inset,0_0_34px_rgba(38,231,255,0.22),0_16px_34px_rgba(0,0,0,0.34)] disabled:text-[rgba(230,248,255,0.46)] max-[760px]:w-[52px] max-[760px]:min-w-[52px] max-[760px]:px-0',
+                              canSubmit &&
+                                'bg-[linear-gradient(135deg,#6dfbff_0%,#25dff5_45%,#38a8ff_100%)]',
+                              isSubmitting && 'opacity-70',
+                              submitCtaShaking && 'submit-btn--cta-shake',
+                            )}
+                            id="submit-btn"
+                            disabled={!canSubmit}
+                            onAnimationEnd={() => setSubmitCtaShaking(false)}
+                          >
+                            <ZapIcon />
+                            <span className="btn-label max-[760px]:hidden">
+                              {submitCtaLabel}
+                            </span>
+                            <div
+                              className={cn(
+                                'hidden size-4 animate-spin rounded-full border-2 border-white/20 border-t-white',
+                                isSubmitting && 'block',
+                              )}
+                            />
+                          </GlassPillButton>
+                        </div>
+                      </form>
 
                       <div
                         className={cn(
-                          'rounded-2xl border border-white/10 bg-white/[0.03] p-3',
-                          designRefOpen ? 'grid gap-3' : 'hidden',
+                          'mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-300',
+                          !errorMessage && 'hidden',
                         )}
-                        id="design-ref-panel"
+                        id="prompt-policy-block"
+                        role="alert"
+                        aria-live="assertive"
+                        hidden={!errorMessage}
                       >
-                        <div className="relative flex items-center gap-2 rounded-xl border border-white/10 bg-black/25 px-3 py-2">
-                          <SearchIcon />
+                        {errorMessage}
+                      </div>
+                      <div className="hidden" id="gen-counter" />
+
+                      <ShareBonusPanel
+                        visible={showSharePanel}
+                        onShareClick={onShareClick}
+                      />
+
+                      <div className="hidden" id="private-gen-row">
+                        <label
+                          className="flex items-center gap-2 text-sm text-white/60"
+                          htmlFor="private-gen-checkbox"
+                        >
                           <input
-                            className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35"
-                            type="text"
-                            id="design-ref-search"
-                            name="design-ref-search"
-                            autoComplete="off"
-                            placeholder="Search a site or paste an HTTPS URL"
-                          />
-                        </div>
-                        <div
-                          className="hidden items-center gap-3 rounded-xl border border-white/10 bg-black/25 p-2"
-                          id="design-ref-preview"
-                        >
-                          <img
-                            className="size-5 rounded"
-                            id="design-ref-preview-favicon"
-                            alt=""
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div
-                              className="truncate text-sm text-white"
-                              id="design-ref-preview-title"
-                            />
-                            <div
-                              className="truncate text-xs text-white/45"
-                              id="design-ref-preview-url"
-                            />
-                          </div>
-                          <GlassPillButton
-                            className="size-7 min-h-7 min-w-7 p-0"
-                            id="design-ref-preview-remove"
-                            ariaLabel="Remove"
-                          >
-                            <CloseIcon />
-                          </GlassPillButton>
-                        </div>
-
-                        <p className="m-0 text-xs leading-relaxed text-white/40">
-                          Use a site you have rights to reference. Ship Fast
-                          creates an original layout.
-                        </p>
-                      </div>
-
-                      <input
-                        type="hidden"
-                        id="design-ref-url-1"
-                        name="design-ref-url-1"
-                        value=""
-                      />
-                      <input
-                        type="hidden"
-                        id="design-ref-url-2"
-                        name="design-ref-url-2"
-                        value=""
-                      />
-                      <input
-                        type="hidden"
-                        id="design-ref-notes"
-                        name="design-ref-notes"
-                        value=""
-                      />
-
-                      <div className="mt-1.5 flex w-full flex-wrap items-center justify-between gap-3">
-                        <div className="flex flex-wrap items-center gap-4">
-                          <div className="flex shrink-0 items-center gap-2.5">
-                            <input
-                              type="checkbox"
-                              className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-white/20 bg-white/[0.08] outline-none transition-all duration-300 checked:border-cyan-300/50 checked:bg-cyan-300/25 before:absolute before:left-0.5 before:top-0.5 before:size-3.5 before:rounded-full before:bg-white/40 before:transition-all checked:before:translate-x-4 checked:before:bg-cyan-200"
-                              id="design-ref-toggle"
-                              checked={designRefOpen}
-                              onChange={(event) =>
-                                setDesignRefOpen(event.currentTarget.checked)
+                            type="checkbox"
+                            id="private-gen-checkbox"
+                            name="private-generation"
+                            onChange={(event) => {
+                              if (event.currentTarget.checked) {
+                                event.currentTarget.checked = false
+                                setPrivateModalOpen(true)
                               }
-                            />
-                            <label
-                              className="text-sm text-[rgba(219,237,255,0.75)]"
-                              htmlFor="design-ref-toggle"
-                            >
-                              Layout inspiration
-                            </label>
-                          </div>
-                          <div className="flex shrink-0 items-center gap-2.5">
-                            <input
-                              type="checkbox"
-                              className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-white/20 bg-white/[0.08] outline-none transition-all duration-300 checked:border-violet-300/55 checked:bg-violet-300/25 before:absolute before:left-0.5 before:top-0.5 before:size-3.5 before:rounded-full before:bg-white/40 before:transition-all checked:before:translate-x-4 checked:before:bg-violet-200"
-                              id="engine-v2-toggle"
-                              name="engine-version-v2"
-                              checked={engineVersion === 'v2'}
-                              onChange={(event) =>
-                                setEngineVersion(
-                                  event.currentTarget.checked ? 'v2' : 'v1',
-                                )
-                              }
-                            />
-                            <label
-                              className="text-sm text-[rgba(219,237,255,0.75)]"
-                              htmlFor="engine-v2-toggle"
-                            >
-                              Method 2 engine
-                            </label>
-                          </div>
-                        </div>
-                        <GlassPillButton
-                          type="submit"
-                          className={cn(
-                            'submit-btn min-h-11 px-[22px] py-2.5 text-sm font-extrabold text-[#00121a] shadow-[0_0_0_1px_rgba(255,255,255,0.35)_inset,0_0_34px_rgba(38,231,255,0.22),0_16px_34px_rgba(0,0,0,0.34)] disabled:text-[rgba(230,248,255,0.46)] max-[760px]:w-[52px] max-[760px]:min-w-[52px] max-[760px]:px-0',
-                            canSubmit &&
-                              'bg-[linear-gradient(135deg,#6dfbff_0%,#25dff5_45%,#38a8ff_100%)]',
-                            isSubmitting && 'opacity-70',
-                            submitCtaShaking && 'submit-btn--cta-shake',
-                          )}
-                          id="submit-btn"
-                          disabled={!canSubmit}
-                          onAnimationEnd={() => setSubmitCtaShaking(false)}
-                        >
-                          <ZapIcon />
-                          <span className="btn-label max-[760px]:hidden">
-                            {submitCtaLabel}
+                            }}
+                          />
+                          <span>Private generation</span>
+                          <span className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.12em] text-cyan-200">
+                            PRO
                           </span>
-                          <div
-                            className={cn(
-                              'hidden size-4 animate-spin rounded-full border-2 border-white/20 border-t-white',
-                              isSubmitting && 'block',
-                            )}
-                          />
-                        </GlassPillButton>
+                        </label>
                       </div>
-                    </form>
+                    </div>
+                  </div>
 
+                  <div>
                     <div
-                      className={cn(
-                        'mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-300',
-                        !errorMessage && 'hidden',
-                      )}
-                      id="prompt-policy-block"
-                      role="alert"
-                      aria-live="assertive"
-                      hidden={!errorMessage}
+                      className="mx-auto mt-2 flex max-w-full flex-nowrap justify-center gap-0 rounded-[14px] border border-white/10 bg-[rgba(20,20,24,0.35)] px-2.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-[12px] max-[760px]:flex-wrap max-[760px]:justify-start max-[760px]:gap-1"
+                      aria-label="Example prompts"
                     >
-                      {errorMessage}
-                    </div>
-                    <div className="hidden" id="gen-counter" />
-
-                    <ShareBonusPanel
-                      visible={showSharePanel}
-                      onShareClick={onShareClick}
-                    />
-
-                    <div className="hidden" id="private-gen-row">
-                      <label
-                        className="flex items-center gap-2 text-sm text-white/60"
-                        htmlFor="private-gen-checkbox"
-                      >
-                        <input
-                          type="checkbox"
-                          id="private-gen-checkbox"
-                          name="private-generation"
-                          onChange={(event) => {
-                            if (event.currentTarget.checked) {
-                              event.currentTarget.checked = false
-                              setPrivateModalOpen(true)
-                            }
-                          }}
-                        />
-                        <span>Private generation</span>
-                        <span className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.12em] text-cyan-200">
-                          PRO
-                        </span>
-                      </label>
+                      {EXAMPLE_CHIPS.map(([label, value], index) => (
+                        <button
+                          key={label}
+                          type="button"
+                          className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-white/12 bg-white/[0.05] px-[7px] py-[5px] font-mono text-[11px] tracking-[0.02em] text-[rgba(237,237,239,0.88)] transition-all duration-150 hover:-translate-y-px hover:border-violet-600/55 hover:bg-violet-600/20 hover:text-white disabled:cursor-wait disabled:opacity-50"
+                          data-prompt={value}
+                          data-react-owned="true"
+                          onClick={() => handleExamplePrompt(value)}
+                        >
+                          <span className="inline-flex h-3.5 min-w-3.5 shrink-0 items-center justify-center rounded bg-violet-600/55 px-1 text-[10px] font-bold text-white">
+                            {index + 1}
+                          </span>
+                          <span className="whitespace-nowrap">{label}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
-                </div>
-
-                <div>
-                  <div
-                    className="mx-auto mt-2 flex max-w-full flex-nowrap justify-center gap-0 rounded-[14px] border border-white/10 bg-[rgba(20,20,24,0.35)] px-2.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-[12px] max-[760px]:flex-wrap max-[760px]:justify-start max-[760px]:gap-1"
-                    aria-label="Example prompts"
-                  >
-                    {EXAMPLE_CHIPS.map(([label, value], index) => (
-                      <button
-                        key={label}
-                        type="button"
-                        className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-white/12 bg-white/[0.05] px-[7px] py-[5px] font-mono text-[11px] tracking-[0.02em] text-[rgba(237,237,239,0.88)] transition-all duration-150 hover:-translate-y-px hover:border-violet-600/55 hover:bg-violet-600/20 hover:text-white disabled:cursor-wait disabled:opacity-50"
-                        data-prompt={value}
-                        data-react-owned="true"
-                        onClick={() => handleExamplePrompt(value)}
-                      >
-                        <span className="inline-flex h-3.5 min-w-3.5 shrink-0 items-center justify-center rounded bg-violet-600/55 px-1 text-[10px] font-bold text-white">
-                          {index + 1}
-                        </span>
-                        <span className="whitespace-nowrap">{label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                </WaitlistGate>
               </div>
             </div>
           </section>

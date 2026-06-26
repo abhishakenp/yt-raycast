@@ -97,4 +97,22 @@ export const clerkFrostedGlassAppearance = {
       color: 'rgba(226, 232, 240, 0.84)',
     },
   },
+  // Component-specific override: make the Waitlist card full-width and
+  // glassmorphic so it matches the hero prompt box. All other styling
+  // (inputs, buttons, colors) inherits from the global theme above.
+  waitlist: {
+    elements: {
+      cardBox: {
+        width: '100%',
+        maxWidth: 'none',
+        border: '1px solid rgba(38, 231, 255, 0.26)',
+        background:
+          'linear-gradient(145deg, rgba(7,15,38,0.78), rgba(4,6,18,0.62))',
+        borderRadius: '26px',
+        boxShadow:
+          '0 0 0 1px rgba(38,231,255,0.26), 0 0 0 5px rgba(38,231,255,0.04), 0 24px 70px rgba(0,0,0,0.42), 0 0 70px rgba(32,136,255,0.18)',
+        backdropFilter: 'blur(22px)',
+      },
+    },
+  },
 } as const
