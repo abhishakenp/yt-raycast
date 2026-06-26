@@ -1,10 +1,10 @@
 import { MarketingShell } from '../pricing/-MarketingShell'
 
 const SITE_NAME = 'Ship Fast'
-const SITE_URL = 'https://ship-fast.devliv.io'
-const LEGAL_CONTROLLER_NAME = 'Livio Gama'
-const PRIVACY_CONTACT_EMAIL = 'privacy@ship-fast.devliv.io'
-const PRIVACY_POLICY_EFFECTIVE_DATE = '2025-01-01'
+const SITE_URL = 'https://ship-fast.ai'
+const LEGAL_CONTROLLER_NAME = 'Surya Remanan and Abhishek Pandey'
+const PRIVACY_CONTACT_EMAIL = 'hello@ship-fast.io'
+const PRIVACY_POLICY_EFFECTIVE_DATE = '2026-06-27'
 const PRIVACY_POLICY_JURISDICTION = 'India'
 const LEGAL_CONTROLLER_ADDRESS = ''
 
@@ -235,8 +235,8 @@ export const PrivacyPage = () => {
               stock imagery APIs (for example Pexels, Unsplash)
             </li>
             <li>
-              Infrastructure and deployment providers that host
-              ship-fast.devliv.io and related services
+              Infrastructure and deployment providers that host ship-fast.ai and
+              related services
             </li>
             <li>Professional advisers or authorities where required by law</li>
           </ul>
