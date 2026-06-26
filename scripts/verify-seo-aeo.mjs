@@ -64,18 +64,46 @@ const { files } = renderHtmlProject(siteSpec)
 const indexHtml = files['index.html']
 
 assert(typeof indexHtml === 'string', 'engine renderer did not emit index.html')
-assert(indexHtml.includes('<title>Atlas Notes - Launch docs</title>'), 'index.html missing SEO title')
 assert(
-  indexHtml.includes('<meta name="description" content="Shared launch docs for small teams." />'),
+  indexHtml.includes('<title>Atlas Notes - Launch docs</title>'),
+  'index.html missing SEO title',
+)
+assert(
+  indexHtml.includes(
+    '<meta name="description" content="Shared launch docs for small teams." />',
+  ),
   'index.html missing SEO description',
 )
-assert(indexHtml.includes(`rel="canonical" href="${siteUrl}/"`), 'index.html missing canonical URL')
-assert(indexHtml.includes('property="og:title"'), 'index.html missing Open Graph metadata')
-assert(indexHtml.includes('application/ld+json'), 'index.html missing structured data')
-assert(files['robots.txt']?.includes(`Sitemap: ${siteUrl}/sitemap.xml`), 'robots.txt missing sitemap URL')
-assert(files['sitemap.xml']?.includes(`<loc>${siteUrl}/pricing</loc>`), 'sitemap.xml missing secondary page')
-assert(files['llms.txt']?.includes('Intent: compare launch documentation tools'), 'llms.txt missing AEO intent')
-assert(files['llms.txt']?.includes('Queries: best launch docs tool; team launch checklist'), 'llms.txt missing suggested queries')
+assert(
+  indexHtml.includes(`rel="canonical" href="${siteUrl}/"`),
+  'index.html missing canonical URL',
+)
+assert(
+  indexHtml.includes('property="og:title"'),
+  'index.html missing Open Graph metadata',
+)
+assert(
+  indexHtml.includes('application/ld+json'),
+  'index.html missing structured data',
+)
+assert(
+  files['robots.txt']?.includes(`Sitemap: ${siteUrl}/sitemap.xml`),
+  'robots.txt missing sitemap URL',
+)
+assert(
+  files['sitemap.xml']?.includes(`<loc>${siteUrl}/pricing</loc>`),
+  'sitemap.xml missing secondary page',
+)
+assert(
+  files['llms.txt']?.includes('Intent: compare launch documentation tools'),
+  'llms.txt missing AEO intent',
+)
+assert(
+  files['llms.txt']?.includes(
+    'Queries: best launch docs tool; team launch checklist',
+  ),
+  'llms.txt missing suggested queries',
+)
 
 const session = convexRun('sessions:create', {
   prompt,
@@ -87,7 +115,10 @@ const session = convexRun('sessions:create', {
   anonymousClientId: `anon-verify-seo-aeo-${Date.now()}`,
 })
 const sessionId = session.sessionId
-assert(typeof sessionId === 'string', 'sessions:create did not return sessionId')
+assert(
+  typeof sessionId === 'string',
+  'sessions:create did not return sessionId',
+)
 
 convexRun('internal.sessions.completeGeneration', {
   sessionId,
@@ -109,22 +140,53 @@ assert(publish.status === 'ready', 'publishPreview did not return ready status')
 
 const preview = await requestText(`/preview/${encodeURIComponent(slug)}`)
 assert(preview.status === 200, `/preview/${slug} returned ${preview.status}`)
-assert(preview.body.includes('Atlas Notes - Launch docs'), 'published preview missing SEO title')
-assert(preview.body.includes(`https://${slug}.ship-fast.io/`), 'published preview missing deployment canonical URL')
-assert(preview.body.includes('application/ld+json'), 'published preview missing structured data')
+assert(
+  preview.body.includes('Atlas Notes - Launch docs'),
+  'published preview missing SEO title',
+)
+assert(
+  preview.body.includes(`https://${slug}.ship-fast.io/`),
+  'published preview missing deployment canonical URL',
+)
+assert(
+  preview.body.includes('application/ld+json'),
+  'published preview missing structured data',
+)
 
 const llms = await requestText(`/preview/${encodeURIComponent(slug)}/llms.txt`)
 assert(llms.status === 200, `/preview/${slug}/llms.txt returned ${llms.status}`)
-assert(llms.body.includes('# Atlas Notes'), 'deployment llms.txt missing generated site title')
-assert(llms.body.includes('Shared launch docs for small teams.'), 'deployment llms.txt missing generated description')
+assert(
+  llms.body.includes('# Atlas Notes'),
+  'deployment llms.txt missing generated site title',
+)
+assert(
+  llms.body.includes('Shared launch docs for small teams.'),
+  'deployment llms.txt missing generated description',
+)
 
-const robots = await requestText(`/preview/${encodeURIComponent(slug)}/robots.txt`)
-assert(robots.status === 200, `/preview/${slug}/robots.txt returned ${robots.status}`)
-assert(robots.body.includes(`Sitemap: ${siteUrl}/sitemap.xml`), 'deployment robots.txt missing sitemap')
+const robots = await requestText(
+  `/preview/${encodeURIComponent(slug)}/robots.txt`,
+)
+assert(
+  robots.status === 200,
+  `/preview/${slug}/robots.txt returned ${robots.status}`,
+)
+assert(
+  robots.body.includes(`Sitemap: ${siteUrl}/sitemap.xml`),
+  'deployment robots.txt missing sitemap',
+)
 
-const sitemap = await requestText(`/preview/${encodeURIComponent(slug)}/sitemap.xml`)
-assert(sitemap.status === 200, `/preview/${slug}/sitemap.xml returned ${sitemap.status}`)
-assert(sitemap.body.includes(`<loc>${siteUrl}/</loc>`), 'deployment sitemap.xml missing public URL')
+const sitemap = await requestText(
+  `/preview/${encodeURIComponent(slug)}/sitemap.xml`,
+)
+assert(
+  sitemap.status === 200,
+  `/preview/${slug}/sitemap.xml returned ${sitemap.status}`,
+)
+assert(
+  sitemap.body.includes(`<loc>${siteUrl}/</loc>`),
+  'deployment sitemap.xml missing public URL',
+)
 
 console.log(
   JSON.stringify(
@@ -150,11 +212,15 @@ console.log(
 )
 
 function convexRun(functionName, payload) {
-  const output = execFileSync('bunx', ['convex', 'run', functionName, JSON.stringify(payload)], {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-    timeout: timeoutMs,
-  }).trim()
+  const output = execFileSync(
+    'bunx',
+    ['convex', 'run', functionName, JSON.stringify(payload)],
+    {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: timeoutMs,
+    },
+  ).trim()
   return parseJson(output || 'null', `Convex ${functionName}`)
 }
 

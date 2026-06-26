@@ -1,5 +1,5 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 import {
   ContextMenu as UIContextMenu,
   ContextMenuContent,
@@ -7,14 +7,14 @@ import {
   ContextMenuLabel,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from "#/components/ui/context-menu.tsx"
+} from '#/components/ui/context-menu.tsx'
 
 // Compound overlay: right-click target + menu. Rendered with `modal={false}`
 // and the menu shown via an inline preview region so content is visible
 // statically (context menus only open on right-click, which can't be forced
 // declaratively). The trigger area plus the menu content are both rendered.
 export const ContextMenu = defineComponent({
-  name: "ContextMenu",
+  name: 'ContextMenu',
   description:
     "Right-click context menu. `items` are the menu rows (variant 'destructive' for dangerous, separator true for a divider). Shows the trigger area and an inline preview of the menu.",
   props: z.object({
@@ -24,7 +24,7 @@ export const ContextMenu = defineComponent({
       .array(
         z.object({
           label: z.string(),
-          variant: z.enum(["default", "destructive"]).optional(),
+          variant: z.enum(['default', 'destructive']).optional(),
           separator: z.boolean().optional(),
           inset: z.boolean().optional(),
         }),
@@ -34,15 +34,15 @@ export const ContextMenu = defineComponent({
   }),
   component: ({ props }) => {
     const items = props.items ?? [
-      { label: "Back" },
-      { label: "Reload" },
-      { label: "Delete", variant: "destructive" as const },
+      { label: 'Back' },
+      { label: 'Reload' },
+      { label: 'Delete', variant: 'destructive' as const },
     ]
     return (
       <div className="flex flex-col gap-2">
         <UIContextMenu>
           <ContextMenuTrigger className="flex h-24 w-full items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
-            {props.triggerLabel ?? "Right-click here"}
+            {props.triggerLabel ?? 'Right-click here'}
           </ContextMenuTrigger>
           <ContextMenuContent className={props.className}>
             {props.label && <ContextMenuLabel>{props.label}</ContextMenuLabel>}
@@ -76,9 +76,9 @@ export const ContextMenu = defineComponent({
               <div
                 key={`p-${it.label}-${i}`}
                 className={
-                  "relative flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm" +
-                  (it.variant === "destructive" ? " text-destructive" : "") +
-                  (it.inset ? " pl-8" : "")
+                  'relative flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm' +
+                  (it.variant === 'destructive' ? ' text-destructive' : '') +
+                  (it.inset ? ' pl-8' : '')
                 }
               >
                 {it.label}

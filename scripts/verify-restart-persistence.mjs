@@ -38,7 +38,10 @@ try {
     anonymousClientId: `anon-verify-restart-${Date.now()}`,
   })
   const sessionId = session.sessionId
-  assert(typeof sessionId === 'string', 'sessions:create did not return sessionId')
+  assert(
+    typeof sessionId === 'string',
+    'sessions:create did not return sessionId',
+  )
 
   convexRun('internal.sessions.completeGeneration', {
     sessionId,
@@ -47,7 +50,13 @@ try {
     siteSpecJson: JSON.stringify({
       projectName: prompt,
       hero: { headline: prompt },
-      pages: [{ id: 'home', title: prompt, description: 'Restart persistence verifier page' }],
+      pages: [
+        {
+          id: 'home',
+          title: prompt,
+          description: 'Restart persistence verifier page',
+        },
+      ],
     }),
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
     elapsed: 2468,
@@ -58,16 +67,22 @@ try {
   await assertStreamReplay(sessionId, 'before restart')
 
   const editedPrompt = `${prompt} after edit`
-  const edit = await requestJson(`/api/sessions/${sessionId}/preview-inline-text`, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-ship-fast-owner-secret': ownerSecret,
+  const edit = await requestJson(
+    `/api/sessions/${sessionId}/preview-inline-text`,
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-ship-fast-owner-secret': ownerSecret,
+      },
+      body: JSON.stringify({ beforeText: prompt, afterText: editedPrompt }),
     },
-    body: JSON.stringify({ beforeText: prompt, afterText: editedPrompt }),
-  })
+  )
   assert(edit.status === 200, `pre-restart inline edit returned ${edit.status}`)
-  assert(edit.json.previewVersion === 2, 'pre-restart edit did not create preview version 2')
+  assert(
+    edit.json.previewVersion === 2,
+    'pre-restart edit did not create preview version 2',
+  )
   await assertHistoryVersions(sessionId, [1, 2], 'before restart')
 
   await stopServer(server)
@@ -79,20 +94,39 @@ try {
   await assertHistoryVersions(sessionId, [1, 2], 'after restart')
 
   const targets = convexRun('sessions:getExportTargets', { lookup: sessionId })
-  assert(targets.previewReady === true, 'post-restart export targets did not see ready preview')
-  assert(Array.isArray(targets.targets), 'post-restart export targets did not return targets')
+  assert(
+    targets.previewReady === true,
+    'post-restart export targets did not see ready preview',
+  )
+  assert(
+    Array.isArray(targets.targets),
+    'post-restart export targets did not return targets',
+  )
 
-  const restore = await requestJson(`/api/sessions/${sessionId}/history/1/restore`, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-ship-fast-owner-secret': ownerSecret,
+  const restore = await requestJson(
+    `/api/sessions/${sessionId}/history/1/restore`,
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-ship-fast-owner-secret': ownerSecret,
+      },
+      body: JSON.stringify({ anonymousOwnerSecret: ownerSecret }),
     },
-    body: JSON.stringify({ anonymousOwnerSecret: ownerSecret }),
-  })
-  assert(restore.status === 200, `post-restart restore returned ${restore.status}`)
-  assert(restore.json.previewVersion === 3, 'post-restart restore did not create preview version 3')
-  await assertHistoryVersions(sessionId, [1, 2, 3], 'after post-restart restore')
+  )
+  assert(
+    restore.status === 200,
+    `post-restart restore returned ${restore.status}`,
+  )
+  assert(
+    restore.json.previewVersion === 3,
+    'post-restart restore did not create preview version 3',
+  )
+  await assertHistoryVersions(
+    sessionId,
+    [1, 2, 3],
+    'after post-restart restore',
+  )
 
   console.log(
     JSON.stringify(
@@ -133,14 +167,18 @@ async function startServer(label) {
       )
     }
     try {
-      const response = await fetch(baseUrl, { signal: AbortSignal.timeout(1000) })
+      const response = await fetch(baseUrl, {
+        signal: AbortSignal.timeout(1000),
+      })
       if (response.status < 500) return { child, output }
     } catch {
       // Keep waiting until Vite binds the port.
     }
     await sleep(250)
   }
-  throw new Error(`Timed out waiting for Vite ${label} server:\n${output.join('').slice(-4000)}`)
+  throw new Error(
+    `Timed out waiting for Vite ${label} server:\n${output.join('').slice(-4000)}`,
+  )
 }
 
 async function stopServer(serverHandle) {
@@ -156,42 +194,79 @@ async function stopServer(serverHandle) {
 
 async function assertSessionReady(sessionId, label) {
   const response = await requestJson(`/api/sessions/${sessionId}`)
-  assert(response.status === 200, `${label} session route returned ${response.status}`)
-  assert(response.json.sessionId === sessionId, `${label} session route returned wrong sessionId`)
-  assert(response.json.status === 'preview_ready', `${label} session did not report preview_ready`)
+  assert(
+    response.status === 200,
+    `${label} session route returned ${response.status}`,
+  )
+  assert(
+    response.json.sessionId === sessionId,
+    `${label} session route returned wrong sessionId`,
+  )
+  assert(
+    response.json.status === 'preview_ready',
+    `${label} session did not report preview_ready`,
+  )
 }
 
 function assertPreviewContains(sessionId, expectedText, label) {
   const preview = convexRun('sessions:getPublicPreview', { lookup: sessionId })
-  assert(typeof preview.html === 'string', `${label} public preview did not include HTML`)
-  assert(preview.html.includes(expectedText), `${label} public preview did not include expected text`)
+  assert(
+    typeof preview.html === 'string',
+    `${label} public preview did not include HTML`,
+  )
+  assert(
+    preview.html.includes(expectedText),
+    `${label} public preview did not include expected text`,
+  )
 }
 
 async function assertStreamReplay(sessionId, label) {
   const stream = await requestText(`/api/sessions/${sessionId}/stream`)
-  assert(stream.status === 200, `${label} stream route returned ${stream.status}`)
-  assert(stream.contentType.includes('text/event-stream'), `${label} stream was not SSE`)
-  assert(stream.body.includes('event: preview_ready'), `${label} stream did not replay preview_ready`)
-  assert(stream.body.includes('event: replay_complete'), `${label} stream did not replay replay_complete`)
+  assert(
+    stream.status === 200,
+    `${label} stream route returned ${stream.status}`,
+  )
+  assert(
+    stream.contentType.includes('text/event-stream'),
+    `${label} stream was not SSE`,
+  )
+  assert(
+    stream.body.includes('event: preview_ready'),
+    `${label} stream did not replay preview_ready`,
+  )
+  assert(
+    stream.body.includes('event: replay_complete'),
+    `${label} stream did not replay replay_complete`,
+  )
 }
 
 async function assertHistoryVersions(sessionId, versions, label) {
   const history = await requestJson(`/api/sessions/${sessionId}/history`)
-  assert(history.status === 200, `${label} history route returned ${history.status}`)
+  assert(
+    history.status === 200,
+    `${label} history route returned ${history.status}`,
+  )
   const actual = Array.isArray(history.json.history)
     ? history.json.history.map((item) => item.version)
     : []
   for (const version of versions) {
-    assert(actual.includes(version), `${label} history missing version ${version}`)
+    assert(
+      actual.includes(version),
+      `${label} history missing version ${version}`,
+    )
   }
 }
 
 function convexRun(functionName, payload) {
-  const output = execFileSync('bunx', ['convex', 'run', functionName, JSON.stringify(payload)], {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-    timeout: timeoutMs,
-  }).trim()
+  const output = execFileSync(
+    'bunx',
+    ['convex', 'run', functionName, JSON.stringify(payload)],
+    {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: timeoutMs,
+    },
+  ).trim()
   return parseJson(output || 'null', `Convex ${functionName}`)
 }
 
@@ -212,7 +287,12 @@ async function requestText(path, init) {
   })
   const contentType = response.headers.get('content-type') ?? ''
   const body = await response.text()
-  return { status: response.status, contentType, headers: response.headers, body }
+  return {
+    status: response.status,
+    contentType,
+    headers: response.headers,
+    body,
+  }
 }
 
 function htmlFor(headline) {

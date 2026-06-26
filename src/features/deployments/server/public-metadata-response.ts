@@ -73,7 +73,7 @@ export const getDeploymentSlugFromRequest = (
   }
   if (!hostname.endsWith(`.${baseDomain}`)) return undefined
 
-  const label = hostname.slice(0, -1 * (`.${baseDomain}`.length))
+  const label = hostname.slice(0, -1 * `.${baseDomain}`.length)
   if (!label || label.includes('.') || RESERVED_HOST_LABELS.has(label)) {
     return undefined
   }
@@ -144,7 +144,8 @@ export const createPublicMetadataResponse = async (
   }
 
   const siteUrl =
-    normalizeSiteUrl(deployment.url) ?? `https://${deployment.slug}.${BASE_DOMAIN}`
+    normalizeSiteUrl(deployment.url) ??
+    `https://${deployment.slug}.${BASE_DOMAIN}`
 
   return new Response(deploymentMetadataBody(kind, siteUrl, preview.html), {
     headers: {

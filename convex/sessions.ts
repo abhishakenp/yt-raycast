@@ -57,7 +57,7 @@ import {
   finalizeSessionClonePreview,
   generateCloneUploadUrl as generateCloneUploadUrlHelper,
   listSessionClonePages,
-  loadCloneHomePreview,
+  loadClonePagePreview,
   writeSessionClonePage,
 } from './lib/session_clone_helpers'
 import {
@@ -157,6 +157,7 @@ import {
   listCmsRevisionsArgs,
   lakebedDeploymentFailureArgs,
   lakebedDeploymentSuccessArgs,
+  clonePageLookupArgs,
   lookupArgs,
   operationalNotificationArgs,
   ownedAnnotationArgs,
@@ -639,8 +640,9 @@ export const generateCloneUploadUrl = mutation({
 // Renderable home clone content: `url` (file-storage iframe src) when the doc is
 // large, else `html` (inline iframe srcDoc). The client chooses url-over-html.
 export const getCloneHomePreview = query({
-  args: lookupArgs,
-  handler: (ctx, args) => loadCloneHomePreview(ctx, args.lookup),
+  args: clonePageLookupArgs,
+  handler: (ctx, args) =>
+    loadClonePagePreview(ctx, args.lookup, args.pathname),
 })
 
 export const applyCloneBriefAndGenerate = mutation({

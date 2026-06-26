@@ -357,13 +357,18 @@ export function Dashboard({
   const clonePageNav = useClonePageNav(resolvedSessionId ?? sessionId)
   const isMissingSession = generationView === null
   const homeModule = generationView?.homeModule
+  const hasRenderableClonePage = Boolean(
+    clonePageNav.currentHtml || clonePageNav.currentUrl,
+  )
+  const hasRenderableHomeSource =
+    Boolean(homeModule?.source) || hasRenderableClonePage
   const isPreviewReady =
     !isMissingSession &&
     generationView?.session.status === 'preview_ready' &&
-    Boolean(homeModule?.source)
+    hasRenderableHomeSource
   const isPreviewRenderable =
     !isMissingSession &&
-    Boolean(homeModule?.source) &&
+    hasRenderableHomeSource &&
     (isPreviewReady || homeModule?.status === 'running')
   const sidePanelQueryArgs =
     resolvedSessionId === undefined || !isPreviewReady
@@ -1310,7 +1315,7 @@ export function Dashboard({
                         }}
                       >
                         {isPreviewRenderable &&
-                        homeModule?.source &&
+                        (homeModule?.source || clonePageNav.currentUrl) &&
                         generationView ? (
                           <GeneratedModulePreview
                             // Key on the rendered source's updatedAt only — NOT previewVersion.
@@ -1318,11 +1323,16 @@ export function Dashboard({
                             // touch homeModule), so keying on it remounts the whole preview and
                             // scrolls to top on every swap. homeModule.updatedAt changes only when
                             // the displayed source actually changes (text edit / restore / regen).
-                            key={`${homeModule.updatedAt ?? generationView.session.previewVersion}`}
+                            key={`${homeModule?.updatedAt ?? generationView.session.previewVersion}`}
                             source={
                               clonePageNav.isClone && clonePageNav.currentHtml
                                 ? clonePageNav.currentHtml
-                                : homeModule.source
+                                : (homeModule?.source ?? '')
+                            }
+                            sourceUrl={
+                              clonePageNav.isClone
+                                ? clonePageNav.currentUrl
+                                : null
                             }
                             sessionId={sessionId}
                             siteSpecJson={generationView.siteSpec?.specJson}

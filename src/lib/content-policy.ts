@@ -180,11 +180,13 @@ export const checkPromptContentPolicy = (raw: unknown) => {
   for (const phrase of BLOCKED_PHRASES) {
     const p = phrase.toLowerCase().trim()
     for (const h of haystacks) {
-      if (h.includes(p)) return { ok: false as const, code: 'CONTENT_POLICY' as const }
+      if (h.includes(p))
+        return { ok: false as const, code: 'CONTENT_POLICY' as const }
     }
   }
   for (const frag of BLOCKED_COLLAPSED) {
-    if (collapsed.includes(frag)) return { ok: false as const, code: 'CONTENT_POLICY' as const }
+    if (collapsed.includes(frag))
+      return { ok: false as const, code: 'CONTENT_POLICY' as const }
   }
   for (const re of BLOCKED_REGEX) {
     re.lastIndex = 0

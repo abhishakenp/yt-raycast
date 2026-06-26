@@ -38,9 +38,7 @@ describe('buildSectionSeedPatch', () => {
   })
 
   it('returns an empty patch when everything is already seeded', () => {
-    expect(
-      buildSectionSeedPatch({ a: 1, b: 2 }, { a: 1, b: 2 }),
-    ).toEqual({})
+    expect(buildSectionSeedPatch({ a: 1, b: 2 }, { a: 1, b: 2 })).toEqual({})
   })
 })
 

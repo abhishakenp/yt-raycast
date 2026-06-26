@@ -1,6 +1,6 @@
-import type { CapturedPage, SectionKind } from "./types.ts"
+import type { CapturedPage, SectionKind } from './types.ts'
 export type { SectionKind }
-import { parseHTML } from "linkedom"
+import { parseHTML } from 'linkedom'
 
 // Split a page DOM into an ORDERED, NON-OVERLAPPING partition of semantic sections.
 // We iterate only the top-level structural children of <body> (and unwrap a single
@@ -18,20 +18,15 @@ export interface Section {
 // linkedom's className can be a string or an SVGAnimatedString (.baseVal). Guard both.
 function classTokens(element: Element): Set<string> {
   const raw = element.className as unknown
-  let value = ""
-  if (typeof raw === "string") {
+  let value = ''
+  if (typeof raw === 'string') {
     value = raw
-  } else if (raw && typeof raw === "object" && "baseVal" in raw) {
+  } else if (raw && typeof raw === 'object' && 'baseVal' in raw) {
     value = String((raw as { baseVal: string }).baseVal)
   } else {
-    value = element.getAttribute("class") || ""
+    value = element.getAttribute('class') || ''
   }
-  return new Set(
-    value
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean),
-  )
+  return new Set(value.toLowerCase().split(/\s+/).filter(Boolean))
 }
 
 function hasToken(tokens: Set<string>, ...needles: string[]): boolean {
@@ -50,26 +45,27 @@ function hasToken(tokens: Set<string>, ...needles: string[]): boolean {
 // little surrounding prose). This is the page's irreplaceable primary content and
 // must never be reduced to its heading.
 function isLinkListRegion(element: Element): boolean {
-  const anchors = element.querySelectorAll("a")
+  const anchors = element.querySelectorAll('a')
   if (anchors.length < 3) return false
   // Count anchors that live inside a list/definition row (the repeated-record shape).
   let listed = 0
   let anchorTextLen = 0
   for (const a of Array.from(anchors)) {
-    anchorTextLen += (a.textContent || "").replace(/\s+/g, " ").trim().length
+    anchorTextLen += (a.textContent || '').replace(/\s+/g, ' ').trim().length
     // Walk ancestors (bounded) to see if this anchor sits inside a list/definition
     // row — done manually rather than via closest() for linkedom robustness.
     let p: Element | null = a.parentElement
     for (let guard = 0; p && p !== element && guard < 12; guard++) {
       const t = p.tagName.toLowerCase()
-      if (t === "li" || t === "dt" || t === "dd") {
+      if (t === 'li' || t === 'dt' || t === 'dd') {
         listed++
         break
       }
       p = p.parentElement
     }
   }
-  const totalTextLen = (element.textContent || "").replace(/\s+/g, " ").trim().length || 1
+  const totalTextLen =
+    (element.textContent || '').replace(/\s+/g, ' ').trim().length || 1
   // Mostly-listed anchors => a list/archive. OR anchors carry most of the text =>
   // a link-dense index even if not in <li> (e.g. <p><a>..</a> <a>..</a> …</p>).
   return listed >= 3 || anchorTextLen / totalTextLen >= 0.5
@@ -81,12 +77,20 @@ function isLinkListRegion(element: Element): boolean {
 // Purely structural — landmarks only, no hostname/slug knowledge.
 function isNavLandmark(element: Element): boolean {
   const tag = element.tagName.toLowerCase()
-  const role = (element.getAttribute("role") || "").toLowerCase()
+  const role = (element.getAttribute('role') || '').toLowerCase()
   const cls = classTokens(element)
-  if (tag === "nav" || role === "navigation" || hasToken(cls, "nav", "navbar", "menu")) {
+  if (
+    tag === 'nav' ||
+    role === 'navigation' ||
+    hasToken(cls, 'nav', 'navbar', 'menu')
+  ) {
     return true
   }
-  if (tag === "header" || role === "banner" || hasToken(cls, "header", "masthead")) {
+  if (
+    tag === 'header' ||
+    role === 'banner' ||
+    hasToken(cls, 'header', 'masthead')
+  ) {
     return true
   }
   return false
@@ -101,7 +105,9 @@ function isNavLandmark(element: Element): boolean {
 export function extractNavLinks(root: Element): string[] {
   const landmarks: Element[] = []
   if (isNavLandmark(root)) landmarks.push(root)
-  for (const el of Array.from(root.querySelectorAll("nav, header, [role], [class]"))) {
+  for (const el of Array.from(
+    root.querySelectorAll('nav, header, [role], [class]'),
+  )) {
     if (isNavLandmark(el)) landmarks.push(el)
   }
   if (landmarks.length === 0) return []
@@ -109,10 +115,10 @@ export function extractNavLinks(root: Element): string[] {
   const hrefs: string[] = []
   const seenAnchors = new Set<Element>()
   for (const region of landmarks) {
-    for (const a of Array.from(region.querySelectorAll("a"))) {
+    for (const a of Array.from(region.querySelectorAll('a'))) {
       if (seenAnchors.has(a)) continue
       seenAnchors.add(a)
-      const href = a.getAttribute("href")
+      const href = a.getAttribute('href')
       if (href) hrefs.push(href)
     }
   }
@@ -122,24 +128,37 @@ export function extractNavLinks(root: Element): string[] {
 // Heuristic detection of section kind based on tag, role, class tokens, and text content.
 function detectSectionKind(element: Element): SectionKind {
   const tag = element.tagName.toLowerCase()
-  const role = (element.getAttribute("role") || "").toLowerCase()
+  const role = (element.getAttribute('role') || '').toLowerCase()
   const cls = classTokens(element)
-  const id = (element.id || "").toLowerCase()
-  const text = (element.textContent || "").toLowerCase()
+  const id = (element.id || '').toLowerCase()
+  const text = (element.textContent || '').toLowerCase()
 
   // Navigation
-  if (tag === "nav" || role === "navigation" || hasToken(cls, "nav", "navbar", "menu")) {
-    return "nav"
+  if (
+    tag === 'nav' ||
+    role === 'navigation' ||
+    hasToken(cls, 'nav', 'navbar', 'menu')
+  ) {
+    return 'nav'
   }
 
   // Footer
-  if (tag === "footer" || role === "contentinfo" || hasToken(cls, "footer") || id.includes("footer")) {
-    return "footer"
+  if (
+    tag === 'footer' ||
+    role === 'contentinfo' ||
+    hasToken(cls, 'footer') ||
+    id.includes('footer')
+  ) {
+    return 'footer'
   }
 
   // Header
-  if (tag === "header" || role === "banner" || hasToken(cls, "header", "masthead")) {
-    return "header"
+  if (
+    tag === 'header' ||
+    role === 'banner' ||
+    hasToken(cls, 'header', 'masthead')
+  ) {
+    return 'header'
   }
 
   // Link-list / index region. A block whose body is a dense list of anchors — a
@@ -150,89 +169,97 @@ function detectSectionKind(element: Element): SectionKind {
   // to a title-only "hero" that downstream then collapses, dropping every link).
   // Purely structural — anchor counts and list nesting, no domain/slug knowledge.
   if (isLinkListRegion(element)) {
-    return "content"
+    return 'content'
   }
 
   // Hero
   if (
-    hasToken(cls, "hero", "jumbotron", "banner") ||
-    id.includes("hero") ||
-    (tag === "section" && !!element.querySelector("h1"))
+    hasToken(cls, 'hero', 'jumbotron', 'banner') ||
+    id.includes('hero') ||
+    (tag === 'section' && !!element.querySelector('h1'))
   ) {
-    return "hero"
+    return 'hero'
   }
 
   // Pricing
   if (
-    hasToken(cls, "pricing", "price", "plan") ||
-    id.includes("pricing") ||
-    (text.includes("$") && (text.includes("plan") || text.includes("/mo") || text.includes("per month")))
+    hasToken(cls, 'pricing', 'price', 'plan') ||
+    id.includes('pricing') ||
+    (text.includes('$') &&
+      (text.includes('plan') ||
+        text.includes('/mo') ||
+        text.includes('per month')))
   ) {
-    return "pricing"
+    return 'pricing'
   }
 
   // Testimonials
   if (
-    hasToken(cls, "testimonial", "review", "quote") ||
-    id.includes("testimonial") ||
-    (text.includes("review") && text.includes("quote"))
+    hasToken(cls, 'testimonial', 'review', 'quote') ||
+    id.includes('testimonial') ||
+    (text.includes('review') && text.includes('quote'))
   ) {
-    return "testimonials"
+    return 'testimonials'
   }
 
   // Features
   if (
-    hasToken(cls, "feature", "benefit", "highlight") ||
-    id.includes("feature") ||
-    (tag === "section" &&
-      !!element.querySelector(".grid, .flex, ul, ol") &&
-      (text.includes("feature") || text.includes("benefit")))
+    hasToken(cls, 'feature', 'benefit', 'highlight') ||
+    id.includes('feature') ||
+    (tag === 'section' &&
+      !!element.querySelector('.grid, .flex, ul, ol') &&
+      (text.includes('feature') || text.includes('benefit')))
   ) {
-    return "features"
+    return 'features'
   }
 
   // CTA
   if (
-    hasToken(cls, "cta", "call-to-action", "action") &&
-    !!element.querySelector("button, a")
+    hasToken(cls, 'cta', 'call-to-action', 'action') &&
+    !!element.querySelector('button, a')
   ) {
-    return "cta"
+    return 'cta'
   }
 
   // Blog
-  if (tag === "article" || role === "article" || hasToken(cls, "blog", "post", "article")) {
-    return "blog"
+  if (
+    tag === 'article' ||
+    role === 'article' ||
+    hasToken(cls, 'blog', 'post', 'article')
+  ) {
+    return 'blog'
   }
 
   // Gallery / portfolio
   if (
-    hasToken(cls, "gallery", "portfolio", "work", "showcase") ||
-    (tag === "section" && element.querySelectorAll("img").length > 3)
+    hasToken(cls, 'gallery', 'portfolio', 'work', 'showcase') ||
+    (tag === 'section' && element.querySelectorAll('img').length > 3)
   ) {
-    return "gallery"
+    return 'gallery'
   }
 
   // Sidebar
-  if (tag === "aside" || role === "complementary" || hasToken(cls, "sidebar")) {
-    return "sidebar"
+  if (tag === 'aside' || role === 'complementary' || hasToken(cls, 'sidebar')) {
+    return 'sidebar'
   }
 
   // About
-  if (hasToken(cls, "about") || id.includes("about")) {
-    return "about"
+  if (hasToken(cls, 'about') || id.includes('about')) {
+    return 'about'
   }
 
   // Contact
   if (
-    hasToken(cls, "contact") ||
-    id.includes("contact") ||
-    (tag === "section" && (!!element.querySelector("form") || text.includes("contact us")))
+    hasToken(cls, 'contact') ||
+    id.includes('contact') ||
+    (tag === 'section' &&
+      (!!element.querySelector('form') || text.includes('contact us')))
   ) {
-    return "contact"
+    return 'contact'
   }
 
   // Default to generic content
-  return "content"
+  return 'content'
 }
 
 // A row/grid container holds REPEATED sibling records (table rows, list items,
@@ -244,14 +271,14 @@ function detectSectionKind(element: Element): SectionKind {
 // Detected purely by tag shape (table/list with ≥2 rows) — no domain knowledge.
 function isRowStructured(element: Element): boolean {
   const tag = element.tagName.toLowerCase()
-  if (tag === "table") return true
-  if (tag === "dl") return element.querySelectorAll("dt, dd").length >= 2
-  if (tag === "ul" || tag === "ol") {
+  if (tag === 'table') return true
+  if (tag === 'dl') return element.querySelectorAll('dt, dd').length >= 2
+  if (tag === 'ul' || tag === 'ol') {
     // Count DIRECT <li> children only (nested lists must not inflate the count);
     // avoid `:scope` which linkedom does not reliably support.
     let liCount = 0
     for (const child of Array.from(element.children)) {
-      if (child.tagName.toLowerCase() === "li") liCount++
+      if (child.tagName.toLowerCase() === 'li') liCount++
     }
     return liCount >= 2
   }
@@ -261,7 +288,11 @@ function isRowStructured(element: Element): boolean {
 // A structural element is a meaningful, layout-level block we can treat as a section.
 function isStructural(element: Element): boolean {
   const tag = element.tagName.toLowerCase()
-  if (["header", "nav", "main", "section", "article", "aside", "footer"].includes(tag)) {
+  if (
+    ['header', 'nav', 'main', 'section', 'article', 'aside', 'footer'].includes(
+      tag,
+    )
+  ) {
     return true
   }
   // A data table or multi-row list is an ATOMIC, row-structured section: it must be
@@ -270,21 +301,21 @@ function isStructural(element: Element): boolean {
   if (isRowStructured(element)) {
     return true
   }
-  if (tag === "div") {
+  if (tag === 'div') {
     const cls = classTokens(element)
     return hasToken(
       cls,
-      "hero",
-      "feature",
-      "pricing",
-      "testimonial",
-      "cta",
-      "footer",
-      "header",
-      "nav",
-      "section",
-      "container",
-      "gallery",
+      'hero',
+      'feature',
+      'pricing',
+      'testimonial',
+      'cta',
+      'footer',
+      'header',
+      'nav',
+      'section',
+      'container',
+      'gallery',
     )
   }
   return false
@@ -294,7 +325,12 @@ function isStructural(element: Element): boolean {
 function renderableChildren(element: Element): Element[] {
   return Array.from(element.children).filter((child) => {
     const tag = child.tagName.toLowerCase()
-    return tag !== "script" && tag !== "style" && tag !== "template" && tag !== "noscript"
+    return (
+      tag !== 'script' &&
+      tag !== 'style' &&
+      tag !== 'template' &&
+      tag !== 'noscript'
+    )
   })
 }
 
@@ -306,24 +342,28 @@ function renderableChildren(element: Element): Element[] {
 // the two lets us keep <h1>+<p>+<ul> coherent while still partitioning true bands.
 function isLayoutSection(element: Element): boolean {
   const tag = element.tagName.toLowerCase()
-  if (["header", "nav", "main", "section", "article", "aside", "footer"].includes(tag)) {
+  if (
+    ['header', 'nav', 'main', 'section', 'article', 'aside', 'footer'].includes(
+      tag,
+    )
+  ) {
     return true
   }
-  if (tag === "div") {
+  if (tag === 'div') {
     const cls = classTokens(element)
     return hasToken(
       cls,
-      "hero",
-      "feature",
-      "pricing",
-      "testimonial",
-      "cta",
-      "footer",
-      "header",
-      "nav",
-      "section",
-      "container",
-      "gallery",
+      'hero',
+      'feature',
+      'pricing',
+      'testimonial',
+      'cta',
+      'footer',
+      'header',
+      'nav',
+      'section',
+      'container',
+      'gallery',
     )
   }
   return false
@@ -373,7 +413,8 @@ function shouldDescend(container: Element): boolean {
   //    structural node IS the section; do NOT descend.
   const grandKids = renderableChildren(only)
   if (grandKids.length > 1) return true
-  if (grandKids.length === 1 && isStructural(grandKids[0])) return shouldDescend(only)
+  if (grandKids.length === 1 && isStructural(grandKids[0]))
+    return shouldDescend(only)
   return false
 }
 
@@ -399,10 +440,18 @@ function topLevelChildren(body: Element): Element[] {
   // thin H1-only stubs and duplicated heading fragments. Return the container
   // itself as the single section in that case.
   const kids = renderableChildren(container)
-  if (kids.length > 1 && container !== body && childrenAreAllLeaves(container)) {
+  if (
+    kids.length > 1 &&
+    container !== body &&
+    childrenAreAllLeaves(container)
+  ) {
     return [container]
   }
-  if (kids.length > 1 && container === body && childrenAreAllLeaves(container)) {
+  if (
+    kids.length > 1 &&
+    container === body &&
+    childrenAreAllLeaves(container)
+  ) {
     // body itself holds only leaves: wrap them by returning body as the section
     // root. segmentPage emits one section spanning all of body's leaf content.
     return [body]
@@ -418,25 +467,29 @@ function topLevelChildren(body: Element): Element[] {
 // (section_content_1/3/5/…) the dogfood audit flagged. Nav/header/footer are
 // exempt: a bare-text nav or footer is legitimately heading-light.
 function isHeadingOnlyStub(element: Element, kind: SectionKind): boolean {
-  if (kind === "nav" || kind === "header" || kind === "footer") return false
-  if (element.querySelector("img, svg, video, picture, canvas, form, input, button, table, ul, ol")) {
+  if (kind === 'nav' || kind === 'header' || kind === 'footer') return false
+  if (
+    element.querySelector(
+      'img, svg, video, picture, canvas, form, input, button, table, ul, ol',
+    )
+  ) {
     return false
   }
-  const headings = element.querySelectorAll("h1, h2, h3, h4, h5, h6")
+  const headings = element.querySelectorAll('h1, h2, h3, h4, h5, h6')
   if (headings.length === 0) return false
   const headingText = Array.from(headings)
-    .map((h) => (h.textContent || "").trim())
-    .join(" ")
-    .replace(/\s+/g, " ")
+    .map((h) => (h.textContent || '').trim())
+    .join(' ')
+    .replace(/\s+/g, ' ')
     .trim()
-  const allText = (element.textContent || "").replace(/\s+/g, " ").trim()
+  const allText = (element.textContent || '').replace(/\s+/g, ' ').trim()
   // If everything the section says IS the heading(s), there is no body.
   return allText.length > 0 && allText.length <= headingText.length + 4
 }
 
 // Collapse repeated whitespace + lowercase for stub/heading equality checks.
 function normText(s: string): string {
-  return s.replace(/\s+/g, " ").trim().toLowerCase()
+  return s.replace(/\s+/g, ' ').trim().toLowerCase()
 }
 
 // A section carries IRREPLACEABLE body content when it contains links, list
@@ -447,7 +500,7 @@ function normText(s: string): string {
 // structural test: presence of <a>/<li>/<img>/etc., no domain knowledge.
 function carriesBodyContent(element: Element): boolean {
   return !!element.querySelector(
-    "a, li, img, svg, video, picture, canvas, form, input, button, table, dl",
+    'a, li, img, svg, video, picture, canvas, form, input, button, table, dl',
   )
 }
 
@@ -458,7 +511,10 @@ function carriesBodyContent(element: Element): boolean {
 // is fully contained in the longer AND the shorter has no interactive/list body
 // of its own (handled by the caller). Length-guarded so a short generic word does
 // not swallow a distinct section.
-function isRedundantHeadingEcho(text: string, seenHeadings: Set<string>): boolean {
+function isRedundantHeadingEcho(
+  text: string,
+  seenHeadings: Set<string>,
+): boolean {
   const key = normText(text)
   if (key.length < 4) return false
   for (const h of seenHeadings) {
@@ -477,8 +533,8 @@ function isRedundantHeadingEcho(text: string, seenHeadings: Set<string>): boolea
 
 // Normalized text of every heading inside an element (for echo detection).
 function headingTexts(element: Element): string[] {
-  return Array.from(element.querySelectorAll("h1, h2, h3, h4, h5, h6"))
-    .map((h) => normText(h.textContent || ""))
+  return Array.from(element.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+    .map((h) => normText(h.textContent || ''))
     .filter((t) => t.length > 0)
 }
 
@@ -503,19 +559,24 @@ export function segmentPage(captured: CapturedPage): Section[] {
   // redundant echo even when the orphan line appears ABOVE its heading in document
   // order (the "orphan text node above the H1" degeneracy).
   const seenHeadings = new Set<string>(
-    Array.from(body.querySelectorAll("h1, h2, h3, h4, h5, h6"))
-      .map((h) => normText(h.textContent || ""))
+    Array.from(body.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+      .map((h) => normText(h.textContent || ''))
       .filter((t) => t.length > 0),
   )
 
   for (const child of children) {
     // Skip non-rendering / empty nodes.
     const tag = child.tagName.toLowerCase()
-    if (tag === "script" || tag === "style" || tag === "template" || tag === "noscript") {
+    if (
+      tag === 'script' ||
+      tag === 'style' ||
+      tag === 'template' ||
+      tag === 'noscript'
+    ) {
       continue
     }
-    const text = (child.textContent || "").trim()
-    const hasMedia = !!child.querySelector("img, svg, video, picture, canvas")
+    const text = (child.textContent || '').trim()
+    const hasMedia = !!child.querySelector('img, svg, video, picture, canvas')
     if (!text && !hasMedia) continue
 
     const kind = detectSectionKind(child)
@@ -542,7 +603,10 @@ export function segmentPage(captured: CapturedPage): Section[] {
       // Drop a bare text line that merely repeats (a fragment of) an already-emitted
       // heading: the orphan "http://info.cern.ch" line echoing the start of the H1.
       const ownHeadings = headingTexts(child)
-      if (ownHeadings.length === 0 && isRedundantHeadingEcho(text, seenHeadings)) {
+      if (
+        ownHeadings.length === 0 &&
+        isRedundantHeadingEcho(text, seenHeadings)
+      ) {
         continue
       }
 
@@ -577,7 +641,7 @@ export function segmentPage(captured: CapturedPage): Section[] {
 // Extract text content from a section
 export function extractSectionText(sectionHtml: string): string {
   const { document: doc } = parseHTML(sectionHtml)
-  return doc.body?.textContent?.trim() || ""
+  return doc.body?.textContent?.trim() || ''
 }
 
 // Parse a captured page and return the raw nav-destination hrefs from its nav/header

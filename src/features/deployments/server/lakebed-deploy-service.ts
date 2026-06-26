@@ -359,11 +359,14 @@ const createSourcePlugin = (
         }
       })
 
-      build.onLoad({ filter: /.*/, namespace: sourceNamespace }, async (args) => ({
-        contents: await sourceStore.readFile(args.path),
-        loader: loaderForPath(args.path),
-        resolveDir: sourcePathDirname(args.path),
-      }))
+      build.onLoad(
+        { filter: /.*/, namespace: sourceNamespace },
+        async (args) => ({
+          contents: await sourceStore.readFile(args.path),
+          loader: loaderForPath(args.path),
+          resolveDir: sourcePathDirname(args.path),
+        }),
+      )
 
       build.onLoad(
         { filter: /.*/, namespace: lakebedServerNamespace },
@@ -410,7 +413,10 @@ const forbiddenSourceDiagnostics = (
       /\bFunction\s*\(/,
       'Function constructors are not available in anonymous server code.',
     ],
-    [/\bimport\s*\(/, 'Dynamic import is not available in anonymous server code.'],
+    [
+      /\bimport\s*\(/,
+      'Dynamic import is not available in anonymous server code.',
+    ],
     [/\bfetch\b/, 'Outbound fetch is disabled for anonymous deploys.'],
     ...(allowAsync
       ? []
@@ -421,12 +427,21 @@ const forbiddenSourceDiagnostics = (
           ],
         ] as Array<[RegExp, string]>)),
     [/\bwhile\s*\(/, 'while loops are not available in anonymous server code.'],
-    [/\bfor\s*\(\s*;/, 'Unbounded for loops are not available in anonymous server code.'],
+    [
+      /\bfor\s*\(\s*;/,
+      'Unbounded for loops are not available in anonymous server code.',
+    ],
     [/\bprocess\b/, 'process is not available in anonymous server code.'],
     [/\bglobalThis\b/, 'globalThis is not available in anonymous server code.'],
     [/\bsetTimeout\s*\(/, 'Timers are not available in anonymous server code.'],
-    [/\bsetInterval\s*\(/, 'Timers are not available in anonymous server code.'],
-    [/from\s+["']node:/, 'Node built-ins are not available in anonymous server code.'],
+    [
+      /\bsetInterval\s*\(/,
+      'Timers are not available in anonymous server code.',
+    ],
+    [
+      /from\s+["']node:/,
+      'Node built-ins are not available in anonymous server code.',
+    ],
   ]
   const diagnostics: Diagnostic[] = []
 
@@ -436,7 +451,8 @@ const forbiddenSourceDiagnostics = (
       candidate.path.startsWith('shared/'),
   )) {
     for (const [pattern, message] of checks) {
-      if (pattern.test(file.contents)) diagnostics.push(diagnostic(file.path, message))
+      if (pattern.test(file.contents))
+        diagnostics.push(diagnostic(file.path, message))
     }
   }
 
@@ -519,7 +535,10 @@ const validateEndpointRoute = (
 ) => {
   if (!endpointMethodPattern.test(method)) {
     diagnostics.push(
-      diagnostic(diagnosticPath, 'Endpoint method must be a valid uppercase HTTP method.'),
+      diagnostic(
+        diagnosticPath,
+        'Endpoint method must be a valid uppercase HTTP method.',
+      ),
     )
   }
 
@@ -541,7 +560,10 @@ const validateEndpointRoute = (
 
   if (isReservedEndpointPath(path)) {
     diagnostics.push(
-      diagnostic(diagnosticPath, `Endpoint path ${path} is reserved by Lakebed.`),
+      diagnostic(
+        diagnosticPath,
+        `Endpoint path ${path} is reserved by Lakebed.`,
+      ),
     )
   }
 }
@@ -727,7 +749,9 @@ export const buildLakebedAnonymousDeployRequest = async (
     sourceFilesBytes: sourceFiles.reduce((sum, file) => sum + file.bytes, 0),
   })
   options.log?.('anonymous-request:diagnostics:start')
-  const diagnostics = forbiddenSourceDiagnostics(sourceFiles, { allowAsync: true })
+  const diagnostics = forbiddenSourceDiagnostics(sourceFiles, {
+    allowAsync: true,
+  })
   const { diagnostics: schemaDiagnostics, schema } = serializeSchema(app.schema)
   const { diagnostics: endpointDiagnostics, endpoints } = serializeEndpoints(
     app.endpoints,
@@ -781,7 +805,10 @@ export const buildLakebedAnonymousDeployRequest = async (
       helpers: {},
       imports: ['lakebed/server'],
       mutations: Object.fromEntries(
-        Object.keys(app.mutations ?? {}).map((name) => [name, { op: 'source' }]),
+        Object.keys(app.mutations ?? {}).map((name) => [
+          name,
+          { op: 'source' },
+        ]),
       ),
       queries: Object.fromEntries(
         Object.keys(app.queries ?? {}).map((name) => [name, { op: 'source' }]),
@@ -844,7 +871,8 @@ export const buildLakebedAnonymousDeployRequest = async (
 
 const readResponseJson = async (response: Response): Promise<JsonRecord> => {
   const body = await response.text()
-  if (!response.ok) throw new Error(body || `Request failed with ${response.status}`)
+  if (!response.ok)
+    throw new Error(body || `Request failed with ${response.status}`)
   return JSON.parse(body) as JsonRecord
 }
 
@@ -906,8 +934,10 @@ export const deployLakebedProjectFiles = async ({
       typeof deployed.updatedAt === 'string' ? deployed.updatedAt : undefined,
     expiresAt:
       typeof deployed.expiresAt === 'string' ? deployed.expiresAt : undefined,
-    claimUrl: typeof deployed.claimUrl === 'string' ? deployed.claimUrl : undefined,
-    claimed: typeof deployed.claimed === 'boolean' ? deployed.claimed : undefined,
+    claimUrl:
+      typeof deployed.claimUrl === 'string' ? deployed.claimUrl : undefined,
+    claimed:
+      typeof deployed.claimed === 'boolean' ? deployed.claimed : undefined,
     inspectPolicy:
       typeof deployed.inspectPolicy === 'string'
         ? deployed.inspectPolicy

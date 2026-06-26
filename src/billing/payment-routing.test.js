@@ -31,6 +31,8 @@ describe('payment routing', () => {
         STRIPE_PRO_PRICE_ID: 'price_pro',
       }),
     ).toBe(true)
-    expect(isGatewayConfigured('stripe', { STRIPE_SECRET_KEY: 'sk_test' })).toBe(false)
+    expect(
+      isGatewayConfigured('stripe', { STRIPE_SECRET_KEY: 'sk_test' }),
+    ).toBe(false)
   })
 })

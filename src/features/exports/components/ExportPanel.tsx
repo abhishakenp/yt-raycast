@@ -1,9 +1,4 @@
-import {
-  Download,
-  LoaderCircle,
-  Lock,
-  TriangleAlert,
-} from 'lucide-react'
+import { Download, LoaderCircle, Lock, TriangleAlert } from 'lucide-react'
 import { useQuery } from 'convex/react'
 import { useState } from 'react'
 
@@ -58,16 +53,16 @@ const exportTargetNames: Array<ExportTarget['target']> = [
 ]
 
 const loadingTargets: ExportTarget[] = exportTargetNames.map((target) => ({
-    target,
-    label: targetLabel(target),
-    ready: false,
-    status: 'loading',
-    requiresPayment: false,
-    fileCount: null,
-    artifactReady: false,
-    artifactStatus: 'loading',
-    downloadUrl: null,
-  }))
+  target,
+  label: targetLabel(target),
+  ready: false,
+  status: 'loading',
+  requiresPayment: false,
+  fileCount: null,
+  artifactReady: false,
+  artifactStatus: 'loading',
+  downloadUrl: null,
+}))
 
 const statusLabel = (target: ExportTarget): string => {
   if (target.requiresPayment) return 'Payment required'
@@ -105,9 +100,7 @@ const readDownloadFilename = (response: Response, fallback: string): string => {
   return match?.[1] ?? fallback
 }
 
-const isDownloadResult = (
-  value: unknown,
-): value is { downloadUrl?: unknown } =>
+const isDownloadResult = (value: unknown): value is { downloadUrl?: unknown } =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
 
 export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
@@ -252,8 +245,7 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
                   ? NextIcon
                   : LakebedIcon
           const isBusy =
-            activeTarget === item.target ||
-            downloadingTarget === item.target
+            activeTarget === item.target || downloadingTarget === item.target
           const isBuildPending =
             !item.artifactReady &&
             (item.artifactStatus === 'queued' ||
@@ -271,10 +263,10 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
             : activeTarget === item.target || downloadingTarget === item.target
               ? 'Working...'
               : item.artifactStatus === 'failed'
-              ? (item.artifactError ?? 'Export failed')
-              : isBuildPending
-                ? ''
-                : statusLabel(item)
+                ? (item.artifactError ?? 'Export failed')
+                : isBuildPending
+                  ? ''
+                  : statusLabel(item)
 
           return (
             <button

@@ -3459,8 +3459,9 @@ export async function buildOpenUIExport(
   input: OpenUIExportInput,
 ): Promise<BuiltExport> {
   if (input.target === 'html') {
-    const { buildOpenUIHtmlExport } =
-      await import('./openui-html-export-builder')
+    const { buildOpenUIHtmlExport } = await import(
+      './openui-html-export-builder'
+    )
     return buildOpenUIHtmlExport(input)
   }
 

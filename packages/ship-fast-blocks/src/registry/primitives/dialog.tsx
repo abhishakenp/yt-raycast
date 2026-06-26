@@ -1,5 +1,5 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 import {
   Dialog as UIDialog,
   DialogContent,
@@ -8,15 +8,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "#/components/ui/dialog.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/dialog.tsx'
+import { Button } from '#/components/ui/button.tsx'
 
 // Overlay: flatten Dialog/Trigger/Content/Header/Title/Description/Footer into
 // one node. Rendered open by default (defaultOpen) so the content is visible.
 export const Dialog = defineComponent({
-  name: "Dialog",
+  name: 'Dialog',
   description:
-    "Modal dialog. Shows a trigger button and opens centered content with title, description, body (children) and footer. Open by default in preview.",
+    'Modal dialog. Shows a trigger button and opens centered content with title, description, body (children) and footer. Open by default in preview.',
   props: z.object({
     title: z.string(),
     description: z.string().optional(),
@@ -28,7 +28,7 @@ export const Dialog = defineComponent({
   component: ({ props, renderNode }) => (
     <UIDialog defaultOpen>
       <DialogTrigger asChild>
-        <Button variant="outline">{props.triggerLabel ?? "Open"}</Button>
+        <Button variant="outline">{props.triggerLabel ?? 'Open'}</Button>
       </DialogTrigger>
       <DialogContent className={props.className}>
         <DialogHeader>
@@ -38,7 +38,9 @@ export const Dialog = defineComponent({
           )}
         </DialogHeader>
         {props.children && renderNode(props.children)}
-        {props.footer && <DialogFooter>{renderNode(props.footer)}</DialogFooter>}
+        {props.footer && (
+          <DialogFooter>{renderNode(props.footer)}</DialogFooter>
+        )}
       </DialogContent>
     </UIDialog>
   ),

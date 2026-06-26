@@ -12,7 +12,7 @@
 export type KitAction = {
   label: string
   target?: string
-  variant?: "primary" | "outline" | "ghost"
+  variant?: 'primary' | 'outline' | 'ghost'
 }
 
 /**
@@ -22,15 +22,15 @@ export type KitAction = {
  * primary action must read against a primary background.
  */
 export function kitActionClasses(
-  variant: KitAction["variant"] = "primary",
+  variant: KitAction['variant'] = 'primary',
   invert = false,
 ): string {
   const base =
-    "inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium transition-colors"
-  if (variant === "outline") {
+    'inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium transition-colors'
+  if (variant === 'outline') {
     return `${base} border border-border bg-background text-foreground hover:bg-muted`
   }
-  if (variant === "ghost") {
+  if (variant === 'ghost') {
     return `${base} text-foreground hover:bg-muted`
   }
   // primary

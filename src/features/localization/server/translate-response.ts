@@ -106,7 +106,8 @@ export const createTranslateResponse = async (
       translation: text,
       locale: locale || 'en',
       translated: false,
-      skipped: locale === 'en' || locale === '' ? 'english' : 'unsupported-locale',
+      skipped:
+        locale === 'en' || locale === '' ? 'english' : 'unsupported-locale',
     })
   }
 

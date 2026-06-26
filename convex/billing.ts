@@ -280,7 +280,9 @@ export const getCreditLedger = query({
     const limit = Math.min(args.limit ?? 50, 100)
     const transactions = await ctx.db
       .query('creditLedger')
-      .withIndex('by_userId_createdAt', (index) => index.eq('userId', args.userId))
+      .withIndex('by_userId_createdAt', (index) =>
+        index.eq('userId', args.userId),
+      )
       .order('desc')
       .take(limit)
 

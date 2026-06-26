@@ -43,8 +43,8 @@ describe('preview versions', () => {
   })
 
   it('rejects missing history restores', () => {
-    expect(() => restorePreviewVersion(createEmptyPreviewState(), 9, 1)).toThrow(
-      'Preview version 9 was not found',
-    )
+    expect(() =>
+      restorePreviewVersion(createEmptyPreviewState(), 9, 1),
+    ).toThrow('Preview version 9 was not found')
   })
 })

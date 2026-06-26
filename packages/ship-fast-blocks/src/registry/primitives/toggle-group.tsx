@@ -1,14 +1,14 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 import {
   ToggleGroup as UIToggleGroup,
   ToggleGroupItem,
-} from "#/components/ui/toggle-group.tsx"
+} from '#/components/ui/toggle-group.tsx'
 
 // Compound primitive: a set of toggles where one (single) or many (multiple)
 // can be pressed. Flattened to items:[{value,label}]. variant/size mirror toggle cva.
 export const ToggleGroup = defineComponent({
-  name: "ToggleGroup",
+  name: 'ToggleGroup',
   description:
     "Set of toggle buttons. items:[{value,label}]. type 'single' (one active) or 'multiple'. variant/size mirror Toggle.",
   props: z.object({
@@ -19,20 +19,24 @@ export const ToggleGroup = defineComponent({
         disabled: z.boolean().optional(),
       }),
     ),
-    type: z.enum(["single", "multiple"]).optional(),
+    type: z.enum(['single', 'multiple']).optional(),
     defaultValue: z.string().optional(),
-    variant: z.enum(["default", "outline"]).optional(),
-    size: z.enum(["default", "sm", "lg"]).optional(),
+    variant: z.enum(['default', 'outline']).optional(),
+    size: z.enum(['default', 'sm', 'lg']).optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
     const items = props.items ?? []
     const children = items.map((item) => (
-      <ToggleGroupItem key={item.value} value={item.value} disabled={item.disabled}>
+      <ToggleGroupItem
+        key={item.value}
+        value={item.value}
+        disabled={item.disabled}
+      >
         {item.label}
       </ToggleGroupItem>
     ))
-    return props.type === "multiple" ? (
+    return props.type === 'multiple' ? (
       <UIToggleGroup
         type="multiple"
         defaultValue={props.defaultValue ? [props.defaultValue] : undefined}

@@ -84,7 +84,9 @@ export const EvilPie = ({
     style={{ height: height || 200 }}
     className={`flex items-center justify-center ${chartFrameClass(chartFrame)}`}
   >
-    <span className="text-gray-500 text-sm">Pie Chart Placeholder{donut ? ' (donut)' : ''}</span>
+    <span className="text-gray-500 text-sm">
+      Pie Chart Placeholder{donut ? ' (donut)' : ''}
+    </span>
   </div>
 )
 

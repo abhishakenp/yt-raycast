@@ -57,8 +57,18 @@ function computeOccurrenceIndex(
 export function useTextEdit(
   containerRef: React.RefObject<HTMLElement | null>,
   editMode: boolean,
-  onTextChange: (change: { oldText: string; newText: string; element: HTMLElement; occurrenceIndex: number }) => void,
-  onImageChange?: (change: { oldSrc: string; newSrc: string; element: HTMLImageElement; alt: string }) => void,
+  onTextChange: (change: {
+    oldText: string
+    newText: string
+    element: HTMLElement
+    occurrenceIndex: number
+  }) => void,
+  onImageChange?: (change: {
+    oldSrc: string
+    newSrc: string
+    element: HTMLImageElement
+    alt: string
+  }) => void,
   onElementActivate?: (element: HTMLElement, rect: DOMRect) => void,
 ) {
   const activeEditRef = useRef<TextEditState | null>(null)
@@ -149,9 +159,10 @@ export function useTextEdit(
       const target = e.target as HTMLElement
 
       // Check if target is an image or contains an image
-      const imgEl = target.tagName.toLowerCase() === 'img'
-        ? (target as HTMLImageElement)
-        : target.querySelector('img') as HTMLImageElement | null
+      const imgEl =
+        target.tagName.toLowerCase() === 'img'
+          ? (target as HTMLImageElement)
+          : (target.querySelector('img') as HTMLImageElement | null)
 
       if (imgEl) {
         const currentSrc = imgEl.src
@@ -257,9 +268,20 @@ function findTextElement(el: HTMLElement): HTMLElement | null {
   while (current) {
     const tag = current.tagName.toLowerCase()
     if (
-      ['button', 'a', 'input', 'textarea', 'select', 'svg', 'path', 'img', 'video', 'audio', 'script', 'style'].includes(
-        tag,
-      )
+      [
+        'button',
+        'a',
+        'input',
+        'textarea',
+        'select',
+        'svg',
+        'path',
+        'img',
+        'video',
+        'audio',
+        'script',
+        'style',
+      ].includes(tag)
     ) {
       return null
     }

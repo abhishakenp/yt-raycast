@@ -1,4 +1,9 @@
-import { HOME_DESCRIPTION, OG_IMAGE_PATH, SITE_NAME, SITE_URL } from './site-config'
+import {
+  HOME_DESCRIPTION,
+  OG_IMAGE_PATH,
+  SITE_NAME,
+  SITE_URL,
+} from './site-config'
 
 export const homeStructuredDataJson = (descriptionOverride?: string) => {
   const desc = descriptionOverride ?? HOME_DESCRIPTION

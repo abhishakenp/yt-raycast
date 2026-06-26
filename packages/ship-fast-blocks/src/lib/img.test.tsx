@@ -21,7 +21,9 @@ describe('Image + ImageContextProvider', () => {
 
   it('inherits the ambient prompt context and biases the query to the domain', () => {
     const markup = renderToStaticMarkup(
-      <ImageContextProvider value={{ prompt: 'Create a website for a dental clinic in Mumbai' }}>
+      <ImageContextProvider
+        value={{ prompt: 'Create a website for a dental clinic in Mumbai' }}
+      >
         <Image alt="hero image" />
       </ImageContextProvider>,
     )
@@ -30,7 +32,9 @@ describe('Image + ImageContextProvider', () => {
 
   it('passes the query un-double-encoded (single space, not %2520)', () => {
     const markup = renderToStaticMarkup(
-      <ImageContextProvider value={{ prompt: 'organic dairy farm fresh milk paneer' }}>
+      <ImageContextProvider
+        value={{ prompt: 'organic dairy farm fresh milk paneer' }}
+      >
         <Image alt="product shot" />
       </ImageContextProvider>,
     )

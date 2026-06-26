@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { examplePrompts, normalizePromptDraft } from '@/features/home/services/home-prompts'
+import {
+  examplePrompts,
+  normalizePromptDraft,
+} from '@/features/home/services/home-prompts'
 
 describe('home prompts', () => {
   it('keeps prompt examples available for immediate generation', () => {

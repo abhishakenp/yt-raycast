@@ -26,9 +26,9 @@ describe('generateContextAwareQuery', () => {
     // Should include ecommerce-related terms
     const lowerQuery = query.toLowerCase()
     expect(
-      lowerQuery.includes('product') || 
-      lowerQuery.includes('commercial') ||
-      lowerQuery.includes('snack')
+      lowerQuery.includes('product') ||
+        lowerQuery.includes('commercial') ||
+        lowerQuery.includes('snack'),
     ).toBe(true)
   })
 
@@ -40,25 +40,26 @@ describe('generateContextAwareQuery', () => {
     // Should include creative terms or preserve original content
     const lowerQuery = query.toLowerCase()
     expect(
-      lowerQuery.includes('creative') || 
-      lowerQuery.includes('web') ||
-      lowerQuery.includes('design')
+      lowerQuery.includes('creative') ||
+        lowerQuery.includes('web') ||
+        lowerQuery.includes('design'),
     ).toBe(true)
   })
 
   it('should extract visual phrases from prompt', () => {
     const query = generateContextAwareQuery('team photo', {
-      prompt: 'Create a website for a dental clinic with modern interior and doctor consultation',
+      prompt:
+        'Create a website for a dental clinic with modern interior and doctor consultation',
       section: 'about-section',
     })
     expect(query).toBeTruthy()
     // Should incorporate medical/clinic context or preserve team context
     const lowerQuery = query.toLowerCase()
     expect(
-      lowerQuery.includes('medical') || 
-      lowerQuery.includes('clinic') || 
-      lowerQuery.includes('team') ||
-      lowerQuery.includes('lifestyle')
+      lowerQuery.includes('medical') ||
+        lowerQuery.includes('clinic') ||
+        lowerQuery.includes('team') ||
+        lowerQuery.includes('lifestyle'),
     ).toBe(true)
   })
 
@@ -71,17 +72,19 @@ describe('generateContextAwareQuery', () => {
     // Should include brand-related terms
     const lowerQuery = query.toLowerCase()
     expect(
-      lowerQuery.includes('dairy') || 
-      lowerQuery.includes('organic') || 
-      lowerQuery.includes('farm') ||
-      lowerQuery.includes('product')
+      lowerQuery.includes('dairy') ||
+        lowerQuery.includes('organic') ||
+        lowerQuery.includes('farm') ||
+        lowerQuery.includes('product'),
     ).toBe(true)
   })
 
   it('should limit query length for API compatibility', () => {
-    const longAlt = 'beautiful professional high quality stunning elegant modern natural warm soft bright dark light small large high quality detail close up view scene image photo picture background'
+    const longAlt =
+      'beautiful professional high quality stunning elegant modern natural warm soft bright dark light small large high quality detail close up view scene image photo picture background'
     const query = generateContextAwareQuery(longAlt, {
-      prompt: 'Create a website for a luxury fashion boutique featuring ethnic wear bridal collection wedding saree lehenga traditional silk embroidery designer wear festive occasion wear couture',
+      prompt:
+        'Create a website for a luxury fashion boutique featuring ethnic wear bridal collection wedding saree lehenga traditional silk embroidery designer wear festive occasion wear couture',
     })
     expect(query.length).toBeLessThanOrEqual(96)
   })
@@ -93,17 +96,18 @@ describe('generateContextAwareQuery', () => {
 
   it('should handle industry-specific queries', () => {
     const query = generateContextAwareQuery('interior', {
-      prompt: 'Create a website for a multispeciality hospital with modern healthcare facilities',
+      prompt:
+        'Create a website for a multispeciality hospital with modern healthcare facilities',
       section: 'hero',
     })
     expect(query).toBeTruthy()
     // Should include healthcare-specific terms or hero context
     const lowerQuery = query.toLowerCase()
     expect(
-      lowerQuery.includes('hospital') || 
-      lowerQuery.includes('healthcare') || 
-      lowerQuery.includes('medical') ||
-      lowerQuery.includes('hero')
+      lowerQuery.includes('hospital') ||
+        lowerQuery.includes('healthcare') ||
+        lowerQuery.includes('medical') ||
+        lowerQuery.includes('hero'),
     ).toBe(true)
   })
 
@@ -118,10 +122,10 @@ describe('generateContextAwareQuery', () => {
     // Should incorporate multiple context elements
     const lowerQuery = query.toLowerCase()
     expect(
-      lowerQuery.includes('hero') || 
-      lowerQuery.includes('product') || 
-      lowerQuery.includes('silk') ||
-      lowerQuery.includes('bridal')
+      lowerQuery.includes('hero') ||
+        lowerQuery.includes('product') ||
+        lowerQuery.includes('silk') ||
+        lowerQuery.includes('bridal'),
     ).toBe(true)
   })
 })

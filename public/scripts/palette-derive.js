@@ -1,1 +1,132 @@
-var p="#3b82f6";function l(a){if(typeof a!="string")return p;let t=a.trim().toLowerCase();return t.startsWith("#")&&(t=t.slice(1)),/^[0-9a-f]{3}$/.test(t)&&(t=t.split("").map(r=>r+r).join("")),/^[0-9a-f]{6}$/.test(t)?"#"+t:p}function h(a){let t=l(a),r=parseInt(t.slice(1,3),16)/255,o=parseInt(t.slice(3,5),16)/255,s=parseInt(t.slice(5,7),16)/255,i=Math.max(r,o,s),n=Math.min(r,o,s),d=(i+n)/2,g=0,u=0;if(i!==n){let c=i-n;u=d>.5?c/(2-i-n):c/(i+n),i===r?g=(o-s)/c+(o<s?6:0):i===o?g=(s-r)/c+2:g=(r-o)/c+4,g*=60}return{h:g,s:u*100,l:d*100}}function e(a,t,r){let o=(a%360+360)%360,s=Math.max(0,Math.min(100,t))/100,i=Math.max(0,Math.min(100,r))/100,n=(1-Math.abs(2*i-1))*s,d=n*(1-Math.abs(o/60%2-1)),g=i-n/2,u=0,c=0,f=0;o<60?(u=n,c=d):o<120?(u=d,c=n):o<180?(c=n,f=d):o<240?(c=d,f=n):o<300?(u=d,f=n):(u=n,f=d);let m=b=>Math.round((b+g)*255).toString(16).padStart(2,"0");return"#"+m(u)+m(c)+m(f)}function x(a){let t=l(a),[r,o,s]=[1,3,5].map(n=>parseInt(t.slice(n,n+2),16)/255),i=[r,o,s].map(n=>n<=.03928?n/12.92:Math.pow((n+.055)/1.055,2.4));return .2126*i[0]+.7152*i[1]+.0722*i[2]}function y(a){let t=l(a),{h:r}=h(t),o=x(t)<.5?"#ffffff":"#0b0b0d",s={background:e(r,12,6),foreground:e(r,8,96),card:e(r,10,9),"card-foreground":e(r,8,96),popover:e(r,10,9),"popover-foreground":e(r,8,96),primary:t,"primary-foreground":o,secondary:e(r,18,16),"secondary-foreground":e(r,8,96),muted:e(r,10,14),"muted-foreground":e(r,10,65),accent:e(r,22,22),"accent-foreground":e(r,8,96),border:e(r,12,18),input:e(r,12,18),ring:t},i={background:e(r,20,98),foreground:e(r,12,12),card:e(r,20,100),"card-foreground":e(r,12,12),popover:e(r,20,100),"popover-foreground":e(r,12,12),primary:t,"primary-foreground":o,secondary:e(r,20,94),"secondary-foreground":e(r,12,16),muted:e(r,18,95),"muted-foreground":e(r,10,40),accent:e(r,22,90),"accent-foreground":e(r,12,16),border:e(r,14,88),input:e(r,14,88),ring:t};return{id:"custom",name:"Custom",dark:s,light:i,bg:s.background,surface:s.card,accent:s.primary,text:s.foreground,border:s.border,seedHex:t}}export{y as deriveCustomPalette,h as hexToHsl,e as hslToHex,x as luminance};
+var p = '#3b82f6'
+function l(a) {
+  if (typeof a != 'string') return p
+  let t = a.trim().toLowerCase()
+  return (
+    t.startsWith('#') && (t = t.slice(1)),
+    /^[0-9a-f]{3}$/.test(t) &&
+      (t = t
+        .split('')
+        .map((r) => r + r)
+        .join('')),
+    /^[0-9a-f]{6}$/.test(t) ? '#' + t : p
+  )
+}
+function h(a) {
+  let t = l(a),
+    r = parseInt(t.slice(1, 3), 16) / 255,
+    o = parseInt(t.slice(3, 5), 16) / 255,
+    s = parseInt(t.slice(5, 7), 16) / 255,
+    i = Math.max(r, o, s),
+    n = Math.min(r, o, s),
+    d = (i + n) / 2,
+    g = 0,
+    u = 0
+  if (i !== n) {
+    let c = i - n
+    ;((u = d > 0.5 ? c / (2 - i - n) : c / (i + n)),
+      i === r
+        ? (g = (o - s) / c + (o < s ? 6 : 0))
+        : i === o
+          ? (g = (s - r) / c + 2)
+          : (g = (r - o) / c + 4),
+      (g *= 60))
+  }
+  return { h: g, s: u * 100, l: d * 100 }
+}
+function e(a, t, r) {
+  let o = ((a % 360) + 360) % 360,
+    s = Math.max(0, Math.min(100, t)) / 100,
+    i = Math.max(0, Math.min(100, r)) / 100,
+    n = (1 - Math.abs(2 * i - 1)) * s,
+    d = n * (1 - Math.abs(((o / 60) % 2) - 1)),
+    g = i - n / 2,
+    u = 0,
+    c = 0,
+    f = 0
+  o < 60
+    ? ((u = n), (c = d))
+    : o < 120
+      ? ((u = d), (c = n))
+      : o < 180
+        ? ((c = n), (f = d))
+        : o < 240
+          ? ((c = d), (f = n))
+          : o < 300
+            ? ((u = d), (f = n))
+            : ((u = n), (f = d))
+  let m = (b) =>
+    Math.round((b + g) * 255)
+      .toString(16)
+      .padStart(2, '0')
+  return '#' + m(u) + m(c) + m(f)
+}
+function x(a) {
+  let t = l(a),
+    [r, o, s] = [1, 3, 5].map((n) => parseInt(t.slice(n, n + 2), 16) / 255),
+    i = [r, o, s].map((n) =>
+      n <= 0.03928 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4),
+    )
+  return 0.2126 * i[0] + 0.7152 * i[1] + 0.0722 * i[2]
+}
+function y(a) {
+  let t = l(a),
+    { h: r } = h(t),
+    o = x(t) < 0.5 ? '#ffffff' : '#0b0b0d',
+    s = {
+      background: e(r, 12, 6),
+      foreground: e(r, 8, 96),
+      card: e(r, 10, 9),
+      'card-foreground': e(r, 8, 96),
+      popover: e(r, 10, 9),
+      'popover-foreground': e(r, 8, 96),
+      primary: t,
+      'primary-foreground': o,
+      secondary: e(r, 18, 16),
+      'secondary-foreground': e(r, 8, 96),
+      muted: e(r, 10, 14),
+      'muted-foreground': e(r, 10, 65),
+      accent: e(r, 22, 22),
+      'accent-foreground': e(r, 8, 96),
+      border: e(r, 12, 18),
+      input: e(r, 12, 18),
+      ring: t,
+    },
+    i = {
+      background: e(r, 20, 98),
+      foreground: e(r, 12, 12),
+      card: e(r, 20, 100),
+      'card-foreground': e(r, 12, 12),
+      popover: e(r, 20, 100),
+      'popover-foreground': e(r, 12, 12),
+      primary: t,
+      'primary-foreground': o,
+      secondary: e(r, 20, 94),
+      'secondary-foreground': e(r, 12, 16),
+      muted: e(r, 18, 95),
+      'muted-foreground': e(r, 10, 40),
+      accent: e(r, 22, 90),
+      'accent-foreground': e(r, 12, 16),
+      border: e(r, 14, 88),
+      input: e(r, 14, 88),
+      ring: t,
+    }
+  return {
+    id: 'custom',
+    name: 'Custom',
+    dark: s,
+    light: i,
+    bg: s.background,
+    surface: s.card,
+    accent: s.primary,
+    text: s.foreground,
+    border: s.border,
+    seedHex: t,
+  }
+}
+export {
+  y as deriveCustomPalette,
+  h as hexToHsl,
+  e as hslToHex,
+  x as luminance,
+}

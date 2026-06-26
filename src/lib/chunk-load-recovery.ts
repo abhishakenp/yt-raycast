@@ -20,7 +20,8 @@ const dynamicImportErrorPatterns = [
 ]
 
 const readErrorText = (reason: unknown): string => {
-  if (reason instanceof Error) return `${reason.name} ${reason.message}`.toLowerCase()
+  if (reason instanceof Error)
+    return `${reason.name} ${reason.message}`.toLowerCase()
   if (typeof reason === 'string') return reason.toLowerCase()
   if (reason && typeof reason === 'object' && 'message' in reason) {
     return String(Reflect.get(reason, 'message')).toLowerCase()

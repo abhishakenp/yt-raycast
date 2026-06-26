@@ -34,18 +34,30 @@ export function canReusePrefetchedPrompt(
   const baseText = base.join(' ')
   const nextText = next.join(' ')
   if (baseText === nextText) return true
-  const trailingOpenEnded = /^(about|for|with|of|in|on|to)$/.test(base[base.length - 1] || '')
-  if (!trailingOpenEnded && nextText.startsWith(`${baseText} `) && next.length - base.length <= 2) {
+  const trailingOpenEnded = /^(about|for|with|of|in|on|to)$/.test(
+    base[base.length - 1] || '',
+  )
+  if (
+    !trailingOpenEnded &&
+    nextText.startsWith(`${baseText} `) &&
+    next.length - base.length <= 2
+  ) {
     return true
   }
   const baseSet = new Set(base)
   const nextSet = new Set(next)
   const overlap = next.filter((token) => baseSet.has(token)).length
   const union = new Set([...baseSet, ...nextSet]).size
-  return union > 0 && overlap / union >= 0.88 && Math.abs(next.length - base.length) <= 2
+  return (
+    union > 0 &&
+    overlap / union >= 0.88 &&
+    Math.abs(next.length - base.length) <= 2
+  )
 }
 
-export function generationPayloadFingerprint(payload: Record<string, unknown>): string {
+export function generationPayloadFingerprint(
+  payload: Record<string, unknown>,
+): string {
   const { prompt: _prompt, ...stablePayload } = payload
   return JSON.stringify(stablePayload)
 }

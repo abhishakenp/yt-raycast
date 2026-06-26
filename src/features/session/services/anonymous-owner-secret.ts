@@ -1,4 +1,7 @@
-export type OwnerSecretStore = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
+export type OwnerSecretStore = Pick<
+  Storage,
+  'getItem' | 'setItem' | 'removeItem'
+>
 export type RandomBytes = (bytes: Uint8Array) => Uint8Array
 
 const ownerSecretStoragePrefix = 'ship-fast:v2:owner-secret:'
@@ -29,7 +32,10 @@ export const persistAnonymousOwnerSecret = (
 export const readAnonymousOwnerSecret = (
   store: OwnerSecretStore,
   sessionId: string,
-): string | undefined => store.getItem(getAnonymousOwnerSecretKey(sessionId)) ?? undefined
+): string | undefined =>
+  store.getItem(getAnonymousOwnerSecretKey(sessionId)) ?? undefined
 
-export const forgetAnonymousOwnerSecret = (store: OwnerSecretStore, sessionId: string): void =>
-  store.removeItem(getAnonymousOwnerSecretKey(sessionId))
+export const forgetAnonymousOwnerSecret = (
+  store: OwnerSecretStore,
+  sessionId: string,
+): void => store.removeItem(getAnonymousOwnerSecretKey(sessionId))

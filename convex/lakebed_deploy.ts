@@ -137,7 +137,11 @@ export const deploy = action({
           const deployed = await deployLakebedProjectFiles({
             files,
             log: (message, details) =>
-              logLakebedDeploy(artifact.sessionId, `lakebed-api:${message}`, details),
+              logLakebedDeploy(
+                artifact.sessionId,
+                `lakebed-api:${message}`,
+                details,
+              ),
           })
           const result: unknown = await ctx.runMutation(
             internal.sessions.recordLakebedDeploymentSuccess,
@@ -216,9 +220,13 @@ export const deploy = action({
       const { deployLakebedProjectFiles } = await import(
         '../src/features/deployments/server/lakebed-deploy-service'
       )
-      logLakebedDeploy(prepared.sessionId, 'lakebed-api:module-import:complete', {
-        elapsedMs: Date.now() - deployStartedAt,
-      })
+      logLakebedDeploy(
+        prepared.sessionId,
+        'lakebed-api:module-import:complete',
+        {
+          elapsedMs: Date.now() - deployStartedAt,
+        },
+      )
       logLakebedDeploy(prepared.sessionId, 'lakebed-api:start', {
         fileCount: project.fileCount,
       })
@@ -259,14 +267,11 @@ export const deploy = action({
         stack: error instanceof Error ? error.stack : undefined,
         elapsedMs: Date.now() - startedAt,
       })
-      await ctx.runMutation(
-        internal.sessions.recordLakebedDeploymentFailure,
-        {
-          sessionId: args.sessionId,
-          requestedSlug: args.requestedSlug,
-          errorMessage: errorMessage(error),
-        },
-      )
+      await ctx.runMutation(internal.sessions.recordLakebedDeploymentFailure, {
+        sessionId: args.sessionId,
+        requestedSlug: args.requestedSlug,
+        errorMessage: errorMessage(error),
+      })
       throw error
     }
   },

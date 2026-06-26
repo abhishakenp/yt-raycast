@@ -84,8 +84,10 @@ export type DefineCapsuleInput<
     z.infer<TProps>,
     TData
   >,
-  TMutations extends LakebedMutationMap<z.infer<TProps>, TData> =
-    LakebedMutationMap<z.infer<TProps>, TData>,
+  TMutations extends LakebedMutationMap<
+    z.infer<TProps>,
+    TData
+  > = LakebedMutationMap<z.infer<TProps>, TData>,
   TClientResult = unknown,
 > = {
   name: string
@@ -115,8 +117,14 @@ export type DefineCapsuleInput<
 
 export type ShipFastCapsule<
   TClient extends OpenUI.DefinedComponent<any> = OpenUI.DefinedComponent<any>,
-  TServer extends CapsuleLakebedConfig<any, any, any, any, any, any> =
-    CapsuleLakebedConfig<any, any, any, any, any, any>,
+  TServer extends CapsuleLakebedConfig<
+    any,
+    any,
+    any,
+    any,
+    any,
+    any
+  > = CapsuleLakebedConfig<any, any, any, any, any, any>,
   TClientResult = unknown,
 > = {
   client: TClient
@@ -139,8 +147,10 @@ export const defineCapsule = <
     z.infer<TProps>,
     TData
   >,
-  TMutations extends LakebedMutationMap<z.infer<TProps>, TData> =
-    LakebedMutationMap<z.infer<TProps>, TData>,
+  TMutations extends LakebedMutationMap<
+    z.infer<TProps>,
+    TData
+  > = LakebedMutationMap<z.infer<TProps>, TData>,
   TClientResult = unknown,
 >(
   input: DefineCapsuleInput<

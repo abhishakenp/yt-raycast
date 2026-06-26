@@ -1,8 +1,8 @@
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
-import type { KitAction } from "./types.ts"
-import { kitActionClasses } from "./types.ts"
+import type { KitAction } from './types.ts'
+import { kitActionClasses } from './types.ts'
 
 /**
  * Full-width call-to-action band: an eyebrow, title, optional subtitle, and a
@@ -16,29 +16,29 @@ export function CtaBand(props: {
   title: string
   subtitle?: string
   actions?: KitAction[]
-  tone?: "primary" | "muted" | "card"
-  align?: "center" | "left"
+  tone?: 'primary' | 'muted' | 'card'
+  align?: 'center' | 'left'
   className?: string
 }) {
   const go = useNavigate()
-  const tone = props.tone ?? "primary"
-  const align = props.align ?? "center"
+  const tone = props.tone ?? 'primary'
+  const align = props.align ?? 'center'
 
   const toneClasses =
-    tone === "muted"
-      ? "bg-muted text-foreground"
-      : tone === "card"
-        ? "bg-card text-card-foreground border border-border"
-        : "bg-primary text-primary-foreground"
+    tone === 'muted'
+      ? 'bg-muted text-foreground'
+      : tone === 'card'
+        ? 'bg-card text-card-foreground border border-border'
+        : 'bg-primary text-primary-foreground'
 
-  const isCenter = align === "center"
+  const isCenter = align === 'center'
 
   return (
-    <section className={cn("w-full", toneClasses, props.className)}>
+    <section className={cn('w-full', toneClasses, props.className)}>
       <div
         className={cn(
-          "mx-auto flex max-w-4xl flex-col gap-5 px-6 py-16 lg:px-8",
-          isCenter ? "items-center text-center" : "items-start text-left",
+          'mx-auto flex max-w-4xl flex-col gap-5 px-6 py-16 lg:px-8',
+          isCenter ? 'items-center text-center' : 'items-start text-left',
         )}
       >
         {props.eyebrow ? (
@@ -55,13 +55,13 @@ export function CtaBand(props: {
         {props.actions && props.actions.length > 0 ? (
           <div
             className={cn(
-              "flex flex-wrap gap-3",
-              isCenter ? "justify-center" : "justify-start",
+              'flex flex-wrap gap-3',
+              isCenter ? 'justify-center' : 'justify-start',
             )}
           >
             {props.actions.map((a) => {
               const isInvert =
-                tone === "primary" && (a.variant ?? "primary") === "primary"
+                tone === 'primary' && (a.variant ?? 'primary') === 'primary'
               return (
                 <button
                   key={a.label}

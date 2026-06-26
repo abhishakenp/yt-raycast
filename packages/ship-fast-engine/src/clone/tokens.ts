@@ -1,4 +1,4 @@
-import type { CapturedPage, ExtractedTokens } from "./types.ts"
+import type { CapturedPage, ExtractedTokens } from './types.ts'
 
 // Extract palette/fonts/radius/spacing from computed styles → synthesized theme token set
 
@@ -10,7 +10,7 @@ function clampByte(n: number): number {
 
 // Compose an #rrggbb string from three channels.
 function channelsToHex(r: number, g: number, b: number): string {
-  const h = (n: number) => clampByte(n).toString(16).padStart(2, "0")
+  const h = (n: number) => clampByte(n).toString(16).padStart(2, '0')
   return `#${h(r)}${h(g)}${h(b)}`
 }
 
@@ -37,33 +37,33 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
 // some properties (e.g. inherited keywords) can surface a bare name; map the
 // common ones to #rrggbb so the token value is always a valid hex.
 const NAMED_COLORS: Record<string, string> = {
-  transparent: "#00000000",
-  white: "#ffffff",
-  black: "#000000",
-  red: "#ff0000",
-  green: "#008000",
-  blue: "#0000ff",
-  gray: "#808080",
-  grey: "#808080",
-  silver: "#c0c0c0",
-  yellow: "#ffff00",
-  orange: "#ffa500",
-  purple: "#800080",
-  navy: "#000080",
-  teal: "#008080",
-  cyan: "#00ffff",
-  magenta: "#ff00ff",
-  maroon: "#800000",
-  olive: "#808000",
-  lime: "#00ff00",
-  aqua: "#00ffff",
-  fuchsia: "#ff00ff",
-  pink: "#ffc0cb",
-  brown: "#a52a2a",
-  gold: "#ffd700",
-  indigo: "#4b0082",
-  violet: "#ee82ee",
-  currentcolor: "#000000",
+  transparent: '#00000000',
+  white: '#ffffff',
+  black: '#000000',
+  red: '#ff0000',
+  green: '#008000',
+  blue: '#0000ff',
+  gray: '#808080',
+  grey: '#808080',
+  silver: '#c0c0c0',
+  yellow: '#ffff00',
+  orange: '#ffa500',
+  purple: '#800080',
+  navy: '#000080',
+  teal: '#008080',
+  cyan: '#00ffff',
+  magenta: '#ff00ff',
+  maroon: '#800000',
+  olive: '#808000',
+  lime: '#00ff00',
+  aqua: '#00ffff',
+  fuchsia: '#ff00ff',
+  pink: '#ffc0cb',
+  brown: '#a52a2a',
+  gold: '#ffd700',
+  indigo: '#4b0082',
+  violet: '#ee82ee',
+  currentcolor: '#000000',
 }
 
 // Normalize a CSS color string to #rrggbb. Handles rgb(), rgba(), hsl(),
@@ -71,7 +71,7 @@ const NAMED_COLORS: Record<string, string> = {
 // input unchanged if it cannot be parsed (caller decides what to do with
 // non-color values).
 function rgbToHex(input: string): string {
-  const value = (input || "").trim()
+  const value = (input || '').trim()
   if (!value) return value
 
   // CSS named color keyword (white/black/transparent/...) -> #rrggbb.
@@ -83,7 +83,10 @@ function rgbToHex(input: string): string {
   if (hexMatch) {
     const h = hexMatch[1]
     if (h.length === 3) {
-      return `#${h.split("").map((c) => c + c).join("")}`.toLowerCase()
+      return `#${h
+        .split('')
+        .map((c) => c + c)
+        .join('')}`.toLowerCase()
     }
     return `#${h}`.toLowerCase()
   }
@@ -122,11 +125,11 @@ function rgbToHex(input: string): string {
 function extractColor(
   styles: Record<string, string>,
   properties: string[],
-  fallback = "#000000",
+  fallback = '#000000',
 ): string {
   for (const prop of properties) {
-    const value = styles[prop]?.trim() || ""
-    if (value && value !== "rgba(0, 0, 0, 0)" && value !== "transparent") {
+    const value = styles[prop]?.trim() || ''
+    if (value && value !== 'rgba(0, 0, 0, 0)' && value !== 'transparent') {
       return rgbToHex(value)
     }
   }
@@ -135,7 +138,7 @@ function extractColor(
 
 // Parse #rrggbb to channels; returns null for non-hex.
 function hexChannels(hex: string): [number, number, number] | null {
-  const m = (hex || "").match(/^#([0-9a-f]{6})$/i)
+  const m = (hex || '').match(/^#([0-9a-f]{6})$/i)
   if (!m) return null
   return [
     parseInt(m[1].slice(0, 2), 16),
@@ -176,33 +179,42 @@ function distinct(a: string, b: string, min = 24): boolean {
   const ca = hexChannels(a)
   const cb = hexChannels(b)
   if (!ca || !cb) return a.toLowerCase() !== b.toLowerCase()
-  return Math.abs(ca[0] - cb[0]) + Math.abs(ca[1] - cb[1]) + Math.abs(ca[2] - cb[2]) >= min
+  return (
+    Math.abs(ca[0] - cb[0]) +
+      Math.abs(ca[1] - cb[1]) +
+      Math.abs(ca[2] - cb[2]) >=
+    min
+  )
 }
 
 // Generic CSS font keywords carry no brand identity; a real per-site typeface is a
 // *named* family. Reject the keywords so font extraction prefers a concrete face.
 const GENERIC_FONT_KEYWORDS = new Set([
-  "sans-serif",
-  "serif",
-  "monospace",
-  "cursive",
-  "fantasy",
-  "system-ui",
-  "ui-sans-serif",
-  "ui-serif",
-  "ui-monospace",
-  "ui-rounded",
-  "inherit",
-  "initial",
-  "unset",
+  'sans-serif',
+  'serif',
+  'monospace',
+  'cursive',
+  'fantasy',
+  'system-ui',
+  'ui-sans-serif',
+  'ui-serif',
+  'ui-monospace',
+  'ui-rounded',
+  'inherit',
+  'initial',
+  'unset',
 ])
 
 // First family token of a font stack, unquoted/lowercased. "" if generic/empty so
 // callers can tell "no concrete face" from a real typeface name.
 function firstConcreteFamily(stack: string): string {
-  const first = (stack || "").split(",")[0]?.trim().replace(/^["']|["']$/g, "") || ""
-  if (!first) return ""
-  if (GENERIC_FONT_KEYWORDS.has(first.toLowerCase())) return ""
+  const first =
+    (stack || '')
+      .split(',')[0]
+      ?.trim()
+      .replace(/^["']|["']$/g, '') || ''
+  if (!first) return ''
+  if (GENERIC_FONT_KEYWORDS.has(first.toLowerCase())) return ''
   return first
 }
 
@@ -211,7 +223,7 @@ function firstConcreteFamily(stack: string): string {
 // bands instead of defaulting every heading to one hardcoded serif. Structural —
 // keyed on the stack's generic fallback + common serif name tokens, never a site.
 export function looksSerif(stack: string): boolean {
-  const s = (stack || "").toLowerCase()
+  const s = (stack || '').toLowerCase()
   if (/\b(sans-serif|monospace|system-ui|ui-sans-serif)\b/.test(s)) return false
   if (/\bserif\b/.test(s)) return true
   return /\b(georgia|times|garamond|playfair|merriweather|lora|cormorant|libre|baskerville|spectral|noto serif|pt serif|source serif|dm serif|crimson|cardo|bitter|frank|tinos|domine|zilla|newsreader|fraunces|recoleta)\b/.test(
@@ -231,11 +243,11 @@ function dominantValue(
 ): string {
   const counts = new Map<string, number>()
   for (const [, style] of styles.entries()) {
-    const norm = accept((style[prop] ?? "").trim())
+    const norm = accept((style[prop] ?? '').trim())
     if (!norm) continue
     counts.set(norm, (counts.get(norm) ?? 0) + 1)
   }
-  let best = ""
+  let best = ''
   let bestN = 0
   for (const [val, n] of counts.entries()) {
     if (n > bestN) {
@@ -253,42 +265,50 @@ export function extractTokens(captured: CapturedPage): ExtractedTokens {
   // Get body styles as baseline. The root <html> element also carries the page's
   // canvas color; UAs paint the viewport with html's (then body's) background, so
   // consult it when body's own background is transparent/unset.
-  const bodyStyles = styles.get("body") || {}
-  const htmlStyles = styles.get("html") || styles.get(":root") || {}
+  const bodyStyles = styles.get('body') || {}
+  const htmlStyles = styles.get('html') || styles.get(':root') || {}
 
   // Extract colors. A transparent/unset page surface must NOT collapse to pure
   // black — UAs render an unstyled document on white, and most doc/minimal pages
   // are a light neutral. Default the canvas to a light surface and fall back to
   // html's background before giving up, so cloned pages match the original light
   // ground instead of a dark/black canvas.
-  let background = extractColor(bodyStyles, ["background-color", "backgroundColor"], "")
+  let background = extractColor(
+    bodyStyles,
+    ['background-color', 'backgroundColor'],
+    '',
+  )
   if (!/^#[0-9a-f]{6}$/i.test(background)) {
-    background = extractColor(htmlStyles, ["background-color", "backgroundColor"], "#ffffff")
+    background = extractColor(
+      htmlStyles,
+      ['background-color', 'backgroundColor'],
+      '#ffffff',
+    )
   }
-  let foreground = extractColor(bodyStyles, ["color"], "")
+  let foreground = extractColor(bodyStyles, ['color'], '')
   if (!/^#[0-9a-f]{6}$/i.test(foreground)) {
-    foreground = extractColor(htmlStyles, ["color"], "#0f172a")
+    foreground = extractColor(htmlStyles, ['color'], '#0f172a')
   }
 
   // Guard: if the page reports the same value for bg and fg (common when a scrape
   // misses an inherited color), force a contrasting foreground so text is legible
   // instead of invisible.
   if (!distinct(background, foreground, 48)) {
-    foreground = luminance(background) > 0.5 ? "#0f172a" : "#f8fafc"
+    foreground = luminance(background) > 0.5 ? '#0f172a' : '#f8fafc'
   }
 
   // Try to find primary/accent colors from buttons or links.
   // Collect *chromatic* brand colors — the page background is usually a neutral
   // (near-gray), so a real accent has visible chroma and differs from the bg.
-  let primary = "#3b82f6" // Default blue
-  let accent = "#8b5cf6" // Default purple
-  const secondary = "#64748b" // Slate — stays neutral; used as a tonal surface
+  let primary = '#3b82f6' // Default blue
+  let accent = '#8b5cf6' // Default purple
+  const secondary = '#64748b' // Slate — stays neutral; used as a tonal surface
 
   const brandCandidates: string[] = []
   for (const [_, style] of styles.entries()) {
-    for (const prop of ["background-color", "color", "border-color"]) {
-      const raw = style[prop]?.trim() || ""
-      if (!raw || raw === "rgba(0, 0, 0, 0)" || raw === "transparent") continue
+    for (const prop of ['background-color', 'color', 'border-color']) {
+      const raw = style[prop]?.trim() || ''
+      if (!raw || raw === 'rgba(0, 0, 0, 0)' || raw === 'transparent') continue
       const hex = rgbToHex(raw)
       if (!/^#[0-9a-f]{6}$/i.test(hex)) continue
       // A brand color is chromatic and clearly distinct from the page background.
@@ -299,7 +319,9 @@ export function extractTokens(captured: CapturedPage): ExtractedTokens {
   }
   if (brandCandidates.length) {
     // Most saturated candidate -> primary; the next most-distinct -> accent.
-    const byChroma = [...new Set(brandCandidates)].sort((a, b) => chroma(b) - chroma(a))
+    const byChroma = [...new Set(brandCandidates)].sort(
+      (a, b) => chroma(b) - chroma(a),
+    )
     primary = byChroma[0]
     const alt = byChroma.find((h) => distinct(h, primary, 80))
     if (alt) accent = alt
@@ -311,12 +333,12 @@ export function extractTokens(captured: CapturedPage): ExtractedTokens {
   // dominant concrete family across captured elements so the cloned typography
   // matches the original instead of collapsing to a system default. This is what
   // makes theme typography confirmable on the content bands, not just the heading.
-  let fontFamily = bodyStyles["font-family"]?.trim() || ""
+  let fontFamily = bodyStyles['font-family']?.trim() || ''
   if (!firstConcreteFamily(fontFamily)) {
-    const dominantFont = dominantValue(styles, "font-family", (v) =>
+    const dominantFont = dominantValue(styles, 'font-family', (v) =>
       firstConcreteFamily(v) ? v : null,
     )
-    fontFamily = dominantFont || fontFamily || "sans-serif"
+    fontFamily = dominantFont || fontFamily || 'sans-serif'
   }
 
   // Border radius is a content-component signal (cards/buttons/inputs), not a body
@@ -333,8 +355,11 @@ export function extractTokens(captured: CapturedPage): ExtractedTokens {
     if (!/^[\d.]+(px|rem|em|%)$/.test(first)) return null
     return first
   }
-  const bodyRadius = acceptRadius(bodyStyles["border-radius"]?.trim() || "")
-  const radius = bodyRadius || dominantValue(styles, "border-radius", acceptRadius) || "0.5rem"
+  const bodyRadius = acceptRadius(bodyStyles['border-radius']?.trim() || '')
+  const radius =
+    bodyRadius ||
+    dominantValue(styles, 'border-radius', acceptRadius) ||
+    '0.5rem'
 
   // Spacing comes from the dominant gap among flex/grid containers; body rarely
   // sets gap, so survey captured layout elements before falling back.
@@ -345,8 +370,8 @@ export function extractTokens(captured: CapturedPage): ExtractedTokens {
     if (!/^[\d.]+(px|rem|em)$/.test(first)) return null
     return first
   }
-  const bodyGap = acceptGap(bodyStyles["gap"]?.trim() || "")
-  const spacing = bodyGap || dominantValue(styles, "gap", acceptGap) || "1rem"
+  const bodyGap = acceptGap(bodyStyles['gap']?.trim() || '')
+  const spacing = bodyGap || dominantValue(styles, 'gap', acceptGap) || '1rem'
 
   // Muted is consumed downstream as a *tonal surface* (the background of alternate
   // sections), so it must be a low-contrast shift of the page background toward the
@@ -357,8 +382,9 @@ export function extractTokens(captured: CapturedPage): ExtractedTokens {
 
   // Extract border color; fall back to a faint surface derived from the palette so
   // section edges remain visible on both light and dark backgrounds.
-  const rawBorder = bodyStyles["border-color"]?.trim() || ""
-  let border = rawBorder && rawBorder !== "transparent" ? rgbToHex(rawBorder) : ""
+  const rawBorder = bodyStyles['border-color']?.trim() || ''
+  let border =
+    rawBorder && rawBorder !== 'transparent' ? rgbToHex(rawBorder) : ''
   if (!/^#[0-9a-f]{6}$/i.test(border) || !distinct(border, background, 16)) {
     border = mix(background, foreground, 0.16)
   }
@@ -378,18 +404,20 @@ export function extractTokens(captured: CapturedPage): ExtractedTokens {
 }
 
 // Map extracted tokens to theme variable keys
-export function tokensToThemeVars(tokens: ExtractedTokens): Partial<Record<string, string>> {
+export function tokensToThemeVars(
+  tokens: ExtractedTokens,
+): Partial<Record<string, string>> {
   return {
-    "--background": tokens.background,
-    "--foreground": tokens.foreground,
-    "--primary": tokens.primary,
-    "--secondary": tokens.secondary,
-    "--muted": tokens.muted,
-    "--accent": tokens.accent,
-    "--border": tokens.border,
-    "--radius": tokens.radius,
-    "--font-sans": tokens.fontFamily,
-    "--spacing": tokens.spacing,
+    '--background': tokens.background,
+    '--foreground': tokens.foreground,
+    '--primary': tokens.primary,
+    '--secondary': tokens.secondary,
+    '--muted': tokens.muted,
+    '--accent': tokens.accent,
+    '--border': tokens.border,
+    '--radius': tokens.radius,
+    '--font-sans': tokens.fontFamily,
+    '--spacing': tokens.spacing,
   }
 }
 
@@ -397,14 +425,14 @@ export function tokensToThemeVars(tokens: ExtractedTokens): Partial<Record<strin
 // tokens (e.g. a scrape that surfaced "transparent" or a font name in a color slot)
 // so a derived theme never ships a broken CSS var.
 function safeHex(value: string | undefined, fallback: string): string {
-  const v = (value || "").trim()
+  const v = (value || '').trim()
   return /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : fallback
 }
 
 // Readable text color to lay on top of `bg`: near-black on light surfaces,
 // near-white on dark ones. Uses the same luminance model as the rest of the file.
 function readableOn(bg: string): string {
-  return luminance(bg) > 0.5 ? "#0a0a0a" : "#fafafa"
+  return luminance(bg) > 0.5 ? '#0a0a0a' : '#fafafa'
 }
 
 // Build full light + dark theme maps from extracted tokens so a cloned site's
@@ -413,19 +441,20 @@ function readableOn(bg: string): string {
 // ship-fast-blocks/theme-apply.ts) — exactly what a preset's styles.light/.dark
 // must contain. Generic engine rule: derived structurally from tokens, never
 // hardcoded per site.
-export function tokensToThemePreset(
-  tokens: ExtractedTokens,
-): { light: Record<string, string>; dark: Record<string, string> } {
+export function tokensToThemePreset(tokens: ExtractedTokens): {
+  light: Record<string, string>
+  dark: Record<string, string>
+} {
   // Defensive defaults — an empty/invalid token must never collapse the theme.
-  const background = safeHex(tokens.background, "#ffffff")
-  const foreground = safeHex(tokens.foreground, "#0a0a0a")
-  const primary = safeHex(tokens.primary, "#3b82f6")
+  const background = safeHex(tokens.background, '#ffffff')
+  const foreground = safeHex(tokens.foreground, '#0a0a0a')
+  const primary = safeHex(tokens.primary, '#3b82f6')
   const accent = safeHex(tokens.accent, primary)
   const secondary = safeHex(tokens.secondary, mix(background, foreground, 0.06))
   const muted = safeHex(tokens.muted, mix(background, foreground, 0.08))
   const border = safeHex(tokens.border, mix(background, foreground, 0.16))
-  const radius = (tokens.radius || "").trim() || "0.5rem"
-  const fontSans = (tokens.fontFamily || "").trim() || "sans-serif"
+  const radius = (tokens.radius || '').trim() || '0.5rem'
+  const fontSans = (tokens.fontFamily || '').trim() || 'sans-serif'
 
   // Foreground sitting on top of muted surfaces: a mid blend reads as a softened
   // body/secondary text color on either light or dark surfaces.
@@ -438,22 +467,22 @@ export function tokensToThemePreset(
     background,
     foreground,
     card: background,
-    "card-foreground": foreground,
+    'card-foreground': foreground,
     popover: background,
-    "popover-foreground": foreground,
+    'popover-foreground': foreground,
     primary,
-    "primary-foreground": primaryForeground,
+    'primary-foreground': primaryForeground,
     secondary,
-    "secondary-foreground": secondaryForeground,
+    'secondary-foreground': secondaryForeground,
     muted,
-    "muted-foreground": mutedForeground,
+    'muted-foreground': mutedForeground,
     accent,
-    "accent-foreground": accentForeground,
+    'accent-foreground': accentForeground,
     border,
     input: border,
     ring: primary,
     radius,
-    "font-sans": fontSans,
+    'font-sans': fontSans,
   }
 
   // Dark variant: swap the canvas to a dark ground with a light foreground while
@@ -462,33 +491,33 @@ export function tokensToThemePreset(
   // is internally consistent rather than a flat fill. If the source is already
   // dark we keep its colors and only ensure a contrasting foreground.
   const sourceIsDark = luminance(background) <= 0.5
-  const darkBg = sourceIsDark ? background : "#0a0a0a"
-  const darkFg = sourceIsDark ? foreground : "#fafafa"
-  const darkCard = mix(darkBg, "#ffffff", 0.06)
-  const darkMuted = mix(darkBg, "#ffffff", 0.1)
-  const darkBorder = mix(darkBg, "#ffffff", 0.16)
-  const darkSecondary = mix(darkBg, "#ffffff", 0.12)
+  const darkBg = sourceIsDark ? background : '#0a0a0a'
+  const darkFg = sourceIsDark ? foreground : '#fafafa'
+  const darkCard = mix(darkBg, '#ffffff', 0.06)
+  const darkMuted = mix(darkBg, '#ffffff', 0.1)
+  const darkBorder = mix(darkBg, '#ffffff', 0.16)
+  const darkSecondary = mix(darkBg, '#ffffff', 0.12)
 
   const dark: Record<string, string> = {
     background: darkBg,
     foreground: darkFg,
     card: darkCard,
-    "card-foreground": darkFg,
+    'card-foreground': darkFg,
     popover: darkCard,
-    "popover-foreground": darkFg,
+    'popover-foreground': darkFg,
     primary,
-    "primary-foreground": primaryForeground,
+    'primary-foreground': primaryForeground,
     secondary: darkSecondary,
-    "secondary-foreground": darkFg,
+    'secondary-foreground': darkFg,
     muted: darkMuted,
-    "muted-foreground": mix(darkFg, darkBg, 0.4),
+    'muted-foreground': mix(darkFg, darkBg, 0.4),
     accent,
-    "accent-foreground": accentForeground,
+    'accent-foreground': accentForeground,
     border: darkBorder,
     input: darkBorder,
     ring: primary,
     radius,
-    "font-sans": fontSans,
+    'font-sans': fontSans,
   }
 
   return { light, dark }

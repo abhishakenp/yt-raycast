@@ -28,7 +28,13 @@ export type SectionRenderer = ComponentType<SectionRenderProps>
  * Reserved keys that the lakebed seed pipeline stamps onto rows. They are not
  * section props and must never be merged back into the component props.
  */
-const RESERVED_DATA_KEYS = new Set(['_id', '_key', 'id', 'createdAt', 'updatedAt'])
+const RESERVED_DATA_KEYS = new Set([
+  '_id',
+  '_key',
+  'id',
+  'createdAt',
+  'updatedAt',
+])
 
 const isPlainRecord = (value: unknown): value is JsonRecord =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value)

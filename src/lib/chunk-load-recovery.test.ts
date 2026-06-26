@@ -13,7 +13,9 @@ describe('chunk load recovery', () => {
         ),
       ),
     ).toBe(true)
-    expect(isDynamicImportLoadError(new Error('ArgumentValidationError'))).toBe(false)
+    expect(isDynamicImportLoadError(new Error('ArgumentValidationError'))).toBe(
+      false,
+    )
   })
 
   it('reloads once per url for dynamic import failures', () => {

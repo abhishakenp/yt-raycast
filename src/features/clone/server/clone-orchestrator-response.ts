@@ -37,14 +37,24 @@ interface CloneEngine {
 // Dynamic import keeps the engine (playwright, provider SDKs) out of the route's
 // static module graph.
 const loadCloneEngine = async (): Promise<CloneEngine> => {
-  const [{ assertPublicUrl }, { crawlSite, normalizeUrl }, { capturePage }, { selfContainPage }] =
-    await Promise.all([
-      import('@ship-fast/engine/clone/security.ts'),
-      import('@ship-fast/engine/clone/crawler.ts'),
-      import('@ship-fast/engine/clone/capture.ts'),
-      import('@ship-fast/engine/clone/verbatim.ts'),
-    ])
-  return { assertPublicUrl, crawlSite, normalizeUrl, capturePage, selfContainPage }
+  const [
+    { assertPublicUrl },
+    { crawlSite, normalizeUrl },
+    { capturePage },
+    { selfContainPage },
+  ] = await Promise.all([
+    import('@ship-fast/engine/clone/security.ts'),
+    import('@ship-fast/engine/clone/crawler.ts'),
+    import('@ship-fast/engine/clone/capture.ts'),
+    import('@ship-fast/engine/clone/verbatim.ts'),
+  ])
+  return {
+    assertPublicUrl,
+    crawlSite,
+    normalizeUrl,
+    capturePage,
+    selfContainPage,
+  }
 }
 
 const loadPlaywright = async () => {
@@ -82,7 +92,9 @@ export async function runCloneJob(input: {
   // SSRF / scheme guard — throws on private/loopback/blocked hosts. Caller handles.
   await engine.assertPublicUrl(seedUrl)
 
-  const client: CloneConvexClient = createRuntimeConvexHttpClient(CONVEX_HTTP_TIMEOUT_MS)
+  const client: CloneConvexClient = createRuntimeConvexHttpClient(
+    CONVEX_HTTP_TIMEOUT_MS,
+  )
   if (bearer) client.setAuth?.(bearer)
 
   const sid = sessionId as Id<'sessions'>
@@ -174,9 +186,13 @@ export async function runCloneJob(input: {
     //    preview paints the moment home lands, before the rest stream in.
     const homeKey = orderedKeys[0]
     try {
-      const captured = await engine.capturePage(browser, urlFor(homeKey, true), {
-        signal: controller.signal,
-      })
+      const captured = await engine.capturePage(
+        browser,
+        urlFor(homeKey, true),
+        {
+          signal: controller.signal,
+        },
+      )
       if (captured) {
         const contained = await engine.selfContainPage(captured, {
           finalUrl: captured.url,
@@ -245,9 +261,13 @@ export async function runCloneJob(input: {
         const key = restKeys[i]
         const order = i + 1 // home was order 0
         try {
-          const captured = await engine.capturePage(browser, urlFor(key, false), {
-            signal: controller.signal,
-          })
+          const captured = await engine.capturePage(
+            browser,
+            urlFor(key, false),
+            {
+              signal: controller.signal,
+            },
+          )
           if (captured) {
             const contained = await engine.selfContainPage(captured, {
               finalUrl: captured.url,

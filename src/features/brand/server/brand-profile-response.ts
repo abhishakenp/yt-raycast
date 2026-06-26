@@ -69,7 +69,8 @@ export const createBrandProfileResponse = async (
   }
 
   try {
-    const resolveBrandProfile = resolver ?? (await loadDefaultBrandProfileResolver())
+    const resolveBrandProfile =
+      resolver ?? (await loadDefaultBrandProfileResolver())
     const result = await resolveBrandProfile({ query, timeoutMs: 5500 })
     if (result.ok !== true) {
       return json(
@@ -103,7 +104,9 @@ export const createBrandProfileResponse = async (
       {
         ok: false,
         error:
-          error instanceof Error ? error.message : 'Brand profile lookup failed.',
+          error instanceof Error
+            ? error.message
+            : 'Brand profile lookup failed.',
       },
       { status: 502 },
     )

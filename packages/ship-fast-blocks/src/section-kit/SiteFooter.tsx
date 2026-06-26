@@ -1,6 +1,6 @@
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import type { ReactNode } from "react"
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import type { ReactNode } from 'react'
 
 /**
  * SiteFooter — generic, prop-driven multi-column site footer. Renders a brand
@@ -23,25 +23,34 @@ export function SiteFooter(props: {
   const year = new Date().getFullYear()
 
   return (
-    <footer className={cn("border-t border-border bg-muted/30", props.className)}>
+    <footer
+      className={cn('border-t border-border bg-muted/30', props.className)}
+    >
       <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-1">
             <div className="flex items-center gap-2">
               {props.brandMark}
-              <span className={cn("text-lg font-semibold text-foreground", props.brandClassName)}>
+              <span
+                className={cn(
+                  'text-lg font-semibold text-foreground',
+                  props.brandClassName,
+                )}
+              >
                 {props.brand}
               </span>
             </div>
             {props.tagline ? (
-              <p className="mt-3 text-sm text-muted-foreground">{props.tagline}</p>
+              <p className="mt-3 text-sm text-muted-foreground">
+                {props.tagline}
+              </p>
             ) : null}
             {props.social ? (
               <div className="mt-4 flex flex-wrap gap-3">
                 {props.social.map((s, i) => (
                   <a
                     key={`${s.label}-${i}`}
-                    href={s.href ?? "#"}
+                    href={s.href ?? '#'}
                     className="text-sm text-muted-foreground hover:text-foreground"
                   >
                     {s.label}
@@ -53,7 +62,9 @@ export function SiteFooter(props: {
 
           {props.columns?.map((col, i) => (
             <div key={`${col.title}-${i}`}>
-              <h3 className="text-sm font-semibold text-foreground">{col.title}</h3>
+              <h3 className="text-sm font-semibold text-foreground">
+                {col.title}
+              </h3>
               <ul className="mt-3 space-y-2">
                 {col.links.map((link, j) => (
                   <li key={`${link}-${j}`}>
@@ -73,7 +84,7 @@ export function SiteFooter(props: {
         <div className="mt-12 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
             © {year} {props.brand}
-            {props.note ? ` · ${props.note}` : ""}
+            {props.note ? ` · ${props.note}` : ''}
           </p>
           {props.legal ? (
             <div className="flex flex-wrap gap-4">

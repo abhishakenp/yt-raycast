@@ -402,11 +402,11 @@ endpoint({ method: "POST", path: "/api/webhooks/incoming" }, async (ctx, req) =>
     })
     const files = unzipBuiltExportTextFiles(result.body)
 
-    // AboutHero emits a ReactNode type import (double-quoted by the section
-    // emitter) consumed by an extracted helper (e.g. the `Eyebrow` subcomponent
-    // typing `icon: ReactNode`). This is the type-import-preservation contract.
-    expect(files['src/components/AboutHero.tsx']).toContain(
-      'import type { ReactNode } from "react"',
+    // AboutHero emits a ReactNode type import consumed by an extracted helper
+    // (e.g. the `Eyebrow` subcomponent typing `icon: ReactNode`). This is the
+    // type-import-preservation contract; quote style belongs to the formatter.
+    expect(files['src/components/AboutHero.tsx']).toMatch(
+      /import type \{ ReactNode \} from ['"]react['"]/,
     )
     expect(files['src/components/AboutHero.tsx']).toContain('icon: ReactNode')
     expect(files['src/components/AboutHero.tsx']).toContain(

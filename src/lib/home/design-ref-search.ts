@@ -46,10 +46,15 @@ const SITE_SEARCH_DB: SiteEntry[] = [
 
 export type DesignRefResolution = { url: string; title: string }
 
-export const resolveDesignRefSearch = (raw: string): DesignRefResolution | null => {
+export const resolveDesignRefSearch = (
+  raw: string,
+): DesignRefResolution | null => {
   const trimmed = raw.trim().toLowerCase()
   if (!trimmed) return null
-  if (/^https?:\/\//i.test(trimmed) || /^[a-z0-9][-a-z0-9]*\.[a-z]{2,}/i.test(trimmed)) {
+  if (
+    /^https?:\/\//i.test(trimmed) ||
+    /^[a-z0-9][-a-z0-9]*\.[a-z]{2,}/i.test(trimmed)
+  ) {
     const url = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
     const hostname = (() => {
       try {

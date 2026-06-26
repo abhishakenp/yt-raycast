@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { generateIdempotencyKey, validateIdempotencyKey } from './razorpay-idempotency'
+import {
+  generateIdempotencyKey,
+  validateIdempotencyKey,
+} from './razorpay-idempotency'
 
 describe('razorpay-idempotency', () => {
   describe('generateIdempotencyKey', () => {

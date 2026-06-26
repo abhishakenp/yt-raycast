@@ -8,11 +8,18 @@ export const PrivateGenerationModal = ({
   onClose: () => void
 }) => (
   <div
-    className={cn('fixed inset-0 z-[260] hidden items-center justify-center px-4', isOpen && 'flex')}
+    className={cn(
+      'fixed inset-0 z-[260] hidden items-center justify-center px-4',
+      isOpen && 'flex',
+    )}
     id="private-gen-modal"
     aria-hidden={!isOpen}
   >
-    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" id="private-gen-modal-backdrop" onClick={onClose} />
+    <div
+      className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+      id="private-gen-modal-backdrop"
+      onClick={onClose}
+    />
     <div
       className="relative z-[1] grid w-[min(420px,100%)] gap-4 rounded-[28px] border border-white/12 bg-[#10131c]/95 p-6 text-center text-white shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-[24px]"
       role="dialog"
@@ -43,12 +50,22 @@ export const PrivateGenerationModal = ({
           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
       </div>
-      <h2 className="m-0 font-sans text-2xl font-bold tracking-[-0.03em]" id="private-gen-modal-title">Private Generation</h2>
-      <p className="m-0 text-sm leading-relaxed text-white/65">Your generated site won't be publicly listed - only you can access it.</p>
+      <h2
+        className="m-0 font-sans text-2xl font-bold tracking-[-0.03em]"
+        id="private-gen-modal-title"
+      >
+        Private Generation
+      </h2>
+      <p className="m-0 text-sm leading-relaxed text-white/65">
+        Your generated site won't be publicly listed - only you can access it.
+      </p>
       <p className="m-0 text-sm leading-relaxed text-white/65">
         This is a <strong>Pro plan</strong> feature.
       </p>
-      <a href="/pricing" className="mx-auto inline-flex min-h-11 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px">
+      <a
+        href="/pricing"
+        className="mx-auto inline-flex min-h-11 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
+      >
         Upgrade to Pro
       </a>
     </div>

@@ -3,14 +3,17 @@ import { describe, expect, it, vi } from 'vitest'
 import { createLakebedPublishResponse } from './lakebed-publish-response'
 
 const requestFor = (body: unknown = {}) =>
-  new Request('https://ship-fast.test/api/sessions/session_123/deploy/lakebed', {
-    body: JSON.stringify(body),
-    headers: {
-      authorization: 'Bearer app-token',
-      'content-type': 'application/json',
+  new Request(
+    'https://ship-fast.test/api/sessions/session_123/deploy/lakebed',
+    {
+      body: JSON.stringify(body),
+      headers: {
+        authorization: 'Bearer app-token',
+        'content-type': 'application/json',
+      },
+      method: 'POST',
     },
-    method: 'POST',
-  })
+  )
 
 describe('createLakebedPublishResponse', () => {
   it('returns an existing ready Lakebed deployment without redeploying', async () => {
@@ -70,13 +73,10 @@ describe('createLakebedPublishResponse', () => {
 
   it('deploys by lookup once the Lakebed artifact file map is ready', async () => {
     const client = {
-      query: vi
-        .fn()
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce({
-          status: 'ready',
-          filesUrl: 'https://storage.test/lakebed-files.json',
-        }),
+      query: vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce({
+        status: 'ready',
+        filesUrl: 'https://storage.test/lakebed-files.json',
+      }),
       action: vi.fn(async () => ({
         provider: 'lakebed',
         status: 'ready',

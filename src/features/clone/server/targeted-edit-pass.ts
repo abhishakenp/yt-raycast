@@ -46,7 +46,7 @@ const loadGenerateTextRuntime = async (): Promise<GenerateTextRuntime> => {
 }
 
 const SYSTEM_PROMPT =
-  'You adapt a cloned website to the user\'s brief by emitting TARGETED text ' +
+  "You adapt a cloned website to the user's brief by emitting TARGETED text " +
   'replacements. Output ONLY a JSON array of {"before":"<exact substring ' +
   'currently on the page>","after":"<replacement>"}. Only change brand names, ' +
   'headings, taglines, hero/CTA copy. `before` MUST be an exact, reasonably-' +
@@ -95,7 +95,9 @@ function extractCandidates(homeHtml: string): string[] {
 
     // Brand-ish strings: text inside header/nav landmarks, logo alts.
     for (const el of Array.from(
-      document.querySelectorAll('header a, nav a, [class*="logo" i], [class*="brand" i]'),
+      document.querySelectorAll(
+        'header a, nav a, [class*="logo" i], [class*="brand" i]',
+      ),
     )) {
       push(el.textContent)
     }

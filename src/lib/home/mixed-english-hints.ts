@@ -32,7 +32,9 @@ export const preferMixedEnglishBcp47FromSnippet = (snippet: string) => {
   if (/\b(benglish|banglish)\b/.test(pl)) return 'bn-en'
   if (/\bgunglish\b/.test(pl)) return 'gu-en'
   if (/\bpunglish\b/.test(pl)) return 'pa-en'
-  for (const [pureCode, words] of Object.entries(MIXED_ENGLISH_SLANG_KEYWORDS)) {
+  for (const [pureCode, words] of Object.entries(
+    MIXED_ENGLISH_SLANG_KEYWORDS,
+  )) {
     for (const w of words) {
       if (pl.includes(w.toLowerCase())) return `${pureCode}-en`
     }

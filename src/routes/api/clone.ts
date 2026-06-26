@@ -19,7 +19,9 @@ const json = (body: unknown, init?: ResponseInit) =>
     headers: { 'Content-Type': 'application/json', ...init?.headers },
   })
 
-const readJsonBody = async (request: Request): Promise<Record<string, unknown>> => {
+const readJsonBody = async (
+  request: Request,
+): Promise<Record<string, unknown>> => {
   const text = await request.text()
   if (!text.trim()) return {}
   try {
@@ -30,7 +32,10 @@ const readJsonBody = async (request: Request): Promise<Record<string, unknown>> 
   }
 }
 
-const getString = (body: Record<string, unknown>, key: string): string | undefined => {
+const getString = (
+  body: Record<string, unknown>,
+  key: string,
+): string | undefined => {
   const value = body[key]
   return typeof value === 'string' ? value : undefined
 }
@@ -87,7 +92,8 @@ const handlePost = async (request: Request): Promise<Response> => {
   const sessionId = getString(body, 'sessionId')
   const seedUrl = getString(body, 'seedUrl')
   const anonymousOwnerSecret =
-    getString(body, 'anonymousOwnerSecret') ?? getString(body, 'anonOwnerSecret')
+    getString(body, 'anonymousOwnerSecret') ??
+    getString(body, 'anonOwnerSecret')
   const brief = getString(body, 'brief') ?? ''
   const bearer = getBearerToken(request)
 
@@ -95,21 +101,28 @@ const handlePost = async (request: Request): Promise<Response> => {
     return json({ error: 'sessionId is required.' }, { status: 400 })
   }
   if (!seedUrl || !isHttpUrl(seedUrl)) {
-    return json({ error: 'seedUrl must be a valid http(s) URL.' }, { status: 400 })
+    return json(
+      { error: 'seedUrl must be a valid http(s) URL.' },
+      { status: 400 },
+    )
   }
 
   // Fire-and-forget — like queueGalleryThumbCapture. Do NOT await; the client
   // streams results via the Convex subscription. Catch + log errors, and on a
   // hard failure (e.g. Chromium launch) write a failed state to the session.
-  void runCloneJob({ sessionId, anonymousOwnerSecret, bearer, seedUrl, brief }).catch(
-    async (err) => {
-      console.error(
-        `[clone] clone job failed for session ${sessionId}:`,
-        (err as Error)?.message ?? err,
-      )
-      await writeFailedState(sessionId, anonymousOwnerSecret, bearer)
-    },
-  )
+  void runCloneJob({
+    sessionId,
+    anonymousOwnerSecret,
+    bearer,
+    seedUrl,
+    brief,
+  }).catch(async (err) => {
+    console.error(
+      `[clone] clone job failed for session ${sessionId}:`,
+      (err as Error)?.message ?? err,
+    )
+    await writeFailedState(sessionId, anonymousOwnerSecret, bearer)
+  })
 
   return json({ ok: true }, { status: 202 })
 }

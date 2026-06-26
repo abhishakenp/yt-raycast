@@ -35,9 +35,11 @@ const getElementIndex = (element: HTMLElement) => {
   const parent = element.parentElement
   if (!parent) return 1
 
-  return Array.from(parent.children).filter(
-    (child) => child.tagName === element.tagName,
-  ).indexOf(element) + 1
+  return (
+    Array.from(parent.children)
+      .filter((child) => child.tagName === element.tagName)
+      .indexOf(element) + 1
+  )
 }
 
 const getElementPath = (root: HTMLElement, element: HTMLElement) => {
@@ -99,208 +101,236 @@ const DirectPreview = forwardRef<
     previewToolMode?: PreviewToolMode
     onPreviewSelect?: (selection: PreviewSelection) => void
     editMode?: boolean
-    onTextChange?: (change: { oldText: string; newText: string; element: HTMLElement; occurrenceIndex: number }) => void
-    onImageChange?: (change: { oldSrc: string; newSrc: string; element: HTMLImageElement; alt: string }) => void
+    onTextChange?: (change: {
+      oldText: string
+      newText: string
+      element: HTMLElement
+      occurrenceIndex: number
+    }) => void
+    onImageChange?: (change: {
+      oldSrc: string
+      newSrc: string
+      element: HTMLImageElement
+      alt: string
+    }) => void
     onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
     /** Inline style/align edits to re-apply on render, since openUiSource can't
      *  hold inline styles. Keyed by the element's exact class + occurrence. */
-    styleOverrides?: Array<{ classAnchor: string; occurrenceIndex: number; style: string }>
+    styleOverrides?: Array<{
+      classAnchor: string
+      occurrenceIndex: number
+      style: string
+    }>
     /** Inline text edits to re-apply on render, since openUiSource can't hold
      *  text edits. Keyed by beforeText -> afterText with occurrence. */
-    textOverrides?: Array<{ beforeText: string; afterText: string; occurrenceIndex?: number }>
+    textOverrides?: Array<{
+      beforeText: string
+      afterText: string
+      occurrenceIndex?: number
+    }>
   }
->(({
-  children,
-  themeStyles,
-  isDark,
-  deviceMode = 'desktop',
-  previewToolMode = null,
-  onPreviewSelect,
-  editMode = false,
-  onTextChange,
-  onImageChange,
-  onElementActivate,
-  styleOverrides,
-  textOverrides,
-}, ref) => {
-  const internalRef = useRef<HTMLDivElement | null>(null)
-  const selectedElementRef = useRef<HTMLElement | null>(null)
-  const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(
-    null,
-  )
-
-  const setRootRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (internalRef.current === node) return
-
-      internalRef.current = node
-      setPortalContainer(node)
-
-      if (typeof ref === 'function') {
-        ref(node)
-      } else if (ref) {
-        ref.current = node
-      }
+>(
+  (
+    {
+      children,
+      themeStyles,
+      isDark,
+      deviceMode = 'desktop',
+      previewToolMode = null,
+      onPreviewSelect,
+      editMode = false,
+      onTextChange,
+      onImageChange,
+      onElementActivate,
+      styleOverrides,
+      textOverrides,
     },
-    [ref],
-  )
+    ref,
+  ) => {
+    const internalRef = useRef<HTMLDivElement | null>(null)
+    const selectedElementRef = useRef<HTMLElement | null>(null)
+    const [portalContainer, setPortalContainer] =
+      useState<HTMLDivElement | null>(null)
 
-  useTextEdit(internalRef, editMode, onTextChange || (() => {}), onImageChange, onElementActivate)
+    const setRootRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        if (internalRef.current === node) return
 
-  // Re-apply saved inline style/align edits after every render. The preview
-  // renders from openUiSource (the DSL), which can't store inline styles, so
-  // style edits would otherwise vanish on reload. We re-apply them imperatively,
-  // anchored on the element's exact class + occurrence (matching how they were
-  // captured), and re-run on subtree mutations so React re-renders don't drop them.
-  useEffect(() => {
-    const root = internalRef.current
-    if (!root || !styleOverrides || styleOverrides.length === 0) return
+        internalRef.current = node
+        setPortalContainer(node)
 
-    const apply = () => {
-      for (const override of styleOverrides) {
-        if (!override.classAnchor) continue
-        const matches = Array.from(root.querySelectorAll<HTMLElement>('*')).filter(
-          (el) => el.getAttribute('class') === override.classAnchor,
-        )
-        const el = matches[override.occurrenceIndex] ?? matches[0]
-        if (!el) continue
-        for (const declaration of override.style.split(';')) {
-          const colon = declaration.indexOf(':')
-          if (colon === -1) continue
-          const prop = declaration.slice(0, colon).trim()
-          const value = declaration.slice(colon + 1).trim()
-          if (prop) el.style.setProperty(prop, value)
+        if (typeof ref === 'function') {
+          ref(node)
+        } else if (ref) {
+          ref.current = node
+        }
+      },
+      [ref],
+    )
+
+    useTextEdit(
+      internalRef,
+      editMode,
+      onTextChange || (() => {}),
+      onImageChange,
+      onElementActivate,
+    )
+
+    // Re-apply saved inline style/align edits after every render. The preview
+    // renders from openUiSource (the DSL), which can't store inline styles, so
+    // style edits would otherwise vanish on reload. We re-apply them imperatively,
+    // anchored on the element's exact class + occurrence (matching how they were
+    // captured), and re-run on subtree mutations so React re-renders don't drop them.
+    useEffect(() => {
+      const root = internalRef.current
+      if (!root || !styleOverrides || styleOverrides.length === 0) return
+
+      const apply = () => {
+        for (const override of styleOverrides) {
+          if (!override.classAnchor) continue
+          const matches = Array.from(
+            root.querySelectorAll<HTMLElement>('*'),
+          ).filter((el) => el.getAttribute('class') === override.classAnchor)
+          const el = matches[override.occurrenceIndex] ?? matches[0]
+          if (!el) continue
+          for (const declaration of override.style.split(';')) {
+            const colon = declaration.indexOf(':')
+            if (colon === -1) continue
+            const prop = declaration.slice(0, colon).trim()
+            const value = declaration.slice(colon + 1).trim()
+            if (prop) el.style.setProperty(prop, value)
+          }
         }
       }
-    }
 
-    apply()
-    // childList/subtree only (NOT attributes) — apply() mutates style attributes,
-    // so observing attributes would loop; node replacements from re-render do not.
-    const observer = new MutationObserver(() => apply())
-    observer.observe(root, { childList: true, subtree: true })
-    return () => observer.disconnect()
-  }, [styleOverrides, children])
+      apply()
+      // childList/subtree only (NOT attributes) — apply() mutates style attributes,
+      // so observing attributes would loop; node replacements from re-render do not.
+      const observer = new MutationObserver(() => apply())
+      observer.observe(root, { childList: true, subtree: true })
+      return () => observer.disconnect()
+    }, [styleOverrides, children])
 
-  // Re-apply saved text edits after every render. The preview renders from
-  // openUiSource (the DSL), which can't store text edits, so text edits would
-  // otherwise vanish on reload. We re-apply them imperatively using the same
-  // applyPreviewTextEdit function used server-side, and re-run on subtree mutations.
-  useEffect(() => {
-    const root = internalRef.current
-    if (!root || !textOverrides || textOverrides.length === 0) return
+    // Re-apply saved text edits after every render. The preview renders from
+    // openUiSource (the DSL), which can't store text edits, so text edits would
+    // otherwise vanish on reload. We re-apply them imperatively using the same
+    // applyPreviewTextEdit function used server-side, and re-run on subtree mutations.
+    useEffect(() => {
+      const root = internalRef.current
+      if (!root || !textOverrides || textOverrides.length === 0) return
 
-    const apply = () => {
-      for (const override of textOverrides) {
-        const result = applyPreviewTextEdit(
-          root.innerHTML,
-          override.beforeText,
-          override.afterText,
-          override.occurrenceIndex,
-        )
-        if (result.replaced) {
-          root.innerHTML = result.html
+      const apply = () => {
+        for (const override of textOverrides) {
+          const result = applyPreviewTextEdit(
+            root.innerHTML,
+            override.beforeText,
+            override.afterText,
+            override.occurrenceIndex,
+          )
+          if (result.replaced) {
+            root.innerHTML = result.html
+          }
         }
       }
-    }
 
-    apply()
-    // childList/subtree only (NOT attributes) — apply() mutates innerHTML,
-    // so observing attributes would loop; node replacements from re-render do not.
-    const observer = new MutationObserver(() => apply())
-    observer.observe(root, { childList: true, subtree: true })
-    return () => observer.disconnect()
-  }, [textOverrides, children])
+      apply()
+      // childList/subtree only (NOT attributes) — apply() mutates innerHTML,
+      // so observing attributes would loop; node replacements from re-render do not.
+      const observer = new MutationObserver(() => apply())
+      observer.observe(root, { childList: true, subtree: true })
+      return () => observer.disconnect()
+    }, [textOverrides, children])
 
-  useEffect(() => {
-    const currentRoot = internalRef.current
-    if (!currentRoot) return
+    useEffect(() => {
+      const currentRoot = internalRef.current
+      if (!currentRoot) return
 
-    if (themeStyles) {
-      applyThemeVars(currentRoot, themeStyles, isDark)
-      injectThemeFonts(document, themeStyles)
-    } else {
-      clearThemeVars(currentRoot)
-      currentRoot.classList.toggle('dark', isDark)
-      currentRoot.style.colorScheme = isDark ? 'dark' : 'light'
-    }
-  }, [themeStyles, isDark])
+      if (themeStyles) {
+        applyThemeVars(currentRoot, themeStyles, isDark)
+        injectThemeFonts(document, themeStyles)
+      } else {
+        clearThemeVars(currentRoot)
+        currentRoot.classList.toggle('dark', isDark)
+        currentRoot.style.colorScheme = isDark ? 'dark' : 'light'
+      }
+    }, [themeStyles, isDark])
 
-  useEffect(() => {
-    const currentRoot = internalRef.current
-    if (!currentRoot) return
+    useEffect(() => {
+      const currentRoot = internalRef.current
+      if (!currentRoot) return
 
-    return observeGeneratedMobileNavs(currentRoot, deviceMode)
-  }, [children, deviceMode])
+      return observeGeneratedMobileNavs(currentRoot, deviceMode)
+    }, [children, deviceMode])
 
-  useEffect(() => {
-    const currentRoot = internalRef.current
-    if (!currentRoot) return
+    useEffect(() => {
+      const currentRoot = internalRef.current
+      if (!currentRoot) return
 
-    currentRoot.dataset.previewToolMode = previewToolMode ?? ''
+      currentRoot.dataset.previewToolMode = previewToolMode ?? ''
 
-    const clearSelectedElement = () => {
-      const selectedElement = selectedElementRef.current
-      if (!selectedElement) return
+      const clearSelectedElement = () => {
+        const selectedElement = selectedElementRef.current
+        if (!selectedElement) return
 
-      selectedElement.removeAttribute('data-ship-fast-selected')
-      selectedElement.style.outline = ''
-      selectedElement.style.outlineOffset = ''
-      selectedElement.style.cursor = ''
-      selectedElementRef.current = null
-    }
+        selectedElement.removeAttribute('data-ship-fast-selected')
+        selectedElement.style.outline = ''
+        selectedElement.style.outlineOffset = ''
+        selectedElement.style.cursor = ''
+        selectedElementRef.current = null
+      }
 
-    if (previewToolMode !== 'select') {
-      clearSelectedElement()
-      return
-    }
-
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target
-      if (!(target instanceof HTMLElement) || !currentRoot.contains(target)) {
+      if (previewToolMode !== 'select') {
+        clearSelectedElement()
         return
       }
 
-      event.preventDefault()
-      event.stopPropagation()
-      clearSelectedElement()
-      const selection = createPreviewSelection(currentRoot, target)
+      const handleClick = (event: MouseEvent) => {
+        const target = event.target
+        if (!(target instanceof HTMLElement) || !currentRoot.contains(target)) {
+          return
+        }
 
-      target.setAttribute('data-ship-fast-selected', 'true')
-      target.style.outline = '2px solid rgb(34, 211, 238)'
-      target.style.outlineOffset = '3px'
-      target.style.cursor = 'crosshair'
-      selectedElementRef.current = target
-      onPreviewSelect?.(selection)
+        event.preventDefault()
+        event.stopPropagation()
+        clearSelectedElement()
+        const selection = createPreviewSelection(currentRoot, target)
 
-      currentRoot.dispatchEvent(
-        new CustomEvent('ship-fast-preview-select', {
-          bubbles: true,
-          detail: selection,
-        }),
-      )
-    }
+        target.setAttribute('data-ship-fast-selected', 'true')
+        target.style.outline = '2px solid rgb(34, 211, 238)'
+        target.style.outlineOffset = '3px'
+        target.style.cursor = 'crosshair'
+        selectedElementRef.current = target
+        onPreviewSelect?.(selection)
 
-    currentRoot.addEventListener('click', handleClick, true)
+        currentRoot.dispatchEvent(
+          new CustomEvent('ship-fast-preview-select', {
+            bubbles: true,
+            detail: selection,
+          }),
+        )
+      }
 
-    return () => {
-      currentRoot.removeEventListener('click', handleClick, true)
-      clearSelectedElement()
-    }
-  }, [previewToolMode, children, onPreviewSelect])
+      currentRoot.addEventListener('click', handleClick, true)
 
-  return (
-    <PortalContainerProvider container={portalContainer}>
-      <div
-        ref={setRootRef}
-        className="genui-preview relative size-full transform-gpu overflow-auto bg-background"
-        data-preview-device={deviceMode}
-      >
-        {children}
-      </div>
-    </PortalContainerProvider>
-  )
-})
+      return () => {
+        currentRoot.removeEventListener('click', handleClick, true)
+        clearSelectedElement()
+      }
+    }, [previewToolMode, children, onPreviewSelect])
+
+    return (
+      <PortalContainerProvider container={portalContainer}>
+        <div
+          ref={setRootRef}
+          className="genui-preview relative size-full transform-gpu overflow-auto bg-background"
+          data-preview-device={deviceMode}
+        >
+          {children}
+        </div>
+      </PortalContainerProvider>
+    )
+  },
+)
 
 DirectPreview.displayName = 'DirectPreview'
 

@@ -5,10 +5,7 @@ import type { MutationCtx } from '../_generated/server'
 import { hashOwnerSecret } from './session_access_helpers'
 import { createSessionEdit } from './session_edit_mutation_helpers'
 
-type TableName =
-  | 'previews'
-  | 'generatedModules'
-  | 'siteSpecs'
+type TableName = 'previews' | 'generatedModules' | 'siteSpecs'
 type Row = Record<string, unknown>
 
 const sessionId = 'session_edit_wrapper' as Id<'sessions'>
@@ -229,5 +226,4 @@ describe('session edit mutation helpers', () => {
       ]),
     )
   })
-
 })

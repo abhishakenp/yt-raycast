@@ -1,105 +1,103 @@
-import * as React from "react";
+import * as React from 'react'
 
-import { cva } from "class-variance-authority";
+import { cva } from 'class-variance-authority'
 
-import { cn } from "#/lib/utils.ts";
-import { Image } from "#/lib/img.tsx";
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
-import {
-  Avatar,
-  AvatarFallback,
-} from "#/components/ui/8bit/avatar.tsx";
-import { Badge } from "#/components/ui/8bit/badge.tsx";
+import { Avatar, AvatarFallback } from '#/components/ui/8bit/avatar.tsx'
+import { Badge } from '#/components/ui/8bit/badge.tsx'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "#/components/ui/8bit/card.tsx";
-import { Separator } from "#/components/ui/8bit/separator.tsx";
-import "#/components/ui/8bit/styles/retro.css";
+} from '#/components/ui/8bit/card.tsx'
+import { Separator } from '#/components/ui/8bit/separator.tsx'
+import '#/components/ui/8bit/styles/retro.css'
 
 export interface LeaderboardPlayer {
-  id: string;
-  name: string;
-  score: number;
-  rank?: number;
-  isCurrentPlayer?: boolean;
-  avatar?: string;
-  avatarFallback?: string;
+  id: string
+  name: string
+  score: number
+  rank?: number
+  isCurrentPlayer?: boolean
+  avatar?: string
+  avatarFallback?: string
 }
 
-export interface LeaderboardProps extends React.ComponentProps<"div"> {
-  players: LeaderboardPlayer[];
-  maxPlayers?: number;
-  showRank?: boolean;
-  showAvatar?: boolean;
-  className?: string;
-  title?: string;
-  currentPlayerId?: string;
+export interface LeaderboardProps extends React.ComponentProps<'div'> {
+  players: LeaderboardPlayer[]
+  maxPlayers?: number
+  showRank?: boolean
+  showAvatar?: boolean
+  className?: string
+  title?: string
+  currentPlayerId?: string
 }
 
 const playerItemVariants = cva(
-  "flex items-center justify-between p-3 rounded-lg transition-all duration-200",
+  'flex items-center justify-between p-3 rounded-lg transition-all duration-200',
   {
     variants: {
       rank: {
-        default: "bg-muted/50 hover:bg-muted",
-        first: "bg-primary/20 border-2 border-primary hover:bg-primary/30",
-        second: "bg-secondary/20 border-2 border-secondary hover:bg-secondary/30",
-        third: "bg-accent/20 border-2 border-accent hover:bg-accent/30",
-        current: "bg-primary/20 border-2 border-primary hover:bg-primary/30",
+        default: 'bg-muted/50 hover:bg-muted',
+        first: 'bg-primary/20 border-2 border-primary hover:bg-primary/30',
+        second:
+          'bg-secondary/20 border-2 border-secondary hover:bg-secondary/30',
+        third: 'bg-accent/20 border-2 border-accent hover:bg-accent/30',
+        current: 'bg-primary/20 border-2 border-primary hover:bg-primary/30',
       },
     },
     defaultVariants: {
-      rank: "default",
+      rank: 'default',
     },
-  }
-);
+  },
+)
 
 const rankBadgeVariants = cva(
-  "flex items-center justify-center size-8 text-sm font-bold",
+  'flex items-center justify-center size-8 text-sm font-bold',
   {
     variants: {
       rank: {
-        default: "bg-muted text-muted-foreground",
-        first: "bg-primary text-primary-foreground",
-        second: "bg-secondary text-secondary-foreground",
-        third: "bg-accent text-accent-foreground",
-        current: "bg-primary text-primary-foreground",
+        default: 'bg-muted text-muted-foreground',
+        first: 'bg-primary text-primary-foreground',
+        second: 'bg-secondary text-secondary-foreground',
+        third: 'bg-accent text-accent-foreground',
+        current: 'bg-primary text-primary-foreground',
       },
     },
     defaultVariants: {
-      rank: "default",
+      rank: 'default',
     },
-  }
-);
+  },
+)
 
 function getRankVariant(
   rank: number,
-  isCurrentPlayer: boolean
-): "default" | "first" | "second" | "third" | "current" {
-  if (isCurrentPlayer) return "current";
-  if (rank === 1) return "first";
-  if (rank === 2) return "second";
-  if (rank === 3) return "third";
-  return "default";
+  isCurrentPlayer: boolean,
+): 'default' | 'first' | 'second' | 'third' | 'current' {
+  if (isCurrentPlayer) return 'current'
+  if (rank === 1) return 'first'
+  if (rank === 2) return 'second'
+  if (rank === 3) return 'third'
+  return 'default'
 }
 
 function formatScore(score: number): string {
-  return score.toLocaleString();
+  return score.toLocaleString()
 }
 
 function getRankIcon(rank: number): string {
   switch (rank) {
     case 1:
-      return "🥇";
+      return '🥇'
     case 2:
-      return "🥈";
+      return '🥈'
     case 3:
-      return "🥉";
+      return '🥉'
     default:
-      return rank.toString();
+      return rank.toString()
   }
 }
 
@@ -109,7 +107,7 @@ export function Leaderboard({
   showRank = true,
   showAvatar = true,
   className,
-  title = "LEADERBOARD",
+  title = 'LEADERBOARD',
   currentPlayerId,
   ...props
 }: LeaderboardProps) {
@@ -124,14 +122,14 @@ export function Leaderboard({
         isCurrentPlayer: currentPlayerId
           ? player.id === currentPlayerId
           : player.isCurrentPlayer,
-      }));
-  }, [players, maxPlayers, currentPlayerId]);
+      }))
+  }, [players, maxPlayers, currentPlayerId])
 
   return (
     <Card
       data-slot="leaderboard"
       className={className}
-      font={"retro"}
+      font={'retro'}
       {...props}
     >
       {title && (
@@ -150,15 +148,15 @@ export function Leaderboard({
             sortedPlayers.map((player) => {
               const rankVariant = getRankVariant(
                 player.rank!,
-                player.isCurrentPlayer!
-              );
+                player.isCurrentPlayer!,
+              )
 
               return (
                 <div
                   key={player.id}
                   className={cn(
                     playerItemVariants({ rank: rankVariant }),
-                    "retro"
+                    'retro',
                   )}
                 >
                   <div className="flex items-center gap-3">
@@ -191,8 +189,8 @@ export function Leaderboard({
                       <div className="flex items-center gap-4">
                         <span
                           className={cn(
-                            "font-medium truncate retro text-xs md:text-sm",
-                            player.isCurrentPlayer && "text-primary font-bold"
+                            'font-medium truncate retro text-xs md:text-sm',
+                            player.isCurrentPlayer && 'text-primary font-bold',
                           )}
                         >
                           {player.name}
@@ -207,18 +205,18 @@ export function Leaderboard({
                   <div className="flex items-center gap-2">
                     <span
                       className={cn(
-                        "font-bold retro text-xs md:text-sm",
-                        rankVariant === "first" && "text-yellow-600",
-                        rankVariant === "second" && "text-gray-600",
-                        rankVariant === "third" && "text-amber-700",
-                        player.isCurrentPlayer && "text-primary"
+                        'font-bold retro text-xs md:text-sm',
+                        rankVariant === 'first' && 'text-yellow-600',
+                        rankVariant === 'second' && 'text-gray-600',
+                        rankVariant === 'third' && 'text-amber-700',
+                        player.isCurrentPlayer && 'text-primary',
                       )}
                     >
                       {formatScore(player.score)}
                     </span>
                   </div>
                 </div>
-              );
+              )
             })
           )}
         </div>
@@ -228,7 +226,7 @@ export function Leaderboard({
         {sortedPlayers.length > 0 && (
           <div className="mt-4 pt-4">
             <p
-              className={cn("text-xs text-muted-foreground text-center retro")}
+              className={cn('text-xs text-muted-foreground text-center retro')}
             >
               Showing top {Math.min(sortedPlayers.length, maxPlayers)} players
             </p>
@@ -236,7 +234,7 @@ export function Leaderboard({
         )}
       </CardContent>
     </Card>
-  );
+  )
 }
 
-export default Leaderboard;
+export default Leaderboard

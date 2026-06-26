@@ -14,7 +14,10 @@ describe('app errors', () => {
   })
 
   it('maps artifact readiness to a retryable conflict status', () => {
-    const error = createAppError('ARTIFACT_NOT_READY', 'Export is still building')
+    const error = createAppError(
+      'ARTIFACT_NOT_READY',
+      'Export is still building',
+    )
 
     expect(toAppErrorShape(error).status).toBe(409)
   })

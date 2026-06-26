@@ -26,7 +26,10 @@ const valid = convexRun('sessions:create', {
   designReferenceUrls: ['https://example.com/reference'],
   designReferenceNotes: 'Use a crisp editorial layout.',
 })
-assert(typeof valid.sessionId === 'string', 'valid create did not return sessionId')
+assert(
+  typeof valid.sessionId === 'string',
+  'valid create did not return sessionId',
+)
 assert(valid.remaining >= 0, 'valid create did not return quota remaining')
 
 const invalidCases = [
@@ -143,7 +146,10 @@ const cachedSecond = convexRun('sessions:create', {
   workspace: `workspace_cache_second_${stamp}`,
   anonymousClientId: `anon-cache-second-${stamp}`,
 })
-assert(cachedSecond.cached === true, 'duplicate public prompt did not reuse cache')
+assert(
+  cachedSecond.cached === true,
+  'duplicate public prompt did not reuse cache',
+)
 assert(
   cachedSecond.sessionId === cachedFirst.sessionId,
   'duplicate public prompt returned a different cached session id',
@@ -193,11 +199,15 @@ function convexRunExpectFailure(functionName, payload) {
 function runConvex(functionName, payload) {
   try {
     return {
-      stdout: execFileSync('bunx', ['convex', 'run', functionName, JSON.stringify(payload)], {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe'],
-        timeout: timeoutMs,
-      }).trim(),
+      stdout: execFileSync(
+        'bunx',
+        ['convex', 'run', functionName, JSON.stringify(payload)],
+        {
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'pipe'],
+          timeout: timeoutMs,
+        },
+      ).trim(),
     }
   } catch (error) {
     const output = `${error.stdout ?? ''}\n${error.stderr ?? ''}`.trim()

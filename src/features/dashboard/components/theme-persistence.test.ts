@@ -102,7 +102,7 @@ describe('Theme persistence', () => {
 
     it('persists the current light/dark mode when toggled', () => {
       expect(dashboardSource).toContain('serverThemeMode')
-      expect(dashboardSource).toContain("themeMode: nextMode")
+      expect(dashboardSource).toContain('themeMode: nextMode')
     })
   })
 })

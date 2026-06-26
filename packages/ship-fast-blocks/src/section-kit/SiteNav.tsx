@@ -1,19 +1,19 @@
-import { useState } from "react"
-import type { ReactNode } from "react"
+import { useState } from 'react'
+import type { ReactNode } from 'react'
 
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
+} from '#/components/ui/sheet.tsx'
 
-import type { KitAction } from "./types.ts"
-import { kitActionClasses } from "./types.ts"
-import { SignInButton } from "#/section-kit/SignInButton.tsx"
+import type { KitAction } from './types.ts'
+import { kitActionClasses } from './types.ts'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 
 /**
  * Matches CTA labels that express an auth intent (sign in / log in / sign up /
@@ -49,8 +49,8 @@ export function SiteNav(props: {
   )
 
   const headerClasses = sticky
-    ? "fixed inset-x-0 top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border"
-    : "relative z-50 bg-background border-b border-border"
+    ? 'fixed inset-x-0 top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border'
+    : 'relative z-50 bg-background border-b border-border'
 
   return (
     <header className={cn(headerClasses, props.className)}>
@@ -63,7 +63,7 @@ export function SiteNav(props: {
           {props.brandMark}
           <span
             className={cn(
-              "text-xl font-medium text-foreground",
+              'text-xl font-medium text-foreground',
               props.brandClassName,
             )}
           >
@@ -85,9 +85,9 @@ export function SiteNav(props: {
         </div>
 
         <div className="flex items-center gap-4">
-          {typeof props.phone === "string" && props.phone.trim() ? (
+          {typeof props.phone === 'string' && props.phone.trim() ? (
             <a
-              href={`tel:${props.phone.replace(/[^\d+]/g, "")}`}
+              href={`tel:${props.phone.replace(/[^\d+]/g, '')}`}
               className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
             >
               {props.phone}
@@ -106,7 +106,7 @@ export function SiteNav(props: {
               onClick={() => go(props.cta!.target ?? props.cta!.label)}
               className={cn(
                 kitActionClasses(props.cta.variant),
-                "hidden sm:inline-flex",
+                'hidden sm:inline-flex',
               )}
             >
               {props.cta.label}

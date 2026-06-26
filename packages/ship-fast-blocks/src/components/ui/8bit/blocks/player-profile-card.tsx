@@ -1,53 +1,50 @@
-import { cn } from "#/lib/utils.ts";
-import { Image } from "#/lib/img.tsx";
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
-import {
-  Avatar,
-  AvatarFallback,
-} from "#/components/ui/8bit/avatar.tsx";
-import { Badge } from "#/components/ui/8bit/badge.tsx";
-import { Card, CardContent, CardHeader } from "#/components/ui/8bit/card.tsx";
-import HealthBar from "#/components/ui/8bit/health-bar.tsx";
-import ManaBar from "#/components/ui/8bit/mana-bar.tsx";
-import { Progress } from "#/components/ui/8bit/progress.tsx";
-import "#/components/ui/8bit/styles/retro.css";
+import { Avatar, AvatarFallback } from '#/components/ui/8bit/avatar.tsx'
+import { Badge } from '#/components/ui/8bit/badge.tsx'
+import { Card, CardContent, CardHeader } from '#/components/ui/8bit/card.tsx'
+import HealthBar from '#/components/ui/8bit/health-bar.tsx'
+import ManaBar from '#/components/ui/8bit/mana-bar.tsx'
+import { Progress } from '#/components/ui/8bit/progress.tsx'
+import '#/components/ui/8bit/styles/retro.css'
 
 export interface PlayerStats {
   health?: {
-    current: number;
-    max: number;
-  };
+    current: number
+    max: number
+  }
   mana?: {
-    current: number;
-    max: number;
-  };
+    current: number
+    max: number
+  }
   experience?: {
-    current: number;
-    max: number;
-  };
-  level?: number;
-  [key: string]: unknown; // Allow custom stats
+    current: number
+    max: number
+  }
+  level?: number
+  [key: string]: unknown // Allow custom stats
 }
 
 export interface PlayerProfileCardProps {
-  className?: string;
-  playerName: string;
-  avatarSrc?: string;
-  avatarFallback?: string;
-  level?: number;
-  stats?: PlayerStats;
-  playerClass?: string;
-  showLevel?: boolean;
-  showHealth?: boolean;
-  showMana?: boolean;
-  showExperience?: boolean;
+  className?: string
+  playerName: string
+  avatarSrc?: string
+  avatarFallback?: string
+  level?: number
+  stats?: PlayerStats
+  playerClass?: string
+  showLevel?: boolean
+  showHealth?: boolean
+  showMana?: boolean
+  showExperience?: boolean
   customStats?: Array<{
-    label: string;
-    value: number;
-    max?: number;
-    color?: string;
-    variant?: "retro" | "default";
-  }>;
+    label: string
+    value: number
+    max?: number
+    color?: string
+    variant?: 'retro' | 'default'
+  }>
 }
 
 export default function PlayerProfileCard({
@@ -67,18 +64,18 @@ export default function PlayerProfileCard({
 }: PlayerProfileCardProps) {
   const healthPercentage = stats?.health
     ? Math.round((stats.health.current / stats.health.max) * 100)
-    : 0;
+    : 0
 
   const manaPercentage = stats?.mana
     ? Math.round((stats.mana.current / stats.mana.max) * 100)
-    : 0;
+    : 0
 
   const experiencePercentage = stats?.experience
     ? Math.round((stats.experience.current / stats.experience.max) * 100)
-    : 0;
+    : 0
 
   return (
-    <Card className={cn("w-full max-w-md", className)} {...props}>
+    <Card className={cn('w-full max-w-md', className)} {...props}>
       <CardHeader className="pb-4">
         <div className="flex items-center gap-4">
           <Avatar className="size-16" variant="pixel" font="retro">
@@ -170,7 +167,7 @@ export default function PlayerProfileCard({
             {customStats.map((stat, index) => {
               const percentage = stat.max
                 ? Math.round((stat.value / stat.max) * 100)
-                : 0;
+                : 0
 
               return (
                 <div key={index} className="space-y-1">
@@ -178,21 +175,21 @@ export default function PlayerProfileCard({
                     <span className="text-sm font-medium">{stat.label}</span>
                     <span className="text-[9px] sm:text-xs text-muted-foreground retro">
                       {stat.value}
-                      {stat.max ? `/${stat.max}` : ""}
+                      {stat.max ? `/${stat.max}` : ''}
                     </span>
                   </div>
                   <Progress
                     value={percentage}
-                    variant={stat.variant || "retro"}
-                    progressBg={stat.color || "bg-primary"}
+                    variant={stat.variant || 'retro'}
+                    progressBg={stat.color || 'bg-primary'}
                     className="h-3"
                   />
                 </div>
-              );
+              )
             })}
           </div>
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

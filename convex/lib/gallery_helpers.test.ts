@@ -14,7 +14,9 @@ const makeSession = (overrides: Record<string, unknown> = {}) =>
 
 describe('hasGalleryReadySignal', () => {
   it('returns true when genuiStatus is done', () => {
-    expect(hasGalleryReadySignal(makeSession({ genuiStatus: 'done' }))).toBe(true)
+    expect(hasGalleryReadySignal(makeSession({ genuiStatus: 'done' }))).toBe(
+      true,
+    )
   })
 
   it('returns true when openuiReady is true', () => {
@@ -22,7 +24,9 @@ describe('hasGalleryReadySignal', () => {
   })
 
   it('returns true when status is preview_ready', () => {
-    expect(hasGalleryReadySignal(makeSession({ status: 'preview_ready' }))).toBe(true)
+    expect(
+      hasGalleryReadySignal(makeSession({ status: 'preview_ready' })),
+    ).toBe(true)
   })
 
   it('returns true when previewVersion > 0', () => {
@@ -31,7 +35,9 @@ describe('hasGalleryReadySignal', () => {
   })
 
   it('returns false when previewVersion is 0', () => {
-    expect(hasGalleryReadySignal(makeSession({ previewVersion: 0 }))).toBe(false)
+    expect(hasGalleryReadySignal(makeSession({ previewVersion: 0 }))).toBe(
+      false,
+    )
   })
 
   it('returns false when previewVersion is undefined (defaults to 0)', () => {
@@ -41,7 +47,12 @@ describe('hasGalleryReadySignal', () => {
   it('returns false when no ready signal is present', () => {
     expect(
       hasGalleryReadySignal(
-        makeSession({ genuiStatus: 'streaming', openuiReady: false, status: 'created', previewVersion: 0 }),
+        makeSession({
+          genuiStatus: 'streaming',
+          openuiReady: false,
+          status: 'created',
+          previewVersion: 0,
+        }),
       ),
     ).toBe(false)
   })
@@ -49,37 +60,66 @@ describe('hasGalleryReadySignal', () => {
   it('returns true when multiple signals are present', () => {
     expect(
       hasGalleryReadySignal(
-        makeSession({ genuiStatus: 'done', openuiReady: true, status: 'preview_ready', previewVersion: 3 }),
+        makeSession({
+          genuiStatus: 'done',
+          openuiReady: true,
+          status: 'preview_ready',
+          previewVersion: 3,
+        }),
       ),
     ).toBe(true)
   })
 
   it('returns false when openuiReady is false', () => {
-    expect(hasGalleryReadySignal(makeSession({ openuiReady: false }))).toBe(false)
+    expect(hasGalleryReadySignal(makeSession({ openuiReady: false }))).toBe(
+      false,
+    )
   })
 })
 
 describe('isGalleryVisibleSession', () => {
   it('returns true for ongoing status with ready signal', () => {
-    expect(isGalleryVisibleSession(makeSession({ status: 'streaming', genuiStatus: 'done' }))).toBe(true)
+    expect(
+      isGalleryVisibleSession(
+        makeSession({ status: 'streaming', genuiStatus: 'done' }),
+      ),
+    ).toBe(true)
   })
 
   it('returns false for ongoing status without ready signal', () => {
-    expect(isGalleryVisibleSession(makeSession({ status: 'created' }))).toBe(false)
-    expect(isGalleryVisibleSession(makeSession({ status: 'queued' }))).toBe(false)
-    expect(isGalleryVisibleSession(makeSession({ status: 'validating' }))).toBe(false)
-    expect(isGalleryVisibleSession(makeSession({ status: 'streaming' }))).toBe(false)
+    expect(isGalleryVisibleSession(makeSession({ status: 'created' }))).toBe(
+      false,
+    )
+    expect(isGalleryVisibleSession(makeSession({ status: 'queued' }))).toBe(
+      false,
+    )
+    expect(isGalleryVisibleSession(makeSession({ status: 'validating' }))).toBe(
+      false,
+    )
+    expect(isGalleryVisibleSession(makeSession({ status: 'streaming' }))).toBe(
+      false,
+    )
   })
 
   it('returns true for non-ongoing status regardless of ready signal', () => {
-    expect(isGalleryVisibleSession(makeSession({ status: 'completed' }))).toBe(true)
+    expect(isGalleryVisibleSession(makeSession({ status: 'completed' }))).toBe(
+      true,
+    )
     expect(isGalleryVisibleSession(makeSession({ status: 'error' }))).toBe(true)
-    expect(isGalleryVisibleSession(makeSession({ status: 'preview_ready' }))).toBe(true)
+    expect(
+      isGalleryVisibleSession(makeSession({ status: 'preview_ready' })),
+    ).toBe(true)
   })
 
   it('falls back to hasGalleryReadySignal when status is undefined', () => {
-    expect(isGalleryVisibleSession(makeSession({ status: undefined, genuiStatus: 'done' }))).toBe(true)
-    expect(isGalleryVisibleSession(makeSession({ status: undefined }))).toBe(false)
+    expect(
+      isGalleryVisibleSession(
+        makeSession({ status: undefined, genuiStatus: 'done' }),
+      ),
+    ).toBe(true)
+    expect(isGalleryVisibleSession(makeSession({ status: undefined }))).toBe(
+      false,
+    )
   })
 })
 
@@ -119,7 +159,9 @@ describe('getGalleryCategories', () => {
   })
 
   it('returns empty array for no matches', () => {
-    expect(getGalleryCategories('just a random string with no keywords')).toEqual([])
+    expect(
+      getGalleryCategories('just a random string with no keywords'),
+    ).toEqual([])
   })
 
   it('returns empty array for empty string', () => {
@@ -127,7 +169,9 @@ describe('getGalleryCategories', () => {
   })
 
   it('matches multi-word terms like "case studies"', () => {
-    expect(getGalleryCategories('A firm with case studies')).toContain('portfolio')
+    expect(getGalleryCategories('A firm with case studies')).toContain(
+      'portfolio',
+    )
   })
 
   it('matches partial words (substring match)', () => {
@@ -224,11 +268,17 @@ describe('getGalleryCategoryOptions', () => {
 })
 
 describe('matchesGalleryFilters', () => {
-  const saasSession = makeSession({ _id: 'sess-1', prompt: 'Build a SaaS dashboard', status: 'completed' })
+  const saasSession = makeSession({
+    _id: 'sess-1',
+    prompt: 'Build a SaaS dashboard',
+    status: 'completed',
+  })
 
   describe('category filtering', () => {
     it('passes when no category is provided', () => {
-      expect(matchesGalleryFilters(saasSession, undefined, undefined)).toBe(true)
+      expect(matchesGalleryFilters(saasSession, undefined, undefined)).toBe(
+        true,
+      )
     })
 
     it('passes when category is empty string', () => {
@@ -249,7 +299,9 @@ describe('matchesGalleryFilters', () => {
     })
 
     it('trims category whitespace', () => {
-      expect(matchesGalleryFilters(saasSession, undefined, '  saas  ')).toBe(true)
+      expect(matchesGalleryFilters(saasSession, undefined, '  saas  ')).toBe(
+        true,
+      )
     })
 
     it('rejects when category does not match', () => {
@@ -259,7 +311,9 @@ describe('matchesGalleryFilters', () => {
 
   describe('search filtering', () => {
     it('passes when no search is provided', () => {
-      expect(matchesGalleryFilters(saasSession, undefined, undefined)).toBe(true)
+      expect(matchesGalleryFilters(saasSession, undefined, undefined)).toBe(
+        true,
+      )
     })
 
     it('passes when search is empty string', () => {
@@ -271,7 +325,9 @@ describe('matchesGalleryFilters', () => {
     })
 
     it('matches against prompt', () => {
-      expect(matchesGalleryFilters(saasSession, 'dashboard', undefined)).toBe(true)
+      expect(matchesGalleryFilters(saasSession, 'dashboard', undefined)).toBe(
+        true,
+      )
     })
 
     it('matches against session _id', () => {
@@ -279,7 +335,9 @@ describe('matchesGalleryFilters', () => {
     })
 
     it('matches against status', () => {
-      expect(matchesGalleryFilters(saasSession, 'completed', undefined)).toBe(true)
+      expect(matchesGalleryFilters(saasSession, 'completed', undefined)).toBe(
+        true,
+      )
     })
 
     it('matches against genuiStatus', () => {
@@ -297,15 +355,23 @@ describe('matchesGalleryFilters', () => {
     })
 
     it('is case insensitive', () => {
-      expect(matchesGalleryFilters(saasSession, 'DASHBOARD', undefined)).toBe(true)
+      expect(matchesGalleryFilters(saasSession, 'DASHBOARD', undefined)).toBe(
+        true,
+      )
     })
 
     it('rejects when search does not match any field', () => {
-      expect(matchesGalleryFilters(saasSession, 'nonexistent', undefined)).toBe(false)
+      expect(matchesGalleryFilters(saasSession, 'nonexistent', undefined)).toBe(
+        false,
+      )
     })
 
     it('skips undefined/non-string fields gracefully', () => {
-      const session = makeSession({ prompt: 'test', status: undefined, genuiStatus: undefined })
+      const session = makeSession({
+        prompt: 'test',
+        status: undefined,
+        genuiStatus: undefined,
+      })
       expect(matchesGalleryFilters(session, 'test', undefined)).toBe(true)
       expect(matchesGalleryFilters(session, 'undefined', undefined)).toBe(false)
     })
@@ -317,11 +383,15 @@ describe('matchesGalleryFilters', () => {
     })
 
     it('rejects if category matches but search does not', () => {
-      expect(matchesGalleryFilters(saasSession, 'nonexistent', 'saas')).toBe(false)
+      expect(matchesGalleryFilters(saasSession, 'nonexistent', 'saas')).toBe(
+        false,
+      )
     })
 
     it('rejects if search matches but category does not', () => {
-      expect(matchesGalleryFilters(saasSession, 'dashboard', 'blog')).toBe(false)
+      expect(matchesGalleryFilters(saasSession, 'dashboard', 'blog')).toBe(
+        false,
+      )
     })
   })
 })

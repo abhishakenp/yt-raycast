@@ -1,5 +1,5 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 import {
   Breadcrumb as UIBreadcrumb,
   BreadcrumbItem,
@@ -7,15 +7,15 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "#/components/ui/breadcrumb.tsx"
+} from '#/components/ui/breadcrumb.tsx'
 
 // Compound primitive: flatten Breadcrumb/BreadcrumbList/BreadcrumbItem/... into
 // a single `items` array. The last item renders as the current page (non-link);
 // earlier items render as links with separators between them.
 export const Breadcrumb = defineComponent({
-  name: "Breadcrumb",
+  name: 'Breadcrumb',
   description:
-    "Hierarchical breadcrumb trail. `items` is ordered root -> current; the last item is the current page.",
+    'Hierarchical breadcrumb trail. `items` is ordered root -> current; the last item is the current page.',
   props: z.object({
     items: z
       .array(z.object({ label: z.string(), href: z.string().optional() }))
@@ -26,9 +26,9 @@ export const Breadcrumb = defineComponent({
     const items = props.items?.length
       ? props.items
       : [
-          { label: "Home", href: "#" },
-          { label: "Components", href: "#" },
-          { label: "Breadcrumb" },
+          { label: 'Home', href: '#' },
+          { label: 'Components', href: '#' },
+          { label: 'Breadcrumb' },
         ]
     const lastIndex = items.length - 1
     return (
@@ -40,7 +40,7 @@ export const Breadcrumb = defineComponent({
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>
               ) : (
                 <>
-                  <BreadcrumbLink href={item.href ?? "#"}>
+                  <BreadcrumbLink href={item.href ?? '#'}>
                     {item.label}
                   </BreadcrumbLink>
                   <BreadcrumbSeparator />

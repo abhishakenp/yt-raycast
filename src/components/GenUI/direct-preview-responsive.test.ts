@@ -30,9 +30,13 @@ describe('generated preview responsive safeguards', () => {
   it('maps generated responsive nav classes to the simulated mobile frame', () => {
     const stylesSource = readProjectFile('src/styles.css')
 
-    expect(stylesSource).toContain('button[class*="md:hidden"]')
-    expect(stylesSource).toContain('div[class*="flex"][class*="md:hidden"]')
-    expect(stylesSource).toContain('[class*="hidden"][class*="md:flex"]')
+    expect(stylesSource).toMatch(/button\[class\*=['"]md:hidden['"]\]/)
+    expect(stylesSource).toMatch(
+      /div\[class\*=['"]flex['"]\]\[class\*=['"]md:hidden['"]\]/,
+    )
+    expect(stylesSource).toMatch(
+      /\[class\*=['"]hidden['"]\]\[class\*=['"]md:flex['"]\]/,
+    )
     expect(stylesSource).toContain('display: inline-flex !important')
     expect(stylesSource).toContain('display: flex !important')
     expect(stylesSource).toContain('display: none !important')

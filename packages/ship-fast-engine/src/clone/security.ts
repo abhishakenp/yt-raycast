@@ -1,8 +1,8 @@
-"use node"
+'use node'
 
-import { URL } from "url"
-import { lookup } from "dns/promises"
-import { isIP } from "net"
+import { URL } from 'url'
+import { lookup } from 'dns/promises'
+import { isIP } from 'net'
 
 // Shared SSRF guard for the clone module. Both crawler.ts (before every fetch)
 // and assets.ts (before every download) MUST call assertPublicUrl.
@@ -11,7 +11,7 @@ import { isIP } from "net"
 export function isAllowedScheme(url: string): boolean {
   try {
     const protocol = new URL(url).protocol
-    return protocol === "http:" || protocol === "https:"
+    return protocol === 'http:' || protocol === 'https:'
   } catch {
     return false
   }
@@ -19,10 +19,10 @@ export function isAllowedScheme(url: string): boolean {
 
 // Reject obviously-disallowed literal hostnames before any DNS work.
 function isBlockedHostLiteral(host: string): boolean {
-  const h = host.toLowerCase().replace(/^\[|\]$/g, "")
-  if (h === "" || h === "localhost" || h.endsWith(".localhost")) return true
-  if (h === "0.0.0.0" || h === "0" || h === "::" || h === "[::]") return true
-  if (h === "metadata.google.internal") return true
+  const h = host.toLowerCase().replace(/^\[|\]$/g, '')
+  if (h === '' || h === 'localhost' || h.endsWith('.localhost')) return true
+  if (h === '0.0.0.0' || h === '0' || h === '::' || h === '[::]') return true
+  if (h === 'metadata.google.internal') return true
   return false
 }
 
@@ -35,10 +35,10 @@ function isSuspiciousNumericHost(host: string): boolean {
   // Hex host (e.g. "0x7f000001")
   if (/^0x[0-9a-f]+$/.test(h)) return true
   // Any dotted octet using hex or octal encoding
-  if (h.includes(".")) {
-    const parts = h.split(".")
+  if (h.includes('.')) {
+    const parts = h.split('.')
     for (const p of parts) {
-      if (p.startsWith("0x")) return true
+      if (p.startsWith('0x')) return true
       if (/^0\d+$/.test(p)) return true // octal-style leading zero
     }
   }
@@ -50,8 +50,11 @@ function isPrivateIp(ip: string): boolean {
   const family = isIP(ip)
 
   if (family === 4) {
-    const octets = ip.split(".").map((o) => parseInt(o, 10))
-    if (octets.length !== 4 || octets.some((o) => Number.isNaN(o) || o < 0 || o > 255)) {
+    const octets = ip.split('.').map((o) => parseInt(o, 10))
+    if (
+      octets.length !== 4 ||
+      octets.some((o) => Number.isNaN(o) || o < 0 || o > 255)
+    ) {
       return true // malformed -> reject
     }
     const [a, b] = octets
@@ -68,18 +71,18 @@ function isPrivateIp(ip: string): boolean {
 
   if (family === 6) {
     const v6 = ip.toLowerCase()
-    if (v6 === "::1" || v6 === "::") return true // loopback / unspecified
+    if (v6 === '::1' || v6 === '::') return true // loopback / unspecified
     // Link-local is fe80::/10, spanning fe80–febf (the high 10 bits are fixed, so
     // the first hextet's leading nibble is `fe` and its second nibble is 8–b).
     // A bare `fe80` prefix would miss fe9x/feax/febx — match the full /10 here.
     if (/^fe[89ab][0-9a-f]/.test(v6)) return true // link-local fe80::/10
-    if (v6.startsWith("fc") || v6.startsWith("fd")) return true // unique-local fc00::/7
-    if (v6.startsWith("ff")) return true // multicast
+    if (v6.startsWith('fc') || v6.startsWith('fd')) return true // unique-local fc00::/7
+    if (v6.startsWith('ff')) return true // multicast
     // IPv4-mapped (::ffff:127.0.0.1) — recurse on the embedded v4
     const mapped = v6.match(/::ffff:(\d+\.\d+\.\d+\.\d+)$/)
     if (mapped) return isPrivateIp(mapped[1])
     // IPv4-mapped in hex form (::ffff:7f00:0001) treated as suspicious
-    if (v6.startsWith("::ffff:")) return true
+    if (v6.startsWith('::ffff:')) return true
     return false
   }
 
@@ -111,9 +114,9 @@ export async function assertPublicUrl(url: string): Promise<void> {
   }
 
   // If the host is already an IP literal, classify directly.
-  const literalFamily = isIP(host.replace(/^\[|\]$/g, ""))
+  const literalFamily = isIP(host.replace(/^\[|\]$/g, ''))
   if (literalFamily !== 0) {
-    if (isPrivateIp(host.replace(/^\[|\]$/g, ""))) {
+    if (isPrivateIp(host.replace(/^\[|\]$/g, ''))) {
       throw new Error(`Blocked URL (private/loopback IP): ${url}`)
     }
     return
@@ -133,7 +136,9 @@ export async function assertPublicUrl(url: string): Promise<void> {
 
   for (const rec of records) {
     if (isPrivateIp(rec.address)) {
-      throw new Error(`Blocked URL (resolves to private/loopback IP ${rec.address}): ${url}`)
+      throw new Error(
+        `Blocked URL (resolves to private/loopback IP ${rec.address}): ${url}`,
+      )
     }
   }
 }

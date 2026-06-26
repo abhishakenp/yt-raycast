@@ -4,11 +4,11 @@
 // instead of through chat(), and we yield the same minimal chunk shape that the
 // generation loop already consumes ({ type: "TEXT_MESSAGE_CONTENT" | "RUN_ERROR" }).
 
-const TALAAS_ENDPOINT = "https://chatjimmy.ai/api/chat"
-const STATS_MARKER = "<|stats|>"
+const TALAAS_ENDPOINT = 'https://chatjimmy.ai/api/chat'
+const STATS_MARKER = '<|stats|>'
 
 export interface TalaasChunk {
-  type: "TEXT_MESSAGE_CONTENT" | "RUN_ERROR"
+  type: 'TEXT_MESSAGE_CONTENT' | 'RUN_ERROR'
   delta?: string
   message?: string
 }
@@ -22,28 +22,38 @@ export async function* talaasChat(
   let res: Response
   try {
     res = await fetch(TALAAS_ENDPOINT, {
-      method: "POST",
-      headers: { "content-type": "application/json", accept: "*/*", Referer: "https://chatjimmy.ai/" },
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        accept: '*/*',
+        Referer: 'https://chatjimmy.ai/',
+      },
       body: JSON.stringify({
-        messages: [{ role: "user", content: user }],
+        messages: [{ role: 'user', content: user }],
         chatOptions: { selectedModel: model, systemPrompt: system, topK: 8 },
         attachment: null,
       }),
       signal,
     })
   } catch (e) {
-    yield { type: "RUN_ERROR", message: e instanceof Error ? e.message : "talaas request failed" }
+    yield {
+      type: 'RUN_ERROR',
+      message: e instanceof Error ? e.message : 'talaas request failed',
+    }
     return
   }
 
   if (!res.ok || !res.body) {
-    yield { type: "RUN_ERROR", message: `talaas ${res.status} ${res.statusText}` }
+    yield {
+      type: 'RUN_ERROR',
+      message: `talaas ${res.status} ${res.statusText}`,
+    }
     return
   }
 
   const reader = res.body.getReader()
   const decoder = new TextDecoder()
-  let buf = ""
+  let buf = ''
   try {
     while (true) {
       const { done, value } = await reader.read()
@@ -53,19 +63,22 @@ export async function* talaasChat(
       const idx = buf.indexOf(STATS_MARKER)
       if (idx !== -1) {
         const text = buf.slice(0, idx)
-        if (text) yield { type: "TEXT_MESSAGE_CONTENT", delta: text }
+        if (text) yield { type: 'TEXT_MESSAGE_CONTENT', delta: text }
         return // everything after the stats marker is metadata, not content
       }
 
       // Hold back the tail in case the marker is split across reads.
       const safe = buf.length - STATS_MARKER.length
       if (safe > 0) {
-        yield { type: "TEXT_MESSAGE_CONTENT", delta: buf.slice(0, safe) }
+        yield { type: 'TEXT_MESSAGE_CONTENT', delta: buf.slice(0, safe) }
         buf = buf.slice(safe)
       }
     }
-    if (buf) yield { type: "TEXT_MESSAGE_CONTENT", delta: buf }
+    if (buf) yield { type: 'TEXT_MESSAGE_CONTENT', delta: buf }
   } catch (e) {
-    yield { type: "RUN_ERROR", message: e instanceof Error ? e.message : "talaas stream error" }
+    yield {
+      type: 'RUN_ERROR',
+      message: e instanceof Error ? e.message : 'talaas stream error',
+    }
   }
 }

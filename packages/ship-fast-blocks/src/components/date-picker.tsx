@@ -1,8 +1,5 @@
-import { Calendar } from "#/components/ui/calendar.tsx"
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-} from "#/components/ui/sidebar.tsx"
+import { Calendar } from '#/components/ui/calendar.tsx'
+import { SidebarGroup, SidebarGroupContent } from '#/components/ui/sidebar.tsx'
 
 export function DatePicker() {
   return (

@@ -1,5 +1,5 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 import {
   Menubar as UIMenubar,
   MenubarContent,
@@ -8,13 +8,13 @@ import {
   MenubarSeparator,
   MenubarShortcut,
   MenubarTrigger,
-} from "#/components/ui/menubar.tsx"
+} from '#/components/ui/menubar.tsx'
 
 // Compound overlay: app-style horizontal menubar. `menus` are the top-level
 // triggers, each with its own dropdown `items`. The first menu is opened by
 // default (via `defaultValue`) so its content is statically visible.
 export const Menubar = defineComponent({
-  name: "Menubar",
+  name: 'Menubar',
   description:
     "Horizontal application menu bar. `menus` are top-level menus, each with `items` (variant 'destructive', separator true for a divider, optional shortcut text). First menu opens by default for preview.",
   props: z.object({
@@ -25,7 +25,7 @@ export const Menubar = defineComponent({
           items: z.array(
             z.object({
               label: z.string(),
-              variant: z.enum(["default", "destructive"]).optional(),
+              variant: z.enum(['default', 'destructive']).optional(),
               shortcut: z.string().optional(),
               separator: z.boolean().optional(),
               inset: z.boolean().optional(),
@@ -39,24 +39,24 @@ export const Menubar = defineComponent({
   component: ({ props }) => {
     const menus = props.menus ?? [
       {
-        label: "File",
+        label: 'File',
         items: [
-          { label: "New Tab", shortcut: "⌘T" },
-          { label: "New Window", shortcut: "⌘N" },
-          { label: "Share", separator: true },
-          { label: "Print", shortcut: "⌘P" },
+          { label: 'New Tab', shortcut: '⌘T' },
+          { label: 'New Window', shortcut: '⌘N' },
+          { label: 'Share', separator: true },
+          { label: 'Print', shortcut: '⌘P' },
         ],
       },
       {
-        label: "Edit",
+        label: 'Edit',
         items: [
-          { label: "Undo", shortcut: "⌘Z" },
-          { label: "Redo", shortcut: "⇧⌘Z" },
+          { label: 'Undo', shortcut: '⌘Z' },
+          { label: 'Redo', shortcut: '⇧⌘Z' },
         ],
       },
       {
-        label: "View",
-        items: [{ label: "Reload" }, { label: "Toggle Fullscreen" }],
+        label: 'View',
+        items: [{ label: 'Reload' }, { label: 'Toggle Fullscreen' }],
       },
     ]
     return (

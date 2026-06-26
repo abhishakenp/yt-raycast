@@ -1,23 +1,23 @@
-"use client";
+'use client'
 
-import type * as React from "react";
+import type * as React from 'react'
 
-import * as AccordionPrimitive from "@radix-ui/react-accordion";
+import * as AccordionPrimitive from '@radix-ui/react-accordion'
 
-import { cn } from "#/lib/utils.ts";
+import { cn } from '#/lib/utils.ts'
 
 import {
   Accordion as ShadcnAccordion,
   AccordionContent as ShadcnAccordionContent,
   AccordionItem as ShadcnAccordionItem,
   AccordionTrigger as ShadcnAccordionTrigger,
-} from "#/components/ui/accordion.tsx";
+} from '#/components/ui/accordion.tsx'
 
-import "#/components/ui/8bit/styles/retro.css";
+import '#/components/ui/8bit/styles/retro.css'
 
 export interface BitAccordionItemProps
   extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> {
-  asChild?: boolean;
+  asChild?: boolean
 }
 
 function AccordionItem({
@@ -28,19 +28,19 @@ function AccordionItem({
   return (
     <ShadcnAccordionItem
       className={cn(
-        "border-dashed border-b-4 border-foreground dark:border-ring relative",
-        className
+        'border-dashed border-b-4 border-foreground dark:border-ring relative',
+        className,
       )}
       {...props}
     >
       {children}
     </ShadcnAccordionItem>
-  );
+  )
 }
 
 export interface BitAccordionTriggerProps
   extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger> {
-  font?: "normal" | "retro";
+  font?: 'normal' | 'retro'
 }
 
 function AccordionTrigger({
@@ -51,17 +51,17 @@ function AccordionTrigger({
 }: BitAccordionTriggerProps) {
   return (
     <ShadcnAccordionTrigger
-      className={cn(font !== "normal" && "retro", className)}
+      className={cn(font !== 'normal' && 'retro', className)}
       {...props}
     >
       {children}
     </ShadcnAccordionTrigger>
-  );
+  )
 }
 
 export interface BitAccordionContentProps
   extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content> {
-  font?: "normal" | "retro";
+  font?: 'normal' | 'retro'
 }
 
 function AccordionContent({
@@ -74,9 +74,9 @@ function AccordionContent({
     <div className="relative">
       <ShadcnAccordionContent
         className={cn(
-          "overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
-          font !== "normal" && "retro",
-          className
+          'overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down',
+          font !== 'normal' && 'retro',
+          className,
         )}
         {...props}
       >
@@ -85,9 +85,9 @@ function AccordionContent({
 
       <AccordionPrimitive.Content asChild forceMount />
     </div>
-  );
+  )
 }
 
-const Accordion = ShadcnAccordion;
+const Accordion = ShadcnAccordion
 
-export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }

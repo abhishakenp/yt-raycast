@@ -29,7 +29,9 @@ export const Chart = defineComponent({
   description:
     "Static SVG chart from data:[{label,value}]. kind 'area' (default), 'bar', or 'line'. Ships sample data so it renders standalone.",
   props: z.object({
-    data: z.array(z.object({ label: z.string(), value: z.number() })).optional(),
+    data: z
+      .array(z.object({ label: z.string(), value: z.number() }))
+      .optional(),
     kind: z.enum(['area', 'bar', 'line']).optional(),
     label: z.string().optional(),
     className: z.string().optional(),
@@ -46,8 +48,17 @@ export const Chart = defineComponent({
     if (kind === 'bar') {
       return (
         <div className={props.className} role="img" aria-label={label}>
-          <svg viewBox="0 0 320 160" className="h-full min-h-48 w-full overflow-visible">
-            <line x1="16" y1="132" x2="304" y2="132" stroke="rgb(var(--border))" />
+          <svg
+            viewBox="0 0 320 160"
+            className="h-full min-h-48 w-full overflow-visible"
+          >
+            <line
+              x1="16"
+              y1="132"
+              x2="304"
+              y2="132"
+              stroke="rgb(var(--border))"
+            />
             {points.map((point, index) => (
               <rect
                 key={`${point.label}-${index}`}
@@ -68,8 +79,17 @@ export const Chart = defineComponent({
     if (kind === 'line') {
       return (
         <div className={props.className} role="img" aria-label={label}>
-          <svg viewBox="0 0 320 160" className="h-full min-h-48 w-full overflow-visible">
-            <line x1="16" y1="132" x2="304" y2="132" stroke="rgb(var(--border))" />
+          <svg
+            viewBox="0 0 320 160"
+            className="h-full min-h-48 w-full overflow-visible"
+          >
+            <line
+              x1="16"
+              y1="132"
+              x2="304"
+              y2="132"
+              stroke="rgb(var(--border))"
+            />
             <polyline
               points={pointList}
               fill="none"
@@ -94,14 +114,31 @@ export const Chart = defineComponent({
 
     return (
       <div className={props.className} role="img" aria-label={label}>
-        <svg viewBox="0 0 320 160" className="h-full min-h-48 w-full overflow-visible">
+        <svg
+          viewBox="0 0 320 160"
+          className="h-full min-h-48 w-full overflow-visible"
+        >
           <defs>
             <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgb(var(--primary))" stopOpacity="0.38" />
-              <stop offset="100%" stopColor="rgb(var(--primary))" stopOpacity="0.04" />
+              <stop
+                offset="0%"
+                stopColor="rgb(var(--primary))"
+                stopOpacity="0.38"
+              />
+              <stop
+                offset="100%"
+                stopColor="rgb(var(--primary))"
+                stopOpacity="0.04"
+              />
             </linearGradient>
           </defs>
-          <line x1="16" y1="132" x2="304" y2="132" stroke="rgb(var(--border))" />
+          <line
+            x1="16"
+            y1="132"
+            x2="304"
+            y2="132"
+            stroke="rgb(var(--border))"
+          />
           <path d={areaPath} fill="url(#chart-fill)" />
           <polyline
             points={pointList}

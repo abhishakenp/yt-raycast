@@ -17,17 +17,57 @@
       "Ship one product-preview band immediately after hero with realistic data labels",
       "Use ring-1 ring-white/8 + backdrop-blur on every card; corner radius 8-10px, never 16+"
     ],
-    "avoid": ["aurora hero blobs as the only visual", "generic SaaS testimonial gradients", "exclamation marks"],
+    "avoid": [
+      "aurora hero blobs as the only visual",
+      "generic SaaS testimonial gradients",
+      "exclamation marks"
+    ],
     "sections": [
-      { "type": "navbar", "variant": "minimal-dark", "note": "Logo + 4-6 nav links + 'Open Linear' CTA, on near-black backdrop, hairline bottom border" },
-      { "type": "hero", "variant": "split-product-preview", "note": "Left: outcome-driven headline + 1-line sub + 2 CTAs. Right: a realistic Linear-style product surface (issue list / cycles board / triage view) rendered in HTML — NOT a screenshot placeholder" },
-      { "type": "logo-cloud", "variant": "muted-row", "note": "8-12 customer logos as inline SVG, ring-1 ring-white/5 wrapper" },
-      { "type": "features", "variant": "grid-3x2", "note": "Six concrete product capabilities with proprietary nouns (Cycles / Triage / Initiatives / Insights / Roadmaps / Templates). Each card has a small Lucide icon, headline, 2-line description, ring-1 ring-white/8" },
-      { "type": "features", "variant": "bento-product-detail", "note": "Asymmetric 2x2 bento showing a different product surface per cell with realistic data labels" },
-      { "type": "pricing", "variant": "segmented-toggle-3-tier", "note": "Monthly/yearly segmented control (NOT pill toggle), 3 tiers (Free / Standard / Enterprise), middle tier featured with ring-2 ring-primary, prices as $/seat/mo" },
-      { "type": "testimonials", "variant": "named-quote-cards", "note": "3 cards: portrait headshot + verbatim quote + name + role + company. NOT generic stock avatars." },
-      { "type": "cta", "variant": "minimal-band", "note": "Centered 2-line outcome headline + single primary CTA, no aurora background" },
-      { "type": "footer", "variant": "four-column", "note": "Product / Company / Resources / Legal columns with hairline rule above, brand mark + small social row at bottom" }
+      {
+        "type": "navbar",
+        "variant": "minimal-dark",
+        "note": "Logo + 4-6 nav links + 'Open Linear' CTA, on near-black backdrop, hairline bottom border"
+      },
+      {
+        "type": "hero",
+        "variant": "split-product-preview",
+        "note": "Left: outcome-driven headline + 1-line sub + 2 CTAs. Right: a realistic Linear-style product surface (issue list / cycles board / triage view) rendered in HTML — NOT a screenshot placeholder"
+      },
+      {
+        "type": "logo-cloud",
+        "variant": "muted-row",
+        "note": "8-12 customer logos as inline SVG, ring-1 ring-white/5 wrapper"
+      },
+      {
+        "type": "features",
+        "variant": "grid-3x2",
+        "note": "Six concrete product capabilities with proprietary nouns (Cycles / Triage / Initiatives / Insights / Roadmaps / Templates). Each card has a small Lucide icon, headline, 2-line description, ring-1 ring-white/8"
+      },
+      {
+        "type": "features",
+        "variant": "bento-product-detail",
+        "note": "Asymmetric 2x2 bento showing a different product surface per cell with realistic data labels"
+      },
+      {
+        "type": "pricing",
+        "variant": "segmented-toggle-3-tier",
+        "note": "Monthly/yearly segmented control (NOT pill toggle), 3 tiers (Free / Standard / Enterprise), middle tier featured with ring-2 ring-primary, prices as $/seat/mo"
+      },
+      {
+        "type": "testimonials",
+        "variant": "named-quote-cards",
+        "note": "3 cards: portrait headshot + verbatim quote + name + role + company. NOT generic stock avatars."
+      },
+      {
+        "type": "cta",
+        "variant": "minimal-band",
+        "note": "Centered 2-line outcome headline + single primary CTA, no aurora background"
+      },
+      {
+        "type": "footer",
+        "variant": "four-column",
+        "note": "Product / Company / Resources / Legal columns with hairline rule above, brand mark + small social row at bottom"
+      }
     ],
     "composition": "Near-black canvas (bg #08090a) the whole page through. Sticky nav with hairline border. Split hero: outcome headline + 2 CTAs left, realistic issue-list/cycle-board product surface right (real list rows with status pills, NOT a screenshot). Tight 8-12 logo proof strip directly below hero with low-opacity logos. 6-card feature grid using proprietary product nouns as titles + Lucide icons. One bento band showing 3-4 product surfaces with realistic data labels. Pricing as segmented monthly/yearly toggle above 3 tiers, middle featured with ring-2 ring-violet-500 (NOT a 'Most popular' pill). Named-customer testimonials with real headshots. Quiet CTA band. Four-column footer with hairline rules. Density target: 9-11 distinct bands. Section spacing: dense (py-16 not py-28). Corner radius 8-10px everywhere — never 16+."
   },
@@ -58,18 +98,63 @@
       "Use a single continuous prismatic linear-gradient as primary hero accent, blur-3xl 600px wide",
       "Footer with developer/support/company/legal as 4-column"
     ],
-    "avoid": ["dark aurora hero", "playful illustrations", "stock testimonial avatars", "multi-blob aurora gradients"],
+    "avoid": [
+      "dark aurora hero",
+      "playful illustrations",
+      "stock testimonial avatars",
+      "multi-blob aurora gradients"
+    ],
     "sections": [
-      { "type": "navbar", "variant": "minimal-dark-prismatic", "note": "Logo + Products mega-nav + Solutions/Developers/Resources/Pricing + Sign in + Contact sales CTA, on dark with subtle prismatic gradient strip at top" },
-      { "type": "hero", "variant": "split-code-snippet", "note": "Left: imperative API headline + 1-line sub + dual CTAs. Right: syntax-highlighted code snippet card (NOT a screenshot). Subtle prismatic linear-gradient ribbon in background (single, blur-3xl 600px wide — NOT 3 blob radials)" },
-      { "type": "logo-cloud", "variant": "trusted-by-row", "note": "Customer logos at low opacity, single row 10-14 logos" },
-      { "type": "features", "variant": "product-catalog-grid", "note": "3x2 grid of Stripe products (Payments / Connect / Atlas / Radar / Issuing / Treasury), each a small card with product name + 1-line value prop + 'Learn more'" },
-      { "type": "features", "variant": "side-by-side-code-band", "note": "Alternating text/code bands: text on one side describes a capability, syntax-highlighted code block on the other shows the API call" },
-      { "type": "stats", "variant": "by-the-numbers", "note": "3-4 numeric stats (e.g. '500B+ processed', '195 countries', '99.999% uptime') in restrained monospace" },
-      { "type": "pricing", "variant": "per-transaction-plus-enterprise", "note": "Two-tier: explicit per-transaction pricing card ('2.9% + 30¢') + 'Custom / Contact sales' enterprise card. Specific numbers." },
-      { "type": "testimonials", "variant": "named-customer-cards", "note": "3 cards: company logo + verbatim quote + author name + title + company (no stock avatars)" },
-      { "type": "cta", "variant": "developer-band", "note": "Two CTAs: 'Start now' + 'Talk to sales', on dark with subtle prismatic background" },
-      { "type": "footer", "variant": "four-column-developer-first", "note": "4 columns: Products / Resources / Developers / Company, with developer columns dense" }
+      {
+        "type": "navbar",
+        "variant": "minimal-dark-prismatic",
+        "note": "Logo + Products mega-nav + Solutions/Developers/Resources/Pricing + Sign in + Contact sales CTA, on dark with subtle prismatic gradient strip at top"
+      },
+      {
+        "type": "hero",
+        "variant": "split-code-snippet",
+        "note": "Left: imperative API headline + 1-line sub + dual CTAs. Right: syntax-highlighted code snippet card (NOT a screenshot). Subtle prismatic linear-gradient ribbon in background (single, blur-3xl 600px wide — NOT 3 blob radials)"
+      },
+      {
+        "type": "logo-cloud",
+        "variant": "trusted-by-row",
+        "note": "Customer logos at low opacity, single row 10-14 logos"
+      },
+      {
+        "type": "features",
+        "variant": "product-catalog-grid",
+        "note": "3x2 grid of Stripe products (Payments / Connect / Atlas / Radar / Issuing / Treasury), each a small card with product name + 1-line value prop + 'Learn more'"
+      },
+      {
+        "type": "features",
+        "variant": "side-by-side-code-band",
+        "note": "Alternating text/code bands: text on one side describes a capability, syntax-highlighted code block on the other shows the API call"
+      },
+      {
+        "type": "stats",
+        "variant": "by-the-numbers",
+        "note": "3-4 numeric stats (e.g. '500B+ processed', '195 countries', '99.999% uptime') in restrained monospace"
+      },
+      {
+        "type": "pricing",
+        "variant": "per-transaction-plus-enterprise",
+        "note": "Two-tier: explicit per-transaction pricing card ('2.9% + 30¢') + 'Custom / Contact sales' enterprise card. Specific numbers."
+      },
+      {
+        "type": "testimonials",
+        "variant": "named-customer-cards",
+        "note": "3 cards: company logo + verbatim quote + author name + title + company (no stock avatars)"
+      },
+      {
+        "type": "cta",
+        "variant": "developer-band",
+        "note": "Two CTAs: 'Start now' + 'Talk to sales', on dark with subtle prismatic background"
+      },
+      {
+        "type": "footer",
+        "variant": "four-column-developer-first",
+        "note": "4 columns: Products / Resources / Developers / Company, with developer columns dense"
+      }
     ],
     "composition": "Dark canvas (#0a2540) with a single prismatic linear-gradient ribbon as the only colored accent (blur-3xl, NEVER 3 blob radials). Sticky dark nav with thin prismatic strip on top. Hero: split — left side has API-imperative headline + 1-line sub + 2 CTAs, right side has a syntax-highlighted code snippet card with realistic code (the snippet is the hero focal point, NOT a screenshot). Low-opacity logo cloud (10-14 logos). 3x2 product catalog grid (Payments/Connect/Atlas/Radar/Issuing/Treasury — invent equivalents). Alternating text/code bands. By-the-numbers stats strip in monospace. Pricing: explicit per-transaction tier (2.9% + 30¢ style) + enterprise contact card (NOT a typical 3-card SaaS toggle). Named-customer testimonials. Developer-band CTA. 4-column footer (Products/Resources/Developers/Company). Density target: 9-11 bands. Section spacing: tight precise rhythm (py-16-20). Single accent rule: ONLY violet/indigo prismatic on dark navy — no other saturated colors."
   },
@@ -86,17 +171,58 @@
       "Hero typography weight 500-600, never 700+",
       "All cards use 4-8px radius, NEVER pill shapes for CTAs"
     ],
-    "avoid": ["aurora blobs", "multi-color gradients", "rounded-3xl anything", "pill-shaped CTAs"],
+    "avoid": [
+      "aurora blobs",
+      "multi-color gradients",
+      "rounded-3xl anything",
+      "pill-shaped CTAs"
+    ],
     "sections": [
-      { "type": "navbar", "variant": "minimal-black", "note": "Logo + thin nav links + 'Sign Up' CTA, on pure black, hairline bottom border" },
-      { "type": "hero", "variant": "typographic-poster-product-mock", "note": "Oversized 600-weight headline word lockup centered or left; small sub line; primary + ghost CTA. Right or below: dashboard/deploy-log product mock with monospace deploy lines" },
-      { "type": "features", "variant": "minimal-rule-divided", "note": "4-6 features separated by hairline rules (no card backgrounds); small icon + headline + 2-line desc each" },
-      { "type": "features", "variant": "code-snippet-band", "note": "Side-by-side: left = engineering imperative + 2-line desc, right = syntax-highlighted code block in a 4-8px-radius card" },
-      { "type": "stats", "variant": "numeric-strip", "note": "3-4 quantified stats with monospace numerals (e.g. '<100ms cold starts', '99.99% uptime')" },
-      { "type": "pricing", "variant": "three-tier-austere", "note": "3 sharp-cornered cards (4-8px radius MAX), generous whitespace between, middle tier featured with ring-1 white not aurora glow" },
-      { "type": "logo-cloud", "variant": "muted-row", "note": "Trusted-by row, low-opacity logos, no card backgrounds" },
-      { "type": "cta", "variant": "centered-text-only", "note": "Single-line outcome headline + primary CTA, no background imagery" },
-      { "type": "footer", "variant": "five-column-dense", "note": "5 columns (Products / Resources / Company / Legal / Developers), hairline rule above, brand mark + small social icons at bottom" }
+      {
+        "type": "navbar",
+        "variant": "minimal-black",
+        "note": "Logo + thin nav links + 'Sign Up' CTA, on pure black, hairline bottom border"
+      },
+      {
+        "type": "hero",
+        "variant": "typographic-poster-product-mock",
+        "note": "Oversized 600-weight headline word lockup centered or left; small sub line; primary + ghost CTA. Right or below: dashboard/deploy-log product mock with monospace deploy lines"
+      },
+      {
+        "type": "features",
+        "variant": "minimal-rule-divided",
+        "note": "4-6 features separated by hairline rules (no card backgrounds); small icon + headline + 2-line desc each"
+      },
+      {
+        "type": "features",
+        "variant": "code-snippet-band",
+        "note": "Side-by-side: left = engineering imperative + 2-line desc, right = syntax-highlighted code block in a 4-8px-radius card"
+      },
+      {
+        "type": "stats",
+        "variant": "numeric-strip",
+        "note": "3-4 quantified stats with monospace numerals (e.g. '<100ms cold starts', '99.99% uptime')"
+      },
+      {
+        "type": "pricing",
+        "variant": "three-tier-austere",
+        "note": "3 sharp-cornered cards (4-8px radius MAX), generous whitespace between, middle tier featured with ring-1 white not aurora glow"
+      },
+      {
+        "type": "logo-cloud",
+        "variant": "muted-row",
+        "note": "Trusted-by row, low-opacity logos, no card backgrounds"
+      },
+      {
+        "type": "cta",
+        "variant": "centered-text-only",
+        "note": "Single-line outcome headline + primary CTA, no background imagery"
+      },
+      {
+        "type": "footer",
+        "variant": "five-column-dense",
+        "note": "5 columns (Products / Resources / Company / Legal / Developers), hairline rule above, brand mark + small social icons at bottom"
+      }
     ],
     "composition": "Pure black canvas (#000000 or #0a0a0a) the whole page. Thin sticky nav. Hero is a typographic poster: oversized weight-500/600 headline word lockup, optional thin rule line under, short sub-headline, two CTAs (primary white-on-black, secondary ghost). Product mock either to the right OR directly below — a fake dashboard card with deploy logs streaming in monospace. Hairline-divided features (no card bgs, just rules). One code snippet band side-by-side with text. Quantified numeric stats strip in monospace. 3-tier austere pricing (sharp corners 4-8px, never pill, never 16px+ radius), middle featured with ring-1 white. Muted logo cloud. Centered text-only CTA. 5-column dense footer. Density target: 9-11 bands. Section spacing: tight engineering rhythm (py-16). Single accent rule: ONLY white-on-black or black-on-white, no colored accents."
   },
@@ -140,7 +266,11 @@
       "Include audio-sample cards with play-icon CTA pattern",
       "Use a single saturated accent (yellow-ish or violet) on near-black"
     ],
-    "avoid": ["generic SaaS hero", "stock photo testimonials", "multi-color gradients"]
+    "avoid": [
+      "generic SaaS hero",
+      "stock photo testimonials",
+      "multi-color gradients"
+    ]
   },
   "Clay": {
     "display": "Fraunces 600 or DM Serif Display",
@@ -154,7 +284,11 @@
       "Include a hand-drawn or illustrated accent — squiggle, arrow, mascot",
       "Bg should be warm off-white (#fff8eb-ish), not cold gray"
     ],
-    "avoid": ["aurora dark hero", "corporate-stock tone", "exclusively grotesk type"]
+    "avoid": [
+      "aurora dark hero",
+      "corporate-stock tone",
+      "exclusively grotesk type"
+    ]
   },
   "Notion": {
     "display": "Inter Display 600",
@@ -170,16 +304,56 @@
     ],
     "avoid": ["dark navy", "aurora gradients", "neon accents"],
     "sections": [
-      { "type": "navbar", "variant": "minimal-light", "note": "Logo + nav links (Product/Download/Solutions/Pricing) + Login + Get Notion Free CTA, on white" },
-      { "type": "hero", "variant": "centered-product-screenshot", "note": "Centered headline + 1-line sub + dual CTAs + a soft-shadowed product screenshot card directly below (NOT a gradient blob)" },
-      { "type": "logo-cloud", "variant": "trusted-by-row", "note": "10-14 light-tone customer logos in one row" },
-      { "type": "features", "variant": "tabbed-product-views", "note": "Tab group switching between 3-4 product views (Docs / Wiki / Projects / AI), each tab shows a product-screenshot card with caption" },
-      { "type": "features", "variant": "use-case-emoji-grid", "note": "3-4 use-case cards with emoji-style or rounded illustration icons, headline, 2-line desc — light backgrounds" },
-      { "type": "testimonials", "variant": "named-quote-cards", "note": "3 cards with portrait + verbatim quote + name + role + company, soft-shadowed white cards" },
-      { "type": "pricing", "variant": "four-tier-light", "note": "FOUR tiers (Free / Plus / Business / Enterprise), monthly/annual toggle, middle tier featured with ring-1 (NOT 3 tiers — Notion is 4)" },
-      { "type": "faq", "variant": "accordion", "note": "5-8 buyer-relevant questions in accordion" },
-      { "type": "cta", "variant": "centered-on-light", "note": "Centered headline + primary CTA on warm off-white background" },
-      { "type": "footer", "variant": "five-column", "note": "Product/Download/Resources/Company/Legal columns + small social row" }
+      {
+        "type": "navbar",
+        "variant": "minimal-light",
+        "note": "Logo + nav links (Product/Download/Solutions/Pricing) + Login + Get Notion Free CTA, on white"
+      },
+      {
+        "type": "hero",
+        "variant": "centered-product-screenshot",
+        "note": "Centered headline + 1-line sub + dual CTAs + a soft-shadowed product screenshot card directly below (NOT a gradient blob)"
+      },
+      {
+        "type": "logo-cloud",
+        "variant": "trusted-by-row",
+        "note": "10-14 light-tone customer logos in one row"
+      },
+      {
+        "type": "features",
+        "variant": "tabbed-product-views",
+        "note": "Tab group switching between 3-4 product views (Docs / Wiki / Projects / AI), each tab shows a product-screenshot card with caption"
+      },
+      {
+        "type": "features",
+        "variant": "use-case-emoji-grid",
+        "note": "3-4 use-case cards with emoji-style or rounded illustration icons, headline, 2-line desc — light backgrounds"
+      },
+      {
+        "type": "testimonials",
+        "variant": "named-quote-cards",
+        "note": "3 cards with portrait + verbatim quote + name + role + company, soft-shadowed white cards"
+      },
+      {
+        "type": "pricing",
+        "variant": "four-tier-light",
+        "note": "FOUR tiers (Free / Plus / Business / Enterprise), monthly/annual toggle, middle tier featured with ring-1 (NOT 3 tiers — Notion is 4)"
+      },
+      {
+        "type": "faq",
+        "variant": "accordion",
+        "note": "5-8 buyer-relevant questions in accordion"
+      },
+      {
+        "type": "cta",
+        "variant": "centered-on-light",
+        "note": "Centered headline + primary CTA on warm off-white background"
+      },
+      {
+        "type": "footer",
+        "variant": "five-column",
+        "note": "Product/Download/Resources/Company/Legal columns + small social row"
+      }
     ],
     "composition": "Pure white or warm off-white (#fafafa) canvas. Light sticky nav. Centered hero: friendly-functional headline + 1-line sub + 2 CTAs + product-screenshot card immediately below with soft drop-shadow (NOT gradient blob). Trusted-by logo row (10-14 logos). Tabbed product-view band: 3-4 tabs (Docs/Wiki/Projects/AI) each surfacing a different product screenshot. Use-case grid with emoji-style/rounded-illustration icons. Named-customer testimonial cards. Pricing as FOUR tiers not 3 (Free/Plus/Business/Enterprise) with monthly-annual toggle. FAQ accordion. Centered CTA on light. 5-column footer. Density target: 9-11 bands. Section spacing: generous airy (py-20+). NEVER dark navy, NEVER aurora, NEVER neon accents — Notion is light-theme always."
   },
@@ -209,17 +383,59 @@
       "Use a serif display font for the hero headline",
       "Single warm accent (terracotta / clay), used sparingly"
     ],
-    "avoid": ["dark theme", "aurora gradients", "grotesk-only typography", "feature-grid SaaS layout", "stock testimonial avatars"],
+    "avoid": [
+      "dark theme",
+      "aurora gradients",
+      "grotesk-only typography",
+      "feature-grid SaaS layout",
+      "stock testimonial avatars"
+    ],
     "sections": [
-      { "type": "navbar", "variant": "minimal-cream", "note": "Logo (wordmark in serif) + thin links (Research / News / Claude / API / Company) + terracotta-accent 'Try Claude' CTA, on warm cream" },
-      { "type": "hero", "variant": "serif-editorial", "note": "Serif display headline (Fraunces 500-600) left or centered, long-form 2-3 line editorial sub-headline, single primary CTA, no product mock — language IS the visual" },
-      { "type": "features", "variant": "research-paper-band", "note": "Long-form editorial paragraph blocks with serif body, pull-quote callouts, occasional small inline citations or author bylines" },
-      { "type": "gallery", "variant": "research-cards", "note": "3-4 cards each linking to a research paper or model card: paper title + 1-line abstract + 'Read paper' link, in soft-cream cards with hairline borders" },
-      { "type": "features", "variant": "model-family-band", "note": "Editorial band introducing the model family (Opus / Sonnet / Haiku — invent equivalents) with capability descriptions, NO comparison-table or pricing-toggle" },
-      { "type": "logo-cloud", "variant": "academic-quiet", "note": "Customer/research-partner logos in a quiet single-row strip, low opacity" },
-      { "type": "testimonials", "variant": "academic-affiliated-quotes", "note": "2-3 long-form quotes from named researchers / academics with their full affiliation (university, institute, lab)" },
-      { "type": "cta", "variant": "research-restrained", "note": "Quiet centered text: 'Start building with Claude' + single primary CTA, no flashy background" },
-      { "type": "footer", "variant": "minimal-multi-column", "note": "Product / Research / Company / Legal columns on cream, hairline rule above, small social row" }
+      {
+        "type": "navbar",
+        "variant": "minimal-cream",
+        "note": "Logo (wordmark in serif) + thin links (Research / News / Claude / API / Company) + terracotta-accent 'Try Claude' CTA, on warm cream"
+      },
+      {
+        "type": "hero",
+        "variant": "serif-editorial",
+        "note": "Serif display headline (Fraunces 500-600) left or centered, long-form 2-3 line editorial sub-headline, single primary CTA, no product mock — language IS the visual"
+      },
+      {
+        "type": "features",
+        "variant": "research-paper-band",
+        "note": "Long-form editorial paragraph blocks with serif body, pull-quote callouts, occasional small inline citations or author bylines"
+      },
+      {
+        "type": "gallery",
+        "variant": "research-cards",
+        "note": "3-4 cards each linking to a research paper or model card: paper title + 1-line abstract + 'Read paper' link, in soft-cream cards with hairline borders"
+      },
+      {
+        "type": "features",
+        "variant": "model-family-band",
+        "note": "Editorial band introducing the model family (Opus / Sonnet / Haiku — invent equivalents) with capability descriptions, NO comparison-table or pricing-toggle"
+      },
+      {
+        "type": "logo-cloud",
+        "variant": "academic-quiet",
+        "note": "Customer/research-partner logos in a quiet single-row strip, low opacity"
+      },
+      {
+        "type": "testimonials",
+        "variant": "academic-affiliated-quotes",
+        "note": "2-3 long-form quotes from named researchers / academics with their full affiliation (university, institute, lab)"
+      },
+      {
+        "type": "cta",
+        "variant": "research-restrained",
+        "note": "Quiet centered text: 'Start building with Claude' + single primary CTA, no flashy background"
+      },
+      {
+        "type": "footer",
+        "variant": "minimal-multi-column",
+        "note": "Product / Research / Company / Legal columns on cream, hairline rule above, small social row"
+      }
     ],
     "composition": "Warm off-white canvas (#faf9f5) the whole page — never dark navy, never aurora. Sticky thin cream nav with serif wordmark. Hero is text-first: serif Fraunces/Tiempos display headline + long 2-3 line editorial sub + single primary CTA, no product mock or gradient (language is the visual). Long-form editorial paragraph blocks with serif body, pull-quote callouts, occasional inline author bylines. Research-paper card grid (3-4 cards linking to papers/model cards in soft-cream cards with hairline borders). Model-family editorial band introducing capabilities (Opus/Sonnet/Haiku equivalents) in prose — NEVER a feature grid or comparison table. Quiet academic logo cloud. Academic-affiliated quote band with full institutional names. Research-restrained CTA. Minimal multi-column footer. Density target: 7-9 bands. Section spacing: generous editorial (py-24+). Single warm terracotta/clay accent (#cc785c), used sparingly on links + CTAs. NEVER a pricing band, NEVER a SaaS feature grid."
   },
@@ -452,7 +668,11 @@
       "Reference named open-source models in copy",
       "Use a saturated yellow accent on near-black or warm cream"
     ],
-    "avoid": ["enterprise-stock tone", "aurora gradients", "closed-source positioning"]
+    "avoid": [
+      "enterprise-stock tone",
+      "aurora gradients",
+      "closed-source positioning"
+    ]
   },
   "Pinecone": {
     "display": "Inter Display 600",
@@ -539,7 +759,11 @@
       "Include explicit SOC2/PCI compliance badges in trust band",
       "Use green-on-near-black palette with conservative typography"
     ],
-    "avoid": ["consumer-fintech tone", "playful illustrations", "aurora gradients"]
+    "avoid": [
+      "consumer-fintech tone",
+      "playful illustrations",
+      "aurora gradients"
+    ]
   },
   "HubSpot": {
     "display": "Lexend Deca (substitute Manrope 600)",
@@ -610,7 +834,11 @@
       "Include an AI-agent demo with sample input/output text",
       "Use a saturated honey-yellow accent on dark navy"
     ],
-    "avoid": ["non-conversation hero", "aurora gradients", "developer-only tone"]
+    "avoid": [
+      "non-conversation hero",
+      "aurora gradients",
+      "developer-only tone"
+    ]
   },
   "Linear (mobile)": {
     "display": "Inter Display 600",
@@ -624,7 +852,11 @@
       "Include app-store badge SVGs (App Store + Google Play)",
       "Use Linear's standard violet-on-black palette"
     ],
-    "avoid": ["aurora hero", "browser-frame product mock", "generic mobile-app tropes"]
+    "avoid": [
+      "aurora hero",
+      "browser-frame product mock",
+      "generic mobile-app tropes"
+    ]
   },
   "Airbnb": {
     "display": "Cereal (substitute Outfit 600 or DM Sans 600 — Cereal not Google-hosted)",
@@ -639,16 +871,57 @@
       "Use editorial photography slots (real-looking destination photos OR an empty `.img` div the engine fills with stock) — never an empty gradient rectangle",
       "Coral-red Airbnb accent is the SINGLE saturated color; everything else is near-black and warm off-white"
     ],
-    "avoid": ["aurora hero blobs", "B2B-style code snippet hero", "violet/teal SaaS palettes", "stock testimonial avatars", "exclamation marks in the hero", "pricing band", "feature-grid SaaS layout", "logo-cloud trust strip"],
+    "avoid": [
+      "aurora hero blobs",
+      "B2B-style code snippet hero",
+      "violet/teal SaaS palettes",
+      "stock testimonial avatars",
+      "exclamation marks in the hero",
+      "pricing band",
+      "feature-grid SaaS layout",
+      "logo-cloud trust strip"
+    ],
     "sections": [
-      { "type": "navbar", "variant": "minimal-light-search", "note": "Logo left, primary nav center (Stays/Experiences/Online Experiences), Become a Host + globe icon + user-menu right. Light backdrop." },
-      { "type": "hero", "variant": "full-bleed-photo-search", "note": "Full-bleed destination photo or short autoplay video. Centered hero card with rounded-2xl: 3-4 search inputs (Where / Check-in / Check-out / Who) + coral Search button with Lucide search icon" },
-      { "type": "gallery", "variant": "category-tiles-rounded", "note": "4-6 category tiles in a horizontal row with rounded-3xl photos + small labels below (Beachfront / Cabins / Tiny homes / Treehouses / Castles / Boats). NOT product cards. NO Add-to-cart. NO prices." },
-      { "type": "features", "variant": "editorial-story-band", "note": "Full-bleed editorial story band — large destination photo + serif/light h2 + 2-paragraph body + 'Read the story' link. Personal narrative voice." },
-      { "type": "gallery", "variant": "destination-grid", "note": "Dense 4-col masonry grid of named destinations (Lisbon / Kyoto / Patagonia / Reykjavik / Bali). Each tile has a photo, name, brief location label, optional price-from-night. Hover-lift on tile." },
-      { "type": "testimonials", "variant": "named-host-quotes", "note": "3-6 host-quote cards: host name + city + verbatim quote about hosting + small portrait. Warm, personal. NOT stock corporate avatars." },
-      { "type": "cta", "variant": "become-a-host-banner", "note": "Wide full-bleed split: text on coral background ('Earn money as an Airbnb Host' style) + 'Learn more' button + small income-estimator widget mockup" },
-      { "type": "footer", "variant": "five-column-extensive", "note": "5-column footer: Support / Hosting / Airbnb / Inspiration / Resources, each with 5-7 dense links. Bottom bar: copyright + language/currency selector + social icons" }
+      {
+        "type": "navbar",
+        "variant": "minimal-light-search",
+        "note": "Logo left, primary nav center (Stays/Experiences/Online Experiences), Become a Host + globe icon + user-menu right. Light backdrop."
+      },
+      {
+        "type": "hero",
+        "variant": "full-bleed-photo-search",
+        "note": "Full-bleed destination photo or short autoplay video. Centered hero card with rounded-2xl: 3-4 search inputs (Where / Check-in / Check-out / Who) + coral Search button with Lucide search icon"
+      },
+      {
+        "type": "gallery",
+        "variant": "category-tiles-rounded",
+        "note": "4-6 category tiles in a horizontal row with rounded-3xl photos + small labels below (Beachfront / Cabins / Tiny homes / Treehouses / Castles / Boats). NOT product cards. NO Add-to-cart. NO prices."
+      },
+      {
+        "type": "features",
+        "variant": "editorial-story-band",
+        "note": "Full-bleed editorial story band — large destination photo + serif/light h2 + 2-paragraph body + 'Read the story' link. Personal narrative voice."
+      },
+      {
+        "type": "gallery",
+        "variant": "destination-grid",
+        "note": "Dense 4-col masonry grid of named destinations (Lisbon / Kyoto / Patagonia / Reykjavik / Bali). Each tile has a photo, name, brief location label, optional price-from-night. Hover-lift on tile."
+      },
+      {
+        "type": "testimonials",
+        "variant": "named-host-quotes",
+        "note": "3-6 host-quote cards: host name + city + verbatim quote about hosting + small portrait. Warm, personal. NOT stock corporate avatars."
+      },
+      {
+        "type": "cta",
+        "variant": "become-a-host-banner",
+        "note": "Wide full-bleed split: text on coral background ('Earn money as an Airbnb Host' style) + 'Learn more' button + small income-estimator widget mockup"
+      },
+      {
+        "type": "footer",
+        "variant": "five-column-extensive",
+        "note": "5-column footer: Support / Hosting / Airbnb / Inspiration / Resources, each with 5-7 dense links. Bottom bar: copyright + language/currency selector + social icons"
+      }
     ],
     "composition": "Warm off-white canvas (#ffffff / #f7f7f7). Sticky light nav with search affordance. Hero: full-bleed destination photo OR autoplay video (12s loop) with subtle dark overlay; centered rounded-2xl search card with Where / Check-in / Check-out / Guests pills + coral Search button. NO pricing section anywhere. Below hero: horizontal scroll of 4-6 category tiles (Beachfront/Cabins/Treehouses) with rounded-3xl photos. Then 2-3 editorial story bands with full-bleed photos + serif h2 + personal-voice body. Dense 4-col destination grid (12-16 places with photos + names + optional price-from-night). Named-host quote band with portraits. 'Become a Host' coral CTA banner. 5-column extensive footer (Support/Hosting/Airbnb/Inspiration/Resources). Density target: 8-10 bands. Section spacing: airy editorial (py-20+). Corner radius generous (rounded-2xl on cards, rounded-3xl on photo tiles)."
   },
@@ -665,7 +938,12 @@
       "Use Hopper's purple-on-near-black with magenta pink as secondary accent",
       "Include app-store badge SVGs in the hero or proof strip"
     ],
-    "avoid": ["B2B SaaS dashboard hero", "violet aurora gradients", "Lorem-style copy", "generic 'Book your trip' headlines"]
+    "avoid": [
+      "B2B SaaS dashboard hero",
+      "violet aurora gradients",
+      "Lorem-style copy",
+      "generic 'Book your trip' headlines"
+    ]
   },
   "Patagonia": {
     "display": "Patagonia Sans (substitute Outfit 700) for short heads; Tiempos / Source Serif for long-form",
@@ -680,17 +958,61 @@
       "Show product photography in real outdoor contexts, never on white seamless",
       "Earth-tone palette with a single saturated red as activism accent"
     ],
-    "avoid": ["aurora hero", "SaaS product preview", "violet/teal accents", "B2B trust strips", "tech-marketing language", "pricing toggles", "add-to-cart on tiles"],
+    "avoid": [
+      "aurora hero",
+      "SaaS product preview",
+      "violet/teal accents",
+      "B2B trust strips",
+      "tech-marketing language",
+      "pricing toggles",
+      "add-to-cart on tiles"
+    ],
     "sections": [
-      { "type": "navbar", "variant": "minimal-earth", "note": "Logo + Shop / Activism / Sports / Stories nav + small search + account + bag, on warm cream or near-black hairline border" },
-      { "type": "hero", "variant": "full-bleed-environmental-photo", "note": "Full-bleed action-sports / environmental photo (mountains, ocean, climbing, surfing) with bold sans display headline overlaid, single primary 'Shop' CTA + secondary 'Read the story' link" },
-      { "type": "features", "variant": "long-form-editorial-band", "note": "Long-form editorial band: serif body text (Source Serif / Tiempos), pull-quote callout, named author/activist byline + date, optional inline photo" },
-      { "type": "gallery", "variant": "activism-impact-band", "note": "Activism band: bold red statement headline + 2-3 paragraphs about environmental commitment + 'Take action' link, NEVER pricing or cart" },
-      { "type": "gallery", "variant": "catalog-photography-grid", "note": "Catalog tiles photographed in real outdoor contexts (model in landscape, never seamless white). Product name + materials + price-link (NOT add-to-cart inline)" },
-      { "type": "features", "variant": "worn-wear-band", "note": "Worn Wear / repair band: bold statement about circularity, repair video or photo, 'Find a repair shop' link" },
-      { "type": "testimonials", "variant": "athlete-activist-quotes", "note": "1-2 long quotes from named ambassadors (climber, surfer, activist) with their full name, sport/cause, and a portrait in environmental context" },
-      { "type": "cta", "variant": "activism-cta-band", "note": "'Join the fight' or 'Earth is our only shareholder' style bold statement + 'Read more' link" },
-      { "type": "footer", "variant": "extensive-multi-column-earth", "note": "Shop / Activism / Stories / Help / Company columns + 'Sign up for emails' newsletter + small social icons" }
+      {
+        "type": "navbar",
+        "variant": "minimal-earth",
+        "note": "Logo + Shop / Activism / Sports / Stories nav + small search + account + bag, on warm cream or near-black hairline border"
+      },
+      {
+        "type": "hero",
+        "variant": "full-bleed-environmental-photo",
+        "note": "Full-bleed action-sports / environmental photo (mountains, ocean, climbing, surfing) with bold sans display headline overlaid, single primary 'Shop' CTA + secondary 'Read the story' link"
+      },
+      {
+        "type": "features",
+        "variant": "long-form-editorial-band",
+        "note": "Long-form editorial band: serif body text (Source Serif / Tiempos), pull-quote callout, named author/activist byline + date, optional inline photo"
+      },
+      {
+        "type": "gallery",
+        "variant": "activism-impact-band",
+        "note": "Activism band: bold red statement headline + 2-3 paragraphs about environmental commitment + 'Take action' link, NEVER pricing or cart"
+      },
+      {
+        "type": "gallery",
+        "variant": "catalog-photography-grid",
+        "note": "Catalog tiles photographed in real outdoor contexts (model in landscape, never seamless white). Product name + materials + price-link (NOT add-to-cart inline)"
+      },
+      {
+        "type": "features",
+        "variant": "worn-wear-band",
+        "note": "Worn Wear / repair band: bold statement about circularity, repair video or photo, 'Find a repair shop' link"
+      },
+      {
+        "type": "testimonials",
+        "variant": "athlete-activist-quotes",
+        "note": "1-2 long quotes from named ambassadors (climber, surfer, activist) with their full name, sport/cause, and a portrait in environmental context"
+      },
+      {
+        "type": "cta",
+        "variant": "activism-cta-band",
+        "note": "'Join the fight' or 'Earth is our only shareholder' style bold statement + 'Read more' link"
+      },
+      {
+        "type": "footer",
+        "variant": "extensive-multi-column-earth",
+        "note": "Shop / Activism / Stories / Help / Company columns + 'Sign up for emails' newsletter + small social icons"
+      }
     ],
     "composition": "Warm cream or muted earth canvas — never bright white, never dark navy, never aurora. Sticky cream nav with hairline border. Hero is FULL-BLEED action-sports / environmental photograph (mountains/ocean/climbing/surfing) with bold sans display headline overlaid + single 'Shop' CTA + secondary 'Read the story' link — NEVER a gradient or product mock. Long-form editorial band with serif body, pull-quote, named-author byline + date. Bold activism / impact band with red saturated statement + 'Take action' link (NEVER pricing or cart). Catalog photography grid with products in real outdoor contexts (NEVER seamless white) — product name + materials + price-link, NOT add-to-cart inline. Worn Wear circularity band with repair video or photo. Athlete/activist named-quote band with environmental-context portraits. 'Earth is our only shareholder' style CTA. Extensive multi-column footer with Shop/Activism/Stories/Help columns + newsletter signup. Density target: 8-10 bands. Section spacing: editorial (py-24). Single saturated red accent (#cf2f23) used ONLY for activism statements + CTA — everywhere else earth tones."
   },
@@ -707,16 +1029,57 @@
       "Vast whitespace OR pure black background — never warm cream or off-white",
       "Include a tech-spec strip with monospaced numbers as a sub-hero element"
     ],
-    "avoid": ["aurora hero", "multi-product cluttered hero", "warm palettes", "testimonial cards", "code snippets", "B2B feature grids", "pricing toggles", "trust strips"],
+    "avoid": [
+      "aurora hero",
+      "multi-product cluttered hero",
+      "warm palettes",
+      "testimonial cards",
+      "code snippets",
+      "B2B feature grids",
+      "pricing toggles",
+      "trust strips"
+    ],
     "sections": [
-      { "type": "navbar", "variant": "minimal-translucent", "note": "Center-anchored thin nav with Apple-logo + product links + magnifier search icon + bag icon, translucent over white or black backdrop" },
-      { "type": "hero", "variant": "single-product-showcase", "note": "ONE product photographed against single seamless background, oversized 600-700 weight display headline, period-separated 2-3-word tagline ('Different. Astonishing. Magic.'), single 'Learn more' link" },
-      { "type": "stats", "variant": "tech-spec-strip", "note": "3-5 tech specs with monospaced numerals as marketing copy ('100x more pixels', '24 hour battery', 'M5 chip')" },
-      { "type": "hero", "variant": "single-product-showcase", "note": "Each subsequent band is ANOTHER product (or product family) following the same single-product-showcase pattern — tagline + image + CTA, never multi-product clutter" },
-      { "type": "features", "variant": "compare-models-table", "note": "Compare-models table only when multiple variants exist (e.g. Pro/Max/Air sizes)" },
-      { "type": "gallery", "variant": "product-family-grid", "note": "Generous-spacing product-family grid: 3-4 products as large cards with product name + tagline + 'Buy' link, NEVER add-to-cart inline" },
-      { "type": "cta", "variant": "shop-prompt", "note": "Centered 'Shop ${product}' line on either pure black or pure white" },
-      { "type": "footer", "variant": "extensive-multi-column", "note": "Extensive multi-column footer with Shop / Account / Apple Store / For Business / Apple Values / About — small hairlines between columns" }
+      {
+        "type": "navbar",
+        "variant": "minimal-translucent",
+        "note": "Center-anchored thin nav with Apple-logo + product links + magnifier search icon + bag icon, translucent over white or black backdrop"
+      },
+      {
+        "type": "hero",
+        "variant": "single-product-showcase",
+        "note": "ONE product photographed against single seamless background, oversized 600-700 weight display headline, period-separated 2-3-word tagline ('Different. Astonishing. Magic.'), single 'Learn more' link"
+      },
+      {
+        "type": "stats",
+        "variant": "tech-spec-strip",
+        "note": "3-5 tech specs with monospaced numerals as marketing copy ('100x more pixels', '24 hour battery', 'M5 chip')"
+      },
+      {
+        "type": "hero",
+        "variant": "single-product-showcase",
+        "note": "Each subsequent band is ANOTHER product (or product family) following the same single-product-showcase pattern — tagline + image + CTA, never multi-product clutter"
+      },
+      {
+        "type": "features",
+        "variant": "compare-models-table",
+        "note": "Compare-models table only when multiple variants exist (e.g. Pro/Max/Air sizes)"
+      },
+      {
+        "type": "gallery",
+        "variant": "product-family-grid",
+        "note": "Generous-spacing product-family grid: 3-4 products as large cards with product name + tagline + 'Buy' link, NEVER add-to-cart inline"
+      },
+      {
+        "type": "cta",
+        "variant": "shop-prompt",
+        "note": "Centered 'Shop ${product}' line on either pure black or pure white"
+      },
+      {
+        "type": "footer",
+        "variant": "extensive-multi-column",
+        "note": "Extensive multi-column footer with Shop / Account / Apple Store / For Business / Apple Values / About — small hairlines between columns"
+      }
     ],
     "composition": "Single coherent canvas — either vast pure white (#ffffff) OR pure near-black (#000000) the WHOLE page, never warm cream. Center-anchored thin translucent nav. Hero is ONE product photographed against a single seamless background with oversized 600-700 weight display type, period-separated 2-3-word tagline ('Different. Astonishing. Magic.'), single 'Learn more' link (NEVER 'Sign up' / 'Get started'). Tech-spec strip in monospace right after. Each subsequent band is ANOTHER product following the same pattern — tagline + hero photo + CTA — never multi-product clutter. Optional compare-models table when variants exist. Generous-spacing product-family grid with 'Buy' link (NEVER add-to-cart inline — Apple sends to product page). 'Shop ${product}' CTA. Extensive multi-column footer. Density target: 7-9 bands, each one big and uncluttered. Section spacing: VAST (py-32 or more). Single accent: black-or-white only, no colored accents whatsoever."
   },
@@ -733,7 +1096,13 @@
       "Product tiles photographed on bold solid color backgrounds (never seamless white)",
       "Include a named-athlete testimonial band with sport + first-name"
     ],
-    "avoid": ["aurora hero", "SaaS dashboard preview", "stock smiling business people", "B2B trust strips", "violet/teal palettes"]
+    "avoid": [
+      "aurora hero",
+      "SaaS dashboard preview",
+      "stock smiling business people",
+      "B2B trust strips",
+      "violet/teal palettes"
+    ]
   },
   "Allbirds": {
     "display": "Tiempos (substitute Fraunces 600 or Instrument Serif 500)",
@@ -748,7 +1117,13 @@
       "Show carbon-footprint or environmental-impact numbers as a numeric proof strip",
       "Use Allbirds' soft cream/pale palette with no saturated accent"
     ],
-    "avoid": ["aurora hero", "saturated bright accents", "SaaS feature grids", "Lorem-style copy", "stock business people"]
+    "avoid": [
+      "aurora hero",
+      "saturated bright accents",
+      "SaaS feature grids",
+      "Lorem-style copy",
+      "stock business people"
+    ]
   },
   "Glossier": {
     "display": "Caslon Italic (substitute Playfair Display Italic 600 or DM Serif Display 400i)",
@@ -763,7 +1138,13 @@
       "Use Glossier's millennial pink as the dominant background with near-black text",
       "Product tiles with the proprietary product names as the headline (Boy Brow, Cloud Paint, etc — invent equivalents)"
     ],
-    "avoid": ["aurora hero", "violet/teal palettes", "SaaS dashboard preview", "developer-tone copy", "corporate stock photography"]
+    "avoid": [
+      "aurora hero",
+      "violet/teal palettes",
+      "SaaS dashboard preview",
+      "developer-tone copy",
+      "corporate stock photography"
+    ]
   },
   "Lululemon": {
     "display": "Lululemon Sans (substitute Outfit 600 or Manrope 700)",
@@ -778,7 +1159,13 @@
       "Use Lululemon's red accent on near-black or warm cream",
       "Include a named-ambassador band with sport + community context"
     ],
-    "avoid": ["aurora hero", "SaaS dashboards", "violet/teal accents", "Lorem-style copy", "corporate trust strips"]
+    "avoid": [
+      "aurora hero",
+      "SaaS dashboards",
+      "violet/teal accents",
+      "Lorem-style copy",
+      "corporate trust strips"
+    ]
   },
   "Headspace": {
     "display": "Apercu (substitute Outfit 600 or DM Sans 700)",
@@ -793,7 +1180,13 @@
       "Include a mood/feeling-selector interactive band as a sub-hero element",
       "Include app-store badge SVGs and a phone frame showing the app UI"
     ],
-    "avoid": ["aurora hero", "B2B SaaS dashboard preview", "violet/teal palettes", "Lorem-style copy", "corporate trust strips"]
+    "avoid": [
+      "aurora hero",
+      "B2B SaaS dashboard preview",
+      "violet/teal palettes",
+      "Lorem-style copy",
+      "corporate trust strips"
+    ]
   },
   "Calm": {
     "display": "GT Eesti Display (substitute Manrope 600 or Inter Display 600)",
@@ -808,7 +1201,13 @@
       "Include a celebrity-narrator band with named voices",
       "Include a phone frame showing the Calm sleep-stories UI"
     ],
-    "avoid": ["aurora hero", "bright saturated accents", "SaaS feature grids", "exclamation marks", "developer-tone copy"]
+    "avoid": [
+      "aurora hero",
+      "bright saturated accents",
+      "SaaS feature grids",
+      "exclamation marks",
+      "developer-tone copy"
+    ]
   },
   "Spotify": {
     "display": "Spotify Circular (substitute Outfit 800 or Space Grotesk 700)",
@@ -823,7 +1222,13 @@
       "Include a Wrapped-style data-vis band with playful infographic charts",
       "Bands are color-blocked — each section a different saturated solid background, not white-on-white"
     ],
-    "avoid": ["aurora hero", "B2B SaaS dashboard preview", "code snippets", "stock corporate photography", "violet/teal palettes"]
+    "avoid": [
+      "aurora hero",
+      "B2B SaaS dashboard preview",
+      "code snippets",
+      "stock corporate photography",
+      "violet/teal palettes"
+    ]
   },
   "MasterClass": {
     "display": "Portrait Text (substitute Fraunces 500 or Playfair Display 600)",
@@ -838,7 +1243,13 @@
       "Include an instructor-tile grid with full-bleed portraits + named instructor + craft per tile",
       "Include a curriculum-preview band with numbered chapter list"
     ],
-    "avoid": ["aurora hero", "SaaS feature grids", "code snippets", "violet/teal palettes", "stock corporate photography"]
+    "avoid": [
+      "aurora hero",
+      "SaaS feature grids",
+      "code snippets",
+      "violet/teal palettes",
+      "stock corporate photography"
+    ]
   },
   "Substack": {
     "display": "Sohne (substitute Inter Display 600 or Outfit 600)",
@@ -853,7 +1264,13 @@
       "Include a named-writer grid band with publication titles per writer",
       "Use Substack's signature orange on near-black or warm cream"
     ],
-    "avoid": ["aurora hero", "SaaS dashboard preview", "sans-serif body text", "developer-tone copy", "Lorem-style content"]
+    "avoid": [
+      "aurora hero",
+      "SaaS dashboard preview",
+      "sans-serif body text",
+      "developer-tone copy",
+      "Lorem-style content"
+    ]
   },
   "NYT": {
     "display": "Cheltenham (substitute Playfair Display 700 or Fraunces 700)",
@@ -868,7 +1285,13 @@
       "Include a multi-section navigation band with section names (Politics/Business/etc — invent equivalents)",
       "Include a photojournalism band with a full-bleed photo + caption-style typography"
     ],
-    "avoid": ["aurora hero", "SaaS feature grids", "sans-serif body", "exclamation marks", "developer-tone copy"]
+    "avoid": [
+      "aurora hero",
+      "SaaS feature grids",
+      "sans-serif body",
+      "exclamation marks",
+      "developer-tone copy"
+    ]
   },
   "Vogue": {
     "display": "Vogue Didone (substitute Playfair Display 800 or DM Serif Display 400)",
@@ -884,6 +1307,12 @@
       "Include named-designer / named-house references in copy",
       "Pure black and warm cream with a subtle gold accent — no other saturated colors"
     ],
-    "avoid": ["aurora hero", "SaaS feature grids", "sans-serif body", "code snippets", "developer-tone copy"]
+    "avoid": [
+      "aurora hero",
+      "SaaS feature grids",
+      "sans-serif body",
+      "code snippets",
+      "developer-tone copy"
+    ]
   }
 }

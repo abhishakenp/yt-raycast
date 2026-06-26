@@ -60,6 +60,11 @@ export const lookupArgs = {
   lookup: v.string(),
 }
 
+export const clonePageLookupArgs = {
+  lookup: v.string(),
+  pathname: v.optional(v.string()),
+}
+
 export const generationViewArgs = {
   sessionId: v.optional(v.id('sessions')),
   lookup: v.optional(v.string()),

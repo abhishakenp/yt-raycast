@@ -1,21 +1,21 @@
-import * as React from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
+import * as React from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "#/components/ui/resizable.tsx"
+} from '#/components/ui/resizable.tsx'
 
 // Compound primitive: flatten ResizablePanelGroup/ResizablePanel/ResizableHandle
 // into a single `panels` array, with a handle inserted between each. Each panel
 // holds child content; defaultSize is a flex-basis percentage. orientation
 // mirrors react-resizable-panels' Group orientation prop.
 export const Resizable = defineComponent({
-  name: "Resizable",
+  name: 'Resizable',
   description:
-    "Resizable split panels with draggable handles between them. Each panel in `panels` holds child content.",
+    'Resizable split panels with draggable handles between them. Each panel in `panels` holds child content.',
   props: z.object({
     panels: z
       .array(
@@ -25,7 +25,7 @@ export const Resizable = defineComponent({
         }),
       )
       .optional(),
-    orientation: z.enum(["horizontal", "vertical"]).optional(),
+    orientation: z.enum(['horizontal', 'vertical']).optional(),
     withHandle: z.boolean().optional(),
     className: z.string().optional(),
   }),
@@ -36,8 +36,8 @@ export const Resizable = defineComponent({
         : [{ content: undefined }, { content: undefined }]
     return (
       <ResizablePanelGroup
-        orientation={props.orientation ?? "horizontal"}
-        className={cn("min-h-48 rounded-lg border", props.className)}
+        orientation={props.orientation ?? 'horizontal'}
+        className={cn('min-h-48 rounded-lg border', props.className)}
       >
         {panels.map((panel, i) => (
           <React.Fragment key={i}>

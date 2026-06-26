@@ -1,38 +1,38 @@
-import { cn } from "#/lib/utils.ts";
+import { cn } from '#/lib/utils.ts'
 
-import { Button } from "#/components/ui/8bit/button.tsx";
+import { Button } from '#/components/ui/8bit/button.tsx'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "#/components/ui/8bit/card.tsx";
+} from '#/components/ui/8bit/card.tsx'
 
 const menuItems = [
   {
-    label: "START GAME",
-    action: () => console.log("Starting game..."),
+    label: 'START GAME',
+    action: () => console.log('Starting game...'),
   },
   {
-    label: "OPTIONS",
-    action: () => console.log("Showing options..."),
+    label: 'OPTIONS',
+    action: () => console.log('Showing options...'),
   },
   {
-    label: "HIGH SCORES",
-    action: () => console.log("Showing high scores..."),
+    label: 'HIGH SCORES',
+    action: () => console.log('Showing high scores...'),
   },
   {
-    label: "MULTIPLAYER",
-    action: () => console.log("Multiplayer mode..."),
+    label: 'MULTIPLAYER',
+    action: () => console.log('Multiplayer mode...'),
   },
-  { label: "QUIT", action: () => console.log("Quitting game...") },
-];
+  { label: 'QUIT', action: () => console.log('Quitting game...') },
+]
 
 export default function MainMenu({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<'div'>) {
   return (
     <Card className={cn(className)} {...props}>
       <CardHeader className="flex flex-col items-center justify-center gap-2">
@@ -49,5 +49,5 @@ export default function MainMenu({
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

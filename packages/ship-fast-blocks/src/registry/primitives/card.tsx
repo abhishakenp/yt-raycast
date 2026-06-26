@@ -1,5 +1,5 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 import {
   Card as UICard,
   CardContent,
@@ -7,15 +7,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "#/components/ui/card.tsx"
+} from '#/components/ui/card.tsx'
 
 // Compound-primitive exemplar: flatten shadcn's Card/CardHeader/CardTitle/... sub-
 // components into a single ergonomic node. `children` holds the body content
 // (other generated components); title/description/footer are optional slots.
 export const Card = defineComponent({
-  name: "Card",
+  name: 'Card',
   description:
-    "Bordered content container with optional title, description, body (children) and footer.",
+    'Bordered content container with optional title, description, body (children) and footer.',
   props: z.object({
     children: z.array(z.any()).optional(),
     title: z.string().optional(),
@@ -28,10 +28,14 @@ export const Card = defineComponent({
       {(props.title || props.description) && (
         <CardHeader>
           {props.title && <CardTitle>{props.title}</CardTitle>}
-          {props.description && <CardDescription>{props.description}</CardDescription>}
+          {props.description && (
+            <CardDescription>{props.description}</CardDescription>
+          )}
         </CardHeader>
       )}
-      {props.children && <CardContent>{renderNode(props.children)}</CardContent>}
+      {props.children && (
+        <CardContent>{renderNode(props.children)}</CardContent>
+      )}
       {props.footer && <CardFooter>{renderNode(props.footer)}</CardFooter>}
     </UICard>
   ),

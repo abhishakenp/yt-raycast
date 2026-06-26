@@ -7,26 +7,63 @@
  *
  * `dots` and the `synapse` grid base are pure CSS; everything else is canvas-only. */
 
-:root { --bg-effect-intensity: 1; }
+:root {
+  --bg-effect-intensity: 1;
+}
 
 /* Canvas-based effects — single source of truth for intensity */
-#synapse-canvas, #rain-canvas, #constellations-canvas,
-#perlin-flow-canvas, #petals-canvas, #sparkles-canvas,
+#synapse-canvas,
+#rain-canvas,
+#constellations-canvas,
+#perlin-flow-canvas,
+#petals-canvas,
+#sparkles-canvas,
 #embers-canvas {
   opacity: var(--bg-effect-intensity, 1);
 }
 
 /* Static dotted background (not animated) */
 body.bg-pattern-dots {
-  background-image: radial-gradient(color-mix(in srgb, var(--bg-effect-color, var(--fg)) calc(5% * var(--bg-effect-intensity, 1)), transparent) 1px, transparent 1px);
-  background-size: 20px 20px; background-attachment: fixed;
+  background-image: radial-gradient(
+    color-mix(
+        in srgb,
+        var(--bg-effect-color, var(--fg))
+          calc(5% * var(--bg-effect-intensity, 1)),
+        transparent
+      )
+      1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+  background-attachment: fixed;
 }
 
 /* Synapse: CSS grid as base, canvas pulses overlay */
 body.bg-pattern-synapse {
-  background-image: linear-gradient(color-mix(in srgb, var(--bg-effect-color, var(--fg)) calc(3.5% * var(--bg-effect-intensity, 1)), transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--bg-effect-color, var(--fg)) calc(3.5% * var(--bg-effect-intensity, 1)), transparent) 1px, transparent 1px);
-  background-size: 24px 24px; background-attachment: fixed;
+  background-image:
+    linear-gradient(
+      color-mix(
+          in srgb,
+          var(--bg-effect-color, var(--fg))
+            calc(3.5% * var(--bg-effect-intensity, 1)),
+          transparent
+        )
+        1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(
+          in srgb,
+          var(--bg-effect-color, var(--fg))
+            calc(3.5% * var(--bg-effect-intensity, 1)),
+          transparent
+        )
+        1px,
+      transparent 1px
+    );
+  background-size: 24px 24px;
+  background-attachment: fixed;
 }
 
 /* Canvas-only backgrounds — no CSS base needed */

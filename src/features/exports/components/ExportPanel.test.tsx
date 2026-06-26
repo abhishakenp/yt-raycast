@@ -256,12 +256,13 @@ describe('ExportPanel', () => {
       configurable: true,
       value: revokeObjectUrl,
     })
-    const fetchMock = vi.fn(async () =>
-      new Response('zip-bytes', {
-        headers: {
-          'content-disposition': 'attachment; filename="site.zip"',
-        },
-      }),
+    const fetchMock = vi.fn(
+      async () =>
+        new Response('zip-bytes', {
+          headers: {
+            'content-disposition': 'attachment; filename="site.zip"',
+          },
+        }),
     )
     vi.stubGlobal('fetch', fetchMock)
 

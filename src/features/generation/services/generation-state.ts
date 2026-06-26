@@ -1,6 +1,9 @@
 import { createAppError } from '@/shared/errors/app-error'
 import type { AppErrorShape } from '@/shared/errors/app-error'
-import type { GenerationStatus, SessionTask } from '@/features/generation/schemas/generation-contracts'
+import type {
+  GenerationStatus,
+  SessionTask,
+} from '@/features/generation/schemas/generation-contracts'
 
 export type GenerationState = {
   status: GenerationStatus
@@ -39,7 +42,10 @@ const transitionRules: Record<GenerationStatus, readonly GenerationStatus[]> = {
   failed: [],
 }
 
-const previewEvents: readonly GenerationEvent['type'][] = ['homepage_ready', 'preview_ready']
+const previewEvents: readonly GenerationEvent['type'][] = [
+  'homepage_ready',
+  'preview_ready',
+]
 
 export const createInitialGenerationState = (): GenerationState => ({
   status: 'created',
@@ -63,25 +69,30 @@ export const applyGenerationEvent = (
     ? {
         ...state,
         status: nextStatus,
-        previewVersion: previewEvents.includes(event.type) ? state.previewVersion + 1 : state.previewVersion,
-        tasks: event.type === 'streaming'
-          ? [
-              ...state.tasks,
-              {
-                taskKey: event.taskKey,
-                title: event.title,
-                status: 'running',
-                order: state.tasks.length,
-              },
-            ]
-          : state.tasks,
-        error: event.type === 'failed'
-          ? {
-              code: 'GENERATION_FAILED',
-              message: event.message,
-              status: createAppError('GENERATION_FAILED', event.message).status,
-            }
-          : state.error,
+        previewVersion: previewEvents.includes(event.type)
+          ? state.previewVersion + 1
+          : state.previewVersion,
+        tasks:
+          event.type === 'streaming'
+            ? [
+                ...state.tasks,
+                {
+                  taskKey: event.taskKey,
+                  title: event.title,
+                  status: 'running',
+                  order: state.tasks.length,
+                },
+              ]
+            : state.tasks,
+        error:
+          event.type === 'failed'
+            ? {
+                code: 'GENERATION_FAILED',
+                message: event.message,
+                status: createAppError('GENERATION_FAILED', event.message)
+                  .status,
+              }
+            : state.error,
       }
     : {
         ...state,

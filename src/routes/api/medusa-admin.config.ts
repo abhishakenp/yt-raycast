@@ -1,6 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { getMedusaAdminUrl, getMedusaBackendUrl } from '@/features/commerce/server/medusa-store-env'
+import {
+  getMedusaAdminUrl,
+  getMedusaBackendUrl,
+} from '@/features/commerce/server/medusa-store-env'
 
 export const Route = createFileRoute('/api/medusa-admin/config')({
   server: {

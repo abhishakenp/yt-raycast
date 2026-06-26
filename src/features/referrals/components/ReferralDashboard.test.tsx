@@ -47,7 +47,9 @@ describe('ReferralDashboard', () => {
     state.status = baseStatus
     render(<ReferralDashboard />)
     expect(screen.getByText(/50% off for life/i)).toBeTruthy()
-    const input = screen.getByDisplayValue(/\/\?ref=ABCD2345$/) as HTMLInputElement
+    const input = screen.getByDisplayValue(
+      /\/\?ref=ABCD2345$/,
+    ) as HTMLInputElement
     expect(input.value).toContain('ref=ABCD2345')
   })
 
@@ -55,9 +57,7 @@ describe('ReferralDashboard', () => {
     state.status = { ...baseStatus, qualifiedCount: 1, remaining: 1 }
     render(<ReferralDashboard />)
     expect(screen.getByText(/1 \/ 2 paid/)).toBeTruthy()
-    expect(
-      screen.getByText(/Invite 1 more paying subscriber/i),
-    ).toBeTruthy()
+    expect(screen.getByText(/Invite 1 more paying subscriber/i)).toBeTruthy()
   })
 
   it('celebrates an active lifetime discount when unlocked', () => {
@@ -71,7 +71,9 @@ describe('ReferralDashboard', () => {
       hasActiveSubscription: true,
     }
     render(<ReferralDashboard />)
-    expect(screen.getByText(/Unlocked!.*50% lifetime discount is active/i)).toBeTruthy()
+    expect(
+      screen.getByText(/Unlocked!.*50% lifetime discount is active/i),
+    ).toBeTruthy()
   })
 
   it('lists referrals with masked emails and status labels', () => {
@@ -87,7 +89,12 @@ describe('ReferralDashboard', () => {
           createdAt: 2,
           paidAt: 3,
         },
-        { status: 'pending', email: 'sa***@acme.co', createdAt: 1, paidAt: null },
+        {
+          status: 'pending',
+          email: 'sa***@acme.co',
+          createdAt: 1,
+          paidAt: null,
+        },
       ],
     }
     render(<ReferralDashboard />)

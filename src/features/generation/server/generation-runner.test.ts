@@ -6,23 +6,32 @@ import { runEngineGeneration } from '@/features/generation/server/generation-run
 import type { GenerationPersistence } from '@/features/generation/server/generation-runner'
 import type { RunShipFastEngine } from '@/features/generation/server/ship-fast-engine-adapter'
 
-const createTempRoot = (): string => mkdtempSync(join(tmpdir(), 'ship-fast-v2-runner-'))
+const createTempRoot = (): string =>
+  mkdtempSync(join(tmpdir(), 'ship-fast-v2-runner-'))
 
 describe('generation runner', () => {
   it('persists completed engine artifacts', async () => {
     const completedInputs: unknown[] = []
     const failedInputs: unknown[] = []
     const seenLanguages: Array<string | undefined> = []
-    const runAll: RunShipFastEngine = async ({ workspace, preferredLanguage }) => {
+    const runAll: RunShipFastEngine = async ({
+      workspace,
+      preferredLanguage,
+    }) => {
       seenLanguages.push(preferredLanguage)
       mkdirSync(workspace, { recursive: true })
-      writeFileSync(join(workspace, 'index.html'), '<!doctype html><h1>Generated</h1>')
+      writeFileSync(
+        join(workspace, 'index.html'),
+        '<!doctype html><h1>Generated</h1>',
+      )
       writeFileSync(join(workspace, 'site-spec.json'), '{"brand":"Generated"}')
       writeFileSync(join(workspace, 'home.openui'), 'page Home {}')
       writeFileSync(
         join(workspace, 'tasks.json'),
         JSON.stringify({
-          tasks: [{ id: 'home.openui', label: 'Generate Home page', status: 'DONE' }],
+          tasks: [
+            { id: 'home.openui', label: 'Generate Home page', status: 'DONE' },
+          ],
         }),
       )
     }
@@ -56,7 +65,9 @@ describe('generation runner', () => {
         html: '<!doctype html><h1>Generated</h1>',
         siteSpecJson: '{"brand":"Generated"}',
         openUiSource: 'page Home {}',
-        tasks: [{ id: 'home.openui', label: 'Generate Home page', status: 'DONE' }],
+        tasks: [
+          { id: 'home.openui', label: 'Generate Home page', status: 'DONE' },
+        ],
       },
     ])
     expect(seenLanguages).toEqual(['fr'])

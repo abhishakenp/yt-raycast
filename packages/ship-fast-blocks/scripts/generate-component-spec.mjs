@@ -24,7 +24,10 @@ const repoRoot = join(blocksRoot, '..', '..')
 const targets = [
   join(blocksRoot, 'src/generated/component-spec.json'),
   join(repoRoot, 'packages/ship-fast-engine/src/generated/component-spec.json'),
-  join(repoRoot, 'packages/ship-fast-engine/src/genui/generated/component-spec.json'),
+  join(
+    repoRoot,
+    'packages/ship-fast-engine/src/genui/generated/component-spec.json',
+  ),
 ]
 for (const target of targets) writeFileSync(target, json)
 

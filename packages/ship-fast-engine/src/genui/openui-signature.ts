@@ -199,9 +199,7 @@ export function arrayFieldNames(name: string): string[] {
   return topLevelArgs(name)
     .filter(
       (f) =>
-        f.name !== 'brand' &&
-        f.name !== 'nav' &&
-        /\]\s*$/.test(f.type.trim()),
+        f.name !== 'brand' && f.name !== 'nav' && /\]\s*$/.test(f.type.trim()),
     )
     .map((f) => f.name)
 }
@@ -219,7 +217,11 @@ function phraseFor(fieldName: string, ctx: SynthesisContext): string {
   if (/headline|heading|title|head/.test(lower)) {
     return `${ctx.brand} — ${ctx.pageLabel}`
   }
-  if (/sub(heading|head|title)|lead|tagline|blurb|description|body|detail|about|note|paragraph|quote|answer|copy/.test(lower)) {
+  if (
+    /sub(heading|head|title)|lead|tagline|blurb|description|body|detail|about|note|paragraph|quote|answer|copy/.test(
+      lower,
+    )
+  ) {
     return `${ctx.brand} brings ${subject} to life with a clear, focused experience for ${ctx.pageLabel}.`
   }
   if (/cta|button|submit|action|link|more|view|signin|sign/.test(lower)) {
@@ -423,9 +425,7 @@ function synthesizeArray(
   const trimmed = inner.trim()
   // Array of objects → 3 synthesized objects.
   if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
-    return [0, 1, 2].map(() =>
-      synthesizeObject(trimmed, ctx, depth + 1),
-    )
+    return [0, 1, 2].map(() => synthesizeObject(trimmed, ctx, depth + 1))
   }
   // Array of strings.
   if (trimmed === 'string') {

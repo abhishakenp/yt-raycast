@@ -7,7 +7,10 @@ import { createTranslateResponse } from './translate-response'
 describe('createTranslateResponse', () => {
   it('keeps the engine text-generation runtime behind the default model path', () => {
     const source = readFileSync(
-      join(process.cwd(), 'src/features/localization/server/translate-response.ts'),
+      join(
+        process.cwd(),
+        'src/features/localization/server/translate-response.ts',
+      ),
       'utf8',
     )
     const imports = source.slice(0, source.indexOf('type TranslateModel'))

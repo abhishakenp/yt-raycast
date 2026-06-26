@@ -183,7 +183,8 @@ export const recordReferralSignup = mutation({
     if (!code) return { recorded: false, reason: 'invalid_code' as const }
 
     const owner = await findCodeOwner(ctx, code)
-    if (owner === null) return { recorded: false, reason: 'invalid_code' as const }
+    if (owner === null)
+      return { recorded: false, reason: 'invalid_code' as const }
     if (owner.userId === referredUserId)
       return { recorded: false, reason: 'self_referral' as const }
 
@@ -199,7 +200,11 @@ export const recordReferralSignup = mutation({
 
     const identityEmail =
       typeof identity?.email === 'string' ? identity.email : ''
-    const emailSource = identityEmail ? 'identity' : args.email ? 'client' : 'none'
+    const emailSource = identityEmail
+      ? 'identity'
+      : args.email
+        ? 'client'
+        : 'none'
     const classified = classifyReferralEmail(identityEmail || args.email)
 
     const now = Date.now()
@@ -219,7 +224,10 @@ export const recordReferralSignup = mutation({
     // checkout). Qualify immediately so the reward isn't lost, unless their
     // email is disposable.
     if (classified.acceptable) {
-      const subscription = await getActiveSubscriptionForUser(ctx, referredUserId)
+      const subscription = await getActiveSubscriptionForUser(
+        ctx,
+        referredUserId,
+      )
       if (subscription !== null) {
         const referral = await ctx.db
           .query('referrals')

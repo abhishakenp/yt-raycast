@@ -5,7 +5,8 @@ import { createSessionApiResponse } from '@/features/session/server/session-api-
 export const Route = createFileRoute('/api/sessions/$sessionId')({
   server: {
     handlers: {
-      GET: async ({ params }) => await createSessionApiResponse(params.sessionId),
+      GET: async ({ params }) =>
+        await createSessionApiResponse(params.sessionId),
     },
   },
 })

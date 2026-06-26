@@ -48,7 +48,11 @@ export const LocalizationPanel = ({
       setResult(data)
     } catch (translateError) {
       setResult(null)
-      setError(translateError instanceof Error ? translateError.message : 'Translation failed')
+      setError(
+        translateError instanceof Error
+          ? translateError.message
+          : 'Translation failed',
+      )
     } finally {
       setIsTranslating(false)
     }
@@ -59,8 +63,13 @@ export const LocalizationPanel = ({
       <div className="flex items-center gap-2 border-b border-white/10 pb-3">
         <Languages className="size-4 text-cyan-200" />
         <div>
-          <h2 className="m-0 text-sm font-semibold uppercase tracking-[0.1em] text-white">Localization</h2>
-          <p className="m-0 mt-1 text-xs leading-5 text-white/48">Use the current translation endpoint with this session's preferred language.</p>
+          <h2 className="m-0 text-sm font-semibold uppercase tracking-[0.1em] text-white">
+            Localization
+          </h2>
+          <p className="m-0 mt-1 text-xs leading-5 text-white/48">
+            Use the current translation endpoint with this session's preferred
+            language.
+          </p>
         </div>
       </div>
 
@@ -98,12 +107,18 @@ export const LocalizationPanel = ({
       {result && (
         <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
           <div className="mb-2 flex items-center justify-between gap-3">
-            <p className="m-0 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-white/42">Result</p>
+            <p className="m-0 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-white/42">
+              Result
+            </p>
             <p className="m-0 font-mono text-[0.68rem] uppercase tracking-[0.08em] text-white/34">
-              {result.translated ? 'translated' : result.skipped ?? 'unchanged'}
+              {result.translated
+                ? 'translated'
+                : (result.skipped ?? 'unchanged')}
             </p>
           </div>
-          <p className="m-0 whitespace-pre-wrap text-sm leading-6 text-white/72">{result.translation}</p>
+          <p className="m-0 whitespace-pre-wrap text-sm leading-6 text-white/72">
+            {result.translation}
+          </p>
         </section>
       )}
 

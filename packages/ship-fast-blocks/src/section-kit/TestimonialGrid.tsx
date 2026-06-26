@@ -1,7 +1,7 @@
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
-import { SectionHeading } from "./SectionHeading.tsx"
-import { StarRating } from "./StarRating.tsx"
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { SectionHeading } from './SectionHeading.tsx'
+import { StarRating } from './StarRating.tsx'
 
 /**
  * TestimonialGrid — responsive grid of customer testimonial cards. Optional
@@ -24,16 +24,16 @@ export function TestimonialGrid(props: {
 }) {
   const columns = props.columns ?? 3
   const colClass =
-    columns === 2 ? "md:grid-cols-2" : "md:grid-cols-2 lg:grid-cols-3"
+    columns === 2 ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'
 
   return (
-    <section className={cn("flex flex-col gap-10", props.className)}>
+    <section className={cn('flex flex-col gap-10', props.className)}>
       {props.heading ? (
         <SectionHeading title={props.heading} subtitle={props.subheading} />
       ) : null}
-      <div className={cn("grid gap-6", "grid-cols-1", colClass)}>
+      <div className={cn('grid gap-6', 'grid-cols-1', colClass)}>
         {props.items.map((i, idx) => {
-          const meta = [i.role, i.company].filter(Boolean).join(" · ")
+          const meta = [i.role, i.company].filter(Boolean).join(' · ')
           return (
             <figure
               key={idx}
@@ -57,7 +57,9 @@ export function TestimonialGrid(props: {
                     {i.name}
                   </span>
                   {meta ? (
-                    <span className="text-xs text-muted-foreground">{meta}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {meta}
+                    </span>
                   ) : null}
                 </div>
               </figcaption>

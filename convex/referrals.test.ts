@@ -14,7 +14,11 @@ const ISS = 'https://clerk.test'
 const id = (u: string) => `${ISS}|${u}`
 const SECRET = 'test-billing-secret'
 
-const asUser = (t: ReturnType<typeof convexTest>, user: string, email?: string) =>
+const asUser = (
+  t: ReturnType<typeof convexTest>,
+  user: string,
+  email?: string,
+) =>
   t.withIdentity({
     tokenIdentifier: id(user),
     subject: user,
@@ -127,7 +131,10 @@ describe('referrals', () => {
     // First payment → 1 qualified, not unlocked.
     const pay1 = await paySubscription(t, 'bob', 'sub_bob', 'evt_bob')
     expect(pay1.referralUnlock).toBeNull()
-    status = await asUser(t, 'alice').query(api.referrals.getMyReferralStatus, {})
+    status = await asUser(t, 'alice').query(
+      api.referrals.getMyReferralStatus,
+      {},
+    )
     expect(status.qualifiedCount).toBe(1)
     expect(status.unlocked).toBe(false)
 
@@ -135,7 +142,10 @@ describe('referrals', () => {
     const pay2 = await paySubscription(t, 'carol', 'sub_carol', 'evt_carol')
     expect(pay2.referralUnlock).toEqual({ referrerUserId: id('alice') })
 
-    status = await asUser(t, 'alice').query(api.referrals.getMyReferralStatus, {})
+    status = await asUser(t, 'alice').query(
+      api.referrals.getMyReferralStatus,
+      {},
+    )
     expect(status.qualifiedCount).toBe(2)
     expect(status.unlocked).toBe(true)
   })
@@ -168,7 +178,9 @@ describe('referrals', () => {
     )
     expect(status.qualifiedCount).toBe(0)
     expect(status.unlocked).toBe(false)
-    expect(status.referrals.every((r) => r.status === 'disqualified')).toBe(true)
+    expect(status.referrals.every((r) => r.status === 'disqualified')).toBe(
+      true,
+    )
   })
 
   it('keeps the reward unlocked permanently (referred churn does not revoke)', async () => {

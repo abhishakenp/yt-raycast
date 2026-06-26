@@ -128,6 +128,85 @@ describe('usePromptHomeController submit guard', () => {
     })
   })
 
+  it('starts a v1 clone job when the prompt contains a reference URL', async () => {
+    const state = getTestState()
+    state.createSession.mockResolvedValueOnce({
+      sessionId: 'session_prompt_clone',
+      cached: false,
+    })
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Clone https://tvnl.in/ exactly')
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt({ engineVersion: 'v2' })
+    })
+
+    expect(state.createSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prompt: 'Clone https://tvnl.in/ exactly',
+        cloneUrl: 'https://tvnl.in/',
+      }),
+    )
+    expect(state.createSession.mock.calls[0]?.[0]).not.toHaveProperty(
+      'engineVersion',
+    )
+    const cloneCall = vi
+      .mocked(fetch)
+      .mock.calls.find((call) => call[0] === '/api/clone')
+    expect(cloneCall?.[1]).toMatchObject({ method: 'POST' })
+    expect(JSON.parse(String(cloneCall?.[1]?.body))).toMatchObject({
+      sessionId: 'session_prompt_clone',
+      anonymousOwnerSecret: expect.any(String),
+      seedUrl: 'https://tvnl.in/',
+      brief: 'Clone exactly',
+    })
+  })
+
+  it('starts a v1 clone job when the reference URL field supplies cloneUrl', async () => {
+    const state = getTestState()
+    state.createSession.mockResolvedValueOnce({
+      sessionId: 'session_reference_clone',
+      cached: false,
+    })
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Create an identical public utility portal')
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt({
+        cloneUrl: 'https://tvnl.in/',
+        designReferenceUrls: ['https://tvnl.in/'],
+        engineVersion: 'v2',
+      })
+    })
+
+    expect(state.createSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prompt: 'Create an identical public utility portal',
+        cloneUrl: 'https://tvnl.in/',
+        designReferenceUrls: ['https://tvnl.in/'],
+      }),
+    )
+    expect(state.createSession.mock.calls[0]?.[0]).not.toHaveProperty(
+      'engineVersion',
+    )
+    const cloneCall = vi
+      .mocked(fetch)
+      .mock.calls.find((call) => call[0] === '/api/clone')
+    expect(cloneCall?.[1]).toMatchObject({ method: 'POST' })
+    expect(JSON.parse(String(cloneCall?.[1]?.body))).toMatchObject({
+      sessionId: 'session_reference_clone',
+      anonymousOwnerSecret: expect.any(String),
+      seedUrl: 'https://tvnl.in/',
+      brief: 'Create an identical public utility portal',
+    })
+  })
+
   it('navigates immediately from a ready prompt cache entry', async () => {
     const state = getTestState()
     window.localStorage.setItem(

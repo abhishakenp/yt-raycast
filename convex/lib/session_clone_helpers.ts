@@ -143,9 +143,7 @@ export const finalizeSessionClonePreview = async (
 
   const clonePages = await ctx.db
     .query('clonePages')
-    .withIndex('by_sessionId', (index) =>
-      index.eq('sessionId', args.sessionId),
-    )
+    .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
     .collect()
 
   const homePage =
@@ -186,12 +184,7 @@ export const finalizeSessionClonePreview = async (
     createdAt: now,
   })
 
-  await seedCmsBindingsForGeneratedArtifacts(
-    ctx,
-    args.sessionId,
-    { html },
-    now,
-  )
+  await seedCmsBindingsForGeneratedArtifacts(ctx, args.sessionId, { html }, now)
 
   await ctx.db.insert('generationEvents', {
     sessionId: args.sessionId,
@@ -249,9 +242,10 @@ export const listSessionClonePages = async (
 // Resolve the home clone page's renderable content. Returns BOTH a possible
 // inline `html` (small docs → iframe srcDoc) and a `url` (large docs in file
 // storage → iframe src); the client picks `url` when present, else `html`.
-export const loadCloneHomePreview = async (
+export const loadClonePagePreview = async (
   ctx: Pick<QueryCtx, 'db' | 'storage'>,
   lookup: string,
+  pathname?: string,
 ) => {
   const sessionId = ctx.db.normalizeId('sessions', lookup)
   const session = sessionId === null ? null : await ctx.db.get(sessionId)
@@ -262,7 +256,12 @@ export const loadCloneHomePreview = async (
     .withIndex('by_sessionId', (index) => index.eq('sessionId', session._id))
     .collect()
 
+  const requestedPage =
+    pathname === undefined
+      ? null
+      : (pages.find((page) => page.pathname === pathname) ?? null)
   const homePage =
+    requestedPage ??
     pages.find((page) => page.isHome) ??
     pages.find((page) => page.order === 0) ??
     null

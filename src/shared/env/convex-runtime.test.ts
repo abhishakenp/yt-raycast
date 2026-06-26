@@ -14,12 +14,16 @@ describe('runtime Convex URL', () => {
   })
 
   it('falls back to browser-safe Convex URLs', () => {
-    expect(getRuntimeConvexUrl({ VITE_CONVEX_URL: 'https://browser-cloud.example.com' })).toBe(
-      'https://browser-cloud.example.com',
-    )
+    expect(
+      getRuntimeConvexUrl({
+        VITE_CONVEX_URL: 'https://browser-cloud.example.com',
+      }),
+    ).toBe('https://browser-cloud.example.com')
   })
 
   it('requires a configured URL', () => {
-    expect(() => getRuntimeConvexUrl({})).toThrow('Convex URL is not configured')
+    expect(() => getRuntimeConvexUrl({})).toThrow(
+      'Convex URL is not configured',
+    )
   })
 })

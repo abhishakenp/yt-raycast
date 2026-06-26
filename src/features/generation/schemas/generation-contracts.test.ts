@@ -7,7 +7,9 @@ import {
 
 describe('generation contracts', () => {
   it('normalizes a prompt request with defaults', () => {
-    expect(parseCreateGenerationInput({ prompt: '  build a hotel site  ' })).toEqual({
+    expect(
+      parseCreateGenerationInput({ prompt: '  build a hotel site  ' }),
+    ).toEqual({
       prompt: 'build a hotel site',
       preferredLanguage: 'en',
       preferredExportTarget: 'html',

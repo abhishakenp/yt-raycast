@@ -85,7 +85,9 @@ export const ReferralDashboard = () => {
           <input
             className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white/85"
             readOnly
-            value={link || (isLoading ? 'Loading…' : 'Sign in to get your link')}
+            value={
+              link || (isLoading ? 'Loading…' : 'Sign in to get your link')
+            }
             onFocus={(event) => event.currentTarget.select()}
           />
           <button
@@ -94,7 +96,11 @@ export const ReferralDashboard = () => {
             onClick={() => void copyLink()}
             type="button"
           >
-            {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+            {copied ? (
+              <Check className="size-4" />
+            ) : (
+              <Copy className="size-4" />
+            )}
             {copied ? 'Copied' : 'Copy'}
           </button>
         </div>
@@ -124,7 +130,9 @@ export const ReferralDashboard = () => {
                 ? `🎉 Unlocked! Subscribe and your ${status.discountPercent}% lifetime discount applies automatically.`
                 : `🎉 Unlocked! Applying your ${status?.discountPercent}% lifetime discount…`
             : `Invite ${status?.remaining ?? threshold} more paying ${
-                (status?.remaining ?? threshold) === 1 ? 'subscriber' : 'subscribers'
+                (status?.remaining ?? threshold) === 1
+                  ? 'subscriber'
+                  : 'subscribers'
               } to unlock your lifetime discount.`}
         </p>
       </section>

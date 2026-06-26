@@ -158,8 +158,9 @@ describe('createBrandProfileResponse', () => {
     }) as typeof fetch
 
     try {
-      const { resolveBrandfetchBrandProfile } =
-        await import('@ship-fast/engine/brandfetch.js')
+      const { resolveBrandfetchBrandProfile } = await import(
+        '@ship-fast/engine/brandfetch.js'
+      )
       const resolveProfile = resolveBrandfetchBrandProfile as (input: {
         query: string
         timeoutMs?: number

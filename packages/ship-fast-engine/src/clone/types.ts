@@ -1,21 +1,21 @@
 // Core types for the site cloning system
 
 export type SectionKind =
-  | "nav"
-  | "hero"
-  | "features"
-  | "pricing"
-  | "testimonials"
-  | "cta"
-  | "footer"
-  | "content"
-  | "sidebar"
-  | "header"
-  | "about"
-  | "contact"
-  | "blog"
-  | "gallery"
-  | "unknown"
+  | 'nav'
+  | 'hero'
+  | 'features'
+  | 'pricing'
+  | 'testimonials'
+  | 'cta'
+  | 'footer'
+  | 'content'
+  | 'sidebar'
+  | 'header'
+  | 'about'
+  | 'contact'
+  | 'blog'
+  | 'gallery'
+  | 'unknown'
 
 export interface ClonedSection {
   pageUrl: string
@@ -25,7 +25,7 @@ export interface ClonedSection {
   contentRefs: string[] // keys into spec.modules for swappable text
   assets: { slot: string; localUrl: string; aspect: number }[]
   hash: string // for dedup
-  source: "scraped" | "native-fallback"
+  source: 'scraped' | 'native-fallback'
 }
 
 export interface ClonedPage {
@@ -77,7 +77,13 @@ export interface ExtractedTokens {
 }
 
 export interface CloneProgressEvent {
-  type: "crawl_progress" | "page_complete" | "page_converting" | "section_complete" | "error" | "done"
+  type:
+    | 'crawl_progress'
+    | 'page_complete'
+    | 'page_converting'
+    | 'section_complete'
+    | 'error'
+    | 'done'
   crawled?: number
   total?: number
   pageUrl?: string

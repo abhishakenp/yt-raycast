@@ -65,9 +65,12 @@ export const createLakebedPublishResponse = async (
     const token = getBearerToken(request)
     if (token !== null) client.setAuth?.(token)
 
-    const existing = await client.query(api.sessions.getDeploymentStatusByLookup, {
-      lookup: sessionId,
-    })
+    const existing = await client.query(
+      api.sessions.getDeploymentStatusByLookup,
+      {
+        lookup: sessionId,
+      },
+    )
     if (
       existing?.provider === 'lakebed' &&
       existing.status === 'ready' &&
@@ -88,7 +91,10 @@ export const createLakebedPublishResponse = async (
       : { status: 'queued', filesUrl: null }
     if (artifact.status !== 'ready' || !artifact.filesUrl) {
       return json(
-        { status: artifact.status ?? 'queued', error: 'Lakebed app is still being prepared.' },
+        {
+          status: artifact.status ?? 'queued',
+          error: 'Lakebed app is still being prepared.',
+        },
         { status: 202 },
       )
     }

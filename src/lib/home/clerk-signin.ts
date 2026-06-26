@@ -53,7 +53,9 @@ const showFallbackOverlay = (doc: AuthDocument): void => {
 const CLERK_SINGLE_SESSION_ERROR_CODE = 'cannot_render_single_session_enabled'
 
 const hasActiveClerkSession = (clerk: ClerkAuth | undefined): boolean =>
-  Boolean(clerk?.user || clerk?.session || (clerk?.client?.sessions?.length ?? 0) > 0)
+  Boolean(
+    clerk?.user || clerk?.session || (clerk?.client?.sessions?.length ?? 0) > 0,
+  )
 
 const isClerkSingleSessionError = (error: unknown): boolean =>
   typeof error === 'object' &&
@@ -61,13 +63,19 @@ const isClerkSingleSessionError = (error: unknown): boolean =>
   'code' in error &&
   (error as { code?: unknown }).code === CLERK_SINGLE_SESSION_ERROR_CODE
 
-const setElementDisplay = (element: AuthElement | null, display: string): void => {
+const setElementDisplay = (
+  element: AuthElement | null,
+  display: string,
+): void => {
   if (element?.style) {
     element.style.display = display
   }
 }
 
-export const bindHomepageClerkSignIn = ({ win, doc }: BindHomepageClerkSignInInput): (() => void) => {
+export const bindHomepageClerkSignIn = ({
+  win,
+  doc,
+}: BindHomepageClerkSignInInput): (() => void) => {
   const signInButton = doc.getElementById('signin-btn')
   const signOutButton = doc.getElementById('signout-btn')
   const syncSignedInControls = (): void => {
@@ -154,18 +162,27 @@ export const bindHomepageClerkSignIn = ({ win, doc }: BindHomepageClerkSignInInp
 
     syncAuthControls()
   }
-  const signInTargets = ['signin-btn', 'google-signin-btn', 'github-signin-btn', 'email-signin-btn']
+  const signInTargets = [
+    'signin-btn',
+    'google-signin-btn',
+    'github-signin-btn',
+    'email-signin-btn',
+  ]
     .map((id) => doc.getElementById(id))
     .filter((element): element is AuthElement => element !== null)
   const signUpTargets = [doc.getElementById('email-signup-btn')].filter(
     (element): element is AuthElement => element !== null,
   )
-  const signOutTargets = [signOutButton].filter((element): element is AuthElement => element !== null)
+  const signOutTargets = [signOutButton].filter(
+    (element): element is AuthElement => element !== null,
+  )
 
   const handleDocumentClick = (event: Event): void => {
     const target = event.target as AuthElement | null
     if (
-      target?.closest?.('#signin-btn, #google-signin-btn, #github-signin-btn, #email-signin-btn')
+      target?.closest?.(
+        '#signin-btn, #google-signin-btn, #github-signin-btn, #email-signin-btn',
+      )
     ) {
       openSignIn(event)
       return
@@ -185,9 +202,15 @@ export const bindHomepageClerkSignIn = ({ win, doc }: BindHomepageClerkSignInInp
   win.addEventListener('sf-request-auth-overlay', openSignIn)
   doc.addEventListener?.('click', handleDocumentClick)
   if (!hasDocumentDelegation) {
-    signInTargets.forEach((target) => target.addEventListener('click', openSignIn))
-    signUpTargets.forEach((target) => target.addEventListener('click', openSignUp))
-    signOutTargets.forEach((target) => target.addEventListener('click', signOut))
+    signInTargets.forEach((target) =>
+      target.addEventListener('click', openSignIn),
+    )
+    signUpTargets.forEach((target) =>
+      target.addEventListener('click', openSignUp),
+    )
+    signOutTargets.forEach((target) =>
+      target.addEventListener('click', signOut),
+    )
   }
 
   return () => {
@@ -197,9 +220,15 @@ export const bindHomepageClerkSignIn = ({ win, doc }: BindHomepageClerkSignInInp
     win.removeEventListener('sf-request-auth-overlay', openSignIn)
     doc.removeEventListener?.('click', handleDocumentClick)
     if (!hasDocumentDelegation) {
-      signInTargets.forEach((target) => target.removeEventListener('click', openSignIn))
-      signUpTargets.forEach((target) => target.removeEventListener('click', openSignUp))
-      signOutTargets.forEach((target) => target.removeEventListener('click', signOut))
+      signInTargets.forEach((target) =>
+        target.removeEventListener('click', openSignIn),
+      )
+      signUpTargets.forEach((target) =>
+        target.removeEventListener('click', openSignUp),
+      )
+      signOutTargets.forEach((target) =>
+        target.removeEventListener('click', signOut),
+      )
     }
   }
 }

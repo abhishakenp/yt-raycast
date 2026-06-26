@@ -1,6 +1,10 @@
 import { cn } from '@/lib/utils'
 
-export function IntroLogo({ logoClass }: { logoClass: 'hidden' | 'visible' | 'shaking' | 'settled' }) {
+export function IntroLogo({
+  logoClass,
+}: {
+  logoClass: 'hidden' | 'visible' | 'shaking' | 'settled'
+}) {
   return (
     <div
       className={cn(
@@ -18,7 +22,9 @@ export function IntroLogo({ logoClass }: { logoClass: 'hidden' | 'visible' | 'sh
           aria-hidden="true"
         />
       </div>
-      <span className="font-mono text-[64px] font-bold tracking-[6px] text-[#ededef] [-webkit-text-fill-color:#ededef]">SHIP FAST</span>
+      <span className="font-mono text-[64px] font-bold tracking-[6px] text-[#ededef] [-webkit-text-fill-color:#ededef]">
+        SHIP FAST
+      </span>
     </div>
   )
 }

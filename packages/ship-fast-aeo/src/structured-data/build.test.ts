@@ -16,7 +16,10 @@ describe('buildStructuredData', () => {
           route: '/',
           title: 'Home',
           description: 'Acme helps remote teams plan work clearly.',
-          seo: { title: 'Acme | Project management', description: 'Acme helps remote teams plan work clearly.' },
+          seo: {
+            title: 'Acme | Project management',
+            description: 'Acme helps remote teams plan work clearly.',
+          },
           aeo: {
             entitySignals: {
               brandName: 'Acme',
@@ -26,7 +29,15 @@ describe('buildStructuredData', () => {
             },
           },
           sections: [
-            { type: 'faq', items: [{ title: 'What is Acme?', body: 'Acme is project management software.' }] },
+            {
+              type: 'faq',
+              items: [
+                {
+                  title: 'What is Acme?',
+                  body: 'Acme is project management software.',
+                },
+              ],
+            },
           ],
         },
         {
@@ -48,6 +59,8 @@ describe('buildStructuredData', () => {
     expect(types).toContain('WebPage')
 
     const pricing = buildStructuredData(siteSpec, siteSpec.pages[1])
-    expect(pricing.some((entry) => entry['@type'] === 'BreadcrumbList')).toBe(true)
+    expect(pricing.some((entry) => entry['@type'] === 'BreadcrumbList')).toBe(
+      true,
+    )
   })
 })

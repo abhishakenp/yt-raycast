@@ -8,7 +8,8 @@ import {
 
 let blockSourceFileIndex: Record<string, string | undefined> | null = null
 
-export const toPosixPath = (value: string): string => value.replaceAll('\\', '/')
+export const toPosixPath = (value: string): string =>
+  value.replaceAll('\\', '/')
 
 export const sourcePathCandidates = (base: string): string[] => [
   base,

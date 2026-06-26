@@ -1,6 +1,6 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { Calendar as UICalendar } from "#/components/ui/calendar.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { Calendar as UICalendar } from '#/components/ui/calendar.tsx'
 
 // Data primitive: wraps react-day-picker. Renders statically with a fixed
 // default month + a preselected day so it shows standalone (no state wired up).
@@ -12,16 +12,16 @@ const rangeStart = new Date(2026, 4, 9)
 const rangeEnd = new Date(2026, 4, 17)
 
 export const Calendar = defineComponent({
-  name: "Calendar",
+  name: 'Calendar',
   description:
     "Month-grid date picker (react-day-picker). Renders a static month with a sample selection. mode 'single' | 'multiple' | 'range'.",
   props: z.object({
-    mode: z.enum(["single", "multiple", "range"]).optional(),
+    mode: z.enum(['single', 'multiple', 'range']).optional(),
     captionLayout: z
-      .enum(["label", "dropdown", "dropdown-months", "dropdown-years"])
+      .enum(['label', 'dropdown', 'dropdown-months', 'dropdown-years'])
       .optional(),
     buttonVariant: z
-      .enum(["default", "destructive", "outline", "secondary", "ghost", "link"])
+      .enum(['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'])
       .optional(),
     numberOfMonths: z.number().optional(),
     showOutsideDays: z.boolean().optional(),
@@ -38,7 +38,7 @@ export const Calendar = defineComponent({
       showWeekNumber: props.showWeekNumber,
       className: props.className,
     }
-    if (props.mode === "range") {
+    if (props.mode === 'range') {
       return (
         <UICalendar
           mode="range"
@@ -47,7 +47,7 @@ export const Calendar = defineComponent({
         />
       )
     }
-    if (props.mode === "multiple") {
+    if (props.mode === 'multiple') {
       return (
         <UICalendar
           mode="multiple"

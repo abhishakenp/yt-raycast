@@ -11,7 +11,12 @@ export const generationStatusValues = [
   'failed',
 ] as const
 
-export const taskStatusValues = ['pending', 'running', 'succeeded', 'failed'] as const
+export const taskStatusValues = [
+  'pending',
+  'running',
+  'succeeded',
+  'failed',
+] as const
 
 export const exportTargetValues = ['html', 'react', 'next'] as const
 
@@ -48,5 +53,6 @@ export type GenerationStatus = (typeof generationStatusValues)[number]
 export type SessionSummary = z.infer<typeof sessionSummarySchema>
 export type SessionTask = z.infer<typeof sessionTaskSchema>
 
-export const parseCreateGenerationInput = (input: unknown): CreateGenerationInput =>
-  createGenerationInputSchema.parse(input)
+export const parseCreateGenerationInput = (
+  input: unknown,
+): CreateGenerationInput => createGenerationInputSchema.parse(input)

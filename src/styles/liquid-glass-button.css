@@ -35,7 +35,8 @@
   z-index: 0;
   border-radius: inherit;
   pointer-events: none;
-  -webkit-backdrop-filter: blur(32px) saturate(210%) brightness(1.03) contrast(1.04);
+  -webkit-backdrop-filter: blur(32px) saturate(210%) brightness(1.03)
+    contrast(1.04);
   backdrop-filter: blur(32px) saturate(210%) brightness(1.03) contrast(1.04);
   filter: url(#sf-glass-lens);
 }
@@ -71,8 +72,18 @@
   z-index: 3;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(8, 10, 18, 0.22) 0%, rgba(255, 255, 255, 0.04) 48%, rgba(218, 224, 232, 0.1) 100%),
-    radial-gradient(ellipse 100% 70% at 88% 12%, rgba(255, 255, 255, 0.06) 0%, transparent 45%);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 10, 18, 0.22) 0%,
+      rgba(255, 255, 255, 0.04) 48%,
+      rgba(218, 224, 232, 0.1) 100%
+    ),
+    radial-gradient(
+      ellipse 100% 70% at 88% 12%,
+      rgba(255, 255, 255, 0.06) 0%,
+      transparent 45%
+    );
   opacity: 0.55;
 }
 
@@ -100,8 +111,17 @@
   z-index: 5;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(172deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 42%),
-    linear-gradient(358deg, rgba(255, 255, 255, 0) 54%, rgba(255, 255, 255, 0.05) 100%);
+  background:
+    linear-gradient(
+      172deg,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(255, 255, 255, 0) 42%
+    ),
+    linear-gradient(
+      358deg,
+      rgba(255, 255, 255, 0) 54%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
   mix-blend-mode: soft-light;
   opacity: 0.55;
 }

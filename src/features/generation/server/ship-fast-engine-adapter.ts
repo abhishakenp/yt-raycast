@@ -3,7 +3,10 @@ import {
   prepareEngineWorkspace,
   readEngineWorkspaceArtifacts,
 } from './engine-workspace'
-import type { EngineWorkspaceArtifacts, EngineWorkspaceTask } from './engine-workspace'
+import type {
+  EngineWorkspaceArtifacts,
+  EngineWorkspaceTask,
+} from './engine-workspace'
 
 export type ShipFastEngineSessionEvent =
   | { type: 'log'; message: string }
@@ -67,8 +70,10 @@ const createSessionContext = (
   updateTask: (task) => emit({ type: 'task', task }),
   signalHomepageReady: () => emit({ type: 'preview_ready' }),
   signalOpenuiReady: () => emit({ type: 'openui_ready' }),
-  setElapsed: (elapsed) => emit({ type: 'status', message: String(elapsed), phase: 'elapsed' }),
-  setCost: (cost) => emit({ type: 'status', message: String(cost), phase: 'cost' }),
+  setElapsed: (elapsed) =>
+    emit({ type: 'status', message: String(elapsed), phase: 'elapsed' }),
+  setCost: (cost) =>
+    emit({ type: 'status', message: String(cost), phase: 'cost' }),
 })
 
 export const createShipFastEngineAdapter = ({
@@ -91,7 +96,9 @@ export const createShipFastEngineAdapter = ({
 
       if (onEvent) {
         pendingEventWrites.push(
-          Promise.resolve(onEvent(event, { sessionId, prompt, workspace })).catch(() => undefined),
+          Promise.resolve(
+            onEvent(event, { sessionId, prompt, workspace }),
+          ).catch(() => undefined),
         )
       }
     }

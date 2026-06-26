@@ -1,11 +1,11 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { Spinner as UISpinner } from "#/components/ui/spinner.tsx"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { Spinner as UISpinner } from '#/components/ui/spinner.tsx'
 
 // Leaf primitive: animated loading spinner. Size/color via className
 // (e.g. "size-8 text-primary").
 export const Spinner = defineComponent({
-  name: "Spinner",
+  name: 'Spinner',
   description:
     "Animated loading spinner. Size/color with className, e.g. 'size-8 text-primary'.",
   props: z.object({
