@@ -73,6 +73,13 @@ vi.mock('@clerk/tanstack-react-start', () => ({
   useClerk: () => ({ session: null, user: null }),
 }))
 
+// Dashboard unit tests pre-date the SignInGate rail gating. Keep the gate a
+// no-op here so rail popovers open as before; gated behavior is covered by
+// SignInGate.test.tsx and the source-level invariant test below.
+vi.mock('@/shared/auth/clerk-runtime', () => ({
+  isClerkClientEnabled: () => false,
+}))
+
 vi.mock('convex/react', () => ({
   useMutation: () => vi.fn(),
   useQuery: (_query: unknown, args: unknown) => {
@@ -695,5 +702,52 @@ describe('Dashboard missing session state', () => {
     expect(source).toContain('hasRenderableHomeSource')
     expect(source).toContain('sourceUrl={')
     expect(source).toContain('clonePageNav.currentUrl')
+  })
+
+  it('gates every siderail item and the pencil edit toggle behind SignInGate', () => {
+    const source = readFileSync(
+      'src/features/dashboard/components/Dashboard.tsx',
+      'utf8',
+    )
+
+    // Reusable gate + locked fallback are wired in.
+    expect(source).toContain("from '@/shared/auth/SignInGate'")
+    expect(source).toContain('const RailLockedButton')
+    expect(source).toContain('useSignInGate')
+    expect(source).toContain('requireSignInForEdit')
+
+    // The pencil (inline-edit) toggle is gated by requireSignInForEdit.
+    expect(source).toContain('if (!requireSignInForEdit()) return')
+
+    // Every declared rail action must be wrapped by a SignInGate. We pair each
+    // data-rail-action occurrence with a preceding <SignInGate opening tag by
+    // scanning the source in order.
+    const railActions = [
+      'cms-studio',
+      'chat',
+      'annotations',
+      'activity',
+      'ecommerce',
+      'palette',
+      'brand-media',
+      'localization',
+      'github',
+      'billing',
+      'export',
+      'domain',
+      '3d',
+    ]
+    for (const action of railActions) {
+      expect(source).toContain(`data-rail-action="${action}"`)
+    }
+
+    // Count SignInGate opening tags == number of rail actions (one gate per item).
+    // `<SignInGate\n` excludes the JSDoc mention in the RailLockedButton doc comment.
+    const gateOpenCount = (source.match(/<SignInGate\n/g) ?? []).length
+    expect(gateOpenCount).toBe(railActions.length)
+
+    // Each gate provides a locked fallback rendered via RailLockedButton.
+    const lockedButtonCount = (source.match(/<RailLockedButton/g) ?? []).length
+    expect(lockedButtonCount).toBe(railActions.length)
   })
 })
