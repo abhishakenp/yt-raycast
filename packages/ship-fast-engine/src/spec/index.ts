@@ -42,24 +42,3 @@ export function saveSiteSpec(
   const filePath = join(workspace, 'site-spec.json')
   writeFileSync(filePath, JSON.stringify(project, null, 2))
 }
-
-export function ensureCompatibleSiteSpec(
-  workspace: string,
-): SiteSpecProject | null {
-  return loadSiteSpec(workspace)
-}
-
-// @ts-ignore -- legacy JS module lacks TypeScript declarations.
-export { supplementSiteSpecPages } from './supplement-pages.js'
-// @ts-ignore -- legacy JS module lacks TypeScript declarations.
-export { buildFallbackSiteSpec, SITE_SPEC_VERSION } from './defaults.js'
-// @ts-ignore -- legacy JS module lacks TypeScript declarations.
-export { normalizeSiteSpec } from './normalize.js'
-// @ts-ignore -- legacy JS module lacks TypeScript declarations.
-export { validateSiteSpec } from './validate.js'
-// @ts-ignore -- legacy JS module lacks TypeScript declarations.
-export {
-  enrichSiteSpecWithWorkspaceBlueprints,
-  extractRenderBlueprintFromHtml,
-  stripSiteSpecBlueprints,
-} from './blueprints.js'

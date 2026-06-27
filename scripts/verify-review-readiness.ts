@@ -65,7 +65,6 @@ export const reviewReadinessProofs = {
         requiredText: [
           '# Engine Regression Coverage Verification',
           '## Verification Commands',
-          'buildFallbackSiteSpec',
           '## GitNexus Impact',
         ],
       },

@@ -59,6 +59,12 @@ scoped to:
 The invariant also asserts that generated blog fallback specs do not contain
 the named demo tokens `blog-dogs` or `KubeMeter`.
 
+> **Note:** The site-spec generation path (`buildFallbackSiteSpec`,
+> `validateSiteSpec`, `defaults.js`, etc.) has since been removed as dead
+> code. The V2 engine goes straight to generation without a blueprint phase.
+> The V1 capsule engine never used it. This section is kept for historical
+> context.
+
 ## GitNexus Impact
 
 GitNexus impact was checked before the production edit:
