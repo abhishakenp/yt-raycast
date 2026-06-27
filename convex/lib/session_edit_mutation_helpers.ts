@@ -216,12 +216,33 @@ export const applySessionEdit = async (
 
   const nextPreviewVersion = preview.version + 1
 
-  // All edit types now use the same pattern: store the edited preview and
-  // record the edit, but keep canonical generated artifacts unchanged. Exports
-  // replay recorded edits onto source through applyEditsToSource.
-  const artifactSnapshot = await snapshotCurrentArtifacts(ctx, sessionId)
-  const openUiSource = artifactSnapshot.openUiSource
-  const siteSpecJson = artifactSnapshot.siteSpecJson
+  // Text edits must patch the canonical generated artifacts (homeModule.source
+  // + siteSpec) in addition to the preview, because the Dashboard renders from
+  // homeModule.source — patching only preview.html makes edits vanish on
+  // reload. Image/style/ai_rewrite edits keep the snapshot pattern: their
+  // overrides are reapplied client-side from the recorded edit history.
+  let openUiSource: string | undefined
+  let siteSpecJson: string | undefined
+  if (
+    args.afterHtml === undefined &&
+    args.editType !== 'style' &&
+    args.editType !== 'image'
+  ) {
+    const artifactSnapshot = await applyTextEditToCurrentArtifacts(
+      ctx,
+      sessionId,
+      args.beforeText,
+      args.afterText,
+      now,
+      args.occurrenceIndex,
+    )
+    openUiSource = artifactSnapshot.openUiSource
+    siteSpecJson = artifactSnapshot.siteSpecJson
+  } else {
+    const artifactSnapshot = await snapshotCurrentArtifacts(ctx, sessionId)
+    openUiSource = artifactSnapshot.openUiSource
+    siteSpecJson = artifactSnapshot.siteSpecJson
+  }
 
   await ctx.db.insert('previews', {
     sessionId,

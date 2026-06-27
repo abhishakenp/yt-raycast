@@ -313,7 +313,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
   })
 })
 
-test('inline preview edits and history restore keep canonical dashboard source artifacts stable', async () => {
+test('inline preview edits patch canonical source artifacts and history restore reverts them', async () => {
   const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
@@ -350,16 +350,17 @@ test('inline preview edits and history restore keep canonical dashboard source a
 
   expect(editedPreview?.previewVersion).toBe(2)
   expect(editedPreview?.html).toContain('Edited dashboard artifact headline')
+  // Text edits patch the canonical source (Dashboard renders from it, so an
+  // unpatched source makes edits vanish on reload).
   expect(editedView?.homeModule?.source).toContain(
-    'Dashboard artifact alignment site',
-  )
-  expect(editedView?.homeModule?.source).not.toContain(
     'Edited dashboard artifact headline',
   )
-  expect(editedView?.siteSpec?.specJson).toContain(
+  expect(editedView?.homeModule?.source).not.toContain(
     'Dashboard artifact alignment site',
   )
-  expect(editedView?.siteSpec?.specJson).not.toContain(
+  // siteSpec: replaceFirstJsonText patches the first occurrence (projectName).
+  // The prompt appears in multiple spec fields, so only the first is rewritten.
+  expect(editedView?.siteSpec?.specJson).toContain(
     'Edited dashboard artifact headline',
   )
   await expect(t.query(api.sessions.listEdits, { sessionId })).resolves.toEqual(
@@ -405,7 +406,7 @@ test('inline preview edits and history restore keep canonical dashboard source a
   )
 })
 
-test('inline preview edits preserve canonical artifacts when rendered text normalizes whitespace', async () => {
+test('inline preview edits patch canonical artifacts even when rendered text normalizes whitespace', async () => {
   const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
@@ -448,10 +449,14 @@ test('inline preview edits preserve canonical artifacts when rendered text norma
   })
 
   expect(editedPreview?.html).toContain('Premium Fleet Rentals')
-  expect(editedView?.homeModule?.source).toContain('Luxury   Car Rental')
-  expect(editedView?.homeModule?.source).not.toContain('Premium Fleet Rentals')
-  expect(editedView?.siteSpec?.specJson).toContain('Luxury   Car Rental')
-  expect(editedView?.siteSpec?.specJson).not.toContain('Premium Fleet Rentals')
+  // The rendered DOM collapses whitespace ("Luxury Car Rental") but the source
+  // keeps the original spacing ("Luxury   Car Rental"). applyPreviewTextEdit
+  // uses a whitespace-tolerant fallback, so the source IS patched and the edit
+  // survives reload — the desired behavior.
+  expect(editedView?.homeModule?.source).toContain('Premium Fleet Rentals')
+  expect(editedView?.homeModule?.source).not.toContain('Luxury   Car Rental')
+  expect(editedView?.siteSpec?.specJson).toContain('Premium Fleet Rentals')
+  expect(editedView?.siteSpec?.specJson).not.toContain('Luxury   Car Rental')
   await expect(t.query(api.sessions.listEdits, { sessionId })).resolves.toEqual(
     expect.arrayContaining([
       expect.objectContaining({

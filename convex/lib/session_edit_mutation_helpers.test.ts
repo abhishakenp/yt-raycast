@@ -43,7 +43,7 @@ const createReadySession = async (
 }
 
 describe('session edit mutation helpers', () => {
-  it('stores inline edits in preview history without mutating canonical artifacts', async () => {
+  it('patches canonical artifacts (homeModule.source + siteSpec) on text edits so they survive reload', async () => {
     const t = sessionEditConvexTest()
     const sessionId = await createReadySession(t)
 
@@ -68,11 +68,54 @@ describe('session edit mutation helpers', () => {
       lookup: sessionId,
     })
 
+    // Preview html is updated.
     expect(preview?.html).toContain('Updated headline')
-    expect(view?.homeModule?.source).toContain('Original headline')
-    expect(view?.homeModule?.source).not.toContain('Updated headline')
-    expect(view?.siteSpec?.specJson).toContain('Original headline')
-    expect(view?.siteSpec?.specJson).not.toContain('Updated headline')
+    // Canonical source MUST be patched — the Dashboard renders from
+    // homeModule.source, so an unpatched source makes the edit vanish on
+    // reload (regression introduced by the master/develop reconcile).
+    expect(view?.homeModule?.source).toContain('Updated headline')
+    expect(view?.homeModule?.source).not.toContain('Original headline')
+    // siteSpec is patched too (replaceFirstJsonText path).
+    expect(view?.siteSpec?.specJson).toContain('Updated headline')
+    expect(view?.siteSpec?.specJson).not.toContain('Original headline')
+  })
+
+  it('text edit survives a reload: re-reading homeModule.source after edit still contains the new text', async () => {
+    const t = sessionEditConvexTest()
+    const sessionId = await createReadySession(t, 'Reload headline')
+
+    await t.mutation(api.sessions.createEdit, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'text',
+      targetLabel: 'Hero headline',
+      beforeText: 'Reload headline',
+      afterText: 'Reloaded headline',
+    })
+
+    // Simulate a page reload: the Dashboard re-fetches the generation view
+    // and renders from homeModule.source. The edited text must still be there.
+    const reloaded = await t.query(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+    expect(reloaded?.homeModule?.source).toContain('Reloaded headline')
+    expect(reloaded?.homeModule?.source).not.toContain('Reload headline')
+
+    // A second sequential edit must patch the already-patched source (guards
+    // against the !!!!!! regression where the second edit couldn't find the
+    // original text because the source had been left stale).
+    await t.mutation(api.sessions.createEdit, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'text',
+      targetLabel: 'Hero headline',
+      beforeText: 'Reloaded headline',
+      afterText: 'Reloaded twice headline',
+    })
+    const reloaded2 = await t.query(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+    expect(reloaded2?.homeModule?.source).toContain('Reloaded twice headline')
   })
 
   it('records edit history with target label and occurrence metadata', async () => {
