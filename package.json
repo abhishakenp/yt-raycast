@@ -19,7 +19,6 @@
     "generate-routes": "tsr generate",
     "prebuild": "bun run generate:react-export-sources",
     "verify:generation": "node scripts/verify-generation-agent-browser.mjs",
-    "verify:site-spec": "node scripts/verify-site-spec.mjs",
     "verify:homepage-quality": "node scripts/homepage-quality-gate.mjs",
     "verify:gallery": "node scripts/verify-gallery.mjs",
     "verify:admission": "node scripts/verify-admission.mjs",

@@ -1,10 +1,6 @@
 // @ts-ignore -- legacy JS module lacks TypeScript declarations.
 import { formatRunAllReport } from './report.js'
-import {
-  buildFallbackSiteSpec,
-  loadSiteSpec,
-  saveSiteSpec,
-} from '../spec/index.js'
+import { loadSiteSpec } from '../spec/index.js'
 import { requirePromptText } from '../prompt.js'
 // @ts-ignore -- legacy JS module lacks TypeScript declarations.
 import { resolvePipelineLanguage } from './prompt-language.js'
@@ -15,15 +11,6 @@ import { enrichBrandProfile } from './brand-profile.js'
 import { resolvePexelsImageHints } from './image-hints.js'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-
-type SiteSpecRecord = Record<string, unknown> & { locale?: string }
-
-const buildFallbackSiteSpecTyped = buildFallbackSiteSpec as (input: {
-  prompt: string
-  ctx?: Record<string, unknown>
-  designBrief?: string
-  siteType?: string
-}) => SiteSpecRecord
 
 const enrichBrandProfileTyped = enrichBrandProfile as (
   prompt: string,
@@ -85,16 +72,8 @@ export async function runAllV2(
   })
 
   const timings: Record<string, number> = { t0 }
-  let preparedSiteSpec: SiteSpecRecord | null = null
 
   const tasks = [
-    {
-      id: 'home.spec',
-      label: 'Blueprint site structure',
-      status: 'PENDING',
-      filename: 'site-spec.json',
-      files: ['site-spec.json'],
-    },
     {
       id: 'home.openui',
       label: 'Generate SFF HTML homepage',
@@ -115,48 +94,16 @@ export async function runAllV2(
   sessionCtx?.setTasks?.(tasks)
   persistTasks()
 
-  // ── Phase 1: Blueprint ────────────────────────────────────────────────────
-  _status('Preparing instant site blueprint…', 'spec')
+  // ── Generation ────────────────────────────────────────────────────────────
+  _status('Generating SFF-style single-file homepage…', 'html')
   tasks[0].status = 'IN_PROGRESS'
   sessionCtx?.updateTask?.(tasks[0])
-  persistTasks()
-
-  try {
-    timings.spec_start = Date.now()
-    const siteSpec = buildFallbackSiteSpecTyped({
-      prompt: languageMode.prompt,
-      siteType: 'landing',
-    })
-    if (languageMode.code) {
-      siteSpec.locale = languageMode.code
-    }
-    saveSiteSpec(workspace, siteSpec)
-    preparedSiteSpec = siteSpec
-    timings.spec_end = Date.now()
-    tasks[0].status = 'DONE'
-    _log(
-      `  ✓ Instant site blueprint ready (${((timings.spec_end - timings.spec_start) / 1000).toFixed(1)}s)`,
-    )
-  } catch (specErr) {
-    tasks[0].status = 'FAILED'
-    _log(
-      `  ⚠ Site spec failed, continuing with defaults: ${(specErr as Error)?.message ?? specErr}`,
-    )
-  }
-
-  sessionCtx?.updateTask?.(tasks[0])
-  persistTasks()
-
-  // ── Phase 2: Generation ───────────────────────────────────────────────────
-  _status('Generating SFF-style single-file homepage…', 'html')
-  tasks[1].status = 'IN_PROGRESS'
-  sessionCtx?.updateTask?.(tasks[1])
   persistTasks()
 
   let htmlStats: any
   try {
     timings.html_start = Date.now()
-    const siteSpec = preparedSiteSpec ?? loadSiteSpec(workspace)
+    const siteSpec = loadSiteSpec(workspace)
     const [brandProfile, imageHints] = await Promise.all([
       enrichBrandProfileTyped(languageMode.prompt, workspace, _log).catch(
         (error: unknown) => {
@@ -201,8 +148,8 @@ export async function runAllV2(
     timings.html_end = Date.now()
     timings.preview_saved = timings.html_end
 
-    tasks[1].status = 'DONE'
-    sessionCtx?.updateTask?.(tasks[1])
+    tasks[0].status = 'DONE'
+    sessionCtx?.updateTask?.(tasks[0])
     persistTasks()
     sessionCtx?.signalHomepageReady?.()
     sessionCtx?.signalOpenuiReady?.()
@@ -242,7 +189,7 @@ export async function runAllV2(
       report,
     })
   } catch (err) {
-    tasks[1].status = 'FAILED'
+    tasks[0].status = 'FAILED'
     sessionCtx?.setTasks?.(tasks)
     persistTasks()
     const message = (err as Error)?.message || String(err)

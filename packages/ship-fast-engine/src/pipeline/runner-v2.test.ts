@@ -61,7 +61,7 @@ vi.mock('./image-hints.js', () => ({
 }))
 
 describe('runAllV2', () => {
-  it('uses an instant local site blueprint before single-pass SFF HTML generation', async () => {
+  it('generates a single-pass SFF HTML homepage', async () => {
     const { runAllV2 } = await import('./runner-v2.ts')
     const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-run-v2-'))
 
@@ -82,9 +82,6 @@ describe('runAllV2', () => {
       integrations: undefined,
     })
 
-    const siteSpec = JSON.parse(
-      readFileSync(join(workspace, 'site-spec.json'), 'utf8'),
-    )
     const tasks = JSON.parse(
       readFileSync(join(workspace, 'tasks.json'), 'utf8'),
     )
@@ -100,7 +97,6 @@ describe('runAllV2', () => {
       expect.objectContaining({
         prompt: expect.stringContaining('a blog about dogs'),
         hydrationPrompt: expect.stringContaining('a blog about dogs'),
-        siteSpec: expect.objectContaining({ locale: 'en' }),
       }),
       expect.objectContaining({ onProgress: expect.any(Function) }),
     )
@@ -114,13 +110,10 @@ describe('runAllV2', () => {
     expect(groqStreamMock.mock.calls[0]?.[0]).toContain(
       'https://cdn.brandfetch.io/dog-journal/logo.svg',
     )
-    expect(siteSpec.locale).toBe('en')
-    expect(siteSpec.pages.length).toBeGreaterThan(0)
     expect(readFileSync(join(workspace, 'index.html'), 'utf8')).toBe(
       htmlFixture,
     )
     expect(tasks.tasks.map((task: { status: string }) => task.status)).toEqual([
-      'DONE',
       'DONE',
     ])
   }, 15_000)

@@ -8,10 +8,6 @@ export {
   loadSiteSpec,
   saveSiteSpec,
   SUPPORTED_EXPORT_TARGETS,
-  enrichSiteSpecWithWorkspaceBlueprints,
-  extractRenderBlueprintFromHtml,
-  stripSiteSpecBlueprints,
-  ensureCompatibleSiteSpec,
 } from './spec/index.ts'
 export {
   renderProject,
