@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * horizontal rule on desktop. Static (no links). Use to explain onboarding /
  * quickstart flow for developer tools, API platforms, or technical SaaS.
  */
-export const DevToolSteps = defineComponent({
+export const DevToolSteps = defineCapsule({
   name: 'DevToolSteps',
   description:
     "3-step 'get started in minutes' timeline for a developer tool / API platform: a muted-banded section with a centered heading + intro above a responsive 3-column grid of numbered steps, each with a filled circular brand-colored number badge, title, and description, connected by a thin horizontal rule on desktop. Use to explain onboarding / quickstart flow for developer tools, API platforms, or technical SaaS.",

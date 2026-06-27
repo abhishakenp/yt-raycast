@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from './saas-interactions.tsx'
+import { saasLakebed } from './saas-lakebed.ts'
 
 /**
  * SaasHero — split product hero for an AI-product / SaaS landing page. A
@@ -11,15 +16,15 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * + outlined "play" secondary) and an avatar-stack social-proof row; on the
  * right a floating product-demo mockup card showing an AI-assistant chat thread
  * (AI/user bubbles with action chips) above a live calendar preview with
- * free/busy/success rows. Premium, conversion-focused; CTAs route through
- * useNavigate. Use as the opening hero for AI tools, scheduling/productivity
+ * free/busy/success rows. Premium, conversion-focused; CTAs and demo chips
+ * write to Lakebed. Use as the opening hero for AI tools, scheduling/productivity
  * apps, automation products, or B2B SaaS. Renders fully with no props via
  * baked-in "Chronos AI" defaults.
  */
-export const SaasHero = defineComponent({
+export const SaasHero = defineCapsule({
   name: 'SaasHero',
   description:
-    'Split product hero for an AI-product / SaaS landing page: a two-column band over a soft muted surface with a radial primary glow orb. Left column has a pulsing-dot status pill, a huge headline with one phrase in the indigo primary highlight, a supporting paragraph, dual CTAs (gradient primary + outlined play-icon secondary) and an avatar-stack social-proof row; right column is a floating product-demo mockup card showing an AI-assistant chat thread (AI/user bubbles with action chips) above a live calendar preview with free/busy/success rows. Premium and conversion-focused; CTAs route through useNavigate. Use as the opening hero for AI tools, scheduling/productivity apps, automation products, or B2B SaaS.',
+    'Split product hero for an AI-product / SaaS landing page: a two-column band over a soft muted surface with a radial primary glow orb. Left column has a pulsing-dot status pill, a huge headline with one phrase in the indigo primary highlight, a supporting paragraph, dual fullstack CTAs (gradient primary + outlined play-icon secondary) and an avatar-stack social-proof row; right column is a floating product-demo mockup card showing an AI-assistant chat thread (AI/user bubbles with Lakebed action chips) above a live calendar preview with free/busy/success rows. Premium and conversion-focused; CTAs and demo chips write to shared Lakebed conversion state. Use as the opening hero for AI tools, scheduling/productivity apps, automation products, or B2B SaaS.',
   props: z.object({
     /** Status / announcement pill text with a pulsing dot. */
     badge: z.string().optional(),
@@ -61,8 +66,8 @@ export const SaasHero = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const badge = props.badge ?? 'Now with GPT-4 scheduling intelligence'
     const heading = props.heading ?? 'Reclaim your day with'
     const highlight = props.highlight ?? 'AI-powered scheduling'
@@ -70,7 +75,7 @@ export const SaasHero = defineComponent({
       props.subheading ??
       'Chronos AI reads your calendar, understands your priorities, and automatically schedules meetings at the perfect time. No more back-and-forth emails. No more double-bookings. Just focus.'
     const primaryCta = props.primaryCta ?? 'Start free trial'
-    const secondaryCta = props.secondaryCta ?? 'See how it works'
+    const secondaryCta = props.secondaryCta ?? 'Book demo'
     const socialProof =
       props.socialProof ?? 'Trusted by 12,000+ busy professionals'
     const demoTitle = props.demoTitle ?? 'Chronos Assistant'
@@ -127,16 +132,32 @@ export const SaasHero = defineComponent({
               {subheading}
             </p>
             <div className="mt-8 flex flex-wrap gap-3.5">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={primaryCta}
+                plan={primaryCta}
+                source="hero"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Starting
+                  </>
+                }
                 className="inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-[0_1px_3px_rgba(79,70,229,0.3)] transition-all hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(79,70,229,0.35)]"
               >
                 {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
+              </SaasPlanActionButton>
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={secondaryCta}
+                plan={secondaryCta}
+                source="hero"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Opening
+                  </>
+                }
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-8 py-3.5 text-base font-semibold text-foreground shadow-sm transition-colors hover:bg-muted"
               >
                 <svg
@@ -154,7 +175,7 @@ export const SaasHero = defineComponent({
                   <polygon points="10 8 16 12 10 16 10 8" />
                 </svg>
                 {secondaryCta}
-              </button>
+              </SaasPlanActionButton>
             </div>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <div className="flex" aria-hidden="true">
@@ -177,7 +198,7 @@ export const SaasHero = defineComponent({
           </div>
 
           {/* Product demo mockup card */}
-          <div className="flex justify-center" aria-hidden="true">
+          <div className="flex justify-center">
             <div className="w-full max-w-[520px] overflow-hidden rounded-3xl border border-border bg-card shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)]">
               <div className="flex items-center gap-2 border-b border-border/60 px-5 py-4">
                 <span className="size-2.5 rounded-full bg-chart-5" />
@@ -218,12 +239,17 @@ export const SaasHero = defineComponent({
                       {msg.from === 'ai' && i === chat.length - 1 ? (
                         <div className="mt-2 flex flex-wrap gap-1">
                           {chips.map((chip) => (
-                            <span
+                            <SaasPlanActionButton
                               key={chip}
-                              className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-[0.8125rem] font-medium text-muted-foreground"
+                              lakebed={lakebed}
+                              intentLabel={chip}
+                              plan={chip}
+                              source="demo"
+                              pendingChildren={<SaasMutationSpinner />}
+                              className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-[0.8125rem] font-medium text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-70"
                             >
                               {chip}
-                            </span>
+                            </SaasPlanActionButton>
                           ))}
                         </div>
                       ) : null}

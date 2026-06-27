@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * No links. Use as the social-proof / credibility band for community platforms, SaaS products,
  * or enterprise landing pages.
  */
-export const CommunityForumStats = defineComponent({
+export const CommunityForumStats = defineCapsule({
   name: 'CommunityForumStats',
   description:
     'Dark KPI stats band for a community-platform / discussion-forum landing page: a near-foreground (dark) horizontal band with a 4-column grid of large metric values and labels in background colors. Used to communicate scale, reliability, and reach. No links. Use as the social-proof / credibility band for community platforms, SaaS products, or enterprise landing pages.',

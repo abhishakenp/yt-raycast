@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * plumbers, HVAC contractors, drain/sewer pros, and water-heater installers.
  * Renders fully with no props via baked-in defaults.
  */
-export const PlumbingHvacHero = defineComponent({
+export const PlumbingHvacHero = defineCapsule({
   name: 'PlumbingHvacHero',
   description:
     "Full-bleed image-forward hero for a local plumbing & HVAC trade site built around the 24/7 emergency angle: a photo of a uniformed technician at work fills the band edge to edge under a token-based dark overlay so light text stays readable. Content has an uppercase '24/7 Emergency Service' eyebrow pill, a large headline, a supporting paragraph, dual CTAs (filled 'Call Now' + outlined translucent 'Book Online'), and a trust-badge row (Licensed, Insured, years in business, star rating). CTAs route through useNavigate. Use as the opening hero for plumbers, HVAC contractors, drain/sewer pros, and water-heater installers.",

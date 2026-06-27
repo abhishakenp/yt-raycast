@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * enterprise software vendors, SaaS platforms, consultancies, or any corporate
  * site with extensive navigation.
  */
-export const CorporateFooter = defineComponent({
+export const CorporateFooter = defineCapsule({
   name: 'CorporateFooter',
   description:
     'Fat multi-column footer for an enterprise / corporate B2B site: dark inverted section with a 5-column grid of brand logo + about paragraph + social icons on the left (spanning 2 columns), followed by three titled link columns, plus a bottom copyright/legal bar. Every brand button, link, and social icon routes through useNavigate. Use as the closing site footer for enterprise software, SaaS, consultancies, or any corporate site.',

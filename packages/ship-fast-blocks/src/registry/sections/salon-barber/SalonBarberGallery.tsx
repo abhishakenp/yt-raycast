@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
-export const SalonBarberGallery = defineComponent({
+export const SalonBarberGallery = defineCapsule({
   name: 'SalonBarberGallery',
   description:
     "Portfolio gallery for a barbershop or salon, rendered through the shared GalleryGrid. Shows a responsive grid of recent cuts, styles, and interior shots with short captions so prospective clients can judge the work at a glance. Use it lower on a barbershop, salon, or men's grooming page to build trust with real-looking before/after style proof.",

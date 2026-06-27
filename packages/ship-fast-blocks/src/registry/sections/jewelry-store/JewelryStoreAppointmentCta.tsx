@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * Use as the conversion-focused booking band for fine jewelers, diamond houses,
  * engagement-ring boutiques, or high-jewelry maisons. Renders fully with no props.
  */
-export const JewelryStoreAppointmentCta = defineComponent({
+export const JewelryStoreAppointmentCta = defineCapsule({
   name: 'JewelryStoreAppointmentCta',
   description:
     'Private-appointment closing CTA for a luxury jewelry maison: a muted band with a dimmed full-cover background image and a bottom-up fade-to-background gradient, fronting a centered column with a gold eyebrow, an oversized serif headline, a relaxed subheading, and dual CTAs (solid gold primary + bordered ghost). A bottom row lists boutique locations (city + address) in up to three columns. Both CTAs route through useNavigate. Use as the conversion-focused booking band for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',

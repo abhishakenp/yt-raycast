@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * on SaaS waitlists, app pre-launch pages, or beta sign-up landers. Renders fully
  * with no props via three baked-in default plans.
  */
-export const ComingSoonPricing = defineComponent({
+export const ComingSoonPricing = defineCapsule({
   name: 'ComingSoonPricing',
   description:
     "Three-tier pricing table for a 'launching soon' / waitlist pre-launch landing page: centered heading and lead above a responsive 1/3-column grid of plan cards with name, tagline, price + period, feature checklist with check icons, and a CTA button. The featured plan gets a primary-colored background, shadow, and floating badge. CTAs route through useNavigate. Use as the pricing / plans section on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",

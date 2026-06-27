@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * sections on music festivals, arts festivals, concert series, or any
  * multi-day live event.
  */
-export const MusicFestivalStats = defineComponent({
+export const MusicFestivalStats = defineCapsule({
   name: 'MusicFestivalStats',
   description:
     'Compact dark stats band for a music / arts festival landing page: a full-bleed inverted (foreground background, light text) section with a centered two/four-column grid of big bold numbers above muted labels (artists performing, unique stages, music lovers, unforgettable days). Use as a punchy by-the-numbers proof band between content sections on music festivals, arts festivals, concert series, raves, or any multi-day live event.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * membership CTA near the bottom of a newspaper, magazine or publication
  * homepage. Renders fully with no props via baked-in defaults.
  */
-export const NewsCta = defineComponent({
+export const NewsCta = defineCapsule({
   name: 'NewsCta',
   description:
     "'Support Independent Journalism' subscribe call-to-action band for a news / editorial site built on the shared CtaBand composite at tone='primary': a membership eyebrow, a strong headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Subscribe Now' button plus an outlined 'View All Plans' button). Both CTAs route through useNavigate. Use as the subscription / membership CTA near the bottom of a newspaper, magazine or publication homepage.",

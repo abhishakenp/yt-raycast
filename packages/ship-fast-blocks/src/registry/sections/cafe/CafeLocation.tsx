@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * cafes, bakeries, tea houses, or any local business visit block. Renders fully
  * with no props via baked-in defaults.
  */
-export const CafeLocation = defineComponent({
+export const CafeLocation = defineCapsule({
   name: 'CafeLocation',
   description:
     "Visit / location block for a cozy cafe page on a card-colored band: centered cap, serif heading, and description above a two-column layout. Left side shows address, hours, and contact tiles with inline icons; a social row; and a flex-wrap amenities chip row. Right side shows a large map image with an overlay 'Open in Google Maps' button. Social links and the map button route through useNavigate. Use for cafes, bakeries, tea houses, or any local business visit block.",

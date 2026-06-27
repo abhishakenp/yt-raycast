@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const brandMark = (
@@ -43,7 +44,7 @@ const DEFAULT_SOCIAL: { label: string; href?: string }[] = [
 
 const DEFAULT_LEGAL = ['Privacy', 'Terms', 'Cookies']
 
-export const PetVeterinaryFooter = defineComponent({
+export const PetVeterinaryFooter = defineCapsule({
   name: 'PetVeterinaryFooter',
   description:
     'Warm, friendly site footer for a veterinary clinic / pet-healthcare site, composing the SiteFooter kit composite. Renders a caring paw-glyph brand mark, a heartfelt tagline, social links, and four link columns (Services, Clinic & Hours, Company, Legal), plus a bottom bar with copyright, a reassuring note, and legal links. Accepts public props to override every block. Use it as the closing band of any pet-care or veterinary site for consistent, route-aware navigation and a final note of trust.',

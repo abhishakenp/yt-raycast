@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * alt-driven. Use to highlight the location, directions, and lodging for tech
  * conference, summit, festival, or workshop pages.
  */
-export const EventVenue = defineComponent({
+export const EventVenue = defineCapsule({
   name: 'EventVenue',
   description:
     'Venue-spotlight split for a conference or event page: a muted band with a two-column layout — on the left a heading, description, and a list of detail rows (address, getting there, hotels) each with a bordered icon tile; on the right a large 16:10 hero photo above a 3-up square photo collage, all alt-driven via the Image component. Use to highlight the location, directions, and lodging for tech conference, summit, festival, meetup, or workshop pages.',

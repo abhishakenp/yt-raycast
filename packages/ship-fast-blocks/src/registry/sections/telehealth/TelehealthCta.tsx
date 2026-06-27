@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
-export const TelehealthCta = defineComponent({
+export const TelehealthCta = defineCapsule({
   name: 'TelehealthCta',
   description:
     "Full-width closing call-to-action band for a telehealth site, built on the shared CtaBand composite with a primary tone. Centers an optional eyebrow, a reassuring title ('Talk to a doctor now'), a supporting subtitle, and a row of routable pill actions — a primary 'Get Started' button (auto-inverted to read against the primary background) that routes to booking, plus an outlined 'Learn more' button. Use as the final conversion band near the footer of a telehealth page.",

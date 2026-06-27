@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * infrastructure for logistics, freight-forwarding, shipping, courier, warehousing
  * or cargo/transport companies. Renders fully with no props via alt-driven images.
  */
-export const LogisticsGallery = defineComponent({
+export const LogisticsGallery = defineCapsule({
   name: 'LogisticsGallery',
   description:
     'Global-network image gallery for a logistics / freight-forwarding company on a subtle muted band: a centered heading + lede over a responsive 1 → 2 → 3 column grid of rounded 4:3 photo tiles (ships, warehouses, trucks, cargo planes, terminals, ports) that gently zoom on hover. Clean and corporate on a light surface. Use to showcase facilities, fleet and infrastructure for logistics, freight-forwarding, shipping, courier, warehousing, supply-chain or cargo/transport companies.',

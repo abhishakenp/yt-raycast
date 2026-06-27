@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * claims processed/approved, and customer rating. Renders fully with no props
  * via baked-in defaults.
  */
-export const InsuranceStats = defineComponent({
+export const InsuranceStats = defineCapsule({
   name: 'InsuranceStats',
   description:
     'Compact 4-up impact stats strip for an insurance page: a centered responsive grid (2 up on mobile, 4 up on desktop) of big brand-colored metric values over muted labels, on a plain background band. Use between content sections to surface social proof like families protected, claims processed/approved dollar amounts, claims-approved rate, and customer rating.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * Daily Luxury, Statement, Heritage) for fine jewelers, diamond houses, or
  * engagement-ring boutiques. Renders fully with no props via baked-in defaults.
  */
-export const JewelryStoreCollections = defineComponent({
+export const JewelryStoreCollections = defineCapsule({
   name: 'JewelryStoreCollections',
   description:
     'Curated collections grid for a luxury jewelry boutique: a centered gold eyebrow + serif heading + description introduce a responsive grid (1/2/3 cols) of clickable collection cards, each a tall 4:5 image that zooms on hover, a wide letter-spaced gold tag, a serif title, and a muted meta line (piece count • from price). Every card routes through useNavigate. Use to showcase distinct jewelry collections (Bridal, Daily Luxury, Statement, Heritage) for fine jewelers, diamond houses, or engagement-ring boutiques.',

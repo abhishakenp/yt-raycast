@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -10,7 +11,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * company. Use to build trust with real customer voices on SaaS, app, or
  * service landing pages. Renders fully with no props via baked-in defaults.
  */
-export const SaasTestimonials = defineComponent({
+export const SaasTestimonials = defineCapsule({
   name: 'SaasTestimonials',
   description:
     "A social-proof band for a B2B SaaS landing page built on the shared TestimonialGrid composite: a centered heading + optional intro above a responsive grid of quote cards, each showing a customer quote and an avatar footer with the person's name, role, and company. Use to build trust with real customer voices on SaaS, app, or service landing pages.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use right beneath a hero to establish social proof for CRM, sales-pipeline or
  * B2B SaaS products. Renders fully with no props.
  */
-export const CrmLogos = defineComponent({
+export const CrmLogos = defineCapsule({
   name: 'CrmLogos',
   description:
     'Slim trusted-by logo strip for a CRM / SaaS landing page: a border-bottomed band with a small uppercase tracking-wide caption above a responsive grid of dimmed wordmark-style company names (2 cols on mobile up to 6 on desktop) that brighten on hover. Each logo routes through useNavigate. Use right beneath a hero to establish social proof for CRM, sales-pipeline or B2B SaaS products.',

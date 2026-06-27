@@ -1,7 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceAccountButton,
+  LocalServiceBookingButton,
+  LocalServiceIntentBadge,
+  LocalServiceMobileMenu,
+  LocalServiceMutationSpinner,
+  LocalServiceSearchButton,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * DentalNavbar — sticky translucent top navigation bar for a dental practice /
@@ -13,7 +23,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * routes through useNavigate. Use as the sticky site header for dentists,
  * dental offices, orthodontists, or cosmetic / pediatric dental clinics.
  */
-export const DentalNavbar = defineComponent({
+export const DentalNavbar = defineCapsule({
   name: 'DentalNavbar',
   description:
     "Sticky translucent top navigation bar for a dental practice / dentist site: backdrop-blurred, border-bottomed header with a rounded mint-primary tooth-glyph logo tile + practice name and a 'Dental Care' eyebrow on the left, horizontal nav links on the right (desktop), a filled primary pill CTA built from the last nav item (e.g. 'Book Appointment'), and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for dentists, dental offices, orthodontists, or cosmetic / pediatric dental clinics.",
@@ -26,7 +36,8 @@ export const DentalNavbar = defineComponent({
     nav: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Bright Smile'
     const tagline = props.tagline ?? 'Dental Care'
@@ -96,32 +107,36 @@ export const DentalNavbar = defineComponent({
                 {label}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={() => go(nav[nav.length - 1])}
-              className="rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            <LocalServiceBookingButton
+              lakebed={lakebed}
+              intentLabel={nav[nav.length - 1]}
+              service="Dental appointment"
+              source="navbar"
+              pendingChildren={
+                <LocalServiceMutationSpinner className="text-primary-foreground" />
+              }
+              className="rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
             >
               {nav[nav.length - 1]}
-            </button>
+            </LocalServiceBookingButton>
           </div>
-          <button
-            type="button"
-            aria-label="Open menu"
-            onClick={() => go(nav[0])}
-            className="p-2 text-muted-foreground md:hidden"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              className="size-6"
-              aria-hidden="true"
-            >
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <LocalServiceIntentBadge lakebed={lakebed} />
+            <LocalServiceSearchButton
+              lakebed={lakebed}
+              buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+            />
+            <LocalServiceAccountButton
+              lakebed={lakebed}
+              buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+            />
+            <LocalServiceMobileMenu
+              brand={brand}
+              homeTarget={nav[0]}
+              nav={nav}
+              buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+            />
+          </div>
         </nav>
       </header>
     )

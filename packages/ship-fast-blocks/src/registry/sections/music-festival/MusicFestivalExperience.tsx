@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * music value on music festivals, arts festivals, camping/desert events, or any
  * multi-day immersive event.
  */
-export const MusicFestivalExperience = defineComponent({
+export const MusicFestivalExperience = defineCapsule({
   name: 'MusicFestivalExperience',
   description:
     'Experience / features split for a music / arts festival landing page: a two-column card-surface band with an eyebrow, heading, intro paragraph, and a vertical list of icon features (immersive art, curated dining, camping community, wellness — each with a rounded accent icon tile, title and description) on the left, and a four-up staggered photo collage on the right. Photos use the alt-driven Image component. Use to communicate everything-beyond-the-music value on music festivals, arts festivals, camping/desert events, raves, or any multi-day immersive event.',

@@ -1,7 +1,27 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { dashboardLakebed } from './dashboard-lakebed.ts'
+
+type DashboardDisplayRow = {
+  amount?: string
+  customer?: string
+  date?: string
+  dbId?: string
+  destination?: string
+  eta?: string
+  id?: string
+  location?: string
+  priority?: string
+  product?: string
+  robot?: string
+  status?: string
+  statusTone?: 'emerald' | 'sky' | 'amber' | 'red' | string
+  task?: string
+}
 
 /**
  * DashboardOrdersTable — a recent-orders data table card for a SaaS admin
@@ -11,14 +31,15 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * gradient initial avatar, product, date, amount, a colored status pill with a
  * matching dot, and a row-actions kebab) and a pagination footer (summary text +
  * Prev / numbered / Next buttons, with "1" active and "Prev" disabled). Toolbar
- * buttons, row actions and pagination route through useNavigate. Use below the
+ * buttons and pagination route through useNavigate; Lakebed-backed row actions
+ * update order status in the shared dashboard state. Use below the
  * KPI / chart band to list latest transactions, orders, invoices or any recent
  * records. Renders fully with no props via baked-in default orders.
  */
-export const DashboardOrdersTable = defineComponent({
+export const DashboardOrdersTable = defineCapsule({
   name: 'DashboardOrdersTable',
   description:
-    "A recent-orders data table card for a SaaS admin dashboard: a bordered card with a header (title + subtitle and toolbar buttons whose icon is chosen from the label — download for Export, funnel otherwise), a responsive table (order id, customer cell with a gradient initial avatar, product, date, amount, a colored status pill with a matching dot, and a row-actions kebab) and a pagination footer (summary text + Prev / numbered / Next buttons, '1' active, 'Prev' disabled). Toolbar buttons, row actions and pagination route through useNavigate. Use below the KPI / chart band to list latest transactions, orders, invoices or any recent records.",
+    "A recent-orders data table card for a SaaS admin dashboard: a bordered card with a header (title + subtitle and toolbar buttons whose icon is chosen from the label — download for Export, funnel otherwise), a responsive table (order id, customer cell with a gradient initial avatar, product, date, amount, a colored status pill with a matching dot, and a row-actions kebab) and a pagination footer (summary text + Prev / numbered / Next buttons, '1' active, 'Prev' disabled). Toolbar buttons and pagination route through useNavigate; Lakebed-backed row actions update order status in shared dashboard state. Use below the KPI / chart band to list latest transactions, orders, invoices or any recent records.",
   props: z.object({
     /** Table heading. */
     title: z.string().optional(),
@@ -55,8 +76,11 @@ export const DashboardOrdersTable = defineComponent({
     pages: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: dashboardLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const storedOrders = lakebed.useQuery('orders') ?? []
+    const setOrderStatus = useKeyedLakebedMutation(lakebed, 'setOrderStatus')
     const title = props.title ?? 'Recent Orders'
     const subtitle = props.subtitle ?? 'Latest transactions from your store'
     const actions = props.actions?.length ? props.actions : ['Filter', 'Export']
@@ -64,7 +88,7 @@ export const DashboardOrdersTable = defineComponent({
       ? props.columns
       : ['Order ID', 'Customer', 'Product', 'Date', 'Amount', 'Status', '']
     const rowTarget = props.rowTarget ?? 'Orders'
-    const rows = props.rows?.length
+    const fallbackRows: DashboardDisplayRow[] = props.rows?.length
       ? props.rows
       : [
           {
@@ -122,7 +146,23 @@ export const DashboardOrdersTable = defineComponent({
             statusTone: 'red' as const,
           },
         ]
-    const summary = props.summary ?? 'Showing 1–6 of 1,247 orders'
+    const rows: DashboardDisplayRow[] = storedOrders.length
+      ? storedOrders.map((order) => ({
+          amount: order.amount,
+          customer: order.customer,
+          date: order.date,
+          dbId: order.id,
+          id: order.orderId || order.id,
+          product: order.product,
+          status: order.status,
+          statusTone: order.statusTone,
+        }))
+      : fallbackRows.map((row) => ({ ...row, dbId: '' }))
+    const summary =
+      props.summary ??
+      (storedOrders.length
+        ? `Showing ${storedOrders.length} live order${storedOrders.length === 1 ? '' : 's'}`
+        : 'Showing 1–6 of 1,247 orders')
     const pages = props.pages?.length
       ? props.pages
       : ['Prev', '1', '2', '3', 'Next']
@@ -220,8 +260,10 @@ export const DashboardOrdersTable = defineComponent({
                 const date = row.date ?? row.eta ?? ''
                 const amount = row.amount ?? row.priority ?? ''
                 const status = row.status ?? 'Active'
-                const tone = statusTones[row.statusTone ?? 'sky']
+                const tone = statusTones[row.statusTone ?? 'sky'] ?? statusTones.sky
                 const initial = customer.charAt(0).toUpperCase()
+                const rowActionKey = `complete:${row.dbId || id}`
+                const rowPending = setOrderStatus.isPending(rowActionKey)
                 return (
                   <tr key={id} className="transition-colors hover:bg-muted/60">
                     <td className="px-5 py-3.5 font-medium text-foreground">
@@ -264,7 +306,20 @@ export const DashboardOrdersTable = defineComponent({
                       <button
                         type="button"
                         aria-label={`Actions for ${id}`}
-                        onClick={() => go(rowTarget)}
+                        aria-busy={rowPending}
+                        disabled={rowPending}
+                        onClick={() => {
+                          if (!row.dbId) {
+                            go(rowTarget)
+                            return
+                          }
+
+                          void setOrderStatus.run(rowActionKey, {
+                            id: row.dbId,
+                            status: 'Completed',
+                            statusTone: 'emerald',
+                          })
+                        }}
                         className="text-muted-foreground transition-colors hover:text-foreground"
                       >
                         <svg

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
  * résumé, or professional profile page to summarize core competencies. Renders
  * fully with no props via baked-in defaults.
  */
-export const ResumeCvServices = defineComponent({
+export const ResumeCvServices = defineCapsule({
   name: 'ResumeCvServices',
   description:
     "Skills / expertise grid for a personal resume / CV / portfolio site, built on the shared FeatureGrid composite: a 'Skills' heading with a short subheading and a responsive three-column grid of token cards, each pairing an expertise-area title (Product Design, Design Systems, User Research, Prototyping, Frontend, Strategy) with a concise description of what that skill covers. Use on a personal portfolio, online résumé, or professional profile page to summarize core competencies.",

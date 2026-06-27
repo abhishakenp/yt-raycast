@@ -1,7 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import {
+  NewsletterAccountButton,
+  NewsletterSubscribeForm,
+  NewsletterSubscribeDrawer,
+} from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * FitnessNavbar — sticky translucent top navigation bar for a gym / fitness-studio
@@ -13,7 +21,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * swap pages. Use as the sticky site header for gyms, fitness studios, CrossFit
  * boxes, yoga / pilates / boxing / spin studios or personal-training businesses.
  */
-export const FitnessNavbar = defineComponent({
+export const FitnessNavbar = defineCapsule({
   name: 'FitnessNavbar',
   description:
     "Sticky translucent top navigation bar for a gym / fitness-studio site: a backdrop-blurred, border-bottomed header with a square monogram logo tile (first letter of the brand) + short brand wordmark on the left, horizontal muted-to-foreground nav links on the right (desktop), a filled primary pill CTA built from the LAST nav item (e.g. 'Start Trial'), and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing, spin / cycle studios, or personal-training businesses.",
@@ -24,7 +32,8 @@ export const FitnessNavbar = defineComponent({
     nav: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Base Fitness Studio'
     const brandShort = brand.split(/\s+/)[0]?.toUpperCase() ?? 'BASE'
@@ -69,36 +78,37 @@ export const FitnessNavbar = defineComponent({
                   {label}
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => go(navPrimary)}
-                className="rounded-sm bg-primary px-4 py-2 text-sm text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {navPrimary}
-              </button>
+              <NewsletterAccountButton
+                lakebed={lakebed}
+                buttonClassName="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              />
+              <NewsletterSubscribeDrawer
+                lakebed={lakebed}
+                buttonLabel={navPrimary}
+                source="navbar"
+                buttonClassName="rounded-sm bg-primary px-4 py-2 text-sm text-primary-foreground transition-colors hover:bg-primary/90"
+              />
             </div>
 
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => go(nav[0])}
-              className="p-2 md:hidden"
-            >
-              <svg
-                className="size-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
+            <MobileNavDrawer
+              brand={brandShort}
+              nav={nav.slice(0, -1)}
+              homeTarget={nav[0]}
+              buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+              footer={
+                <NewsletterSubscribeForm
+                  lakebed={lakebed}
+                  source="navbar"
+                  buttonLabel={navPrimary}
+                  pendingLabel="Joining"
+                  placeholder="you@example.com"
+                  successMessage="You're on the list for the trial."
+                  className="grid gap-2"
+                  inputClassName="min-h-11 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground"
+                  buttonClassName="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60"
                 />
-              </svg>
-            </button>
+              }
+            />
           </div>
         </div>
       </nav>

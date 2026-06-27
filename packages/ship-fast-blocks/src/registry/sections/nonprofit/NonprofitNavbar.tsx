@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -30,7 +31,7 @@ const SproutMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const NonprofitNavbar = defineComponent({
+export const NonprofitNavbar = defineCapsule({
   name: 'NonprofitNavbar',
   description:
     "Sticky nonprofit / charity / NGO site header built on the shared SiteNav composite: a layered sprout-glyph logo mark + organization name on the left, desktop nav links, a pill-shaped primary 'Donate' CTA on the right, and a real mobile drawer. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for nonprofits, charities, NGOs, foundations, humanitarian or community organizations.",

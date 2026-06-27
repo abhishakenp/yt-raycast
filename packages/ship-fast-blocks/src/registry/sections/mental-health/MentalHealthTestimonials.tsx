@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * Use as social proof for therapists, counselors, psychologists or wellness
  * centers.
  */
-export const MentalHealthTestimonials = defineComponent({
+export const MentalHealthTestimonials = defineCapsule({
   name: 'MentalHealthTestimonials',
   description:
     '3-up testimonials grid for a therapy practice: a centered eyebrow + heading + intro above a responsive 1/2/3-column grid of rounded bordered cards, each with a 5-star primary rating row, a quoted client testimonial, and a footer pairing a round client avatar with name + therapy detail. Calm, warm, sage-and-sand wellness aesthetic with soft card shadow. Use as social proof for therapists, counselors, psychologists or wellness centers.',

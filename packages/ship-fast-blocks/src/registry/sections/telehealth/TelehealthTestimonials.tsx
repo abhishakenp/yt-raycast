@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
-export const TelehealthTestimonials = defineComponent({
+export const TelehealthTestimonials = defineCapsule({
   name: 'TelehealthTestimonials',
   description:
     'Patient reviews band for a telehealth site, built on the shared TestimonialGrid composite. Renders a centered heading and a three-column grid of patient testimonial cards, each with a star rating, a quote, an avatar, and a name with role or context. Cards collapse to two columns and then one column on smaller screens. Use as social proof near the bottom of a telehealth page to reassure prospective patients before they book a visit.',

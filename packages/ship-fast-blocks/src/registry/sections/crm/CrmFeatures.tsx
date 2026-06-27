@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * showcase the core capabilities of a CRM, sales-enablement or B2B SaaS product.
  * Renders fully with no props.
  */
-export const CrmFeatures = defineComponent({
+export const CrmFeatures = defineCapsule({
   name: 'CrmFeatures',
   description:
     'Centered multi-column feature grid for a CRM / sales-platform landing page: a heading + supporting paragraph above a responsive 1/2/3-up grid of bordered cards, each with a soft tinted icon tile (rotating line icons for pipeline, activity, AI, team, reporting, mobile), a title and a description; cards lift with a hover shadow. Clean and professional. Use to showcase the core capabilities of a CRM, sales-enablement or B2B SaaS product.',

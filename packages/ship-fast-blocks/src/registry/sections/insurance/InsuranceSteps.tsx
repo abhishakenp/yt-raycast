@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * insurance carriers, insurtech, brokers, or financial-protection products.
  * Renders fully with no props via baked-in defaults.
  */
-export const InsuranceSteps = defineComponent({
+export const InsuranceSteps = defineCapsule({
   name: 'InsuranceSteps',
   description:
     "'How it works' 3-step process band for an insurance page on a soft muted canvas: a centered eyebrow chip + heading + lede above a responsive grid of numbered step cards, each with a solid brand-colored number tile, a title and a description, connected by right-pointing arrows between cards on desktop. Use to explain a simple get-covered / get-a-quote flow for insurance carriers, insurtech startups, brokers, or financial-protection products.",

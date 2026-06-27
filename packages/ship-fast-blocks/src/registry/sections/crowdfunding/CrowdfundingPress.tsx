@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * campaign hero to establish press credibility, or as a lightweight "as seen
  * in" logo bar on any launch, fundraiser, or product page.
  */
-export const CrowdfundingPress = defineComponent({
+export const CrowdfundingPress = defineCapsule({
   name: 'CrowdfundingPress',
   description:
     "A compact 'Featured in' press-logo strip for a crowdfunding / campaign landing page: a border-y card band with a small uppercase eyebrow heading centered above a wrapped, dimmed row of wordmark-style publication names rendered as muted text buttons that brighten on hover. Each name routes through useNavigate. Use directly beneath a campaign hero to establish press credibility, or as a lightweight 'as seen in' logo bar on any launch, fundraiser, or product page.",

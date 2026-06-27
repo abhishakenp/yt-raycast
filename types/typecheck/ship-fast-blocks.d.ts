@@ -46,18 +46,38 @@ declare module '@ship-fast/blocks/runtime' {
   export const OpenUISanityContext: Context<any>
   export const OpenUIMedusaContext: Context<any>
   export function extractOpenUIRuntimeComponentNames(source: string): string[]
-  export function getOpenUIRuntimeLibraryCacheKey(source: string): string
+  export type AiCapsuleRecord = {
+    capsuleName: string
+    parentCapsule: string
+    compiledJs: string
+    description: string
+  }
+  export function getOpenUIRuntimeLibraryCacheKey(
+    source: string,
+    aiCapsules?: AiCapsuleRecord[],
+  ): string
   export function loadOpenUIRuntimeComponent(
     name: string,
   ): Promise<{ client: any }>
-  export function loadOpenUIRuntimeLibrary(source: string): Promise<any>
+  export function loadOpenUIRuntimeLibrary(
+    source: string,
+    aiCapsules?: AiCapsuleRecord[],
+  ): Promise<any>
 }
 
 declare module '@ship-fast/blocks/generated' {
   export const blockSourceFilesBase64: string
   export const blockSourceFilesEncoding: string
+  export const capsuleCategories: Record<
+    string,
+    {
+      category: string
+      functionalType: string
+    }
+  >
   export const componentSpecBase64: string
   export const componentSpecEncoding: string
+  export function findSimilarCapsules(name: string, limit?: number): string[]
   export const reactExportSourcesBase64: string
   export const reactExportSourcesEncoding: string
   export const vendorSourceFilesBase64: string

@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
-export const WeddingCta = defineComponent({
+export const WeddingCta = defineCapsule({
   name: 'WeddingCta',
   description:
     'Closing RSVP call-to-action band for a wedding site, built on the shared CtaBand composite with a primary surface: an RSVP-by eyebrow, a warm headline inviting guests to respond, a heartfelt subtitle, and two routable actions (RSVP plus View Details). Use near the end of a wedding invitation or celebration page to prompt guests to confirm their attendance.',

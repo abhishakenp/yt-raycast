@@ -1,9 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
-export const WebinarSchedule = defineComponent({
+export const WebinarSchedule = defineCapsule({
   name: 'WebinarSchedule',
   description:
     'Agenda band for a webinar or virtual event: a SectionHeading over a vertical, divided list of timed agenda rows. Each row pairs an accented start time with a topic title and a short blurb describing what that segment covers. Use to show prospective attendees exactly what the session will walk through on a webinar registration page.',

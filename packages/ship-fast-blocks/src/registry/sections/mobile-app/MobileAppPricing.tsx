@@ -1,7 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  saasPlan,
+  useSyncSaasPlans,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * MobileAppPricing — a centered-intro, 3-tier pricing table for a clean,
@@ -15,10 +22,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * landing page. Renders fully with no props via baked-in Free / Pro / Teams
  * defaults.
  */
-export const MobileAppPricing = defineComponent({
+export const MobileAppPricing = defineCapsule({
   name: 'MobileAppPricing',
   description:
-    "Centered-intro 3-tier pricing table for a clean, minimalist mobile-app marketing page: a centered heading + description over a responsive 3-column row of plan cards, where the featured plan inverts to the primary background, lifts slightly and carries a 'Most Popular' pill; each card has a name, tagline, big price + period, a checklist of features (check / cross icons, dimmed when excluded), and a full-width CTA button routing through useNavigate. Use as the plans / subscription section on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.",
+    'Centered-intro 3-tier pricing table backed by shared Lakebed conversion state: plan cards seed command search and each CTA records selected plan or sales intent with scoped loading. Use as the plans / subscription section on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -39,8 +46,8 @@ export const MobileAppPricing = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
@@ -94,6 +101,18 @@ export const MobileAppPricing = defineComponent({
             ],
           },
         ]
+
+    useSyncSaasPlans(
+      lakebed,
+      tiers.map((tier) =>
+        saasPlan({
+          name: tier.name,
+          period: tier.period,
+          price: tier.price,
+          summary: tier.tagline || tier.features?.at(0)?.label || '',
+        }),
+      ),
+    )
 
     const CheckIcon = ({ className }: { className?: string }) => (
       <svg
@@ -210,18 +229,27 @@ export const MobileAppPricing = defineComponent({
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => go(tier.cta)}
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={tier.cta}
+                  plan={tier.name}
+                  source="pricing"
+                  aria-label={`${tier.cta} for ${tier.name}`}
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Selecting
+                    </>
+                  }
                   className={cn(
-                    'w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors',
+                    'inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
                     tier.featured
                       ? 'bg-background text-foreground hover:bg-muted'
                       : 'bg-muted text-foreground hover:bg-accent',
                   )}
                 >
                   {tier.cta}
-                </button>
+                </SaasPlanActionButton>
               </div>
             ))}
           </div>

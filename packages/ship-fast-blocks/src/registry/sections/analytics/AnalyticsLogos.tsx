@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * the hero of any analytics, BI, or data-product landing page to establish
  * credibility. Renders fully with no props via baked-in company defaults.
  */
-export const AnalyticsLogos = defineComponent({
+export const AnalyticsLogos = defineCapsule({
   name: 'AnalyticsLogos',
   description:
     "Bespoke 'trusted by' social-proof strip for an analytics product site: a centered muted lead line above a responsive, wrapping row of company wordmarks rendered as crisp token-styled text lockups (a small bar-glyph plus name), de-emphasized in muted-foreground and lifting to full foreground on hover. Token-only, no images. Use directly under the hero of any analytics, BI, or data-product landing page to establish credibility.",

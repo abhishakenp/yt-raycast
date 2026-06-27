@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * houses, or any warm food-and-drink small business. Renders fully with no props
  * via baked-in defaults.
  */
-export const CafeFooter = defineComponent({
+export const CafeFooter = defineCapsule({
   name: 'CafeFooter',
   description:
     'Rich multi-column footer for a cozy cafe page on a dark inverted band: four columns with brand mark + blurb, quick links, business links, and plain-text contact lines. A bottom row holds an auto-updating copyright line and legal links. The owl brand mark is an inline SVG (currentColor → token), copied locally so the footer is self-contained. Every link routes through useNavigate. Use as the closing footer for cafes, bakeries, tea houses, or warm food-and-drink small businesses.',

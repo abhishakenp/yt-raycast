@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * Links route through useNavigate. Use as the top hero for marketing / growth
  * agencies, SEO / paid-ads shops, or B2B SaaS growth firms. Renders with no props.
  */
-export const MarketingAgencyHero = defineComponent({
+export const MarketingAgencyHero = defineCapsule({
   name: 'MarketingAgencyHero',
   description:
     'Split, conversion-focused hero for a growth / marketing agency: a two-column layout on a light neutral canvas with a small eyebrow, a large semibold headline featuring a muted-highlight phrase, a supporting paragraph, dual rounded-pill CTAs (filled primary with arrow + outlined secondary), and inline trust checkmarks on the left; a rounded team photo with a floating ROI stat card overlapping its lower-left corner on the right. Links route through useNavigate. Use as the top hero for marketing / growth agencies, SEO / paid-ads shops, lead-gen consultancies, or B2B SaaS growth firms.',

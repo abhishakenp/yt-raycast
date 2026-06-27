@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * useNavigate. Use to explain how to get started — create account, fund,
  * trade — on a brokerage or trading-app page. Renders fully with no props.
  */
-export const InvestingSteps = defineComponent({
+export const InvestingSteps = defineCapsule({
   name: 'InvestingSteps',
   description:
     'Onboarding timeline + transfer CTA for an investing / fintech page: a centered heading + lead above a responsive 3-step horizontal timeline (large numbered primary tiles with connecting lines on desktop), followed by a muted rounded panel pairing a portfolio-transfer headline + paragraph and an arrow link with a supporting dashboard photo. The transfer link routes through useNavigate. Use to explain how to get started (create account, fund, trade) on a brokerage or trading-app page.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * patisseries, cafes, restaurants, or any local maker citing media coverage.
  * Renders fully with no props via baked-in default publications.
  */
-export const BakeryLogos = defineComponent({
+export const BakeryLogos = defineCapsule({
   name: 'BakeryLogos',
   description:
     "'Featured in' press / media logo strip for an artisan-bakery site on a bordered card band: a centered uppercase label above a wrapping, faded row of publication wordmarks that brighten on hover, each routing through useNavigate. Warm, editorial, light aesthetic. Use as a social-proof / press-mentions strip directly beneath the hero for bakeries, patisseries, cafes, restaurants, or any local food maker citing media coverage.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * robo-advisors, crypto exchanges, wealth-management or any fintech product.
  * Renders fully with no props via baked-in "Vestora" defaults.
  */
-export const InvestingNavbar = defineComponent({
+export const InvestingNavbar = defineCapsule({
   name: 'InvestingNavbar',
   description:
     "Sticky backdrop-blurred top navigation bar for a modern investing / fintech brokerage site: a trend-line brand glyph tile + platform name on the left, horizontal nav links in the center (desktop), and a subtle 'Sign in' link plus a filled 'Get started' primary button on the right. Links and CTAs route through useNavigate for page-switching. Use as the sticky site header for stock brokerages, trading apps, robo-advisors, crypto exchanges or wealth-management products.",

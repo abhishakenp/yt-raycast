@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * metrics-driven B2B security SaaS. Renders fully with no props via baked-in
  * threat-intelligence defaults.
  */
-export const CybersecurityStats = defineComponent({
+export const CybersecurityStats = defineCapsule({
   name: 'CybersecurityStats',
   description:
     'Dark full-bleed real-time threat-intelligence stats band: a high-contrast brand-surface section with a centered heading + subheading, a 2-to-4 column grid of big numeric stats (value, label, colored delta/note), and a bordered-top 3-up row of secondary metrics. Pure display, no links. Use as an authority/social-proof band between hero and features for cybersecurity vendors, SOC/MDR providers, or any metrics-driven B2B security SaaS.',

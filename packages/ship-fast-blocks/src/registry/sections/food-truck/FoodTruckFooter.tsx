@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * links route through useNavigate. Use as the closing footer for food trucks,
  * street-food vendors, caterers or restaurants.
  */
-export const FoodTruckFooter = defineComponent({
+export const FoodTruckFooter = defineCapsule({
   name: 'FoodTruckFooter',
   description:
     'Inverted, multi-column site footer for a food-truck brand: a foreground-filled band with a brand block (circular monogram tile of brand initials + wordmark + about line) beside configurable link columns and a dedicated socials column, then a divided bottom bar with a copyright line and inline legal links. All links route through useNavigate. Use as the closing footer for food trucks, street-food vendors, taco / burger / bowl concepts, caterers or restaurants.',

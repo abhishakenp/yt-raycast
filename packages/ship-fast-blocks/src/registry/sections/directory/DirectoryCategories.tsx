@@ -1,8 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { directoryLakebed } from './directory-lakebed.ts'
+import { useDirectorySearch } from './directory-interactions.tsx'
 
 /**
  * DirectoryCategories — browse-by-category tile grid for a local-business
@@ -11,13 +13,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * bordered card with a tinted rounded icon badge that scales on hover, a title,
  * and a listing-count caption), and a centered "View All" link with a chevron.
  * Icon badge tints rotate through chart-1..5 + primary/accent/secondary tokens.
- * Every tile and the view-all link route through useNavigate. Use to let users
- * browse listing categories on local directories, marketplaces, or city guides.
+ * Every tile writes shared Lakebed category search state; the view-all link
+ * clears it. Use to let users browse listing categories on local directories,
+ * marketplaces, or city guides.
  */
-export const DirectoryCategories = defineComponent({
+export const DirectoryCategories = defineCapsule({
   name: 'DirectoryCategories',
   description:
-    'Browse-by-category tile grid for a local-business DIRECTORY: a card-surface section with a centered heading and description, a responsive 2-to-4-column grid of clickable category tiles (each a rounded bordered card with a tinted rounded icon badge that scales on hover, a title, and a listing-count caption), and a centered View All link with a chevron. Icon badge tints rotate through chart-1..5 plus primary/accent/secondary tokens. Every tile and the view-all link route through useNavigate. Use to let users browse listing categories on local directories, business-listing marketplaces, find-a-service platforms, or city guides.',
+    'Browse-by-category tile grid for a local-business DIRECTORY: a card-surface section with a centered heading and description, a responsive 2-to-4-column grid of clickable category tiles (each a rounded bordered card with a tinted rounded icon badge that scales on hover, a title, and a listing-count caption), and a centered View All link with a chevron. Icon badge tints rotate through chart-1..5 plus primary/accent/secondary tokens. Every tile writes shared Lakebed category state so featured listings react; the view-all link clears filters. Use to let users browse listing categories on local directories, business-listing marketplaces, find-a-service platforms, or city guides.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -31,8 +34,9 @@ export const DirectoryCategories = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: directoryLakebed,
+  component: ({ props, lakebed }) => {
+    const directorySearch = useDirectorySearch(lakebed)
     const heading = props.heading ?? 'Browse by Category'
     const description =
       props.description ??
@@ -193,7 +197,13 @@ export const DirectoryCategories = defineComponent({
               <button
                 key={cat.title}
                 type="button"
-                onClick={() => go(cat.title)}
+                aria-pressed={directorySearch.state?.category === cat.title}
+                onClick={() =>
+                  directorySearch.chooseSearch({
+                    category: cat.title,
+                    query: '',
+                  })
+                }
                 className="group rounded-xl border border-border bg-background p-6 text-left transition-all hover:border-muted-foreground/40 hover:shadow-sm"
               >
                 <div
@@ -217,7 +227,12 @@ export const DirectoryCategories = defineComponent({
           <div className="mt-10 text-center">
             <button
               type="button"
-              onClick={() => go(viewAll)}
+              onClick={() =>
+                directorySearch.chooseSearch({
+                  category: '',
+                  query: '',
+                })
+              }
               className="inline-flex items-center gap-2 font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {viewAll}

@@ -1,8 +1,21 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { inquiryLakebed } from './inquiry-lakebed.ts'
+import {
+  InquiryContactSheetButton,
+  useInquirySubmission,
+} from './inquiry-interactions.tsx'
+
+type ContactDetailIcon = 'clock' | 'mail' | 'map-pin' | 'phone'
+type ContactDetailItem = {
+  icon?: ContactDetailIcon
+  label: string
+  value: string
+  value2?: string
+}
 
 /**
  * ContactFormDetails — two-up band pairing a working contact form with a
@@ -13,7 +26,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * main conversion block on contact, support, or sales-inquiry pages. Renders
  * fully with no props via baked-in defaults.
  */
-export const ContactFormDetails = defineComponent({
+export const ContactFormDetails = defineCapsule({
   name: 'ContactFormDetails',
   description:
     'Two-up band pairing a working contact form with a contact-details card. Left side: full-name, email, and message fields with labels, placeholders, and a wide send button. Right side: a tinted-icon list of contact info (email, phone, address, hours) plus a row of social-link buttons. Raised cards with soft shadows and border tokens. Use as the main conversion block on contact, support, or sales-inquiry pages.',
@@ -50,9 +63,8 @@ export const ContactFormDetails = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
-
+  lakebed: inquiryLakebed,
+  component: ({ props, lakebed }) => {
     const nameLabel = props.form?.nameLabel ?? 'Full Name'
     const namePlaceholder = props.form?.namePlaceholder ?? 'John Doe'
     const emailLabel = props.form?.emailLabel ?? 'Email Address'
@@ -65,38 +77,44 @@ export const ContactFormDetails = defineComponent({
     const confirmation =
       props.form?.confirmation ??
       'Thanks for reaching out! We will get back to you shortly.'
+    const inquiry = useInquirySubmission({
+      lakebed,
+      source: 'Contact form',
+      successMessage: confirmation,
+    })
 
     const detailsHeading = props.details?.heading ?? 'Contact Information'
-    const detailItems = props.details?.items?.length
+    const defaultDetailItems: ContactDetailItem[] = [
+      {
+        icon: 'mail',
+        label: 'Email',
+        value: 'hello@orbitdigital.co',
+      },
+      {
+        icon: 'phone',
+        label: 'Phone',
+        value: '+1 (415) 555-1234',
+      },
+      {
+        icon: 'map-pin',
+        label: 'Office',
+        value: '1201 Mission Street, Suite 400',
+        value2: 'San Francisco, CA 94103',
+      },
+      {
+        icon: 'clock',
+        label: 'Business Hours',
+        value: 'Mon — Fri: 9:00 AM – 6:00 PM PST',
+      },
+    ]
+    const detailItems: ContactDetailItem[] = props.details?.items?.length
       ? props.details.items
-      : [
-          {
-            icon: 'mail' as const,
-            label: 'Email',
-            value: 'hello@orbitdigital.co',
-          },
-          {
-            icon: 'phone' as const,
-            label: 'Phone',
-            value: '+1 (415) 555-1234',
-          },
-          {
-            icon: 'map-pin' as const,
-            label: 'Office',
-            value: '1201 Mission Street, Suite 400',
-            value2: 'San Francisco, CA 94103',
-          },
-          {
-            icon: 'clock' as const,
-            label: 'Business Hours',
-            value: 'Mon — Fri: 9:00 AM – 6:00 PM PST',
-          },
-        ]
+      : defaultDetailItems
     const socials = props.details?.socials?.length
       ? props.details.socials
       : ['Twitter', 'LinkedIn', 'GitHub', 'Instagram']
 
-    const detailIcons: Record<string, ReactNode> = {
+    const detailIcons: Record<ContactDetailIcon, ReactNode> = {
       mail: (
         <svg
           width="20"
@@ -196,12 +214,7 @@ export const ContactFormDetails = defineComponent({
         {/* Contact form */}
         <div className="rounded-2xl border border-border bg-card p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60">
           <h2 className="sr-only">Contact form</h2>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              go('Contact')
-            }}
-          >
+          <form onSubmit={inquiry.submitForm}>
             <div className="mb-6">
               <label
                 htmlFor="cfd-name"
@@ -247,11 +260,13 @@ export const ContactFormDetails = defineComponent({
               />
             </div>
             <p className="sr-only" aria-live="polite">
-              {confirmation}
+              {inquiry.statusText}
             </p>
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2.5 rounded-lg bg-primary px-7 py-4 text-[0.95rem] font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] active:translate-y-0"
+              aria-busy={inquiry.isPending}
+              disabled={inquiry.isPending}
+              className="flex w-full items-center justify-center gap-2.5 rounded-lg bg-primary px-7 py-4 text-[0.95rem] font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] active:translate-y-0 disabled:pointer-events-none disabled:opacity-70"
             >
               <svg
                 width="18"
@@ -267,8 +282,11 @@ export const ContactFormDetails = defineComponent({
                 <path d="M22 2 11 13" />
                 <path d="M22 2 15 22l-4-9-9-4 20-7z" />
               </svg>
-              {submitLabel}
+              {inquiry.isPending ? 'Sending' : submitLabel}
             </button>
+            <p className="mt-4 text-sm text-muted-foreground">
+              {inquiry.statusText}
+            </p>
           </form>
         </div>
 
@@ -308,12 +326,15 @@ export const ContactFormDetails = defineComponent({
             {socials.map((label) => {
               const s = socialPath(label)
               return (
-                <button
+                <InquiryContactSheetButton
                   key={label}
-                  type="button"
-                  aria-label={label}
-                  onClick={() => go(label)}
-                  className="grid size-[42px] place-items-center rounded-xl border border-border bg-background text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-foreground"
+                  lakebed={lakebed}
+                  label={label}
+                  target={label}
+                  source="Contact details"
+                  heading={`Connect on ${label}`}
+                  description={`Open this ${label} contact option without leaving the generated page.`}
+                  buttonClassName="grid size-[42px] place-items-center rounded-xl border border-border bg-background text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-foreground"
                 >
                   <svg
                     width="18"
@@ -349,7 +370,7 @@ export const ContactFormDetails = defineComponent({
                       <path d={s.path} />
                     )}
                   </svg>
-                </button>
+                </InquiryContactSheetButton>
               )
             })}
           </div>

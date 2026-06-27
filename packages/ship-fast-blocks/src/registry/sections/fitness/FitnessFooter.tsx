@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use as the closing footer on gyms, fitness studios, yoga / pilates / boxing / spin
  * studios, wellness clubs or class-booking sites.
  */
-export const FitnessFooter = defineComponent({
+export const FitnessFooter = defineCapsule({
   name: 'FitnessFooter',
   description:
     'Inverted multi-column site footer for a gym or fitness studio: a foreground-filled band with a brand block (square monogram tile + short wordmark + tagline) beside link columns (classes, company, connect / social), and a divided bottom bar with a copyright line and inline legal links. All links route through useNavigate. Use as the closing footer on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios, wellness clubs and class-booking sites.',

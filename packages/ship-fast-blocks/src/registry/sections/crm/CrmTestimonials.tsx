@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * showcase customer love for CRM, sales-pipeline or B2B SaaS products. Renders
  * fully with no props.
  */
-export const CrmTestimonials = defineComponent({
+export const CrmTestimonials = defineCapsule({
   name: 'CrmTestimonials',
   description:
     'Centered testimonial wall for a CRM / SaaS landing page: a heading + supporting paragraph above a responsive 1/2/3-up grid of bordered muted cards, each with a 5-star rating row, a quote, and an alt-driven round avatar beside the customer name and role. Warm, credible social proof. Use to showcase customer love for CRM, sales-pipeline or B2B SaaS products.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * Uses semantic tokens only. Use as the author bio block at the end of blog
  * posts, journals, magazines, or editorial reading pages.
  */
-export const BlogPostAuthors = defineComponent({
+export const BlogPostAuthors = defineCapsule({
   name: 'BlogPostAuthors',
   description:
     'Bespoke about-the-author bio card for the end of a blog article: a narrow reading-column card with a round author avatar, a small eyebrow label, the author name and byline/role, a short bio paragraph, a routable Follow pill button, and small social handle buttons. Use as the author bio block at the end of blog posts, journals, magazines, or editorial reading pages.',

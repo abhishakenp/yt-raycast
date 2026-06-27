@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * contractors, builders, or any service business showcasing trusted
  * partnerships. Renders fully with no props via baked-in defaults.
  */
-export const ConstructionLogos = defineComponent({
+export const ConstructionLogos = defineCapsule({
   name: 'ConstructionLogos',
   description:
     'Trusted-by client logo wall for a construction / general contractor page: a bordered muted band with a centered eyebrow heading above a responsive grid of text-based logo placeholders. Use as a social-proof logo strip beneath the hero for construction firms, contractors, builders, or any service business showcasing trusted partnerships.',

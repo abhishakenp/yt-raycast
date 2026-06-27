@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
@@ -12,7 +13,7 @@ import { StatGrid } from '#/section-kit/StatGrid.tsx'
  * Use to prove credibility on a real-estate brokerage or agent site. Renders
  * fully with no props via baked-in defaults.
  */
-export const RealEstateStats = defineComponent({
+export const RealEstateStats = defineCapsule({
   name: 'RealEstateStats',
   description:
     'Confident track-record band for a brokerage: an optional centered serif header above a responsive 2/4-column row of KPI cells, each showing a large primary-toned figure over a muted label. Defaults cover homes sold, sales volume, average days on market, and happy clients. Use to prove credibility on a real-estate brokerage or agent site.',

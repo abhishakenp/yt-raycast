@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -113,7 +114,7 @@ const VrIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const FlightSimulatorFeatures = defineComponent({
+export const FlightSimulatorFeatures = defineCapsule({
   name: 'FlightSimulatorFeatures',
   description:
     '3-up capability grid for a flight-simulator landing page built on the shared FeatureGrid composite: a centered heading above token-styled cards, each pairing an aviation line-icon tile with a title and description. Six baked features cover real flight physics, global photoreal scenery, live real-world weather, true-to-life multiplayer ATC, study-level aircraft systems, and VR support. Use to sell the depth of a flight sim, airliner / combat sim, or aviation training title.',

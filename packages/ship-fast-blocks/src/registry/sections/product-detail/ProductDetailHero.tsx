@@ -1,14 +1,24 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { useState } from 'react'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
+import { isProductPurchaseIntent } from './product-purchase-intent.ts'
 
-export const ProductDetailHero = defineComponent({
+export const ProductDetailHero = defineCapsule({
   name: 'ProductDetailHero',
   description:
-    'Premium two-column product detail hero / buy box for a single flagship product (Aurora Pro Headphones). The left column shows a large square product photo rendered through the alt-driven Image component; the right column is a conversion-focused buy box with product title, an inline 5-star rating with review count, a price row with optional strike-through compare price, a short product blurb, selectable variant pills (color / size options) backed by local state, and a dual CTA row (Add to Cart primary, Buy Now secondary) wired through the navigate helper. Use when composing a product detail page that needs a polished above-the-fold purchase experience without generating new HTML.',
+    'Premium two-column product detail hero / buy box for a single flagship product (Aurora Pro Headphones). The left column shows a large square product photo rendered through the alt-driven Image component; the right column is a conversion-focused buy box with product title, an inline 5-star rating with review count, a price row with optional strike-through compare price, a short product blurb, selectable variant pills (color / size options) backed by local state, and a dual CTA row where the primary action adds the product to the shared Lakebed cart and the secondary action routes through navigation. Use when composing a product detail page that needs a polished above-the-fold purchase experience without generating new HTML.',
+  lakebed: commerceCartLakebed,
   props: z.object({
     title: z.string().optional(),
     price: z.string().optional(),
@@ -22,7 +32,7 @@ export const ProductDetailHero = defineComponent({
     secondaryCta: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [sel, setSel] = useState(0)
     const title = props.title ?? 'Aurora Pro Headphones'
@@ -40,6 +50,26 @@ export const ProductDetailHero = defineComponent({
       : ['Midnight Black', 'Arctic Silver', 'Aurora Blue']
     const primaryCta = props.primaryCta ?? 'Add to Cart'
     const secondaryCta = props.secondaryCta ?? 'Buy Now'
+    const selectedVariant = variants[sel] ?? variants[0] ?? ''
+    const selectedItemLabel = selectedVariant
+      ? `${title} - ${selectedVariant}`
+      : title
+    const selectedCartItem = {
+      itemKey: selectedVariant
+        ? `${title}\u0000${price}\u0000${selectedVariant}`
+        : `${title}\u0000${price}`,
+      label: selectedItemLabel,
+      price,
+    }
+
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt,
+        label: title,
+        price,
+        subtitle: description,
+      }),
+    ])
 
     return (
       <section className={cn('bg-background py-12 sm:py-20', props.className)}>
@@ -106,20 +136,52 @@ export const ProductDetailHero = defineComponent({
               ))}
             </div>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                className="flex-1 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground transition hover:bg-primary/90"
-              >
-                {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
-                className="flex-1 rounded-full border border-border bg-background px-6 py-3 font-semibold text-foreground transition hover:bg-muted"
-              >
-                {secondaryCta}
-              </button>
+              {isProductPurchaseIntent(primaryCta) ? (
+                <CommerceAddItemButton
+                  lakebed={lakebed}
+                  item={selectedCartItem}
+                  pendingChildren={
+                    <>
+                      <CommerceMutationSpinner />
+                      Adding
+                    </>
+                  }
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                >
+                  {primaryCta}
+                </CommerceAddItemButton>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => go(primaryCta)}
+                  className="flex-1 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground transition hover:bg-primary/90"
+                >
+                  {primaryCta}
+                </button>
+              )}
+              {isProductPurchaseIntent(secondaryCta) ? (
+                <CommerceAddItemButton
+                  lakebed={lakebed}
+                  item={selectedCartItem}
+                  pendingChildren={
+                    <>
+                      <CommerceMutationSpinner />
+                      Adding
+                    </>
+                  }
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-border bg-background px-6 py-3 font-semibold text-foreground transition hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+                >
+                  {secondaryCta}
+                </CommerceAddItemButton>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => go(secondaryCta)}
+                  className="flex-1 rounded-full border border-border bg-background px-6 py-3 font-semibold text-foreground transition hover:bg-muted"
+                >
+                  {secondaryCta}
+                </button>
+              )}
             </div>
           </div>
         </div>

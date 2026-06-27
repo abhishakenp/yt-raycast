@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
  * offices, flex-office providers, or business centers. Renders fully with no
  * props via bright, modern baked-in defaults.
  */
-export const CoworkingFeatures = defineComponent({
+export const CoworkingFeatures = defineCapsule({
   name: 'CoworkingFeatures',
   description:
     "Amenity / perks grid for a coworking or shared-workspace page built on the shared FeatureGrid composite: a centered heading block above a responsive grid of amenity cards, each with an inline line-icon tile, a short title, and a benefit-led description (fast WiFi, meeting rooms, free coffee, 24/7 access, phone booths, community events). Use to communicate what's included with a membership for coworking spaces, shared offices, flex-office providers, or business centers.",

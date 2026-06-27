@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -34,7 +35,7 @@ const GrapeClusterMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const WineryBreweryFooter = defineComponent({
+export const WineryBreweryFooter = defineCapsule({
   name: 'WineryBreweryFooter',
   description:
     'Rich, multi-column closing footer for a winery or brewery site: a responsive grid with a brand block (serif wordmark + grape-cluster mark + tagline + social row), a Visit column with address plus tappable phone and email, an Hours column of day/time rows, and extra link columns (Explore, Contact, …); a bordered-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through useNavigate. Use as the site-wide footer for wineries, vineyards, cellar doors, breweries, taprooms, or cideries.',

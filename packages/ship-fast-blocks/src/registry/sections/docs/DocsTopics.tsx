@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -15,7 +16,7 @@ import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
  * theme-token developer-docs aesthetic. Renders fully with no props via baked-in
  * defaults.
  */
-export const DocsTopics = defineComponent({
+export const DocsTopics = defineCapsule({
   name: 'DocsTopics',
   description:
     'Documentation category grid for a developer-docs or product-docs landing page built on the shared FeatureGrid composite: a centered heading block above a responsive grid of doc-category cards, each with an inline line-icon tile (book, code brackets, graduation cap, document), a short title, and a one-line description routing the reader toward the right path (guides, API reference, tutorials, concept reference). Use as the primary navigation surface on a docs home, help center, or knowledge-base landing page to route readers from first steps to deep API reference. Clean developer-docs aesthetic using theme tokens only. Renders fully with no props.',

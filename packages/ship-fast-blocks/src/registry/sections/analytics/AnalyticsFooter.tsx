@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const brandMark = (
@@ -50,7 +51,7 @@ const DEFAULT_LEGAL = ['Privacy', 'Terms', 'Cookies']
  * band of any analytics, BI, or data-product site for consistent, route-aware
  * navigation. Renders fully with no props via baked-in defaults.
  */
-export const AnalyticsFooter = defineComponent({
+export const AnalyticsFooter = defineCapsule({
   name: 'AnalyticsFooter',
   description:
     'Sharp, data-forward site footer for an analytics product, composing the shared SiteFooter kit composite. Renders a bar-chart brand mark, a confident tagline, social links, and four link columns (Product, Resources, Company, Legal), plus a bottom bar with copyright, a short note, and legal links. Accepts public props to override every block. Use it as the closing band of any analytics, BI, or data-product site for consistent, route-aware navigation.',

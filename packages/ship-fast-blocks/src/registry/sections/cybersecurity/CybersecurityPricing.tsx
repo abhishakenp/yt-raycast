@@ -1,7 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  saasPlan,
+  useSyncSaasPlans,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * CybersecurityPricing — three-tier pricing table. A muted-band section with a
@@ -13,10 +20,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * providers, or any B2B security SaaS. Renders fully with no props via baked-in
  * Starter / Professional / Enterprise defaults.
  */
-export const CybersecurityPricing = defineComponent({
+export const CybersecurityPricing = defineCapsule({
   name: 'CybersecurityPricing',
   description:
-    'Three-tier pricing table: a muted-band section with a centered heading + subheading above a 3-column grid of plan cards. The featured plan inverts to the dark brand surface, lifts upward, and shows a floating badge; each card lists a name, blurb, large price + period, check-marked feature list, and a full-width CTA routing through useNavigate. Use to present subscription tiers for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.',
+    'Three-tier pricing table backed by shared Lakebed conversion state: a muted-band section with a centered heading + subheading above plan cards. Plans seed command search and each CTA records selected plan or sales intent with scoped loading. Use to present subscription tiers for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -39,8 +46,8 @@ export const CybersecurityPricing = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
@@ -96,6 +103,18 @@ export const CybersecurityPricing = defineComponent({
             ],
           },
         ]
+
+    useSyncSaasPlans(
+      lakebed,
+      plans.map((plan) =>
+        saasPlan({
+          name: plan.name,
+          period: plan.period,
+          price: plan.price,
+          summary: plan.blurb || plan.features.at(0) || '',
+        }),
+      ),
+    )
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -182,18 +201,27 @@ export const CybersecurityPricing = defineComponent({
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => go(plan.cta)}
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={plan.cta}
+                  plan={plan.name}
+                  source="pricing"
+                  aria-label={`${plan.cta} for ${plan.name}`}
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Selecting
+                    </>
+                  }
                   className={cn(
-                    'block w-full rounded-lg py-3 text-center font-semibold transition-colors',
+                    'inline-flex w-full items-center justify-center gap-2 rounded-lg py-3 text-center font-semibold transition-colors disabled:pointer-events-none disabled:opacity-70',
                     plan.featured
                       ? 'bg-background text-foreground hover:bg-background/90'
                       : 'border border-input text-foreground hover:bg-muted',
                   )}
                 >
                   {plan.cta}
-                </button>
+                </SaasPlanActionButton>
               </div>
             ))}
           </div>

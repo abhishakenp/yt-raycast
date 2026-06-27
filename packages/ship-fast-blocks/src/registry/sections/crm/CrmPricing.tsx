@@ -1,7 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  saasPlan,
+  useSyncSaasPlans,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * CrmPricing — centered 3-tier pricing table for a CRM / SaaS landing page on a
@@ -13,10 +20,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * tiered subscription pricing for CRM, sales-pipeline or B2B SaaS products.
  * Renders fully with no props.
  */
-export const CrmPricing = defineComponent({
+export const CrmPricing = defineCapsule({
   name: 'CrmPricing',
   description:
-    'Centered 3-tier pricing table for a CRM / SaaS landing page on a subtle muted band: a heading + supporting paragraph above a responsive 3-up grid of plan cards with name, blurb, large price + unit, a checklist of included features (green checks) plus optional crossed-out excluded features, and a full-width CTA; the featured plan inverts to a filled primary surface with a floating Most-Popular badge. CTAs route through useNavigate. Use to present tiered subscription pricing for CRM, sales-pipeline or B2B SaaS products.',
+    'Centered 3-tier pricing table for a CRM / SaaS landing page backed by shared Lakebed conversion state: a heading + supporting paragraph above responsive plan cards with name, blurb, large price + unit, feature checklist, optional excluded features, and scoped mutation CTAs. Plans seed command search and every CTA records selected plan or sales intent. Use to present tiered subscription pricing for CRM, sales-pipeline or B2B SaaS products.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -39,8 +46,8 @@ export const CrmPricing = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
@@ -92,6 +99,18 @@ export const CrmPricing = defineComponent({
             cta: 'Contact sales',
           },
         ]
+
+    useSyncSaasPlans(
+      lakebed,
+      plans.map((plan) =>
+        saasPlan({
+          name: plan.name,
+          period: plan.unit,
+          price: plan.price,
+          summary: plan.description || plan.features.at(0) || '',
+        }),
+      ),
+    )
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -220,18 +239,27 @@ export const CrmPricing = defineComponent({
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => go(plan.cta)}
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={plan.cta}
+                  plan={plan.name}
+                  source="pricing"
+                  aria-label={`${plan.cta} for ${plan.name}`}
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Selecting
+                    </>
+                  }
                   className={cn(
-                    'w-full rounded-lg py-3 font-semibold transition-colors',
+                    'inline-flex w-full items-center justify-center gap-2 rounded-lg py-3 font-semibold transition-colors disabled:pointer-events-none disabled:opacity-70',
                     plan.featured
                       ? 'bg-background text-foreground hover:bg-muted'
                       : 'border border-border text-foreground hover:bg-muted',
                   )}
                 >
                   {plan.cta}
-                </button>
+                </SaasPlanActionButton>
               </div>
             ))}
           </div>

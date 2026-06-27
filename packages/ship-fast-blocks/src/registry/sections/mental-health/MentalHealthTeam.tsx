@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * specialty link routes through useNavigate. Use to introduce therapists,
  * counselors, psychologists or psychiatrists at a mental-health practice.
  */
-export const MentalHealthTeam = defineComponent({
+export const MentalHealthTeam = defineCapsule({
   name: 'MentalHealthTeam',
   description:
     "Clinician team gallery for a therapy practice: a centered eyebrow + heading + intro above a responsive 1/2/4-column grid of clinician cards (rounded headshot photo that zooms on hover, name, primary-colored role, short bio), then a muted 'looking for a specific specialty?' band with a therapist-matching link. Calm, warm, sage-and-sand wellness aesthetic. The specialty link routes through useNavigate. Use to introduce therapists, counselors, psychologists or psychiatrists at a mental-health practice.",

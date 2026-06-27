@@ -1,8 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  useSyncPublicationArticles,
+} from '../blog/publication-interactions.tsx'
+import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 /**
  * NewsroomFeaturedStory — editorial "Editor's Pick" featured long-read band for
@@ -15,7 +20,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * or editor-selected long read on news, magazine, blog or publication
  * homepages. Renders fully with no props.
  */
-export const NewsroomFeaturedStory = defineComponent({
+export const NewsroomFeaturedStory = defineCapsule({
   name: 'NewsroomFeaturedStory',
   description:
     "Editorial 'Editor's Pick' featured long-read band for a digital newsroom or magazine: a two-column split with a large feature photograph on one side and, on the other, a wide letter-spaced eyebrow label, a serif headline, a two-to-three sentence excerpt, a short bulleted 'key points' list, a set-off pull-quote, a byline (author • date) and a 'Continue reading' CTA that routes through useNavigate. Magazine-grade, unhurried, long-form aesthetic. Use to spotlight a featured analysis, cover story or editor-selected long read on news sites, magazines, blogs or publication homepages.",
@@ -40,7 +45,8 @@ export const NewsroomFeaturedStory = defineComponent({
     cta: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: publicationLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? "EDITOR'S PICK"
     const headline =
@@ -64,6 +70,16 @@ export const NewsroomFeaturedStory = defineComponent({
       props.imageAlt ??
       'Aerial view of a busy container port at dusk with cranes and stacked shipping containers'
     const cta = props.cta ?? 'Continue reading'
+    useSyncPublicationArticles(lakebed, [
+      {
+        author,
+        category: eyebrow,
+        date,
+        excerpt,
+        target: cta,
+        title: headline,
+      },
+    ])
 
     return (
       <section

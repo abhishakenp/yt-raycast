@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * footer for local directories, business-listing marketplaces, find-a-service
  * platforms, or review-and-discovery sites.
  */
-export const DirectoryFooter = defineComponent({
+export const DirectoryFooter = defineCapsule({
   name: 'DirectoryFooter',
   description:
     'Dark inverted multi-column footer for a local-business DIRECTORY: a foreground-on-background inverted footer with a brand block (a location-pin glyph plus wordmark and a short tagline) plus up to three link-group columns, then a bottom bar with a copyright line on the left and a row of legal links on the right. Every link routes through useNavigate. Use as the site footer for local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',

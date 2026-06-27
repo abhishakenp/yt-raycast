@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * landscapers, garden designers, hardscaping contractors or maintenance services.
  * Renders fully with no props via baked-in four-step defaults.
  */
-export const LandscapingProcess = defineComponent({
+export const LandscapingProcess = defineCapsule({
   name: 'LandscapingProcess',
   description:
     "Centered-header 'how we work' process band for a landscaping / outdoor-design company on a soft accent surface: a heading + description introduce a responsive 4-column row of numbered steps, each with a solid round primary number badge, a title and a descriptive paragraph, joined by a faint connector line between badges on desktop. Calm, organic and premium with a sage-green accent. Use to explain an engagement / project workflow (consultation, design, installation, care) for landscapers, garden designers, hardscaping contractors or maintenance services.",

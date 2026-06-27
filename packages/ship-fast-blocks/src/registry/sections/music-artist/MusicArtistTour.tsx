@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * tour schedule section for musicians, bands, or tour-promotion pages. Renders
  * fully with no props via baked-in defaults.
  */
-export const MusicArtistTour = defineComponent({
+export const MusicArtistTour = defineCapsule({
   name: 'MusicArtistTour',
   description:
     "Long tour-date list for a music artist / band page: a centered eyebrow, thin heading and lead over a soft muted band, then a stacked list of date rows (month/day block, venue and city, price/status, and a 'Get Tickets' pill that disables for sold-out shows), with a trailing 'view all' link with an arrow. Warm, airy editorial indie-folk aesthetic. Each ticket link and the view-all link route through useNavigate. Use as the live-dates / tour schedule section for musicians, bands, indie/folk acts, or tour-promotion pages.",

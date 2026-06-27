@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { cn } from '#/lib/utils.ts'
 
-export const UniversityPrograms = defineComponent({
+export const UniversityPrograms = defineCapsule({
   name: 'UniversityPrograms',
   description:
     "Bespoke degree-program showcase for the University page family with a prestigious, collegiate aesthetic. Opens with a SectionHeading, then lays out a responsive grid of program cards — each naming a school, a degree, and a short blurb, with a per-card 'Explore program' link routed via useNavigate. Card and border tokens give each program a refined, catalog-style frame. Use to summarize flagship academic offerings across colleges on a university homepage.",

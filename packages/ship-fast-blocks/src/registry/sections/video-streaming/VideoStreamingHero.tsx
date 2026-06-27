@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * through useNavigate. Use as the opening hero for streaming services, OTT
  * apps, and on-demand video platforms. Renders fully with no props.
  */
-export const VideoStreamingHero = defineComponent({
+export const VideoStreamingHero = defineCapsule({
   name: 'VideoStreamingHero',
   description:
     "Full-bleed cinematic dark hero for a video-streaming landing page: one dramatic show backdrop fills the band edge to edge under layered token-based dark overlays so light text stays readable. Content has a small 'Featured' eyebrow, a huge show title, a short logline, dual CTAs (filled 'Start Free Trial' + outlined 'Browse'), and a divider-separated metadata strip (genre · rating · seasons). CTAs route through useNavigate. Use as the opening hero for streaming services, OTT apps, and on-demand video platforms.",

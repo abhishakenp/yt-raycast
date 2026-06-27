@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * service business with a multi-phase workflow. Renders fully with no props via
  * baked-in defaults.
  */
-export const ConstructionProcess = defineComponent({
+export const ConstructionProcess = defineCapsule({
   name: 'ConstructionProcess',
   description:
     "Six-step numbered process timeline for a construction / general contractor page: a centered section heading above a responsive grid of numbered cards, each showing a large step number watermark, a title, a description, and a duration note. Use as a 'how we bring your vision to life' section for construction firms, contractors, builders, or any service business with a multi-phase workflow.",

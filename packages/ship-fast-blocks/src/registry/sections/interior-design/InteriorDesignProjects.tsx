@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * interior designers, design studios or architecture firms. Renders fully with
  * no props via baked-in defaults.
  */
-export const InteriorDesignProjects = defineComponent({
+export const InteriorDesignProjects = defineCapsule({
   name: 'InteriorDesignProjects',
   description:
     "Filterable project portfolio gallery for an upscale interior-design / architecture studio: a header row pairing an uppercase eyebrow + light-weight heading with underline-style filter tabs (first active), above a responsive 2/3-column grid of tall project cards — each a zoom-on-hover photo over an uppercase tag, a medium title and a location/year meta line — and a centered outlined 'view all' button. Editorial and gallery-like; filters, cards and button route through useNavigate and photos use the alt-driven Image component. Use to showcase a body of work for interior designers, design studios or architecture firms.",

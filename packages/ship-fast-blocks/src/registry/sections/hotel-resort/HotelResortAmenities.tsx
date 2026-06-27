@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * Imagery uses the alt-driven Image component. Renders fully with no props via
  * baked-in resort defaults.
  */
-export const HotelResortAmenities = defineComponent({
+export const HotelResortAmenities = defineCapsule({
   name: 'HotelResortAmenities',
   description:
     'Editorial amenities grid for a luxury hotel / resort & spa site: a left-aligned uppercase eyebrow + thin heading + supporting paragraph, then a 2-up / 3-up grid of cards, each a rounded image that gently zooms on hover above a title and short description. Airy and high-end; imagery uses the alt-driven Image component. Use to showcase resort amenities — spa & wellness, dining, pools, fitness, beach access, events — for hotels, resorts, spa retreats, inns, or wellness destinations.',

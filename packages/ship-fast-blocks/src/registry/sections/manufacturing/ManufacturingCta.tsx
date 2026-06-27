@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * conversion prompt before the footer on machine-shop, fabricator or contract-
  * manufacturer pages. Renders fully with no props via baked-in defaults.
  */
-export const ManufacturingCta = defineComponent({
+export const ManufacturingCta = defineCapsule({
   name: 'ManufacturingCta',
   description:
     'A dark closing call-to-action band for a precision-manufacturing site: on a foreground-colored centered block, a large heading, a supporting paragraph, dual CTAs (a solid background-on-foreground button plus an outlined button) and a small note line beneath. Both CTAs route through useNavigate. Bold, industrial, conversion-focused. Use as the final conversion prompt before the footer on machine-shop, fabricator or contract-manufacturer pages.',

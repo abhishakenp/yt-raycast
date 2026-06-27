@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * professional-services capabilities block. Renders fully with no props via six
  * baked-in default services.
  */
-export const ConsultingServices = defineComponent({
+export const ConsultingServices = defineCapsule({
   name: 'ConsultingServices',
   description:
     '6-up services / capabilities grid with icon tiles for a management-consulting firm page: a centered section heading and lead paragraph above a responsive 3-column grid of bordered cards, each with a rounded primary icon tile (rotating inline line-icons), a title and a description. Tokens-only, no links. Use to present consulting offerings (corporate strategy, digital transformation, M&A advisory, operations, organization, risk) or any professional-services capabilities block.',

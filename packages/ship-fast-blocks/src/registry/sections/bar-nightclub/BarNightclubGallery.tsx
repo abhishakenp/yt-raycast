@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * floor, or ambient details for bars, nightclubs, lounges, or speakeasies.
  * Renders fully with no props via baked-in defaults.
  */
-export const BarNightclubGallery = defineComponent({
+export const BarNightclubGallery = defineCapsule({
   name: 'BarNightclubGallery',
   description:
     'Masonry-style photo gallery for a cocktail-bar / nightclub page: a split header (eyebrow + light-weight heading on the left, right-aligned lead on the right), then a responsive grid where the first image spans two columns and rows to anchor the composition and the rest tile at a fixed height. All photos use the alt-driven Image component. Moody, editorial and monochrome. Use to show interior atmosphere, bar craft, the dance floor, or ambient details for bars, nightclubs, lounges, or speakeasies.',

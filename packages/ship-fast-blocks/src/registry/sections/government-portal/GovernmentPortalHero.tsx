@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { useEffect, useState } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * Official, civic, institutional mood for public sector portals. Renders fully
  * with no props via baked-in Tenughat Vidyut Nigam Limited defaults.
  */
-export const GovernmentPortalHero = defineComponent({
+export const GovernmentPortalHero = defineCapsule({
   name: 'GovernmentPortalHero',
   description:
     'Full-width classic indian government / PSU hero carousel of plant and infrastructure photos (auto-advancing with prev/next/dots) plus a thin royal-blue welcome and notice ticker. Official, civic, institutional mood for public sector, municipal, utility, power and electricity board portals that announce tenders and public notices. Use for the homepage banner of any classic government portal.',

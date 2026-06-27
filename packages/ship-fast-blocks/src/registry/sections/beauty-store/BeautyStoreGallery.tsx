@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * moments, brand storytelling, spa/lifestyle photography, or any cosmetics / wellness
  * visual showcase block.
  */
-export const BeautyStoreGallery = defineComponent({
+export const BeautyStoreGallery = defineCapsule({
   name: 'BeautyStoreGallery',
   description:
     'Behind-the-scenes mosaic image gallery for a beauty / skincare storefront: centered eyebrow, heading, and short paragraph above a responsive grid. A large feature image with an overlay gradient and caption (top-left tile, spanning 2 columns and 2 rows on desktop) surrounded by smaller square images. All images use alt-driven lazy <Image>. Use for editorial product moments, brand storytelling, spa/lifestyle photography, or any cosmetics / wellness visual showcase block.',

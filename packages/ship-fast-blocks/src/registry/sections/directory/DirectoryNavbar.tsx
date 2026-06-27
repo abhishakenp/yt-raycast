@@ -1,7 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { directoryLakebed } from './directory-lakebed.ts'
+import {
+  DirectoryAccountButton,
+  DirectoryLeadButton,
+  DirectoryMobileMenu,
+  DirectoryMutationSpinner,
+  DirectorySearchButton,
+} from './directory-interactions.tsx'
 
 /**
  * DirectoryNavbar — clean horizontal top navigation bar for a local-business
@@ -12,7 +21,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use as the site header for local directories, business-listing marketplaces,
  * find-a-service platforms, review-and-discovery sites, or city guides.
  */
-export const DirectoryNavbar = defineComponent({
+export const DirectoryNavbar = defineCapsule({
   name: 'DirectoryNavbar',
   description:
     'Clean horizontal top navigation bar for a local-business DIRECTORY / listings site: a bordered card-surface header with a location-pin glyph plus wordmark on the left, a centered row of category nav links, and a right-side cluster of a text Sign In action and a filled primary List Your Business CTA. Every link and CTA routes through useNavigate. Use as the site header for local directories, business-listing marketplaces, find-a-service / find-a-pro platforms, review-and-discovery sites, city guides, or yellow-pages-style apps.',
@@ -29,7 +38,8 @@ export const DirectoryNavbar = defineComponent({
     homeTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: directoryLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'LocalFindr'
     const nav = props.nav?.length
@@ -84,21 +94,31 @@ export const DirectoryNavbar = defineComponent({
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(signIn)}
-                className="hidden text-muted-foreground transition-colors hover:text-foreground sm:block"
-              >
-                {signIn}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(listCta)}
-                className="rounded-lg bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/90"
+            <div className="flex items-center gap-2 sm:gap-3">
+              <DirectorySearchButton
+                lakebed={lakebed}
+                buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              />
+              <DirectoryAccountButton
+                lakebed={lakebed}
+                label={signIn}
+                buttonClassName="hidden size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+              />
+              <DirectoryLeadButton
+                lakebed={lakebed}
+                action={listCta}
+                source="navbar"
+                pendingChildren={<DirectoryMutationSpinner />}
+                className="hidden min-h-10 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
               >
                 {listCta}
-              </button>
+              </DirectoryLeadButton>
+              <DirectoryMobileMenu
+                brand={brand}
+                homeTarget={homeTarget}
+                nav={nav}
+                buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+              />
             </div>
           </div>
         </div>

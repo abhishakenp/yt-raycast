@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * alt-driven. Use to showcase recent weddings, galas and celebrations for event
  * planners or hospitality brands.
  */
-export const EventPlannerGallery = defineComponent({
+export const EventPlannerGallery = defineCapsule({
   name: 'EventPlannerGallery',
   description:
     'Portfolio gallery of past events: a centered intro (uppercase eyebrow, thin light heading, lede) above a masonry-style grid where alternating tiles vary in height for visual rhythm, followed by a second wide 3-up row (the last tile spanning two columns on mobile). Every tile is a clickable, hover-zoom rounded photo routed through useNavigate; all imagery is alt-driven. Use to showcase recent weddings, galas and celebrations for event/wedding planners or premium hospitality brands.',

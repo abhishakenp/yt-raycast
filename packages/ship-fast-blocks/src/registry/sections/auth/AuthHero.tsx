@@ -1,7 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * AuthHero — bespoke two-column developer hero for Authly, an authentication-as-a-service
@@ -14,10 +20,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * preview is interactive. Use as the opening hero for auth platforms, identity
  * APIs, login SDKs, or any developer-first SaaS. Renders fully with no props.
  */
-export const AuthHero = defineComponent({
+export const AuthHero = defineCapsule({
   name: 'AuthHero',
   description:
-    "Bespoke two-column developer hero for a developer-auth product (Authly, an authentication-as-a-service like Clerk / Auth0). Left column: an uppercase eyebrow pill, a large sharp headline 'Authentication for developers', a supporting paragraph, dual CTAs (filled 'Start Building' routing to sign-up + outlined 'Docs'), and a small trust line. Right column: a presentational faux-editor preview card with a window dot-bar and token-styled, font-mono SDK code lines. CTAs route through useNavigate; the preview is purely decorative. Use as the opening hero for auth platforms, identity APIs, login SDKs, or developer-first SaaS pages.",
+    "Bespoke two-column developer hero for a developer-auth product (Authly, an authentication-as-a-service like Clerk / Auth0). Left column: an uppercase eyebrow pill, a large sharp headline 'Authentication for developers', a supporting paragraph, a Lakebed-backed primary sign-up CTA with scoped loading, an outlined Docs route, and a small trust line. Right column: a presentational faux-editor preview card with token-styled SDK lines. Use as the opening hero for auth platforms, identity APIs, login SDKs, or developer-first SaaS pages.",
   props: z.object({
     /** Small uppercase eyebrow pill above the headline. */
     eyebrow: z.string().optional(),
@@ -39,7 +45,8 @@ export const AuthHero = defineComponent({
     codeLines: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Auth-as-a-service'
     const heading = props.heading ?? 'Authentication for developers'
@@ -83,13 +90,21 @@ export const AuthHero = defineComponent({
             </p>
 
             <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryTarget)}
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={primaryTarget}
+                plan={primaryCta}
+                source="hero"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Starting
+                  </>
+                }
                 className="inline-flex items-center justify-center rounded-lg bg-primary px-7 py-3.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 {primaryCta}
-              </button>
+              </SaasPlanActionButton>
               <button
                 type="button"
                 onClick={() => go(secondaryTarget)}

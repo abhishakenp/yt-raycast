@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use to advertise the ecosystem / app marketplace of a CRM,
  * sales-pipeline or B2B SaaS product. Renders fully with no props.
  */
-export const CrmIntegrations = defineComponent({
+export const CrmIntegrations = defineCapsule({
   name: 'CrmIntegrations',
   description:
     'Centered integrations grid for a CRM / SaaS landing page: a heading + supporting paragraph above a dense responsive (2/4/6-up) grid of bordered tiles, each a soft tinted grid-glyph icon above an integration name and a short capability label; tiles lift on hover and route through useNavigate. Use to advertise the ecosystem / app marketplace of a CRM, sales-pipeline or B2B SaaS product.',

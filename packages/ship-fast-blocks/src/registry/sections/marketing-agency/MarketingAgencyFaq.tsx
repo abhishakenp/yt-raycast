@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * to answer common questions for a marketing / growth agency, SaaS, or service
  * business. Renders fully with no props.
  */
-export const MarketingAgencyFaq = defineComponent({
+export const MarketingAgencyFaq = defineCapsule({
   name: 'MarketingAgencyFaq',
   description:
     'Native expandable FAQ accordion: a centered eyebrow + heading + description above a narrow stack of bordered, muted <details> rows; each summary shows a question with a chevron that rotates when open, revealing the answer and raising the row to a card surface. Uses no JS state. Use to answer common questions about timelines, contracts, ad spend, reporting, and industries for a marketing / growth agency, SaaS, or service business.',

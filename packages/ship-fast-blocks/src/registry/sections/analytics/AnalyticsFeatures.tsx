@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
@@ -82,7 +83,7 @@ const ICONS = {
  * explain the core capabilities of any analytics, BI, or data-product site.
  * Renders fully with no props via baked-in defaults.
  */
-export const AnalyticsFeatures = defineComponent({
+export const AnalyticsFeatures = defineCapsule({
   name: 'AnalyticsFeatures',
   description:
     'Four-up capability grid for an analytics product, composing the shared FeatureGrid kit composite inside a padded section. An optional centered SectionHeading sits above four token-styled feature cards with inline stroke icons: real-time event tracking, custom dashboards, smart alerting, and integrations. Sharp, data-forward and marketing-grade. Use to explain the core capabilities of any analytics, BI, or data-product site.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * proof for churches, ministries, and nonprofits. Renders fully with no props via
  * baked-in defaults.
  */
-export const ChurchTestimonials = defineComponent({
+export const ChurchTestimonials = defineCapsule({
   name: 'ChurchTestimonials',
   description:
     '3-up member testimonials wall for a church or faith-community site: centered header (eyebrow + heading + description), then a responsive grid of quote cards with a blockquote, circular avatar headshot, name, and membership meta. Warm, personal, and trust-building. Images use the Image component for avatar headshots. Use for member stories, life-change testimonies, community impact quotes, or social proof for churches, ministries, and nonprofits.',

@@ -1,8 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  useSyncPublicationArticles,
+} from '../blog/publication-interactions.tsx'
+import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 /**
  * NewsroomStoryGrid — a dense editorial "Latest Stories" grid for a digital
@@ -14,7 +19,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use for the main feed of a news site, publication, blog index, or
  * magazine homepage. Renders fully with no props.
  */
-export const NewsroomStoryGrid = defineComponent({
+export const NewsroomStoryGrid = defineCapsule({
   name: 'NewsroomStoryGrid',
   description:
     "Dense editorial 'Latest Stories' grid for a digital newsroom or online magazine: a section header row with a serif heading and a 'View all' link on the right above a hairline rule, then a responsive 1/2/3-up grid of magazine story cards. Each card has a 16:9 cover image, a small colored category tag, a serif headline, a 1-2 line excerpt and a meta line (author • date • read time); cards route through useNavigate. Use for the main feed of a news site, publication, blog index, or magazine homepage.",
@@ -39,7 +44,8 @@ export const NewsroomStoryGrid = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: publicationLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heading = props.heading ?? 'Latest Stories'
     const viewAllCta = props.viewAllCta ?? 'View all'
@@ -129,6 +135,17 @@ export const NewsroomStoryGrid = defineComponent({
             imageAlt: 'Footballers celebrating a goal under floodlights',
           },
         ]
+    useSyncPublicationArticles(
+      lakebed,
+      stories.map((story) => ({
+        author: story.author,
+        category: story.tag,
+        date: story.date,
+        excerpt: story.excerpt,
+        target: story.title,
+        title: story.title,
+      })),
+    )
 
     return (
       <section

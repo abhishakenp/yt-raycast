@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   ButtonGroup as UIButtonGroup,
   ButtonGroupSeparator,
@@ -8,7 +9,7 @@ import {
 
 // Compound primitive: groups adjacent buttons/inputs into one segmented control.
 // children hold the Buttons; optional leading/trailing text labels are flattened.
-export const ButtonGroup = defineComponent({
+export const ButtonGroup = defineCapsule({
   name: 'ButtonGroup',
   description:
     'Segmented control that visually joins adjacent Buttons. children are the buttons; orientation horizontal (default) or vertical.',
@@ -32,7 +33,7 @@ export const ButtonGroup = defineComponent({
   ),
 })
 
-export const ButtonGroupDivider = defineComponent({
+export const ButtonGroupDivider = defineCapsule({
   name: 'ButtonGroupDivider',
   description: 'Separator placed between items inside a ButtonGroup.',
   props: z.object({

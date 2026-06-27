@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * directly under the hero of a mobile-app, SaaS or consumer-product landing
  * page. Renders fully with no props via baked-in defaults.
  */
-export const MobileAppLogos = defineComponent({
+export const MobileAppLogos = defineCapsule({
   name: 'MobileAppLogos',
   description:
     "Compact centered 'Featured in' press-logo strip with a bordered bottom: a small uppercase eyebrow label over a wrapping, dimmed row of bold wordmark-style publication names (pure text logos, no imagery). Use as a slim social-proof / press-credibility band placed directly under the hero of a mobile-app, SaaS or consumer-product landing page.",

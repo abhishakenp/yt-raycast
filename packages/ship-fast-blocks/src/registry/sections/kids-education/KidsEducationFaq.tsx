@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * kids-education startups, children's e-learning platforms, tutoring services,
  * and family learning apps. Renders fully with no props via baked-in defaults.
  */
-export const KidsEducationFaq = defineComponent({
+export const KidsEducationFaq = defineCapsule({
   name: 'KidsEducationFaq',
   description:
     "Native disclosure FAQ accordion for a kids / family learning platform: a centered eyebrow + heading + description intro above a narrow stack of rounded muted details rows; each summary shows a question and a chevron that rotates when open, revealing the answer beneath. Uses native details/summary (no JS state). Use to answer common parent questions for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -8,7 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * numbers above labels, on a responsive 2/4-column grid. Use to showcase credibility
  * metrics like revenue, client count, uptime, or global presence.
  */
-export const CorporateStats = defineComponent({
+export const CorporateStats = defineCapsule({
   name: 'CorporateStats',
   description:
     'Dark KPI / stats band for an enterprise / corporate B2B site: full-width inverted foreground background with a responsive 2/4-column grid of large centered numbers above labels. Use to showcase credibility metrics like revenue, client count, uptime SLA, or global presence.',

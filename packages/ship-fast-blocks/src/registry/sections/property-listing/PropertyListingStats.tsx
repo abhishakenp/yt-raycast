@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
@@ -12,7 +13,7 @@ import { StatGrid } from '#/section-kit/StatGrid.tsx'
  * visitors. Use to convey the reach and liquidity of a property marketplace.
  * Renders fully with no props via baked-in defaults.
  */
-export const PropertyListingStats = defineComponent({
+export const PropertyListingStats = defineCapsule({
   name: 'PropertyListingStats',
   description:
     'Marketplace-scale band for a property portal: a primary-toned panel centering an optional header above a responsive 2/4-column row of KPI cells, each showing a large figure over a softened label. Defaults cover total listings, cities covered, partner agents, and monthly visitors. Use to convey the reach and liquidity of a property marketplace.',

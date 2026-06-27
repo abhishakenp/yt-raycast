@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -10,7 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * a trust note beneath. All CTAs route through useNavigate. Use as the closing conversion band
  * for community platforms, SaaS products, or subscription services.
  */
-export const CommunityForumContactCta = defineComponent({
+export const CommunityForumContactCta = defineCapsule({
   name: 'CommunityForumContactCta',
   description:
     'Final dark call-to-action band for a community-platform / discussion-forum landing page: a centered section on a dark foreground background with a large heading, a supporting paragraph, dual CTAs (filled primary + outlined secondary), and a trust note beneath. All CTAs route through useNavigate. Use as the closing conversion band for community platforms, SaaS products, or subscription services.',

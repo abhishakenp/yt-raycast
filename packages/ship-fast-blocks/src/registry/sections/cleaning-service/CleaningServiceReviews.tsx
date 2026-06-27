@@ -1,12 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
  * CleaningServiceReviews — a 6-up customer reviews grid for a home-cleaning / maid-service landing page. A centered heading + lead paragraph above a responsive 2/3-column grid of review cards; each card shows a 5-star rating row (inline filled-star icons), a quoted review paragraph, and an attribution row with a round lazy-loaded avatar + name + meta line. No links — pure social proof. Use for testimonial / review blocks for residential cleaning companies, maid services, or any local home-service brand wanting homeowner credibility. Renders fully with no props via six baked-in default reviews.
  */
-export const CleaningServiceReviews = defineComponent({
+export const CleaningServiceReviews = defineCapsule({
   name: 'CleaningServiceReviews',
   description:
     'A 6-up customer reviews grid for a home-cleaning / maid-service landing page: centered heading + lead above a responsive 2/3-column grid of review cards. Each card shows a 5-star rating row (inline filled-star icons), a quoted review paragraph, and an attribution row with a round lazy-loaded avatar + name + meta line. No links — pure social proof. Use for testimonial / review blocks for residential cleaning, maid services, or local home-service brands.',

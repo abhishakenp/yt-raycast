@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * AI tools, SaaS apps, startups, or any marketing site that lists customer or
  * partner brands. Renders fully with no props.
  */
-export const AiProductLogos = defineComponent({
+export const AiProductLogos = defineCapsule({
   name: 'AiProductLogos',
   description:
     "Slim 'trusted by' social-proof logo strip for a clean, light AI SaaS / product page: a bordered muted-band section with a small uppercase tracking-wider label centered above a dimmed responsive grid of wordmark buttons (2 → 3 → 6 columns) that brighten on hover. Each wordmark routes through useNavigate. Place directly beneath a hero to establish credibility for AI tools, SaaS apps, startups, or any marketing site listing customer or partner brands.",

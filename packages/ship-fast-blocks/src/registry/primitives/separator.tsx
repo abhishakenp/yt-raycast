@@ -1,9 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Separator as UISeparator } from '#/components/ui/separator.tsx'
 
 // Leaf primitive: a thin divider line. orientation mirrors radix/shadcn.
-export const Separator = defineComponent({
+export const Separator = defineCapsule({
   name: 'Separator',
   description:
     "Thin divider line. orientation 'horizontal' (default) or 'vertical'.",

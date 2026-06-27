@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * companies, or any premium brand's about/company page. Renders fully with no
  * props via baked-in "Kinetic Labs" defaults.
  */
-export const AboutNavbar = defineComponent({
+export const AboutNavbar = defineCapsule({
   name: 'AboutNavbar',
   description:
     "Glassy sticky top navigation bar for a modern company / ABOUT page: a backdrop-blurred, border-bottomed header pinned to the top with an indigo-to-violet gradient zap-glyph logo tile + brand name on the left, a horizontal set of nav links in the center (desktop), and a dark 'Work with us' pill CTA with a trailing arrow on the right. Every nav item and the CTA route through useNavigate for page-switching. Use as the sticky site header for startups, product studios, agencies, SaaS companies, or any premium brand's about/company page.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * proof on photographers, studios, and elopement shooters. Renders fully with
  * no props via baked-in defaults.
  */
-export const PhotographyTestimonials = defineComponent({
+export const PhotographyTestimonials = defineCapsule({
   name: 'PhotographyTestimonials',
   description:
     'Client-review wall for a fine-art / wedding photographer site built on the shared TestimonialGrid composite: a centered serif heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted testimonial, and an attribution row pairing the couple / client name with their event (wedding, elopement, portrait). Use for social proof on photographers, studios, and elopement shooters.',

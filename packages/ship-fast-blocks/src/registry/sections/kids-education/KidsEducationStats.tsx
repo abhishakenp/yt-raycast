@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * content sections for kids-education startups, children's e-learning platforms,
  * and family learning apps. Renders fully with no props via baked-in defaults.
  */
-export const KidsEducationStats = defineComponent({
+export const KidsEducationStats = defineCapsule({
   name: 'KidsEducationStats',
   description:
     "Dark stats band for a kids / family learning platform: a full-width dark (foreground) band holding a 2-up / 4-up grid of big metric figures whose values rotate through primary / secondary / accent accent colors, each with a muted sub-label below. Use as a social-proof / impact strip between content sections for kids-education startups, children's e-learning platforms, and family learning apps.",

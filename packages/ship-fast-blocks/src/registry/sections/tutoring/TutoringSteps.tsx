@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -26,7 +27,7 @@ const DEFAULT_STEPS: { title: string; description: string }[] = [
   },
 ]
 
-export const TutoringSteps = defineComponent({
+export const TutoringSteps = defineCapsule({
   name: 'TutoringSteps',
   description:
     'How-it-works band for tutoring sites that lays out the journey as friendly numbered steps. Composes the SectionHeading kit composite for the header, then renders each step as a card with a rounded primary number badge, a title, and a reassuring description, connected by a subtle line on desktop. Accepts a public `steps` prop to override the default four-step flow (tell us your goals, match with a tutor, start learning, track progress). Use it to reduce hesitation by showing parents exactly how getting started works.',

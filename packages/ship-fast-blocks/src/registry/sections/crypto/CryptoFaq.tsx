@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * with a chevron that rotates on open, and the answer in the details panel.
  * Use for common questions about protocols, pricing, security, or onboarding.
  */
-export const CryptoFaq = defineComponent({
+export const CryptoFaq = defineCapsule({
   name: 'CryptoFaq',
   description:
     'Accordion FAQ section for a crypto / DeFi landing page: centered heading + description, then a vertical stack of bordered detail/summary cards. Each item shows a question as a clickable summary with a rotating chevron, and the answer in the details panel. Use for common questions about protocols, pricing, security, or onboarding.',

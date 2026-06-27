@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
-export const WeddingAbout = defineComponent({
+export const WeddingAbout = defineCapsule({
   name: 'WeddingAbout',
   description:
     'Romantic "Our Story" band for a wedding site: a tall alt-driven engagement photograph paired with a vertical how-we-met timeline (first meeting, first date, the proposal) rendered as accented milestone rows, plus a short serif prose paragraph. Use to tell the couple\'s love story on a wedding invitation or celebration page.',

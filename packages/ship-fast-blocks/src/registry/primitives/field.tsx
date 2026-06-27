@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Field as UIField,
   FieldContent,
@@ -14,7 +15,7 @@ import {
 
 // Compound primitive: a single labelled form row wrapping one control (children).
 // orientation enum mirrors fieldVariants exactly.
-export const Field = defineComponent({
+export const Field = defineCapsule({
   name: 'Field',
   description:
     'Labelled form row wrapping one control (children) with optional description/error. orientation vertical (default), horizontal, or responsive.',
@@ -42,7 +43,7 @@ export const Field = defineComponent({
 
 // Compound primitive: a titled group of stacked fields (children). Optional
 // legend variant mirrors FieldLegend variant enum exactly.
-export const FieldSetGroup = defineComponent({
+export const FieldSetGroup = defineCapsule({
   name: 'FieldSetGroup',
   description:
     "Fieldset grouping several Fields (children) under an optional legend. legend variant 'legend' (default) or 'label'.",
@@ -66,7 +67,7 @@ export const FieldSetGroup = defineComponent({
   ),
 })
 
-export const FieldDivider = defineComponent({
+export const FieldDivider = defineCapsule({
   name: 'FieldDivider',
   description:
     'Horizontal separator between fields, with optional centered label text.',

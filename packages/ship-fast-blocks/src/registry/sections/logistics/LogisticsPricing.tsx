@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * tiers (Standard / Priority / Express) for logistics, freight-forwarding,
  * shipping, courier or cargo/transport companies. Renders fully with no props.
  */
-export const LogisticsPricing = defineComponent({
+export const LogisticsPricing = defineCapsule({
   name: 'LogisticsPricing',
   description:
     "Three-tier service-pricing table for a global-logistics / freight-forwarding company: a centered heading + lede over a 1 → 3 column grid of pricing cards, with the featured tier inverted to a solid primary surface and an optional floating 'Popular' badge. Each card lists name, tagline, a large price with unit, a check-marked feature list and a full-width CTA, plus a centered footnote below. Clean and corporate on a light surface with a deep slate primary; every CTA routes through useNavigate. Use to present shipping service tiers (Standard / Priority / Express) for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.",

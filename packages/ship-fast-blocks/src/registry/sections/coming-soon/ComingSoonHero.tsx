@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * ComingSoonHero — centered hero band for a "launching soon" / waitlist pre-launch
@@ -9,15 +11,15 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * multi-line headline (one phrase in normal weight for emphasis), a supporting
  * paragraph, a four-cell countdown timer (Days/Hours/Minutes/Seconds), and an
  * inline email-capture form with a primary submit button and a disclaimer line.
- * Form submit and all interactive elements route through useNavigate. Use as the
+ * Form submit writes to the shared Lakebed subscriber list. Use as the
  * opening hero for SaaS waitlists, app pre-launch pages, beta sign-ups, or any
  * countdown / "notify me" landing page. Renders fully with no props via
  * baked-in "Nexus" defaults.
  */
-export const ComingSoonHero = defineComponent({
+export const ComingSoonHero = defineCapsule({
   name: 'ComingSoonHero',
   description:
-    "Centered hero band for a 'launching soon' / waitlist pre-launch landing page: launch-date eyebrow label, large multi-line headline with one phrase in normal weight for emphasis, supporting paragraph, four-cell countdown timer (Days/Hours/Minutes/Seconds), and an inline email-capture form with primary submit button and disclaimer. Form submit routes through useNavigate. Use as the opening hero for SaaS waitlists, app pre-launch pages, beta sign-ups, or countdown / 'notify me' landing pages.",
+    "Centered hero band for a 'launching soon' / waitlist pre-launch landing page: launch-date eyebrow label, large multi-line headline with one phrase in normal weight for emphasis, supporting paragraph, four-cell countdown timer (Days/Hours/Minutes/Seconds), and an inline email-capture form with primary submit button and disclaimer. Form submit writes to the shared Lakebed subscriber list. Use as the opening hero for SaaS waitlists, app pre-launch pages, beta sign-ups, or countdown / 'notify me' landing pages.",
   props: z.object({
     /** Launch date / status eyebrow text. */
     eyebrow: z.string().optional(),
@@ -39,8 +41,8 @@ export const ComingSoonHero = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const eyebrow = props.eyebrow ?? 'Launching March 15, 2025'
     const headingTop = props.headingTop ?? 'The future of'
     const headingEmphasis = props.headingEmphasis ?? 'collaborative work'
@@ -106,32 +108,17 @@ export const ComingSoonHero = defineComponent({
           </div>
 
           {/* Email capture */}
-          <form
-            className="mx-auto max-w-md"
-            aria-label="Join the waitlist"
-            onSubmit={(e) => {
-              e.preventDefault()
-              go(submit)
-            }}
-          >
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <label htmlFor="hero-email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="hero-email"
-                type="email"
-                name="email"
-                required
-                placeholder={emailPlaceholder}
-                className={inputCls}
-              />
-              <button type="submit" className={submitCls}>
-                {submit}
-              </button>
-            </div>
-            <p className="mt-3 text-xs text-muted-foreground">{disclaimer}</p>
-          </form>
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={submit}
+            placeholder={emailPlaceholder}
+            buttonLabel={submit}
+            successMessage="You're on the waitlist. Early access updates will arrive by email."
+            className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+            inputClassName={inputCls}
+            buttonClassName={`${submitCls} disabled:pointer-events-none disabled:opacity-70`}
+          />
+          <p className="mt-3 text-xs text-muted-foreground">{disclaimer}</p>
         </div>
       </header>
     )

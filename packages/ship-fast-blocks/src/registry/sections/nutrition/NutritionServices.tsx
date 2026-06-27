@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
  * nutrition coaches, dietitians, meal-plan subscriptions, diet / wellness
  * programs or healthy-eating apps to lay out what the program includes.
  */
-export const NutritionServices = defineComponent({
+export const NutritionServices = defineCapsule({
   name: 'NutritionServices',
   description:
     'Services / offerings grid for a nutrition-coaching or wellness site, built on the shared FeatureGrid kit composite: an optional heading + subheading above a responsive grid of four service cards (Meal Plans, 1-on-1 Coaching, Progress Tracking, Recipe Library), each with a fresh primary-tinted inline-svg icon tile, title, and description. Use mid-page on nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs or healthy-eating apps to lay out what the program includes.',

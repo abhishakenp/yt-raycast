@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use to present retainer / service tiers for a marketing agency.
  * Renders fully with no props.
  */
-export const MarketingAgencyPricing = defineComponent({
+export const MarketingAgencyPricing = defineCapsule({
   name: 'MarketingAgencyPricing',
   description:
     "3-tier pricing table: a centered eyebrow + heading + description above a responsive 3-up grid of plan cards, each with a name, audience line, large price + period, a feature list (included rows get a primary check, excluded rows render muted/struck with a cross), and a rounded pill CTA; the featured plan inverts to the primary surface and shows a floating 'Most Popular' badge, with a reassurance note centered below. Links route through useNavigate. Use to present retainer / service tiers for a marketing or growth agency.",

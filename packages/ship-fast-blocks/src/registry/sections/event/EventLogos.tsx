@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -10,7 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * routes through useNavigate. Use directly beneath the hero of conference, summit,
  * meetup, or festival pages to show sponsors, partners, or featured companies.
  */
-export const EventLogos = defineComponent({
+export const EventLogos = defineCapsule({
   name: 'EventLogos',
   description:
     'Trusted-by sponsor / company logo strip for a conference or event page: a muted, top-and-bottom-bordered band with a centered caption above a wrapping row of dimmed wordmark buttons that brighten on hover. Each wordmark routes through useNavigate. Use directly beneath the hero of conference, summit, meetup, festival, or webinar pages to surface sponsors, partners, or featured companies.',

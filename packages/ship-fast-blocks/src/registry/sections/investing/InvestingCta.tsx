@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * push before the footer on a brokerage, trading-app or robo-advisor page.
  * Renders fully with no props.
  */
-export const InvestingCta = defineComponent({
+export const InvestingCta = defineCapsule({
   name: 'InvestingCta',
   description:
     'Dark closing call-to-action band for an investing / fintech page: a centered dark (foreground-surface) section with a large headline, a supporting paragraph, dual primary/outline CTA buttons, and a small reassurance note beneath. Both CTAs route through useNavigate. Use as the final conversion push before the footer on a brokerage, trading-app or robo-advisor page.',

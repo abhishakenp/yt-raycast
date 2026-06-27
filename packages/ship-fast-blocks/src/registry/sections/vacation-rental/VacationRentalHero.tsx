@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * vacation rentals, beach houses, cabins, villas, or boutique short-stays.
  * Renders fully with no props via baked-in "Azure Cove Retreats" defaults.
  */
-export const VacationRentalHero = defineComponent({
+export const VacationRentalHero = defineCapsule({
   name: 'VacationRentalHero',
   description:
     'Full-bleed, immersive getaway hero for a vacation-rental listing page: a beautiful property photo rendered through the alt-driven Image component fills the band beneath a soft token-dark overlay; centered over it are an eyebrow, a large airy headline, a supporting line, a location/rating row, and a glassy inline booking bar with Check in, Check out, and Guests cells plus a Check Availability button. Actions route through useNavigate. Inviting and conversion-focused; use as the opening hero for vacation rentals, beach houses, cabins, villas, or boutique short-stays.',

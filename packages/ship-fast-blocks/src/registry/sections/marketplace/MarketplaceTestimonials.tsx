@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * marketplaces, multi-vendor or maker/artisan platforms, and retail
  * aggregators. Renders fully with no props via baked-in defaults.
  */
-export const MarketplaceTestimonials = defineComponent({
+export const MarketplaceTestimonials = defineCapsule({
   name: 'MarketplaceTestimonials',
   description:
     "3-up review wall for a multi-vendor marketplace / e-commerce page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted testimonial, and an attribution row pairing the reviewer name with their role (Verified Buyer, Seller since 2021, …). The public reviews prop maps to the composite's items. Use for social proof on online marketplaces, multi-vendor or maker/artisan platforms, and retail aggregators.",

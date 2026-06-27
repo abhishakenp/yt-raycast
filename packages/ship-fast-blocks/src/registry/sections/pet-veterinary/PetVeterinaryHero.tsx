@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * the alt-driven Image component. Use as the top hero for veterinary clinics,
  * animal hospitals, pet healthcare practices, or emergency animal care.
  */
-export const PetVeterinaryHero = defineComponent({
+export const PetVeterinaryHero = defineCapsule({
   name: 'PetVeterinaryHero',
   description:
     'Split two-column hero for a veterinary clinic / pet healthcare landing page on a soft primary-tinted gradient band: a left text column with a pulsing now-accepting-new-patients pill, a big headline with an accented trailing phrase, a lede paragraph, a filled primary Schedule-a-Visit CTA plus an outlined Explore-Services button, and a social-proof row of overlapping staff avatars and a star-rating note; a right column with a rounded clinic photo and two floating info chips (same-day appointments / open 7 days). CTAs route through useNavigate; imagery uses the Image component. Use as the top hero for veterinary clinics, animal hospitals, pet healthcare practices, or emergency animal care.',

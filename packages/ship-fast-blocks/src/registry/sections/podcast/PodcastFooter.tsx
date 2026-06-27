@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const MicWaveMark = ({ className }: { className?: string }) => (
@@ -23,7 +24,7 @@ const MicWaveMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const PodcastFooter = defineComponent({
+export const PodcastFooter = defineCapsule({
   name: 'PodcastFooter',
   description:
     "Multi-column podcast footer built on SiteFooter: a 'Signal & Static' brand block with a mic/soundwave mark and tagline, a social row (Instagram / Twitter / YouTube), and link columns grouped into Listen, Show, and Company, finished with a bottom copyright note. Designed for podcast and audio-show sites that want a warm, structured close to every page. Renders fully with no props via baked defaults and passes className through for layout control.",

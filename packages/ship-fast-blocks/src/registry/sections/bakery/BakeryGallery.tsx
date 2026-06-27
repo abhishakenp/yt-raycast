@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * bakery" photo wall for bakeries, patisseries, cafes, or any food maker.
  * Renders fully with no props via baked-in default photo alts.
  */
-export const BakeryGallery = defineComponent({
+export const BakeryGallery = defineCapsule({
   name: 'BakeryGallery',
   description:
     "Masonry photo gallery for an artisan-bakery page on a soft muted band: a centered heading and lead paragraph above a 2/4-column grid of staggered-height, rounded, lazy-loaded alt-driven photos that evoke the daily process (mixing, shaping, baking, finished loaves and pastries). Warm, editorial, light and craft-forward; all photography is alt-driven via the Image component with no links. Use to show a behind-the-scenes / 'inside the bakery' photo wall for bakeries, patisseries, cafes, dessert studios, or any food maker.",

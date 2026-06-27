@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -13,7 +14,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * résumé, or professional profile page to introduce who the person is. Renders
  * fully with no props via baked-in defaults.
  */
-export const ResumeCvAbout = defineComponent({
+export const ResumeCvAbout = defineCapsule({
   name: 'ResumeCvAbout',
   description:
     "Professional-summary section for a personal resume / CV / portfolio site: a left-aligned SectionHeading ('About' / 'Professional summary') leads into two or three prose paragraphs describing the person's background and approach, followed by a row of quick-fact chips (location, focus, availability) rendered as token labels. Clean, minimal, text-forward, no required imagery. Use on a personal portfolio, online résumé, or professional profile page to introduce who the person is.",

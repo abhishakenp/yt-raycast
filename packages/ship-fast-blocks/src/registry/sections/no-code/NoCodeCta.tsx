@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * NoCodeCta — bold closing call-to-action band rendered on the inverse
@@ -12,10 +17,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * before the footer on a no-code builder, SaaS, or product landing page.
  * Renders fully with no props.
  */
-export const NoCodeCta = defineComponent({
+export const NoCodeCta = defineCapsule({
   name: 'NoCodeCta',
   description:
-    'Bold closing call-to-action band rendered on the inverse foreground surface: a centered narrow column with a large heading, a muted supporting paragraph, dual CTAs (a filled background-surface primary with arrow + an outlined secondary with play icon), and a small reassurance note beneath. CTAs route through useNavigate. Use as the final conversion band before the footer on a no-code / app-builder SaaS or product landing page.',
+    'Bold closing call-to-action band rendered on the inverse foreground surface: a centered narrow column with a large heading, muted supporting paragraph, scoped Lakebed trial/demo mutation buttons, and a small reassurance note beneath. CTA buttons record real intent instead of dead route-only navigation.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -29,8 +34,8 @@ export const NoCodeCta = defineComponent({
     note: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Ready to build something amazing?'
     const description =
       props.description ??
@@ -92,22 +97,37 @@ export const NoCodeCta = defineComponent({
             {description}
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-background px-8 py-4 text-lg font-medium text-foreground transition-colors hover:bg-background/90"
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={primaryCta}
+              plan={primaryCta}
+              source="cta"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Starting
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-background px-8 py-4 text-lg font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
               <ArrowRight className="size-5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-background/30 px-8 py-4 text-lg font-medium text-background transition-colors hover:bg-background/10"
+            </SaasPlanActionButton>
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={secondaryCta}
+              source="cta"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Sending
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-background/30 px-8 py-4 text-lg font-medium text-background transition-colors hover:bg-background/10 disabled:pointer-events-none disabled:opacity-70"
             >
               <PlayIcon />
               {secondaryCta}
-            </button>
+            </SaasPlanActionButton>
           </div>
           <p className="mt-6 text-sm text-background/50">{note}</p>
         </div>

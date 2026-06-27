@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
@@ -12,7 +13,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * and data-forward. Use to build trust before the pricing or final CTA on any
  * analytics, BI, or data-product site. Renders fully with no props.
  */
-export const AnalyticsTestimonials = defineComponent({
+export const AnalyticsTestimonials = defineCapsule({
   name: 'AnalyticsTestimonials',
   description:
     'Social-proof testimonial band for an analytics product, composing the shared TestimonialGrid composite inside a padded section with an optional centered SectionHeading. Renders three star-rated quote cards from data and growth leaders with name, role, and company. Sharp and data-forward. Use to build trust before the pricing or final CTA on any analytics, BI, or data-product site.',

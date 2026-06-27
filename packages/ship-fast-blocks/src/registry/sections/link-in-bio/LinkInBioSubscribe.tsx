@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * LinkInBioSubscribe — a compact, centered email-capture band sized for a
@@ -9,15 +11,15 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * card surface: a small mail icon tile, an uppercase eyebrow, a bold headline,
  * a short subtitle, then a stacked newsletter form (an email input + a full
  * width pill submit button) and a small reassurance note underneath. The form
- * routes through useNavigate on submit so it slots into the same flow as the
- * other link-hub bands. Use as the "Subscribe" / newsletter-capture role of a
- * Linktree / Bento style personal landing page, creator or influencer link hub,
- * or social-profile splash. Renders fully with no props.
+ * writes to the shared Lakebed subscriber list. Use as the "Subscribe" /
+ * newsletter-capture role of a Linktree / Bento style personal landing page,
+ * creator or influencer link hub, or social-profile splash. Renders fully with
+ * no props.
  */
-export const LinkInBioSubscribe = defineComponent({
+export const LinkInBioSubscribe = defineCapsule({
   name: 'LinkInBioSubscribe',
   description:
-    "Compact, centered EMAIL-CAPTURE / newsletter-subscribe band sized for a mobile LINK-IN-BIO / link-hub page. Renders a single rounded card on a card surface with a small mail icon tile, an uppercase eyebrow, a bold headline, a short subtitle, a stacked subscribe form (an email input + a full-width pill submit button), and a small reassurance note. Use as the 'Subscribe' / 'Join my newsletter' / email-signup role of a Linktree / Bento style personal landing page, creator or influencer link hub, freelancer bio link, or social-profile splash. Supply copy only — eyebrow, heading, subheading, placeholder, CTA label, and note; the section owns all layout and styling.",
+    "Compact, centered EMAIL-CAPTURE / newsletter-subscribe band sized for a mobile LINK-IN-BIO / link-hub page. Renders a single rounded card on a card surface with a small mail icon tile, an uppercase eyebrow, a bold headline, a short subtitle, a stacked subscribe form (an email input + a full-width pill submit button), and a small reassurance note. Submitting writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use as the 'Subscribe' / 'Join my newsletter' / email-signup role of a Linktree / Bento style personal landing page, creator or influencer link hub, freelancer bio link, or social-profile splash. Supply copy only — eyebrow, heading, subheading, placeholder, CTA label, and note; the section owns all layout and styling.",
   props: z.object({
     /** Small uppercase label above the headline. */
     eyebrow: z.string().optional(),
@@ -29,15 +31,14 @@ export const LinkInBioSubscribe = defineComponent({
     placeholder: z.string().optional(),
     /** Submit button label. */
     ctaLabel: z.string().optional(),
-    /** Routing key fired when the form is submitted. */
+    /** Subscriber source label recorded when the form is submitted. */
     ctaTarget: z.string().optional(),
     /** Small reassurance line under the form. */
     note: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
-
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const eyebrow = props.eyebrow ?? 'Stay in the loop'
     const heading = props.heading ?? 'Join my newsletter'
     const subheading =
@@ -77,26 +78,16 @@ export const LinkInBioSubscribe = defineComponent({
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">{subheading}</p>
 
-          <form
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={ctaTarget}
+            placeholder={placeholder}
+            buttonLabel={ctaLabel}
+            successMessage="You're subscribed. New links and drops will arrive by email."
             className="mt-6 flex flex-col gap-3"
-            onSubmit={(e) => {
-              e.preventDefault()
-              go(ctaTarget)
-            }}
-          >
-            <input
-              type="email"
-              placeholder={placeholder}
-              aria-label="Email address"
-              className="w-full rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            <button
-              type="submit"
-              className="w-full rounded-full bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {ctaLabel}
-            </button>
-          </form>
+            inputClassName="w-full rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            buttonClassName="w-full rounded-full bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+          />
 
           <p className="mt-3 text-xs text-muted-foreground">{note}</p>
         </div>

@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * DentalContactCta — bold closing call-to-action banner for a dental practice
@@ -12,7 +17,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * buttons route through useNavigate. Use as the final conversion banner above
  * the footer on a dentist, dental office, or clinic site.
  */
-export const DentalContactCta = defineComponent({
+export const DentalContactCta = defineCapsule({
   name: 'DentalContactCta',
   description:
     'Bold closing call-to-action banner for a dental practice site: a full-width primary-colored section with soft blurred corner glows, a centered heading + supporting paragraph, a pair of pill buttons (an inverted click-to-call button with a phone icon and a translucent online-booking button with a calendar icon), and a row of check-marked reassurance perks. All buttons route through useNavigate. Use as the final conversion banner above the footer on a dentist, dental office, or clinic site.',
@@ -24,8 +29,8 @@ export const DentalContactCta = defineComponent({
     perks: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const contactHeading = props.heading ?? 'Ready to love your smile?'
     const contactDesc =
       props.description ??
@@ -70,18 +75,26 @@ export const DentalContactCta = defineComponent({
             {contactDesc}
           </p>
           <div className="mb-12 flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(contactCallCta)}
+            <LocalServiceBookingButton
+              lakebed={lakebed}
+              intentLabel={contactCallCta}
+              service="Phone consultation"
+              source="final-cta-phone"
+              pendingChildren={<LocalServiceMutationSpinner />}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-8 py-4 text-lg font-semibold text-primary transition-colors hover:bg-muted"
             >
               <PhoneIcon className="size-5" />
               {contactCallCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(contactBookCta)}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-foreground/15 px-8 py-4 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/25"
+            </LocalServiceBookingButton>
+            <LocalServiceBookingButton
+              lakebed={lakebed}
+              intentLabel={contactBookCta}
+              service="Dental appointment"
+              source="final-cta"
+              pendingChildren={
+                <LocalServiceMutationSpinner className="text-primary-foreground" />
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-foreground/15 px-8 py-4 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/25 disabled:pointer-events-none disabled:opacity-70"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -96,7 +109,7 @@ export const DentalContactCta = defineComponent({
                 <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
               </svg>
               {contactBookCta}
-            </button>
+            </LocalServiceBookingButton>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-primary-foreground/80">
             {contactPerks.map((perk) => (

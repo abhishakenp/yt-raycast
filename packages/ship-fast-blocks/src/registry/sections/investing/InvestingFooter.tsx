@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * a brokerage, trading app, robo-advisor or crypto exchange. Renders fully with
  * no props via baked-in "Vestora" defaults.
  */
-export const InvestingFooter = defineComponent({
+export const InvestingFooter = defineCapsule({
   name: 'InvestingFooter',
   description:
     'Rich multi-column footer for an investing / fintech site: a muted bordered-top footer with a brand block (trend-line logo tile + name, tagline, and a row of social-initial buttons) beside a responsive grid of link columns, above a divider row carrying an auto-updating copyright line and a small FINRA/SIPC-style legal disclosure. The brand button, social buttons and every link route through useNavigate. Use as the closing site footer for a brokerage, trading app, robo-advisor or crypto exchange.',

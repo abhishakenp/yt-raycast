@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * contractors or any practice that wants to showcase client praise. Renders
  * fully with no props via three baked-in testimonials.
  */
-export const ArchitectureFirmTestimonials = defineComponent({
+export const ArchitectureFirmTestimonials = defineCapsule({
   name: 'ArchitectureFirmTestimonials',
   description:
     'Client testimonials grid for an architecture-studio / design-practice page: on a subtle card surface, a centered eyebrow + light heading above a responsive 1/2/3-column grid of quote cards, each with a faint quotation-mark glyph, the quote, and a footer pairing a round client portrait with name + role. Calm, editorial, monochrome. Tokens-only, no links. Use as a testimonials / client-words / social-proof section for architecture firms, design studios, interior designers, contractors or any practice showcasing client praise.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * craft-process block for cafes, roasteries, bakeries, or artisan food brands.
  * Renders fully with no props via baked-in defaults.
  */
-export const CafeProcess = defineComponent({
+export const CafeProcess = defineCapsule({
   name: 'CafeProcess',
   description:
     "Dark 'farm to cup' numbered process band for a cozy cafe page: full-bleed inverted section on bg-foreground with centered cap, serif heading, and description above a 4-up grid. Each step shows a circular tile with an outlined number (01–04), serif title, and description. No links. Use as a credibility / craft-process block for cafes, roasteries, bakeries, or artisan food brands.",

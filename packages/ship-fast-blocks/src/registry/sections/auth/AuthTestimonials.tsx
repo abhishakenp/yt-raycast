@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * rating}) maps to the composite's items. Use for social proof on an auth
  * platform, identity API, or login SDK. Renders fully with no props.
  */
-export const AuthTestimonials = defineComponent({
+export const AuthTestimonials = defineCapsule({
   name: 'AuthTestimonials',
   description:
     "3-up developer testimonial wall for a developer-auth product built on the shared TestimonialGrid composite: a centered heading ('Developers ship faster with us') above a responsive card grid. Each card renders a star row matching the rating, a quoted testimonial, and an attribution pairing the engineer's name with their role and company. Use for social proof on an auth platform, identity API, or login SDK.",

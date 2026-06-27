@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
-export const UniversityCta = defineComponent({
+export const UniversityCta = defineCapsule({
   name: 'UniversityCta',
   description:
     "Admissions conversion band for the University page family with a prestigious, collegiate aesthetic. Composes the shared CtaBand kit composite on a primary-tone surface with an optional deadline eyebrow, an invitational title, supporting copy, and two routable actions — a primary 'Start your application' that targets the Admissions page and an outline 'Request info'. Use as the closing call to action before the footer on a university homepage.",

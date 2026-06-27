@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * Use as the closing site footer for spas, wellness retreats, and treatment
  * studios. Renders fully with no props via baked-in defaults.
  */
-export const SpaWellnessFooter = defineComponent({
+export const SpaWellnessFooter = defineCapsule({
   name: 'SpaWellnessFooter',
   description:
     'Full footer for a day-spa / wellness site built on the shared SiteFooter composite: a serif wordmark + tagline with a social row, and a responsive grid of link columns where hours / address / contact details fold into a Visit column, closing with an auto-updating copyright row. The wordmark, social, and column links route through useNavigate. Use as the closing site footer for spas, wellness retreats, and treatment studios.',

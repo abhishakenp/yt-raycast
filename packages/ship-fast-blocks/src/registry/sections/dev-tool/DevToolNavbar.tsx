@@ -1,7 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasAccountButton,
+  SaasIntentBadge,
+  SaasMobileMenu,
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  SaasSearchButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * DevToolNavbar — sticky, backdrop-blurred top navigation bar for a developer
@@ -13,10 +23,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * site header for developer tools, API platforms, backend-as-a-service, or
  * technical SaaS products.
  */
-export const DevToolNavbar = defineComponent({
+export const DevToolNavbar = defineCapsule({
   name: 'DevToolNavbar',
   description:
-    "Sticky, backdrop-blurred top navigation bar for a developer tool / API platform site: border-bottomed header with a blue brand 'bolt' logo tile + product name on the left, horizontal nav links on the right (desktop), and a 'Sign In' text link plus a filled primary 'Get Started' CTA. Clean, light, slate-and-blue product aesthetic. All links and CTAs route through useNavigate. Use as the sticky site header for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
+    "Sticky, backdrop-blurred top navigation bar for a developer tool / API platform site: border-bottomed header with a blue brand 'bolt' logo tile + product name, horizontal nav links on desktop, command plan search, Shoo account dropdown, selected-plan badge, a fullstack 'Get Started' CTA, and a real mobile drawer. Clean, light, slate-and-blue product aesthetic. Navigation routes through useNavigate while auth/search/conversion state is shared through Lakebed. Use as the sticky site header for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -32,14 +42,14 @@ export const DevToolNavbar = defineComponent({
     ctaTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'DevStack'
     const nav = props.nav?.length
       ? props.nav
       : ['Features', 'Pricing', 'Docs', 'Blog']
     const homeTarget = props.homeTarget ?? 'Features'
-    const signInLabel = props.signInLabel ?? 'Sign In'
     const ctaLabel = props.ctaLabel ?? 'Get Started'
     const ctaTarget = props.ctaTarget ?? 'Start Building Free'
 
@@ -99,21 +109,37 @@ export const DevToolNavbar = defineComponent({
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(signInLabel)}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-              >
-                {signInLabel}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(ctaTarget)}
-                className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            <div className="flex items-center gap-3">
+              <SaasIntentBadge lakebed={lakebed} />
+              <SaasSearchButton
+                lakebed={lakebed}
+                buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+              />
+              <SaasAccountButton
+                lakebed={lakebed}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+              />
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={ctaTarget}
+                plan={ctaLabel}
+                source="navbar"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Starting
+                  </>
+                }
+                className="hidden items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
               >
                 {ctaLabel}
-              </button>
+              </SaasPlanActionButton>
+              <SaasMobileMenu
+                brand={brand}
+                nav={nav}
+                homeTarget={homeTarget}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+              />
             </div>
           </div>
         </div>

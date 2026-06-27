@@ -1,13 +1,18 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-import { Image } from '#/lib/img.tsx'
 
-export const PropertyListingOverview = defineComponent({
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { propertyListingLakebed } from './property-listing-lakebed.ts'
+import {
+  PropertyListingInquiryButton,
+  PropertyListingMutationSpinner,
+} from './property-listing-interactions.tsx'
+
+export const PropertyListingOverview = defineCapsule({
   name: 'PropertyListingOverview',
   description:
-    'Reusable overview / hero section for the Property Listing page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: eyebrow, large heading, supporting copy, dual CTAs, feature pills, KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a property listing page or adding a focused property listing band to a larger generated site.',
+    'Reusable overview / hero section for the Property Listing page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: eyebrow, large heading, supporting copy, fullstack inquiry CTAs, feature pills, KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a property listing page or adding a focused property listing band to a larger generated site.',
   props: z.object({
     brand: z.string().optional(),
     eyebrow: z.string().optional(),
@@ -22,8 +27,8 @@ export const PropertyListingOverview = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: propertyListingLakebed,
+  component: ({ props, lakebed }) => {
     const brand = props.brand ?? 'Property Listing'
     const eyebrow = props.eyebrow ?? 'Property Listing section'
     const heading =
@@ -90,20 +95,34 @@ export const PropertyListingOverview = defineComponent({
               ))}
             </div>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+              <PropertyListingInquiryButton
+                lakebed={lakebed}
+                intent={primaryCta}
+                source="overview:primary"
+                pendingChildren={
+                  <>
+                    <PropertyListingMutationSpinner className="size-4" />
+                    Sending
+                  </>
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
               >
                 {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
-                className="rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+              </PropertyListingInquiryButton>
+              <PropertyListingInquiryButton
+                lakebed={lakebed}
+                intent={secondaryCta}
+                source="overview:secondary"
+                pendingChildren={
+                  <>
+                    <PropertyListingMutationSpinner className="size-4" />
+                    Sending
+                  </>
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
               >
                 {secondaryCta}
-              </button>
+              </PropertyListingInquiryButton>
             </div>
             <div className="mt-12 grid grid-cols-3 gap-4 border-t border-border pt-8">
               {stats.map((stat) => (

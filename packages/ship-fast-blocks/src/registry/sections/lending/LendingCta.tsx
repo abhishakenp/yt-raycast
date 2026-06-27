@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * personal-loan, debt-consolidation, or financing pages. Renders fully with no
  * props via baked-in defaults.
  */
-export const LendingCta = defineComponent({
+export const LendingCta = defineCapsule({
   name: 'LendingCta',
   description:
     "Dark full-width 'ready to check your rate?' CTA band for a lending or fintech marketing page: near-ink (foreground-toned) section with a centered large heading, supporting paragraph, dual buttons (solid inverted-background primary with arrow + bordered ghost phone button) and a row of check-marked security badges below. Buttons route through useNavigate. Use as the closing conversion push near the page bottom on personal-loan, debt-consolidation, or financing pages.",

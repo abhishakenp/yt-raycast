@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * FashionStoreHero — full-bleed editorial image hero for a minimalist fashion
@@ -14,10 +22,11 @@ import { Image } from '#/lib/img.tsx'
  * Use as the opening hero for clothing brands, boutiques, lookbook commerce,
  * or any premium quiet-luxury storefront.
  */
-export const FashionStoreHero = defineComponent({
+export const FashionStoreHero = defineCapsule({
   name: 'FashionStoreHero',
   description:
     'Full-bleed editorial image hero for a minimalist fashion store: a tall (85vh) background photograph with a subtle foreground scrim, centered over it a wide uppercase tracked season eyebrow, an oversized serif two-line display headline, a light supporting paragraph, and dual CTAs (a solid light primary button + an outlined ghost button). Both CTAs route through useNavigate and the background uses the alt-driven Image component. Use as the opening hero for clothing brands, boutiques, apparel shops, lookbook commerce, or any premium quiet-luxury storefront.',
+  lakebed: commerceCartLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
     /** Heading lines rendered stacked. */
@@ -26,10 +35,13 @@ export const FashionStoreHero = defineComponent({
     subheading: z.string().optional(),
     primaryCta: z.string().optional(),
     secondaryCta: z.string().optional(),
+    featuredName: z.string().optional(),
+    featuredPrice: z.string().optional(),
+    featuredVariant: z.string().optional(),
     imageAlt: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'Spring/Summer 2025'
     const heroTop = props.headingTop ?? 'The Quiet'
@@ -42,6 +54,17 @@ export const FashionStoreHero = defineComponent({
     const heroImageAlt =
       props.imageAlt ??
       'Editorial fashion photograph of model in flowing beige coat walking on minimalist concrete architecture'
+    const featuredName = props.featuredName ?? 'Quiet Luxury Capsule'
+    const featuredPrice = props.featuredPrice ?? '$485'
+    const featuredVariant = props.featuredVariant ?? heroEyebrow
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt: heroImageAlt,
+        label: featuredName,
+        price: featuredPrice,
+        subtitle: featuredVariant,
+      }),
+    ])
 
     return (
       <section
@@ -88,6 +111,20 @@ export const FashionStoreHero = defineComponent({
                   {heroSecondary}
                 </button>
               </div>
+              <CommerceAddItemButton
+                lakebed={lakebed}
+                item={{ label: featuredName, price: featuredPrice }}
+                aria-label={`Add ${featuredName} to cart`}
+                pendingChildren={
+                  <>
+                    <CommerceMutationSpinner />
+                    Adding
+                  </>
+                }
+                className="mx-auto mt-5 inline-flex items-center justify-center gap-2 border border-background/60 px-5 py-3 text-xs font-medium uppercase tracking-[0.2em] text-background transition-colors hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-70"
+              >
+                Add capsule · {featuredPrice}
+              </CommerceAddItemButton>
             </div>
           </div>
         </div>

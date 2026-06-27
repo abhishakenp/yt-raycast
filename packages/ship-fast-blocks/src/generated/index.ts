@@ -11,5 +11,6 @@ export {
   vendorSourceFilesBase64,
   vendorSourceFilesEncoding,
 } from './vendor-source-files.compressed'
+export { capsuleCategories, findSimilarCapsules } from './capsule-categories'
 
 export { componentSpec }

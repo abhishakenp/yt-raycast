@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Elite plans for dating apps, singles platforms, or subscription products.
  * Renders fully with no props via baked-in tier defaults.
  */
-export const DatingAppPricing = defineComponent({
+export const DatingAppPricing = defineCapsule({
   name: 'DatingAppPricing',
   description:
     "3-tier pricing table for a dating / matchmaking app on a soft muted band: a centered heading + supporting paragraph above three card tiers, where the featured tier gains a primary ring, shadow, and a centered 'Most Popular' badge. Each card shows name, tagline, big price + period, a check/cross feature checklist, and a full-width CTA (filled for the featured tier, outlined otherwise) routed through useNavigate. Use to present Free / Premium / Elite plans for dating apps, singles platforms, or subscription products.",

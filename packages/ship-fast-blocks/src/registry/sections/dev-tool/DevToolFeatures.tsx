@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * capabilities for developer tools, API platforms, backend-as-a-service, or
  * technical SaaS.
  */
-export const DevToolFeatures = defineComponent({
+export const DevToolFeatures = defineCapsule({
   name: 'DevToolFeatures',
   description:
     "6-up product features grid for a developer tool / API platform: a centered heading + intro paragraph above a responsive 1/2/3-column grid of bordered cards, each with a tinted square icon tile, title, description, and a 'Learn more' chevron link. Built-in developer icon set (auth, database, real-time, serverless, edge, observability) rotates across cards. Card links route through useNavigate. Use to showcase platform capabilities for developer tools, API platforms, backend-as-a-service, or technical SaaS.",

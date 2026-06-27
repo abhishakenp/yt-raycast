@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * CloudInfraFinalCta — dark inverted final call-to-action band for a cloud-
@@ -10,10 +15,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * (dark filled primary + ghost outlined secondary) and a row of trust checkmarks.
  * CTAs route through useNavigate. Renders fully on zero arguments.
  */
-export const CloudInfraFinalCta = defineComponent({
+export const CloudInfraFinalCta = defineCapsule({
   name: 'CloudInfraFinalCta',
   description:
-    'Dark inverted final call-to-action band for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description on a primary background with primary-foreground text, dual pill CTAs (dark filled primary with arrow and ghost outlined secondary), and a row of trust checkmarks. CTAs route through useNavigate. Use as the closing conversion band for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
+    'Dark inverted final call-to-action band for a cloud-infrastructure / developer-platform SaaS landing page backed by shared Lakebed conversion state: a centered heading plus description on a primary background, dual scoped fullstack CTAs, and a row of trust checkmarks. Use as the closing conversion band for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -27,8 +32,8 @@ export const CloudInfraFinalCta = defineComponent({
     trust: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Ready to deploy your first app?'
     const description =
       props.description ??
@@ -86,21 +91,37 @@ export const CloudInfraFinalCta = defineComponent({
             {description}
           </p>
           <div className="mb-12 flex flex-wrap justify-center gap-4">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="inline-flex items-center rounded-lg bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-background/90"
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={primaryCta}
+              plan={primaryCta}
+              source="cta"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Starting
+                </>
+              }
+              className="inline-flex items-center gap-2 rounded-lg bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
               <ArrowRight className="ml-2 size-5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex items-center rounded-lg border border-primary-foreground/40 px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10"
+            </SaasPlanActionButton>
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={secondaryCta}
+              plan={secondaryCta}
+              source="cta"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Sending
+                </>
+              }
+              className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/40 px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
             >
               {secondaryCta}
-            </button>
+            </SaasPlanActionButton>
           </div>
           <div className="flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">
             {trust.map((t) => (

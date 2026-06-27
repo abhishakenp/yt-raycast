@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * slow fermentation, no shortcuts — or any "what makes us different" trio for
  * food makers. Renders fully with no props via three baked-in default features.
  */
-export const BakeryFeatures = defineComponent({
+export const BakeryFeatures = defineCapsule({
   name: 'BakeryFeatures',
   description:
     "'Why our bread is different' value-proposition trio for an artisan-bakery page on a card surface: a centered heading and lead paragraph above a responsive 3-up grid of centered feature cards, each with a rounded tinted icon tile (rotating inline line-icons: grain, clock, check), a title and a description. Warm, editorial, light and craft-forward; tokens-only, no links. Use to explain a bakery's craft, sourcing and process (local grains, slow fermentation, no shortcuts) or any 'what makes us different' / how-we-work trio for food makers.",

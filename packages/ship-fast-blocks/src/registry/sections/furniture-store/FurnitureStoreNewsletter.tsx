@@ -1,8 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * FurnitureStoreNewsletter — a centered newsletter subscribe CTA on a soft muted
@@ -15,10 +18,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * any retail brand. Renders fully with no props via baked-in "Haven & Home"
  * defaults.
  */
-export const FurnitureStoreNewsletter = defineComponent({
+export const FurnitureStoreNewsletter = defineCapsule({
   name: 'FurnitureStoreNewsletter',
   description:
-    'Centered newsletter subscribe CTA on a soft muted band: a narrow column with heading + description, an inline email form (screen-reader-only label, primary submit button, stacks on mobile), a fine-print note, and a centered row of social icon buttons; form submit and socials route through useNavigate, with baked-in Instagram / Pinterest / Facebook glyphs matched by name and unknown socials shown as text. Use as a closing email-capture / follow-us CTA for furniture, home-decor, or any retail brand.',
+    'Centered newsletter subscribe CTA on a soft muted band: a narrow column with heading + description, an inline email form (screen-reader-only label, primary submit button, stacks on mobile), a fine-print note, and a centered row of social icon buttons; form submit writes to the shared Lakebed subscriber list and socials route through useNavigate, with baked-in Instagram / Pinterest / Facebook glyphs matched by name and unknown socials shown as text. Use as a closing email-capture / follow-us CTA for furniture, home-decor, or any retail brand.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -28,7 +31,8 @@ export const FurnitureStoreNewsletter = defineComponent({
     socials: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heading = props.heading ?? 'Join the Haven & Home family'
     const description =
@@ -90,30 +94,16 @@ export const FurnitureStoreNewsletter = defineComponent({
           </h2>
           <p className="mb-8 text-lg text-muted-foreground">{description}</p>
 
-          <form
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={submit}
+            placeholder={placeholder}
+            buttonLabel={submit}
+            successMessage="You're subscribed. New room edits and early access will arrive by email."
             className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-            onSubmit={(e) => {
-              e.preventDefault()
-              go(submit)
-            }}
-          >
-            <label htmlFor="furniture-newsletter-email" className="sr-only">
-              Email address
-            </label>
-            <input
-              type="email"
-              id="furniture-newsletter-email"
-              required
-              placeholder={placeholder}
-              className="flex-1 rounded-md border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            <button
-              type="submit"
-              className="rounded-md bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {submit}
-            </button>
-          </form>
+            inputClassName="flex-1 rounded-md border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+            buttonClassName="rounded-md bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+          />
 
           <p className="mt-4 text-sm text-muted-foreground">{note}</p>
 

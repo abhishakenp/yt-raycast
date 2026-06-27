@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * detail line (rows highlight on hover). Use to lay out the full schedule of
  * tech conference, summit, multi-day workshop, or festival pages.
  */
-export const EventAgenda = defineComponent({
+export const EventAgenda = defineCapsule({
   name: 'EventAgenda',
   description:
     'Day-by-day agenda timeline for a conference or event page: a centered heading + description above a two-column grid of day blocks; each day has a square day-number badge, a title + subtitle, and a vertical list of sessions where each row pairs a left time column with a session title and a detail line (rows highlight on hover). Use to lay out the full schedule of tech conference, summit, multi-day workshop, meetup, or festival pages.',

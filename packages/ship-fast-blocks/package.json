@@ -8,6 +8,9 @@
     "./capsules": "./src/capsules/index.ts",
     "./component-names": "./src/component-names.ts",
     "./generated": "./src/generated/index.ts",
+    "./generated/capsule-categories": "./src/generated/capsule-categories.ts",
+    "./generated/runtime-component-loaders": "./src/generated/runtime-component-loaders.ts",
+    "./generated/react-export-sources.compressed": "./src/generated/react-export-sources.compressed.ts",
     "./theme": "./src/theme.ts",
     "./runtime": "./src/runtime.ts",
     "./portal": "./src/components/ui/portal-container.tsx"

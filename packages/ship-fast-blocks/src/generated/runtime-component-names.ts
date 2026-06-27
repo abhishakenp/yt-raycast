@@ -985,6 +985,7 @@ export const runtimeComponentNames = [
   'SalonBarberTestimonials',
   'ScrollArea',
   'Section',
+  'SectionAnchor',
   'Select',
   'Separator',
   'Sheet',

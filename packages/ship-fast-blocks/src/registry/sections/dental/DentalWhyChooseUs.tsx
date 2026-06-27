@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * Image component. Use to communicate differentiators (technology, comfort,
  * pricing, family care) for dentists, dental offices, or clinics.
  */
-export const DentalWhyChooseUs = defineComponent({
+export const DentalWhyChooseUs = defineCapsule({
   name: 'DentalWhyChooseUs',
   description:
     'Numbered why-choose-us split for a dental practice site on a soft muted band: a two-column layout with a tall rounded clinic photo on one side and, on the other, an eyebrow + heading + lede followed by a vertical list of value props, each prefixed with a zero-padded numbered primary tile (01, 02, ...) beside a title and supporting copy. Imagery uses the Image component. Use to communicate differentiators (technology, comfort, pricing, family care) for dentists, dental offices, or clinics.',

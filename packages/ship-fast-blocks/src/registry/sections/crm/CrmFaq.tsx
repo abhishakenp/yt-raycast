@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * answer common objections for CRM, sales-pipeline or B2B SaaS products.
  * Renders fully with no props.
  */
-export const CrmFaq = defineComponent({
+export const CrmFaq = defineCapsule({
   name: 'CrmFaq',
   description:
     'Centered FAQ accordion for a CRM / SaaS landing page on a subtle muted band: a narrow heading + supporting paragraph above a stack of native <details> cards, each a bordered card with a question summary, a chevron that rotates open, and a revealed answer paragraph. Clean and scannable. Use to answer common objections for CRM, sales-pipeline or B2B SaaS products.',

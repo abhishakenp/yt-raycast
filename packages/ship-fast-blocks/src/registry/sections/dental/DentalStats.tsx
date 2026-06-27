@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * (years of excellence, patients served, average rating, satisfaction) between
  * content sections on a dentist, dental office, or clinic site.
  */
-export const DentalStats = defineComponent({
+export const DentalStats = defineCapsule({
   name: 'DentalStats',
   description:
     'Dark inverted stats band for a dental practice site: a full-width section on the foreground color with inverted text, showing a responsive 2-to-4 column grid of centered metrics where each big value is rendered in the primary color above a faded label. Use as a credibility strip (years of excellence, patients served, average rating, satisfaction) between content sections on a dentist, dental office, or clinic site.',

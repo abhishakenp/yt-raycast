@@ -1,21 +1,31 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  InquiryAccountButton,
+  InquiryActionBadge,
+  InquiryActionButton,
+  InquiryMobileMenu,
+  InquiryMutationSpinner,
+} from './inquiry-interactions.tsx'
+import { inquiryLakebed } from './inquiry-lakebed.ts'
 
 /**
  * ContactNavbar — glassy sticky top navigation bar for a contact / support page.
  * A blurred, border-bottomed header pinned to the top with a gradient orbit-glyph
  * logo tile + brand name on the left, a horizontal set of nav links in the center
- * (desktop), and a rounded primary CTA on the right. Every link and the CTA route
- * through useNavigate so labels drive page-switching. Use as the sticky site header
- * for SaaS, agency, or startup contact pages. Renders fully with no props via
- * baked-in "Orbit Digital" defaults.
+ * (desktop), a Shoo account dropdown, a Lakebed-backed primary CTA, and a real
+ * mobile Sheet menu on the right. Nav links route through useNavigate so labels
+ * drive page-switching, while contact actions stay in scoped Lakebed state. Use
+ * as the sticky site header for SaaS, agency, or startup contact pages. Renders
+ * fully with no props via baked-in "Orbit Digital" defaults.
  */
-export const ContactNavbar = defineComponent({
+export const ContactNavbar = defineCapsule({
   name: 'ContactNavbar',
   description:
-    'Glassy sticky top navigation bar for a contact / support page: a blurred, border-bottomed header with a gradient orbit-glyph logo tile + brand name on the left, horizontal nav links in the center (desktop), and a rounded primary CTA on the right. Every link and the CTA route through useNavigate. Use as the sticky site header for SaaS, agency, or startup contact pages.',
+    'Glassy sticky top navigation bar for a contact / support page: a blurred, border-bottomed header with a gradient orbit-glyph logo tile + brand name on the left, horizontal nav links in the center (desktop), Shoo profile dropdown, scoped Lakebed CTA, and real Sheet hamburger menu. Nav links route through useNavigate while inquiry actions stay in Lakebed state. Use as the sticky site header for SaaS, agency, or startup contact pages.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -29,7 +39,8 @@ export const ContactNavbar = defineComponent({
     ctaTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: inquiryLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Orbit Digital'
     const nav = props.nav?.length
@@ -92,13 +103,37 @@ export const ContactNavbar = defineComponent({
               </li>
             ))}
           </ul>
-          <button
-            type="button"
-            onClick={() => go(ctaTarget)}
-            className="rounded-lg bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
-          >
-            {ctaLabel}
-          </button>
+          <div className="flex items-center gap-3">
+            <InquiryActionBadge lakebed={lakebed} />
+            <InquiryAccountButton
+              lakebed={lakebed}
+              buttonClassName="grid size-10 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+            />
+            <InquiryActionButton
+              lakebed={lakebed}
+              label={ctaLabel}
+              target={ctaTarget}
+              source="navbar"
+              pendingChildren={
+                <>
+                  <InquiryMutationSpinner />
+                  Saving
+                </>
+              }
+              className="hidden items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            >
+              {ctaLabel}
+            </InquiryActionButton>
+            <InquiryMobileMenu
+              brand={brand}
+              nav={nav}
+              homeTarget={homeTarget}
+              ctaLabel={ctaLabel}
+              ctaTarget={ctaTarget}
+              lakebed={lakebed}
+              buttonClassName="grid size-10 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:border-primary hover:text-foreground md:hidden"
+            />
+          </div>
         </nav>
       </header>
     )

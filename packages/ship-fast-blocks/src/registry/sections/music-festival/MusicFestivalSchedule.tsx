@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use to lay out the daily program on music festivals, arts
  * festivals, concert series, or any multi-day live event.
  */
-export const MusicFestivalSchedule = defineComponent({
+export const MusicFestivalSchedule = defineCapsule({
   name: 'MusicFestivalSchedule',
   description:
     "Three-day schedule grid for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three day cards, each with a primary-filled header (day label, name, date), a timed set list (set title + stage detail on the left, time on the right), and a full-width outlined 'view full schedule' CTA. Each day CTA routes through useNavigate. Use to lay out the daily program on music festivals, arts festivals, concert series, conferences-with-lineups, or any multi-day live event.",

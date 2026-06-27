@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * nutrition coaches, dietitians, meal-plan subscriptions, diet / wellness
  * programs or healthy-eating apps.
  */
-export const NutritionCta = defineComponent({
+export const NutritionCta = defineCapsule({
   name: 'NutritionCta',
   description:
     "Full-width primary call-to-action band for a nutrition-coaching or wellness site, built on the shared CtaBand kit composite: an optional eyebrow, a bold 'Start your plan' title, a motivating subtitle, and a row of two routable pill actions (filled primary 'Start Now' + outlined 'See Plans') against a fresh primary background. Use as the closing conversion band on nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs or healthy-eating apps.",

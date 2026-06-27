@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -14,7 +15,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * live-music evenings for wineries, vineyards, cellar doors, breweries,
  * taprooms, or cideries. Renders fully with no props via baked-in defaults.
  */
-export const WineryBreweryEvents = defineComponent({
+export const WineryBreweryEvents = defineCapsule({
   name: 'WineryBreweryEvents',
   description:
     'Tastings, tours, and seasonal-event list for a winery or brewery page: centered eyebrow + serif heading + supporting line above a responsive grid of event cards. Each card pairs a date badge with an event name, a short blurb, an optional price, and a routable CTA, clicking through useNavigate to a booking / events target. Use to promote sunset tastings, barrel-room tours, harvest festivals, member nights, or live-music evenings for wineries, vineyards, breweries, taprooms, or cideries.',

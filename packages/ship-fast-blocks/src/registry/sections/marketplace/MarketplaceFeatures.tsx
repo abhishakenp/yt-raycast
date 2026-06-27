@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -15,7 +16,7 @@ import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
  * stores, and retail aggregators. Renders fully with no props via vibrant
  * baked-in defaults.
  */
-export const MarketplaceFeatures = defineComponent({
+export const MarketplaceFeatures = defineCapsule({
   name: 'MarketplaceFeatures',
   description:
     "'Browse by Category' grid for a multi-vendor marketplace / e-commerce home page built on the shared FeatureGrid composite: a centered heading block above a responsive 4-column grid of category tiles, each with an inline line-icon tile, a category title, and an item-count-flavored description (Electronics, Fashion, Home & Living, Art & Collectibles, Health & Beauty, Sports & Outdoors, Books & Media, Crafts & Supplies). Theme-token only. Use to surface top shopping categories on online marketplaces, multi-vendor or maker/artisan platforms, handmade/craft stores, and retail aggregators.",

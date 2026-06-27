@@ -1,12 +1,21 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
-import { SiteNav } from '#/section-kit/SiteNav.tsx'
+
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  PublicationAccountButton,
+  PublicationMobileMenu,
+  PublicationSearchButton,
+  PublicationSubscribeDrawer,
+} from './publication-interactions.tsx'
+import { publicationLakebed } from './publication-lakebed.ts'
 
 /**
  * BlogNavbar — sticky editorial site header for a blog, magazine, newsroom, or
- * content hub. Thin configuration over the shared `SiteNav` composite: a clean
- * wordmark beside a gradient brand tile + inline mark, horizontal nav links with
- * a home highlight on desktop, a "Subscribe" CTA, and a real mobile drawer
+ * content hub. A clean wordmark beside a gradient brand tile + inline mark,
+ * horizontal nav links with a home highlight on desktop, command article search,
+ * a Shoo profile dropdown, a Lakebed subscribe drawer, and a real mobile drawer
  * (Sheet) on small screens. No phone number — editorial publications don't show
  * one. Use as the header for blogs, publications, journals, or any content site.
  * Renders fully with no props.
@@ -33,10 +42,10 @@ const QuillMark = ({ className }: { className?: string }) => (
   </span>
 )
 
-export const BlogNavbar = defineComponent({
+export const BlogNavbar = defineCapsule({
   name: 'BlogNavbar',
   description:
-    "Sticky editorial site header for a blog, magazine, newsroom, or content hub built on the shared SiteNav composite: a clean wordmark beside a gradient brand tile + inline mark, horizontal desktop nav links with a home highlight, a 'Subscribe' CTA, and a real mobile drawer. No phone number — editorial publications don't show one. Use as the header for blogs, publications, journals, or any content site.",
+    "Sticky editorial site header for a blog, magazine, newsroom, or content hub: a clean wordmark beside a gradient brand tile + inline mark, horizontal desktop nav links with a home highlight, command article search, a Shoo profile dropdown, a Lakebed subscribe drawer, and a real mobile drawer. No phone number — editorial publications don't show one. Use as the header for blogs, publications, journals, or any content site.",
   props: z.object({
     /** Brand / publication name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -50,23 +59,78 @@ export const BlogNavbar = defineComponent({
     ctaTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: publicationLakebed,
+  component: ({ props, lakebed }) => {
+    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['Home', 'Design', 'Engineering', 'Product', 'About']
+    const brand = props.brand ?? 'Form & Function'
+    const homeTarget = props.homeTarget ?? nav[0]
+    const ctaLabel = props.ctaLabel ?? 'Subscribe'
+    const ctaTarget = props.ctaTarget ?? 'Subscribe'
+
     return (
-      <SiteNav
-        brand={props.brand ?? 'Form & Function'}
-        brandMark={<QuillMark className="size-8 text-primary" />}
-        brandClassName="text-xl font-bold tracking-tight"
-        nav={nav}
-        cta={{
-          label: props.ctaLabel ?? 'Subscribe',
-          target: props.ctaTarget ?? 'Subscribe',
-        }}
-        homeTarget={props.homeTarget ?? nav[0]}
-        className={props.className}
-      />
+      <header
+        className={cn(
+          'sticky inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
+          props.className,
+        )}
+      >
+        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="flex min-w-0 items-center gap-3"
+          >
+            <QuillMark className="size-8 text-primary" />
+            <span className="truncate text-xl font-bold tracking-tight text-foreground">
+              {brand}
+            </span>
+          </button>
+
+          <div className="hidden items-center gap-8 md:flex">
+            {nav.map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => go(label)}
+                className={cn(
+                  'text-sm font-medium transition-colors hover:text-foreground',
+                  label === homeTarget
+                    ? 'text-foreground'
+                    : 'text-muted-foreground',
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <PublicationSearchButton
+              lakebed={lakebed}
+              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            />
+            <PublicationAccountButton
+              lakebed={lakebed}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+            />
+            <PublicationSubscribeDrawer
+              lakebed={lakebed}
+              buttonLabel={ctaLabel}
+              source={ctaTarget}
+              buttonClassName="hidden rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+            />
+            <PublicationMobileMenu
+              brand={brand}
+              nav={nav}
+              homeTarget={homeTarget}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            />
+          </div>
+        </nav>
+      </header>
     )
   },
 })

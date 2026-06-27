@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * items, with `source` shown as the card's meta line via `company`. Use for
  * social proof on streaming services or OTT apps. Renders fully with no props.
  */
-export const VideoStreamingTestimonials = defineComponent({
+export const VideoStreamingTestimonials = defineCapsule({
   name: 'VideoStreamingTestimonials',
   description:
     'A 3-up subscriber-review wall for a video-streaming page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted review, and an attribution row pairing the subscriber name with the review source (App Store, Trustpilot, Google Play). Use for social proof on streaming services, OTT apps, or on-demand video platforms.',

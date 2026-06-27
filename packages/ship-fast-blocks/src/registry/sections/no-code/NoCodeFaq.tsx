@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * handling section on a no-code builder, SaaS, or product landing page. Renders
  * fully with no props.
  */
-export const NoCodeFaq = defineComponent({
+export const NoCodeFaq = defineCapsule({
   name: 'NoCodeFaq',
   description:
     'Centered-header accordion FAQ in a narrow column on a bright canvas: a muted eyebrow and heading above a stack of native details/summary cards, each bordered card showing a question with a chevron that rotates open and reveals a muted answer paragraph. Use as the FAQ / objection-handling section on a no-code / app-builder SaaS or product landing page.',

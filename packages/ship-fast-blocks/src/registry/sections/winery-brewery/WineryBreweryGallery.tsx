@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
  * wineries, vineyards, breweries, taprooms, or cideries. Renders fully with no
  * props via baked-in defaults (six photos + captions).
  */
-export const WineryBreweryGallery = defineComponent({
+export const WineryBreweryGallery = defineCapsule({
   name: 'WineryBreweryGallery',
   description:
     'Captioned gallery for a winery or brewery page: centered serif header above a responsive 1/2/3-column grid of vineyard rows, the barrel room, the taproom, a tasting flight, the cellar, and harvest, with hover zoom and a token-based caption strip per image. All imagery is alt-driven via the Image component. Use to showcase the estate, cellar, and tasting experience for wineries, vineyards, breweries, taprooms, or cideries.',

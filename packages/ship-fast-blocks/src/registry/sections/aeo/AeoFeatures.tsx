@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import type { ReactNode } from 'react'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const ICONS: ReactNode[] = [
@@ -78,7 +79,7 @@ const DEFAULT_FEATURES: { title: string; description: string }[] = [
   },
 ]
 
-export const AeoFeatures = defineComponent({
+export const AeoFeatures = defineCapsule({
   name: 'AeoFeatures',
   description:
     'Feature grid for an Answer-Engine-Optimization (AEO) SaaS, composing the shared FeatureGrid composite into a set of capability cards — answer tracking, citation optimization, share-of-voice monitoring, source & sentiment reporting, prompt opportunity finding, and change alerts. Each card pairs a line icon with a benefit-led description. Use to communicate product value on AEO, generative-search visibility, or brand-citation analytics landing pages.',

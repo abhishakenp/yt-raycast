@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * attorney, consulting or professional-services pages. Renders fully with no
  * props via baked-in defaults.
  */
-export const LawFirmProcess = defineComponent({
+export const LawFirmProcess = defineCapsule({
   name: 'LawFirmProcess',
   description:
     "Split 'how we work' process band on the card surface: the left column carries a tracked-uppercase eyebrow, serif heading, lead paragraph and a vertical list of numbered steps (each a squared primary-filled serif numeral beside a serif title + description); the right column shows a tall portrait photo. Refined, authoritative editorial aesthetic with sharp squared corners; imagery uses the alt-driven Image component. Use to explain a firm's client engagement, intake or matter-handling process on law-firm, attorney, consulting, accounting or professional-services pages.",

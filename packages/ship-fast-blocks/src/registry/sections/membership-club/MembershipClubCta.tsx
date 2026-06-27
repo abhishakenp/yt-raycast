@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * communities, mastermind groups or paid community subscriptions. Renders fully
  * with no props.
  */
-export const MembershipClubCta = defineComponent({
+export const MembershipClubCta = defineCapsule({
   name: 'MembershipClubCta',
   description:
     "Full-width primary-surface conversion CTA for a private membership club / exclusive community page: a centered narrow column on the inverted primary surface with a thin display heading, a relaxed supporting line, dual rounded-pill CTAs (solid light primary + outlined secondary) and a small contact footnote (with email) below. CTAs route through useNavigate. Use as the closing 'Ready to join' band for members clubs, professional networks, founders communities, mastermind groups or paid community subscriptions.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import type { ReactNode } from 'react'
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
@@ -55,7 +56,7 @@ function FeatureIcon({ glyph }: { glyph: ReactNode }) {
   )
 }
 
-export const ProductDetailFeatures = defineComponent({
+export const ProductDetailFeatures = defineCapsule({
   name: 'ProductDetailFeatures',
   description:
     'Premium feature highlight band for the Aurora Pro Headphones product detail page. Wraps the shared FeatureGrid composite to present six headline specs as icon-led cards — battery life, adaptive ANC, studio-grade sound, memory-foam comfort, multipoint Bluetooth, and USB-C fast charge. Fully prop-driven: heading, subheading, columns, and the features array can each be overridden, with rich Aurora defaults baked in. Use directly beneath the product overview to sell the engineering story before reviews. Theme tokens only.',

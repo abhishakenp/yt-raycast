@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   HoverCard as UIHoverCard,
   HoverCardContent,
@@ -8,7 +9,7 @@ import {
 
 // Overlay: trigger + content shown on hover. Rendered `defaultOpen` so the
 // card body is statically visible. `children` render inside the card.
-export const HoverCard = defineComponent({
+export const HoverCard = defineCapsule({
   name: 'HoverCard',
   description:
     'Card that appears when hovering a trigger. `triggerLabel` is the hover target; children fill the card. Open by default for preview.',

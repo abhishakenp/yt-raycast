@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * developer tools, or B2B startups. Renders fully with no props via baked-in
  * default brand names.
  */
-export const SaasLogos = defineComponent({
+export const SaasLogos = defineCapsule({
   name: 'SaasLogos',
   description:
     "Grayscale 'trusted by' logo / social-proof strip for a SaaS landing page: a slim bordered-bottom band with a small uppercase eyebrow label centered above a wrapping, dimmed row of bold wordmark-style company names. Tokens-only, no links, no images (names render as styled text). Use directly beneath a hero to establish credibility for AI tools, SaaS apps, developer tools, or B2B startups.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const brandMark = (
@@ -19,7 +20,7 @@ const brandMark = (
   </svg>
 )
 
-export const TutoringNavbar = defineComponent({
+export const TutoringNavbar = defineCapsule({
   name: 'TutoringNavbar',
   description:
     "Friendly, trustworthy navigation header for the tutoring page family. Composes the SiteNav kit composite to render a graduation-cap brand mark, warm wordmark, a desktop link row, an optional phone number, and a sticky 'Book a Session' call to action with a real mobile drawer. Use it as the first band of any tutoring site or whenever a generated education/tutoring page needs a consistent, route-aware top nav without hand-rolling markup.",

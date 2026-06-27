@@ -1,26 +1,34 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  PublicationAccountButton,
+  PublicationMobileMenu,
+  PublicationSearchButton,
+  PublicationSubscribeDrawer,
+} from '../blog/publication-interactions.tsx'
+import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 /**
  * NewsroomNavbar — refined editorial masthead bar for a digital newsroom or
  * online magazine. A sticky, press-feeling header in three tiers: a thin top
  * utility strip with today's date on the left and a live "BREAKING" ticker line
  * on the right; a prominent center-stage serif wordmark row flanked by a search
- * affordance on the left and a filled "Subscribe" button plus a text "Sign in"
- * link on the right; and a dense, bordered horizontal section nav beneath
- * (Latest, World, Politics, Business, Tech, Culture, Opinion). Every section
- * link, the search, the subscribe button and the sign-in link route through
- * useNavigate so labels can drive page-switching. Use as the sticky site header
- * for digital newspapers, magazines, newsrooms, media brands or longform
+ * affordance on the left and a filled Lakebed "Subscribe" button plus a Shoo
+ * profile dropdown on the right; and a dense, bordered horizontal section nav
+ * beneath (Latest, World, Politics, Business, Tech, Culture, Opinion). Section
+ * links route through useNavigate while search, account, subscription, and
+ * mobile menu actions use Lakebed-backed UI. Use as the sticky site header for
+ * digital newspapers, magazines, newsrooms, media brands or longform
  * publications. Renders fully with no props via baked-in "The Daily Ledger"
  * defaults.
  */
-export const NewsroomNavbar = defineComponent({
+export const NewsroomNavbar = defineCapsule({
   name: 'NewsroomNavbar',
   description:
-    "Refined editorial masthead bar for a digital newsroom or online magazine: a sticky, press-feeling header in three tiers — a thin top utility strip with today's date on the left and a live 'BREAKING' ticker on the right; a prominent center-stage serif wordmark row flanked by a search affordance and a filled 'Subscribe' button plus a text 'Sign in' link; and a dense bordered horizontal section nav beneath (Latest, World, Politics, Business, Tech, Culture, Opinion). Section links, search, subscribe and sign-in route through useNavigate for page-switching. Use as the sticky site header for digital newspapers, magazines, newsrooms, media brands or longform publications.",
+    "Refined editorial masthead bar for a digital newsroom or online magazine: a sticky, press-feeling header in three tiers — a thin top utility strip with today's date and a live 'BREAKING' ticker; a prominent center-stage serif wordmark row flanked by command article search, a Shoo profile dropdown, and a filled Lakebed subscribe button; a Sheet mobile menu; and a dense bordered horizontal section nav beneath (Latest, World, Politics, Business, Tech, Culture, Opinion). Section and article links route through useNavigate while search, account, and subscription actions use Lakebed-backed UI. Use as the sticky site header for digital newspapers, magazines, newsrooms, media brands or longform publications.",
   props: z.object({
     /** Publication / masthead wordmark rendered in a prominent serif. */
     brand: z.string().optional(),
@@ -36,7 +44,8 @@ export const NewsroomNavbar = defineComponent({
     signInCta: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: publicationLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'The Daily Ledger'
     const date = props.date ?? 'Sunday, June 22, 2026'
@@ -90,11 +99,16 @@ export const NewsroomNavbar = defineComponent({
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid h-20 grid-cols-[1fr_auto_1fr] items-center gap-4">
             <div className="flex items-center justify-start">
-              <button
-                type="button"
-                aria-label="Search"
-                onClick={() => go('Search')}
-                className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              <PublicationMobileMenu
+                brand={brand}
+                homeTarget={sections[0]}
+                nav={sections}
+                buttonClassName="mr-2 inline-flex items-center justify-center rounded-md border border-border px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+              />
+              <PublicationSearchButton
+                lakebed={lakebed}
+                label="Search articles"
+                buttonClassName="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -108,7 +122,7 @@ export const NewsroomNavbar = defineComponent({
                   <path d="m21 21-4.3-4.3" />
                 </svg>
                 <span className="hidden sm:inline">Search</span>
-              </button>
+              </PublicationSearchButton>
             </div>
 
             <button
@@ -120,20 +134,17 @@ export const NewsroomNavbar = defineComponent({
             </button>
 
             <div className="flex items-center justify-end gap-2 sm:gap-4">
-              <button
-                type="button"
-                onClick={() => go(signInCta)}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-block"
-              >
-                {signInCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(subscribeCta)}
-                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {subscribeCta}
-              </button>
+              <PublicationAccountButton
+                lakebed={lakebed}
+                label={signInCta}
+                buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+              />
+              <PublicationSubscribeDrawer
+                lakebed={lakebed}
+                buttonLabel={subscribeCta}
+                source="newsroom navbar"
+                buttonClassName="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              />
             </div>
           </div>
         </div>

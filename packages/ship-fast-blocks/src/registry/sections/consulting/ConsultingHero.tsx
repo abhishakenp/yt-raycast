@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * groups, or corporate B2B landing pages. Renders fully with no props via
  * baked-in "Nexus Strategy Partners" defaults.
  */
-export const ConsultingHero = defineComponent({
+export const ConsultingHero = defineCapsule({
   name: 'ConsultingHero',
   description:
     'Two-column hero section for a management-consulting firm landing page: an eyebrow pill, a large headline with one phrase rendered in muted highlight, a supporting paragraph, dual CTAs (filled primary and outlined secondary), inline trust stats with check icons, and a hero photo with a floating client-retention stat card. CTAs route through useNavigate. Use as the opening hero for consulting firms, strategy advisories, professional-services groups, or corporate B2B landing pages.',

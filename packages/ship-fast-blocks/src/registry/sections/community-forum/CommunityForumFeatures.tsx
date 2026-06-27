@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * community platforms, forums, knowledge bases, or SaaS products showcasing organized topics,
  * search, permissions, real-time updates, insights, and rich text editing.
  */
-export const CommunityForumFeatures = defineComponent({
+export const CommunityForumFeatures = defineCapsule({
   name: 'CommunityForumFeatures',
   description:
     'Capabilities grid for a community-platform / discussion-forum landing page: a centered section heading and description above a responsive 3-column grid of rounded card tiles, each with a tinted inline SVG icon, a title, and a description; cards slightly lift on hover. No links — presentation only. Use as the feature section for community platforms, forums, knowledge bases, or SaaS products showcasing organized topics, search, permissions, real-time updates, insights, and rich text editing.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * common ticket, refund, schedule, and policy questions on tech conference,
  * summit, festival, or workshop pages.
  */
-export const EventFaq = defineComponent({
+export const EventFaq = defineCapsule({
   name: 'EventFaq',
   description:
     'Frequently-asked-questions accordion for a conference or event page: a muted band with a centered heading + description above a narrow stack of native details/summary accordion items; each bordered card shows a question with a chevron that rotates when open and reveals the answer below. Use to answer common ticket, refund, schedule, code-of-conduct, recording, and discount questions on tech conference, summit, festival, meetup, or workshop pages.',

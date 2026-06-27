@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * studios, architecture firms, home staging or renovation businesses. Renders
  * fully with no props via baked-in "Atelier Studio" defaults.
  */
-export const InteriorDesignHero = defineComponent({
+export const InteriorDesignHero = defineCapsule({
   name: 'InteriorDesignHero',
   description:
     'Refined split hero band for an upscale interior-design / architecture studio landing page: two-column layout with an uppercase tracked eyebrow, a large light-weight headline featuring an italic accent word, a supporting paragraph, dual square CTAs (filled + outlined) and a row of award badges with icons on the left, and a tall featured-project photo with an overlaid translucent caption card (eyebrow + title + meta) on the right. Editorial, airy and gallery-like; CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the opening hero for interior designers, design studios, architecture firms, home staging or renovation businesses.',

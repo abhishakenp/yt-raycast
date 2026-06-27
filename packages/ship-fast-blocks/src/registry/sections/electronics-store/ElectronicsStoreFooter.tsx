@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * through useNavigate. Use as the closing footer for electronics stores, gadget
  * shops, consumer-tech retailers, or audio/camera storefronts.
  */
-export const ElectronicsStoreFooter = defineComponent({
+export const ElectronicsStoreFooter = defineCapsule({
   name: 'ElectronicsStoreFooter',
   description:
     'Multi-column site footer for an electronics storefront: a wide brand column (bolt logo mark + name, description, social icon buttons) beside link columns of store/support/company links, over a bottom bar with a copyright line and legal links. Every link and icon routes through useNavigate. Use as the closing footer for electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',

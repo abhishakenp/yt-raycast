@@ -1,22 +1,24 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { propertyListingLakebed } from './property-listing-lakebed.ts'
+import { usePropertyListingSearch } from './property-listing-interactions.tsx'
 
 /**
  * PropertyListingHero — search-portal hero for a property marketplace. A split
  * layout pairs a left content column (eyebrow, bold headline, supporting line,
  * a prominent search bar with location + type/beds/price filter inputs and a
  * search button, plus a row of popular-search chips) with a right image collage
- * (one tall photo + two stacked photos). All imagery is alt-driven; search,
- * chips, and the button route through useNavigate. Use as the opening hero for
- * property search portals and listing marketplaces. Renders fully with no props.
+ * (one tall photo + two stacked photos). All imagery is alt-driven; search and
+ * chips write shared Lakebed listing state so results update below. Use as the
+ * opening hero for property search portals and listing marketplaces.
  */
-export const PropertyListingHero = defineComponent({
+export const PropertyListingHero = defineCapsule({
   name: 'PropertyListingHero',
   description:
-    'Search-portal hero for a property marketplace: a split layout with a left content column (eyebrow, bold headline, supporting line, a prominent search bar with location + type/beds/price filter inputs and a search button, plus popular-search chips) and a right image collage (one tall photo + two stacked photos). Imagery is alt-driven; search, chips, and the button route through useNavigate. Use as the opening hero for property search portals and listing marketplaces.',
+    'Search-portal hero for a property marketplace: a split layout with a left content column (eyebrow, bold headline, supporting line, a prominent Lakebed search bar with location + type/beds/price filter inputs and a search button, plus popular-search chips) and a right image collage (one tall photo + two stacked photos). Imagery is alt-driven; search and chips write shared listing state so the results grid reacts immediately. Use as the opening hero for property search portals and listing marketplaces.',
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -38,8 +40,9 @@ export const PropertyListingHero = defineComponent({
     imageAlt: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: propertyListingLakebed,
+  component: ({ props, lakebed }) => {
+    const propertySearch = usePropertyListingSearch(lakebed)
     const eyebrow = props.eyebrow ?? '10,000+ live listings'
     const heading = props.heading ?? 'Search every home in one place'
     const subheading =
@@ -58,6 +61,8 @@ export const PropertyListingHero = defineComponent({
     const imageAlt =
       props.imageAlt ??
       'bright modern apartment interior with floor-to-ceiling windows and city skyline view'
+    const locationValue = propertySearch.state?.location ?? ''
+    const activeFilter = propertySearch.state?.filter || searchTarget
 
     return (
       <section className={cn('bg-background py-16 lg:py-24', props.className)}>
@@ -73,32 +78,66 @@ export const PropertyListingHero = defineComponent({
               {subheading}
             </p>
 
-            <div className="mt-8 rounded-2xl border border-border bg-card p-3 shadow-sm">
-              <div className="rounded-xl bg-muted px-4 py-3 text-sm text-muted-foreground">
-                {locationPlaceholder}
-              </div>
+            <form
+              key={`${locationValue}:${activeFilter}`}
+              onSubmit={propertySearch.submitSearch}
+              className="mt-8 rounded-2xl border border-border bg-card p-3 shadow-sm"
+            >
+              <label className="sr-only" htmlFor="property-location-search">
+                Search by city, area, or ZIP
+              </label>
+              <input
+                id="property-location-search"
+                name="location"
+                defaultValue={locationValue}
+                placeholder={locationPlaceholder}
+                className="w-full rounded-xl border-0 bg-muted px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+              <input type="hidden" name="filter" value={activeFilter} />
               <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="flex flex-1 flex-wrap gap-2">
                   {filters.map((filter) => (
                     <button
                       key={filter}
                       type="button"
-                      onClick={() => go(searchTarget)}
-                      className="inline-flex items-center rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                      aria-pressed={activeFilter === filter}
+                      onClick={() =>
+                        propertySearch.chooseSearch({
+                          filter,
+                          location: locationValue,
+                          query: '',
+                        })
+                      }
+                      className={cn(
+                        'inline-flex items-center rounded-lg border px-3 py-2 text-sm transition-colors',
+                        activeFilter === filter
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-border bg-background text-foreground hover:bg-muted',
+                      )}
                     >
                       {filter}
                     </button>
                   ))}
                 </div>
                 <button
-                  type="button"
-                  onClick={() => go(searchTarget)}
+                  type="submit"
+                  aria-busy={propertySearch.isPending}
+                  disabled={propertySearch.isPending}
                   className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
-                  {searchLabel}
+                  {propertySearch.isPending ? 'Searching' : searchLabel}
                 </button>
               </div>
-            </div>
+            </form>
+
+            <p
+              className="mt-3 text-sm text-muted-foreground"
+              aria-live="polite"
+            >
+              {locationValue || activeFilter
+                ? `Showing ${[activeFilter, locationValue].filter(Boolean).join(' in ')} listings below.`
+                : 'Search filters are shared with the listings below.'}
+            </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-2">
               <span className="text-sm text-muted-foreground">Popular:</span>
@@ -106,7 +145,14 @@ export const PropertyListingHero = defineComponent({
                 <button
                   key={item}
                   type="button"
-                  onClick={() => go(searchTarget)}
+                  aria-pressed={propertySearch.state?.query === item}
+                  onClick={() =>
+                    propertySearch.chooseSearch({
+                      filter: searchTarget,
+                      location: '',
+                      query: item,
+                    })
+                  }
                   className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {item}

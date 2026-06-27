@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * near the bottom of a streaming-service or OTT page to drive signups. Renders
  * fully with no props via baked-in defaults.
  */
-export const VideoStreamingCta = defineComponent({
+export const VideoStreamingCta = defineCapsule({
   name: 'VideoStreamingCta',
   description:
     "Bold, centered free-trial band for a video-streaming home page built on the shared CtaBand composite at tone='primary': a 'No commitment · Cancel anytime' eyebrow, a strong 'Start your free trial' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Start Free Trial' button plus an outlined 'See all plans' button). Both CTAs route through useNavigate. Use near the bottom of a streaming-service or OTT page to drive signups.",

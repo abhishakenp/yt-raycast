@@ -1,8 +1,18 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import type { PropertyListingCatalogInput } from './property-listing-lakebed.ts'
+import { propertyListingLakebed } from './property-listing-lakebed.ts'
+import {
+  PropertyListingInquiryButton,
+  PropertyListingMutationSpinner,
+  PropertyListingSaveButton,
+  usePropertyListingActions,
+  usePropertyListingSearch,
+  useSyncPropertyListings,
+} from './property-listing-interactions.tsx'
 
 /**
  * PropertyListingGallery — search-results grid for a property marketplace. A
@@ -10,13 +20,14 @@ import { Image } from '#/lib/img.tsx'
  * For Rent / type / price), above a dense responsive 1/2/3-column grid of
  * listing cards. Each card has an alt-driven photo with an optional corner tag
  * and a save-heart button, a bold price, a beds / baths / sqft spec row, and
- * the address. Filter chips, the heart, and cards route through useNavigate.
- * Use to render listing results in a search portal. Renders fully with no props.
+ * the address. Filter chips update shared Lakebed search state; save-heart and
+ * cards update saved/selected listing state. Use to render listing results in a
+ * search portal.
  */
-export const PropertyListingGallery = defineComponent({
+export const PropertyListingGallery = defineCapsule({
   name: 'PropertyListingGallery',
   description:
-    'Search-results grid for a property marketplace: a header row pairing a heading with a horizontal filter-chip strip, above a dense responsive 1/2/3-column grid of listing cards. Each card has an alt-driven photo with an optional corner tag and a save-heart button, a bold price, a beds / baths / sqft spec row, and the address. Filter chips, the heart, and cards route through useNavigate. Use to render listing results in a search portal.',
+    'Search-results grid for a property marketplace: a header row pairing a heading with a horizontal filter-chip strip, above a dense responsive 1/2/3-column grid of listing cards. Each card has an alt-driven photo with an optional corner tag and a save-heart button, a bold price, a beds / baths / sqft spec row, and the address. Filter chips update shared Lakebed listing search state; save-heart and cards update saved/selected listing state. Use to render listing results in a search portal.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -37,13 +48,15 @@ export const PropertyListingGallery = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: propertyListingLakebed,
+  component: ({ props, lakebed }) => {
+    const propertySearch = usePropertyListingSearch(lakebed)
+    const propertyActions = usePropertyListingActions(lakebed)
     const heading = props.heading ?? 'Homes for you'
     const filters = props.filters?.length
       ? props.filters
       : ['For Sale', 'For Rent', 'Any type', 'Beds', 'Price', 'More']
-    const listings = props.listings?.length
+    const listings: PropertyListingCatalogInput[] = props.listings?.length
       ? props.listings
       : [
           {
@@ -93,6 +106,42 @@ export const PropertyListingGallery = defineComponent({
             address: '330 Willow Bend #2C, Eastside',
           },
         ]
+    useSyncPropertyListings(lakebed, listings)
+    const catalog = lakebed.useQuery('propertyCatalog') ?? []
+    const listingCatalog = catalog.length ? catalog : listings
+    const activeFilter = propertySearch.state?.filter ?? filters[0] ?? ''
+    const activeLocation = propertySearch.state?.location.toLowerCase() ?? ''
+    const activeQuery = propertySearch.state?.query.toLowerCase() ?? ''
+    const savedAddresses = new Set(propertyActions.state?.savedAddresses ?? [])
+    const selectedAddress = propertyActions.state?.selectedAddress ?? ''
+    const matchesFilter = (listing: PropertyListingCatalogInput) => {
+      const listingStatus = listing.price.includes('/mo')
+        ? 'For Rent'
+        : 'For Sale'
+      const haystack = [
+        listing.address,
+        listing.price,
+        listing.beds,
+        listing.baths,
+        listing.sqft,
+        listing.tag ?? '',
+        listingStatus,
+      ]
+        .join(' ')
+        .toLowerCase()
+      const filterValue = activeFilter.toLowerCase()
+      const locationMatches =
+        !activeLocation || haystack.includes(activeLocation)
+      const queryMatches = !activeQuery || haystack.includes(activeQuery)
+      const filterMatches =
+        !filterValue ||
+        filterValue === 'any type' ||
+        filterValue === 'more' ||
+        haystack.includes(filterValue)
+
+      return locationMatches && queryMatches && filterMatches
+    }
+    const matchingListings = listingCatalog.filter(matchesFilter)
 
     return (
       <section className={cn('bg-muted py-16 lg:py-24', props.className)}>
@@ -106,10 +155,19 @@ export const PropertyListingGallery = defineComponent({
                 <button
                   key={filter}
                   type="button"
-                  onClick={() => go('For Sale')}
+                  aria-pressed={
+                    activeFilter === filter || (i === 0 && !activeFilter)
+                  }
+                  onClick={() =>
+                    propertySearch.chooseSearch({
+                      filter,
+                      location: propertySearch.state?.location ?? '',
+                      query: propertySearch.state?.query ?? '',
+                    })
+                  }
                   className={cn(
                     'inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-medium transition-colors',
-                    i === 0
+                    activeFilter === filter || (i === 0 && !activeFilter)
                       ? 'border-primary bg-primary text-primary-foreground'
                       : 'border-border bg-background text-foreground hover:bg-muted',
                   )}
@@ -120,11 +178,24 @@ export const PropertyListingGallery = defineComponent({
             </div>
           </div>
 
+          <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">
+            {matchingListings.length} listing
+            {matchingListings.length === 1 ? '' : 's'} match the current search
+            {propertyActions.state?.savedCount
+              ? ` · ${propertyActions.state.savedCount} saved`
+              : ''}
+          </p>
+
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {listings.map((listing, index) => (
+            {matchingListings.map((listing, index) => (
               <article
                 key={`${listing.address}-${index}`}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
+                className={cn(
+                  'group flex flex-col overflow-hidden rounded-2xl border bg-card',
+                  selectedAddress === listing.address
+                    ? 'border-primary shadow-md'
+                    : 'border-border',
+                )}
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <Image
@@ -139,18 +210,30 @@ export const PropertyListingGallery = defineComponent({
                       {listing.tag}
                     </span>
                   ) : null}
-                  <button
-                    type="button"
-                    onClick={() => go('Saved')}
+                  <PropertyListingSaveButton
+                    lakebed={lakebed}
+                    address={listing.address}
+                    price={listing.price}
+                    aria-pressed={savedAddresses.has(listing.address)}
                     aria-label={`Save ${listing.address}`}
-                    className="absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-background/90 text-muted-foreground backdrop-blur transition-colors hover:text-accent"
+                    className={cn(
+                      'absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-background/90 backdrop-blur transition-colors hover:text-accent',
+                      savedAddresses.has(listing.address)
+                        ? 'text-accent'
+                        : 'text-muted-foreground',
+                    )}
                   >
                     <span aria-hidden="true">♥</span>
-                  </button>
+                  </PropertyListingSaveButton>
                 </div>
                 <button
                   type="button"
-                  onClick={() => go('Listing')}
+                  aria-pressed={selectedAddress === listing.address}
+                  onClick={() => {
+                    void propertyActions.select({
+                      address: listing.address,
+                    })
+                  }}
                   className="flex flex-1 flex-col p-5 text-left"
                 >
                   <div className="text-lg font-bold text-foreground">
@@ -167,8 +250,30 @@ export const PropertyListingGallery = defineComponent({
                     {listing.address}
                   </p>
                 </button>
+                <div className="border-t border-border px-5 py-4">
+                  <PropertyListingInquiryButton
+                    lakebed={lakebed}
+                    address={listing.address}
+                    intent="Contact agent"
+                    source="listing-card"
+                    pendingChildren={
+                      <>
+                        <PropertyListingMutationSpinner className="size-4" />
+                        Sending
+                      </>
+                    }
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+                  >
+                    Contact agent
+                  </PropertyListingInquiryButton>
+                </div>
               </article>
             ))}
+            {!matchingListings.length ? (
+              <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3">
+                No listings match the current search.
+              </div>
+            ) : null}
           </div>
         </div>
       </section>

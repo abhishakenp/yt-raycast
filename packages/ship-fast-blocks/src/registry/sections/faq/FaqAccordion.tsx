@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * questions section on SaaS knowledge bases, help centers, or support pages.
  * Renders fully with no props via eight baked-in multi-paragraph Q&As.
  */
-export const FaqAccordion = defineComponent({
+export const FaqAccordion = defineCapsule({
   name: 'FaqAccordion',
   description:
     "An expandable frequently-asked-questions accordion for a help-center / support page: a centered heading with an intro line and an inline underlined 'contact support' link above a stacked list of native details/summary items. Each item is a rounded bordered panel (raised when open) with the question in a medium heading, a circular chevron badge that rotates on open, and one or more answer paragraphs in relaxed body text; the first item is open by default. The contact link routes through useNavigate. Use as the FAQ / questions section on SaaS knowledge bases, help centers, or support pages.",

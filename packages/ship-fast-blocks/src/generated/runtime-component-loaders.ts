@@ -15,7 +15,9 @@ const toCapsule = (
 ): ShipFastCapsule => {
   const exported = module[name]
   if (isCapsule(exported)) return exported
-  return { client: exported as ShipFastCapsule['client'] }
+  throw new Error(
+    `Runtime component "${name}" must be exported with defineCapsule`,
+  )
 }
 
 export const runtimeComponentLoaders = {
@@ -3958,6 +3960,10 @@ export const runtimeComponentLoaders = {
   Section: (() =>
     import('../registry/primitives/layout.tsx').then((module) =>
       toCapsule(module, 'Section'),
+    )) satisfies RuntimeComponentLoader,
+  SectionAnchor: (() =>
+    import('../registry/primitives/page-switch.tsx').then((module) =>
+      toCapsule(module, 'SectionAnchor'),
     )) satisfies RuntimeComponentLoader,
   Select: (() =>
     import('../registry/primitives/select.tsx').then((module) =>

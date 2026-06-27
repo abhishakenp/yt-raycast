@@ -1,6 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+
+import { cn } from '#/lib/utils.ts'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from './saas-interactions.tsx'
+import { saasLakebed } from './saas-lakebed.ts'
 
 /**
  * SaasCta — a full-width conversion band for the bottom of a SaaS / AI-product
@@ -12,10 +18,10 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * call-to-action for SaaS, API, or B2B product pages. Renders fully with no
  * props via baked-in defaults.
  */
-export const SaasCta = defineComponent({
+export const SaasCta = defineCapsule({
   name: 'SaasCta',
   description:
-    "Full-width conversion band for the bottom of a SaaS / AI-product landing page built on the shared CtaBand composite at tone='primary': a centered headline + supporting line over a primary surface, a high-contrast 'Start free trial' pill (auto-inverted on the primary band), an outlined 'Book demo' pill, and a small reassurance note in the eyebrow. Both CTAs route through useNavigate. Use as the closing call-to-action for SaaS, API, or B2B product pages.",
+    "Full-width conversion band for the bottom of a SaaS / AI-product landing page backed by shared Lakebed conversion state: a centered headline + supporting line over a primary surface, a high-contrast 'Start free trial' pill, an outlined 'Book demo' pill, and a small reassurance note in the eyebrow. CTA buttons record trial/demo intent instead of dead route-only navigation. Use as the closing call-to-action for SaaS, API, or B2B product pages.",
   props: z.object({
     /** Centered headline on the band. */
     heading: z.string().optional(),
@@ -29,7 +35,8 @@ export const SaasCta = defineComponent({
     note: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Ready to reclaim your day?'
     const subheading =
       props.subheading ??
@@ -38,28 +45,60 @@ export const SaasCta = defineComponent({
     const secondaryCta = props.secondaryCta ?? 'Book demo'
     const note = props.note ?? 'No credit card required • 14-day free trial'
 
-    const actions = [
-      { label: primaryCta, target: primaryCta, variant: 'primary' as const },
-      ...(secondaryCta
-        ? [
-            {
-              label: secondaryCta,
-              target: secondaryCta,
-              variant: 'outline' as const,
-            },
-          ]
-        : []),
-    ]
-
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={note}
-        title={heading}
-        subtitle={subheading}
-        actions={actions}
-        className={props.className}
-      />
+      <section
+        className={cn(
+          'bg-primary py-20 text-primary-foreground',
+          props.className,
+        )}
+      >
+        <div className="mx-auto flex max-w-4xl flex-col items-center gap-7 px-6 text-center">
+          <p className="text-sm font-medium text-primary-foreground/80">
+            {note}
+          </p>
+          <div className="flex flex-col gap-4">
+            <h2 className="text-3xl font-semibold tracking-tight md:text-5xl">
+              {heading}
+            </h2>
+            <p className="mx-auto max-w-2xl text-base text-primary-foreground/80 md:text-lg">
+              {subheading}
+            </p>
+          </div>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={primaryCta}
+              plan={primaryCta}
+              source="cta"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Starting
+                </>
+              }
+              className="inline-flex min-w-40 items-center justify-center gap-2 rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+            >
+              {primaryCta}
+            </SaasPlanActionButton>
+            {secondaryCta ? (
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={secondaryCta}
+                source="cta"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Sending
+                  </>
+                }
+                className="inline-flex min-w-40 items-center justify-center gap-2 rounded-full border border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
+              >
+                {secondaryCta}
+              </SaasPlanActionButton>
+            ) : null}
+          </div>
+        </div>
+      </section>
     )
   },
 })

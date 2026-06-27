@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * or any FAQ on churches, worship centers, parishes, ministries, or religious nonprofits.
  * Renders fully with no props via baked-in defaults.
  */
-export const ChurchFaq = defineComponent({
+export const ChurchFaq = defineCapsule({
   name: 'ChurchFaq',
   description:
     'Accordion FAQ section for a church or faith-community site: centered header (eyebrow + heading) above a stacked list of native details cards with a chevron that rotates on open. Clean, accessible, and content-friendly. Use for newcomer questions, service logistics, beliefs, kids programs, giving, counseling, or any FAQ on churches, worship centers, parishes, ministries, or religious nonprofits.',

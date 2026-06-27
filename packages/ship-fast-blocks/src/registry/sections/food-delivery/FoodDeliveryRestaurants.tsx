@@ -1,8 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
+import {
+  foodDeliveryRestaurant,
+  useFoodDeliveryRestaurants,
+  useFoodDeliverySearch,
+  useSyncFoodDeliveryRestaurants,
+} from './food-delivery-interactions.tsx'
 
 /**
  * FoodDeliveryRestaurants — popular-restaurants gallery band for a food-delivery
@@ -10,15 +17,15 @@ import { Image } from '#/lib/img.tsx'
  * a right-aligned "View all" link, above a responsive 2/4-up grid of clickable
  * cuisine cards. Each card has an alt-driven food photo (zoom on hover) with a
  * cuisine chip and a rating badge overlaid, then a name, category line, and a
- * delivery-time / delivery-fee row. Card clicks and the view-all link route
- * through useNavigate. Use to showcase restaurant discovery for food-delivery
- * apps, restaurant aggregators, or online-ordering platforms. Renders fully with
- * no props via baked-in defaults.
+ * delivery-time / delivery-fee row. Restaurant cards update shared Lakebed
+ * selected restaurant state, and the view-all link clears search filters. Use to
+ * showcase restaurant discovery for food-delivery apps, restaurant aggregators,
+ * or online-ordering platforms.
  */
-export const FoodDeliveryRestaurants = defineComponent({
+export const FoodDeliveryRestaurants = defineCapsule({
   name: 'FoodDeliveryRestaurants',
   description:
-    'Popular-restaurants gallery band for a food-delivery marketplace: a card-surfaced section with a left-aligned heading + subhead and a right-aligned View all link, above a responsive 2/4-up grid of clickable cuisine cards. Each card shows an alt-driven food photo (zoom-on-hover) with an overlaid cuisine chip and rating badge, then a name, a category line, and a delivery-time / delivery-fee row. Card clicks and the view-all link route through useNavigate. Use to showcase restaurant discovery for food-delivery apps, restaurant aggregators, online-ordering platforms, or grocery/takeout services.',
+    'Popular-restaurants gallery band for a food-delivery marketplace: a card-surfaced section with a left-aligned heading + subhead and a right-aligned View all link, above a responsive 2/4-up grid of clickable cuisine cards. Each card shows an alt-driven food photo (zoom-on-hover) with an overlaid cuisine chip and rating badge, then a name, a category line, and a delivery-time / delivery-fee row. Cards update shared Lakebed selected restaurant state; the view-all link clears shared search filters. Use to showcase restaurant discovery for food-delivery apps, restaurant aggregators, online-ordering platforms, or grocery/takeout services.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -42,8 +49,10 @@ export const FoodDeliveryRestaurants = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: foodDeliveryLakebed,
+  component: ({ props, lakebed }) => {
+    const foodSearch = useFoodDeliverySearch(lakebed)
+    const restaurantActions = useFoodDeliveryRestaurants(lakebed)
     const restaurantsHeading = props.heading ?? 'Popular restaurants'
     const restaurantsDesc =
       props.description ?? 'Top-rated spots in your neighborhood'
@@ -132,6 +141,27 @@ export const FoodDeliveryRestaurants = defineComponent({
               'Decadent chocolate cake with berries and powdered sugar dusting',
           },
         ]
+    const syncedRestaurants = restaurantItems.map((item) =>
+      foodDeliveryRestaurant(item),
+    )
+    useSyncFoodDeliveryRestaurants(lakebed, syncedRestaurants)
+    const activeQuery = restaurantActions.state?.query.toLowerCase() ?? ''
+    const selectedRestaurant = restaurantActions.state?.selectedRestaurant ?? ''
+    const matchingRestaurants = restaurantItems.filter((restaurant) => {
+      if (!activeQuery) return true
+
+      const haystack = [
+        restaurant.name,
+        restaurant.cuisine,
+        restaurant.category,
+        restaurant.time,
+        restaurant.delivery,
+      ]
+        .join(' ')
+        .toLowerCase()
+
+      return haystack.includes(activeQuery)
+    })
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -162,7 +192,12 @@ export const FoodDeliveryRestaurants = defineComponent({
             </div>
             <button
               type="button"
-              onClick={() => go(restaurantsViewAll)}
+              onClick={() =>
+                foodSearch.chooseSearch({
+                  address: '',
+                  query: '',
+                })
+              }
               className="flex items-center gap-1 text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
             >
               {restaurantsViewAll}
@@ -170,13 +205,33 @@ export const FoodDeliveryRestaurants = defineComponent({
             </button>
           </div>
 
+          <p className="mb-5 text-sm text-muted-foreground" aria-live="polite">
+            {matchingRestaurants.length} restaurant
+            {matchingRestaurants.length === 1 ? '' : 's'} match the current
+            search
+            {restaurantActions.state?.selectionCount
+              ? ` · ${restaurantActions.state.selectionCount} opened`
+              : ''}
+          </p>
+
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {restaurantItems.map((r) => (
+            {matchingRestaurants.map((r) => (
               <button
                 key={r.name}
                 type="button"
-                onClick={() => go(r.name)}
-                className="group block w-full overflow-hidden rounded-xl border border-border bg-background text-left transition-shadow hover:shadow-lg"
+                aria-pressed={selectedRestaurant === r.name}
+                onClick={() => {
+                  void restaurantActions.select({
+                    cuisine: r.cuisine,
+                    name: r.name,
+                  })
+                }}
+                className={cn(
+                  'group block w-full overflow-hidden rounded-xl border bg-background text-left transition-shadow hover:shadow-lg',
+                  selectedRestaurant === r.name
+                    ? 'border-primary shadow-lg'
+                    : 'border-border',
+                )}
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <Image
@@ -209,6 +264,11 @@ export const FoodDeliveryRestaurants = defineComponent({
                 </div>
               </button>
             ))}
+            {!matchingRestaurants.length ? (
+              <div className="rounded-xl border border-dashed border-border bg-background p-8 text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-4">
+                No restaurants match the current search.
+              </div>
+            ) : null}
           </div>
         </div>
       </section>

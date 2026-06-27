@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * development, documentary, music videos, and post production for filmmakers,
  * directors, DPs, or video production houses.
  */
-export const FilmDirectorServices = defineComponent({
+export const FilmDirectorServices = defineCapsule({
   name: 'FilmDirectorServices',
   description:
     'Services / capabilities grid for a film director or cinematographer: a left-aligned section header (thin heading + muted lede) above a responsive 1/2/3-column grid of bordered cards, each with a rounded muted icon tile (rotating line-art film, camera, lightbulb, clapper, music, and sliders glyphs), a title, and a short muted description. Use to present production offerings such as commercial direction, cinematography, creative development, documentary, music videos, and post production for filmmakers, directors, DPs, or video production houses.',

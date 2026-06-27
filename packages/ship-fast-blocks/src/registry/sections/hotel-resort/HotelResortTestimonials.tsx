@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * Avatars use the alt-driven Image component. Renders fully with no props via
  * baked-in guest defaults.
  */
-export const HotelResortTestimonials = defineComponent({
+export const HotelResortTestimonials = defineCapsule({
   name: 'HotelResortTestimonials',
   description:
     'Guest testimonials grid for a luxury hotel / resort & spa site: a muted-surface section with a centered uppercase eyebrow + thin heading + paragraph, then a 3-up grid of cards each with a 5-star rating row in the primary color, a quote, and an avatar beside the guest name and location/date meta. Warm and reassuring; avatars use the alt-driven Image component. Use to surface reviews and social proof for hotels, resorts, spa retreats, inns, or wellness destinations.',

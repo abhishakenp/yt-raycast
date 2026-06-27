@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * showcase performers on music festivals, arts festivals, concert series, or
  * any multi-day live-music event.
  */
-export const MusicFestivalLineup = defineComponent({
+export const MusicFestivalLineup = defineCapsule({
   name: 'MusicFestivalLineup',
   description:
     "Lineup section for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three headliner photo cards (each with a dark gradient overlay carrying a day label, artist name and genre), a featured-artist grid of bordered name/genre cards (2/4/6-up responsive), and a centered 'more artists' pill button. Headliner cards, featured cards and the more button all route through useNavigate; photos use the alt-driven Image component. Use to showcase performers on music festivals, arts festivals, concert series, raves, or any multi-day live-music event.",

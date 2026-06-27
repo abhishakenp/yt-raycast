@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * showcase settlement, bridging, custody, security, analytics, or governance
  * capabilities.
  */
-export const CryptoFeatures = defineComponent({
+export const CryptoFeatures = defineCapsule({
   name: 'CryptoFeatures',
   description:
     '6-up feature capabilities grid for a crypto / DeFi infrastructure landing page: centered heading + description, then a responsive three-column card grid with semantic icons in muted badges, bold titles, and description paragraphs. Icons rotate through bolt, swap, lock, shield, chart, and users. Use to showcase settlement, bridging, custody, security, analytics, or governance capabilities.',

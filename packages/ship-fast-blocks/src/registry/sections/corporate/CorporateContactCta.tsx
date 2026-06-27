@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -10,7 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * note beneath. Every CTA routes through useNavigate. Use as a pre-footer conversion
  * block on enterprise SaaS, consultancy, and managed services landing pages.
  */
-export const CorporateContactCta = defineComponent({
+export const CorporateContactCta = defineCapsule({
   name: 'CorporateContactCta',
   description:
     'Dark conversion CTA band for an enterprise / corporate B2B site: full-width inverted background with a large centered headline, a lead paragraph, dual pill CTAs (filled primary + bordered secondary), and a response-time note beneath. CTAs route through useNavigate. Use as a pre-footer conversion block on enterprise SaaS, consultancy, and managed services landing pages.',

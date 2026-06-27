@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
-export const TourExperiencesOverview = defineComponent({
+export const TourExperiencesOverview = defineCapsule({
   name: 'TourExperiencesOverview',
   description:
     'Reusable overview / hero section for the Tour Experiences page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: eyebrow, large heading, supporting copy, dual CTAs, feature pills, KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a tour experiences page or adding a focused tour experiences band to a larger generated site.',

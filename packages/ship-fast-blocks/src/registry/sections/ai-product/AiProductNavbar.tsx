@@ -1,7 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasAccountButton,
+  SaasIntentBadge,
+  SaasMobileMenu,
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  SaasSearchButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * AiProductNavbar — sticky, blurred top navigation bar for a clean, light AI
@@ -13,10 +23,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * assistants, AI copilots, generative-AI tools, developer-AI products, or any
  * modern minimal SaaS marketing site. Renders fully with no props.
  */
-export const AiProductNavbar = defineComponent({
+export const AiProductNavbar = defineCapsule({
   name: 'AiProductNavbar',
   description:
-    "Sticky backdrop-blurred top navigation bar for a clean, light AI SaaS / product landing page: a near-black rounded brand tile with a pen/edit glyph + product name on the left, a horizontal set of nav links (desktop), and a muted 'Sign in' text link plus a near-black filled primary CTA button on the right. Links and CTAs route through useNavigate for page-switching. Use as the sticky site header for AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or any modern minimal conversion-focused SaaS marketing site.",
+    'Sticky backdrop-blurred top navigation bar for a clean, light AI SaaS / product landing page: a near-black rounded brand tile with a pen/edit glyph + product name on the left, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, near-black fullstack primary CTA, and a real mobile drawer. Links route through useNavigate while auth and conversion actions use shared Lakebed state. Use as the sticky site header for AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or any modern minimal conversion-focused SaaS marketing site.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -30,7 +40,8 @@ export const AiProductNavbar = defineComponent({
     ctaTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'WriteFlow'
     const nav = props.nav?.length
@@ -94,20 +105,37 @@ export const AiProductNavbar = defineComponent({
           </div>
 
           <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => go(signInLabel)}
-              className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-            >
-              {signInLabel}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(ctaTarget)}
-              className="inline-flex items-center justify-center rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+            <SaasIntentBadge lakebed={lakebed} />
+            <SaasSearchButton
+              lakebed={lakebed}
+              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            />
+            <SaasAccountButton
+              lakebed={lakebed}
+              label={signInLabel}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+            />
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={ctaTarget}
+              plan={ctaTarget}
+              source="navbar"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Starting
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
             >
               {cta}
-            </button>
+            </SaasPlanActionButton>
+            <SaasMobileMenu
+              brand={brand}
+              nav={nav}
+              homeTarget={brand}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            />
           </div>
         </nav>
       </header>

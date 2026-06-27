@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * launch, fundraiser, maker project, or any campaign page that needs a
  * problem-and-solution story with supporting stats and a founder quote.
  */
-export const CrowdfundingStory = defineComponent({
+export const CrowdfundingStory = defineCapsule({
   name: 'CrowdfundingStory',
   description:
     "A long-form founder STORY section for a crowdfunding / campaign landing page on a muted band: a centered eyebrow + heading + intro, a two-up grid of image-over-paragraph story blocks, a primary-bordered pull-quote with attribution, a raised card panel holding a 'problem' heading over a three-up stat trio (big destructive-toned numbers + captions), and a 'solution' heading followed by body paragraphs. Imagery uses the alt-driven Image component. Use to tell the origin / mission narrative on a product launch, fundraiser, maker project, or any campaign page that needs a problem-and-solution story with supporting stats and a founder quote.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use to explain the onboarding process for therapists, counselors,
  * psychologists or wellness centers.
  */
-export const MentalHealthSteps = defineComponent({
+export const MentalHealthSteps = defineCapsule({
   name: 'MentalHealthSteps',
   description:
     "'How it works' / approach flow for a therapy practice: a centered eyebrow + heading + intro above a numbered 3-step row (filled primary circular badges with dashed connectors on desktop), then a primary-tinted help band pairing a 'not sure where to start?' prompt with a phone CTA + secondary booking button on the left and a divided pair of help stats on the right. Calm, reassuring wellness aesthetic. CTAs route through useNavigate. Use to explain the onboarding process for therapists, counselors, psychologists or wellness centers.",

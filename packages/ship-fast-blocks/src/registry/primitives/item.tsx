@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Item as UIItem,
   ItemActions,
@@ -13,7 +14,7 @@ import {
 
 // Compound primitive: a list row with optional leading media, title/description,
 // and trailing actions. variant/size/media-variant enums mirror cva exactly.
-export const Item = defineComponent({
+export const Item = defineCapsule({
   name: 'Item',
   description:
     'List row with title, optional description, optional leading media slot and trailing actions slot. variant default|outline|muted, size default|sm.',
@@ -50,7 +51,7 @@ export const Item = defineComponent({
 })
 
 // Compound primitive: a vertical list of Items (children) with optional separators.
-export const ItemList = defineComponent({
+export const ItemList = defineCapsule({
   name: 'ItemList',
   description:
     'Vertical list grouping several Item rows (children). Set separated for dividers between rows.',

@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * networks, curated communities or coworking/clubhouse memberships. Renders fully
  * with no props.
  */
-export const MembershipClubBenefits = defineComponent({
+export const MembershipClubBenefits = defineCapsule({
   name: 'MembershipClubBenefits',
   description:
     '6-up member-benefits grid for a private membership club / exclusive community page: a centered eyebrow + thin heading + supporting line above a responsive 3-column grid of rounded bordered cards, each with a muted rounded icon tile (introductions, clubhouses, events, retreats, library, community), a medium title and a relaxed description. Use to explain what a membership includes for members clubs, founders/social clubs, professional networks, curated communities or coworking/clubhouse memberships.',

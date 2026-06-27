@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * humanitarian pages. Renders fully with no props via baked-in "Roots of Hope"
  * defaults.
  */
-export const NonprofitTestimonials = defineComponent({
+export const NonprofitTestimonials = defineCapsule({
   name: 'NonprofitTestimonials',
   description:
     "Impact-stories wall for a nonprofit / charity / NGO page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid where each card renders a heartfelt quote, an avatar, and an attribution line pairing a name with the person's relationship to the cause (beneficiary, donor, volunteer). The public `stories` prop maps to the composite items. Use for social proof and emotional resonance on nonprofit, foundation, or humanitarian pages.",

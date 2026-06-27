@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
+import { dashboardLakebed } from './dashboard-lakebed.ts'
 
 /**
  * DashboardKpis — a 4-up KPI stat-card row for a SaaS admin dashboard. A
@@ -14,10 +16,10 @@ import { cn } from '#/lib/utils.ts'
  * revenue, orders, customers, average order value. Renders fully with no props
  * via four baked-in default KPIs.
  */
-export const DashboardKpis = defineComponent({
+export const DashboardKpis = defineCapsule({
   name: 'DashboardKpis',
   description:
-    'A 4-up KPI stat-card row for a SaaS admin dashboard: a responsive 1/2/4-column grid of bordered card tiles, each pairing a label, a large bold value and an up/down trend badge (green chart styling for up, destructive for down, with a directional arrow + optional caption) on the left, and a tone-tinted colored icon tile on the right. Tones rotate across the data-viz tokens (primary / orange / sky / violet / emerald). Tokens-only, no links. Use as the headline-metric summary row at the top of a dashboard — revenue, orders, customers, average order value.',
+    'A 4-up KPI stat-card row for a SaaS admin dashboard: a responsive 1/2/4-column grid of bordered card tiles, each pairing a label, a large bold value and an up/down trend badge (green chart styling for up, destructive for down, with a directional arrow + optional caption) on the left, and a tone-tinted colored icon tile on the right. The Orders KPI reads shared Lakebed dashboard order state so generated admin counters react to mutations. Tones rotate across the data-viz tokens (primary / orange / sky / violet / emerald). Tokens-only, no links. Use as the headline-metric summary row at the top of a dashboard — revenue, orders, customers, average order value.',
   props: z.object({
     /** KPI stat cards. `tone` colors the icon tile; `trendUp` true = green up trend, false = red down trend. */
     kpis: z
@@ -36,8 +38,11 @@ export const DashboardKpis = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const kpis = props.kpis?.length
+  lakebed: dashboardLakebed,
+  component: ({ props, lakebed }) => {
+    const orderSummary = lakebed.useQuery('orderSummary')
+    const liveOrderCount = String(orderSummary?.count ?? 0)
+    const baseKpis = props.kpis?.length
       ? props.kpis
       : [
           {
@@ -73,6 +78,11 @@ export const DashboardKpis = defineComponent({
             tone: 'violet' as const,
           },
         ]
+    const kpis = baseKpis.map((kpi) =>
+      kpi.label.toLowerCase().includes('order')
+        ? { ...kpi, value: liveOrderCount }
+        : kpi,
+    )
 
     // ── KPI icon tints (data-viz tokens for a multi-color decorative set). ──
     const kpiTones: Record<string, string> = {
@@ -131,6 +141,7 @@ export const DashboardKpis = defineComponent({
           return (
             <div
               key={kpi.label}
+              aria-label={`${kpi.label}: ${kpi.value}`}
               className="rounded-xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_4px_10px_-4px_rgba(0,0,0,0.04)]"
             >
               <div className="flex items-start justify-between">

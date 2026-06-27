@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
-export const AeoFaqSection = defineComponent({
+export const AeoFaqSection = defineCapsule({
   name: 'AeoFaqSection',
   description:
     'An AEO-friendly FAQ section with semantic headings and expandable Q&A items for buyer questions. Use on home, pricing, or dedicated FAQ pages.',

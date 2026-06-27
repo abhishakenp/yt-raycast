@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * service menu for wedding/event planners, gala organizers, or premium
  * hospitality services.
  */
-export const EventPlannerServices = defineComponent({
+export const EventPlannerServices = defineCapsule({
   name: 'EventPlannerServices',
   description:
     "Airy services grid for an event-planning agency: a centered intro block (uppercase eyebrow, thin light heading, supporting lede) above a responsive 2-up/3-up grid of service cards, each with a rounded 4:3 photo that scales gently on hover, a medium-weight title, a relaxed description, and a muted 'starting at' price line. All imagery is alt-driven. Use to present the service menu (wedding planning, corporate events, private celebrations, galas, destination events, day-of coordination) for wedding/event planners, gala organizers, or premium hospitality services.",

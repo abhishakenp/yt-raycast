@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * profiles, or any individual's professional landing page. Renders fully with
  * no props via baked-in "Jordan Avery" defaults.
  */
-export const ResumeCvHero = defineComponent({
+export const ResumeCvHero = defineCapsule({
   name: 'ResumeCvHero',
   description:
     "Clean two-column opening hero for a personal resume / CV / portfolio site: the left column stacks an availability eyebrow, the person's name in a large sans headline, their role / title, a short pitch paragraph, and dual CTAs (filled 'Download CV' + outlined 'Contact'); the right column holds a rounded professional headshot photo. Token surfaces, crisp spacing, minimal professional feel. Both CTAs route through useNavigate. Use as the opening hero for personal portfolios, online résumés, designer or developer profiles, or any individual's professional landing page.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * Cannes / AICP / Sundance credits) for filmmakers, directors, DPs, or
  * production houses.
  */
-export const FilmDirectorStats = defineComponent({
+export const FilmDirectorStats = defineCapsule({
   name: 'FilmDirectorStats',
   description:
     'Muted stats + awards band for a film director or cinematographer: a subtle muted-band section with a 2/4-column grid of big thin metric numbers above small muted labels, then a bordered top divider leading into a 3-column row of award credits, each pairing a rounded secondary-tinted sparkle icon tile with an award name + detail line. Use as a credibility / achievements band (projects, awards, views, festival selections, Cannes / AICP / Sundance credits) for filmmakers, directors, DPs, or production houses.',

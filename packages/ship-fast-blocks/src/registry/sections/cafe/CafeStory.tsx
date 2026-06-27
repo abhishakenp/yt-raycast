@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * No links. Use to present a cafe's origin, values, or team story. Renders
  * fully with no props via baked-in "Little Owl Coffee" defaults.
  */
-export const CafeStory = defineComponent({
+export const CafeStory = defineCapsule({
   name: 'CafeStory',
   description:
     "Split founder / origin story section for a cozy cafe page: left side shows two vertically offset 3:4 photos in a 2-column grid; right side has an eyebrow cap, serif heading, multiple narrative paragraphs, and a founder attribution row with a round avatar, name, and role. No links. Use to present a cafe's origin, values, or team story.",

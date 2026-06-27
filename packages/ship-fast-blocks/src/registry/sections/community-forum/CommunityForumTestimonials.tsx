@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * Use as the social-proof / customer-voices section for community platforms, SaaS
  * products, or professional networks.
  */
-export const CommunityForumTestimonials = defineComponent({
+export const CommunityForumTestimonials = defineCapsule({
   name: 'CommunityForumTestimonials',
   description:
     'Star-rated testimonial grid for a community-platform / discussion-forum landing page: a centered heading and description above a responsive 3-column grid of bordered card tiles, each with a 5-star rating strip, a quote, and an attribution row with a round avatar (via Image) + name + role. No links. Use as the social-proof / customer-voices section for community platforms, SaaS products, or professional networks.',

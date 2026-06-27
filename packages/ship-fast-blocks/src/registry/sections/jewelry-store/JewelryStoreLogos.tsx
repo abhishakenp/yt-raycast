@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * via Vogue / Bazaar / Tatler-style press logos. Renders fully with no props
  * via baked-in defaults.
  */
-export const JewelryStoreLogos = defineComponent({
+export const JewelryStoreLogos = defineCapsule({
   name: 'JewelryStoreLogos',
   description:
     'Press / awards recognition strip for a luxury jewelry brand: a bordered band with a centered wide letter-spaced uppercase caption above a responsive grid of dimmed serif publication wordmarks (2 cols mobile, 4 tablet, 6 desktop; trailing items reveal only on large screens). Use directly below the hero to establish editorial credibility via Vogue / Bazaar / Tatler-style press logos for fine jewelers, diamond houses, or any premium luxury-retail brand.',

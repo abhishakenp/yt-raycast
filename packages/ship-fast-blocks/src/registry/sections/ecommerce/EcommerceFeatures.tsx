@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -83,7 +84,7 @@ const ShieldIcon = (
 
 const ICONS: ReactNode[] = [TruckIcon, ReturnIcon, SupportIcon, ShieldIcon]
 
-export const EcommerceFeatures = defineComponent({
+export const EcommerceFeatures = defineCapsule({
   name: 'EcommerceFeatures',
   description:
     "Clean 'why shop with us' benefits row for a modern online store built on the shared FeatureGrid composite: an optional centered heading + subheading above a responsive 4-column grid of benefit cards, each pairing a distinct inline SVG icon with a bold title and a short blurb. Defaults cover the four classic retail trust signals — free shipping, easy returns, 24/7 support, and secure payment. Use to reassure shoppers and reduce checkout hesitation on any general ecommerce or online store homepage.",

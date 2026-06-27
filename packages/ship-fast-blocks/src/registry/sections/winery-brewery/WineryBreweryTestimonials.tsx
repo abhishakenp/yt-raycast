@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * wineries, vineyards, cellar doors, breweries, taprooms, or cideries. Renders
  * fully with no props via baked defaults.
  */
-export const WineryBreweryTestimonials = defineComponent({
+export const WineryBreweryTestimonials = defineCapsule({
   name: 'WineryBreweryTestimonials',
   description:
     '3-up visitor-review wall for a winery or brewery page: a centered serif heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted review, and an attribution row pairing the visitor name with the review source (Google, Tripadvisor, Wine Club). Use for social-proof on wineries, vineyards, cellar doors, breweries, taprooms, or cideries.',

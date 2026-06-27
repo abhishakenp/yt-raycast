@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   NativeSelect as UINativeSelect,
   NativeSelectOption,
@@ -8,7 +9,7 @@ import {
 // Compound: flatten the native select + options into one node taking an array
 // of { value, label } items plus an optional placeholder.
 // size enum copied verbatim from shadcn source ("sm" | "default").
-export const NativeSelect = defineComponent({
+export const NativeSelect = defineCapsule({
   name: 'NativeSelect',
   description:
     'Native dropdown select. `items` is an array of { value, label }. Mirrors shadcn NativeSelect.',

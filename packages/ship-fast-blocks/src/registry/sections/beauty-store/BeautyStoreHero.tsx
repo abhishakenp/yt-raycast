@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * BeautyStoreHero — split editorial hero for a beauty / skincare / cosmetics
@@ -15,10 +23,11 @@ import { Image } from '#/lib/img.tsx'
  * Use as the opening hero for beauty stores, skincare shops, cosmetics brands,
  * clean beauty retailers, or premium personal-care DTC storefronts.
  */
-export const BeautyStoreHero = defineComponent({
+export const BeautyStoreHero = defineCapsule({
   name: 'BeautyStoreHero',
   description:
     'Split editorial hero for a beauty / skincare / cosmetics e-commerce storefront: a soft token-gradient background with a two-column layout. Left side has an eyebrow badge, large serif headline with one phrase in the primary accent, supporting paragraph, dual rounded CTAs (filled primary + outlined secondary), and a social-proof strip with overlapping customer avatars, star rating and rating count. Right side has a tall 4:5 product image with a floating cruelty-free badge. CTAs route through useNavigate. Use as the opening hero for beauty stores, skincare shops, cosmetics brands, or premium personal-care DTC storefronts.',
+  lakebed: commerceCartLakebed,
   props: z.object({
     /** Eyebrow / collection label above the headline. */
     eyebrow: z.string().optional(),
@@ -42,11 +51,15 @@ export const BeautyStoreHero = defineComponent({
     badgeTitle: z.string().optional(),
     /** Floating badge subtitle. */
     badgeSubtitle: z.string().optional(),
+    /** Shoppable hero product or bundle name. */
+    heroProductName: z.string().optional(),
+    /** Shoppable hero product or bundle price. */
+    heroProductPrice: z.string().optional(),
     /** Alt texts for the small overlapping customer avatars. */
     customerAlts: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'New Collection'
     const headingTop = props.headingTop ?? 'Radiant Beauty,'
@@ -63,6 +76,8 @@ export const BeautyStoreHero = defineComponent({
       'arrangement of luxury skincare products including serums creams and face oils on marble surface'
     const badgeTitle = props.badgeTitle ?? '100% Cruelty-Free'
     const badgeSubtitle = props.badgeSubtitle ?? 'Certified Clean Beauty'
+    const heroProductName = props.heroProductName ?? 'Clean Beauty Glow Set'
+    const heroProductPrice = props.heroProductPrice ?? '$58.00'
     const customerAlts = props.customerAlts?.length
       ? props.customerAlts
       : [
@@ -71,6 +86,14 @@ export const BeautyStoreHero = defineComponent({
           'woman with radiant healthy skin portrait',
           'beautiful woman with dewy makeup look',
         ]
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt,
+        label: heroProductName,
+        price: heroProductPrice,
+        subtitle: badgeSubtitle,
+      }),
+    ])
 
     const Star = ({ className }: { className?: string }) => (
       <svg
@@ -180,6 +203,18 @@ export const BeautyStoreHero = defineComponent({
                     <p className="text-sm text-muted-foreground">
                       {badgeSubtitle}
                     </p>
+                    <CommerceAddItemButton
+                      lakebed={lakebed}
+                      item={{
+                        label: heroProductName,
+                        price: heroProductPrice,
+                      }}
+                      aria-label={`Add ${heroProductName} to cart`}
+                      pendingChildren={<CommerceMutationSpinner />}
+                      className="mt-3 inline-flex items-center rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-card-foreground transition-colors hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70"
+                    >
+                      Add set · {heroProductPrice}
+                    </CommerceAddItemButton>
                   </div>
                 </div>
               </div>

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * consulting or professional-services pages. Renders fully with no props via
  * baked-in defaults.
  */
-export const LawFirmFaq = defineComponent({
+export const LawFirmFaq = defineCapsule({
   name: 'LawFirmFaq',
   description:
     'Centered-heading, single-column FAQ stack for a law firm: a tracked-uppercase eyebrow and serif heading above a vertical stack of bordered question/answer cards on the card surface, each pairing a serif question with a muted answer paragraph, on a constrained reading width. Refined, authoritative editorial aesthetic with sharp squared corners. Use to answer common fee, billing, engagement, jurisdiction and scope questions on law-firm, attorney, consulting, accounting or professional-services pages.',

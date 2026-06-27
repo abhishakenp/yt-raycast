@@ -1,23 +1,25 @@
-import { useState, type FormEvent } from 'react'
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
+import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
 /**
  * GovernmentPortalContact — classic Indian-government / public-sector (PSU)
  * "Contact us" band: Head Office + Plant Office address cards (address, phone,
  * email) beside a working grievance / enquiry form (name, email, subject,
- * message) kept in useState that calls an optional onSubmit callback, plus an
- * optional officials directory table (Name / Designation / Email). Gov-blue
- * panel headers (#3346B5), #640032 directory accents, #333 body. Use for the
+ * message) that writes a shared Lakebed inquiry record, plus an optional
+ * officials directory table (Name / Designation / Email). Gov-blue panel
+ * headers (#3346B5), #640032 directory accents, #333 body. Use for the
  * official Contact us, head-office, grievance or staff-directory section of any
  * classic government, civic, municipal, PSU, utility or public-sector portal.
  */
-export const GovernmentPortalContact = defineComponent({
+export const GovernmentPortalContact = defineCapsule({
   name: 'GovernmentPortalContact',
   description:
-    'Classic Indian-government / public-sector (PSU) Contact us band: Head Office + Plant Office address cards (address, phone, email) beside a working grievance / enquiry form (name, email, subject, message) in useState that calls an optional onSubmit callback, plus an optional officials directory table (Name / Designation / Email). Handles citizen grievances, tender / notice queries and general enquiries. Gov-blue #3346B5 panel headers, #640032 directory accents, #333 body. Use for the official Contact us, head-office, plant-office, grievance or staff-directory section of any classic government, civic, municipal, PSU, utility or public-sector portal.',
+    'Classic Indian-government / public-sector (PSU) Contact us band: Head Office + Plant Office address cards (address, phone, email) beside a working Lakebed grievance / enquiry form (name, email, subject, message) that writes a shared inquiry record, plus an optional officials directory table (Name / Designation / Email). Handles citizen grievances, tender / notice queries and general enquiries. Gov-blue #3346B5 panel headers, #640032 directory accents, #333 body. Use for the official Contact us, head-office, plant-office, grievance or staff-directory section of any classic government, civic, municipal, PSU, utility or public-sector portal.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -44,7 +46,8 @@ export const GovernmentPortalContact = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: inquiryLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Contact Us'
     const offices = props.offices?.length
       ? props.offices
@@ -84,23 +87,12 @@ export const GovernmentPortalContact = defineComponent({
           },
         ]
 
-    const [name, setName] = useState('')
-    const [email, setEmail] = useState('')
-    const [subject, setSubject] = useState('')
-    const [message, setMessage] = useState('')
-    const [sent, setSent] = useState(false)
-
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault()
-      // Self-contained: the live runtime wraps this section with the lakebed
-      // realtime HOC (withSectionRealtime), which is where a real grievance/
-      // enquiry submission persists. No JSON-incompatible callback props.
-      setSent(true)
-      setName('')
-      setEmail('')
-      setSubject('')
-      setMessage('')
-    }
+    const inquiry = useInquirySubmission({
+      lakebed,
+      source: 'Government portal grievance',
+      successMessage:
+        'Thank you — your enquiry has been received.',
+    })
 
     const fieldClass =
       'w-full rounded-sm border border-[#ccc] bg-white px-3 py-2 text-[14px] text-[#333] outline-none transition-colors focus:border-[#0792D0]'
@@ -169,7 +161,7 @@ export const GovernmentPortalContact = defineComponent({
               <h3 className="border-b border-[#dfdfdf] bg-[#f4f7fa] px-4 py-3 text-[16px] font-medium text-[#3346B5]">
                 Grievance / Enquiry
               </h3>
-              <form onSubmit={handleSubmit} className="space-y-4 p-5">
+              <form onSubmit={inquiry.submitForm} className="space-y-4 p-5">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label htmlFor="gov-contact-name" className={labelClass}>
@@ -177,10 +169,9 @@ export const GovernmentPortalContact = defineComponent({
                     </label>
                     <input
                       id="gov-contact-name"
+                      name="name"
                       type="text"
                       required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
                       placeholder="Name"
                       className={fieldClass}
                     />
@@ -191,10 +182,9 @@ export const GovernmentPortalContact = defineComponent({
                     </label>
                     <input
                       id="gov-contact-email"
+                      name="email"
                       type="email"
                       required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
                       placeholder="E-mail"
                       className={fieldClass}
                     />
@@ -206,9 +196,8 @@ export const GovernmentPortalContact = defineComponent({
                   </label>
                   <input
                     id="gov-contact-subject"
+                    name="subject"
                     type="text"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
                     placeholder="Subject"
                     className={fieldClass}
                   />
@@ -219,9 +208,8 @@ export const GovernmentPortalContact = defineComponent({
                   </label>
                   <textarea
                     id="gov-contact-message"
+                    name="message"
                     required
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
                     placeholder="Message"
                     className={cn(fieldClass, 'min-h-28 resize-y')}
                   />
@@ -229,18 +217,18 @@ export const GovernmentPortalContact = defineComponent({
                 <div className="flex items-center gap-3">
                   <button
                     type="submit"
-                    className="rounded-sm bg-[#3346B5] px-6 py-2 text-[14px] font-medium text-white transition-colors hover:bg-[#2a3a99]"
+                    aria-busy={inquiry.isPending}
+                    disabled={inquiry.isPending}
+                    className="rounded-sm bg-[#3346B5] px-6 py-2 text-[14px] font-medium text-white transition-colors hover:bg-[#2a3a99] disabled:pointer-events-none disabled:opacity-70"
                   >
-                    Submit
+                    {inquiry.isPending ? 'Sending' : 'Submit'}
                   </button>
-                  {sent ? (
-                    <span
-                      className="text-[13px] text-[#1a7a3a]"
-                      aria-live="polite"
-                    >
-                      Thank you — your enquiry has been received.
-                    </span>
-                  ) : null}
+                  <span
+                    className="text-[13px] text-[#1a7a3a]"
+                    aria-live="polite"
+                  >
+                    {inquiry.statusText}
+                  </span>
                 </div>
               </form>
             </section>

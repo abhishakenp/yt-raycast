@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -15,7 +16,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * collectives or paid community subscriptions. Renders fully with no props via
  * baked-in "The Guild" defaults.
  */
-export const MembershipClubNavbar = defineComponent({
+export const MembershipClubNavbar = defineCapsule({
   name: 'MembershipClubNavbar',
   description:
     "Sticky translucent top navigation bar for a private membership club / exclusive community site: backdrop-blurred, border-bottomed header pinned to the top with a thin concentric 'compass' club mark + light-weight club name on the left, horizontal nav links centered on desktop, and a solid rounded-pill primary 'Apply Now' CTA on the right. Nav items and CTA route through useNavigate for page switching. Use as the calm, refined, quietly premium site header for members clubs, founders/social clubs, professional networks, curated communities, alumni collectives, coworking/clubhouse memberships or paid community subscriptions.",

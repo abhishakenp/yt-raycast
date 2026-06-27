@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * build trust with real customer voices on plumber, HVAC, or other
  * home-service landing pages. Renders fully with no props via baked-in defaults.
  */
-export const PlumbingHvacTestimonials = defineComponent({
+export const PlumbingHvacTestimonials = defineCapsule({
   name: 'PlumbingHvacTestimonials',
   description:
     "A social-proof band for a plumbing & HVAC trade site built on the shared TestimonialGrid composite: a centered heading + optional intro above a responsive grid of review cards, each showing a star rating, a customer quote, and an avatar footer with the person's name and role/source (e.g. 'Homeowner · Google Review'). Use to build trust with real customer voices on plumber, HVAC, or other home-service landing pages.",

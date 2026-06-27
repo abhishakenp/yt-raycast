@@ -1,11 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
  * CleaningServiceFaq — a 7-item FAQ accordion for a home-cleaning / maid-service landing page. A muted-band background with a centered heading + lead paragraph above a stacked list of native HTML `details/summary` accordion items; each item animates open with a chevron rotation and reveals a paragraph answer beneath. No links, no images — pure informational disclosure. Use for FAQ / help / expectations sections for residential cleaning companies, maid services, housekeeping platforms, or any local home-service brand. Renders fully with no props via seven baked-in default questions.
  */
-export const CleaningServiceFaq = defineComponent({
+export const CleaningServiceFaq = defineCapsule({
   name: 'CleaningServiceFaq',
   description:
     'A 7-item FAQ accordion for a home-cleaning / maid-service landing page: muted-band background with centered heading + lead above a stacked list of native HTML details/summary accordion items. Each item animates open with a chevron rotation and reveals a paragraph answer beneath. No links, no images — pure informational disclosure. Use for FAQ / help / expectations sections for residential cleaning, maid services, housekeeping, or local home-service brands.',

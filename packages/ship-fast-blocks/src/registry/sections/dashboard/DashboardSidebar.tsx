@@ -1,9 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { useState, type ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { dashboardLakebed } from './dashboard-lakebed.ts'
 
 /**
  * DashboardSidebar — a fixed left navigation rail for a SaaS admin dashboard. A
@@ -12,15 +14,15 @@ import { Image } from '#/lib/img.tsx'
  * tile + product name at top, a primary line-icon nav group with an active state
  * and a count badge on the Orders item, a "Support" sub-group below it, and a
  * bottom user footer (avatar, name, email, sign-out). Every nav item, the brand
- * and the sign-out route through useNavigate so labels can drive page-switching.
+ * through useNavigate and the footer account button uses Shoo/Lakebed auth.
  * Use as the persistent left rail for an authenticated admin area, back office,
  * analytics console, CRM or internal SaaS tool. Renders fully with no props via
  * baked-in "Orbit" defaults.
  */
-export const DashboardSidebar = defineComponent({
+export const DashboardSidebar = defineCapsule({
   name: 'DashboardSidebar',
   description:
-    "A fixed left navigation rail for a SaaS admin dashboard: a full-height bordered card column (hidden below md, with a slide-in mobile drawer + scrim toggled by an exposed hamburger button) holding an indigo brand tile + product name, a primary line-icon nav group with an active state and a count badge on the Orders item, a 'Support' sub-group, and a bottom user footer (avatar, name, email, sign-out). Every nav item, the brand and sign-out route through useNavigate for page-switching. Use as the persistent left rail for an authenticated admin area, back office, analytics console, CRM or internal SaaS tool.",
+    "A fixed left navigation rail for a SaaS admin dashboard: a full-height bordered card column (hidden below md, with a slide-in mobile drawer + scrim toggled by an exposed hamburger button) holding an indigo brand tile + product name, a primary line-icon nav group with an active state and a count badge on the Orders item, a 'Support' sub-group, and a bottom user footer wired to Shoo/Lakebed auth. Nav items and the brand route through useNavigate for page-switching. Use as the persistent left rail for an authenticated admin area, back office, analytics console, CRM or internal SaaS tool.",
   props: z.object({
     /** Brand / product name shown at the top of the sidebar. */
     brand: z.string().optional(),
@@ -46,8 +48,10 @@ export const DashboardSidebar = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: dashboardLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const auth = lakebed.useAuth()
     const brand = props.brand ?? 'Orbit'
     const nav = props.nav?.length
       ? props.nav
@@ -66,14 +70,31 @@ export const DashboardSidebar = defineComponent({
     const supportNav = nav.slice(primaryCount)
     const supportLabel = props.supportLabel ?? 'Support'
     const badgeLabel = props.badgeLabel ?? 'Orders'
-    const badgeCount = props.badgeCount ?? '24'
-    const signOutTarget = props.signOutTarget ?? 'Logout'
-
-    const userName = props.user?.name ?? 'Alex Morgan'
-    const userEmail = props.user?.email ?? 'alex@orbit.dev'
+    const orderSummary = lakebed.useQuery('orderSummary')
+    const badgeCount =
+      props.badgeCount ??
+      (badgeLabel.toLowerCase() === 'orders'
+        ? String(orderSummary?.count ?? 0)
+        : '')
+    const authUser = auth.user
+    const isSignedIn = auth.isAuthenticated && !authUser?.isGuest
+    const userName = isSignedIn
+      ? (authUser?.displayName ?? authUser?.email ?? 'Account')
+      : (props.user?.name ?? 'Alex Morgan')
+    const userEmail = isSignedIn
+      ? (authUser?.email ?? 'Signed in')
+      : (props.user?.email ?? 'alex@orbit.dev')
     const userAvatarAlt =
       props.user?.avatarAlt ??
       `portrait headshot of ${userName}, friendly professional`
+    const runAuthAction = () => {
+      if (isSignedIn) {
+        lakebed.signOut()
+        return
+      }
+
+      void lakebed.signInWithGoogle()
+    }
 
     const [activeNav, setActiveNav] = useState(nav[0])
     const [mobileNavOpen, setMobileNavOpen] = useState(false)
@@ -167,9 +188,11 @@ export const DashboardSidebar = defineComponent({
 
     const NavButton = ({ label }: { label: string }) => {
       const active = activeNav === label
+      const badgeText = label === badgeLabel && badgeCount ? badgeCount : ''
       return (
         <button
           type="button"
+          aria-label={badgeText ? `${label} ${badgeText}` : label}
           onClick={() => {
             setActiveNav(label)
             setMobileNavOpen(false)
@@ -196,9 +219,9 @@ export const DashboardSidebar = defineComponent({
             {navIcon(label)}
           </svg>
           {label}
-          {label === badgeLabel ? (
+          {badgeText ? (
             <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-              {badgeCount}
+              {badgeText}
             </span>
           ) : null}
         </button>
@@ -255,8 +278,8 @@ export const DashboardSidebar = defineComponent({
             </div>
             <button
               type="button"
-              aria-label="Sign out"
-              onClick={() => go(signOutTarget)}
+              aria-label={isSignedIn ? 'Sign out' : 'Sign in with Shoo'}
+              onClick={runAuthAction}
               className="ml-auto text-muted-foreground transition-colors hover:text-foreground"
             >
               <svg

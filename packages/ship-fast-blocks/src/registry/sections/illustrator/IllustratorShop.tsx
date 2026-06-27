@@ -1,8 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useCommerceFilteredProducts,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * IllustratorShop — an art-print shop section for an illustrator / visual-artist
@@ -10,14 +19,15 @@ import { Image } from '#/lib/img.tsx'
  * sit above a responsive 4-up grid of product cards; each card has a square
  * product image that zooms on hover, a serif title, a small meta line, and a
  * price beside a pill "add to cart" button, with a centered outlined
- * "visit full shop" CTA beneath. Every add-to-cart and the shop CTA route
- * through useNavigate. Use to sell limited-edition prints, greeting cards, and
+ * "visit full shop" CTA beneath. Add-to-cart writes to the shared commerce
+ * Lakebed cart/catalog while the shop CTA routes through useNavigate. Use to sell limited-edition prints, greeting cards, and
  * illustrated goods. Renders fully with no props via baked-in defaults.
  */
-export const IllustratorShop = defineComponent({
+export const IllustratorShop = defineCapsule({
   name: 'IllustratorShop',
   description:
-    "Art-print shop section for an illustrator / visual-artist portfolio: a centered uppercase accent eyebrow + serif heading + paragraph above a responsive 4-up grid of product cards, each with a square product image that zooms on hover, a serif title, small meta line, and a price beside a pill 'add to cart' button, plus a centered outlined 'visit full shop' CTA beneath. Add-to-cart and the shop CTA route through useNavigate. Use to sell limited-edition prints, greeting cards, and illustrated goods.",
+    "Art-print shop section for an illustrator / visual-artist portfolio: a centered uppercase accent eyebrow + serif heading + paragraph above a responsive 4-up grid of product cards, each with a square product image that zooms on hover, a serif title, small meta line, and a price beside a pill 'add to cart' button, plus a centered outlined 'visit full shop' CTA beneath. Add-to-cart writes to the shared commerce Lakebed cart/catalog while the shop CTA routes through useNavigate. Use to sell limited-edition prints, greeting cards, and illustrated goods.",
+  lakebed: commerceCartLakebed,
   props: z.object({
     /** Uppercase accent eyebrow label. */
     eyebrow: z.string().optional(),
@@ -41,7 +51,7 @@ export const IllustratorShop = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Art Shop'
     const heading = props.heading ?? 'Prints & Products'
@@ -74,6 +84,22 @@ export const IllustratorShop = defineComponent({
             price: '$24',
           },
         ]
+    useSyncCommerceCatalog(
+      lakebed,
+      items.map((item) =>
+        commerceProduct({
+          imageAlt: item.title,
+          label: item.title,
+          price: item.price,
+          subtitle: item.meta,
+        }),
+      ),
+    )
+    const visibleItems = useCommerceFilteredProducts(lakebed, items, (item) => [
+      item.title,
+      item.meta,
+      item.price,
+    ])
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -110,7 +136,7 @@ export const IllustratorShop = defineComponent({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {items.map((item) => (
+            {visibleItems.map((item) => (
               <article
                 key={item.title}
                 className="group overflow-hidden rounded-lg border border-border/60 bg-card transition-shadow hover:shadow-lg"
@@ -135,13 +161,23 @@ export const IllustratorShop = defineComponent({
                     <span className="font-medium text-card-foreground">
                       {item.price}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => go(addToCart)}
-                      className="rounded-full bg-foreground px-4 py-2 text-sm text-background transition-colors hover:bg-muted-foreground"
+                    <CommerceAddItemButton
+                      lakebed={lakebed}
+                      item={{
+                        label: item.title,
+                        price: item.price,
+                      }}
+                      aria-label={`${addToCart} ${item.title}`}
+                      pendingChildren={
+                        <>
+                          <CommerceMutationSpinner />
+                          Adding
+                        </>
+                      }
+                      className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm text-background transition-colors hover:bg-muted-foreground disabled:pointer-events-none disabled:opacity-70"
                     >
                       {addToCart}
-                    </button>
+                    </CommerceAddItemButton>
                   </div>
                 </div>
               </article>

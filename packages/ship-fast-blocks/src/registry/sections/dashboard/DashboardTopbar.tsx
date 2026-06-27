@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * back office, analytics console or internal SaaS tool, paired above the main
  * content column. Renders fully with no props via baked-in "Orbit" defaults.
  */
-export const DashboardTopbar = defineComponent({
+export const DashboardTopbar = defineCapsule({
   name: 'DashboardTopbar',
   description:
     'A sticky top app-bar for a SaaS admin dashboard: a bordered card header bar with a left search field (leading magnifier icon), and on the right a notification bell (with an unread dot), a mail button, a divider and a user chip (avatar + name + role). The bell, mail and user chip route through useNavigate. Use as the top bar of an authenticated admin area, back office, analytics console or internal SaaS tool, paired above the main content column.',

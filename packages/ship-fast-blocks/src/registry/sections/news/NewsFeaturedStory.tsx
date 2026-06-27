@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -17,7 +18,7 @@ import { Image } from '#/lib/img.tsx'
  * featured big-story band of a newspaper, magazine or publication homepage.
  * Renders fully with no props via baked-in defaults.
  */
-export const NewsFeaturedStory = defineComponent({
+export const NewsFeaturedStory = defineCapsule({
   name: 'NewsFeaturedStory',
   description:
     'Featured big lead story band for a news / editorial outlet on a card surface: a top breaking-news banner (uppercase badge + clickable headline + timestamp), then a 12-column grid anchored by one large lead article on the left (wide photo with overlaid tag, big headline, excerpt and author/date/read-time byline) and a stacked rail of secondary headlines on the right (each with a rotating-accent category label, headline, excerpt, timestamp and small square thumbnail, divided by rules). Stories and the breaking headline route through useNavigate. Use directly below the masthead as the lead/featured big-story band of a newspaper, magazine or publication homepage.',

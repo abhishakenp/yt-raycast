@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * "let's work together" band before the footer. Renders fully with no props via
  * baked-in defaults.
  */
-export const IllustratorContactCta = defineComponent({
+export const IllustratorContactCta = defineCapsule({
   name: 'IllustratorContactCta',
   description:
     "Centered closing contact call-to-action for an illustrator / visual-artist portfolio: a large serif heading and supporting paragraph above dual CTAs (a filled primary email button with a mail icon + an outlined secondary action) and a centered row of text social links, all routing through useNavigate. Use as the final 'let's work together' band before the footer.",

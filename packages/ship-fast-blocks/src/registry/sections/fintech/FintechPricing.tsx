@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
@@ -11,7 +12,7 @@ import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
  * layout-only, so this capsule supplies the section wrapper and container
  * padding. Renders fully with no props via baked-in "Vault" defaults.
  */
-export const FintechPricing = defineComponent({
+export const FintechPricing = defineCapsule({
   name: 'FintechPricing',
   description:
     'Three-tier pricing section for a fintech / neobank landing page: a padded section wrapping the shared PricingGrid composite with a heading and three plans (free Personal, highlighted Plus, and Business), each with a feature list and a routable CTA. The capsule supplies the section wrapper and container padding around the layout-only grid.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * section of a doctors' office, primary-care practice or telehealth clinic.
  * Renders fully with no props via baked-in clinic-FAQ defaults.
  */
-export const HealthcareFaq = defineComponent({
+export const HealthcareFaq = defineCapsule({
   name: 'HealthcareFaq',
   description:
     "Accordion FAQ for a medical-clinic page: a narrow centered column with an eyebrow chip, heading and intro above a stack of native <details> accordions, each muted-surface row with a question summary, a chevron that rotates when open, and a revealed answer paragraph. Tokens-only, no links, no JS state. Use for a frequently-asked-questions / patient-info section of a doctors' office, primary-care practice or telehealth clinic.",

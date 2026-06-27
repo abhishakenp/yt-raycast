@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * networks, mastermind groups or paid community subscriptions. Renders fully with
  * no props.
  */
-export const MembershipClubPricing = defineComponent({
+export const MembershipClubPricing = defineCapsule({
   name: 'MembershipClubPricing',
   description:
     "3-tier membership pricing block for a private membership club / exclusive community page: a centered eyebrow + thin heading + supporting line above a responsive 3-column grid of rounded bordered tier cards (name, blurb, large light price + period, annual savings note, a checkmark feature list and an Apply CTA); the highlighted 'Most Popular' tier inverts to the primary surface with a floating badge, and a centered footnote sits below. CTAs route through useNavigate. Use for membership levels / plans for members clubs, professional networks, mastermind groups or paid community subscriptions.",

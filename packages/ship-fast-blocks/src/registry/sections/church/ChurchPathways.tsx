@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * flow for churches, ministries, or community organizations. Renders fully with no
  * props via baked-in defaults.
  */
-export const ChurchPathways = defineComponent({
+export const ChurchPathways = defineCapsule({
   name: 'ChurchPathways',
   description:
     '3-up next-step pathways grid for a church or faith-community site: heading + description on the left, then a responsive grid of photo-card articles with image, title, description, and a text CTA with arrow. Each image lazily loads and subtly scales on hover. CTAs route through useNavigate. Use for small-groups, kids/youth, serve-together, or any multi-pathway onboarding flow for churches, ministries, or community organizations.',

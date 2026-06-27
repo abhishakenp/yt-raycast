@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
  * travel-experience landing pages. Renders fully with no props via baked-in
  * defaults.
  */
-export const TourExperiencesPricing = defineComponent({
+export const TourExperiencesPricing = defineCapsule({
   name: 'TourExperiencesPricing',
   description:
     "Tour-package pricing for an adventure / guided-tour brand. Composes the shared PricingGrid composite as three per-person packages (Half-Day Escape, Full-Day Expedition, Multi-Day Expedition) each with a price, '/ person' period, an inclusions list, and a 'Book Now' CTA routed via the shared navigation. The Full-Day tier is highlighted as the most popular pick. Use to present bookable tour tiers on tour-operator, expedition, and travel-experience landing pages.",

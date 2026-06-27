@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
  * through useNavigate. Use to present collections for photographers, studios,
  * and elopement shooters. Renders fully with no props via baked-in defaults.
  */
-export const PhotographyPricing = defineComponent({
+export const PhotographyPricing = defineCapsule({
   name: 'PhotographyPricing',
   description:
     "Session-package pricing for a fine-art / wedding photographer site built on the shared PricingGrid composite: a centered serif header above three responsive tier cards (portrait, full-day wedding, destination), each with a price, a coverage period line, an inclusions list, and a routable 'Book a Shoot' CTA, with the middle wedding tier highlighted by a 'Most popular' pill. Each CTA routes through useNavigate. Use to present collections and session packages for photographers, studios, and elopement shooters.",

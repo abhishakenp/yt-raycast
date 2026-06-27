@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import type { ReactNode } from 'react'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -105,7 +106,7 @@ const IconBot = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const AuthFeatures = defineComponent({
+export const AuthFeatures = defineCapsule({
   name: 'AuthFeatures',
   description:
     "Capability grid for a developer-auth product built on the shared FeatureGrid composite: a centered heading ('Everything you need to ship auth') above a 3-column responsive grid of feature cards, each with a token line-icon, title, and description. Baked defaults cover the core auth surface — SSO / SAML, MFA & 2FA, passwordless (magic links + passkeys), a user-management dashboard, social login (OAuth), and bot & fraud protection. Use to explain an auth platform, identity API, or login SDK.",

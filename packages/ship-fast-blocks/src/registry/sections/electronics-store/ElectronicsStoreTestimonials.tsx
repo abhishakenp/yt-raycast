@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * Use for social proof on electronics stores, gadget shops, consumer-tech
  * retailers, or audio/camera storefronts.
  */
-export const ElectronicsStoreTestimonials = defineComponent({
+export const ElectronicsStoreTestimonials = defineCapsule({
   name: 'ElectronicsStoreTestimonials',
   description:
     "3-up verified-buyer testimonials row for an electronics storefront: a centered heading above muted rounded cards, each with a 5-star rating, a quoted review, and a footer pairing a round customer avatar with the name and a verified-buyer meta line (e.g. 'Verified Buyer • 3 orders'). Avatars are alt-driven images. Use for social proof on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.",

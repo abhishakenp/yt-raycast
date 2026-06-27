@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import type { ReactNode } from 'react'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
@@ -82,7 +83,7 @@ const CancelIcon = (
   </svg>
 )
 
-export const SubscriptionBoxFeatures = defineComponent({
+export const SubscriptionBoxFeatures = defineCapsule({
   name: 'SubscriptionBoxFeatures',
   description:
     "Feature band for a subscription-box brand built on the shared FeatureGrid composite: a padded section wrapping a 4-up grid of value-prop cards (what's inside, flexible plans, free shipping, cancel anytime), each with an inline outline icon, title, and description. Use to sell the membership perks on any curated-box or recurring-delivery page.",

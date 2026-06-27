@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * useNavigate. Use to showcase a back-catalog for newsletters, publications,
  * blogs, or content creators. Renders fully with no props via baked-in defaults.
  */
-export const NewsletterIssues = defineComponent({
+export const NewsletterIssues = defineCapsule({
   name: 'NewsletterIssues',
   description:
     "Recent-issues archive grid for an editorial newsletter: a centered serif heading + lede over a 1/2/3-column grid of bordered article cards, each with a 16:10 cover photo that zooms on hover, an issue-number-and-date meta line, a serif title, a short blurb, and a 'Read issue' link with a trailing arrow; a centered outlined 'View all' button closes the section. Warm, calm, literary mood on a paper-toned surface. Covers use the alt-driven Image component; titles, read links, and the view-all button route through useNavigate. Use to showcase a back-catalog for newsletters, publications, blogs, or content creators.",

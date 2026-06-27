@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const MicWaveMark = ({ className }: { className?: string }) => (
@@ -23,7 +24,7 @@ const MicWaveMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const PodcastNavbar = defineComponent({
+export const PodcastNavbar = defineCapsule({
   name: 'PodcastNavbar',
   description:
     "Sticky podcast site header built on SiteNav: a 'Signal & Static' wordmark paired with a mic/soundwave mark, a centered desktop nav, a Subscribe CTA, and a mobile drawer. Designed for podcasts and audio shows that want a warm, on-air feel at the top of every page. Renders fully with no props via baked defaults and passes className through for layout control.",

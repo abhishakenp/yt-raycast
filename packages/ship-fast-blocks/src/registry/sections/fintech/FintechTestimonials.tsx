@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
@@ -11,7 +12,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * wrapper and container padding. Renders fully with no props via baked-in
  * "Vault" defaults.
  */
-export const FintechTestimonials = defineComponent({
+export const FintechTestimonials = defineCapsule({
   name: 'FintechTestimonials',
   description:
     'Social-proof section for a fintech / neobank landing page: a padded section wrapping the shared TestimonialGrid composite with a heading and three customer quotes, each with a star rating, name, and role/company. The capsule supplies the section wrapper and container padding around the layout-only grid.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use as the closing footer for CRM, sales-pipeline or B2B SaaS
  * products. Renders fully with no props.
  */
-export const CrmFooter = defineComponent({
+export const CrmFooter = defineCapsule({
   name: 'CrmFooter',
   description:
     'Comprehensive 5-column site footer for a CRM / SaaS landing page: a bordered-top band with a wide brand block (bar-chart glyph + name, a short descriptor and a row of round social icon buttons) beside several link columns, plus an auto-updating copyright line and a row of legal links along a divided bottom bar. The brand mark, social icons and every link route through useNavigate. Use as the closing footer for CRM, sales-pipeline or B2B SaaS products.',

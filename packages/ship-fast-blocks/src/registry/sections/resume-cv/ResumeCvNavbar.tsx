@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { SiteNav } from '#/section-kit/SiteNav.tsx'
  * landing page. Renders fully with no props via baked-in "Jordan Avery"
  * defaults.
  */
-export const ResumeCvNavbar = defineComponent({
+export const ResumeCvNavbar = defineCapsule({
   name: 'ResumeCvNavbar',
   description:
     "Sticky personal resume / CV / portfolio site header built on the shared SiteNav composite: a clean sans wordmark of the person's name beside an initials monogram in a token circle, centered desktop nav links (About, Experience, Skills, Projects), a 'Contact Me' pill CTA routing to the contact section, and a real mobile drawer. Use as the header for personal portfolios, online résumés, designer or developer profiles, or any individual's professional landing page.",

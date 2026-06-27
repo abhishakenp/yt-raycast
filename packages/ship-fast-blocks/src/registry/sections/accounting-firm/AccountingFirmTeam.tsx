@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * Use to introduce partners on accounting firms, CPA practices, tax/bookkeeping
  * providers, audit firms, or advisory practices. Renders fully with no props.
  */
-export const AccountingFirmTeam = defineComponent({
+export const AccountingFirmTeam = defineCapsule({
   name: 'AccountingFirmTeam',
   description:
     'Leadership team grid for a CPA / accounting-firm site: a muted band with a centered heading + lede above a responsive 1-to-4 column grid of bordered cards, each with a square headshot, name, role, and short bio, plus a centered footnote with an arrow-linked meet-the-full-team action. Calm professional-services look; headshots use the alt-driven Image component and the footnote action routes through useNavigate. Use to introduce partners on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or advisory practices.',

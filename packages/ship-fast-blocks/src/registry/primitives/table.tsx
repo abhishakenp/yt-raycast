@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Table as UITable,
   TableBody,
@@ -25,7 +26,7 @@ const sampleRows: Array<Record<string, string>> = [
   { name: 'Invoice #1026', status: 'Unpaid', amount: '$350.00' },
 ]
 
-export const Table = defineComponent({
+export const Table = defineCapsule({
   name: 'Table',
   description:
     'Data table. `columns` define headers (key+label); each `rows` object maps column key -> cell text. Optional caption.',

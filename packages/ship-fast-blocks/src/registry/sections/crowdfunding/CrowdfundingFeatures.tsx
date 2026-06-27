@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * specs / benefits of a launching product, hardware/maker project, or any
  * campaign where concrete feature bullets build buyer confidence.
  */
-export const CrowdfundingFeatures = defineComponent({
+export const CrowdfundingFeatures = defineCapsule({
   name: 'CrowdfundingFeatures',
   description:
     'A 6-up product FEATURES grid for a crowdfunding / campaign landing page on a card surface: a centered uppercase eyebrow + heading above a responsive 1/2/3-column grid of muted feature cards, each with a rounded primary-tinted icon tile (rotating through a set of outline glyphs), a bold title, and a muted description. Use to spell out the product specs / benefits of a launching product, hardware/maker project, or any campaign where concrete feature bullets build buyer confidence.',

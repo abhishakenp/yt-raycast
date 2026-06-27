@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * top-of-page hero for insurance carriers, insurtech, brokers, or financial-
  * protection products. Renders fully with no props via baked-in defaults.
  */
-export const InsuranceHero = defineComponent({
+export const InsuranceHero = defineCapsule({
   name: 'InsuranceHero',
   description:
     'Two-column hero band for an insurance / fintech landing page on a soft muted canvas: a left column with a star rating pill, a bold headline with one brand-accent highlighted word, a lede paragraph, dual CTAs (solid primary + outline secondary with a play icon), and an inline trust checklist; a right column with a tilted gradient panel behind a rounded family photo plus a floating social-proof card (overlapping customer avatars, happy-customer count, star rating). Links route through useNavigate; imagery is alt-driven Image. Use as the top-of-page hero for insurance carriers, insurtech startups, brokers, or financial-protection products.',

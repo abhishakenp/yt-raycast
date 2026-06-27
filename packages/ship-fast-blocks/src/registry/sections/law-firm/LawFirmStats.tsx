@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * credentials (attorneys, years in practice, transactions closed, success rate).
  * Renders fully with no props via baked-in defaults.
  */
-export const LawFirmStats = defineComponent({
+export const LawFirmStats = defineCapsule({
   name: 'LawFirmStats',
   description:
     'Dark full-width stats band on the primary surface: a responsive 2-up / 4-up row of credential metrics, each a large serif value above a tracked-uppercase muted label. High-contrast, restrained, authoritative editorial aesthetic. Use between content sections on law-firm, attorney, consulting, accounting or professional-services pages to surface firm credentials such as number of attorneys, years in practice, transactions closed and success rate.',

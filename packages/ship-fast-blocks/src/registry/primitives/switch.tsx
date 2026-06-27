@@ -1,11 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Switch as UISwitch } from '#/components/ui/switch.tsx'
 import { Label as UILabel } from '#/components/ui/label.tsx'
 
 // Compound: toggle switch with optional inline label.
 // size enum copied verbatim from shadcn source ("sm" | "default").
-export const Switch = defineComponent({
+export const Switch = defineCapsule({
   name: 'Switch',
   description:
     'On/off toggle switch with optional inline label. Mirrors shadcn Switch.',

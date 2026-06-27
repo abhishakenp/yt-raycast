@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * studio, or freelance creative site. Renders fully with no props via baked-in
  * default client names.
  */
-export const PortfolioLogos = defineComponent({
+export const PortfolioLogos = defineCapsule({
   name: 'PortfolioLogos',
   description:
     'Client / brand wordmark trust strip for a dark creative portfolio: a short bordered band on a raised card surface with a centered, dimmed, wrapping row of brand wordmarks rendered as bold text (not images), each brightening on hover and routing through useNavigate. Use directly under the hero to signal trust and notable clients on a 3D artist, motion designer, studio, or freelance creative site.',

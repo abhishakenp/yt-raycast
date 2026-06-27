@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * services — massages, facials, body treatments, and rituals. Renders fully
  * with no props via baked-in defaults.
  */
-export const SpaWellnessServices = defineComponent({
+export const SpaWellnessServices = defineCapsule({
   name: 'SpaWellnessServices',
   description:
     "Treatment-menu grid for a day-spa / wellness page: a calm band with a centered serif heading + intro above a responsive grid of treatment cards, each showing the treatment name, a duration + price row, and a short blurb. Use to present a spa's menu of services — massages, facials, body treatments, and rituals.",

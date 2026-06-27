@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * matchmaking services, singles or relationship platforms. Renders fully with no
  * props via baked-in "HeartLink" defaults.
  */
-export const DatingAppHero = defineComponent({
+export const DatingAppHero = defineCapsule({
   name: 'DatingAppHero',
   description:
     "Bright, romantic split hero for a dating / matchmaking app: a soft rose/primary-to-muted gradient canvas, two columns — left has a live-matches pulse pill, a large 'find someone who [highlight]' headline with the accent phrase in primary, a supporting paragraph, dual CTAs (filled 'Download Free' + outlined 'See How It Works'), and stacked overlapping avatar social proof; right has a tall rounded photo with an overlaid online profile card and a floating 'It's a Match!' verified badge. Buttons route through useNavigate; all imagery is alt-driven <Image>. Use as the top hero for dating apps, matchmaking services, singles or relationship platforms.",

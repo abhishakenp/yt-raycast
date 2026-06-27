@@ -1,7 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+  localServiceItem,
+  useSyncLocalServices,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * HealthcarePricing — transparent pricing table for a medical-clinic page. A
@@ -13,7 +21,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * link. Use for a self-pay / visit-pricing / membership section of a doctors'
  * office or clinic. Renders fully with no props via baked-in visit-tier defaults.
  */
-export const HealthcarePricing = defineComponent({
+export const HealthcarePricing = defineCapsule({
   name: 'HealthcarePricing',
   description:
     "Transparent pricing table for a medical-clinic page: a centered eyebrow chip, heading and intro above a 3-column grid of plan cards, each with a name, tagline, big price with a unit, a check-marked feature list, and a full-width CTA routing through useNavigate. A featured plan gets a primary border, shadow and a floating 'Most Popular' badge plus a primary CTA. Below the grid sits a reassurance note with an inline 'verify coverage' link. Use for a self-pay / visit-pricing / membership section of a doctors' office or clinic.",
@@ -45,7 +53,8 @@ export const HealthcarePricing = defineComponent({
     noteCta: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Transparent Pricing'
     const heading = props.heading ?? 'Simple, upfront pricing'
@@ -97,6 +106,16 @@ export const HealthcarePricing = defineComponent({
             cta: 'Book urgent care',
           },
         ]
+    useSyncLocalServices(
+      lakebed,
+      items.map((plan) =>
+        localServiceItem({
+          name: plan.name,
+          price: `${plan.price}${plan.unit}`,
+          summary: plan.tagline,
+        }),
+      ),
+    )
     const note =
       props.note ?? 'Insurance typically covers 80-100% of visit costs.'
     const noteCta = props.noteCta ?? 'Verify your coverage'
@@ -175,18 +194,28 @@ export const HealthcarePricing = defineComponent({
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => go(plan.cta)}
+                <LocalServiceBookingButton
+                  lakebed={lakebed}
+                  intentLabel={plan.cta}
+                  service={plan.name}
+                  source="pricing"
+                  pendingChildren={
+                    <LocalServiceMutationSpinner
+                      className={
+                        plan.featured ? 'text-primary-foreground' : undefined
+                      }
+                    />
+                  }
                   className={cn(
                     'block w-full rounded-xl px-6 py-3 text-center font-semibold transition-colors',
                     plan.featured
                       ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+                    'disabled:pointer-events-none disabled:opacity-70',
                   )}
                 >
                   {plan.cta}
-                </button>
+                </LocalServiceBookingButton>
               </article>
             ))}
           </div>

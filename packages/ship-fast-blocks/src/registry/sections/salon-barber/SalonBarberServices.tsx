@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const ScissorsIcon = () => (
@@ -75,7 +76,7 @@ const ICONS = [
   <SparkleIcon />,
 ]
 
-export const SalonBarberServices = defineComponent({
+export const SalonBarberServices = defineCapsule({
   name: 'SalonBarberServices',
   description:
     "Services band for a barbershop or salon, rendered through the shared FeatureGrid as four icon-tiled cards (cuts & fades, color, beard & grooming, styling & treatments). Each card pairs a stroke icon with a short, confident grooming description. Use it directly under the hero to lay out the menu of services on a barbershop, salon, or men's grooming page.",

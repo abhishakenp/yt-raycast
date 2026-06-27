@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * mentions, partner brands, or trust-signal logos on loan, fintech, SaaS, or any
  * conversion landing page. Renders fully with no props via baked-in defaults.
  */
-export const LendingLogos = defineComponent({
+export const LendingLogos = defineCapsule({
   name: 'LendingLogos',
   description:
     "'Featured in' / press-and-trust logos strip for a lending or fintech marketing page: a subtle bordered, card-tinted band with a centered caption above a wrapping row of dimmed monochrome wordmark buttons (small layered-diamond glyph + publication name). Wordmarks route through useNavigate. Use directly under a hero for social proof from press mentions, partner brands, or trust-signal logos on loan, fintech, SaaS, or conversion landing pages.",

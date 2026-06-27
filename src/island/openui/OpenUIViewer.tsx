@@ -6,6 +6,7 @@ import {
   Renderer,
   getOpenUIRuntimeLibraryCacheKey,
   loadOpenUIRuntimeLibrary,
+  type AiCapsuleRecord,
   type ImageContext,
   type Library,
 } from '@ship-fast/blocks/runtime'
@@ -18,6 +19,9 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react'
+import { useQuery } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+import type { Id } from '../../../convex/_generated/dataModel'
 import { I18nProvider, T } from './_providers/translation'
 import { preprocessOpenUIRuntimeResponse } from './openui-runtime-preprocess'
 import {
@@ -262,9 +266,23 @@ export default function OpenUIViewer({
     () => preprocessOpenUIRuntimeResponse(response),
     [response],
   )
+  // Fetch AI capsules for this session (OpenUI section edits)
+  const aiCapsulesQuery = useQuery(
+    api.sessions.listAiCapsules,
+    sessionId ? { sessionId: sessionId as Id<'sessions'> } : 'skip',
+  )
+  const aiCapsules: AiCapsuleRecord[] | undefined = useMemo(() => {
+    if (!aiCapsulesQuery) return undefined
+    return aiCapsulesQuery.map((row: { capsuleName: string; parentCapsule: string; compiledJs: string; description: string }) => ({
+      capsuleName: row.capsuleName,
+      parentCapsule: row.parentCapsule,
+      compiledJs: row.compiledJs,
+      description: row.description,
+    }))
+  }, [aiCapsulesQuery])
   const runtimeLibraryKey = useMemo(
-    () => getOpenUIRuntimeLibraryCacheKey(preparedResponse),
-    [preparedResponse],
+    () => getOpenUIRuntimeLibraryCacheKey(preparedResponse, aiCapsules),
+    [preparedResponse, aiCapsules],
   )
   const [runtimeLibraryState, setRuntimeLibraryState] = useState<{
     key: string | null
@@ -279,7 +297,7 @@ export default function OpenUIViewer({
         ? current
         : { ...current, error: null },
     )
-    loadOpenUIRuntimeLibrary(preparedResponse)
+    loadOpenUIRuntimeLibrary(preparedResponse, aiCapsules)
       .then((library) => {
         if (cancelled) return
         setRuntimeLibraryState({ key: runtimeLibraryKey, library, error: null })
@@ -296,7 +314,7 @@ export default function OpenUIViewer({
     return () => {
       cancelled = true
     }
-  }, [preparedResponse, runtimeLibraryKey])
+  }, [preparedResponse, runtimeLibraryKey, aiCapsules])
 
   const runtimeLibrary =
     runtimeLibraryState.key === runtimeLibraryKey

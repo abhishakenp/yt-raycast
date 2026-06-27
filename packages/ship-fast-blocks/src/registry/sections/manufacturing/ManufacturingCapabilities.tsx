@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * machining, sheet metal, grinding, wire EDM, finishing, inspection) on machine-
  * shop or fabricator pages. Renders fully with no props via baked-in defaults.
  */
-export const ManufacturingCapabilities = defineComponent({
+export const ManufacturingCapabilities = defineCapsule({
   name: 'ManufacturingCapabilities',
   description:
     'A 6-up capabilities / services grid for a precision-manufacturing site: a centered eyebrow + heading + description intro above a responsive three-column grid of muted cards, each with a rounded icon tile (rotating through a built-in industrial icon set), a title and a spec-rich description, lifting to an accent surface on hover. Clean, neutral, industrial. Use to present full-service manufacturing capabilities (CNC machining, sheet metal, grinding, wire EDM, finishing, inspection) on machine-shop or fabricator pages.',

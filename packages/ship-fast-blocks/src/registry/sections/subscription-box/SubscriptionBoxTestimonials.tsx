@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
@@ -10,7 +11,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * a star rating. Theme-token only and renders complete with no props. Use to
  * showcase delight and trust on any curated-box or membership page.
  */
-export const SubscriptionBoxTestimonials = defineComponent({
+export const SubscriptionBoxTestimonials = defineCapsule({
   name: 'SubscriptionBoxTestimonials',
   description:
     'Social-proof band for a subscription-box brand built on the shared TestimonialGrid composite: a padded section wrapping a 3-column grid of happy-customer quotes with name, role/location, and star rating. Use to showcase delight and trust on any curated-box or membership page.',

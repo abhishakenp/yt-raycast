@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * and how-it-works for members clubs, professional networks, founders communities
  * or curated collectives. Renders fully with no props.
  */
-export const MembershipClubStats = defineComponent({
+export const MembershipClubStats = defineCapsule({
   name: 'MembershipClubStats',
   description:
     'Community stats band for a private membership club / exclusive community page: a bordered, muted-surface band holding a responsive 2-up / 4-up grid of centered stat cells, each pairing a large thin numeric value with an uppercase tracked caption. Use as a compact proof band between pricing and how-it-works for members clubs, professional networks, founders communities or curated collectives.',

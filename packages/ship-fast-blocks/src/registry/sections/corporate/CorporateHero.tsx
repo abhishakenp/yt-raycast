@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * infrastructure, IT consultancies, or any corporate site that needs Fortune 500
  * credibility.
  */
-export const CorporateHero = defineComponent({
+export const CorporateHero = defineCapsule({
   name: 'CorporateHero',
   description:
     'Split-layout enterprise hero section for a corporate B2B marketing page: left side with a live trust badge (pulsing dot), authoritative headline, supporting paragraph, dual CTAs, and SOC 2 / ISO compliance check-marks; right side with a showcase office photo and a floating ROI stat card. Clean, trustworthy, conversion-focused. CTAs route through useNavigate. Use as the opening hero for enterprise software, cloud infrastructure, IT consultancies, or any corporate site.',

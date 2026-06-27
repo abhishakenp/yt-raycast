@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * online-ordering platforms, or takeout services. Renders fully with no props
  * via baked-in "nosh" defaults.
  */
-export const FoodDeliveryFooter = defineComponent({
+export const FoodDeliveryFooter = defineCapsule({
   name: 'FoodDeliveryFooter',
   description:
     'Muted multi-column site footer for a food-delivery / restaurant-marketplace site: a wide branded column (location-pin mark + brand name + tagline) beside several link columns (company / resources / legal), then a bordered bottom bar with a copyright line and a row of social icons. Brand click, links, and social icons route through useNavigate. Use as the closing footer for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',

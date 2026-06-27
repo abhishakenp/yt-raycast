@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * carriers, insurtech startups, brokers, or financial-protection products.
  * Renders fully with no props via baked-in defaults.
  */
-export const InsuranceNavbar = defineComponent({
+export const InsuranceNavbar = defineCapsule({
   name: 'InsuranceNavbar',
   description:
     "Sticky top navigation bar for an insurance / fintech site: backdrop-blurred, border-bottomed header with a shield logo tile + brand name on the left, horizontal nav links in the center, and a phone link plus a primary 'Get a Quote' CTA on the right (desktop). Links and CTA route through useNavigate for page-switching. Clean, trustworthy corporate aesthetic on a light canvas with a single brand-blue accent. Use as the sticky site header for insurance carriers, insurtech startups, brokers, or financial-protection products.",

@@ -1,8 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * DentalHero — split, two-column hero for a dental practice / dentist landing
@@ -16,7 +22,7 @@ import { Image } from '#/lib/img.tsx'
  * Image component. Use as the top hero for dentists, dental offices,
  * orthodontists, or family / cosmetic dental clinics.
  */
-export const DentalHero = defineComponent({
+export const DentalHero = defineCapsule({
   name: 'DentalHero',
   description:
     'Split two-column hero for a dental practice / dentist landing page on a soft muted band with blurred mint blobs: a left text column with a pulsing now-accepting-new-patients pill, a big headline with an accented middle word, a lede paragraph, a filled primary Schedule-Your-Visit CTA plus an outlined click-to-call phone button, and a row of check-marked trust badges; a right column with a rounded treatment-room photo and a floating ratings card showing overlapping dentist avatars and a star rating. CTAs route through useNavigate; imagery uses the Image component. Use as the top hero for dentists, dental offices, orthodontists, or family / cosmetic dental clinics.',
@@ -37,7 +43,8 @@ export const DentalHero = defineComponent({
     avatars: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heroBadge = props.badge ?? 'Now accepting new patients'
     const heroPre = props.headingPre ?? 'Your smile deserves'
@@ -115,10 +122,15 @@ export const DentalHero = defineComponent({
                 {heroSub}
               </p>
               <div className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                <LocalServiceBookingButton
+                  lakebed={lakebed}
+                  intentLabel={heroPrimary}
+                  service="Dental appointment"
+                  source="hero"
+                  pendingChildren={
+                    <LocalServiceMutationSpinner className="text-primary-foreground" />
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {heroPrimary}
                   <svg
@@ -133,7 +145,7 @@ export const DentalHero = defineComponent({
                   >
                     <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
-                </button>
+                </LocalServiceBookingButton>
                 <button
                   type="button"
                   onClick={() => go(`Call ${heroPhone}`)}

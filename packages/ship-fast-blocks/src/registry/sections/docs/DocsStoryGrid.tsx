@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -16,7 +17,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * docs" band on docs homes, API references, SDK guides, developer portals, or
  * knowledge bases. Renders fully with no props via baked-in defaults.
  */
-export const DocsStoryGrid = defineComponent({
+export const DocsStoryGrid = defineCapsule({
   name: 'DocsStoryGrid',
   description:
     "Bespoke, token-styled 'popular guides' cards grid for a developer DOCUMENTATION site. Opens with a SectionHeading ('Popular' eyebrow + 'Popular guides' title + subtitle), then a responsive grid of clean, text-forward guide cards (no cover images): each card is a routable button with a small category pill, a bold guide title, a one-line description, and a footer meta row showing read-time plus an arrow that slides on hover. Every card routes through useNavigate keyed on its title so PageSwitch can swap pages. Use as the 'most-read guides' / 'popular docs' band on docs homes, API references, SDK guides, developer portals, or knowledge bases.",

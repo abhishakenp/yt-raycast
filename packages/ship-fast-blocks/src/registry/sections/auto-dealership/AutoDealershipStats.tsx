@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * confidence / credibility band between sections for car dealerships, used-car
  * lots, or auto sales groups. Renders fully with no props via baked-in defaults.
  */
-export const AutoDealershipStats = defineComponent({
+export const AutoDealershipStats = defineCapsule({
   name: 'AutoDealershipStats',
   description:
     'Bold full-bleed stats band for an auto dealership site: a solid primary-colored section with a responsive 2-up / 4-up grid of large metric figures (years in business, vehicles sold, Google rating, repeat customers) over softened captions. Static and content-only with no links. Use as a confidence / credibility band between sections for car dealerships, used-car lots, or auto sales groups.',

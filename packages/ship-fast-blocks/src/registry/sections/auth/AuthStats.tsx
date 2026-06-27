@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
@@ -13,7 +14,7 @@ import { StatGrid } from '#/section-kit/StatGrid.tsx'
  * platform, identity API, or login SDK with hard numbers. Renders fully with no
  * props.
  */
-export const AuthStats = defineComponent({
+export const AuthStats = defineCapsule({
   name: 'AuthStats',
   description:
     'Proof-by-numbers band for a developer-auth product: a token section wrapping an optional centered SectionHeading above the shared StatGrid composite at 4 columns. Baked metrics quantify scale and reliability — logins served per month, developers building on the platform, an uptime SLA, and countries covered. Use to back an auth platform, identity API, or login SDK with hard numbers.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * backer questions on a Kickstarter/Indiegogo-style raise, pre-order, or
  * fundraiser.
  */
-export const CrowdfundingFaq = defineComponent({
+export const CrowdfundingFaq = defineCapsule({
   name: 'CrowdfundingFaq',
   description:
     'A native-disclosure accordion FAQ for a crowdfunding / campaign landing page on a card surface in a narrow column: a centered uppercase eyebrow + heading above a stack of bordered details items, each a clickable question summary with a chevron that rotates open and a muted answer body that expands. No JS required (uses the browser details element). Use to answer shipping, fulfillment, sourcing, refund and other backer questions on a Kickstarter/Indiegogo-style raise, pre-order, or fundraiser.',

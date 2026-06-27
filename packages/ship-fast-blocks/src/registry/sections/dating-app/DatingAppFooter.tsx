@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * apps, singles platforms, or social-connection products. Renders fully with no
  * props via baked-in "HeartLink" defaults.
  */
-export const DatingAppFooter = defineComponent({
+export const DatingAppFooter = defineCapsule({
   name: 'DatingAppFooter',
   description:
     'Multi-column site footer for a dating / matchmaking app: a muted bordered-top band with a wide brand column (rose/primary heart-glyph logo tile + app name, a tagline, and round social icon buttons for Twitter / Instagram / LinkedIn) followed by link columns (Product / Company / Support); a bottom row holds an auto-updating copyright note and a set of legal links. The brand button and every link route through useNavigate. Use as the closing footer for dating apps, singles platforms, or social-connection products.',

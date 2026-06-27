@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * law-firm, attorney, consulting or professional-services pages. Renders fully
  * with no props via baked-in defaults.
  */
-export const LawFirmAttorneys = defineComponent({
+export const LawFirmAttorneys = defineCapsule({
   name: 'LawFirmAttorneys',
   description:
     'Centered-intro attorney / partner gallery for a law firm: a tracked-uppercase eyebrow, serif heading and lead paragraph above a responsive 3-up grid of cards on the card surface, each with a tall headshot that gently zooms on hover, a serif name, muted title, bio and a row of LinkedIn + email icon links. Refined, authoritative editorial aesthetic; imagery uses the alt-driven Image component and the social links route through useNavigate. Use to introduce leadership, partners, attorneys or team members on law-firm, attorney, consulting, accounting or professional-services pages.',

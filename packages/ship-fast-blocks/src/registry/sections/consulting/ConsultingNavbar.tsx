@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * ConsultingNavbar — sticky top navigation bar for a management-consulting
@@ -13,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * professional-services groups, corporate advisories, or B2B service businesses.
  * Renders fully with no props via baked-in "Nexus Strategy Partners" defaults.
  */
-export const ConsultingNavbar = defineComponent({
+export const ConsultingNavbar = defineCapsule({
   name: 'ConsultingNavbar',
   description:
     'Sticky top navigation bar for a management-consulting firm landing page: a border-bottomed, backdrop-blurred header with a solid brand-initial logo tile + firm name on the left, horizontal nav links in the center (desktop), a primary CTA button and a hamburger menu icon on the right. Every link and the logo route through useNavigate for page-switching. Use as the site header for consulting firms, professional-services groups, corporate advisories, or B2B service businesses.',
@@ -90,28 +92,14 @@ export const ConsultingNavbar = defineComponent({
             >
               {ctaLabel}
             </button>
-            <button
-              type="button"
-              aria-label="Toggle menu"
-              onClick={() => go(homeTarget)}
-              className="p-2 text-muted-foreground md:hidden"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="4" y1="6" x2="20" y2="6" />
-                <line x1="4" y1="12" x2="20" y2="12" />
-                <line x1="4" y1="18" x2="20" y2="18" />
-              </svg>
-            </button>
+            <MobileNavDrawer
+              brand={brand}
+              nav={nav}
+              homeTarget={homeTarget}
+              cta={{ label: ctaLabel, target: ctaTarget }}
+              label="Toggle menu"
+              buttonClassName="p-2 text-muted-foreground md:hidden"
+            />
           </div>
         </nav>
       </header>

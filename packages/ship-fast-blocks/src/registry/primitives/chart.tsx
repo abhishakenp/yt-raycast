@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 
 const DEFAULT_DATA = [
   { label: 'Jan', value: 186 },
@@ -24,7 +25,7 @@ const chartPoints = (data: typeof DEFAULT_DATA) => {
   }))
 }
 
-export const Chart = defineComponent({
+export const Chart = defineCapsule({
   name: 'Chart',
   description:
     "Static SVG chart from data:[{label,value}]. kind 'area' (default), 'bar', or 'line'. Ships sample data so it renders standalone.",

@@ -1,8 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { directoryLakebed } from './directory-lakebed.ts'
+import {
+  directoryListing,
+  useDirectoryListings,
+  useDirectorySearch,
+  useSyncDirectoryListings,
+} from './directory-interactions.tsx'
 
 /**
  * DirectoryFeatured — featured-business listing gallery for a local-business
@@ -10,15 +17,15 @@ import { Image } from '#/lib/img.tsx'
  * left, a "View All" link on the right) and a responsive 1-to-3-column grid of
  * rated listing cards: each card has a 4:3 cover photo with an overlaid category
  * pill and a primary star-rating badge, then the business name, address, an
- * open-hours line with a clock icon, and a review count. Every card and the
- * view-all link route through useNavigate; photos use the alt-driven Image
- * component. Use to showcase top-rated or handpicked listings on directories,
- * marketplaces, or review-and-discovery sites.
+ * open-hours line with a clock icon, and a review count. Cards react to shared
+ * Lakebed directory search, record selections, and photos use the alt-driven
+ * Image component. Use to showcase top-rated or handpicked listings on
+ * directories, marketplaces, or review-and-discovery sites.
  */
-export const DirectoryFeatured = defineComponent({
+export const DirectoryFeatured = defineCapsule({
   name: 'DirectoryFeatured',
   description:
-    'Featured-business listing gallery for a local-business DIRECTORY: a background section with a header row (heading and description on the left, a View All link on the right) and a responsive 1-to-3-column grid of rated listing cards — each card has a 4:3 cover photo with an overlaid category pill and a primary star-rating badge, then the business name, address, an open-hours line with a clock icon, and a review count. Every card and the view-all link route through useNavigate; photos use the alt-driven Image component. Use to showcase top-rated or handpicked listings on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
+    'Featured-business listing gallery for a local-business DIRECTORY: a background section with a header row (heading and description on the left, a View All action on the right) and a responsive 1-to-3-column grid of rated listing cards — each card has a 4:3 cover photo with an overlaid category pill and a primary star-rating badge, then the business name, address, an open-hours line with a clock icon, and a review count. Cards react to shared Lakebed directory search state and record selections; photos use the alt-driven Image component. Use to showcase top-rated or handpicked listings on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -42,8 +49,10 @@ export const DirectoryFeatured = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: directoryLakebed,
+  component: ({ props, lakebed }) => {
+    const directorySearch = useDirectorySearch(lakebed)
+    const directoryListings = useDirectoryListings(lakebed)
     const heading = props.heading ?? 'Featured Businesses'
     const description =
       props.description ?? 'Top-rated local favorites handpicked by our team'
@@ -109,6 +118,27 @@ export const DirectoryFeatured = defineComponent({
             imageAlt: 'Modern dental clinic with state-of-the-art equipment',
           },
         ]
+    const syncedItems = items.map((item) => directoryListing(item))
+    useSyncDirectoryListings(lakebed, syncedItems)
+    const activeCategory = directoryListings.state?.category.toLowerCase() ?? ''
+    const activeQuery = directoryListings.state?.query.toLowerCase() ?? ''
+    const selectedName = directoryListings.state?.selectedName ?? ''
+    const matchingItems = items.filter((biz) => {
+      const haystack = [
+        biz.name,
+        biz.category,
+        biz.address,
+        biz.hours,
+        biz.reviews,
+      ]
+        .join(' ')
+        .toLowerCase()
+      const categoryMatches =
+        !activeCategory || haystack.includes(activeCategory)
+      const queryMatches = !activeQuery || haystack.includes(activeQuery)
+
+      return categoryMatches && queryMatches
+    })
 
     const Star = ({ className }: { className?: string }) => (
       <svg
@@ -148,20 +178,46 @@ export const DirectoryFeatured = defineComponent({
             </div>
             <button
               type="button"
-              onClick={() => go(viewAll)}
+              onClick={() =>
+                directorySearch.chooseSearch({
+                  category: '',
+                  query: '',
+                })
+              }
               className="font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {viewAll}
             </button>
           </div>
 
+          <p className="mb-5 text-sm text-muted-foreground" aria-live="polite">
+            {matchingItems.length} featured business
+            {matchingItems.length === 1 ? '' : 'es'} match the current search
+            {directoryListings.state?.selectionCount
+              ? ` · ${directoryListings.state.selectionCount} listing${
+                  directoryListings.state.selectionCount === 1 ? '' : 's'
+                } opened`
+              : ''}
+          </p>
+
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((biz) => (
+            {matchingItems.map((biz) => (
               <button
                 key={biz.name}
                 type="button"
-                onClick={() => go(biz.name)}
-                className="group block overflow-hidden rounded-xl border border-border bg-card text-left transition-shadow hover:shadow-md"
+                aria-pressed={selectedName === biz.name}
+                onClick={() => {
+                  void directoryListings.select({
+                    category: biz.category,
+                    name: biz.name,
+                  })
+                }}
+                className={cn(
+                  'group block overflow-hidden rounded-xl border bg-card text-left transition-shadow hover:shadow-md',
+                  selectedName === biz.name
+                    ? 'border-primary shadow-md'
+                    : 'border-border',
+                )}
               >
                 <div className="relative aspect-[4/3] bg-muted">
                   <Image
@@ -197,6 +253,11 @@ export const DirectoryFeatured = defineComponent({
                 </div>
               </button>
             ))}
+            {!matchingItems.length ? (
+              <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3">
+                No featured businesses match the current search.
+              </div>
+            ) : null}
           </div>
         </div>
       </section>

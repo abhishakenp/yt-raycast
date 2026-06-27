@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -15,7 +16,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * knowledge base or support portal. Renders fully with no props via baked-in
  * defaults.
  */
-export const KnowledgeBasePopular = defineComponent({
+export const KnowledgeBasePopular = defineCapsule({
   name: 'KnowledgeBasePopular',
   description:
     "Popular-articles list beside a support sidebar for a help center: a two-thirds column lists the most-viewed articles as full-width row buttons (eye-icon tile, title, description, view-count + updated meta, trailing chevron) under a heading + description with a 'view all' link; a one-third aside stacks a muted 'Trending Topics' panel (title + percent-change rows) and a bordered 'Need more help?' card of chat/contact links. Calm, light, editorial; every article, trending row and help link routes through useNavigate. Use as the browse-popular section of a knowledge base, support portal or docs site.",

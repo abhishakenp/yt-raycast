@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const Mark = ({ className }: { className?: string }) => (
@@ -19,7 +20,7 @@ const Mark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const WeddingFooter = defineComponent({
+export const WeddingFooter = defineCapsule({
   name: 'WeddingFooter',
   description:
     'Elegant wedding site footer built on the shared SiteFooter composite: a serif couple wordmark with an interlocking-rings mark, a warm tagline, the wedding day details, explore links, and a questions/contact column. Use as the closing band of a wedding invitation or celebration page.',

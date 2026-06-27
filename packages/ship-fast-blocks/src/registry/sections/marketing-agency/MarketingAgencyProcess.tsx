@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * methodology (discovery, strategy, execution, scale) for marketing / growth
  * agencies, consultancies, or service firms. Renders fully with no props.
  */
-export const MarketingAgencyProcess = defineComponent({
+export const MarketingAgencyProcess = defineCapsule({
   name: 'MarketingAgencyProcess',
   description:
     "Numbered 'how we work' process timeline: a centered eyebrow + heading + description above a responsive 4-up grid of steps, each with a filled primary number badge, a step title, and a short description; a thin connector line bridges adjacent steps on desktop. Use to explain a working methodology (discovery, strategy, execution, scale) for marketing / growth agencies, consultancies, or service firms.",

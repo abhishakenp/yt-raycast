@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * indigo-on-light aesthetic. Use to showcase product capabilities on B2B SaaS,
  * team/project-management, productivity, or developer-platform pages.
  */
-export const MarketingFeatures = defineComponent({
+export const MarketingFeatures = defineCapsule({
   name: 'MarketingFeatures',
   description:
     'Centered-header 6-up feature grid for a SaaS / product-marketing landing page: a bold centered heading + supporting line over a responsive 1/2/3-column grid of bordered cards, each with a soft indigo rounded icon tile, a bold title and a description, lifting with a raised shadow on hover. Rotates a built-in set of line icons (boards, collaboration, analytics, workflows, security, integrations). Clean premium indigo-on-light aesthetic. Use to showcase product capabilities on B2B SaaS, team/project-management, productivity, or developer-platform pages.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use as the sticky site header for coding bootcamps, dev academies, vocational
  * tech schools, or any cohort-based education brand.
  */
-export const BootcampNavbar = defineComponent({
+export const BootcampNavbar = defineCapsule({
   name: 'BootcampNavbar',
   description:
     'Sticky translucent top navigation bar for a coding bootcamp / career-school landing page: blurred, border-bottomed header pinned to the top with a solid brand-initial logo tile + academy name on the left, horizontal nav links in the center (desktop), and a rounded primary CTA on the right. Brand button routes to homeTarget, nav links route to their own labels, and the CTA routes to ctaTarget through useNavigate. Use as the sticky site header for coding bootcamps, dev academies, vocational tech schools, or cohort-based education brands.',

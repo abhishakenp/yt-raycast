@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * to surface patient count, wait time, satisfaction and years of service.
  * Renders fully with no props via baked-in clinic-metric defaults.
  */
-export const HealthcareStats = defineComponent({
+export const HealthcareStats = defineCapsule({
   name: 'HealthcareStats',
   description:
     "Full-bleed accent statistics band for a medical-clinic page: a solid primary-colored strip holding a responsive 2/4-column grid of big metric figures, each with a large value and a lighter label below, all centered. Tokens-only, no links. Use as a credibility / 'by the numbers' band between sections of a doctors' office, primary-care practice or hospital to surface patient count, wait time, satisfaction and years of service.",

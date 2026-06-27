@@ -1,0 +1,517 @@
+// @vitest-environment jsdom
+
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
+import { JSDOM } from 'jsdom'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { FoodDeliveryLakebed } from './food-delivery-interactions.tsx'
+import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
+
+type FoodDeliveryState = ReturnType<
+  typeof foodDeliveryLakebed.queries.foodDeliveryState
+>
+type FoodAction = FoodDeliveryState['actions'][number]
+type FoodCatalogItem = ReturnType<
+  typeof foodDeliveryLakebed.queries.restaurantCatalog
+>[number]
+type FoodSearch = FoodDeliveryState['searches'][number]
+type FoodSelection = FoodDeliveryState['selections'][number]
+type FoodStateRow = {
+  address: string
+  createdAt: string
+  id: string
+  query: string
+  selectedCuisine: string
+  selectedRestaurant: string
+  updatedAt: string
+}
+type FoodMutationInput =
+  | Parameters<typeof foodDeliveryLakebed.mutations.recordFoodAction>[1]
+  | Parameters<typeof foodDeliveryLakebed.mutations.selectRestaurant>[1]
+  | Parameters<typeof foodDeliveryLakebed.mutations.setFoodSearch>[1]
+  | Parameters<typeof foodDeliveryLakebed.mutations.syncRestaurants>[1]
+
+const navigate = vi.fn()
+const lakebedRef: { current: FoodDeliveryLakebed | null } = { current: null }
+
+vi.mock('#/lib/use-navigate.tsx', () => ({
+  useNavigate: () => navigate,
+}))
+
+vi.mock('#/lib/img.tsx', () => ({
+  Image: ({ alt, className }: { alt: string; className?: string }) => (
+    <img alt={alt} className={className} />
+  ),
+}))
+
+vi.mock('@ship-fast/lakebed/react', async () => {
+  const actual = await vi.importActual<
+    typeof import('@ship-fast/lakebed/react')
+  >('@ship-fast/lakebed/react')
+
+  return {
+    ...actual,
+    createLakebedClient: vi.fn(() => {
+      if (!lakebedRef.current) throw new Error('Missing test Lakebed client')
+      return lakebedRef.current
+    }),
+  }
+})
+
+if (typeof document === 'undefined') {
+  const dom = new JSDOM('<!doctype html><html><body></body></html>', {
+    url: 'http://localhost/',
+  })
+  const defineGlobal = (name: string, value: unknown) => {
+    Object.defineProperty(globalThis, name, {
+      configurable: true,
+      value,
+      writable: true,
+    })
+  }
+  const requestAnimationFrame = (callback: FrameRequestCallback) =>
+    setTimeout(() => callback(Date.now()), 0)
+  const cancelAnimationFrame = (id: number) => clearTimeout(id)
+
+  defineGlobal('document', dom.window.document)
+  defineGlobal('CustomEvent', dom.window.CustomEvent)
+  defineGlobal('Element', dom.window.Element)
+  defineGlobal('Event', dom.window.Event)
+  defineGlobal('EventTarget', dom.window.EventTarget)
+  defineGlobal('FocusEvent', dom.window.FocusEvent)
+  defineGlobal('FormData', dom.window.FormData)
+  defineGlobal('HTMLButtonElement', dom.window.HTMLButtonElement)
+  defineGlobal('HTMLElement', dom.window.HTMLElement)
+  defineGlobal('HTMLInputElement', dom.window.HTMLInputElement)
+  defineGlobal('KeyboardEvent', dom.window.KeyboardEvent)
+  defineGlobal('MouseEvent', dom.window.MouseEvent)
+  defineGlobal('MutationObserver', dom.window.MutationObserver)
+  defineGlobal('Node', dom.window.Node)
+  defineGlobal('PointerEvent', dom.window.PointerEvent ?? dom.window.MouseEvent)
+  defineGlobal(
+    'ResizeObserver',
+    dom.window.ResizeObserver ??
+      class ResizeObserver {
+        disconnect() {}
+        observe() {}
+        unobserve() {}
+      },
+  )
+  defineGlobal('SVGElement', dom.window.SVGElement)
+  defineGlobal('getComputedStyle', dom.window.getComputedStyle)
+  defineGlobal('navigator', dom.window.navigator)
+  defineGlobal('requestAnimationFrame', requestAnimationFrame)
+  defineGlobal('cancelAnimationFrame', cancelAnimationFrame)
+  defineGlobal('window', dom.window)
+  dom.window.requestAnimationFrame = requestAnimationFrame
+  dom.window.cancelAnimationFrame = cancelAnimationFrame
+}
+
+if (typeof ResizeObserver === 'undefined') {
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    configurable: true,
+    value: class ResizeObserver {
+      disconnect() {}
+      observe() {}
+      unobserve() {}
+    },
+    writable: true,
+  })
+}
+
+if (
+  typeof Element !== 'undefined' &&
+  typeof Element.prototype.scrollIntoView !== 'function'
+) {
+  Object.defineProperty(Element.prototype, 'scrollIntoView', {
+    configurable: true,
+    value: () => {},
+  })
+}
+
+if (typeof window !== 'undefined' && 'FormData' in window) {
+  Object.defineProperty(globalThis, 'FormData', {
+    configurable: true,
+    value: window.FormData,
+    writable: true,
+  })
+}
+
+const { cleanup, fireEvent, render, screen, waitFor, within } =
+  await import('@testing-library/react')
+const { FoodDeliveryHero } = await import('./FoodDeliveryHero.tsx')
+const { FoodDeliveryNavbar } = await import('./FoodDeliveryNavbar.tsx')
+const { FoodDeliveryRestaurants } =
+  await import('./FoodDeliveryRestaurants.tsx')
+const { FoodDeliveryCta } = await import('./FoodDeliveryCta.tsx')
+
+const now = '2026-06-26T00:00:00.000Z'
+
+function createFoodDeliveryLakebedStub() {
+  let version = 0
+  let actions: FoodAction[] = []
+  let items: FoodCatalogItem[] = []
+  let searches: FoodSearch[] = []
+  let selections: FoodSelection[] = []
+  let state: FoodStateRow | null = null
+  const listeners = new Set<() => void>()
+  const notify = () => {
+    version += 1
+    for (const listener of listeners) listener()
+  }
+  const row = <TRow extends Record<string, unknown>>(
+    prefix: string,
+    value: TRow,
+    index: number,
+  ) => ({
+    ...value,
+    createdAt: now,
+    id: `${prefix}-${index}`,
+    updatedAt: now,
+  })
+  const summary = () => ({
+    actionCount: actions.length,
+    actions,
+    address: state?.address ?? '',
+    query: state?.query ?? '',
+    searches,
+    selectedCuisine: state?.selectedCuisine ?? '',
+    selectedRestaurant: state?.selectedRestaurant ?? '',
+    selectionCount: selections.length,
+    selections,
+  })
+
+  const lakebed: FoodDeliveryLakebed = {
+    signInWithGoogle: vi.fn(async () => ({
+      bundle: { challenge: '', state: '', verifier: '' },
+      url: '',
+    })),
+    signOut: vi.fn(),
+    useAuth: () => ({
+      isAuthenticated: false,
+      user: { displayName: 'Guest', email: '', isGuest: true },
+    }),
+    useData: () => ({
+      actions,
+      items,
+      searches,
+      selections,
+      state: state ? [state] : [],
+    }),
+    useQuery: (name) => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+
+      if (name === 'restaurantCatalog') return items
+      if (name === 'foodDeliveryState') return summary()
+      return null
+    },
+    useMutation: (name) => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+      const runMutation = useCallback(
+        async (input: FoodMutationInput) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+
+          try {
+            if (name === 'setFoodSearch') {
+              const address =
+                'address' in input ? (input.address?.trim() ?? '') : ''
+              const query =
+                'query' in input ? input.query?.trim() || address : address
+              state = row(
+                'state',
+                {
+                  address,
+                  query,
+                  selectedCuisine: '',
+                  selectedRestaurant: '',
+                },
+                1,
+              )
+              searches = [
+                row(
+                  'search',
+                  {
+                    address: state.address,
+                    query: state.query,
+                  },
+                  searches.length + 1,
+                ),
+                ...searches,
+              ]
+            }
+
+            if (name === 'selectRestaurant' && 'name' in input) {
+              const selectedRestaurant = input.name.trim()
+              const selectedCuisine = input.cuisine?.trim() ?? ''
+              state = row(
+                'state',
+                {
+                  address: state?.address ?? '',
+                  query: state?.query ?? '',
+                  selectedCuisine,
+                  selectedRestaurant,
+                },
+                1,
+              )
+              selections = [
+                row(
+                  'selection',
+                  {
+                    cuisine: selectedCuisine,
+                    name: selectedRestaurant,
+                  },
+                  selections.length + 1,
+                ),
+                ...selections,
+              ]
+            }
+
+            if (name === 'recordFoodAction' && 'action' in input) {
+              actions = [
+                row(
+                  'action',
+                  {
+                    action: input.action.trim(),
+                    source: input.source?.trim() ?? '',
+                  },
+                  actions.length + 1,
+                ),
+                ...actions,
+              ]
+            }
+
+            if (name === 'syncRestaurants' && 'items' in input) {
+              const existingByName = new Map(
+                items.map((item) => [item.name.toLowerCase(), item]),
+              )
+
+              for (const item of input.items) {
+                const nameValue = item.name.trim()
+                if (!nameValue) continue
+
+                const current = existingByName.get(nameValue.toLowerCase())
+                const next = {
+                  category: item.category?.trim() ?? '',
+                  cuisine: item.cuisine?.trim() ?? '',
+                  delivery: item.delivery?.trim() ?? '',
+                  imageAlt: item.imageAlt?.trim() ?? '',
+                  name: nameValue,
+                  rating: item.rating?.trim() ?? '',
+                  time: item.time?.trim() ?? '',
+                }
+
+                if (current) {
+                  items = items.map((candidate) =>
+                    candidate.id === current.id
+                      ? { ...current, ...next, updatedAt: now }
+                      : candidate,
+                  )
+                } else {
+                  items = [...items, row('item', next, items.length + 1)]
+                }
+              }
+            }
+
+            notify()
+            return []
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        },
+        [name],
+      )
+      const mutation = useMemo(() => {
+        const callable = Object.assign(
+          (input: FoodMutationInput) => runMutation(input),
+          {
+            isPending: false,
+            lastError: null,
+            pendingCount: 0,
+            reset,
+          },
+        )
+        return callable
+      }, [reset, runMutation])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
+    },
+  }
+
+  return {
+    actions: () => actions,
+    catalog: () => items,
+    lakebed,
+    searches: () => searches,
+    selections: () => selections,
+    state: () => state,
+  }
+}
+
+afterEach(() => {
+  cleanup()
+  navigate.mockReset()
+  lakebedRef.current = null
+})
+
+describe('food delivery fullstack search', () => {
+  it('lets hero search filter restaurant cards and record selected restaurants', async () => {
+    const { lakebed, searches, selections, state } =
+      createFoodDeliveryLakebedStub()
+    lakebedRef.current = lakebed
+    const Hero = FoodDeliveryHero.client.component
+    const Restaurants = FoodDeliveryRestaurants.client.component
+
+    render(
+      <>
+        <Hero props={{}} statementId="food_delivery_hero" />
+        <Restaurants props={{}} statementId="food_delivery_restaurants" />
+      </>,
+    )
+
+    expect(screen.getByText("Mario's Pizzeria")).toBeTruthy()
+    expect(screen.getByText('Sakura Sushi Bar')).toBeTruthy()
+
+    fireEvent.change(screen.getByLabelText('Enter your delivery address'), {
+      target: { value: 'Sushi' },
+    })
+    fireEvent.submit(screen.getByRole('button', { name: 'Find Food' }))
+
+    await waitFor(() =>
+      expect(state()).toMatchObject({
+        address: 'Sushi',
+        query: 'Sushi',
+      }),
+    )
+    expect(searches()).toHaveLength(1)
+    expect(screen.getByText('Sakura Sushi Bar')).toBeTruthy()
+    expect(screen.queryByText("Mario's Pizzeria")).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: /Sakura Sushi Bar/i }))
+    await waitFor(() => expect(selections()).toHaveLength(1))
+    expect(state()).toMatchObject({
+      selectedCuisine: 'Japanese',
+      selectedRestaurant: 'Sakura Sushi Bar',
+    })
+  })
+
+  it('lets the restaurant view-all action clear the shared search', async () => {
+    const { lakebed, state } = createFoodDeliveryLakebedStub()
+    lakebedRef.current = lakebed
+    const Hero = FoodDeliveryHero.client.component
+    const Restaurants = FoodDeliveryRestaurants.client.component
+
+    render(
+      <>
+        <Hero props={{}} statementId="food_delivery_hero" />
+        <Restaurants props={{}} statementId="food_delivery_restaurants" />
+      </>,
+    )
+
+    fireEvent.change(screen.getByLabelText('Enter your delivery address'), {
+      target: { value: 'Thai' },
+    })
+    fireEvent.submit(screen.getByRole('button', { name: 'Find Food' }))
+    await waitFor(() =>
+      expect(state()).toMatchObject({
+        query: 'Thai',
+      }),
+    )
+    expect(screen.getByText('Thai Orchid')).toBeTruthy()
+    expect(screen.queryByText('Wing King')).toBeNull()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /View all 240\+ restaurants/i }),
+    )
+
+    await waitFor(() =>
+      expect(state()).toMatchObject({
+        address: '',
+        query: '',
+      }),
+    )
+    expect(screen.getByText('Wing King')).toBeTruthy()
+  })
+
+  it('lets navbar command search drive shared restaurant results', async () => {
+    const { catalog, lakebed, state } = createFoodDeliveryLakebedStub()
+    lakebedRef.current = lakebed
+    const Navbar = FoodDeliveryNavbar.client.component
+    const Restaurants = FoodDeliveryRestaurants.client.component
+
+    render(
+      <>
+        <Navbar props={{}} statementId="food_delivery_navbar" />
+        <Restaurants props={{}} statementId="food_delivery_restaurants" />
+      </>,
+    )
+
+    await waitFor(() => expect(catalog()).not.toHaveLength(0))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }))
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Search restaurants',
+    })
+    fireEvent.click(within(dialog).getByText('Sakura Sushi Bar'))
+
+    await waitFor(() =>
+      expect(state()).toMatchObject({
+        address: '',
+        query: 'Sakura Sushi Bar',
+      }),
+    )
+    expect(screen.getByText('Sakura Sushi Bar')).toBeTruthy()
+    expect(screen.queryByText("Mario's Pizzeria")).toBeNull()
+  })
+
+  it('records navbar and app-download actions without navigation fallbacks', async () => {
+    const { actions, lakebed } = createFoodDeliveryLakebedStub()
+    lakebedRef.current = lakebed
+    const Navbar = FoodDeliveryNavbar.client.component
+    const Cta = FoodDeliveryCta.client.component
+
+    render(
+      <>
+        <Navbar props={{ getStarted: 'Start Ordering' }} statementId="nav" />
+        <Cta
+          props={{ appStore: 'App Store', googlePlay: 'Google Play' }}
+          statementId="cta"
+        />
+      </>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start Ordering' }))
+
+    await waitFor(() => expect(actions()).toHaveLength(1))
+    expect(actions()[0]).toMatchObject({
+      action: 'Start Ordering',
+      source: 'navbar',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'App Store' }))
+    await waitFor(() => expect(actions()).toHaveLength(2))
+    expect(actions()[0]).toMatchObject({
+      action: 'App Store',
+      source: 'cta',
+    })
+    expect(navigate).not.toHaveBeenCalled()
+  })
+})

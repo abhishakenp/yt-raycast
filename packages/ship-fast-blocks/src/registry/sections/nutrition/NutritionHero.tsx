@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * top hero for nutrition coaches, dietitians, meal-plan subscriptions, diet / wellness
  * programs or healthy-eating apps.
  */
-export const NutritionHero = defineComponent({
+export const NutritionHero = defineCapsule({
   name: 'NutritionHero',
   description:
     "Split two-column hero for a nutrition-coaching / wellness landing page: a left column with a primary eyebrow, big tracking-tight headline, relaxed subheading, dual pill CTAs (filled primary + outlined card), and a stacked trust-avatar row with a social-proof note; a right column with a large rounded food photo and an overlapping floating 'meal logged' card (check badge + title + subtitle). All CTAs route through useNavigate; imagery uses the alt-driven Image component. Use as the top hero for nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs, weight-loss services or healthy-eating apps.",

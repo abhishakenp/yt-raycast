@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * floating member-quote card on the right. CTAs route through useNavigate. Use as
  * the top hero for gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
-export const FitnessHero = defineComponent({
+export const FitnessHero = defineCapsule({
   name: 'FitnessHero',
   description:
     'Warm, editorial split hero for a gym / fitness-studio landing page: a two-column layout pairing a large two-tone headline (lead in foreground, highlight phrase in muted), a supporting paragraph, dual CTAs (a filled primary pill with an arrow icon and an outlined secondary), and a row of check-marked member-proof points on the left, with a tall rounded showcase photo carrying a floating member-quote card on the right. CTAs route through useNavigate; the photo uses the alt-driven Image component. Use as the top hero for gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.',

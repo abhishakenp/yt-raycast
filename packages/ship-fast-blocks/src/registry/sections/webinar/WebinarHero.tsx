@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
-export const WebinarHero = defineComponent({
+export const WebinarHero = defineCapsule({
   name: 'WebinarHero',
   description:
     "Conversion-focused webinar hero: an uppercase live-event eyebrow pill, a large headline naming the webinar topic, a prominent date/time badge, a value-proposition subheading, a primary 'Save my seat' CTA with a 'Free · Live + Recording' note, a presenter preview (avatar + name + role), and a static countdown row of token cards (Days/Hours/Mins/Secs). Use as the opening viewport of a webinar, summit, or virtual-event registration page.",

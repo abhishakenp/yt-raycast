@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * alt-driven Image component. Use to surface social proof for dentists, dental
  * offices, orthodontists, or clinics.
  */
-export const DentalTestimonials = defineComponent({
+export const DentalTestimonials = defineCapsule({
   name: 'DentalTestimonials',
   description:
     'Patient-testimonials grid for a dental practice site on a soft muted band: a centered eyebrow + heading + lede above a responsive 1-to-3 column grid of card-framed reviews, each with a five-star primary rating row, a quoted testimonial, and a footer pairing a round patient avatar with the patient name and a location / since-date meta line. Avatars use the Image component. Use to surface social proof for dentists, dental offices, orthodontists, or clinics.',

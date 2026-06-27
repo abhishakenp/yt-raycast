@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * image. Use as the opening hero for crypto protocols, DeFi platforms,
  * layer-1/layer-2 chains, bridges, or token projects.
  */
-export const CryptoHero = defineComponent({
+export const CryptoHero = defineCapsule({
   name: 'CryptoHero',
   description:
     'Split-layout hero section for a crypto / DeFi infrastructure landing page: left side has a pulsing mainnet-live status pill, bold multi-line headline, supporting paragraph, dual CTAs (filled primary + outlined secondary), and trust chips with check-circle icons; right side shows a live token price card with token details, mini decorative bar chart, and alt-driven background chart image. Use as the opening hero for crypto protocols, DeFi platforms, layer-1/layer-2 chains, bridges, or token projects.',

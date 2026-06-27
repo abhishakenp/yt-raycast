@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * role. Use to surface social proof from editors, art directors, and
  * collectors. Renders fully with no props via baked-in defaults.
  */
-export const IllustratorTestimonials = defineComponent({
+export const IllustratorTestimonials = defineCapsule({
   name: 'IllustratorTestimonials',
   description:
     "Client testimonials wall for an illustrator / visual-artist portfolio on a raised card-colored band: a centered uppercase accent eyebrow + serif heading above a responsive 3-up grid of quote cards, each a soft background-colored panel with a curly-quoted blockquote and a footer pairing a round avatar with the reviewer's name and role. Use to surface social proof from editors, art directors, and collectors.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * header for construction companies, general contractors, builders, or
  * trades businesses. Renders fully with no props via baked-in defaults.
  */
-export const ConstructionNavbar = defineComponent({
+export const ConstructionNavbar = defineCapsule({
   name: 'ConstructionNavbar',
   description:
     "Sticky top navigation bar for a construction / general contractor site: backdrop-blurred, border-bottomed header with a hard-hat logo tile + brand name on the left, horizontal nav links in the center, and a phone link plus a 'Get a Quote' CTA on the right (desktop). Links and CTA route through useNavigate for page-switching. Use as the sticky site header for construction firms, contractors, builders, or trades businesses.",

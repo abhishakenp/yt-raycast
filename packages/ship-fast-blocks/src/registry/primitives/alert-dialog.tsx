@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   AlertDialog as UIAlertDialog,
   AlertDialogAction,
@@ -15,7 +16,7 @@ import { Button } from '#/components/ui/button.tsx'
 
 // Overlay: flatten the confirm-dialog parts into title/description + action /
 // cancel labels. Rendered open by default so the content is visible.
-export const AlertDialog = defineComponent({
+export const AlertDialog = defineCapsule({
   name: 'AlertDialog',
   description:
     "Confirmation modal with a title, description, cancel and action buttons. Open by default in preview. size 'sm' for compact.",

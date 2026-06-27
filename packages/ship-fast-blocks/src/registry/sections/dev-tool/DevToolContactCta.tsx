@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * DevToolContactCta — a dark closing call-to-action band for a developer tool /
@@ -11,10 +16,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use as the final conversion section before the footer for developer tools,
  * API platforms, backend-as-a-service, or technical SaaS.
  */
-export const DevToolContactCta = defineComponent({
+export const DevToolContactCta = defineCapsule({
   name: 'DevToolContactCta',
   description:
-    'Dark closing call-to-action band for a developer tool / API platform: a centered rounded inverted panel (dark foreground surface) with a bold headline, supporting paragraph, dual CTAs (filled primary + outline-on-dark secondary), and a small footnote. Both CTAs route through useNavigate. Use as the final conversion section before the footer for developer tools, API platforms, backend-as-a-service, or technical SaaS.',
+    'Dark closing call-to-action band for a developer tool / API platform backed by shared Lakebed conversion state: a centered rounded inverted panel with a bold headline, supporting paragraph, dual scoped fullstack CTAs, and a small footnote. Use as the final conversion section before the footer for developer tools, API platforms, backend-as-a-service, or technical SaaS.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -23,8 +28,8 @@ export const DevToolContactCta = defineComponent({
     footnote: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Ready to ship faster?'
     const description =
       props.description ??
@@ -51,20 +56,36 @@ export const DevToolContactCta = defineComponent({
               {description}
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={primaryCta}
+                plan={primaryCta}
+                source="cta"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Starting
+                  </>
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
               >
                 {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
-                className="inline-flex items-center justify-center rounded-lg border border-background/30 bg-transparent px-8 py-3 font-semibold text-background transition-colors hover:bg-background/10"
+              </SaasPlanActionButton>
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={secondaryCta}
+                plan={secondaryCta}
+                source="cta"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Sending
+                  </>
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-background/30 bg-transparent px-8 py-3 font-semibold text-background transition-colors hover:bg-background/10 disabled:pointer-events-none disabled:opacity-70"
               >
                 {secondaryCta}
-              </button>
+              </SaasPlanActionButton>
             </div>
             <p className="mt-6 text-sm text-background/50">{footnote}</p>
           </div>

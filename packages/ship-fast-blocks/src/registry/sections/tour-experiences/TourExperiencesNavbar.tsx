@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /** Inline compass brand mark — adventurous, currentColor → theme token. */
@@ -32,7 +33,7 @@ const CompassMark = ({ className }: { className?: string }) => (
  * landing pages. Renders fully with no props via baked-in "Wanderwild Tours"
  * defaults.
  */
-export const TourExperiencesNavbar = defineComponent({
+export const TourExperiencesNavbar = defineCapsule({
   name: 'TourExperiencesNavbar',
   description:
     "Sticky site header for an adventure / guided-tour brand. Composes the shared SiteNav composite — inline compass brand mark + name, desktop nav links, phone, a pill 'Book a Tour' CTA, and a real mobile drawer — with vivid travel-ready defaults. Every nav label and the CTA route through the shared navigation so labels drive page-switching. Use as the top navigation for tour operators, expedition companies, day-trip outfitters, and travel-experience landing pages.",

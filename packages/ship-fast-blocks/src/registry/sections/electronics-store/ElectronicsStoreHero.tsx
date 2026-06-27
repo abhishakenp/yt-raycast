@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * ElectronicsStoreHero — split storefront hero for a premium electronics /
@@ -14,7 +22,7 @@ import { Image } from '#/lib/img.tsx'
  * meta). CTAs route through useNavigate. Use as the opening hero for electronics
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
-export const ElectronicsStoreHero = defineComponent({
+export const ElectronicsStoreHero = defineCapsule({
   name: 'ElectronicsStoreHero',
   description:
     'Split storefront hero for a premium electronics / gadgets shop on a soft muted band: a two-column layout where the left carries a pill badge, large headline, supporting paragraph, dual CTAs (filled primary Shop Now with an arrow + outlined View Deals) and a bordered inline KPI strip (e.g. 50K+ Happy Customers / 2-Day Free Shipping / 30-Day Easy Returns); the right shows a square product image with a floating best-seller product card (star icon + product title + rating meta). CTAs route through useNavigate; imagery is alt-driven. Use as the opening hero for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, or camera/drone storefronts.',
@@ -39,9 +47,12 @@ export const ElectronicsStoreHero = defineComponent({
     stats: z
       .array(z.object({ value: z.string(), label: z.string() }))
       .optional(),
+    /** Optional price for the floating hero product. */
+    floatPrice: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const badge = props.badge ?? 'New Collection 2025'
     const heading =
@@ -56,6 +67,7 @@ export const ElectronicsStoreHero = defineComponent({
       'Premium over-ear wireless headphones with sleek matte black finish on minimal background'
     const floatTitle = props.floatTitle ?? 'Sony WH-1000XM5'
     const floatMeta = props.floatMeta ?? 'Best Seller • 4.9 (2,847 reviews)'
+    const floatPrice = props.floatPrice ?? '$399.99'
     const stats = props.stats?.length
       ? props.stats
       : [
@@ -63,6 +75,14 @@ export const ElectronicsStoreHero = defineComponent({
           { value: '2-Day', label: 'Free Shipping' },
           { value: '30-Day', label: 'Easy Returns' },
         ]
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt,
+        label: floatTitle,
+        price: floatPrice,
+        subtitle: floatMeta,
+      }),
+    ])
 
     const ArrowRight = () => (
       <svg
@@ -107,14 +127,17 @@ export const ElectronicsStoreHero = defineComponent({
                 {subheading}
               </p>
               <div className="flex flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                <CommerceAddItemButton
+                  lakebed={lakebed}
+                  item={{ label: floatTitle, price: floatPrice }}
+                  pendingChildren={
+                    <CommerceMutationSpinner className="text-primary-foreground" />
+                  }
+                  className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
                   <ArrowRight />
-                </button>
+                </CommerceAddItemButton>
                 <button
                   type="button"
                   onClick={() => go(secondaryCta)}

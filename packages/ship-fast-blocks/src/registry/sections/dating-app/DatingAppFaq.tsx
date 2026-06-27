@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * platforms, or any consumer product. Renders fully with no props via baked-in
  * "HeartLink" FAQ defaults.
  */
-export const DatingAppFaq = defineComponent({
+export const DatingAppFaq = defineCapsule({
   name: 'DatingAppFaq',
   description:
     'Centered FAQ accordion for a dating / matchmaking app: a narrow single-column layout with a centered heading + supporting paragraph above a stack of native <details> accordion items on soft muted backgrounds; each summary shows the question with a chevron that rotates open to reveal the answer. The default supporting line interpolates the brand name. Use to answer common questions — safety, matching, privacy, pricing — for dating apps, singles platforms, or any consumer product.',

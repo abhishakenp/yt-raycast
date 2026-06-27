@@ -1,7 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+  localServiceItem,
+  useSyncLocalServices,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * MentalHealthPricing — a transparent 3-tier pricing block for a therapy
@@ -13,7 +20,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Calm, reassuring wellness aesthetic. Buttons route through useNavigate. Use to
  * present session rates for therapists, counselors, psychologists or psychiatry.
  */
-export const MentalHealthPricing = defineComponent({
+export const MentalHealthPricing = defineCapsule({
   name: 'MentalHealthPricing',
   description:
     "Transparent 3-tier pricing block for a therapy practice: a centered eyebrow + heading + intro above a 3-column grid of pricing cards; the 'most popular' tier is lifted with a primary border, raised card surface and a floating badge, while others sit on a muted surface. Each card shows name, cadence, big price + unit, a checkmarked feature list, and a rounded booking button, with a centered sliding-scale note below. Calm, reassuring wellness aesthetic. Buttons route through useNavigate. Use to present session rates for therapists, counselors, psychologists or psychiatry.",
@@ -39,8 +46,8 @@ export const MentalHealthPricing = defineComponent({
     bookLabel: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const eyebrow = props.eyebrow ?? 'Investment in You'
     const heading = props.heading ?? 'Transparent pricing'
     const description =
@@ -92,11 +99,19 @@ export const MentalHealthPricing = defineComponent({
             popular: false,
           },
         ]
+    useSyncLocalServices(
+      lakebed,
+      tiers.map((tier) =>
+        localServiceItem({
+          name: tier.name,
+          price: `${tier.price}${tier.unit}`,
+          summary: tier.cadence,
+        }),
+      ),
+    )
     const note =
       props.note ??
       'Sliding scale available: We reserve a limited number of reduced-rate slots for clients experiencing financial hardship. Contact us to inquire about availability.'
-    const bookLabel = props.bookLabel ?? 'Book Session'
-
     const Check = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -165,18 +180,28 @@ export const MentalHealthPricing = defineComponent({
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => go(bookLabel)}
+                <LocalServiceBookingButton
+                  lakebed={lakebed}
+                  intentLabel={tier.cta}
+                  service={tier.name}
+                  source="pricing"
+                  pendingChildren={
+                    <LocalServiceMutationSpinner
+                      className={
+                        tier.popular ? 'text-primary-foreground' : undefined
+                      }
+                    />
+                  }
                   className={cn(
                     'block w-full rounded-full px-6 py-3 text-center font-medium transition-colors',
                     tier.popular
                       ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+                    'disabled:pointer-events-none disabled:opacity-70',
                   )}
                 >
                   {tier.cta}
-                </button>
+                </LocalServiceBookingButton>
               </div>
             ))}
           </div>

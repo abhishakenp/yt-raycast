@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * Use as the opening section for coworking spaces, shared offices, flex-office
  * providers, or business centers.
  */
-export const CoworkingHero = defineComponent({
+export const CoworkingHero = defineCapsule({
   name: 'CoworkingHero',
   description:
     "Split hero section for a coworking / workspace landing page: eyebrow label, large multi-line headline with one phrase muted, a supporting paragraph, dual pill CTAs (filled primary + outlined secondary), a trust-check row with icons, a large rounded hero image, and an absolute-positioned floating 'members active' social-proof card with an avatar stack. CTAs route through useNavigate; images use the alt-driven Image component. Use as the opening section for coworking spaces, shared offices, flex-office providers, or workspace membership sites.",

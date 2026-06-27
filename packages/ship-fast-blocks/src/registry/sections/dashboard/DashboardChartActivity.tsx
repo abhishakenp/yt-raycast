@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { useState, type ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -16,7 +17,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * activity stream. Renders fully with no props via baked-in revenue + activity
  * defaults.
  */
-export const DashboardChartActivity = defineComponent({
+export const DashboardChartActivity = defineCapsule({
   name: 'DashboardChartActivity',
   description:
     "A two-column analytics band for a SaaS admin dashboard: on the left (2/3 width) a revenue panel with title/subtitle, range-toggle buttons and a smooth inline SVG area chart (indigo gradient fill, gridlines, end-point marker, axis-label strip); on the right a recent-activity feed card with a 'View all' link and tone-tinted round-icon items (sentence + optional bold phrase + timestamp). Range toggles are interactive; 'View all' routes through useNavigate. Use below the KPI row to pair a trend chart with a live activity stream.",

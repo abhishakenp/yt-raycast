@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * brands, or any warm boutique-retail site. Renders fully with no props via
  * baked-in "Haven & Home" defaults.
  */
-export const FurnitureStoreFooter = defineComponent({
+export const FurnitureStoreFooter = defineCapsule({
   name: 'FurnitureStoreFooter',
   description:
     'Rich multi-column footer on the dark primary background: a responsive 5-column grid with a wide brand column (house-glyph logo tile + store name, about blurb, stacked store address / hours block) beside several link columns (heading over a list of nav buttons), plus a bordered-top bottom bar with an auto-updating copyright line and a wrapping row of legal links; the brand button and every link route through useNavigate. Use as the closing site footer for furniture stores, home-decor or interiors brands, or any warm boutique-retail site.',

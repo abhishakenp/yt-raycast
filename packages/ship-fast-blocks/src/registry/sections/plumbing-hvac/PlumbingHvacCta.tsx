@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * call-to-action for plumber, HVAC, or other home-service pages. Renders fully
  * with no props via baked-in defaults.
  */
-export const PlumbingHvacCta = defineComponent({
+export const PlumbingHvacCta = defineCapsule({
   name: 'PlumbingHvacCta',
   description:
     "Full-width conversion band for the bottom of a plumbing & HVAC trade site built on the shared CtaBand composite at tone='primary': a centered headline + supporting line over a primary surface, a high-contrast 'Schedule Service' pill (auto-inverted on the primary band), an outlined 'Call Now' pill, and a small reassurance note in the eyebrow. Both CTAs route through useNavigate. Use as the closing call-to-action for plumber, HVAC, or other home-service pages.",

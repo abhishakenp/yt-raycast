@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Image } from '#/lib/img.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
@@ -15,7 +16,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * CTAs route through useNavigate. Use as the top hero for B2B SaaS,
  * team/project-management, productivity, or developer-platform landing pages.
  */
-export const MarketingHero = defineComponent({
+export const MarketingHero = defineCapsule({
   name: 'MarketingHero',
   description:
     "Split product hero for a SaaS / product-marketing landing page: a soft top-down indigo gradient section pairing a left content column (a check-pill badge, a bold balanced headline, a supporting paragraph, dual CTAs — filled primary + outline 'watch demo' with a play glyph — and a trust footnote) with a right 3D-tilted browser mockup of a live product dashboard (traffic-light dots, address bar, an app rail with the brand initial, an animated sprint-velocity bar chart, and a task checklist). Clean premium indigo-on-light aesthetic; CTAs route through useNavigate. Use as the top hero for B2B SaaS, team/project-management, productivity, or developer-platform landing pages.",

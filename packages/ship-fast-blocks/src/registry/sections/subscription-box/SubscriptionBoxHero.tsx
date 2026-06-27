@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * SubscriptionBoxHero — bespoke split hero for a subscription-box brand built
@@ -14,7 +22,7 @@ import { Image } from '#/lib/img.tsx'
  * rounded, shadowed card. Theme-token only and fully routable via useNavigate.
  * Renders complete with no props.
  */
-export const SubscriptionBoxHero = defineComponent({
+export const SubscriptionBoxHero = defineCapsule({
   name: 'SubscriptionBoxHero',
   description:
     "Bespoke split hero for a subscription-box brand with a playful unboxing aesthetic: an eyebrow pill, a headline with a primary-tinted phrase, supporting copy, dual CTAs (primary 'Build your box' + secondary 'How it works'), and small delight badges over a framed alt-driven unboxing image. Use as the opening viewport for any curated monthly box or recurring-delivery brand.",
@@ -25,11 +33,16 @@ export const SubscriptionBoxHero = defineComponent({
     subheading: z.string().optional(),
     primaryCta: z.string().optional(),
     secondaryCta: z.string().optional(),
+    featuredBoxName: z.string().optional(),
+    featuredBoxPrice: z.string().optional(),
+    featuredBoxSubtitle: z.string().optional(),
+    addLabel: z.string().optional(),
     badges: z.array(z.string()).optional(),
     imageAlt: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'New boxes every month'
     const headline = props.headline ?? 'A little box of joy, delivered to'
@@ -39,11 +52,25 @@ export const SubscriptionBoxHero = defineComponent({
       'Hand-picked treats, gadgets, and surprises curated around what you love. Build a box, unwrap the delight, repeat every month.'
     const primaryCta = props.primaryCta ?? 'Build your box'
     const secondaryCta = props.secondaryCta ?? 'How it works'
+    const featuredBoxName = props.featuredBoxName ?? 'Classic starter box'
+    const featuredBoxPrice = props.featuredBoxPrice ?? '$39/mo'
+    const featuredBoxSubtitle =
+      props.featuredBoxSubtitle ?? 'Personalized monthly box'
+    const addLabel = props.addLabel ?? 'Add to cart'
     const badges = props.badges?.length
       ? props.badges
       : ['Free shipping', 'Cancel anytime', 'Skip a month']
     const imageAlt =
       props.imageAlt ?? 'curated subscription box unboxing products'
+
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt,
+        label: featuredBoxName,
+        price: featuredBoxPrice,
+        subtitle: featuredBoxSubtitle,
+      }),
+    ])
 
     return (
       <section
@@ -82,6 +109,18 @@ export const SubscriptionBoxHero = defineComponent({
               >
                 {secondaryCta}
               </button>
+              <CommerceAddItemButton
+                lakebed={lakebed}
+                item={{
+                  label: featuredBoxName,
+                  price: featuredBoxPrice,
+                }}
+                aria-label={`${addLabel} ${featuredBoxName}`}
+                pendingChildren={<CommerceMutationSpinner />}
+                className="inline-flex items-center justify-center rounded-full bg-foreground px-7 py-3.5 text-sm font-semibold text-background transition hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+              >
+                {addLabel}
+              </CommerceAddItemButton>
             </div>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
               {badges.map((badge) => (

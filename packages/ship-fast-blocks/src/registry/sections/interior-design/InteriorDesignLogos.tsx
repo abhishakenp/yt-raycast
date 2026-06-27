@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * affiliations for design studios, architecture firms or furniture businesses.
  * Renders fully with no props via baked-in defaults.
  */
-export const InteriorDesignLogos = defineComponent({
+export const InteriorDesignLogos = defineCapsule({
   name: 'InteriorDesignLogos',
   description:
     "Understated 'trusted by' brand logo strip for an upscale interior-design / architecture studio site: a muted, border-top-and-bottom band with a centered uppercase tracked caption above a responsive 2/4/6-column grid of light-weight wordmark logos at reduced opacity (extra items hide below large screens). Editorial and minimal — pure social proof. Use beneath the hero to signal partner brands, press, retailers or showroom affiliations for design studios, architecture firms or furniture businesses.",

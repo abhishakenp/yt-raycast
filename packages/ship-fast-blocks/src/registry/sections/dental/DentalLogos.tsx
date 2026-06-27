@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * hero of a dentist, dental office, or clinic site to signal accepted insurance
  * and build trust.
  */
-export const DentalLogos = defineComponent({
+export const DentalLogos = defineCapsule({
   name: 'DentalLogos',
   description:
     'Insurance-provider / trust logo strip for a dental practice site: a border-bottomed band on the page surface with a small uppercase caption above a faded, responsive 2-to-6 column grid of provider wordmarks rendered as text buttons that brighten on hover. Every wordmark routes through useNavigate. Use directly below the hero of a dentist, dental office, or clinic site to signal accepted insurance and build trust.',

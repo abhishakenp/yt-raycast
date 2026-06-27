@@ -1,21 +1,25 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { dashboardLakebed } from './dashboard-lakebed.ts'
 
 /**
  * DashboardHeader — a page-title header row for a SaaS admin dashboard. A
  * responsive flex band with a bold title + muted subtitle on the left and two
  * action buttons on the right: an outline secondary action and a gradient indigo
- * primary action (prefixed with a "+"). Both actions route through useNavigate.
+ * primary action (prefixed with a "+"). The primary action writes a shared
+ * Lakebed order and the secondary action routes through useNavigate.
  * Use as the heading row at the top of a dashboard content area — above KPI
  * cards, tables or charts — to label the view and surface its key actions.
  * Renders fully with no props via baked-in "Dashboard" defaults.
  */
-export const DashboardHeader = defineComponent({
+export const DashboardHeader = defineCapsule({
   name: 'DashboardHeader',
   description:
-    "A page-title header row for a SaaS admin dashboard: a responsive flex band with a bold title + muted subtitle on the left and two action buttons on the right — an outline secondary action and a gradient indigo primary action (prefixed with a '+'). Both actions route through useNavigate. Use as the heading row at the top of a dashboard content area, above KPI cards, tables or charts, to label the view and surface its key actions.",
+    "A page-title header row for a SaaS admin dashboard: a responsive flex band with a bold title + muted subtitle on the left and two action buttons on the right — an outline secondary action and a gradient indigo primary action (prefixed with a '+'). The primary action writes a shared Lakebed order and the secondary action routes through useNavigate. Use as the heading row at the top of a dashboard content area, above KPI cards, tables or charts, to label the view and surface its key actions.",
   props: z.object({
     /** Page-header heading. */
     title: z.string().optional(),
@@ -27,14 +31,18 @@ export const DashboardHeader = defineComponent({
     primaryAction: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: dashboardLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const addOrder = useKeyedLakebedMutation(lakebed, 'addOrder')
     const title = props.title ?? 'Dashboard'
     const subtitle =
       props.subtitle ??
       "Welcome back, Alex. Here's what's happening with your store."
     const secondaryAction = props.secondaryAction ?? 'Export'
     const primaryAction = props.primaryAction ?? 'New Order'
+    const newOrderKey = 'dashboard-header:new-order'
+    const newOrderPending = addOrder.isPending(newOrderKey)
 
     return (
       <div
@@ -57,10 +65,27 @@ export const DashboardHeader = defineComponent({
           </button>
           <button
             type="button"
-            onClick={() => go(primaryAction)}
-            className="rounded-lg bg-gradient-to-br from-primary to-primary/80 px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm shadow-primary/30 transition hover:-translate-y-px hover:shadow-md hover:shadow-primary/40"
+            aria-busy={newOrderPending}
+            disabled={newOrderPending}
+            onClick={() => {
+              const now = new Date()
+              void addOrder.run(newOrderKey, {
+                amount: '$0.00',
+                customer: 'New Customer',
+                date: now.toLocaleDateString('en-US', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                }),
+                orderId: `#${Math.floor(now.getTime() / 1000)}`,
+                product: 'Manual order',
+                status: 'Processing',
+                statusTone: 'sky',
+              })
+            }}
+            className="rounded-lg bg-gradient-to-br from-primary to-primary/80 px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm shadow-primary/30 transition hover:-translate-y-px hover:shadow-md hover:shadow-primary/40 disabled:pointer-events-none disabled:opacity-70"
           >
-            + {primaryAction}
+            {newOrderPending ? 'Adding' : `+ ${primaryAction}`}
           </button>
         </div>
       </div>

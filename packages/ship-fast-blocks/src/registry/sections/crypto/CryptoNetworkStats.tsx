@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * pulsing status dot plus metric rows (label/value pairs). Use as a trust-
  * building stats band for protocols, chains, bridges, or staking networks.
  */
-export const CryptoNetworkStats = defineComponent({
+export const CryptoNetworkStats = defineCapsule({
   name: 'CryptoNetworkStats',
   description:
     'Inverted dark data-band for a crypto / DeFi infrastructure landing page: bg-foreground section containing KPI counter cells (value + label), a 24h transaction volume mini bar chart with a change badge and update timestamp, and a network health panel with a live pulsing status dot plus metric rows (label/value pairs). Use as a trust-building stats band for protocols, chains, bridges, or staking networks.',

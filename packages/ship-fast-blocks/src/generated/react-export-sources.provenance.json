@@ -10,9 +10,10 @@
     "src/generated/runtime-component-loaders.ts",
     "src/generated/runtime-component-names.ts",
     "src/generated/runtime-section-component-names.ts",
+    "src/generated/capsule-categories.ts",
     "src/generated/react-export-sources.provenance.json"
   ],
-  "componentCount": 1134,
+  "componentCount": 1135,
   "sectionComponentCount": 1064,
   "components": [
     {
@@ -3954,6 +3955,10 @@
     {
       "name": "Section",
       "sourceFile": "src/registry/primitives/layout.tsx"
+    },
+    {
+      "name": "SectionAnchor",
+      "sourceFile": "src/registry/primitives/page-switch.tsx"
     },
     {
       "name": "Select",

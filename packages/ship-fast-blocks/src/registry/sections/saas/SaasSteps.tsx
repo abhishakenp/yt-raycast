@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * product onboarding or workflow in a few confident, conversion-focused steps.
  * Renders fully with no props via baked-in defaults.
  */
-export const SaasSteps = defineComponent({
+export const SaasSteps = defineCapsule({
   name: 'SaasSteps',
   description:
     "A 'How it works' band for a B2B SaaS landing page: a centered heading + optional intro above a responsive row of 3-4 numbered steps, each with a large gradient/primary numbered badge, a title, and a short description, joined by a faint accent connector line. Use to explain a product onboarding or workflow in a few confident, conversion-focused steps.",

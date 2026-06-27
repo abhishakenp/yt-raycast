@@ -1,21 +1,29 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  EventActionButton,
+  EventMobileMenu,
+  EventMutationSpinner,
+  EventRegistrationBadge,
+} from './event-interactions.tsx'
+import { eventLakebed } from './event-lakebed.ts'
 
 /**
  * EventNavbar — sticky translucent top navigation bar for a conference / event
  * landing page. A blurred, border-bottomed header pinned to the top with a square
  * brand-initials mark plus the event name on the left, a horizontal row of nav
- * links in the center, and a primary "Get Tickets" CTA on the right. Every link
- * and the CTA route through useNavigate, and the nav labels match site routes so
- * page switching works. Use as the sticky site header for tech conferences,
+ * links in the center, a shared registration badge, a real mobile Sheet menu,
+ * and a primary "Get Tickets" CTA on the right. Nav links route through
+ * useNavigate; the CTA records a Lakebed event/ticket action. Use as the sticky site header for tech conferences,
  * summits, meetups, workshops, festivals, webinars, or any ticketed event.
  */
-export const EventNavbar = defineComponent({
+export const EventNavbar = defineCapsule({
   name: 'EventNavbar',
   description:
-    "Sticky translucent top navigation bar for a conference / event landing page: a blurred, border-bottomed header pinned to the top with a square brand-initials mark plus the event name on the left, a horizontal row of nav links in the center, and a primary 'Get Tickets' CTA button on the right. Every nav link and the CTA route through useNavigate, and the nav labels match site routes so PageSwitch can swap pages. Use as the sticky site header for tech conferences, summits, meetups, workshops, festivals, webinars, hackathons, or any ticketed event.",
+    "Sticky translucent top navigation bar for a conference / event landing page: a blurred, border-bottomed header pinned to the top with a square brand-initials mark plus the event name on the left, a horizontal row of nav links in the center, a shared Lakebed registration badge, a real mobile Sheet menu, and a primary 'Get Tickets' CTA button on the right. Nav links route through useNavigate, and the CTA records a Lakebed event/ticket action. Use as the sticky site header for tech conferences, summits, meetups, workshops, festivals, webinars, hackathons, or any ticketed event.",
   props: z.object({
     /** Brand / event name shown in the navbar. */
     brand: z.string().optional(),
@@ -29,7 +37,8 @@ export const EventNavbar = defineComponent({
     ctaTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: eventLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'DesignFront'
     const nav = props.nav?.length
@@ -78,13 +87,34 @@ export const EventNavbar = defineComponent({
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={() => go(ctaTarget)}
-              className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {ctaLabel}
-            </button>
+            <div className="flex items-center gap-3">
+              <EventRegistrationBadge lakebed={lakebed} />
+              <EventActionButton
+                lakebed={lakebed}
+                action="ticket"
+                label={ctaLabel}
+                intentKey="navbar-ticket"
+                source="navbar"
+                tier={ctaTarget}
+                pendingChildren={
+                  <>
+                    <EventMutationSpinner />
+                    Reserving
+                  </>
+                }
+                className="hidden items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+              >
+                {ctaLabel}
+              </EventActionButton>
+              <EventMobileMenu
+                brand={brand}
+                ctaLabel={ctaLabel}
+                homeTarget={homeTarget}
+                lakebed={lakebed}
+                nav={nav}
+                buttonClassName="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+              />
+            </div>
           </div>
         </nav>
       </header>

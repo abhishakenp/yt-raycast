@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * CafeHero — split-layout hero section for a cozy neighborhood cafe / coffee
@@ -15,10 +23,11 @@ import { Image } from '#/lib/img.tsx'
  * houses, brunch spots, or any warm food-and-drink small business. Renders
  * fully with no props via baked-in "Little Owl Coffee" defaults.
  */
-export const CafeHero = defineComponent({
+export const CafeHero = defineCapsule({
   name: 'CafeHero',
   description:
     'Split-layout hero section for a cozy cafe / coffee shop landing page: left side with an open-now availability pill (pulsing dot), serif headline with an italic amber highlight phrase, supporting paragraph, dual rounded CTAs (filled primary + outlined secondary), and an inline KPI strip; right side has a tall interior photo with a floating customer-review card anchored bottom-left. CTAs route through useNavigate. Use as the opening hero for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink businesses.',
+  lakebed: commerceCartLakebed,
   props: z.object({
     /** Availability / status pill text. */
     badge: z.string().optional(),
@@ -34,6 +43,10 @@ export const CafeHero = defineComponent({
     primaryCta: z.string().optional(),
     /** Outlined secondary CTA label. */
     secondaryCta: z.string().optional(),
+    /** Featured shoppable cafe item name. */
+    featuredItemName: z.string().optional(),
+    /** Featured shoppable cafe item price. */
+    featuredItemPrice: z.string().optional(),
     /** Alt text driving the tall hero interior photo. */
     imageAlt: z.string().optional(),
     /** Floating customer-review card over the hero photo — quote text. */
@@ -50,7 +63,7 @@ export const CafeHero = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const badge = props.badge ?? 'Now Open — 7am to 7pm Daily'
     const headingTop = props.headingTop ?? 'Coffee that feels like'
@@ -61,6 +74,8 @@ export const CafeHero = defineComponent({
       "Specialty coffee, house-made pastries, and a cozy corner for your morning ritual. Located in the heart of Portland's Pearl District since 2018."
     const primaryCta = props.primaryCta ?? 'View Menu'
     const secondaryCta = props.secondaryCta ?? 'Find Us'
+    const featuredItemName = props.featuredItemName ?? 'Oat Flat White'
+    const featuredItemPrice = props.featuredItemPrice ?? '$5.50'
     const imageAlt =
       props.imageAlt ??
       'Cozy coffee shop interior with warm wood tables, exposed brick walls, and soft morning light streaming through large windows'
@@ -77,6 +92,14 @@ export const CafeHero = defineComponent({
           { value: '6', label: 'Years Serving' },
           { value: '12', label: 'Coffee Origins' },
         ]
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt,
+        label: featuredItemName,
+        price: featuredItemPrice,
+        subtitle: badge,
+      }),
+    ])
 
     return (
       <section
@@ -116,6 +139,20 @@ export const CafeHero = defineComponent({
                   {secondaryCta}
                 </button>
               </div>
+              <CommerceAddItemButton
+                lakebed={lakebed}
+                item={{ label: featuredItemName, price: featuredItemPrice }}
+                aria-label={`Add ${featuredItemName} to cart`}
+                pendingChildren={
+                  <>
+                    <CommerceMutationSpinner />
+                    Adding
+                  </>
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/30 px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:pointer-events-none disabled:opacity-70"
+              >
+                Add today&apos;s pick · {featuredItemPrice}
+              </CommerceAddItemButton>
               <div className="flex items-center gap-8 pt-4">
                 {stats.map((s, i) => (
                   <div key={s.label} className="flex items-center gap-8">

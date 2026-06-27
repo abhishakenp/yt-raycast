@@ -1,12 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CleaningServiceLogos — a "trusted by" logos strip for a home-cleaning / maid-service landing page. A single-row bordered section with a centered uppercase label above a responsive 2/4/6-column grid of clickable company-name pills. Each item routes through useNavigate on click. Use as social-proof / credibility strip immediately below the hero for residential cleaning companies, local services, or small-business landing pages. Renders fully with no props via baked-in defaults.
  */
-export const CleaningServiceLogos = defineComponent({
+export const CleaningServiceLogos = defineCapsule({
   name: 'CleaningServiceLogos',
   description:
     "A 'trusted by' logos strip for a home-cleaning / maid-service landing page: single-row bordered section with a centered uppercase label above a responsive 2/4/6-column grid of clickable company-name pills. Each item routes through useNavigate on click. Use as social-proof credibility strip below the hero for residential cleaning companies, local services, or small-business landing pages.",

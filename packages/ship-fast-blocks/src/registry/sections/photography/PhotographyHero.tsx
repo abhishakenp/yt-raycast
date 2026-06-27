@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * or any gallery-first visual creative. Renders fully with no props via baked-in
  * defaults.
  */
-export const PhotographyHero = defineComponent({
+export const PhotographyHero = defineCapsule({
   name: 'PhotographyHero',
   description:
     'Full-bleed image-overlay hero for a fine-art / wedding photographer portfolio: a full-height section with an edge-to-edge background photo under a soft dark scrim, bottom-anchored content with an uppercase tracked kicker, a large serif display headline, a supporting paragraph, dual CTAs (solid light button + outlined ghost button), and an animated scroll cue. Both CTAs route through useNavigate. Use as the opening hero for wedding photographers, portrait studios, elopement shooters, or gallery-first visual creatives.',

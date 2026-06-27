@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * service practice that wants to explain its workflow. Renders fully with no
  * props via three baked-in steps.
  */
-export const ArchitectureFirmProcess = defineComponent({
+export const ArchitectureFirmProcess = defineCapsule({
   name: 'ArchitectureFirmProcess',
   description:
     "Numbered process / how-we-work section for an architecture-studio / design-practice page: a centered eyebrow + light heading above a responsive 1/3-column grid of steps, each with an oversized faint two-digit ordinal behind a title + paragraph. Calm, editorial, monochrome. Tokens-only, no links. Use as a process / methodology / how-it-works / 'our approach' timeline (discovery, design development, realization) for architecture firms, design studios, interior designers or any service practice explaining its workflow.",

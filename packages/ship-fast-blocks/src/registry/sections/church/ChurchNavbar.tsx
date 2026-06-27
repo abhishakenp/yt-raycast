@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * ChurchNavbar — fixed translucent top navigation bar for a church or faith-community
@@ -12,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * site header for churches, parishes, worship centers, ministries, or religious nonprofits.
  * Renders fully with no props via baked-in "Grace Community" defaults.
  */
-export const ChurchNavbar = defineComponent({
+export const ChurchNavbar = defineCapsule({
   name: 'ChurchNavbar',
   description:
     "Fixed translucent top navigation bar for a church or faith-community site: backdrop-blurred, border-bottomed header pinned to the top with a star brand mark + church name on the left, horizontal nav links and a pill-shaped 'Give Today' CTA on the right (desktop), and a hamburger menu button on mobile. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for churches, parishes, worship centers, ministries, or religious nonprofits.",
@@ -87,27 +89,13 @@ export const ChurchNavbar = defineComponent({
               >
                 {ctaLabel}
               </button>
-              <button
-                type="button"
-                aria-label="Open menu"
-                onClick={() => go(homeTarget)}
-                className="p-2 text-muted-foreground md:hidden"
-              >
-                <svg
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
+              <MobileNavDrawer
+                brand={brand}
+                nav={nav}
+                homeTarget={homeTarget}
+                cta={{ label: ctaLabel, target: ctaTarget }}
+                buttonClassName="p-2 text-muted-foreground md:hidden"
+              />
             </div>
           </nav>
         </div>

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * conversion / install push for dating apps, singles platforms, or any mobile app
  * landing page. Renders fully with no props via baked-in "HeartLink" defaults.
  */
-export const DatingAppDownloadCta = defineComponent({
+export const DatingAppDownloadCta = defineCapsule({
   name: 'DatingAppDownloadCta',
   description:
     "Bold app-download CTA band for a dating / matchmaking app: a dark foreground-surfaced two-column band — left has a big heading, a supporting paragraph, and App Store + Google Play store buttons (each with its glyph and two-line label); right has a tilted phone mockup with an overlaid in-app profile card and a floating 'New Match!' notification chip. Store buttons route through useNavigate; mockup imagery is alt-driven <Image>. Use as the final conversion / install push for dating apps, singles platforms, or any mobile app landing page.",

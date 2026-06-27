@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
-export const TravelAgencyHero = defineComponent({
+export const TravelAgencyHero = defineCapsule({
   name: 'TravelAgencyHero',
   description:
     "Bespoke, full-bleed wanderlust hero for the Travel Agency page family. Renders a breathtaking destination image behind a token-based dark overlay, with an eyebrow, an oversized aspirational heading, supporting copy, and an inline destination search affordance (Where to? / Dates / Travelers cells plus a 'Find your trip' button wired through useNavigate). Use as the opening viewport of a premium travel agency page. All content is prop-driven with baked defaults so it renders with no props.",

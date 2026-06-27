@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * bottomed band. Use right under the hero to establish credibility with press
  * mentions or partner brands. Renders fully with no props via baked-in defaults.
  */
-export const InsuranceLogos = defineComponent({
+export const InsuranceLogos = defineCapsule({
   name: 'InsuranceLogos',
   description:
     'Press / trust logo strip for an insurance / fintech page: a centered uppercase eyebrow label above a responsive grid of muted wordmark logos (2 up on mobile, 6 up on desktop) at reduced opacity, on a border-bottomed band. Use right under the hero to establish credibility with press mentions or partner brands.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -26,7 +27,7 @@ const SparkMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const LinkInBioNavbar = defineComponent({
+export const LinkInBioNavbar = defineCapsule({
   name: 'LinkInBioNavbar',
   description:
     "Minimal, mobile-first header for a single-page link-in-bio hub built on the shared SiteNav composite: a bold monogram spark mark beside a creator name, one or two in-page anchor links, and a prominent 'Follow' CTA — no phone, no sprawling menu. Use as the header for a creator, artist, musician, influencer, or solo founder link hub. Renders fully with no props.",

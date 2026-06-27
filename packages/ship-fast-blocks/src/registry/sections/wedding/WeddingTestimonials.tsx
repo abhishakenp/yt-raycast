@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
-export const WeddingTestimonials = defineComponent({
+export const WeddingTestimonials = defineCapsule({
   name: 'WeddingTestimonials',
   description:
     "Well-wishes band for a wedding site, built on the shared TestimonialGrid composite: warm notes from family and friends rendered as elegant quote cards with the sender's name and relationship to the couple. No star ratings — just heartfelt messages. Use to share blessings and congratulations on a wedding invitation or celebration page.",

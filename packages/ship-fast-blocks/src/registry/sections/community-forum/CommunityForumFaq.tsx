@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * and an answer paragraph. No links. Use as the frequently-asked-questions section
  * for community platforms, SaaS products, or membership services.
  */
-export const CommunityForumFaq = defineComponent({
+export const CommunityForumFaq = defineCapsule({
   name: 'CommunityForumFaq',
   description:
     'Accordion FAQ for a community-platform / discussion-forum landing page: a centered heading and description above a max-width stack of details/summary cards, each with a question, a chevron that rotates on open, and an answer paragraph. No links. Use as the frequently-asked-questions section for community platforms, SaaS products, or membership services.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * starting APR, $0 fees, sample monthly payments — on personal-loan, debt-
  * consolidation, or financing pages. Renders fully with no props via defaults.
  */
-export const LendingRates = defineComponent({
+export const LendingRates = defineCapsule({
   name: 'LendingRates',
   description:
     'Transparent rates-and-fees band + sample payment-schedule table on a muted section for a lending or fintech marketing page: centered heading + description above a white card with a 3-up divided highlights row (big stat + label + note) and a muted check-listed guarantees footer; below it a separate card with a titled, horizontally-scrollable APR-by-credit-tier table and a fine-print disclaimer. Use to communicate honest pricing — starting APR, $0 fees, sample monthly payments — on personal-loan, debt-consolidation, or financing pages.',

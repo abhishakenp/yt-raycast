@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -10,7 +11,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * spa guests, members, and first-time visitors. Renders fully with no props via
  * baked-in defaults.
  */
-export const SpaWellnessTestimonials = defineComponent({
+export const SpaWellnessTestimonials = defineCapsule({
   name: 'SpaWellnessTestimonials',
   description:
     "Guest-review band for a day-spa / wellness page built on the shared TestimonialGrid composite: a centered heading above a responsive grid of review cards, each with a star rating, a guest quote, and the guest's name. Use to build trust with social proof from spa guests, members, and first-time visitors.",

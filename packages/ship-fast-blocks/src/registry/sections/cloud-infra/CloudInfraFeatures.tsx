@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * an inline SVG, a title, and a description. Cards lift with a primary border
  * tint on hover. Tokens-only. Renders fully on zero arguments.
  */
-export const CloudInfraFeatures = defineComponent({
+export const CloudInfraFeatures = defineCapsule({
   name: 'CloudInfraFeatures',
   description:
     'Product capabilities grid for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a responsive 3-column card grid. Each card has a rounded tinted icon tile with an inline SVG, a title, and a description; cards lift with a primary border tint on hover. Tokens-only. Use for feature grids on cloud hosting, IaaS, PaaS, serverless, container, DevOps, or developer-tooling sites.',

@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * Use as the core "everything you need" features section for a no-code builder,
  * SaaS, or product landing page. Renders fully with no props.
  */
-export const NoCodeFeatures = defineComponent({
+export const NoCodeFeatures = defineCapsule({
   name: 'NoCodeFeatures',
   description:
     "Centered-header 6-up feature grid on a bright canvas: a muted eyebrow, bold heading, and supporting paragraph above a 1-to-3 column grid of soft-bordered cards, each with a rounded tinted icon tile (rotating token tints) that scales up on hover, a title, and a description. Use as the core 'everything you need' features section for a no-code / app-builder SaaS or product landing page.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * tutoring services, and family learning apps. Renders fully with no props via
  * baked-in defaults.
  */
-export const KidsEducationTestimonials = defineComponent({
+export const KidsEducationTestimonials = defineCapsule({
   name: 'KidsEducationTestimonials',
   description:
     "Parent & teacher testimonial grid for a kids / family learning platform: a centered eyebrow + heading + description intro on a muted band above a responsive 3-up grid of rounded white quote cards; each card has a 5-star rating row, a quote, and a headshot avatar with name + role. Use as social proof for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",

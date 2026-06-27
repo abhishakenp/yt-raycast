@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * section for churches, worship centers, ministries, or religious nonprofits.
  * Renders fully with no props via baked-in defaults.
  */
-export const ChurchGive = defineComponent({
+export const ChurchGive = defineCapsule({
   name: 'ChurchGive',
   description:
     'Generosity / give split section for a church or faith-community site: left column with eyebrow, heading, description, icon-accented giving-method list, and dual pill CTAs; right column with a staggered 2-column photo collage and two stat cards (one on muted bg, one on primary bg). Warm, mission-focused, and action-oriented. CTAs route through useNavigate. Use as the giving / donate section for churches, worship centers, ministries, or religious nonprofits.',

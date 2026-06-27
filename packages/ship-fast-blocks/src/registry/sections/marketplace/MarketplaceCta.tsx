@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -15,7 +16,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * or maker/artisan platform, or retail aggregator to drive seller signups and
  * shopping. Renders fully with no props via vibrant baked-in defaults.
  */
-export const MarketplaceCta = defineComponent({
+export const MarketplaceCta = defineCapsule({
   name: 'MarketplaceCta',
   description:
     "Bold, centered conversion band for a multi-vendor marketplace / e-commerce home page built on the shared CtaBand composite at tone='primary': an optional eyebrow, a strong 'Start selling today' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Start Selling' button routing to seller onboarding plus an outlined 'Browse Marketplace' button routing to category browsing). Both CTAs route through useNavigate. Use near the bottom of an online marketplace, multi-vendor or maker/artisan platform, or retail aggregator to drive seller signups and shopping.",

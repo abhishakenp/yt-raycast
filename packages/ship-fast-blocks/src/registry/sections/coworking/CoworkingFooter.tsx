@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -21,7 +22,7 @@ const BrandTile = ({ letter }: { letter: string }) => (
   </span>
 )
 
-export const CoworkingFooter = defineComponent({
+export const CoworkingFooter = defineCapsule({
   name: 'CoworkingFooter',
   description:
     'Rich, multi-column closing footer for a coworking or shared-workspace site built on the shared SiteFooter composite: a brand block (rounded brand-initial logo tile + workspace name + tagline + social row) beside a responsive grid of link columns (Spaces, Company, Resources, Contact), with a bordered-top bottom bar holding an auto-updating copyright line. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for coworking spaces, shared offices, flex-office providers, or business centers.',

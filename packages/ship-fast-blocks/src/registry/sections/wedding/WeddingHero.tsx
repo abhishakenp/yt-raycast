@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
-export const WeddingHero = defineComponent({
+export const WeddingHero = defineCapsule({
   name: 'WeddingHero',
   description:
     'Romantic full-bleed wedding hero: an alt-driven golden-hour ceremony photograph behind a soft dark overlay, with an uppercase save-the-date eyebrow pill, a large serif couple-names headline, the wedding date and venue, and dual call-to-action buttons (RSVP plus Our Story). Use as the opening viewport of a wedding invitation or celebration site to set an elegant, heartfelt tone.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * to showcase an artist's recent books, editorial spreads, campaigns, and
  * personal projects. Renders fully with no props via baked-in defaults.
  */
-export const IllustratorWork = defineComponent({
+export const IllustratorWork = defineCapsule({
   name: 'IllustratorWork',
   description:
     "Selected-work project gallery for an illustrator / visual-artist portfolio on a raised card-colored band: a header row pairing an uppercase accent eyebrow + serif heading with a 'view all' arrow link, above a responsive 3-up grid of clickable projects, each a tall 4:5 image that zooms on hover with a serif title and small meta line. Items and the view-all link route through useNavigate. Use to showcase an artist's recent books, editorial spreads, campaigns, and personal projects.",

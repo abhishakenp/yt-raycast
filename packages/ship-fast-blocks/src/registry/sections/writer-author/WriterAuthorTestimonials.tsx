@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -14,7 +15,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * Renders fully with no props via baked critic blurbs from The New York Times,
  * The Guardian, and Booklist.
  */
-export const WriterAuthorTestimonials = defineComponent({
+export const WriterAuthorTestimonials = defineCapsule({
   name: 'WriterAuthorTestimonials',
   description:
     "3-up critical-praise wall for a literary author page: a centered serif heading and subheading above a responsive card grid. Each card renders a filled star row matching the rating, a pull-quote blurb, and an attribution row pairing the critic's name with the publication that ran the review (The New York Times, The Guardian, Booklist). Use for review pull-quotes and social-proof on novelist, poet, essayist, or memoirist sites.",

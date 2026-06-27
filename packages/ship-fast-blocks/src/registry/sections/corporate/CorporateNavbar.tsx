@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * CorporateNavbar — sticky translucent top navigation bar for an enterprise /
@@ -13,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * for enterprise software vendors, SaaS platforms, IT consultancies, or any
  * corporate site that needs gravitas and clear conversion paths.
  */
-export const CorporateNavbar = defineComponent({
+export const CorporateNavbar = defineCapsule({
   name: 'CorporateNavbar',
   description:
     'Sticky translucent top navigation bar for an enterprise / corporate B2B site: backdrop-blurred, border-bottomed header with a solid brand-initial logo tile + company name on the left, horizontal nav links and a secondary text link plus a filled primary CTA on the right (desktop), and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for enterprise software, SaaS, IT consultancies, or any corporate site.',
@@ -112,26 +114,13 @@ export const CorporateNavbar = defineComponent({
               >
                 {ctaLabel}
               </button>
-              <button
-                type="button"
-                aria-label="Open menu"
-                onClick={() => go(nav[0])}
-                className="p-2 text-muted-foreground hover:text-foreground md:hidden"
-              >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
+              <MobileNavDrawer
+                brand={brand}
+                nav={nav}
+                homeTarget={nav[0]}
+                cta={{ label: ctaLabel, target: ctaTarget }}
+                buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+              />
             </div>
           </div>
         </nav>

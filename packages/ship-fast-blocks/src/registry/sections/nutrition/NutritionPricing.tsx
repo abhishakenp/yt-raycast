@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
  * coaches, dietitians, meal-plan subscriptions, diet / wellness programs or
  * healthy-eating apps to present membership options.
  */
-export const NutritionPricing = defineComponent({
+export const NutritionPricing = defineCapsule({
   name: 'NutritionPricing',
   description:
     "Three-tier pricing section for a nutrition-coaching or wellness subscription, built on the shared PricingGrid kit composite: an optional heading + subheading above Starter / Pro / Elite plan cards, each with price, billing period, a feature checklist, and a routable CTA; the Pro tier is highlighted with a 'Most popular' pill and primary border. Use on nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs or healthy-eating apps to present membership options.",

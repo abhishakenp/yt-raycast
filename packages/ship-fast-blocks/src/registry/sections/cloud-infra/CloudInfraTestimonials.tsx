@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -10,7 +11,7 @@ import { Image } from '#/lib/img.tsx'
  * stars), a blockquote, and an attribution row with an alt-driven avatar image.
  * Tokens-only. Renders fully on zero arguments.
  */
-export const CloudInfraTestimonials = defineComponent({
+export const CloudInfraTestimonials = defineCapsule({
   name: 'CloudInfraTestimonials',
   description:
     'Three-up star-rated testimonial grid for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a responsive 3-column card grid. Each card has a 5-star rating row (chart-4 filled stars), a blockquote, and an attribution row with an alt-driven avatar image. Tokens-only. Use for social-proof, customer-endorsement bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * productivity or to-do app, or any consumer app landing page. Renders fully
  * with no props via baked-in defaults.
  */
-export const MobileAppTestimonials = defineComponent({
+export const MobileAppTestimonials = defineCapsule({
   name: 'MobileAppTestimonials',
   description:
     'Centered-intro 6-up testimonials grid on a calm muted band: a centered heading + description over a responsive 2-/3-column grid of bordered card quotes, each with a 5-star rating row (primary-colored stars), the quote in curly quotation marks, and an avatar + name + role footer; avatars are alt-driven via <Image>. Use as the social-proof / reviews wall on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',

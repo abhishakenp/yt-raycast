@@ -515,3 +515,27 @@ export const telegramNotificationArgs = {
   botToken: v.optional(v.string()),
   chatId: v.optional(v.string()),
 }
+
+export const upsertAiCapsuleArgs = {
+  sessionId: v.id('sessions'),
+  capsuleName: v.string(),
+  parentCapsule: v.string(),
+  compiledJs: v.string(),
+  description: v.string(),
+}
+
+export const applySectionEditArgs = {
+  sessionId: v.id('sessions'),
+  anonymousOwnerSecret: v.optional(v.string()),
+  replacementHtml: v.optional(v.string()),
+  replacementOpenUiSource: v.optional(v.string()),
+  aiCapsule: v.optional(
+    v.object({
+      capsuleName: v.string(),
+      parentCapsule: v.string(),
+      compiledJs: v.string(),
+      description: v.string(),
+    }),
+  ),
+  instruction: v.string(),
+}

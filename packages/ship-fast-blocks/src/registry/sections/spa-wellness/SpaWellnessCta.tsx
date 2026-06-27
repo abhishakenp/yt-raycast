@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * to reserve a treatment or call the spa. Renders fully with no props via
  * baked-in defaults.
  */
-export const SpaWellnessCta = defineComponent({
+export const SpaWellnessCta = defineCapsule({
   name: 'SpaWellnessCta',
   description:
     "Warm booking call-to-action band for a day-spa / wellness page built on the shared CtaBand composite at tone='primary': a serif headline, a short supporting line, and dual pill CTAs (filled 'Book Now' + outlined 'Call'). Both route through useNavigate. Use as a closing conversion band inviting visitors to reserve a treatment or call the spa.",

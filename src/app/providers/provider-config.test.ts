@@ -30,7 +30,7 @@ describe('provider config', () => {
     expect(shouldUseAuthenticatedProviders('/')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/gallery')).toBe(false)
     expect(shouldUseAuthenticatedProviders('/pricing')).toBe(true)
-    expect(shouldUseAuthenticatedProviders('/generate/session_123')).toBe(false)
+    expect(shouldUseAuthenticatedProviders('/generate/session_123')).toBe(true)
   })
 
   it('provides a frosted glass Clerk appearance theme', () => {

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * or any business showcasing key metrics. Renders fully with no props via
  * baked-in defaults.
  */
-export const ConstructionStats = defineComponent({
+export const ConstructionStats = defineCapsule({
   name: 'ConstructionStats',
   description:
     "Four-up stats band for a construction / general contractor page: a muted section band with a responsive grid of large metric figures and labels centered in each column. Use as a credibility 'by the numbers' section for construction firms, contractors, builders, or any business showcasing key metrics.",

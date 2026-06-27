@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * law-firm, attorney, consulting or professional-services pages. Renders fully
  * with no props via baked-in defaults.
  */
-export const LawFirmTestimonials = defineComponent({
+export const LawFirmTestimonials = defineCapsule({
   name: 'LawFirmTestimonials',
   description:
     'Centered-intro, star-rated client testimonials grid on the card surface: a tracked-uppercase eyebrow, serif heading and lead paragraph above a responsive 3-up grid of bordered quote cards, each showing a five-star row, an italic quote and an avatar + name + role footer. Refined, authoritative editorial aesthetic with sharp squared corners; avatars use the alt-driven Image component. Use to surface client social proof and reviews on law-firm, attorney, consulting, accounting or professional-services pages.',

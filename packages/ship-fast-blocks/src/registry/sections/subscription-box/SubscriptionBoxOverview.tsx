@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
-export const SubscriptionBoxOverview = defineComponent({
+export const SubscriptionBoxOverview = defineCapsule({
   name: 'SubscriptionBoxOverview',
   description:
     'Reusable overview / hero section for the Subscription Box page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: eyebrow, large heading, supporting copy, dual CTAs, feature pills, KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a subscription box page or adding a focused subscription box band to a larger generated site.',

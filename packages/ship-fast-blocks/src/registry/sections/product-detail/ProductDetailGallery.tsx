@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
-export const ProductDetailGallery = defineComponent({
+export const ProductDetailGallery = defineCapsule({
   name: 'ProductDetailGallery',
   description:
     'Editorial product gallery band for the Aurora Pro Headphones detail page. Wraps the shared GalleryGrid composite to show the headphones from every angle — front profile, side, folded, on-desk, worn outdoors, ear-cushion close-up, and the charging case. Each stock image resolves from a descriptive alt with a short caption strip. Fully prop-driven: heading, subheading, columns, and the images array can be overridden, with premium Aurora defaults baked in. Place between features and reviews to let buyers inspect the product visually. Theme tokens only.',

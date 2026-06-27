@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * consumer-product landing page. Renders fully with no props via baked-in
  * defaults.
  */
-export const MobileAppStats = defineComponent({
+export const MobileAppStats = defineCapsule({
   name: 'MobileAppStats',
   description:
     'Inverted full-bleed big-number stats band on the primary brand background: a centered heading + translucent description over a responsive 2-/4-column row of large metric figures, each over a translucent caption label. Use as a high-contrast proof-point / traction band between content sections on a mobile-app, SaaS or consumer-product landing page.',

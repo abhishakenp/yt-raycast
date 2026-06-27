@@ -1,7 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from './newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
 
 /**
  * NewsletterCta — inverted final-CTA subscribe band for an editorial newsletter.
@@ -9,14 +12,15 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * lede, an inline email subscribe form (translucent email input + solid
  * background submit button that stacks on mobile), and a small note line with an
  * inline upgrade link. Warm, calm, literary mood inverted for emphasis. The form
- * submit and the note link route through useNavigate. Use as the closing
+ * submit writes to the shared Lakebed subscriber list and the note link routes
+ * through useNavigate. Use as the closing
  * conversion band for newsletters, publications, blogs, or content creators.
  * Renders fully with no props via baked-in defaults.
  */
-export const NewsletterCta = defineComponent({
+export const NewsletterCta = defineCapsule({
   name: 'NewsletterCta',
   description:
-    'Inverted final-CTA subscribe band for an editorial newsletter: a full-width dark foreground band, centered, with a large serif headline, a relaxed lede, an inline email subscribe form (translucent email input + solid background submit button that stacks on mobile), and a small note line with an inline upgrade link. Warm, calm, literary mood inverted for emphasis. The form submit and the note link route through useNavigate. Use as the closing conversion band for newsletters, publications, blogs, or content creators.',
+    'Inverted final-CTA subscribe band for an editorial newsletter: a full-width dark foreground band, centered, with a large serif headline, a relaxed lede, an inline email subscribe form (translucent email input + solid background submit button that stacks on mobile), and a small note line with an inline upgrade link. Warm, calm, literary mood inverted for emphasis. The form submit writes to the shared Lakebed subscriber list and the note link routes through useNavigate. Use as the closing conversion band for newsletters, publications, blogs, or content creators.',
   props: z.object({
     /** Headline. */
     heading: z.string().optional(),
@@ -34,7 +38,8 @@ export const NewsletterCta = defineComponent({
     noteSuffix: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heading = props.heading ?? 'Start your Sunday with insight'
     const description =
@@ -56,29 +61,18 @@ export const NewsletterCta = defineComponent({
             {description}
           </p>
 
-          <form
-            className="mx-auto max-w-md"
-            onSubmit={(e) => {
-              e.preventDefault()
-              go(submit)
-            }}
-          >
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <input
-                type="email"
-                required
-                placeholder={emailPlaceholder}
-                aria-label="Email address for newsletter subscription"
-                className="flex-1 rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder-background/50 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-background"
-              />
-              <button
-                type="submit"
-                className="rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-background focus:ring-offset-2"
-              >
-                {submit}
-              </button>
-            </div>
-          </form>
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={submit}
+            placeholder={emailPlaceholder}
+            buttonLabel={submit}
+            successMessage="You're subscribed. The next issue will arrive by email."
+            className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+            inputClassName="flex-1 rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder-background/50 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-background"
+            buttonClassName="rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-background focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
+            emailLabel="Email address for newsletter subscription"
+            statusClassName="text-background/60"
+          />
 
           <p className="mt-6 text-sm text-background/60">
             {notePrefix}

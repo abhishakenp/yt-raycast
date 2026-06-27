@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -17,7 +18,7 @@ import { Image } from '#/lib/img.tsx'
  * design principles. Renders fully with no props via three baked-in approach
  * points.
  */
-export const ArchitectureFirmPhilosophy = defineComponent({
+export const ArchitectureFirmPhilosophy = defineCapsule({
   name: 'ArchitectureFirmPhilosophy',
   description:
     "Split approach / philosophy section for an architecture-studio / design-practice page: on a subtle card surface, a two-column layout with an eyebrow + light heading and a vertical list of approach points (each a round muted icon tile beside a title + paragraph) on one side, and a tall studio/model photograph with a floating 'years-of-practice' stat card overlapping its lower-left corner on the other. Calm, editorial, monochrome. Tokens-only, no links. Use as a philosophy / approach / values / 'how we think' section for architecture firms, design studios, interior designers or any practice articulating its design principles.",

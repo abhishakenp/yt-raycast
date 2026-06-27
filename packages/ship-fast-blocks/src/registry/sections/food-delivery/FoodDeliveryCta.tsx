@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
+import {
+  FoodDeliveryActionButton,
+  FoodDeliveryMutationSpinner,
+} from './food-delivery-interactions.tsx'
 
 /**
  * FoodDeliveryCta — inverted app-download CTA panel for a food-delivery /
@@ -12,7 +17,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * installs for food-delivery apps, restaurant aggregators, or online-ordering
  * platforms. Renders fully with no props via baked-in defaults.
  */
-export const FoodDeliveryCta = defineComponent({
+export const FoodDeliveryCta = defineCapsule({
   name: 'FoodDeliveryCta',
   description:
     'Inverted app-download CTA panel for a food-delivery / restaurant-marketplace site: a centered rounded foreground-on-background dark card with a heading, a supporting paragraph, and two app-store buttons (Apple App Store + Google Play, each with its brand glyph) on a light surface. Both buttons route through useNavigate. Use as a final conversion push to drive app installs for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',
@@ -27,8 +32,8 @@ export const FoodDeliveryCta = defineComponent({
     googlePlay: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: foodDeliveryLakebed,
+  component: ({ props, lakebed }) => {
     const ctaHeading = props.heading ?? 'Ready to order?'
     const ctaDesc =
       props.description ??
@@ -47,10 +52,12 @@ export const FoodDeliveryCta = defineComponent({
               {ctaDesc}
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(ctaAppStore)}
-                className="inline-flex items-center gap-2 rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
+              <FoodDeliveryActionButton
+                lakebed={lakebed}
+                action={ctaAppStore}
+                source="cta"
+                pendingChildren={<FoodDeliveryMutationSpinner />}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
               >
                 <svg
                   className="size-6"
@@ -61,11 +68,13 @@ export const FoodDeliveryCta = defineComponent({
                   <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.84-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
                 </svg>
                 {ctaAppStore}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(ctaGooglePlay)}
-                className="inline-flex items-center gap-2 rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
+              </FoodDeliveryActionButton>
+              <FoodDeliveryActionButton
+                lakebed={lakebed}
+                action={ctaGooglePlay}
+                source="cta"
+                pendingChildren={<FoodDeliveryMutationSpinner />}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
               >
                 <svg
                   className="size-6"
@@ -76,7 +85,7 @@ export const FoodDeliveryCta = defineComponent({
                   <path d="M3,20.5V3.5C3,2.91 3.4,2.38 4,2.2L13.69,12.5L4,22.8C3.4,22.63 3,22.09 3,21.5V20.5M13.69,12.5L22.18,4.41C22.69,3.91 23.5,3.99 23.91,4.58C24.03,4.75 24.09,4.95 24.09,5.16V18.84C24.09,19.26 23.86,19.65 23.5,19.87C23.22,20.03 22.88,20.06 22.57,19.95L13.69,15.4V12.5M4,2.2L16.58,8.86L13.69,11.5L4,2.2Z" />
                 </svg>
                 {ctaGooglePlay}
-              </button>
+              </FoodDeliveryActionButton>
             </div>
           </div>
         </div>

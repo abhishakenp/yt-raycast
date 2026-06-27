@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * tell the artist's personal story and surface awards. Renders fully with no
  * props via baked-in "Mira" defaults.
  */
-export const IllustratorAbout = defineComponent({
+export const IllustratorAbout = defineCapsule({
   name: 'IllustratorAbout',
   description:
     "Split about / bio band for an illustrator / visual-artist portfolio on a subtle muted band: left a tall 3:4 portrait photo with a floating years-of-experience stat badge card anchored bottom-right; right an uppercase accent eyebrow, serif heading, a stack of bio paragraphs, and a bordered recognition / awards list with accent arrow bullets. Use to tell the artist's personal story and surface awards and honors.",

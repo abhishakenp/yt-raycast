@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * latest-articles grid of a newspaper, magazine or publication homepage. Renders
  * fully with no props via baked-in defaults.
  */
-export const NewsStoryGrid = defineComponent({
+export const NewsStoryGrid = defineCapsule({
   name: 'NewsStoryGrid',
   description:
     "Latest stories grid for a news outlet on a subtle muted band: a 'Latest Stories' heading with a row of filter chips (All / News / Opinion / Analysis) on the right, then a responsive grid of recent article cards (sm:grid-cols-2 lg:grid-cols-3) — each a bordered card with a 4:3 photo on top, a rotating-accent category label + timestamp, headline, excerpt and author/read-time byline — closing with a centered 'Load More' button. Cards, filters and the load-more button route through useNavigate. Use as the latest-articles grid of a newspaper, magazine or publication homepage.",

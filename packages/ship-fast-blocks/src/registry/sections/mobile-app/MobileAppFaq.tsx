@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * on a habit tracker, fitness / wellness app, productivity or to-do app, or any
  * consumer app landing page. Renders fully with no props via baked-in defaults.
  */
-export const MobileAppFaq = defineComponent({
+export const MobileAppFaq = defineCapsule({
   name: 'MobileAppFaq',
   description:
     'Narrow centered FAQ accordion on a calm muted band: a centered heading + description over a stacked list of bordered card-style <details> rows, each with a question summary and a chevron that rotates open to reveal a relaxed answer paragraph (native disclosure, no JS state). Use as the questions / objection-handling section on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * a knowledge base, support portal or docs site to signal depth and trust.
  * Renders fully with no props via baked-in defaults.
  */
-export const KnowledgeBaseStats = defineComponent({
+export const KnowledgeBaseStats = defineCapsule({
   name: 'KnowledgeBaseStats',
   description:
     'Compact stats band for a help center on a raised card surface with top/bottom borders: a centered 2-up (mobile) / 4-up (desktop) grid of big numeric values over small muted labels — e.g. help articles, video tutorials, monthly readers and self-service rate. Calm, light, editorial and purely presentational. Use between content sections of a knowledge base, support portal or docs site to signal depth and trust.',

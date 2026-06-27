@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -34,7 +35,7 @@ const PalmMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const VacationRentalNavbar = defineComponent({
+export const VacationRentalNavbar = defineCapsule({
   name: 'VacationRentalNavbar',
   description:
     'Airy sticky top navigation for a vacation-rental / getaway listing site built on the shared SiteNav composite: a palm-and-sun logo mark and property wordmark, horizontal desktop nav links, a phone number, a pill Book Now CTA, and a real mobile drawer. Nav items and CTA route through useNavigate for page-switching. Use as the inviting site header for vacation rentals, beach houses, cabins, villas, or boutique short-stay properties.',

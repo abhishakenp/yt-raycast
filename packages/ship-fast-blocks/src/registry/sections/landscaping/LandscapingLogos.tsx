@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * services, garden designers or property-maintenance companies. Renders fully
  * with no props via baked-in Portland-neighborhood defaults.
  */
-export const LandscapingLogos = defineComponent({
+export const LandscapingLogos = defineCapsule({
   name: 'LandscapingLogos',
   description:
     "Slim 'trusted by' social-proof strip for a landscaping / outdoor-design company: a bordered card band with a small uppercase eyebrow label centered above a responsive dimmed grid of partner / neighborhood property names (2 cols on mobile, up to 6 on large screens, with the last two hidden on small screens). Calm and understated to lend credibility without stealing focus. Use directly beneath a hero for landscapers, lawn-care services, garden designers or property-maintenance companies.",

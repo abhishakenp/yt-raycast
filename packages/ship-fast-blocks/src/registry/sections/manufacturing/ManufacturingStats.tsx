@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * surface facility size, machine count, headcount and parts shipped. Renders
  * fully with no props via baked-in defaults.
  */
-export const ManufacturingStats = defineComponent({
+export const ManufacturingStats = defineCapsule({
   name: 'ManufacturingStats',
   description:
     'A compact company stats band for a precision-manufacturing site: a muted, top-and-bottom-bordered strip with a screen-reader heading above a two- to four-column grid of large semibold numbers each over a small muted label. Quiet, credible proof-by-numbers. Use between content sections on machine-shop, fabricator or contract-manufacturer pages to surface facility size, machine count, headcount and parts shipped.',

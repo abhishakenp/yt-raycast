@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * Use as the closing site footer for insurance carriers, insurtech, brokers,
  * or financial-protection products. Renders fully with no props via defaults.
  */
-export const InsuranceFooter = defineComponent({
+export const InsuranceFooter = defineCapsule({
   name: 'InsuranceFooter',
   description:
     'Fat 6-column dark footer for an insurance page on a foreground-colored band: a wide brand block (shield logo + name, tagline, round social buttons), several link columns (products, company, resources, legal), and a dedicated contact column with phone, email and address rows. A bottom bar shows the copyright note beside alt-driven trust badges. Every link and social routes through useNavigate; badges use the Image component. Use as the closing site footer for insurance carriers, insurtech startups, brokers, or financial-protection products.',

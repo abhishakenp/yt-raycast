@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * useNavigate. Use as the opening hero for churches, worship centers, ministries,
  * or religious nonprofits. Renders fully with no props via baked-in defaults.
  */
-export const ChurchHero = defineComponent({
+export const ChurchHero = defineCapsule({
   name: 'ChurchHero',
   description:
     'Centered, image-backed hero section for a church or faith-community landing page: generous top padding over a soft background photo with gradient overlay, an established-since eyebrow, a two-tone headline (primary + muted accent line), supporting paragraph, dual pill CTAs (filled primary + outlined secondary), and an inline service-time + address strip beneath. Warm, inviting, and conversion-focused; CTAs route through useNavigate. Use as the opening hero for churches, worship centers, ministries, or religious nonprofits.',

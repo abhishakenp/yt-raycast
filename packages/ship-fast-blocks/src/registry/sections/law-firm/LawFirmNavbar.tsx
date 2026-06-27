@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * LawFirmNavbar — sticky top navigation bar for a corporate / trial law-firm
@@ -16,7 +18,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * counsel, accounting/advisory or any premium professional-services site.
  * Renders fully with no props via baked-in "Reinhart & Associates" defaults.
  */
-export const LawFirmNavbar = defineComponent({
+export const LawFirmNavbar = defineCapsule({
   name: 'LawFirmNavbar',
   description:
     "Sticky bordered top navigation bar for a corporate / trial law-firm site on the card surface: a squared brand tile bearing the firm initial beside a two-line serif wordmark (firm name + tracked-uppercase tagline) on the left, a row of quiet monochrome nav links plus a solid 'Free Consultation' CTA on the right (desktop), and a hamburger menu button on mobile. Refined, authoritative, serif-driven editorial aesthetic with sharp squared corners. Links route through useNavigate for page-switching. Use as the sticky site header for law firms, attorneys, legal practices, solicitors, barristers, corporate counsel, litigation boutiques, estate-planning, tax or accounting/advisory firms.",
@@ -94,28 +96,13 @@ export const LawFirmNavbar = defineComponent({
                 {ctaLabel}
               </button>
             </div>
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => go(nav[0])}
-              className="p-2 text-foreground md:hidden"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="4" y1="6" x2="20" y2="6" />
-                <line x1="4" y1="12" x2="20" y2="12" />
-                <line x1="4" y1="18" x2="20" y2="18" />
-              </svg>
-            </button>
+            <MobileNavDrawer
+              brand={brand}
+              nav={nav}
+              homeTarget={nav[0]}
+              cta={{ label: ctaLabel, target: nav[nav.length - 1] }}
+              buttonClassName="p-2 text-foreground md:hidden"
+            />
           </div>
         </nav>
       </header>

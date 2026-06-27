@@ -1,21 +1,24 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * MusicArtistMailing — dark, centered mailing-list CTA for a music artist /
  * band page. On a foreground-colored band: a thin heading, a lead paragraph, a
  * real inline email-subscribe form (rounded email input + pill submit button),
- * and a small reassurance note. The form submit routes through useNavigate.
+ * and a small reassurance note. The form submit writes to the shared Lakebed
+ * subscriber list.
  * Warm, editorial indie-folk aesthetic inverted to a dark band for contrast. Use
  * as the email-capture / newsletter conversion section for musicians, bands, or
  * artist promo pages. Renders fully with no props via baked-in defaults.
  */
-export const MusicArtistMailing = defineComponent({
+export const MusicArtistMailing = defineCapsule({
   name: 'MusicArtistMailing',
   description:
-    'Dark, centered mailing-list CTA for a music artist / band page on a foreground-colored band: a thin heading, a lead paragraph, a real inline email-subscribe form (rounded email input + pill submit button), and a small reassurance note. The form submit routes through useNavigate. Warm editorial indie-folk aesthetic inverted to a dark band for contrast. Use as the email-capture / newsletter conversion section for musicians, singers, bands, or artist promo pages.',
+    'Dark, centered mailing-list CTA for a music artist / band page on a foreground-colored band: a thin heading, a lead paragraph, a real inline email-subscribe form (rounded email input + pill submit button), and a small reassurance note. The form submit writes to the shared Lakebed subscriber list. Warm editorial indie-folk aesthetic inverted to a dark band for contrast. Use as the email-capture / newsletter conversion section for musicians, singers, bands, or artist promo pages.',
   props: z.object({
     /** Thin-weight section heading. */
     heading: z.string().optional(),
@@ -29,8 +32,8 @@ export const MusicArtistMailing = defineComponent({
     note: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Join the Mailing List'
     const description =
       props.description ??
@@ -51,27 +54,17 @@ export const MusicArtistMailing = defineComponent({
           <p className="mx-auto mb-10 max-w-2xl text-lg text-background/70">
             {description}
           </p>
-          <form
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={submit}
+            placeholder={placeholder}
+            buttonLabel={submit}
+            successMessage="You're on the list. Tour and release updates will arrive by email."
             className="mx-auto flex max-w-md flex-col gap-4 sm:flex-row"
-            onSubmit={(e) => {
-              e.preventDefault()
-              go(submit)
-            }}
-          >
-            <input
-              type="email"
-              required
-              placeholder={placeholder}
-              aria-label="Email address"
-              className="flex-1 rounded-full border border-background/20 bg-background/10 px-5 py-3 text-background placeholder:text-background/50 focus:border-background/50 focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="rounded-full bg-background px-8 py-3 font-medium text-foreground transition-colors hover:bg-background/80"
-            >
-              {submit}
-            </button>
-          </form>
+            inputClassName="flex-1 rounded-full border border-background/20 bg-background/10 px-5 py-3 text-background placeholder:text-background/50 focus:border-background/50 focus:outline-none"
+            buttonClassName="rounded-full bg-background px-8 py-3 font-medium text-foreground transition-colors hover:bg-background/80 disabled:pointer-events-none disabled:opacity-70"
+            statusClassName="text-background/50"
+          />
           <p className="mt-4 text-xs text-background/50">{note}</p>
         </div>
       </section>

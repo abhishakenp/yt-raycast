@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * them on desktop. Use on AEO, generative-search visibility, or brand-citation
  * landing pages to explain the workflow. Renders fully with no props.
  */
-export const AeoSteps = defineComponent({
+export const AeoSteps = defineCapsule({
   name: 'AeoSteps',
   description:
     "Bespoke three-step 'how it works' section for an Answer-Engine-Optimization (AEO) product: a centered heading block above a connected, numbered three-column timeline (connect your content, optimize for answer engines, track citations and win), each step with a gradient numbered badge, a title, and a short description, joined by a horizontal accent line on desktop. Use to explain the AEO workflow on landing or how-it-works pages.",

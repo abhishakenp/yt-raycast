@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * for community platforms, online forums, discussion boards, or membership SaaS
  * products.
  */
-export const CommunityForumHero = defineComponent({
+export const CommunityForumHero = defineCapsule({
   name: 'CommunityForumHero',
   description:
     'Centered hero band for a community-platform / discussion-forum landing page: a live-status pill dot, a large tracking-tight headline split across two lines, a supporting paragraph, dual CTAs (primary filled + secondary outlined), and a trust-checkmark chip strip beneath. Clean, calm, light slate-toned SaaS aesthetic; CTAs route through useNavigate. Use as the opening hero for community platforms, online forums, discussion boards, or membership SaaS products.',

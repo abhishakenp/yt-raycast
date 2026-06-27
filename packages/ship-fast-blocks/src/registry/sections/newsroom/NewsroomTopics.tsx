@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Science, Culture, Sport, Health…) on a news or magazine homepage. Renders
  * fully with no props.
  */
-export const NewsroomTopics = defineComponent({
+export const NewsroomTopics = defineCapsule({
   name: 'NewsroomTopics',
   description:
     "Editorial 'Browse by section/topic' block for a digital newsroom or magazine: a serif heading + supporting subheading above a responsive 1/2/4-up grid of topic cards, each with an image band, the topic name in serif, a one-line blurb, the current top headline, and a small story-count badge; cards lift on hover and route through useNavigate. Use to let readers explore by section (Politics, World, Business, Technology, Science, Culture, Sport, Health) on a news or magazine homepage. Renders fully with no props.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * retreats, inns, or wellness destinations. Renders fully with no props via
  * baked-in resort defaults.
  */
-export const HotelResortFaq = defineComponent({
+export const HotelResortFaq = defineCapsule({
   name: 'HotelResortFaq',
   description:
     'Accordion FAQ for a luxury hotel / resort & spa site: a narrow centered column with an uppercase eyebrow + thin heading + paragraph, then a stack of native details accordions on muted cards, each showing a question with a chevron that rotates on open to reveal the answer. Quiet and editorial. Use to answer pre-booking questions — cancellation, breakfast, dietary needs, check-in/out, parking, pets — for hotels, resorts, spa retreats, inns, or wellness destinations.',

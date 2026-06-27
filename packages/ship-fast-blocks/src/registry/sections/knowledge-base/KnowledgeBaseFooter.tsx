@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * closing footer for a knowledge base, support portal, docs site or FAQ hub.
  * Renders fully with no props via baked-in "Help Center" defaults.
  */
-export const KnowledgeBaseFooter = defineComponent({
+export const KnowledgeBaseFooter = defineCapsule({
   name: 'KnowledgeBaseFooter',
   description:
     'Five-column site footer for a help center on the page surface with a top border: a wide brand column (solid rounded book-glyph tile + wordmark, a tagline paragraph and inline social text buttons) beside product/resources/company link columns, above a bordered-top bar pairing an auto-updating copyright line with legal links. Calm, light, editorial; the brand button, socials and every link route through useNavigate. Use as the closing footer for a knowledge base, support portal, docs site or FAQ hub.',

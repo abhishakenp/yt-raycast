@@ -1,7 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
+import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
 /**
  * LawFirmContact — a dark, split contact band on the primary surface pairing firm
@@ -11,15 +14,15 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * column is a light card holding a form (first + last name, email, phone,
  * practice-area select, message textarea and a full-width submit) plus a fine
  * legal disclaimer. Refined, authoritative editorial aesthetic with sharp
- * squared corners. Contact links, the social button and form submit route
- * through useNavigate. Use as the closing conversion section on law-firm,
- * attorney, consulting or professional-services pages. Renders fully with no
- * props via baked-in defaults.
+ * squared corners. Contact links and the social button route through useNavigate;
+ * submit writes a Lakebed inquiry. Use as the closing conversion section on
+ * law-firm, attorney, consulting or professional-services pages. Renders fully
+ * with no props via baked-in defaults.
  */
-export const LawFirmContact = defineComponent({
+export const LawFirmContact = defineCapsule({
   name: 'LawFirmContact',
   description:
-    'Dark split contact band on the primary surface pairing firm details with a real consultation-request form: the left column carries a tracked-uppercase eyebrow, serif heading, lead paragraph, a phone / email / address contact list with line icons and a LinkedIn social button; the right column is a light card holding a form (first + last name, email, phone, practice-area select, message textarea, full-width submit) plus a fine legal disclaimer. Refined, authoritative editorial aesthetic with sharp squared corners; contact links, the social button and form submit route through useNavigate. Use as the closing consultation / lead-capture conversion section on law-firm, attorney, consulting, accounting or professional-services pages.',
+    'Dark split contact band on the primary surface pairing firm details with a real Lakebed consultation-request form: the left column carries a tracked-uppercase eyebrow, serif heading, lead paragraph, a phone / email / address contact list with line icons and a LinkedIn social button; the right column is a light card holding a form (first + last name, email, phone, practice-area select, message textarea, full-width submit) plus a fine legal disclaimer. Refined, authoritative editorial aesthetic with sharp squared corners; contact links and the social button route through useNavigate, while submit writes a shared inquiry record. Use as the closing consultation / lead-capture conversion section on law-firm, attorney, consulting, accounting or professional-services pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -32,11 +35,10 @@ export const LawFirmContact = defineComponent({
     disclaimer: z.string().optional(),
     /** Practice-area options for the form select. */
     practiceOptions: z.array(z.string()).optional(),
-    /** Navigation target fired on form submit. */
-    submitTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: inquiryLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Schedule Consultation'
     const heading = props.heading ?? "Let's Discuss Your Matter"
@@ -64,7 +66,12 @@ export const LawFirmContact = defineComponent({
           'Tax & Estates',
           'Other',
         ]
-    const submitTarget = props.submitTarget ?? 'Contact'
+    const inquiry = useInquirySubmission({
+      lakebed,
+      source: 'Law firm consultation',
+      successMessage:
+        "Thanks. We've received your consultation request and will respond soon.",
+    })
 
     const inputCls =
       'w-full rounded-sm border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
@@ -191,13 +198,7 @@ export const LawFirmContact = defineComponent({
               <h3 className="mb-6 font-serif text-2xl text-foreground">
                 {formHeading}
               </h3>
-              <form
-                className="space-y-6"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  go(submitTarget)
-                }}
-              >
+              <form className="space-y-6" onSubmit={inquiry.submitForm}>
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div>
                     <label
@@ -208,6 +209,7 @@ export const LawFirmContact = defineComponent({
                     </label>
                     <input
                       id="lawfirm-contact-first"
+                      name="firstName"
                       type="text"
                       required
                       className={inputCls}
@@ -222,6 +224,7 @@ export const LawFirmContact = defineComponent({
                     </label>
                     <input
                       id="lawfirm-contact-last"
+                      name="lastName"
                       type="text"
                       required
                       className={inputCls}
@@ -237,6 +240,7 @@ export const LawFirmContact = defineComponent({
                   </label>
                   <input
                     id="lawfirm-contact-email"
+                    name="email"
                     type="email"
                     required
                     className={inputCls}
@@ -251,6 +255,7 @@ export const LawFirmContact = defineComponent({
                   </label>
                   <input
                     id="lawfirm-contact-phone"
+                    name="phone"
                     type="tel"
                     className={inputCls}
                   />
@@ -264,6 +269,7 @@ export const LawFirmContact = defineComponent({
                   </label>
                   <select
                     id="lawfirm-contact-practice"
+                    name="practiceArea"
                     className={cn(inputCls, 'appearance-none')}
                   >
                     {practiceOptions.map((opt) => (
@@ -282,16 +288,22 @@ export const LawFirmContact = defineComponent({
                   </label>
                   <textarea
                     id="lawfirm-contact-message"
+                    name="message"
                     rows={4}
                     className={cn(inputCls, 'resize-none')}
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-primary py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  aria-busy={inquiry.isPending}
+                  disabled={inquiry.isPending}
+                  className="w-full bg-primary py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
-                  {submit}
+                  {inquiry.isPending ? 'Sending' : submit}
                 </button>
+                <p className="text-sm text-muted-foreground" aria-live="polite">
+                  {inquiry.statusText}
+                </p>
                 <p className="text-xs text-muted-foreground">{disclaimer}</p>
               </form>
             </div>

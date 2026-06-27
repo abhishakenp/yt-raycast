@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -10,7 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Both buttons route through useNavigate. Use as the final call-to-action / get-in-touch
  * band for food trucks, caterers or street-food vendors prompting bookings and enquiries.
  */
-export const FoodTruckContactCta = defineComponent({
+export const FoodTruckContactCta = defineCapsule({
   name: 'FoodTruckContactCta',
   description:
     'Dark, inverted closing contact CTA band: a foreground-filled, centered section with a bold heading, a supporting paragraph, a pair of pill buttons (a filled email CTA and an outlined phone CTA) and a small response-time note beneath. Both buttons route through useNavigate. Use as the final call-to-action / get-in-touch band for food trucks, caterers, street-food vendors or restaurants prompting catering bookings and enquiries.',

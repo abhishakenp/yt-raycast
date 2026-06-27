@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * for fine jewelers, diamond houses, or high-jewelry maisons. Renders fully with
  * no props via baked-in defaults.
  */
-export const JewelryStoreFaq = defineComponent({
+export const JewelryStoreFaq = defineCapsule({
   name: 'JewelryStoreFaq',
   description:
     'Accordion FAQ for a luxury jewelry maison: a centered gold eyebrow + serif heading above a narrow column of native details/summary accordions on muted surfaces, each with a serif question, a gold chevron that rotates open, and a relaxed muted answer. Use to address custom design, certifications, warranty, shipping, in-person viewing, and financing questions for fine jewelers, diamond houses, or high-jewelry maisons.',

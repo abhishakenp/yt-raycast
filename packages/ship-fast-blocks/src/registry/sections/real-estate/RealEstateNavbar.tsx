@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { SiteNav } from '#/section-kit/SiteNav.tsx'
  * useNavigate. Use as the site header for real-estate brokerages, agent teams,
  * and luxury property firms. Renders fully with no props via baked defaults.
  */
-export const RealEstateNavbar = defineComponent({
+export const RealEstateNavbar = defineCapsule({
   name: 'RealEstateNavbar',
   description:
     "Confident sticky top navigation for a premium real-estate brokerage: a serif wordmark on the left, a centered Buy / Sell / Rent / Agents / Contact inline nav on desktop, and a right cluster with a phone link plus a filled 'List a Property' primary CTA. Wordmark, nav items, phone, and CTA route through useNavigate. Use as the site header for brokerages, agent teams, and luxury property firms.",

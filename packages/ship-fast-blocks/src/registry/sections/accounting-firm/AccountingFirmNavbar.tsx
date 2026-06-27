@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * AccountingFirmNavbar — sticky, translucent top navigation bar for a CPA /
@@ -15,7 +17,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * bookkeeping/payroll providers, audit/assurance firms, or financial advisory
  * practices. Renders fully with no props via baked-in "Northridge" defaults.
  */
-export const AccountingFirmNavbar = defineComponent({
+export const AccountingFirmNavbar = defineCapsule({
   name: 'AccountingFirmNavbar',
   description:
     'Sticky translucent top navigation bar for a CPA / accounting-firm site: backdrop-blurred, border-bottomed header pinned to the top with a neutral brand-initial logo tile + firm name on the left, horizontal nav links in the center (desktop), and a filled Schedule-Consultation primary CTA plus a hamburger menu button on the right. Calm, trustworthy professional-services look; links and CTA route through useNavigate for page-switching. Use as the sticky site header for accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, audit/assurance firms, or financial advisory practices.',
@@ -89,25 +91,13 @@ export const AccountingFirmNavbar = defineComponent({
               >
                 {cta}
               </button>
-              <button
-                type="button"
-                aria-label="Open menu"
-                onClick={() => go(nav[0])}
-                className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-              >
-                <svg
-                  className="size-6"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
+              <MobileNavDrawer
+                brand={brand}
+                nav={nav}
+                homeTarget={nav[0]}
+                cta={{ label: cta, target: cta }}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+              />
             </div>
           </div>
         </nav>

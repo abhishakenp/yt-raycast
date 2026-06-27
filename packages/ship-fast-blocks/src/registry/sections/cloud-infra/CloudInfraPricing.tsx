@@ -1,6 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  saasPlan,
+  useSyncSaasPlans,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * CloudInfraPricing — usage-based pricing card grid for a cloud-infrastructure /
@@ -9,10 +17,10 @@ import { cn } from '#/lib/utils.ts'
  * border. Below the cards sits an enterprise reserved-capacity panel. Each tier
  * lists features with a check icon. Tokens-only. Renders fully on zero arguments.
  */
-export const CloudInfraPricing = defineComponent({
+export const CloudInfraPricing = defineCapsule({
   name: 'CloudInfraPricing',
   description:
-    "Usage-based pricing card grid for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a 3-tier pricing card grid, with the middle tier optionally tagged 'Most Popular' using a primary border. Below the cards sits an enterprise reserved-capacity panel listing feature bullets with check icons. Tokens-only. Use for pricing sections on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.",
+    'Usage-based pricing card grid for a cloud-infrastructure / developer-platform SaaS landing page backed by shared Lakebed conversion state: a centered heading plus description above a 3-tier pricing card grid with scoped plan CTAs that seed command search and record conversion intent. Below the cards sits an enterprise reserved-capacity panel. Use for pricing sections on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -27,6 +35,7 @@ export const CloudInfraPricing = defineComponent({
           price: z.string(),
           unit: z.string(),
           features: z.array(z.string()),
+          cta: z.string().optional(),
           popular: z.boolean().optional(),
         }),
       )
@@ -39,7 +48,8 @@ export const CloudInfraPricing = defineComponent({
     enterpriseItems: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Usage-based pricing that scales'
     const description =
       props.description ??
@@ -58,6 +68,7 @@ export const CloudInfraPricing = defineComponent({
               'GPU instances (NVIDIA A100) at $2.50/hour',
               'Auto-scaling with per-second billing',
             ],
+            cta: 'Start Compute',
           },
           {
             name: 'Serverless',
@@ -71,6 +82,7 @@ export const CloudInfraPricing = defineComponent({
               '128 MB to 8 GB memory tiers',
               'Global edge deployment included',
             ],
+            cta: 'Start Free',
           },
           {
             name: 'Storage & Data',
@@ -83,6 +95,7 @@ export const CloudInfraPricing = defineComponent({
               'Object storage with free egress',
               'Automated daily backups included',
             ],
+            cta: 'Start Storage',
           },
         ]
     const enterpriseHeading =
@@ -93,6 +106,18 @@ export const CloudInfraPricing = defineComponent({
     const enterpriseItems = props.enterpriseItems?.length
       ? props.enterpriseItems
       : ['1-year: 15% discount', '2-year: 25% discount', '3-year: 40% discount']
+
+    useSyncSaasPlans(
+      lakebed,
+      tiers.map((tier) =>
+        saasPlan({
+          name: tier.name,
+          period: tier.unit,
+          price: tier.price,
+          summary: tier.tagline,
+        }),
+      ),
+    )
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -158,6 +183,27 @@ export const CloudInfraPricing = defineComponent({
                     </li>
                   ))}
                 </ul>
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={tier.cta ?? `Start ${tier.name}`}
+                  plan={tier.name}
+                  source="pricing"
+                  aria-label={`${tier.cta ?? `Start ${tier.name}`} for ${tier.name}`}
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Selecting
+                    </>
+                  }
+                  className={cn(
+                    'mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                    tier.popular
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      : 'border border-border text-foreground hover:bg-muted',
+                  )}
+                >
+                  {tier.cta ?? `Start ${tier.name}`}
+                </SaasPlanActionButton>
               </div>
             ))}
           </div>

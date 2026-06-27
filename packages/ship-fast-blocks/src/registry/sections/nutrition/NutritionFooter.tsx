@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * standalone. Use as the closing site footer on nutrition coaches, dietitians,
  * meal-plan subscriptions, diet / wellness programs or healthy-eating apps.
  */
-export const NutritionFooter = defineComponent({
+export const NutritionFooter = defineCapsule({
   name: 'NutritionFooter',
   description:
     'Multi-column site footer for a nutrition-coaching or wellness site, built on the shared SiteFooter kit composite: a fresh, energetic brand block (leaf mark + wordmark + tagline + social row), four link columns (Programs, Company, Resources, Legal), and a bottom bar with copyright and a closing note. Use as the closing site footer on nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs or healthy-eating apps.',

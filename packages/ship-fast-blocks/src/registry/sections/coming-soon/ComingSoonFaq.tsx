@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * pages, or beta sign-up landers. Renders fully with no props via five baked-in
  * default Q&As.
  */
-export const ComingSoonFaq = defineComponent({
+export const ComingSoonFaq = defineCapsule({
   name: 'ComingSoonFaq',
   description:
     "Accordion FAQ section for a 'launching soon' / waitlist pre-launch landing page: centered heading and lead above a stacked list of native details/summary accordion items on a card-colored band. Each item has a rounded bordered panel, bold question heading, chevron icon that rotates on open, and relaxed body-text answer. No links. Use as the FAQ / questions section on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",

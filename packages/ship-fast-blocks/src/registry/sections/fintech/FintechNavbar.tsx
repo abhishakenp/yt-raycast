@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -29,7 +30,7 @@ const ShieldMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const FintechNavbar = defineComponent({
+export const FintechNavbar = defineCapsule({
   name: 'FintechNavbar',
   description:
     "Sticky fintech / neobank site header built on the shared SiteNav composite: an inline shield brand mark + product wordmark, horizontal desktop nav links, a primary 'Get Started' pill CTA, and a real mobile drawer. All links and CTA route through useNavigate for page-switching. Use as the header for banking apps, digital wallets, payment products, lending platforms, or finance startup landing pages.",

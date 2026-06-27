@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import type { ReactNode } from 'react'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
@@ -43,7 +44,7 @@ const ICONS: ReactNode[] = [
   </svg>,
 ]
 
-export const WebinarFeatures = defineComponent({
+export const WebinarFeatures = defineCapsule({
   name: 'WebinarFeatures',
   description:
     "Takeaways band for a webinar or virtual event built on the shared FeatureGrid composite: a heading over a three-column grid of 'what you'll learn' cards, each with a small line icon, a title, and a one-line description. Use to summarize the concrete outcomes attendees will walk away with on a webinar registration page.",

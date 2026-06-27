@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
  * of a vacation rental, beach house, cabin, villa, or boutique short-stay.
  * Renders fully with no props via baked-in defaults.
  */
-export const VacationRentalGallery = defineComponent({
+export const VacationRentalGallery = defineCapsule({
   name: 'VacationRentalGallery',
   description:
     'Airy property photo gallery for a vacation-rental listing page built on the shared GalleryGrid composite: an optional heading/subheading above a responsive grid of alt-driven property tiles (living room, bedroom, pool, kitchen, deck view, bathroom), each with a hover zoom and a caption strip. Theme-token only. Use to showcase the spaces of a vacation rental, beach house, cabin, villa, or boutique short-stay.',

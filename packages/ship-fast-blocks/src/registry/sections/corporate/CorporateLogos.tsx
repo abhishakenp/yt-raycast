@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * through useNavigate. Use beneath the hero to establish credibility for SaaS
  * platforms, consultancies, or any B2B offering.
  */
-export const CorporateLogos = defineComponent({
+export const CorporateLogos = defineCapsule({
   name: 'CorporateLogos',
   description:
     'Client logo trust bar for an enterprise / corporate B2B homepage: centered muted heading above a responsive grid of text-logo placeholders at reduced opacity with a thin top border, each clickable via useNavigate. Use beneath the hero to establish credibility for SaaS platforms, consultancies, or any B2B offering.',

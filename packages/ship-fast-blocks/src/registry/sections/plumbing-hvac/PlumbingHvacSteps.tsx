@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * expectations and reduce friction for homeowners calling a plumber or HVAC
  * contractor. Renders fully with no props via baked-in defaults.
  */
-export const PlumbingHvacSteps = defineComponent({
+export const PlumbingHvacSteps = defineCapsule({
   name: 'PlumbingHvacSteps',
   description:
     "A 'How it works' band for a plumbing & HVAC trade site: a centered heading + optional intro above a responsive row of 3 numbered steps, each with a large gradient/primary numbered badge, a title, and a short description, joined by a faint accent connector line. Defaults walk a customer through the booking experience — Call us, We diagnose, We fix it. Use to set expectations and reduce friction for homeowners calling a plumber or HVAC contractor.",

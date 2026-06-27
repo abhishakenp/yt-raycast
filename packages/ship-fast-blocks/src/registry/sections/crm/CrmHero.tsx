@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * CrmHero — split, light-aesthetic hero band for a CRM / sales-platform landing
@@ -15,10 +20,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * through useNavigate. Use as the opening hero for CRM products, sales-pipeline
  * tools or deal-tracking SaaS. Renders fully with no props.
  */
-export const CrmHero = defineComponent({
+export const CrmHero = defineCapsule({
   name: 'CrmHero',
   description:
-    'Split light-aesthetic hero band for a CRM / sales-platform landing page: a two-column grid over a soft muted surface with, on the left, a pulsing live-status pill, a bold tracking-tight headline, a supporting paragraph, dual CTAs (filled primary + outlined secondary) and a fine-print note; on the right an inline visual Kanban SALES PIPELINE mockup card with browser chrome, four stage columns of deal cards with dollar values and color-coded accents (a won deal shows a check), a pipeline-value/win-rate/active-deals stats bar, and a floating revenue-growth badge. Clean, professional and conversion-focused; CTAs route through useNavigate. Use as the opening hero for CRM products, sales-pipeline tools or deal-tracking SaaS.',
+    'Split light-aesthetic hero band for a CRM / sales-platform landing page: a two-column grid over a soft muted surface with live-status pill, bold headline, supporting paragraph, scoped Lakebed trial/demo CTAs, and an inline visual Kanban SALES PIPELINE mockup card. Clean, professional and conversion-focused; CTA buttons record trial or demo intent instead of colliding with navigation. Use as the opening hero for CRM products, sales-pipeline tools or deal-tracking SaaS.',
   props: z.object({
     /** Pulsing live-status pill text. */
     badge: z.string().optional(),
@@ -61,8 +66,8 @@ export const CrmHero = defineComponent({
     badgeLabel: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const badge = props.badge ?? 'Now with AI-powered forecasting'
     const heading =
       props.heading ??
@@ -135,20 +140,35 @@ export const CrmHero = defineComponent({
                 {subheading}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="rounded-lg bg-primary px-8 py-4 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={primaryCta}
+                  plan={primaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Starting
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="rounded-lg border border-border bg-background px-8 py-4 text-center font-semibold text-foreground transition-colors hover:bg-muted"
+                </SaasPlanActionButton>
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={secondaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Sending
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-8 py-4 text-center font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
                 >
                   {secondaryCta}
-                </button>
+                </SaasPlanActionButton>
               </div>
               <p className="mt-4 text-sm text-muted-foreground">{note}</p>
             </div>

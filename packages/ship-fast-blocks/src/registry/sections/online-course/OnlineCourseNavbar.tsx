@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const brandMark = (
@@ -27,7 +28,7 @@ const brandMark = (
  * marketplaces, MOOCs, bootcamps, academies, or training providers. Renders
  * fully with no props via baked-in "LearnSpace" defaults.
  */
-export const OnlineCourseNavbar = defineComponent({
+export const OnlineCourseNavbar = defineCapsule({
   name: 'OnlineCourseNavbar',
   description:
     "Sticky top navigation header for an online-course / e-learning platform built on the shared SiteNav kit composite: a book/open-pages brand mark, a wordmark, a desktop link row, and a single solid primary 'Enroll' CTA with a real mobile drawer. Brand, links, and CTA all route through the kit's useNavigate for page-switching. Use as the site header for course platforms, e-learning marketplaces, MOOCs, bootcamps, academies, or training providers.",

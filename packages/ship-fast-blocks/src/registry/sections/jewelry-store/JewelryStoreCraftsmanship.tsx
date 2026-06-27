@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * master artisanship, lifetime warranty, and bespoke design for fine jewelers,
  * diamond houses, or high-jewelry maisons. Renders fully with no props.
  */
-export const JewelryStoreCraftsmanship = defineComponent({
+export const JewelryStoreCraftsmanship = defineCapsule({
   name: 'JewelryStoreCraftsmanship',
   description:
     'Split craftsmanship / values band for a luxury jewelry maison on a subtle muted band: a left column with a gold eyebrow, serif heading, lead paragraph, and a stacked list of value props (each a circular gold icon chip + serif title + description, icons rotated from a local check-badge / star / shield / sparkle set), and a right column with a staggered two-column photo collage of atelier images (mixed 3:4 / square aspect ratios, one column nudged down). Use to communicate ethical sourcing, master artisanship, lifetime warranty, and bespoke design for fine jewelers, diamond houses, or high-jewelry maisons.',

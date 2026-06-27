@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * security, integrations, support) on SaaS, API, or B2B product pages. Renders
  * fully with no props via baked-in "Chronos AI" defaults.
  */
-export const SaasFaq = defineComponent({
+export const SaasFaq = defineCapsule({
   name: 'SaasFaq',
   description:
     'Centered accordion-style FAQ band for a SaaS / AI-product landing page: a heading + optional intro above a stacked list of bordered, rounded-xl native HTML details/summary items. Each summary is a font-semibold question with an inline +/chevron SVG that rotates when the item is open, and the answer reveals in a muted paragraph below. Pure static render with no React state. Use to answer pre-purchase objections (pricing, trial, cancellation, security, integrations, support) on SaaS, API, or B2B product pages.',

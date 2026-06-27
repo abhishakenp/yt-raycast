@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * present room/category inspiration for furniture, home-decor, or interiors
  * brands. Renders fully with no props via baked-in "Haven & Home" defaults.
  */
-export const FurnitureStoreRooms = defineComponent({
+export const FurnitureStoreRooms = defineCapsule({
   name: 'FurnitureStoreRooms',
   description:
     "'Shop by room' inspiration gallery on a soft muted band: a header row (eyebrow + heading left, arrow 'view all' link right) above a responsive 1/2/3-column grid of tall 4:5 image tiles; each tile zooms on hover under a bottom-anchored foreground-to-transparent gradient with the room name and product count; tiles and view-all route through useNavigate. A baked-in alt-text lookup supplies rich photo descriptions for default room names. Use to present room/category inspiration for furniture, home-decor, or interiors brands.",

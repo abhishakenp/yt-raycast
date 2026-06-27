@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * SOC/MDR/XDR providers, zero-trust, cloud-security, or compliance-automation
  * products. Renders fully with no props via baked-in capability defaults.
  */
-export const CybersecurityFeatures = defineComponent({
+export const CybersecurityFeatures = defineCapsule({
   name: 'CybersecurityFeatures',
   description:
     "Security-capability grid: a light section with a centered heading + supporting paragraph above a responsive 2-to-3 column grid of bordered cards, each with a rounded icon tile (cycling security glyphs that invert color on hover), a bold title, a description, and an arrowed 'Learn more' link routing through useNavigate. Use to lay out core platform capabilities for cybersecurity vendors, SOC/MDR/XDR providers, zero-trust, cloud-security, or compliance-automation products.",

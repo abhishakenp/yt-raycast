@@ -1,8 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  AutoLeadActionButton,
+  AutoMutationSpinner,
+} from './auto-dealership-interactions.tsx'
+import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
 /**
  * AutoDealershipHero — split, two-column hero for an auto dealership / used-car
@@ -10,14 +16,15 @@ import { Image } from '#/lib/img.tsx'
  * headline, a lead paragraph, dual CTAs (solid primary + outlined secondary),
  * and an inline KPI strip with divider rules (inventory count / starting APR /
  * Google rating). Right column: a large rounded showroom hero photo with a deep
- * shadow. Both CTAs route through useNavigate. Use as the top hero for car
+ * shadow. Inventory CTA routes through useNavigate; test-drive CTA writes a
+ * Lakebed lead intent. Use as the top hero for car
  * dealerships, used-car lots, certified pre-owned sellers, or EV/hybrid
  * showrooms. Renders fully with no props via baked-in defaults.
  */
-export const AutoDealershipHero = defineComponent({
+export const AutoDealershipHero = defineCapsule({
   name: 'AutoDealershipHero',
   description:
-    'Split two-column hero for an auto dealership / used-car landing page on a soft muted band: left column has an uppercase eyebrow, a large headline, a lead paragraph, dual CTAs (solid primary + outlined secondary), and an inline KPI strip with divider rules (inventory count / starting APR / Google rating); right column has a large rounded showroom hero photo with a deep shadow. Both CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the top hero for car dealerships, used-car lots, certified pre-owned sellers, or EV/hybrid showrooms.',
+    'Split two-column hero for an auto dealership / used-car landing page on a soft muted band: left column has an uppercase eyebrow, a large headline, a lead paragraph, dual CTAs (solid primary inventory navigation + outlined Lakebed test-drive action), and an inline KPI strip with divider rules (inventory count / starting APR / Google rating); right column has a large rounded showroom hero photo with a deep shadow. The photo uses the alt-driven Image component. Use as the top hero for car dealerships, used-car lots, certified pre-owned sellers, or EV/hybrid showrooms.',
   props: z.object({
     /** Uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -37,7 +44,8 @@ export const AutoDealershipHero = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: autoDealershipLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Premium Pre-Owned Vehicles'
     const heading = props.heading ?? 'Find Your Perfect Drive'
@@ -83,13 +91,22 @@ export const AutoDealershipHero = defineComponent({
                 >
                   {primaryCta}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                <AutoLeadActionButton
+                  lakebed={lakebed}
+                  action="test_drive"
+                  label={secondaryCta}
+                  intentKey="hero-test-drive"
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <AutoMutationSpinner />
+                      Sending
+                    </>
+                  }
                   className="inline-flex items-center justify-center rounded-md border border-border bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-accent"
                 >
                   {secondaryCta}
-                </button>
+                </AutoLeadActionButton>
               </div>
               <div className="flex items-center gap-8 pt-4">
                 {stats.map((s, i) => (

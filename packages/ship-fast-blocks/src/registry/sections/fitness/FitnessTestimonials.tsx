@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * Image component. Use for member stories / reviews / social proof on gyms, fitness
  * studios, yoga / pilates / boxing / spin studios or personal-training businesses.
  */
-export const FitnessTestimonials = defineComponent({
+export const FitnessTestimonials = defineCapsule({
   name: 'FitnessTestimonials',
   description:
     'Member testimonials grid for a gym or fitness studio on a muted card-surface band: a centered heading and lead paragraph above a 3-column grid of muted-surface quote cards, each with a 5-star rating row, the member quote and a footer of a round avatar + name + membership meta. Avatars use the alt-driven Image component. Use for member stories, reviews or social proof on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios and personal-training businesses.',

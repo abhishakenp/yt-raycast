@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * habit tracker, fitness / wellness app, productivity or to-do app, or any
  * consumer app landing page. Renders fully with no props via baked-in defaults.
  */
-export const MobileAppHowItWorks = defineComponent({
+export const MobileAppHowItWorks = defineCapsule({
   name: 'MobileAppHowItWorks',
   description:
     "Centered-intro 3-step 'how it works' walkthrough on a calm muted band: a centered heading + description over a responsive 3-column grid of numbered steps, each with a big ghosted two-digit index (01, 02, 03), a title, a short description, and a centered phone-screenshot image beneath. Use as the onboarding / process explainer on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * bylines behind the reporting. Renders fully with no props via baked-in
  * defaults.
  */
-export const NewsAuthors = defineComponent({
+export const NewsAuthors = defineCapsule({
   name: 'NewsAuthors',
   description:
     "Meet our columnists / contributors grid for a news outlet on a card surface: a heading with an optional intro, then a responsive grid of journalist cards. Each card has an avatar (via Image), the writer's name, their beat / role, a short bio, an optional social handle and a 'latest column' link. The card, the latest-column link and the social handle route through useNavigate. Use as a masthead / contributors band on a newspaper, magazine or publication homepage or about page so readers can get to know the bylines behind the reporting.",

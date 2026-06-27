@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -10,7 +11,7 @@ import { Image } from '#/lib/img.tsx'
  * alt-driven Image component. Use to show off the gym floor, studios, locker rooms
  * and recovery areas on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
-export const FitnessGallery = defineComponent({
+export const FitnessGallery = defineCapsule({
   name: 'FitnessGallery',
   description:
     'Facility photo gallery for a gym or fitness studio on a muted card-surface band: a centered heading and lead paragraph above a 2/4-column grid of equal-height rounded cover photos showing the training space. Images use the alt-driven Image component. Use to show off the gym floor, studios, locker rooms, recovery areas or amenities on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * Image component. Use as the opening hero for album releases, musicians, bands,
  * or any artist promo page. Renders fully with no props via baked-in defaults.
  */
-export const MusicArtistHero = defineComponent({
+export const MusicArtistHero = defineCapsule({
   name: 'MusicArtistHero',
   description:
     "Split two-column hero for a music artist / band landing page: on the left a small uppercase eyebrow, a huge thin-weight album title, a descriptive blurb, and a pair of pill CTAs (a filled 'Listen Now' with an arrow and an outlined 'View Tour Dates'); on the right a large square album-cover image (stacked above the copy on mobile). Warm, airy editorial indie-folk aesthetic on a soft neutral canvas with generous whitespace. Both CTAs route through useNavigate; the cover uses the alt-driven Image component. Use as the opening hero for album releases, musicians, singers, bands, or any artist promo page.",

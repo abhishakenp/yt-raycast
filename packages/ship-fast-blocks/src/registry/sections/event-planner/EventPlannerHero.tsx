@@ -1,22 +1,30 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
+import {
+  InquiryActionButton,
+  InquiryMutationSpinner,
+} from '../contact/inquiry-interactions.tsx'
 
 /**
  * EventPlannerHero — calm editorial split hero for a luxury event-planning agency.
  * A two-column layout pairing a left text column (uppercase eyebrow, large thin
  * light headline, relaxed lede, dual pill CTAs, and a top-bordered KPI strip) with
  * a tall rounded hero photo on the right that carries a floating planner-team card
- * (stacked avatar circles, lead-planner name/role and an italic quote). Dual CTAs
- * route through useNavigate; imagery is alt-driven. Use as the opening hero for
+ * (stacked avatar circles, lead-planner name/role and an italic quote). Primary
+ * CTA records a real Lakebed contact action, secondary CTA routes through
+ * useNavigate, and imagery is alt-driven. Use as the opening hero for
  * wedding/event planners, gala and celebration organizers, or premium hospitality.
  */
-export const EventPlannerHero = defineComponent({
+export const EventPlannerHero = defineCapsule({
   name: 'EventPlannerHero',
   description:
-    'Calm editorial split hero for a luxury event-planning agency: a two-column layout pairing a left text column (uppercase eyebrow, large thin light headline, relaxed lede, dual pill CTAs and a top-bordered KPI/stats strip) with a tall rounded hero photo on the right carrying a floating planner-team card (stacked avatar circles, lead-planner name/role and an italic quote). Dual CTAs route through useNavigate; all imagery is alt-driven. Use as the opening hero for wedding/event planners, party, gala and celebration organizers, corporate-event companies, or premium hospitality services.',
+    'Calm editorial split hero for a luxury event-planning agency: a two-column layout pairing a left text column (uppercase eyebrow, large thin light headline, relaxed lede, dual pill CTAs and a top-bordered KPI/stats strip) with a tall rounded hero photo on the right carrying a floating planner-team card (stacked avatar circles, lead-planner name/role and an italic quote). Primary CTA records a real Lakebed contact action, secondary CTA routes through useNavigate, and all imagery is alt-driven. Use as the opening hero for wedding/event planners, party, gala and celebration organizers, corporate-event companies, or premium hospitality services.',
+  lakebed: inquiryLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -33,7 +41,7 @@ export const EventPlannerHero = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'Est. 2012 • San Francisco'
     const heroHeading = props.heading ?? 'Crafting Moments That Last Forever'
@@ -83,13 +91,22 @@ export const EventPlannerHero = defineComponent({
                 {heroSub}
               </p>
               <div className="flex flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
-                  className="inline-flex items-center rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                <InquiryActionButton
+                  lakebed={lakebed}
+                  label={heroPrimary}
+                  source="Event planner hero"
+                  target={heroPrimary}
+                  kind="cta"
+                  pendingChildren={
+                    <>
+                      <InquiryMutationSpinner />
+                      Recording
+                    </>
+                  }
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {heroPrimary}
-                </button>
+                </InquiryActionButton>
                 <button
                   type="button"
                   onClick={() => go(heroSecondary)}

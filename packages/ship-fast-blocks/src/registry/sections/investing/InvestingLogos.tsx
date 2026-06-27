@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * through useNavigate. Use directly beneath a hero to establish credibility via
  * press mentions or partner brands. Renders fully with no props.
  */
-export const InvestingLogos = defineComponent({
+export const InvestingLogos = defineCapsule({
   name: 'InvestingLogos',
   description:
     "Press / trust-logo strip for an investing / fintech site: a muted bordered band with a small centered caption above a responsive 2/3/6-column grid of dimmed wordmark text 'logos' (press outlets like Bloomberg, Reuters, CNBC, WSJ) that brighten on hover; each routes through useNavigate. Use beneath a hero to establish credibility via press mentions or partner brands.",

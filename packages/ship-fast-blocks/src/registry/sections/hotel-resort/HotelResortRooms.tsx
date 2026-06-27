@@ -1,8 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HotelBookingActionButton,
+  HotelMutationSpinner,
+  hotelRoom,
+  useSyncHotelRooms,
+} from './hotel-resort-interactions.tsx'
+import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
 
 /**
  * HotelResortRooms — rooms & suites pricing grid for a luxury hotel / resort &
@@ -10,14 +17,14 @@ import { Image } from '#/lib/img.tsx'
  * then a 3-up grid of accommodation cards: a 4:3 photo, a name with an optional
  * "Popular" badge, a per-night price, a meta line, a short description, amenity
  * chips, and a CTA button; the featured card gets a primary ring and a solid
- * CTA. Each card's CTA routes through useNavigate. Use to present room
+ * CTA. Each card's CTA writes a Lakebed booking intent. Use to present room
  * categories and rates for hotels, resorts, villas, spa retreats, or inns.
  * Imagery uses the alt-driven Image component. Renders fully with no props.
  */
-export const HotelResortRooms = defineComponent({
+export const HotelResortRooms = defineCapsule({
   name: 'HotelResortRooms',
   description:
-    'Rooms & suites pricing grid for a luxury hotel / resort & spa site: a muted-surface section with an uppercase eyebrow + thin heading + paragraph, then a 3-up grid of accommodation cards each showing a 4:3 photo, a name with optional Popular badge, a per-night price, a meta line, a short description, amenity chips and a CTA button; the featured card gets a primary ring and a solid CTA. Card CTAs route through useNavigate and imagery uses the alt-driven Image component. Use to present room categories and per-night rates for hotels, resorts, villas, spa retreats, or boutique inns.',
+    'Rooms & suites pricing grid for a luxury hotel / resort & spa site backed by shared Lakebed booking/search state: a muted-surface section with an uppercase eyebrow + thin heading + paragraph, then a 3-up grid of accommodation cards each showing a 4:3 photo, a name with optional Popular badge, a per-night price, a meta line, a short description, amenity chips and a CTA button; the featured card gets a primary ring and a solid CTA. Card CTAs write booking intent and cards seed the shared room catalog for navbar search. Imagery uses the alt-driven Image component. Use to present room categories and per-night rates for hotels, resorts, villas, spa retreats, or boutique inns.',
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -44,8 +51,8 @@ export const HotelResortRooms = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: hotelResortLakebed,
+  component: ({ props, lakebed }) => {
     const eyebrow = props.eyebrow ?? 'Accommodations'
     const heading = props.heading ?? 'Suites & Villas'
     const description =
@@ -88,6 +95,15 @@ export const HotelResortRooms = defineComponent({
             tags: ['Private Pool', 'Full Kitchen', 'Concierge'],
           },
         ]
+    const catalogRooms = items.map((room) =>
+      hotelRoom({
+        description: room.description,
+        meta: room.meta,
+        name: room.name,
+        price: room.price,
+      }),
+    )
+    useSyncHotelRooms(lakebed, catalogRooms)
 
     return (
       <section className={cn('bg-muted py-24 lg:py-32', props.className)}>
@@ -154,18 +170,27 @@ export const HotelResortRooms = defineComponent({
                       </span>
                     ))}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => go(room.name)}
+                  <HotelBookingActionButton
+                    lakebed={lakebed}
+                    intentLabel={cta}
+                    intentKey={`room:${room.name}`}
+                    room={room.name}
+                    source="rooms"
+                    pendingChildren={
+                      <>
+                        <HotelMutationSpinner />
+                        Sending
+                      </>
+                    }
                     className={cn(
-                      'block w-full rounded-md px-6 py-3 text-center text-sm font-medium transition-colors',
+                      'inline-flex w-full items-center justify-center gap-2 rounded-md px-6 py-3 text-center text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
                       room.featured
                         ? 'bg-foreground text-background hover:bg-foreground/90'
                         : 'border border-foreground text-foreground hover:bg-foreground hover:text-background',
                     )}
                   >
                     {cta}
-                  </button>
+                  </HotelBookingActionButton>
                 </div>
               </div>
             ))}

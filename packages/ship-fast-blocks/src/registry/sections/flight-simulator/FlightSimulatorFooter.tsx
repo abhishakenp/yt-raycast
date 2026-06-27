@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -30,7 +31,7 @@ const WingMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const FlightSimulatorFooter = defineComponent({
+export const FlightSimulatorFooter = defineCapsule({
   name: 'FlightSimulatorFooter',
   description:
     'Rich, multi-column closing footer for a flight-simulator site built on the shared SiteFooter composite: a bold wordmark + inline winged-plane mark, an aviation tagline, a social row, and a responsive grid of link columns (Product, Editions, Community, Support), with an auto-updating copyright line in the bottom bar. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for flight simulators, airliner / combat sims, or aviation titles.',

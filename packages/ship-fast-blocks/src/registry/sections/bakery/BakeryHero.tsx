@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * BakeryHero — split, two-column hero band for an artisan-bakery landing page,
@@ -15,7 +23,7 @@ import { Image } from '#/lib/img.tsx'
  * Use as the opening hero for bakeries, patisseries, cafes, or pastry shops.
  * Renders fully with no props via baked-in "Flour & Stone" defaults.
  */
-export const BakeryHero = defineComponent({
+export const BakeryHero = defineCapsule({
   name: 'BakeryHero',
   description:
     "Split two-column hero band for an artisan-bakery landing page on a soft muted surface: left column has an uppercase 'Est.' eyebrow, a large display headline, a supporting paragraph, dual CTAs (filled dark primary + outlined secondary), and an open-hours + address chip row with clock/pin icons; right column is a large rounded hero photo with a floating 'Certified Organic' badge card overlapping its corner. Warm, editorial, light and craft-forward; CTAs route through useNavigate and the photo is alt-driven. Use as the opening hero for bakeries, patisseries, sourdough/artisan-bread shops, cafes, or pastry kitchens.",
@@ -34,6 +42,10 @@ export const BakeryHero = defineComponent({
     primaryTarget: z.string().optional(),
     /** Navigation target for the secondary CTA. */
     secondaryTarget: z.string().optional(),
+    featuredItemName: z.string().optional(),
+    featuredItemPrice: z.string().optional(),
+    featuredItemSubtitle: z.string().optional(),
+    addLabel: z.string().optional(),
     /** Open-hours chip text. */
     hoursChip: z.string().optional(),
     /** Address chip text. */
@@ -46,7 +58,8 @@ export const BakeryHero = defineComponent({
     badgeSubtitle: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Est. 2018 — Portland, Oregon'
     const heading =
@@ -59,6 +72,11 @@ export const BakeryHero = defineComponent({
     const secondaryCta = props.secondaryCta ?? 'Visit Our Bakery'
     const primaryTarget = props.primaryTarget ?? 'Order'
     const secondaryTarget = props.secondaryTarget ?? 'Visit'
+    const featuredItemName = props.featuredItemName ?? 'Country Sourdough'
+    const featuredItemPrice = props.featuredItemPrice ?? '$9'
+    const featuredItemSubtitle =
+      props.featuredItemSubtitle ?? 'Daily bake · organic grains'
+    const addLabel = props.addLabel ?? 'Add to cart'
     const hoursChip = props.hoursChip ?? 'Open 7am–4pm Daily'
     const addressChip = props.addressChip ?? '1423 Oak Street'
     const imageAlt =
@@ -66,6 +84,15 @@ export const BakeryHero = defineComponent({
       'Golden crusty artisan sourdough bread loaves arranged on a wooden cutting board in a sunlit bakery'
     const badgeTitle = props.badgeTitle ?? 'Certified Organic'
     const badgeSubtitle = props.badgeSubtitle ?? 'Stone-milled grains'
+
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt,
+        label: featuredItemName,
+        price: featuredItemPrice,
+        subtitle: featuredItemSubtitle,
+      }),
+    ])
 
     const ArrowRight = () => (
       <svg
@@ -150,6 +177,18 @@ export const BakeryHero = defineComponent({
                 >
                   {secondaryCta}
                 </button>
+                <CommerceAddItemButton
+                  lakebed={lakebed}
+                  item={{
+                    label: featuredItemName,
+                    price: featuredItemPrice,
+                  }}
+                  aria-label={`${addLabel} ${featuredItemName}`}
+                  pendingChildren={<CommerceMutationSpinner />}
+                  className="inline-flex items-center rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                >
+                  {addLabel}
+                </CommerceAddItemButton>
               </div>
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">

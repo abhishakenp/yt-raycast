@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * baptisms, or outreach drives on church, ministry, or community organization pages.
  * Renders fully with no props via baked-in defaults.
  */
-export const ChurchEvents = defineComponent({
+export const ChurchEvents = defineCapsule({
   name: 'ChurchEvents',
   description:
     "Featured-events grid for a church or faith-community site: a responsive 6-card grid with header row (eyebrow + heading + 'View all' CTA) and event cards that each show a date badge, time, title, description, and a CTA with arrow. Images lazily load and scale on hover. All CTAs route through useNavigate. Use for upcoming events, classes, workshops, baptisms, or outreach drives on church, ministry, or community organization pages.",

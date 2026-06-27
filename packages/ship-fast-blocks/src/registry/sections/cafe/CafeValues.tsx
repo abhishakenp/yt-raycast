@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * trust / ethos block for cafes, bakeries, tea houses, or any small
  * food-and-drink business. Renders fully with no props via baked-in defaults.
  */
-export const CafeValues = defineComponent({
+export const CafeValues = defineCapsule({
   name: 'CafeValues',
   description:
     '4-up values / highlights grid for a cozy cafe page on a card-colored band: each column centers an inline decorative icon inside a muted circular tile, a serif title, and a small description. Icons rotate via index modulo four. No links. Use as a trust / ethos block for cafes, bakeries, tea houses, or any small food-and-drink business.',

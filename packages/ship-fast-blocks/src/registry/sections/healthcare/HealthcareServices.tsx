@@ -1,8 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+  localServiceItem,
+  useSyncLocalServices,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * HealthcareServices — medical services grid for a clinic / primary-care page.
@@ -14,7 +21,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * we treat" section of a doctors' office, family-medicine, women's-health,
  * pediatric, mental-health or telehealth clinic. Renders fully with no props.
  */
-export const HealthcareServices = defineComponent({
+export const HealthcareServices = defineCapsule({
   name: 'HealthcareServices',
   description:
     "Medical services grid for a clinic / primary-care page: a centered eyebrow chip, heading and intro above a responsive 1/2/3-column grid of bordered cards, each with a soft accent-tinted icon tile, title, description, and a chevron 'book' link routing through useNavigate. Cards lift on hover and a built-in set of medical icons (shield, video, heart, smiley, chart, beaker) rotates across them. Use for a services / 'what we treat' section of a doctors' office, family-medicine, women's-health, pediatric, mental-health or telehealth clinic.",
@@ -37,8 +44,8 @@ export const HealthcareServices = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const eyebrow = props.eyebrow ?? 'Our Services'
     const heading =
       props.heading ?? 'Comprehensive care for every stage of life'
@@ -85,6 +92,15 @@ export const HealthcareServices = defineComponent({
             cta: 'Learn about labs',
           },
         ]
+    useSyncLocalServices(
+      lakebed,
+      items.map((item) =>
+        localServiceItem({
+          name: item.title,
+          summary: item.description,
+        }),
+      ),
+    )
 
     const ChevronRight = () => (
       <svg
@@ -223,16 +239,19 @@ export const HealthcareServices = defineComponent({
                 <p className="mb-4 leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => go(item.cta)}
-                  className="inline-flex items-center font-semibold text-primary transition-colors hover:text-primary/80"
+                <LocalServiceBookingButton
+                  lakebed={lakebed}
+                  intentLabel={item.cta}
+                  service={item.title}
+                  source="services"
+                  pendingChildren={<LocalServiceMutationSpinner />}
+                  className="inline-flex items-center font-semibold text-primary transition-colors hover:text-primary/80 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {item.cta}
                   <span className="ml-1">
                     <ChevronRight />
                   </span>
-                </button>
+                </LocalServiceBookingButton>
               </article>
             ))}
           </div>

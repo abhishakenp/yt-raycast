@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use as the closing footer for B2B SaaS, productivity, or
  * developer-platform pages.
  */
-export const MarketingFooter = defineComponent({
+export const MarketingFooter = defineCapsule({
   name: 'MarketingFooter',
   description:
     'Slim single-row footer for a SaaS / product-marketing landing page: a border-top band laying out, on one row (stacking on mobile), an indigo brand-initial logo tile + product name on the left, a wrapping row of muted text links in the middle, and a copyright line on the right. Clean premium indigo-on-light aesthetic; brand button + links route through useNavigate. Use as the closing footer for B2B SaaS, productivity, or developer-platform pages.',

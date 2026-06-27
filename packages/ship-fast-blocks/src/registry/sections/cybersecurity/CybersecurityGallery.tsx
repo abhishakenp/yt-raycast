@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * cybersecurity vendors, SOC/MDR providers, or any visual B2B security SaaS.
  * Renders fully with no props via baked-in platform-view defaults.
  */
-export const CybersecurityGallery = defineComponent({
+export const CybersecurityGallery = defineCapsule({
   name: 'CybersecurityGallery',
   description:
     'Platform-screenshot gallery: a light section with a centered heading + subheading above a responsive 2-to-3 column grid of bordered, shadowed clickable cards, each with an alt-driven screenshot image (zooms on hover) over a title + short caption, routing through useNavigate. Use to showcase product surfaces / dashboards for cybersecurity vendors, SOC/MDR providers, or any visual B2B security SaaS.',

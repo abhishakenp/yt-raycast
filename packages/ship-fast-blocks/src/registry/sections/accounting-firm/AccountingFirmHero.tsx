@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * services, bookkeeping/payroll providers, or financial advisory practices.
  * Renders fully with no props via baked-in "Northridge" defaults.
  */
-export const AccountingFirmHero = defineComponent({
+export const AccountingFirmHero = defineCapsule({
   name: 'AccountingFirmHero',
   description:
     'Split editorial hero band for a CPA / accounting-firm landing page: two-column section on a card surface with an uppercase Est.-year eyebrow, a large two-line headline, a supporting paragraph, dual CTAs (filled primary + secondary), and an inline check-marked trust-badge row on the left; a 4:3 photo with a floating tax-savings stat card pinned to its lower-left corner on the right. Calm, trustworthy professional-services look; CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the opening hero for accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, or financial advisory practices.',

@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { useState } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * out on SaaS, agency, or startup contact pages. Renders fully with no props via
  * baked-in defaults.
  */
-export const ContactFaq = defineComponent({
+export const ContactFaq = defineCapsule({
   name: 'ContactFaq',
   description:
     'Two-column FAQ accordion for a contact / support page: a centered heading + description followed by a responsive two-column grid of expandable question cards, each animating its answer open/closed with a chevron rotation. Use to surface common questions before a visitor reaches out on SaaS, agency, or startup contact pages.',

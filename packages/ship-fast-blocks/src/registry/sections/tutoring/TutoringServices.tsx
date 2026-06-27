@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const ICONS = {
@@ -146,7 +147,7 @@ const DEFAULT_SUBJECTS: {
   },
 ]
 
-export const TutoringServices = defineComponent({
+export const TutoringServices = defineCapsule({
   name: 'TutoringServices',
   description:
     'Subjects / services band for tutoring sites, composing the FeatureGrid kit composite into a four-column grid of subject cards. Each card pairs a friendly outline icon tile with a subject name and an encouraging description (Math, Science, Languages, Test Prep, Writing, Reading by default). Accepts a public `subjects` prop to override the offering list. Use it to show parents and students the breadth of tutoring help available in a warm, scannable layout.',

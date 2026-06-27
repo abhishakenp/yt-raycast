@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * logistics, freight-forwarding, shipping, courier, warehousing or cargo/transport
  * site to quantify scale and trust. Renders fully with no props.
  */
-export const LogisticsStats = defineComponent({
+export const LogisticsStats = defineCapsule({
   name: 'LogisticsStats',
   description:
     'Compact KPI stat band for a global-logistics / freight-forwarding company: a centered, responsive grid (2 → 4 columns) of large semibold metric values over small muted captions (e.g. countries served, shipments delivered, years in operation, team members worldwide). Clean and corporate on a light surface with generous vertical padding. Use beneath the hero or logo strip of a logistics, freight-forwarding, shipping, courier, warehousing, supply-chain or cargo/transport site to quantify scale and trust.',

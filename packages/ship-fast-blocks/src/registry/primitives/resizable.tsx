@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import * as React from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import {
   ResizableHandle,
@@ -12,7 +13,7 @@ import {
 // into a single `panels` array, with a handle inserted between each. Each panel
 // holds child content; defaultSize is a flex-basis percentage. orientation
 // mirrors react-resizable-panels' Group orientation prop.
-export const Resizable = defineComponent({
+export const Resizable = defineCapsule({
   name: 'Resizable',
   description:
     'Resizable split panels with draggable handles between them. Each panel in `panels` holds child content.',

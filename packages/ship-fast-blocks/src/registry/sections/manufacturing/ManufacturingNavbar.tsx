@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * ManufacturingNavbar — sticky, translucent top navigation bar for a precision-
@@ -16,7 +18,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * engineering firms. Renders fully with no props via baked-in "Vertex
  * Manufacturing" defaults.
  */
-export const ManufacturingNavbar = defineComponent({
+export const ManufacturingNavbar = defineCapsule({
   name: 'ManufacturingNavbar',
   description:
     'Sticky translucent top navigation bar for a precision-manufacturing / industrial-fabrication B2B site: backdrop-blurred, border-bottomed header pinned to the top with an initials brand tile plus wordmark on the left, horizontal nav links in the center, and a solid foreground primary CTA on the right (desktop), plus a hamburger menu on mobile. Links and CTA route through useNavigate for page-switching; the CTA uses the last nav item. Clean, neutral and industrial. Use as the sticky site header for CNC machine shops, metal fabricators, contract manufacturers or industrial engineering firms.',
@@ -94,26 +96,13 @@ export const ManufacturingNavbar = defineComponent({
                 {nav[nav.length - 1]}
               </button>
             </div>
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => go(nav[0])}
-              className="p-2 text-muted-foreground md:hidden"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            <MobileNavDrawer
+              brand={brand}
+              nav={nav}
+              homeTarget={nav[0]}
+              cta={{ label: nav[nav.length - 1], target: nav[nav.length - 1] }}
+              buttonClassName="p-2 text-muted-foreground md:hidden"
+            />
           </div>
         </nav>
       </header>

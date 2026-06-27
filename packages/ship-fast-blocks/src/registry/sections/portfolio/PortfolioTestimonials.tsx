@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * designer, motion artist, or director personal site. Renders fully with no
  * props via baked-in defaults.
  */
-export const PortfolioTestimonials = defineComponent({
+export const PortfolioTestimonials = defineCapsule({
   name: 'PortfolioTestimonials',
   description:
     'Client-review wall for a creative-individual portfolio built on the shared TestimonialGrid composite: a centered heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted testimonial, and an attribution row pairing the client name with their role and company. Use for social proof from collaborators and clients on a designer, motion artist, or director personal site.',

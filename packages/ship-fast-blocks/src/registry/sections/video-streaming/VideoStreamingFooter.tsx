@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -23,7 +24,7 @@ const PlayMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const VideoStreamingFooter = defineComponent({
+export const VideoStreamingFooter = defineCapsule({
   name: 'VideoStreamingFooter',
   description:
     'Rich, multi-column closing footer for a video-streaming site built on the shared SiteFooter composite: a bold wordmark + inline primary play-triangle mark, a tagline, a social row (Instagram, Twitter, TikTok, YouTube), and a responsive grid of link columns (Browse, Account, Company, Support); a bordered-top bottom bar holds an auto-updating copyright line. Use as the site-wide footer for streaming services, OTT apps, or on-demand video platforms.',

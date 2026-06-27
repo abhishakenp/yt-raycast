@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { SiteNav } from '#/section-kit/SiteNav.tsx'
  * portrait studios, elopement shooters, or any warm, editorial visual-creative
  * portfolio. Renders fully with no props via baked-in "Elena Vossen" defaults.
  */
-export const PhotographyNavbar = defineComponent({
+export const PhotographyNavbar = defineCapsule({
   name: 'PhotographyNavbar',
   description:
     "Fixed translucent site header for a fine-art / wedding photographer portfolio built on the shared SiteNav composite: a serif wordmark brand, evenly spaced desktop nav links, a 'Book a Shoot' CTA pill, and a real mobile drawer (Sheet) on small screens. Every link and the CTA route through useNavigate for page-switching. Use as the sticky site header for wedding photographers, portrait studios, elopement shooters, or warm editorial visual-creative portfolios.",

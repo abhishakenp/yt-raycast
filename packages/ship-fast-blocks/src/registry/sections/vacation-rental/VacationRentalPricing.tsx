@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
  * villa, or boutique short-stay. Renders fully with no props via baked-in
  * defaults.
  */
-export const VacationRentalPricing = defineComponent({
+export const VacationRentalPricing = defineCapsule({
   name: 'VacationRentalPricing',
   description:
     'Stay-rate table for a vacation-rental listing page built on the shared PricingGrid composite: an optional heading/subheading above three rate cards (Nightly / Weekly / Monthly), each with a price, a period, an included-perks list, and a Reserve CTA that routes through useNavigate. The Weekly tier is highlighted as the best value. Theme-token only. Use to present the rates of a vacation rental, beach house, cabin, villa, or boutique short-stay.',

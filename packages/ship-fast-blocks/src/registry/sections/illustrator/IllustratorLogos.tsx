@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * with the magazines, publishers, and brands the artist has worked with.
  * Renders fully with no props via baked-in publication defaults.
  */
-export const IllustratorLogos = defineComponent({
+export const IllustratorLogos = defineCapsule({
   name: 'IllustratorLogos',
   description:
     "Low-key 'trusted by' publications / brands strip on a subtle muted band with hairline top and bottom borders: a small uppercase caption above a centered, wrapping row of serif publication names at reduced opacity, each routing through useNavigate. Use directly beneath an illustrator or creative hero to establish credibility with the magazines, publishers, and brands the artist has worked with.",

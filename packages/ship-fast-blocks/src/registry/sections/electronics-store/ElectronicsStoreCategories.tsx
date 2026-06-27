@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * through useNavigate. Use to surface department navigation on electronics
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
-export const ElectronicsStoreCategories = defineComponent({
+export const ElectronicsStoreCategories = defineCapsule({
   name: 'ElectronicsStoreCategories',
   description:
     'Shop by Category image-tile grid for an electronics storefront: a left-aligned heading above a 2-to-4 column grid of clickable 4:3 tiles, each a full-bleed image under a bottom-up foreground gradient with the category name and product count overlaid. Tiles route through useNavigate; imagery is alt-driven. Use to surface department navigation (Headphones, Smartwatches, Laptops, Cameras, Gaming, Smart Home, Accessories, etc.) on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',

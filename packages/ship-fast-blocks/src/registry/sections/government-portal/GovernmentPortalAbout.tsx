@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * message / about / overview section of any government, civic, municipal, PSU,
  * utility or public-sector portal.
  */
-export const GovernmentPortalAbout = defineComponent({
+export const GovernmentPortalAbout = defineCapsule({
   name: 'GovernmentPortalAbout',
   description:
     "Classic Indian-government / public-sector (PSU) About / Overview band: a Managing Director / Chairman message box (portrait photo + name + designation + excerpt + 'read more') beside a short formal 'About / Overview' prose column. Gov-blue #3346B5 panel headers, leader name in #350788, body in #333; the read-more link routes through useNavigate. Pairs with the tender / notice board and citizen-services sections of the family. Use for the official leadership message, about, profile or organisation-overview section of any classic government, civic, municipal, PSU, utility or public-sector portal.",

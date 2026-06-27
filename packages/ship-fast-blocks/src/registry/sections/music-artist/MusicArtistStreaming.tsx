@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * under the hero on musician, band, or album-release pages. Renders fully with
  * no props via baked-in defaults.
  */
-export const MusicArtistStreaming = defineComponent({
+export const MusicArtistStreaming = defineCapsule({
   name: 'MusicArtistStreaming',
   description:
     "Slim 'stream on' streaming-platform strip for a music artist / band page: a small centered uppercase label above a horizontally-wrapping row of streaming-platform name buttons (Spotify, Apple Music, Bandcamp, YouTube Music, SoundCloud, Tidal) on a border-banded band. Warm, airy editorial indie-folk aesthetic. Each platform routes through useNavigate. Use as a thin trust / availability strip directly under the hero on musician, band, or album-release pages.",

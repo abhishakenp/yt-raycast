@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -28,7 +29,7 @@ const KeyholeMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const AuthFooter = defineComponent({
+export const AuthFooter = defineCapsule({
   name: 'AuthFooter',
   description:
     'Rich, multi-column closing footer for a developer-auth product built on the shared SiteFooter composite: a sharp sans wordmark + keyhole/shield mark, a developer-focused tagline, a social row (GitHub, X, Discord), and a responsive grid of link columns (Product, Developers, Company, Legal); a bordered-top bottom bar holds an auto-updating copyright note. Use as the site-wide footer for auth platforms, identity APIs, login SDKs, or developer SaaS landing pages.',

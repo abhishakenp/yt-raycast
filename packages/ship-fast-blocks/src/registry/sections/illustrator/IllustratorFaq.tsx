@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * answer paragraph. Use to answer common commission, licensing, and shipping
  * questions. Renders fully with no props via baked-in defaults.
  */
-export const IllustratorFaq = defineComponent({
+export const IllustratorFaq = defineCapsule({
   name: 'IllustratorFaq',
   description:
     'Narrow centered FAQ list for an illustrator / visual-artist portfolio on a raised card-colored band: a centered uppercase accent eyebrow + serif heading above a constrained definition-list of soft background-colored cards, each pairing a serif question with a relaxed answer paragraph. Use to answer common commission, licensing, and shipping questions.',

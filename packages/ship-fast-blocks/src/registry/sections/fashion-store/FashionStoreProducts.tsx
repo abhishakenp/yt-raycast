@@ -1,8 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useCommerceFilteredProducts,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * FashionStoreProducts — New Arrivals product grid for a minimalist fashion
@@ -14,7 +23,7 @@ import { Image } from '#/lib/img.tsx'
  * imagery uses the alt-driven Image component. Use to showcase a curated
  * product drop for clothing brands, boutiques, or apparel shops.
  */
-export const FashionStoreProducts = defineComponent({
+export const FashionStoreProducts = defineCapsule({
   name: 'FashionStoreProducts',
   description:
     "New Arrivals product grid for a minimalist fashion store: a centered eyebrow + serif heading + description intro above a responsive 2-to-4 column grid of portrait product cards, each with a hover Quick-Add button overlay, optional New/Best Seller/Limited corner badge, product name, price and variant label, closed by an underlined 'View All' link with an arrow. Every card and link routes through useNavigate and all imagery uses the alt-driven Image component. Use to showcase a curated product drop for clothing brands, boutiques, apparel and accessories shops.",
@@ -37,7 +46,8 @@ export const FashionStoreProducts = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const productsEyebrow = props.eyebrow ?? 'Just Dropped'
     const productsHeading = props.heading ?? 'New Arrivals'
@@ -109,6 +119,28 @@ export const FashionStoreProducts = defineComponent({
               "Silk midi slip dress in champagne color, women's elegant evening wear",
           },
         ]
+    useSyncCommerceCatalog(
+      lakebed,
+      productItems.map((product) =>
+        commerceProduct({
+          imageAlt: product.imageAlt,
+          label: product.name,
+          price: product.price,
+          subtitle: product.variant,
+        }),
+      ),
+    )
+    const visibleProductItems = useCommerceFilteredProducts(
+      lakebed,
+      productItems,
+      (product) => [
+        product.name,
+        product.variant,
+        product.price,
+        product.badge,
+        product.imageAlt,
+      ],
+    )
 
     const eyebrowCls =
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
@@ -147,7 +179,7 @@ export const FashionStoreProducts = defineComponent({
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 lg:gap-8">
-            {productItems.map((product) => (
+            {visibleProductItems.map((product) => (
               <article key={product.name} className="group">
                 <div className="relative mb-4 aspect-[3/4] overflow-hidden bg-muted">
                   <Image
@@ -171,13 +203,22 @@ export const FashionStoreProducts = defineComponent({
                       </span>
                     </div>
                   ) : null}
-                  <button
-                    type="button"
-                    onClick={() => go(product.name)}
-                    className="absolute inset-x-4 bottom-4 bg-background py-3 text-sm font-medium text-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                  <CommerceAddItemButton
+                    lakebed={lakebed}
+                    item={{
+                      label: product.name,
+                      price: product.price,
+                    }}
+                    pendingChildren={
+                      <>
+                        <CommerceMutationSpinner />
+                        Adding
+                      </>
+                    }
+                    className="absolute inset-x-4 bottom-4 inline-flex items-center justify-center gap-2 bg-background py-3 text-sm font-medium text-foreground opacity-0 transition-opacity disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100"
                   >
                     {quickAdd}
-                  </button>
+                  </CommerceAddItemButton>
                 </div>
                 <h3 className="text-sm font-medium text-foreground">
                   {product.name}

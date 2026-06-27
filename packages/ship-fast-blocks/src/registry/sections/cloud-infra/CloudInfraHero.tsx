@@ -1,8 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * CloudInfraHero — two-column hero section for a cloud-infrastructure / developer-
@@ -13,10 +18,10 @@ import { Image } from '#/lib/img.tsx'
  * Uses semantic tokens throughout. CTAs and links route through useNavigate.
  * Renders fully on zero arguments via baked-in defaults.
  */
-export const CloudInfraHero = defineComponent({
+export const CloudInfraHero = defineCapsule({
   name: 'CloudInfraHero',
   description:
-    'Two-column hero section for a cloud-infrastructure / developer-platform SaaS landing page: a status pill with a chart-2 dot, a bold headline, supporting paragraph, dual pill CTAs (filled primary with arrow and outlined secondary), trust checkmark row, a 4:3 alt-driven image on the right with a floating stat card overlaid at the bottom-left. CTAs route through useNavigate. Use as the primary hero for cloud hosting, IaaS/PaaS, serverless, container, DevOps, or developer-tooling sites.',
+    'Two-column hero section for a cloud-infrastructure / developer-platform SaaS landing page: a status pill with a chart-2 dot, a bold headline, supporting paragraph, Lakebed-backed dual pill CTAs, trust checkmark row, a 4:3 alt-driven image on the right with a floating stat card overlaid at the bottom-left. CTA intent is shared across sections. Use as the primary hero for cloud hosting, IaaS/PaaS, serverless, container, DevOps, or developer-tooling sites.',
   props: z.object({
     /** Status pill text before the headline. */
     badge: z.string().optional(),
@@ -38,8 +43,8 @@ export const CloudInfraHero = defineComponent({
     statValue: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const badge = props.badge ?? 'Now with GPU instances'
     const heading = props.heading ?? 'Cloud infrastructure that scales with you'
     const subheading =
@@ -109,21 +114,37 @@ export const CloudInfraHero = defineComponent({
                 {subheading}
               </p>
               <div className="flex flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center rounded-lg bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={primaryCta}
+                  plan={primaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Starting
+                    </>
+                  }
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
                   <ArrowRight className="ml-2 size-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center rounded-lg border border-border bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-accent"
+                </SaasPlanActionButton>
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={secondaryCta}
+                  plan={secondaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Sending
+                    </>
+                  }
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-70"
                 >
                   {secondaryCta}
-                </button>
+                </SaasPlanActionButton>
               </div>
               <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 {trust.map((t) => (

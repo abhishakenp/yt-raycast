@@ -1,8 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HotelBookingActionButton,
+  HotelMutationSpinner,
+} from './hotel-resort-interactions.tsx'
+import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
 
 /**
  * HotelResortCta — full-bleed image call-to-action band for a luxury hotel /
@@ -10,14 +15,14 @@ import { Image } from '#/lib/img.tsx'
  * a darkening token overlay: an uppercase eyebrow, a thin oversized headline, a
  * light supporting paragraph, and dual CTAs (solid light primary + glassy
  * outlined secondary, e.g. book + call). Cinematic and conversion-focused; CTAs
- * route through useNavigate. Use as a closing booking push for hotels, resorts,
+ * write Lakebed booking/inquiry intent. Use as a closing booking push for hotels, resorts,
  * spa retreats, villas, or inns. Background uses the alt-driven Image component.
  * Renders fully with no props via baked-in resort defaults.
  */
-export const HotelResortCta = defineComponent({
+export const HotelResortCta = defineCapsule({
   name: 'HotelResortCta',
   description:
-    'Full-bleed image call-to-action band for a luxury hotel / resort & spa site: a centered section over a full-cover background photo with a darkening token overlay, an uppercase eyebrow, a thin oversized headline, a light supporting paragraph, and dual CTAs (solid light primary + glassy outlined secondary, e.g. book + call). Cinematic and conversion-focused; CTAs route through useNavigate and the background uses the alt-driven Image component. Use as a closing booking push for hotels, resorts, spa retreats, villas, or boutique inns.',
+    'Full-bleed image call-to-action band for a luxury hotel / resort & spa site: a centered section over a full-cover background photo with a darkening token overlay, an uppercase eyebrow, a thin oversized headline, a light supporting paragraph, and dual scoped Lakebed CTAs (solid light primary booking action + glassy outlined secondary inquiry action, e.g. book + call). Cinematic and conversion-focused; the background uses the alt-driven Image component. Use as a closing booking push for hotels, resorts, spa retreats, villas, or boutique inns.',
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -33,8 +38,8 @@ export const HotelResortCta = defineComponent({
     imageAlt: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: hotelResortLakebed,
+  component: ({ props, lakebed }) => {
     const eyebrow = props.eyebrow ?? 'Limited Availability'
     const heading = props.heading ?? 'Begin your Azure Coast experience'
     const description =
@@ -74,20 +79,37 @@ export const HotelResortCta = defineComponent({
             {description}
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="rounded-md bg-background px-10 py-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            <HotelBookingActionButton
+              lakebed={lakebed}
+              intentLabel={primaryCta}
+              intentKey="cta-primary-booking"
+              source="cta"
+              pendingChildren={
+                <>
+                  <HotelMutationSpinner />
+                  Sending
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-background px-10 py-4 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="rounded-md border border-background/30 bg-background/10 px-10 py-4 text-sm font-medium text-background backdrop-blur-sm transition-colors hover:bg-background/20"
+            </HotelBookingActionButton>
+            <HotelBookingActionButton
+              lakebed={lakebed}
+              action="inquiry"
+              intentLabel={secondaryCta}
+              intentKey="cta-secondary-inquiry"
+              source="cta"
+              pendingChildren={
+                <>
+                  <HotelMutationSpinner />
+                  Sending
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-background/30 bg-background/10 px-10 py-4 text-sm font-medium text-background backdrop-blur-sm transition-colors hover:bg-background/20 disabled:pointer-events-none disabled:opacity-70"
             >
               {secondaryCta}
-            </button>
+            </HotelBookingActionButton>
           </div>
         </div>
       </section>

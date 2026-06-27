@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
@@ -16,7 +17,7 @@ import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
  * work, product drops, or video content. Renders fully with no props via baked-in
  * defaults.
  */
-export const LinkInBioGallery = defineComponent({
+export const LinkInBioGallery = defineCapsule({
   name: 'LinkInBioGallery',
   description:
     "Bold, mobile-first 'Featured' content grid for a creator LINK-IN-BIO / link-hub / Linktree-style page, built on the shared GalleryGrid composite. A compact heading + subheading sit over a tight 2-column grid (2/3/4 supported) of recent posts, product drops, videos, and projects; each tile pulls a relevant stock photo from its alt text and shows a short caption strip, turning the section into a visual portfolio teaser beneath the profile and links stack. The wrapper centers the grid in a narrow column with mobile-first padding. Use to spotlight latest work, drops, tutorials, or video content on any creator, influencer, or freelancer link-in-bio landing page. Renders fully with no props.",

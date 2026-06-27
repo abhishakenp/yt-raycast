@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * adventure outfitters, travel-experience marketplaces, and destination guides.
  * Renders fully with no props via baked-in "Wanderwild Tours" defaults.
  */
-export const TourExperiencesHero = defineComponent({
+export const TourExperiencesHero = defineCapsule({
   name: 'TourExperiencesHero',
   description:
     "Vivid full-bleed adventure hero for a guided-tour / expedition brand: a cinematic landscape photo behind a token-driven dark gradient overlay, with an eyebrow pill, a large headline, supporting copy, and dual CTAs ('Explore Tours' primary + 'How it works' outline) that route through useNavigate, plus a bottom trust strip of rating and tour stats. Use as the opening hero for tour operators, adventure outfitters, travel-experience marketplaces, and destination guides.",

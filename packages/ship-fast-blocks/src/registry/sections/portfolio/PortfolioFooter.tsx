@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * director, or freelance creative site. Renders fully with no props via baked-in
  * "Kaelen Vance" defaults.
  */
-export const PortfolioFooter = defineComponent({
+export const PortfolioFooter = defineCapsule({
   name: 'PortfolioFooter',
   description:
     'Rich, multi-column closing footer for a creative-individual portfolio built on the shared SiteFooter composite: a bold wordmark + tagline + social row (Instagram, Behance, LinkedIn), a responsive grid of link columns (Explore, Services, Contact) with contact details folded in as links, and a bordered-top bottom bar with an auto-updating copyright line. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for a 3D artist, motion designer, art director, or freelance creative site.',

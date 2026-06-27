@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * for interior designers, design studios, architecture or renovation firms.
  * Renders fully with no props via baked-in defaults.
  */
-export const InteriorDesignProcess = defineComponent({
+export const InteriorDesignProcess = defineCapsule({
   name: 'InteriorDesignProcess',
   description:
     'Numbered process band on a muted surface for an upscale interior-design / architecture studio: a centered uppercase eyebrow + light-weight heading + supporting paragraph above a responsive four-column row of steps, each prefixed with a large faded two-digit ordinal (01–04) over a medium title and a short description. Editorial, airy and timeless. Use to explain a working methodology such as discovery, concept, development and delivery for interior designers, design studios, architecture or renovation firms.',

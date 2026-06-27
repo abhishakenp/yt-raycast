@@ -1,24 +1,27 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * NonprofitSubscribe — warm get-involved / newsletter band for a nonprofit /
  * charity / NGO page. A centered `SectionHeading` (eyebrow + title + subtitle)
- * sits on a soft muted surface above a styled (non-functional) email-capture
- * row with a submit button, and a short row of secondary get-involved links
- * (Volunteer, Fundraise, Partner with us). The submit button and the
- * get-involved links route through useNavigate so nothing is a dead link. Use
- * to grow the mailing list and surface ways to help on nonprofit, foundation,
- * or humanitarian pages. Renders fully with no props via baked-in "Roots of
- * Hope" defaults.
+ * sits on a soft muted surface above a styled email-capture row with a submit
+ * button, and a short row of secondary get-involved links (Volunteer, Fundraise,
+ * Partner with us). The submit button writes to the shared Lakebed subscriber
+ * list and the get-involved links route through useNavigate. Use to grow the
+ * mailing list and surface ways to help on nonprofit, foundation, or
+ * humanitarian pages. Renders fully with no props via baked-in "Roots of Hope"
+ * defaults.
  */
-export const NonprofitSubscribe = defineComponent({
+export const NonprofitSubscribe = defineCapsule({
   name: 'NonprofitSubscribe',
   description:
-    'Warm get-involved / newsletter band for a nonprofit / charity / NGO page: a centered SectionHeading (eyebrow + title + subtitle) on a soft muted surface above a styled non-functional email-capture row with a submit button, plus a short row of secondary get-involved links (Volunteer, Fundraise, Partner with us). The submit button and links route through useNavigate. Use to grow the mailing list and surface ways to help on nonprofit, foundation, or humanitarian pages.',
+    'Warm get-involved / newsletter band for a nonprofit / charity / NGO page: a centered SectionHeading (eyebrow + title + subtitle) on a soft muted surface above a styled email-capture row with a submit button, plus a short row of secondary get-involved links (Volunteer, Fundraise, Partner with us). The submit button writes to the shared Lakebed subscriber list and secondary links route through useNavigate. Use to grow the mailing list and surface ways to help on nonprofit, foundation, or humanitarian pages.',
   props: z.object({
     /** Small uppercase eyebrow above the title. */
     eyebrow: z.string().optional(),
@@ -30,7 +33,7 @@ export const NonprofitSubscribe = defineComponent({
     emailPlaceholder: z.string().optional(),
     /** Label for the email-capture submit button. */
     submitCta: z.string().optional(),
-    /** Navigation target for the submit button. */
+    /** Subscriber source label recorded when the form is submitted. */
     submitTarget: z.string().optional(),
     /** Secondary get-involved link labels under the form. */
     getInvolved: z.array(z.string()).optional(),
@@ -38,7 +41,8 @@ export const NonprofitSubscribe = defineComponent({
     footnote: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Get involved'
     const heading = props.heading ?? 'Stay close to the change you make'
@@ -64,24 +68,16 @@ export const NonprofitSubscribe = defineComponent({
               subtitle={subheading}
             />
 
-            <form
-              onSubmit={(e) => e.preventDefault()}
+            <NewsletterSubscribeForm
+              lakebed={lakebed}
+              source={submitTarget}
+              placeholder={emailPlaceholder}
+              buttonLabel={submitCta}
+              successMessage="You're subscribed. We'll send field updates and ways to help."
               className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row"
-            >
-              <input
-                type="email"
-                placeholder={emailPlaceholder}
-                aria-label="Email address"
-                className="w-full rounded-full border border-border bg-background px-5 py-3 text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-              <button
-                type="button"
-                onClick={() => go(submitTarget)}
-                className="shrink-0 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {submitCta}
-              </button>
-            </form>
+              inputClassName="w-full rounded-full border border-border bg-background px-5 py-3 text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              buttonClassName="shrink-0 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            />
 
             <p className="mt-4 text-center text-xs text-muted-foreground">
               {footnote}

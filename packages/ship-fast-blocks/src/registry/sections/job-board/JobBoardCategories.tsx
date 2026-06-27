@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * boards, hiring marketplaces, talent networks or directory-style products.
  * Renders fully with no props; built-in line icons rotate across the items.
  */
-export const JobBoardCategories = defineComponent({
+export const JobBoardCategories = defineCapsule({
   name: 'JobBoardCategories',
   description:
     'Browse-by-category icon grid for a job-board / careers site: a centered heading + description above a responsive 2/3/4-column grid of tappable category tiles, each with a rounded icon chip, a category title and a per-category job count; tiles lift on hover and route through useNavigate. Use to let visitors jump into a field (Engineering, Design, Marketing…) on job boards, hiring marketplaces, talent networks or directory-style products.',

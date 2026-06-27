@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * or tea houses. Renders fully with no props via six baked-in default alt
  * strings.
  */
-export const CafeGallery = defineComponent({
+export const CafeGallery = defineCapsule({
   name: 'CafeGallery',
   description:
     'Masonry photo gallery for a cozy cafe page on a card-colored band: responsive 3-column masonry grid with alternating 3:4 and square aspect ratios, each image zooming on hover. All imagery uses the alt-driven Image component. Use to showcase interiors, latte art, pastries, and ambiance for cafes, bakeries, or tea houses.',

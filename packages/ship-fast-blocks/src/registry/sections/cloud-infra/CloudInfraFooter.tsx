@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * columns list link groups (title + links). Every button routes through useNavigate.
  * Tokens-only. Renders fully on zero arguments.
  */
-export const CloudInfraFooter = defineComponent({
+export const CloudInfraFooter = defineCapsule({
   name: 'CloudInfraFooter',
   description:
     'Fat multi-column footer for a cloud-infrastructure / developer-platform SaaS landing page: a bordered-top footer with a 5-column grid. The first two columns show a brand logo tile plus name, a tagline paragraph, and social icon buttons; the remaining columns list link groups (title + routable links). Every button routes through useNavigate. Use as the site footer for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',

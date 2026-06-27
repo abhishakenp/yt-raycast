@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
  * Use to flaunt the visual fidelity of a flight sim, airliner / combat sim, or
  * aviation title. Renders fully with no props via baked defaults.
  */
-export const FlightSimulatorGallery = defineComponent({
+export const FlightSimulatorGallery = defineCapsule({
   name: 'FlightSimulatorGallery',
   description:
     'Screenshot showcase for a flight-simulator landing page built on the shared GalleryGrid composite: a centered heading above a responsive grid of in-game captures, each driven by an evocative alt prompt and a short caption naming the aircraft, airport, and lighting. Six baked screenshots span airliners, bush flying, and night ops. Use to flaunt the visual fidelity of a flight sim, airliner / combat sim, or aviation title.',

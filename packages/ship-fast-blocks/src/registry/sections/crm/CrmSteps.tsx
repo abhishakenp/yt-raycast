@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * explain getting-started / setup / how-it-works flows for CRM, sales-pipeline
  * or B2B SaaS products. Renders fully with no props.
  */
-export const CrmSteps = defineComponent({
+export const CrmSteps = defineCapsule({
   name: 'CrmSteps',
   description:
     'Centered 3-step onboarding flow for a CRM / SaaS landing page on a subtle muted band: a heading + supporting paragraph above a responsive (1/3-up) row of numbered step cards, each a circular primary number badge above a bordered card with a centered title, description and an alt-driven image, joined by thin connector lines on desktop. Reassuring and guided. Use to explain getting-started / setup / how-it-works flows for CRM, sales-pipeline or B2B SaaS products.',

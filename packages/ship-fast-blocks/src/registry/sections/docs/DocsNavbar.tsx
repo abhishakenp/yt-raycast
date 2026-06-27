@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -27,7 +28,7 @@ const StackedBlocksMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const DocsNavbar = defineComponent({
+export const DocsNavbar = defineCapsule({
   name: 'DocsNavbar',
   description:
     "Sticky developer DOCUMENTATION / API-reference site header built on the shared SiteNav composite: a clean stacked-blocks brand mark + product wordmark, desktop section links, a 'Get Started' CTA, and a real mobile drawer. Links route through useNavigate for page-switching and nav labels match site routes. Use as the sticky header for docs homes, API references, SDK guides, developer portals, or knowledge bases.",

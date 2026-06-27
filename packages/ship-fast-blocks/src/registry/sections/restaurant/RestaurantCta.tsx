@@ -1,6 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  RestaurantMutationSpinner,
+  RestaurantReservationButton,
+} from './restaurant-interactions.tsx'
+import { restaurantLakebed } from './restaurant-lakebed.ts'
 
 /**
  * RestaurantCta — a bold, centered reservation band for a restaurant home page.
@@ -14,7 +21,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * page to drive table reservations and calls. Renders fully with no props via
  * warm, appetizing baked-in defaults.
  */
-export const RestaurantCta = defineComponent({
+export const RestaurantCta = defineCapsule({
   name: 'RestaurantCta',
   description:
     "Bold, centered reservation band for a restaurant home page: a full-width section wrapping a strong primary-colored card with a serif headline, a short supporting subheading, a centered row of two pill CTAs (a high-contrast 'Reserve Now' button plus an outlined 'Call Us' button), and a small hours-and-phone strip beneath. Both CTAs route through useNavigate. Use near the bottom of a restaurant, bistro, ramen shop, sushi counter, or cafe page to drive table reservations and phone calls.",
@@ -35,7 +42,9 @@ export const RestaurantCta = defineComponent({
     hours: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: restaurantLakebed,
+  component: ({ props, lakebed }) => {
+    const go = useNavigate()
     const headline = props.headline ?? 'Join us for an unforgettable evening'
     const subheading =
       props.subheading ??
@@ -47,17 +56,38 @@ export const RestaurantCta = defineComponent({
     const hours = props.hours ?? 'Open Tue–Sun · 5pm–11pm'
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={hours}
-        title={headline}
-        subtitle={subheading}
-        actions={[
-          { label: primaryCta, target: primaryTarget, variant: 'primary' },
-          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
-        ]}
-        className={props.className}
-      />
+      <section className={cn('py-20 lg:py-28', props.className)}>
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="rounded-2xl bg-primary px-6 py-14 text-center text-primary-foreground shadow-sm sm:px-10 lg:px-16">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary-foreground/75">
+              {hours}
+            </p>
+            <h2 className="mx-auto mt-4 max-w-3xl font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl">
+              {headline}
+            </h2>
+            <p className="mx-auto mt-5 max-w-2xl text-primary-foreground/80">
+              {subheading}
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <RestaurantReservationButton
+                lakebed={lakebed}
+                input={{ label: primaryCta, source: primaryTarget }}
+                className="inline-flex min-h-12 min-w-36 items-center justify-center rounded-full bg-background px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-60"
+                pendingChildren={<RestaurantMutationSpinner />}
+              >
+                {primaryCta}
+              </RestaurantReservationButton>
+              <button
+                type="button"
+                onClick={() => go(secondaryTarget)}
+                className="inline-flex min-h-12 min-w-36 items-center justify-center rounded-full border border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
+              >
+                {secondaryCta}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
     )
   },
 })

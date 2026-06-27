@@ -1,23 +1,30 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  PublicationActionButton,
+  PublicationMutationSpinner,
+  PublicationSubscribeForm,
+} from '../blog/publication-interactions.tsx'
+import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 /**
  * NewsroomSubscribe — editorial subscription / membership band for a digital
  * newsroom or magazine. A bold centered intro with a serif heading and a
- * muted supporting paragraph, a short benefits checklist, a styled (non-functional)
+ * muted supporting paragraph, a short benefits checklist, a styled
  * email-capture row with a Subscribe button, and a responsive 3-up grid of tiered
  * membership plan cards (the featured middle plan inverts to a filled primary
  * surface with a "Most Popular" badge), closing with a fine-print trust footnote.
- * CTAs route through useNavigate. Use to convert readers into paying subscribers /
- * newsletter members for a news, magazine or publication site. Renders fully with
- * no props.
+ * email submit writes to the shared Lakebed subscriber list and plan CTAs route
+ * through useNavigate. Use to convert readers into paying subscribers /
+ * newsletter members for a news, magazine or publication site. Renders fully
+ * with no props.
  */
-export const NewsroomSubscribe = defineComponent({
+export const NewsroomSubscribe = defineCapsule({
   name: 'NewsroomSubscribe',
   description:
-    'Editorial subscription / membership band for a digital newsroom or magazine: a bold centered intro with a serif heading and a muted supporting paragraph, a short benefits checklist, a styled non-functional email-capture row with a Subscribe button, and a responsive 3-up grid of tiered membership plan cards where the featured middle plan inverts to a filled primary surface with a Most-Popular badge, closing with a fine-print trust footnote. Combines newsletter sign-up and tiered paid subscription plans; all CTAs route through useNavigate. Use to convert readers into paying subscribers or newsletter members for a news, magazine or publication site. Renders fully with no props.',
+    'Editorial subscription / membership band for a digital newsroom or magazine: a bold centered intro with a serif heading and a muted supporting paragraph, a short benefits checklist, a styled email-capture row with a Subscribe button, and a responsive 3-up grid of tiered membership plan cards where the featured middle plan inverts to a filled primary surface with a Most-Popular badge, closing with a fine-print trust footnote. Combines newsletter sign-up and tiered paid subscription plans; email submit writes to the shared Lakebed subscriber list and plan CTAs route through useNavigate. Use to convert readers into paying subscribers or newsletter members for a news, magazine or publication site. Renders fully with no props.',
   props: z.object({
     /** Serif section heading. */
     heading: z.string().optional(),
@@ -46,8 +53,8 @@ export const NewsroomSubscribe = defineComponent({
     footnote: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: publicationLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Join 250,000 informed readers'
     const subheading =
       props.subheading ??
@@ -139,24 +146,17 @@ export const NewsroomSubscribe = defineComponent({
             </ul>
           </div>
 
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="mx-auto mb-16 flex max-w-xl flex-col gap-3 sm:flex-row"
-          >
-            <input
-              type="email"
-              placeholder={emailPlaceholder}
-              aria-label="Email address"
-              className="w-full rounded-lg border border-border bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-            <button
-              type="button"
-              onClick={() => go(submitCta)}
-              className="shrink-0 rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {submitCta}
-            </button>
-          </form>
+          <PublicationSubscribeForm
+            lakebed={lakebed}
+            source={submitCta}
+            placeholder={emailPlaceholder}
+            buttonLabel={submitCta}
+            successMessage="You're subscribed. The briefing will arrive by email."
+            className="mx-auto flex max-w-xl flex-col gap-3 sm:flex-row"
+            inputClassName="w-full rounded-lg border border-border bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            buttonClassName="shrink-0 rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            statusClassName="mb-16 text-center"
+          />
 
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
             {plans.map((plan) => (
@@ -230,18 +230,25 @@ export const NewsroomSubscribe = defineComponent({
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => go(plan.cta)}
+                <PublicationActionButton
+                  action={plan.cta}
+                  lakebed={lakebed}
+                  source={`plan:${plan.name}`}
+                  pendingChildren={
+                    <>
+                      <PublicationMutationSpinner className="size-4" />
+                      Saving
+                    </>
+                  }
                   className={cn(
-                    'w-full rounded-lg py-3 font-semibold transition-colors',
+                    'inline-flex w-full items-center justify-center gap-2 rounded-lg py-3 font-semibold transition-colors disabled:pointer-events-none disabled:opacity-70',
                     plan.featured
                       ? 'bg-background text-foreground hover:bg-muted'
                       : 'border border-border text-foreground hover:bg-muted',
                   )}
                 >
                   {plan.cta}
-                </button>
+                </PublicationActionButton>
               </div>
             ))}
           </div>

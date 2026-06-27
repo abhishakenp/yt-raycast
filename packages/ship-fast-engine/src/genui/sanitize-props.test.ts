@@ -18,7 +18,7 @@ const schema = z.object({
 })
 
 describe('sanitizeProps', () => {
-  it('drops array items whose required nested array is null or missing', () => {
+  it('repairs array items whose required nested array is null or missing', () => {
     const result = sanitizeProps(
       {
         title: 'Hello',
@@ -29,10 +29,18 @@ describe('sanitizeProps', () => {
         ],
       },
       schema,
-    ) as { sections: Array<{ heading: string }> }
+    ) as { sections: Array<{ blocks: unknown[]; heading: string }> }
 
-    expect(result.sections).toHaveLength(1)
+    expect(result.sections).toHaveLength(3)
     expect(result.sections[0].heading).toBe('Good')
+    expect(result.sections[1]).toMatchObject({
+      blocks: [],
+      heading: 'NullBlocks',
+    })
+    expect(result.sections[2]).toMatchObject({
+      blocks: [],
+      heading: 'MissingBlocks',
+    })
   })
 
   it('coerces scalar types instead of discarding content', () => {

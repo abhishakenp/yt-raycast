@@ -1,8 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  RestaurantMutationSpinner,
+  RestaurantReservationButton,
+} from './restaurant-interactions.tsx'
+import { restaurantLakebed } from './restaurant-lakebed.ts'
 
 /**
  * RestaurantHero — full-bleed, image-forward hero for a restaurant landing page.
@@ -15,7 +21,7 @@ import { Image } from '#/lib/img.tsx'
  * restaurants, bistros, eateries, fine-dining rooms, and chef-driven venues.
  * Renders fully with no props via baked-in defaults.
  */
-export const RestaurantHero = defineComponent({
+export const RestaurantHero = defineCapsule({
   name: 'RestaurantHero',
   description:
     "Full-bleed image-forward hero for a restaurant landing page: one appetizing food / dining-room photo fills the band edge to edge under a token-based dark overlay so light serif text stays readable. Centered content has an uppercase eyebrow pill, a large serif headline, a supporting paragraph, dual CTAs (filled 'Reserve a Table' + outlined translucent 'View Menu'), and a divider-separated hours / location / phone strip. CTAs route through useNavigate. Use as the opening hero for casual or upscale restaurants, bistros, eateries, fine-dining rooms, and chef-driven venues.",
@@ -44,7 +50,8 @@ export const RestaurantHero = defineComponent({
     phone: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: restaurantLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'Farm-to-table · Est. 2014'
     const heroHeading =
@@ -99,13 +106,14 @@ export const RestaurantHero = defineComponent({
           </p>
 
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(heroPrimaryTarget)}
+            <RestaurantReservationButton
+              lakebed={lakebed}
+              input={{ label: heroPrimary, source: heroPrimaryTarget }}
               className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              pendingChildren={<RestaurantMutationSpinner />}
             >
               {heroPrimary}
-            </button>
+            </RestaurantReservationButton>
             <button
               type="button"
               onClick={() => go(heroSecondaryTarget)}

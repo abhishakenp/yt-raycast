@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * for social proof on music festivals, arts festivals, concert series, or any
  * multi-day live event with returning attendees.
  */
-export const MusicFestivalTestimonials = defineComponent({
+export const MusicFestivalTestimonials = defineCapsule({
   name: 'MusicFestivalTestimonials',
   description:
     'Three-up starred testimonial grid for a music / arts festival landing page: a centered eyebrow + heading above a row of three bordered cards, each with a circular headshot avatar plus name and role, a five-star rating row, and a quote in smart quotes. Avatars use the alt-driven Image component. Use for community social proof on music festivals, arts festivals, concert series, raves, or any multi-day live event with returning attendees.',

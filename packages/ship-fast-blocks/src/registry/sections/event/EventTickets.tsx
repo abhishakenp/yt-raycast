@@ -1,7 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  EventActionButton,
+  EventMutationSpinner,
+  eventTicket,
+  useSyncEventTickets,
+} from './event-interactions.tsx'
+import { eventLakebed } from './event-lakebed.ts'
 
 /**
  * EventTickets — a 3-tier ticket pricing block for a conference or event page. A
@@ -9,13 +16,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * featured tier gets a thicker border and a "Most Popular" badge), each with
  * name, availability, big price + unit, a checklist of included features (and an
  * optional crossed-out excluded list), and a CTA button that disables when sold
- * out. A note line with an inline link sits below. Use to sell Early Bird /
+ * out. Purchasable CTAs write Lakebed ticket actions and the catalog is shared
+ * across event sections. A note line with an inline link sits below. Use to sell Early Bird /
  * Regular / VIP passes on tech conference, summit, workshop, or festival pages.
  */
-export const EventTickets = defineComponent({
+export const EventTickets = defineCapsule({
   name: 'EventTickets',
   description:
-    "Three-tier ticket pricing block for a conference or event page: a centered heading + description above a 3-column grid of pricing cards (the featured tier gets a thicker border and a 'Most Popular' badge), each with a tier name, availability line, a big price + unit, a checklist of included features and an optional crossed-out excluded list, and a CTA button that becomes a disabled 'Sold Out' state when flagged. A note line with an inline link sits below. Use to sell Early Bird / Regular / VIP passes on tech conference, summit, workshop, meetup, or festival pages.",
+    "Three-tier ticket pricing block for a conference or event page backed by shared Lakebed event state: a centered heading + description above a 3-column grid of pricing cards (the featured tier gets a thicker border and a 'Most Popular' badge), each with a tier name, availability line, a big price + unit, a checklist of included features and an optional crossed-out excluded list, and a CTA button that becomes a disabled 'Sold Out' state when flagged. Purchasable CTAs write Lakebed ticket actions and the catalog is shared across event sections. A note line with an inline contact action sits below. Use to sell Early Bird / Regular / VIP passes on tech conference, summit, workshop, meetup, or festival pages.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -44,8 +52,8 @@ export const EventTickets = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: eventLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Get Your Ticket'
     const description =
       props.description ??
@@ -103,6 +111,18 @@ export const EventTickets = defineComponent({
             cta: 'Get VIP Pass',
           },
         ]
+    useSyncEventTickets(
+      lakebed,
+      tiers.map((tier) =>
+        eventTicket({
+          availability: tier.availability,
+          cta: tier.cta,
+          name: tier.name,
+          price: tier.price,
+          unit: tier.unit,
+        }),
+      ),
+    )
 
     const CheckIcon = () => (
       <svg
@@ -199,18 +219,28 @@ export const EventTickets = defineComponent({
                     {tier.cta}
                   </button>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => go(tier.cta)}
+                  <EventActionButton
+                    lakebed={lakebed}
+                    action="ticket"
+                    label={tier.cta}
+                    intentKey={`ticket:${tier.name}`}
+                    source="tickets"
+                    tier={tier.name}
+                    pendingChildren={
+                      <>
+                        <EventMutationSpinner />
+                        Reserving
+                      </>
+                    }
                     className={cn(
-                      'block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors',
+                      'block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
                       tier.featured
                         ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                         : 'bg-foreground text-background hover:bg-foreground/90',
                     )}
                   >
                     {tier.cta}
-                  </button>
+                  </EventActionButton>
                 )}
               </div>
             ))}
@@ -218,13 +248,16 @@ export const EventTickets = defineComponent({
           <div className="mt-12 text-center">
             <p className="text-sm text-muted-foreground">
               {note.split(noteLink)[0]}
-              <button
-                type="button"
-                onClick={() => go(noteLink)}
+              <EventActionButton
+                lakebed={lakebed}
+                action="contact"
+                label={noteLink}
+                intentKey="tickets-contact"
+                source="tickets-note"
                 className="text-foreground underline hover:no-underline"
               >
                 {noteLink}
-              </button>
+              </EventActionButton>
               {note.split(noteLink)[1] ?? ''}
             </p>
           </div>

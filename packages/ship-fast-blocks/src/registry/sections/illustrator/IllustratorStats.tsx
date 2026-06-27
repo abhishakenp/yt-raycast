@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * high-contrast achievements strip between content sections. Renders fully with
  * no props via baked-in defaults.
  */
-export const IllustratorStats = defineComponent({
+export const IllustratorStats = defineCapsule({
   name: 'IllustratorStats',
   description:
     'Compact dark stats band for an illustrator / visual-artist portfolio: a full-width foreground-colored band with inverted type holding a centered responsive grid of big serif metric values over small muted labels (books published, prints sold, happy clients, awards). Use as a high-contrast achievements strip between content sections.',

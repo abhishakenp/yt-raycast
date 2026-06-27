@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * route through useNavigate. Use to let visitors estimate loan terms on personal-
  * loan, debt-consolidation, or financing pages. Renders fully with no props.
  */
-export const LendingCalculator = defineComponent({
+export const LendingCalculator = defineCapsule({
   name: 'LendingCalculator',
   description:
     "Interactive personalized-rate calculator panel for a lending or fintech marketing page: centered heading + description above a two-column white card — left 'loan details' pane has a labelled amount range slider (min/max captions), a purpose select, a 3-up loan-term toggle and a 2-up credit-tier picker; right muted 'estimated offer' pane shows a large monthly-payment figure, a key/value summary list (free items in the primary tone), a full-width primary CTA and a reassuring sub-note. Controls route through useNavigate. Use to let visitors estimate loan terms on personal-loan, debt-consolidation, or financing pages.",

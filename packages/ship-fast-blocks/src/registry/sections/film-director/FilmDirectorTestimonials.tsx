@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * artists, and fellow filmmakers for directors, cinematographers, DPs, or
  * production houses.
  */
-export const FilmDirectorTestimonials = defineComponent({
+export const FilmDirectorTestimonials = defineCapsule({
   name: 'FilmDirectorTestimonials',
   description:
     'Client-testimonial grid for a film director or cinematographer: a centered section header (thin heading + muted lede) above a responsive 1/2/3-column grid of bordered cards, each with a round avatar + name + role header and an italic muted quote. Avatars use the Image component. Use as social proof from creative directors, brand managers, artists, and fellow filmmakers for directors, cinematographers, DPs, or production houses.',

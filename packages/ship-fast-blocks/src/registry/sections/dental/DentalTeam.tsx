@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * headshots use the alt-driven Image component. Use to introduce
  * board-certified dentists, orthodontists, or oral surgeons for a clinic site.
  */
-export const DentalTeam = defineComponent({
+export const DentalTeam = defineCapsule({
   name: 'DentalTeam',
   description:
     'Meet-the-team grid for a dental practice site on a soft muted band: a centered eyebrow + heading + lede above a responsive 1-to-4 column grid of card-framed dentist profiles, each with a tall headshot photo, name, primary-colored role, short bio, and a round LinkedIn icon button that brightens to the primary color on hover. Links route through useNavigate; headshots use the Image component. Use to introduce board-certified dentists, orthodontists, or oral surgeons for a clinic site.',

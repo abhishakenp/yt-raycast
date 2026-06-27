@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
 
-export const UniversityStats = defineComponent({
+export const UniversityStats = defineCapsule({
   name: 'UniversityStats',
   description:
     'Institutional key-figures band for the University page family with a prestigious, collegiate aesthetic. Composes an optional SectionHeading above the shared StatGrid kit composite (four columns) to present headline metrics — total students, national ranking, distinguished faculty, and the worldwide alumni network. Use to convey scale and reputation between the hero and program sections of a university homepage.',

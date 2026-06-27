@@ -1,7 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceAccountButton,
+  LocalServiceBookingButton,
+  LocalServiceIntentBadge,
+  LocalServiceMobileMenu,
+  LocalServiceMutationSpinner,
+  LocalServiceSearchButton,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * MentalHealthNavbar — a sticky, backdrop-blurred top navigation bar for a
@@ -13,7 +23,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * sticky site header for therapists, counselors, psychologists, psychiatrists,
  * wellness centers, telehealth or behavioral-health practices.
  */
-export const MentalHealthNavbar = defineComponent({
+export const MentalHealthNavbar = defineCapsule({
   name: 'MentalHealthNavbar',
   description:
     "Sticky, backdrop-blurred top navigation bar for a therapy / counseling / mental-health practice site: a border-bottomed header with a calming 'sun/wellness' brand mark + practice name on the left, horizontal nav links on the right (desktop), a filled primary 'Book Session' CTA, and a mobile hamburger toggle. Calm, warm, sage-and-sand wellness aesthetic. All links and CTAs route through useNavigate. Use as the sticky site header for therapists, counselors, psychologists, psychiatrists, wellness centers, telehealth or behavioral-health practices.",
@@ -28,7 +38,8 @@ export const MentalHealthNavbar = defineComponent({
     bookLabel: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Stillpoint'
     const nav = props.nav?.length
@@ -84,35 +95,36 @@ export const MentalHealthNavbar = defineComponent({
                   {label}
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => go(bookLabel)}
-                className="rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              <LocalServiceBookingButton
+                lakebed={lakebed}
+                intentLabel={bookLabel}
+                service="Therapy session"
+                source="navbar"
+                pendingChildren={
+                  <LocalServiceMutationSpinner className="text-primary-foreground" />
+                }
+                className="rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
               >
                 {bookLabel}
-              </button>
+              </LocalServiceBookingButton>
             </div>
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => go(homeTarget)}
-              className="p-2 text-muted-foreground md:hidden"
-            >
-              <svg
-                className="size-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
+            <div className="flex items-center gap-2">
+              <LocalServiceIntentBadge lakebed={lakebed} />
+              <LocalServiceSearchButton
+                lakebed={lakebed}
+                buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:inline-flex"
+              />
+              <LocalServiceAccountButton
+                lakebed={lakebed}
+                buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:inline-flex"
+              />
+              <LocalServiceMobileMenu
+                brand={brand}
+                homeTarget={homeTarget}
+                nav={nav}
+                buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
+              />
+            </div>
           </div>
         </nav>
       </header>

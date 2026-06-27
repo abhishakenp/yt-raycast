@@ -1,9 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
-export const WebinarFaq = defineComponent({
+export const WebinarFaq = defineCapsule({
   name: 'WebinarFaq',
   description:
     'Frequently asked questions band for a webinar or virtual event: a SectionHeading over a stacked list of native <details>/<summary> disclosures. Each item shows a token-styled question with a chevron that expands to reveal the answer, handling cost, recording, timing, and access objections. Use to remove last-mile hesitation before registration on a webinar landing page.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * between sections on food trucks, street-food vendors, caterers or restaurants to show
  * volume served, reviews, events catered and years running.
  */
-export const FoodTruckStats = defineComponent({
+export const FoodTruckStats = defineCapsule({
   name: 'FoodTruckStats',
   description:
     'Compact metrics strip on a subtle muted band: a centered 2-up (mobile) / 4-up (desktop) grid of stat blocks, each a large bold value over a small muted label. No imagery or links — pure at-a-glance proof. Use as a credibility strip between sections on food trucks, street-food vendors, caterers or restaurants to show volume served, reviews, events catered and years running.',

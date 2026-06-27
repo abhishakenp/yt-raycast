@@ -183,14 +183,9 @@ export const deploy = action({
       })
       let project: LakebedProjectFiles
       if (sourceKind === 'html') {
-        const { buildStaticLakebedProjectFiles } = await import(
-          '../src/features/deployments/server/lakebed-static-project-builder'
+        throw new Error(
+          'Lakebed deploys require generated fullstack source. Regenerate this site before publishing to Lakebed.',
         )
-        project = await buildStaticLakebedProjectFiles({
-          source: prepared.source,
-          siteSpecJson: prepared.siteSpecJson,
-          previewHtml: prepared.previewHtml,
-        })
       } else {
         const { buildOpenUILakebedProjectFiles } = await import(
           '../src/features/exports/services/openui-lakebed-export-builder'

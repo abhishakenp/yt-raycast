@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -14,7 +15,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * multi-vendor or maker/artisan platforms, and retail aggregators. Renders fully
  * with no props via baked-in "MarketHub" defaults.
  */
-export const MarketplaceStats = defineComponent({
+export const MarketplaceStats = defineCapsule({
   name: 'MarketplaceStats',
   description:
     'Scale / trust metrics band for a multi-vendor marketplace / e-commerce landing page: a padded section with an optional centered heading above the shared StatGrid composite, surfacing headline marketplace numbers (active buyers, verified sellers, live listings, countries served). Theme-token only; the capsule supplies the section wrapper and container padding around the layout-only grid. Use to convey reach and momentum on online marketplaces, multi-vendor or maker/artisan platforms, and retail aggregators.',

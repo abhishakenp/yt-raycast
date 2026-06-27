@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * members clubs, founders/social clubs, professional networks, curated communities
  * or paid community subscriptions. Renders fully with no props.
  */
-export const MembershipClubHero = defineComponent({
+export const MembershipClubHero = defineCapsule({
   name: 'MembershipClubHero',
   description:
     'Calm, editorial split hero for a private membership club / exclusive community landing page: left column with an uppercase tracked eyebrow label, a thin display headline containing one emphasized (normal-weight) highlight phrase, a relaxed subheading, dual rounded-pill CTAs (solid primary + outlined secondary) and a member-count proof strip; right column with a large rounded lifestyle photo and a floating pull-quote card overlapping its lower-left corner. CTAs route through useNavigate. Use as the trust-building opening section for members clubs, founders/social clubs, professional networks, curated communities or paid community subscriptions.',

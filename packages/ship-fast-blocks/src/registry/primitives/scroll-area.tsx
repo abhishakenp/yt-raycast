@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { ScrollArea as UIScrollArea } from '#/components/ui/scroll-area.tsx'
 
@@ -13,7 +14,7 @@ const heightMap = {
   xl: 'h-96',
 } as const
 
-export const ScrollArea = defineComponent({
+export const ScrollArea = defineCapsule({
   name: 'ScrollArea',
   description:
     'Fixed-height scrollable container with a styled scrollbar. Put overflowing content in children.',

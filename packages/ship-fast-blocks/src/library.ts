@@ -1,6 +1,6 @@
 import {
   createLibrary,
-  isDefinedComponent,
+  isCapsule,
   type ShipFastCapsule,
 } from './capsules/openui.ts'
 import * as registry from './registry/all.ts'
@@ -10,9 +10,12 @@ import * as registry from './registry/all.ts'
 // component that OpenUI needs under the hood. The legacy monolithic page
 // capsules were removed once every vertical became a composable section family.
 
-const registryCapsules = Object.values(registry)
-  .filter(isDefinedComponent)
-  .map((client) => ({ client })) satisfies ShipFastCapsule[]
+const registryCapsules = Object.values(registry).flatMap(
+  (value): ShipFastCapsule[] => {
+    if (isCapsule(value)) return [value]
+    return []
+  },
+)
 
 export const library = createLibrary({
   capsules: registryCapsules,

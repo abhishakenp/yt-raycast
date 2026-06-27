@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -33,7 +34,7 @@ const PipeMark = () => (
   </span>
 )
 
-export const PlumbingHvacFooter = defineComponent({
+export const PlumbingHvacFooter = defineCapsule({
   name: 'PlumbingHvacFooter',
   description:
     'Multi-column site footer for a plumbing & HVAC trade site built on the shared SiteFooter composite: a pipe/droplet brand mark + wordmark, a tagline, a social row, and a responsive grid of link columns (Services / Service Area / Company / Contact with address, phone, and email); below, a bordered-top bottom bar with an auto-updating copyright line and optional legal links. The brand, every column link, and each social link route through useNavigate. Use as the closing footer for plumber, HVAC, or other home-service sites.',

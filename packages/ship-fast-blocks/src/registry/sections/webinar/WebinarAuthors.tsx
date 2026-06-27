@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
-export const WebinarAuthors = defineComponent({
+export const WebinarAuthors = defineCapsule({
   name: 'WebinarAuthors',
   description:
     'Speaker lineup band for a webinar or virtual event: a SectionHeading over a responsive grid of speaker cards, each with a rounded avatar photograph, name, role, company, and a short credibility-building bio. Use to introduce the presenters and establish authority on a webinar registration page.',

@@ -1,7 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasAccountButton,
+  SaasIntentBadge,
+  SaasMobileMenu,
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  SaasSearchButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * CybersecurityNavbar — sticky, translucent top navigation bar for an
@@ -15,10 +25,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * compliance-automation, or any authoritative B2B security SaaS landing page.
  * Renders fully with no props via baked-in "SentinelGuard" defaults.
  */
-export const CybersecurityNavbar = defineComponent({
+export const CybersecurityNavbar = defineCapsule({
   name: 'CybersecurityNavbar',
   description:
-    "Sticky translucent top navigation bar for an enterprise cybersecurity / security-platform site: backdrop-blurred, border-bottomed header pinned to the top with a shield-glyph logo + brand name on the left, horizontal nav links in the center (desktop), and a 'Contact Sales' text link plus a solid primary 'Get Demo' CTA on the right. Nav items, contact link and CTA route through useNavigate for page-switching. Use as the sticky site header for cybersecurity vendors, SOC/MDR/XDR/SIEM providers, zero-trust, cloud-security, or any authoritative B2B security SaaS landing page.",
+    'Sticky translucent top navigation bar for an enterprise cybersecurity / security-platform site: backdrop-blurred, border-bottomed header pinned to the top with a shield-glyph logo + brand name, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped contact/demo CTAs, and a reusable Sheet mobile drawer. Nav links route through useNavigate while conversion CTAs write to shared Lakebed state.',
   props: z.object({
     /** Brand / product name shown beside the shield logo. */
     brand: z.string().optional(),
@@ -32,7 +42,8 @@ export const CybersecurityNavbar = defineComponent({
     ctaTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'SentinelGuard'
     const nav = props.nav?.length
@@ -90,20 +101,46 @@ export const CybersecurityNavbar = defineComponent({
               ))}
             </div>
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(contactLabel)}
-                className="hidden text-muted-foreground transition-colors hover:text-foreground sm:block"
+              <SaasIntentBadge lakebed={lakebed} />
+              <SaasSearchButton
+                lakebed={lakebed}
+                buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+              />
+              <SaasAccountButton
+                lakebed={lakebed}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+              />
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={contactLabel}
+                plan={contactLabel}
+                source="navbar-contact"
+                pendingChildren={<SaasMutationSpinner className="size-4" />}
+                className="hidden items-center justify-center gap-2 text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-70 lg:inline-flex"
               >
                 {contactLabel}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(ctaTarget)}
-                className="rounded-lg bg-primary px-5 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              </SaasPlanActionButton>
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={ctaTarget}
+                plan={ctaTarget}
+                source="navbar"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Scheduling
+                  </>
+                }
+                className="hidden items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
               >
                 {ctaLabel}
-              </button>
+              </SaasPlanActionButton>
+              <SaasMobileMenu
+                brand={brand}
+                nav={nav}
+                homeTarget={nav[0]}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+              />
             </div>
           </div>
         </nav>

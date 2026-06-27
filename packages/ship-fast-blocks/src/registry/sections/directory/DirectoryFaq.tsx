@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * pricing, and coverage questions on local directories, find-a-service platforms,
  * or review-and-discovery sites.
  */
-export const DirectoryFaq = defineComponent({
+export const DirectoryFaq = defineCapsule({
   name: 'DirectoryFaq',
   description:
     'Accordion FAQ section for a local-business DIRECTORY: a narrow-width background section with a centered heading and description and a stack of native disclosure cards (details/summary) on card surfaces — each row shows a bold question with a chevron that rotates when open, expanding to a muted answer paragraph. Static, no links. Use to answer listing, review-verification, pricing, and coverage questions on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',

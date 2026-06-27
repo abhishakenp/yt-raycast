@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -62,7 +63,7 @@ const FeatureIcon = ({ glyph }: { glyph: ReactNode }) => (
   </svg>
 )
 
-export const SaasFeatures = defineComponent({
+export const SaasFeatures = defineCapsule({
   name: 'SaasFeatures',
   description:
     "Centered-heading 3-column feature grid for a B2B SaaS / AI-product landing page built on the shared FeatureGrid composite: a centered heading + supporting subheading above a responsive grid of feature cards, each pairing an inline stroke-SVG glyph (cycled per index) with a bold title and a muted blurb. Use to showcase a product's core capabilities — scheduling, integrations, analytics, security, automation, collaboration — beneath a SaaS hero.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * a studio offers — Vinyasa, Yin, Hot, Restorative, and more. Renders fully
  * with no props via baked-in defaults.
  */
-export const YogaStudioPrograms = defineComponent({
+export const YogaStudioPrograms = defineCapsule({
   name: 'YogaStudioPrograms',
   description:
     "Class-types grid for a yoga-studio page: a warm band with a centered heading + intro above a responsive grid of class cards, each showing the class name, a level pill, and a short blurb describing the style and who it's for. Use to present the range of practices a studio offers — Vinyasa, Yin, Hot, Restorative, and more.",

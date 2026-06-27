@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * pricing for interior designers, design studios or architecture firms. Renders
  * fully with no props via baked-in defaults.
  */
-export const InteriorDesignPricing = defineComponent({
+export const InteriorDesignPricing = defineCapsule({
   name: 'InteriorDesignPricing',
   description:
     'Inverted (foreground-surface) services + pricing list for an upscale interior-design / architecture studio: a dramatic two-column band on the dark foreground surface with an uppercase eyebrow, light-weight heading, supporting paragraph and a filled inverted CTA on the left, and a divided vertical list of service tiers — each with a title, right-aligned price and short description — on the right. Editorial, refined and high-contrast; the CTA routes through useNavigate. Use to present service packages and pricing for interior designers, design studios or architecture firms.',

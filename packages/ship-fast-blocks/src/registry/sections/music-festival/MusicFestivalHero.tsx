@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * festivals, arts festivals, concert series, camping/desert events, or any
  * multi-day ticketed live event.
  */
-export const MusicFestivalHero = defineComponent({
+export const MusicFestivalHero = defineCapsule({
   name: 'MusicFestivalHero',
   description:
     'Split, editorial hero for a multi-day music / arts festival landing page: a two-column layout with a warm-clay uppercase date eyebrow, a huge two-line headline, a supporting paragraph, dual primary/secondary pill CTAs (buy tickets / view lineup), and a bordered inline KPI strip (artists / stages / attendees) on the left, plus a large rounded festival crowd photo with a floating early-bird price card overlay (countdown + starting price) on the right. Both CTAs route through useNavigate; the photo uses the alt-driven Image component. Use as the opening hero for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed live event.',

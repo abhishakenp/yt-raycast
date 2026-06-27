@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * machine-shop, fabricator or contract-manufacturer pages. Renders fully with no
  * props via baked-in defaults.
  */
-export const ManufacturingProcess = defineComponent({
+export const ManufacturingProcess = defineCapsule({
   name: 'ManufacturingProcess',
   description:
     'A numbered quote-to-delivery process band for a precision-manufacturing site: a centered eyebrow + heading + description intro above a horizontal five-column step row (each step a numbered foreground circle with title and copy joined by connector lines on desktop), followed by a bordered lead-time stats panel with three big numbers. Clean, neutral, industrial. Use to explain the workflow from CAD upload to shipping on machine-shop, fabricator or contract-manufacturer pages.',

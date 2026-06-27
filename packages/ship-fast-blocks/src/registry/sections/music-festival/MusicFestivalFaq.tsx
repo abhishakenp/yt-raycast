@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * food, refunds, getting there) on music festivals, arts festivals, concert
  * series, or any multi-day ticketed event.
  */
-export const MusicFestivalFaq = defineComponent({
+export const MusicFestivalFaq = defineCapsule({
   name: 'MusicFestivalFaq',
   description:
     'Centered FAQ accordion for a music / arts festival landing page: a card-surface band with a centered eyebrow + heading above a narrow stack of native disclosure rows (question + chevron that rotates when opened to reveal the answer paragraph). Use to answer attendee questions about tickets, camping, food and drinks, payment plans, refunds and getting there on music festivals, arts festivals, concert series, camping/desert events, or any multi-day ticketed event.',

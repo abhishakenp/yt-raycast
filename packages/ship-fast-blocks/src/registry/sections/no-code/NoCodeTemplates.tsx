@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * template marketplace / gallery section for a no-code builder or theme
  * marketplace. Renders fully with no props.
  */
-export const NoCodeTemplates = defineComponent({
+export const NoCodeTemplates = defineCapsule({
   name: 'NoCodeTemplates',
   description:
     "Filterable templates GALLERY on a bright canvas: a centered header (eyebrow, heading, paragraph) above a row of pill filter chips (first active), then a 1-to-3 column grid of 4:3 thumbnail cards with hover-zoom images and a gradient overlay revealing a tinted category tag, title, and description on hover, finished by a 'view all' text link with arrow. Chips, cards, and link route through useNavigate. Use as the template marketplace / gallery section for a no-code / website-builder product or theme marketplace.",

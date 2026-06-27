@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * marketing-grade. Use to showcase a mix of headline and supporting capabilities
  * on any analytics, BI, or data-product site. Renders fully with no props.
  */
-export const AnalyticsBento = defineComponent({
+export const AnalyticsBento = defineCapsule({
   name: 'AnalyticsBento',
   description:
     'Bespoke asymmetric capability bento for an analytics product. A padded section with an optional centered SectionHeading above a responsive grid of token-styled card tiles: one large hero tile spanning two columns and two rows that frames a product screenshot, plus four smaller supporting tiles each carrying a heading and a short description. Sharp, data-forward and marketing-grade. Use to showcase a mix of headline and supporting capabilities on any analytics, BI, or data-product site.',

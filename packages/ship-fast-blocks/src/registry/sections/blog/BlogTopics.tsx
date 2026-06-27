@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -15,7 +16,7 @@ import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
  * newsletter, magazine, or docs home and it renders fully from warm,
  * theme-token defaults (no hex, clean editorial aesthetic).
  */
-export const BlogTopics = defineComponent({
+export const BlogTopics = defineCapsule({
   name: 'BlogTopics',
   description:
     "Editorial 'Browse by topic' grid for a blog or publication home page: a quiet heading and short subheading above a responsive grid of topic cards, each with a small stroke icon in a primary-tinted tile, a category title, and a one-line description. Wraps the shared FeatureGrid composite at four columns and cycles a baked icon pool by index. Use to let readers browse blog categories/topics (design, engineering, product, culture, tutorials, careers, …). Renders fully with no props from theme-token defaults.",

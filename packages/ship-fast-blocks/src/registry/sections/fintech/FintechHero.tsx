@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * as the opening hero for banking apps, wallets, payments, or lending products.
  * Renders fully with no props via baked-in "Vault" defaults.
  */
-export const FintechHero = defineComponent({
+export const FintechHero = defineCapsule({
   name: 'FintechHero',
   description:
     "Split hero for a fintech / neobank / digital-banking landing page: a two-column band with a left column carrying a rounded trust badge pill, a large headline with one phrase in the primary highlight color, a supporting paragraph, dual CTAs ('Open an Account' primary pill + a ghost 'See how' link), and a row of compliance trust badges (FDIC insured, 256-bit encryption, SOC 2). The right column frames a banking app dashboard image inside a bordered card with a soft primary glow. CTAs route through useNavigate. Premium, trustworthy and conversion-focused; use as the opening hero for banking apps, wallets, payments, or lending products.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -12,7 +13,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * layout-only so this capsule supplies the section wrapper and container
  * padding. Renders fully with no props via baked-in "Vault" defaults.
  */
-export const FintechStats = defineComponent({
+export const FintechStats = defineCapsule({
   name: 'FintechStats',
   description:
     'Trust-building metrics band for a fintech / neobank landing page: a padded section with an optional centered heading above the shared StatGrid composite, surfacing headline numbers (active users, total transactions processed, uptime percentage). Theme-token only; the capsule supplies the section wrapper and container padding around the layout-only grid.',

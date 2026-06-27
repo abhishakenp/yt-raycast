@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * route through useNavigate. Use as the closing site footer for a no-code
  * builder, SaaS, or product landing page. Renders fully with no props.
  */
-export const NoCodeFooter = defineComponent({
+export const NoCodeFooter = defineCapsule({
   name: 'NoCodeFooter',
   description:
     'Rich multi-column footer on a card surface with a top border: a 2-to-5 column grid with a wide brand column (inverse cube-glyph logo tile + brand name, a short description, and round social-initial buttons) beside several link columns, then a bordered bottom row with an auto-updating copyright line and a set of legal links. The brand button and every link route through useNavigate. Use as the closing site footer for a no-code / app-builder SaaS or product landing page.',

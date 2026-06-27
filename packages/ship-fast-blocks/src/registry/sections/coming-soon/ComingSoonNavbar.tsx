@@ -1,7 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import {
+  NewsletterAccountButton,
+  NewsletterSubscribeForm,
+  NewsletterSubscribeDrawer,
+} from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * ComingSoonNavbar — minimal top navigation bar for a "launching soon" / waitlist
@@ -12,7 +20,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * pre-launch pages, beta sign-up landers, or any minimal coming-soon page.
  * Renders fully with no props via baked-in "Nexus" defaults.
  */
-export const ComingSoonNavbar = defineComponent({
+export const ComingSoonNavbar = defineCapsule({
   name: 'ComingSoonNavbar',
   description:
     "Minimal top navigation bar for a 'launching soon' / waitlist pre-launch landing page: clean airy header with the brand name on the left and two text-link nav items on the right (desktop), with the last nav item underlined as the active state. Links route through useNavigate for page-switching. Use as the site header for SaaS waitlists, app pre-launch pages, beta sign-up landers, or minimal coming-soon pages.",
@@ -23,7 +31,8 @@ export const ComingSoonNavbar = defineComponent({
     links: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Nexus'
     const links = props.links?.length
@@ -54,13 +63,36 @@ export const ComingSoonNavbar = defineComponent({
             >
               {links[0]}
             </button>
-            <button
-              type="button"
-              onClick={() => go(links[links.length - 1])}
-              className="border-b border-foreground text-sm font-medium text-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground"
-            >
-              {links[links.length - 1]}
-            </button>
+            <NewsletterAccountButton
+              lakebed={lakebed}
+              buttonClassName="hidden size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+            />
+            <NewsletterSubscribeDrawer
+              lakebed={lakebed}
+              buttonLabel={links[links.length - 1] ?? 'Join Waitlist'}
+              source="navbar"
+              buttonClassName="hidden border-b border-foreground text-sm font-medium text-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground sm:inline-flex"
+            />
+            <MobileNavDrawer
+              brand={brand}
+              label="Menu"
+              nav={links.slice(0, -1)}
+              homeTarget={brand}
+              buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:hidden"
+              footer={
+                <NewsletterSubscribeForm
+                  lakebed={lakebed}
+                  source="navbar"
+                  buttonLabel={links[links.length - 1] ?? 'Join Waitlist'}
+                  pendingLabel="Joining"
+                  placeholder="you@example.com"
+                  successMessage="You're on the waitlist."
+                  className="grid gap-2"
+                  inputClassName="min-h-11 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground"
+                  buttonClassName="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60"
+                />
+              }
+            />
           </div>
         </div>
       </nav>

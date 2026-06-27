@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * knowledge base, support portal or docs site to escalate visitors to human
  * support. Renders fully with no props via baked-in defaults.
  */
-export const KnowledgeBaseSupportCta = defineComponent({
+export const KnowledgeBaseSupportCta = defineCapsule({
   name: 'KnowledgeBaseSupportCta',
   description:
     "Contrasting 'still need help?' support CTA band on the primary surface for a help center: a centered heading + supporting paragraph above two buttons (a filled inverted 'live chat' with a chat icon and an outlined 'email support' with a mail icon), with a bordered-top note line below stating availability / response times. High-contrast, calm and reassuring; both buttons route through useNavigate. Use near the end of a knowledge base, support portal or docs site to escalate visitors to human support.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Pagination as UIPagination,
   PaginationContent,
@@ -13,7 +14,7 @@ import {
 // Compound primitive: flatten Pagination/PaginationContent/PaginationItem/...
 // into a single node. `pages` is the list of page numbers to show; `activePage`
 // highlights the current one; `ellipsis` appends a "more pages" gap.
-export const Pagination = defineComponent({
+export const Pagination = defineCapsule({
   name: 'Pagination',
   description:
     'Page navigation control with previous/next, numbered page links and an optional trailing ellipsis.',

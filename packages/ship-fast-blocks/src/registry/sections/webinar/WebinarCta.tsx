@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * neither is a dead link. Use near the bottom of a webinar, summit, or virtual
  * event page to drive registrations. Renders fully with no props.
  */
-export const WebinarCta = defineComponent({
+export const WebinarCta = defineCapsule({
   name: 'WebinarCta',
   description:
     "Bold, centered registration band for a webinar landing page built on the shared CtaBand composite at tone='primary': a date-and-seats urgency eyebrow, a strong 'Reserve your spot — free' headline, a short reassuring subheading, and a centered row of two pill CTAs (a high-contrast 'Save my seat' button plus an outlined 'Add to calendar' button). Both CTAs route through useNavigate. Use near the bottom of a webinar, summit, or virtual-event page to drive registrations.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * memoirists who want to showcase a backlist with quiet, elegant typography.
  * Ships with five baked-in titles so it renders fully with no props.
  */
-export const WriterAuthorWork = defineComponent({
+export const WriterAuthorWork = defineCapsule({
   name: 'WriterAuthorWork',
   description:
     "A 'Selected works' books grid for a literary author website: a centered SectionHeading (uppercase 'Books' eyebrow over a serif title) above a responsive grid of book cards. Each card pairs a tall 2:3 cover image with the book title, publication year, and a 'Buy' link button that routes through useNavigate. Built for novelists, essayists, poets, and memoirists presenting a backlist with restrained, elegant serif typography. Renders fully with no props via five baked-in titles.",

@@ -1,7 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from './newsletter-lakebed.ts'
+import {
+  NewsletterAccountButton,
+  NewsletterMobileMenu,
+  NewsletterSubscribeDrawer,
+} from './newsletter-interactions.tsx'
 
 /**
  * NewsletterNavbar — sticky, backdrop-blurred top navigation bar for an editorial
@@ -14,7 +21,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * newsletters, Substack-style publications, blogs, essayists, or content
  * creators. Renders fully with no props via baked-in defaults.
  */
-export const NewsletterNavbar = defineComponent({
+export const NewsletterNavbar = defineCapsule({
   name: 'NewsletterNavbar',
   description:
     "Sticky, backdrop-blurred top navigation bar for an editorial newsletter / subscription site: a serif initial-mark logo tile + publication name on the left, quiet text nav links in the center, and the final nav label promoted to an outlined 'Subscribe' pill on the right (desktop); a hamburger button on mobile. Warm, calm, literary aesthetic on a light paper-toned surface. Items route through useNavigate for page-switching. Use as the sticky site header for newsletters, Substack-style publications, blogs, essayists, digests, or content creators.",
@@ -25,7 +32,8 @@ export const NewsletterNavbar = defineComponent({
     nav: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'The Quiet Observer'
     const nav = props.nav?.length
@@ -74,35 +82,23 @@ export const NewsletterNavbar = defineComponent({
                   {label}
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => go(nav[nav.length - 1])}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground"
-              >
-                {nav[nav.length - 1]}
-              </button>
+              <NewsletterAccountButton
+                lakebed={lakebed}
+                buttonClassName="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              />
+              <NewsletterSubscribeDrawer
+                lakebed={lakebed}
+                buttonLabel={nav[nav.length - 1] ?? 'Subscribe'}
+                source="navbar"
+                buttonClassName="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground disabled:pointer-events-none disabled:opacity-60"
+              />
             </div>
-            <button
-              type="button"
-              aria-label="Menu"
-              onClick={() => go(nav[0])}
-              className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-            >
-              <svg
-                className="size-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1.5"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
+            <NewsletterMobileMenu
+              brand={brand}
+              homeTarget={brand}
+              nav={nav}
+              buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+            />
           </div>
         </div>
       </header>

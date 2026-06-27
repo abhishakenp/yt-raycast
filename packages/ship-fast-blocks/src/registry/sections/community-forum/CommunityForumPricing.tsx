@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * All buttons route through useNavigate. Use as the pricing section for SaaS community-platform
  * products, subscription services, or membership tools.
  */
-export const CommunityForumPricing = defineComponent({
+export const CommunityForumPricing = defineCapsule({
   name: 'CommunityForumPricing',
   description:
     '3-tier pricing table for a community-platform / discussion-forum landing page: a centered heading and description above a responsive 3-column grid of bordered pricing cards on a muted band, with one tier highlighted (dark foreground theme). Each card shows a badge, name, price, cadence, description, feature list with checkmarks, and a CTA button; all buttons route through useNavigate. Use as the pricing section for SaaS community-platform products, subscription services, or membership tools.',

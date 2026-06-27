@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Flame, Leaf, Soup, Wheat } from 'lucide-react'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
@@ -26,7 +27,7 @@ const FEATURE_CHIPS = [
  * shops, izakayas, bistros, or any cozy premium food brand. Renders fully with
  * no props via baked-in "Kaze Ramen" defaults.
  */
-export const RestaurantStory = defineComponent({
+export const RestaurantStory = defineCapsule({
   name: 'RestaurantStory',
   description:
     "About / origin-story split band for a warm food brand: a two-column section with a tall main photo in a rounded card plus a smaller inset photo overlapping its corner for depth on one side, and on the other an uppercased kicker with a leading rule, a serif heading, a story paragraph, a vertical list of up to three icon-chip features in warm rotating token tints, and a filled primary CTA. The CTA routes through useNavigate. Use to tell the chef's or restaurant's origin story, craft, and values for ramen shops, izakayas, bistros, sushi counters, or any cozy premium food brand.",

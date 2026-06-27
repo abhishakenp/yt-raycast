@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use as the final conversion push on music festivals, arts
  * festivals, concert series, or any multi-day ticketed event.
  */
-export const MusicFestivalCta = defineComponent({
+export const MusicFestivalCta = defineCapsule({
   name: 'MusicFestivalCta',
   description:
     'Dark closing call-to-action band for a music / arts festival landing page: a full-bleed inverted (foreground background, light text) centered section with a large headline, a supporting paragraph, dual pill CTAs (get tickets / join mailing list), and a small contact note beneath. Both CTAs route through useNavigate. Use as the final conversion push before the footer on music festivals, arts festivals, concert series, raves, or any multi-day ticketed event.',

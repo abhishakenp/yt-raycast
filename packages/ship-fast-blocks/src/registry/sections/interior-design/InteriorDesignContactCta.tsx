@@ -1,7 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
+import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
 /**
  * InteriorDesignContactCta — split contact section pairing studio details with a
@@ -11,15 +14,15 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * phone) each with a circular muted line icon; on the right a bordered inquiry
  * form (first/last name, email, project-type + budget selects, message
  * textarea) with a filled submit button and a footnote. Editorial and
- * conversion-focused. The email, phone and submit route through useNavigate.
- * Use as the closing contact / lead-capture block for interior designers, design
- * studios or architecture firms. Renders fully with no props via baked-in
- * defaults.
+ * conversion-focused. The email and phone route through useNavigate; submit
+ * writes a Lakebed inquiry. Use as the closing contact / lead-capture block for
+ * interior designers, design studios or architecture firms. Renders fully with
+ * no props via baked-in defaults.
  */
-export const InteriorDesignContactCta = defineComponent({
+export const InteriorDesignContactCta = defineCapsule({
   name: 'InteriorDesignContactCta',
   description:
-    'Split contact section pairing studio details with a real inquiry form for an upscale interior-design / architecture studio: two-column layout with an uppercase eyebrow, light-weight heading, supporting paragraph and a stack of contact rows (studio address, email, phone) each with a circular muted line icon on the left, and a bordered inquiry form (first/last name, email, project-type + budget selects, message textarea) with a filled submit button and footnote on the right. Editorial and conversion-focused; email, phone and submit route through useNavigate. Use as the closing contact / lead-capture block for interior designers, design studios or architecture firms.',
+    'Split contact section pairing studio details with a real Lakebed inquiry form for an upscale interior-design / architecture studio: two-column layout with an uppercase eyebrow, light-weight heading, supporting paragraph and a stack of contact rows (studio address, email, phone) each with a circular muted line icon on the left, and a bordered inquiry form (first/last name, email, project-type + budget selects, message textarea) with a filled submit button and footnote on the right. Editorial and conversion-focused; email and phone route through useNavigate, while submit writes a shared inquiry record. Use as the closing contact / lead-capture block for interior designers, design studios or architecture firms.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -36,7 +39,8 @@ export const InteriorDesignContactCta = defineComponent({
     budgets: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: inquiryLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Start Your Project'
     const heading = props.heading ?? "Let's create something beautiful together"
@@ -75,6 +79,12 @@ export const InteriorDesignContactCta = defineComponent({
           '$100,000 — $250,000',
           '$250,000+',
         ]
+    const inquiry = useInquirySubmission({
+      lakebed,
+      source: 'Interior design consultation',
+      successMessage:
+        "Thanks. We've received your consultation request and will respond soon.",
+    })
 
     const inputCls =
       'w-full rounded-sm border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
@@ -182,13 +192,7 @@ export const InteriorDesignContactCta = defineComponent({
               </div>
             </div>
 
-            <form
-              className="space-y-6"
-              onSubmit={(e) => {
-                e.preventDefault()
-                go(submit)
-              }}
-            >
+            <form className="space-y-6" onSubmit={inquiry.submitForm}>
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
                   <label
@@ -199,6 +203,7 @@ export const InteriorDesignContactCta = defineComponent({
                   </label>
                   <input
                     id="interior-design-contact-first-name"
+                    name="firstName"
                     type="text"
                     required
                     placeholder="Enter first name"
@@ -214,6 +219,7 @@ export const InteriorDesignContactCta = defineComponent({
                   </label>
                   <input
                     id="interior-design-contact-last-name"
+                    name="lastName"
                     type="text"
                     required
                     placeholder="Enter last name"
@@ -231,6 +237,7 @@ export const InteriorDesignContactCta = defineComponent({
                 </label>
                 <input
                   id="interior-design-contact-email"
+                  name="email"
                   type="email"
                   required
                   placeholder="you@example.com"
@@ -247,6 +254,7 @@ export const InteriorDesignContactCta = defineComponent({
                 </label>
                 <select
                   id="interior-design-contact-project-type"
+                  name="projectType"
                   className={cn(inputCls, 'appearance-none')}
                 >
                   {projectTypes.map((opt) => (
@@ -266,6 +274,7 @@ export const InteriorDesignContactCta = defineComponent({
                 </label>
                 <select
                   id="interior-design-contact-budget"
+                  name="budget"
                   className={cn(inputCls, 'appearance-none')}
                 >
                   {budgets.map((opt) => (
@@ -285,6 +294,7 @@ export const InteriorDesignContactCta = defineComponent({
                 </label>
                 <textarea
                   id="interior-design-contact-message"
+                  name="message"
                   rows={4}
                   placeholder="Describe your space, timeline, and any specific design goals..."
                   className={cn(inputCls, 'resize-none')}
@@ -293,10 +303,16 @@ export const InteriorDesignContactCta = defineComponent({
 
               <button
                 type="submit"
-                className="w-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                aria-busy={inquiry.isPending}
+                disabled={inquiry.isPending}
+                className="w-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
               >
-                {submit}
+                {inquiry.isPending ? 'Sending' : submit}
               </button>
+
+              <p className="text-center text-sm text-muted-foreground">
+                {inquiry.statusText}
+              </p>
 
               <p className="text-center text-xs text-muted-foreground">
                 {footnote}

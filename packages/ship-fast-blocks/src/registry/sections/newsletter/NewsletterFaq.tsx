@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * publications, blogs, or content creators. Renders fully with no props via
  * baked-in defaults.
  */
-export const NewsletterFaq = defineComponent({
+export const NewsletterFaq = defineCapsule({
   name: 'NewsletterFaq',
   description:
     'Native accordion FAQ for an editorial newsletter: a centered serif heading over a narrow column of bordered card details rows where each summary shows the question in medium weight with a chevron that rotates open, revealing a relaxed muted answer. Warm, calm, literary mood on a paper-toned surface, no JavaScript required. Use to answer common subscription questions (cadence, archives, refunds, authorship, team plans) for newsletters, publications, blogs, or content creators.',

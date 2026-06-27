@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const DotWave = ({ className }: { className?: string }) => (
@@ -111,7 +112,7 @@ const Music = ({ className }: { className?: string }) => (
 
 const ICONS = [DotWave, Music, Sparkle, Mic, Headphones, Chat]
 
-export const PodcastTopics = defineComponent({
+export const PodcastTopics = defineCapsule({
   name: 'PodcastTopics',
   description:
     "A responsive feature grid of the Signal & Static podcast's recurring topics and themes, built on FeatureGrid. Each card pairs a small token-styled icon tile with a topic title and a one-line description of what that thread covers. Use it to show, at a glance, what an audio show keeps returning to episode after episode.",

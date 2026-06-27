@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { jobBoardLakebed } from './job-board-lakebed.ts'
+import { useJobBoardSearch } from './job-board-interactions.tsx'
 
 /**
  * JobBoardHero — centered, conversion-focused hero for a job-board / careers
@@ -9,15 +11,15 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * jobs-available pill, a large headline, a supporting paragraph, and a real
  * dual-field search box (a card holding a role/keyword input with a search icon
  * and a location input with a pin icon, plus a solid primary search button) above
- * a row of popular-search chips. The search form and every chip route through
- * useNavigate. Use as the top hero for job boards, hiring marketplaces, talent
- * networks or 'find a job' products where prominent search is wanted. Renders
- * fully with no props.
+ * a row of popular-search chips. The search form and every chip writes shared
+ * Lakebed search criteria so listings below react immediately. Use as the top
+ * hero for job boards, hiring marketplaces, talent networks or 'find a job'
+ * products where prominent search is wanted. Renders fully with no props.
  */
-export const JobBoardHero = defineComponent({
+export const JobBoardHero = defineCapsule({
   name: 'JobBoardHero',
   description:
-    "Centered, conversion-focused hero for a job-board / careers marketplace: a soft border-bottomed band with a jobs-available pill, large headline, supporting paragraph, and a real dual-field search box (a card holding a role/keyword input with a search icon and a location input with a pin icon plus a solid primary search button) above a row of popular-search chips. The search form and chips route through useNavigate. Use as the top hero for job boards, hiring marketplaces, talent networks or 'find a job' products where prominent search is wanted.",
+    "Centered, conversion-focused hero for a job-board / careers marketplace: a soft border-bottomed band with a jobs-available pill, large headline, supporting paragraph, and a real dual-field Lakebed search box (a card holding a role/keyword input with a search icon and a location input with a pin icon plus a solid primary search button) above a row of popular-search chips. The search form and chips write shared search criteria so JobBoardJobs reacts immediately. Use as the top hero for job boards, hiring marketplaces, talent networks or 'find a job' products where prominent search is wanted.",
   props: z.object({
     /** Small pill above the headline. */
     badge: z.string().optional(),
@@ -29,7 +31,7 @@ export const JobBoardHero = defineComponent({
     searchPlaceholder: z.string().optional(),
     /** Placeholder for the location input. */
     locationPlaceholder: z.string().optional(),
-    /** Search submit button label (also the navigation target). */
+    /** Search submit button label. */
     searchCta: z.string().optional(),
     /** Label preceding the popular-search chips. */
     popularLabel: z.string().optional(),
@@ -37,8 +39,9 @@ export const JobBoardHero = defineComponent({
     popular: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: jobBoardLakebed,
+  component: ({ props, lakebed }) => {
+    const jobSearch = useJobBoardSearch(lakebed)
     const badge = props.badge ?? 'Over 12,000 jobs available this week'
     const heading = props.heading ?? 'Find work that moves your career forward'
     const subheading =
@@ -53,6 +56,8 @@ export const JobBoardHero = defineComponent({
     const popular = props.popular?.length
       ? props.popular
       : ['Remote', 'Engineering', 'Design', 'Marketing', 'Product']
+    const queryValue = jobSearch.state?.query ?? ''
+    const locationValue = jobSearch.state?.location ?? ''
 
     const inputCls =
       'w-full rounded-xl border border-input bg-background py-3 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
@@ -78,13 +83,11 @@ export const JobBoardHero = defineComponent({
 
             <div className="mx-auto max-w-4xl rounded-2xl border border-border bg-card p-2 shadow-lg sm:p-4">
               <form
+                key={`${queryValue}:${locationValue}`}
                 className="flex flex-col gap-3 sm:flex-row"
                 role="search"
                 aria-label="Job search"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  go(searchCta)
-                }}
+                onSubmit={jobSearch.submitSearch}
               >
                 <div className="relative flex-1">
                   <svg
@@ -99,7 +102,9 @@ export const JobBoardHero = defineComponent({
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                   </svg>
                   <input
+                    name="query"
                     type="text"
+                    defaultValue={queryValue}
                     placeholder={searchPlaceholder}
                     aria-label="Search for jobs by title, keywords, or company"
                     className={inputCls}
@@ -120,7 +125,9 @@ export const JobBoardHero = defineComponent({
                     <circle cx="12" cy="10" r="3" />
                   </svg>
                   <input
+                    name="location"
                     type="text"
+                    defaultValue={locationValue}
                     placeholder={locationPlaceholder}
                     aria-label="Search location"
                     className={inputCls}
@@ -128,18 +135,36 @@ export const JobBoardHero = defineComponent({
                 </div>
                 <button
                   type="submit"
-                  className="rounded-xl bg-primary px-8 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:whitespace-nowrap"
+                  aria-busy={jobSearch.isPending}
+                  disabled={jobSearch.isPending}
+                  className="rounded-xl bg-primary px-8 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:whitespace-nowrap"
                 >
-                  {searchCta}
+                  {jobSearch.isPending ? 'Searching' : searchCta}
                 </button>
               </form>
+              <p
+                className="mt-3 text-sm text-muted-foreground"
+                aria-live="polite"
+              >
+                {queryValue || locationValue
+                  ? `Showing jobs for ${[queryValue, locationValue]
+                      .filter(Boolean)
+                      .join(' in ')}.`
+                  : 'Search filters are shared with the listings below.'}
+              </p>
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground">
                 <span>{popularLabel}</span>
                 {popular.map((p) => (
                   <button
                     key={p}
                     type="button"
-                    onClick={() => go(p)}
+                    onClick={() =>
+                      jobSearch.chooseSearch({
+                        filter: p === 'Remote' ? 'Remote' : 'All Jobs',
+                        location: p === 'Remote' ? 'Remote' : '',
+                        query: p === 'Remote' ? '' : p,
+                      })
+                    }
                     className="rounded-full bg-muted px-3 py-1 transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
                     {p}

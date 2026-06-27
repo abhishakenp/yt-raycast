@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * apps, tutoring or homeschool services, and playful course marketplaces.
  * Renders fully with no props via baked-in "WonderLearn" defaults.
  */
-export const KidsEducationNavbar = defineComponent({
+export const KidsEducationNavbar = defineCapsule({
   name: 'KidsEducationNavbar',
   description:
     "Sticky translucent top navigation bar for a bright, playful kids / family learning platform: backdrop-blurred header with an animated open-book brand mark + platform name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a rounded pill primary CTA on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for kids-education startups, children's e-learning platforms, family learning apps, tutoring or homeschool services, and playful course marketplaces.",

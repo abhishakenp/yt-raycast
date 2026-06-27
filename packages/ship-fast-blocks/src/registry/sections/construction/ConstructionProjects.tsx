@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * projects for construction firms, contractors, builders, or design-build
  * firms. Renders fully with no props via baked-in defaults.
  */
-export const ConstructionProjects = defineComponent({
+export const ConstructionProjects = defineCapsule({
   name: 'ConstructionProjects',
   description:
     "Featured-projects gallery for a construction / general contractor page: a centered section heading above a responsive grid of clickable project cards, each with an alt-driven image with a category tag overlay, a title, and a meta line. Cards and the 'View all' link route through useNavigate. Use to showcase completed projects for construction firms, contractors, builders, or design-build firms.",

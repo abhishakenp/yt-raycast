@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * Use to explain what lands in subscribers' inbox for newsletters, publications,
  * blogs, or content creators. Renders fully with no props via baked-in defaults.
  */
-export const NewsletterFeatures = defineComponent({
+export const NewsletterFeatures = defineCapsule({
   name: 'NewsletterFeatures',
   description:
     "'What You Get' value grid for an editorial newsletter: a centered serif heading + lede introduces a 3-up grid of feature cards, each with a rounded muted icon tile (rotating book / links / chat line icons), a serif title, and a relaxed description; a bordered divider then opens a 2-up / 4-up checklist of smaller perks, each a circular check badge beside a bold title and muted sub-line. Warm, calm, literary mood on a paper-toned surface. Use to explain what lands in subscribers' inbox for newsletters, publications, blogs, essayists, or content creators.",

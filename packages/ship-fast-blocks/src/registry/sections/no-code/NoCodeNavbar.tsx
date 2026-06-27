@@ -1,7 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasAccountButton,
+  SaasIntentBadge,
+  SaasMobileMenu,
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  SaasSearchButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * NoCodeNavbar — sticky, translucent top navigation bar for a clean, bright
@@ -13,10 +23,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * for no-code / website-builder / page-builder / SaaS platform landing pages.
  * Renders fully with no props via baked-in "Buildr" defaults.
  */
-export const NoCodeNavbar = defineComponent({
+export const NoCodeNavbar = defineCapsule({
   name: 'NoCodeNavbar',
   description:
-    "Sticky translucent top navigation bar for a clean, bright no-code / app-builder SaaS site: backdrop-blurred, border-bottomed header pinned to the top with an inverse cube-glyph logo tile + brand name on the left, centered nav links (desktop), and a 'Sign in' text link plus a filled primary CTA on the right. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for no-code / website-builder / page-builder / form-builder / SaaS platform landing pages.",
+    'Sticky translucent top navigation bar for a clean, bright no-code / app-builder SaaS site: backdrop-blurred, border-bottomed header pinned to the top with an inverse cube-glyph logo tile + brand name, centered nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped fullstack CTA, and a reusable Sheet mobile drawer. Nav links route through useNavigate while conversion CTAs write to shared Lakebed state.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -30,7 +40,8 @@ export const NoCodeNavbar = defineComponent({
     homeTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Buildr'
     const nav = props.nav?.length
@@ -97,20 +108,37 @@ export const NoCodeNavbar = defineComponent({
             ))}
           </div>
           <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => go(signInLabel)}
-              className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-            >
-              {signInLabel}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(cta)}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            <SaasIntentBadge lakebed={lakebed} />
+            <SaasSearchButton
+              lakebed={lakebed}
+              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            />
+            <SaasAccountButton
+              lakebed={lakebed}
+              label={signInLabel}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+            />
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={cta}
+              plan={cta}
+              source="navbar"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Starting
+                </>
+              }
+              className="hidden items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
             >
               {cta}
-            </button>
+            </SaasPlanActionButton>
+            <SaasMobileMenu
+              brand={brand}
+              nav={nav}
+              homeTarget={homeTarget}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            />
           </div>
         </nav>
       </header>

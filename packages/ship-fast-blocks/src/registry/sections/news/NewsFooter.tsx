@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -28,7 +29,7 @@ const Masthead = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const NewsFooter = defineComponent({
+export const NewsFooter = defineCapsule({
   name: 'NewsFooter',
   description:
     'Fat multi-column closing footer for a news / editorial publication built on the shared SiteFooter composite: a brand block (bold wordmark + newspaper-glyph mark + tagline + social row) alongside link columns (Sections / Company / Support / Legal), with a bordered-top bottom bar carrying an auto-updating copyright line and a row of legal links. Every brand, social and column link routes through useNavigate. Use as the closing footer of a newspaper, magazine or publication homepage.',

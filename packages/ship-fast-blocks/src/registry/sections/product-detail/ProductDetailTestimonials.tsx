@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
-export const ProductDetailTestimonials = defineComponent({
+export const ProductDetailTestimonials = defineCapsule({
   name: 'ProductDetailTestimonials',
   description:
     'Social-proof testimonials band for the Product Detail page family, tuned for the premium Aurora Pro Headphones story. Wraps the shared TestimonialGrid composite to render verified-buyer reviews with per-card star ratings, quotes covering sound, comfort, battery, and active noise cancellation, plus avatar footers. A public `reviews` prop maps cleanly onto grid items so prompts can supply their own quotes, names, roles, and ratings, while sensible Aurora-branded defaults keep the section polished out of the box. Use when composing a single-product detail page or adding a focused proof band to a larger generated site.',

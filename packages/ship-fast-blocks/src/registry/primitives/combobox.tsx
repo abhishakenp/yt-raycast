@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Combobox as UICombobox,
   ComboboxContent,
@@ -12,7 +13,7 @@ import {
 // Compound overlay (Base UI): searchable input + filtered option list.
 // Flattened into one node; `items` are the options. Rendered `defaultOpen`
 // so the option list is statically visible.
-export const Combobox = defineComponent({
+export const Combobox = defineCapsule({
   name: 'Combobox',
   description:
     'Searchable select: type to filter `items`. `placeholder` labels the empty input. Open by default for preview.',

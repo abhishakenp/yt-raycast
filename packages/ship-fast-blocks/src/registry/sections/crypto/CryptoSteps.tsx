@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * step. Use for deploy/connect/onboard flows, integration guides, or getting-
  * started sequences.
  */
-export const CryptoSteps = defineComponent({
+export const CryptoSteps = defineCapsule({
   name: 'CryptoSteps',
   description:
     '3-step numbered process flow for a crypto / DeFi onboarding landing page: centered heading + description, then a responsive three-column grid with oversized numbered circles (with connecting border lines on desktop), a bold title, and a description paragraph beneath each step. Use for deploy/connect/onboard flows, integration guides, or getting-started sequences.',

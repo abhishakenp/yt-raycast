@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * offerings (cloud infrastructure, security, analytics, transformation, managed
  * services, risk) on SaaS, IT, or consultancy sites.
  */
-export const CorporateSolutions = defineComponent({
+export const CorporateSolutions = defineCapsule({
   name: 'CorporateSolutions',
   description:
     "Enterprise solutions / feature grid for a corporate B2B homepage: centered section heading and lead above a responsive 1/2/3-column grid of bordered cards, each with a solid dark icon tile (rotating inline SVGs), a title, description, and a 'Learn more' text button with an arrow. Cards gain subtle hover border change. Use to present enterprise offerings on SaaS, IT, or consultancy sites. All card links route through useNavigate.",

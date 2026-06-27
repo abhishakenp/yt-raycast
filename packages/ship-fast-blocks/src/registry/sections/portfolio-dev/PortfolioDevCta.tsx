@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -14,7 +15,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * to drive contact and new engagements. Renders fully with no props via
  * baked-in defaults.
  */
-export const PortfolioDevCta = defineComponent({
+export const PortfolioDevCta = defineCapsule({
   name: 'PortfolioDevCta',
   description:
     "Bold, centered availability band for a modern developer portfolio: a full-width primary-colored band with a mono-style availability eyebrow, a strong headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Start a Project' button plus an outlined 'View Work' button). Both CTAs route through useNavigate. Use near the bottom of a freelance engineer or studio portfolio to drive contact and new engagements.",

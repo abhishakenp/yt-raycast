@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * beach house, cabin, villa, or boutique short-stay page. Renders fully with no
  * props via baked-in defaults.
  */
-export const VacationRentalCta = defineComponent({
+export const VacationRentalCta = defineCapsule({
   name: 'VacationRentalCta',
   description:
     'Closing call-to-action band for a vacation-rental listing page built on the shared CtaBand composite on a primary-tone surface: an optional eyebrow, an inviting Book your stay title, a supporting subtitle, and a row of routable pill actions (a primary Book Now and an outline Contact host). Centered layout; actions route through useNavigate. Theme-token only. Use as the booking nudge near the end of a vacation rental, beach house, cabin, villa, or boutique short-stay page.',

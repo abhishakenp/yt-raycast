@@ -1,8 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { useSyncPublicationArticles } from './publication-interactions.tsx'
+import { publicationLakebed } from './publication-lakebed.ts'
 
 /**
  * BlogHero — split featured-post card for an editorial blog / publication index.
@@ -12,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * useNavigate. Use as the lead / featured-article section above the story grid
  * on blog homepages, magazine indexes, or editorial landing pages.
  */
-export const BlogHero = defineComponent({
+export const BlogHero = defineCapsule({
   name: 'BlogHero',
   description:
     'Split featured-post card for an editorial blog or publication index: a two-column article card with a large cover image on the left that zooms on hover, a badge label, and a rich text panel on the right with a topic label, serif headline, excerpt, author meta row, and a read-link. Every interactive element routes through useNavigate. Use as the lead featured-article section above the story grid on blog homepages, magazine indexes, or editorial landing pages.',
@@ -39,7 +42,8 @@ export const BlogHero = defineComponent({
     postTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: publicationLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const alt =
       props.alt ??
@@ -55,6 +59,16 @@ export const BlogHero = defineComponent({
     const date = props.date ?? 'May 28, 2026'
     const readLabel = props.readLabel ?? 'Read the story'
     const postTarget = props.postTarget ?? 'Blog post'
+    useSyncPublicationArticles(lakebed, [
+      {
+        author,
+        category: topic,
+        date,
+        excerpt,
+        target: postTarget,
+        title,
+      },
+    ])
 
     const Arrow = () => (
       <svg

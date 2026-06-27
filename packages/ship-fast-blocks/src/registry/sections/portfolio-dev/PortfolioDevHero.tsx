@@ -1,9 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
-export const PortfolioDevHero = defineComponent({
+export const PortfolioDevHero = defineCapsule({
   name: 'PortfolioDevHero',
   description:
     'A split developer-intro hero. The left column leads with a mono `$ whoami` eyebrow, a large name plus a Full-Stack Developer headline, a short intro paragraph, and dual CTAs (a filled View Work and an outlined Resume) that route via useNavigate, followed by a mono tech-tag row. The right column is a faux terminal/code card with window-chrome dots, a filename, and mono pseudo-code lines. Everything is theme-token only with mono accents — ideal for developer, engineer, and freelancer portfolios.',

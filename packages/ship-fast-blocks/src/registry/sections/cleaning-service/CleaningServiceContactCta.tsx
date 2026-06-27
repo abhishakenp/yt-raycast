@@ -1,12 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * CleaningServiceContactCta — a big closing book-now CTA section for a home-cleaning / maid-service landing page. A centered heading + supporting paragraph inside a rounded-3xl primary-colored card with a subtle dot-pattern background overlay, followed by dual pill CTAs (filled primary-foreground + outlined secondary) and a cancellation-note line beneath. Every CTA routes through useNavigate. Use as the final conversion push for residential cleaning companies, maid services, housekeeping platforms, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
  */
-export const CleaningServiceContactCta = defineComponent({
+export const CleaningServiceContactCta = defineCapsule({
   name: 'CleaningServiceContactCta',
   description:
     'Big closing book-now CTA section for a home-cleaning / maid-service landing page: centered heading + supporting paragraph inside a rounded-3xl primary-colored card with a subtle dot-pattern background overlay, followed by dual pill CTAs (filled primary-foreground + outlined secondary with phone icon) and a cancellation-note line beneath. CTAs route through useNavigate. Use as the final conversion push for residential cleaning, maid services, housekeeping, or local home-service brands.',
@@ -23,8 +28,8 @@ export const CleaningServiceContactCta = defineComponent({
     note: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Ready for a cleaner home?'
     const description =
       props.description ??
@@ -102,22 +107,32 @@ export const CleaningServiceContactCta = defineComponent({
                 {description}
               </p>
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center rounded-full bg-primary-foreground px-8 py-4 text-base font-semibold text-primary shadow-lg transition-colors hover:bg-primary-foreground/90"
+                <LocalServiceBookingButton
+                  lakebed={lakebed}
+                  intentLabel={primaryCta}
+                  service="Home cleaning"
+                  source="final-cta"
+                  pendingChildren={
+                    <LocalServiceMutationSpinner className="text-primary" />
+                  }
+                  className="inline-flex items-center justify-center rounded-full bg-primary-foreground px-8 py-4 text-base font-semibold text-primary shadow-lg transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
                   <ArrowRight className="ml-2 size-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center justify-center rounded-full border border-primary-foreground/40 bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
+                </LocalServiceBookingButton>
+                <LocalServiceBookingButton
+                  lakebed={lakebed}
+                  intentLabel={secondaryCta}
+                  service="Phone consultation"
+                  source="final-cta-phone"
+                  pendingChildren={
+                    <LocalServiceMutationSpinner className="text-primary-foreground" />
+                  }
+                  className="inline-flex items-center justify-center rounded-full border border-primary-foreground/40 bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
                 >
                   <PhoneIcon className="mr-2 size-5" />
                   {secondaryCta}
-                </button>
+                </LocalServiceBookingButton>
               </div>
               <p className="mt-6 text-sm text-primary-foreground/70">{note}</p>
             </div>

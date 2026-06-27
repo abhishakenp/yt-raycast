@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * application-to-placement journey for bootcamps, academies, or cohort-based
  * education programs.
  */
-export const BootcampSteps = defineComponent({
+export const BootcampSteps = defineCapsule({
   name: 'BootcampSteps',
   description:
     "4-step 'how it works' admissions path for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive 4-column grid of numbered step cards. Each card has a large numbered circle in primary, a step title, and a description. Horizontal connector lines appear between steps on desktop. Use to explain the application-to-placement journey for bootcamps, academies, or cohort-based education programs.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Button } from '#/components/ui/button.tsx'
 import {
   Tooltip as UITooltip,
@@ -10,7 +11,7 @@ import {
 
 // Overlay: small label shown on hover/focus of a trigger. Rendered `defaultOpen`
 // (inside a Provider) so the tooltip bubble is statically visible.
-export const Tooltip = defineComponent({
+export const Tooltip = defineCapsule({
   name: 'Tooltip',
   description:
     'Small floating label attached to a trigger. `content` is the tooltip text; `triggerLabel` labels the trigger button. Open by default for preview.',

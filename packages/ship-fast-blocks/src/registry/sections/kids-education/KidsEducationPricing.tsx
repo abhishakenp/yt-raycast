@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * children's e-learning platforms, tutoring services, and family learning apps.
  * Renders fully with no props via baked-in defaults.
  */
-export const KidsEducationPricing = defineComponent({
+export const KidsEducationPricing = defineCapsule({
   name: 'KidsEducationPricing',
   description:
     "Friendly 3-tier pricing table for a kids / family learning platform: a centered eyebrow + heading + description intro above a responsive 3-up grid of rounded plan cards; the highlighted 'Most Popular' plan inverts to a dark surface, lifts on desktop, and shows a floating badge. Each card lists name, tagline, price + period, a checkmarked feature list, and a full-width pill CTA, with a reassurance note centered below. CTAs route through useNavigate. Use for subscription tiers on kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",

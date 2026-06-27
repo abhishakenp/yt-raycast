@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * CrmCta — bold full-width conversion CTA band for a CRM / SaaS landing page.
@@ -11,10 +16,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * route through useNavigate. Use near the bottom of a page to drive sign-ups for
  * CRM, sales-pipeline or B2B SaaS products. Renders fully with no props.
  */
-export const CrmCta = defineComponent({
+export const CrmCta = defineCapsule({
   name: 'CrmCta',
   description:
-    'Bold full-width conversion CTA band for a CRM / SaaS landing page: a centered section on a filled primary surface with a large headline, a supporting paragraph, dual CTAs (a solid light primary button + an outlined ghost button) and a fine-print reassurance note. High-contrast and conversion-focused; CTAs route through useNavigate. Use near the bottom of a page to drive sign-ups for CRM, sales-pipeline or B2B SaaS products.',
+    'Bold full-width conversion CTA band for a CRM / SaaS landing page backed by shared Lakebed conversion state: a centered section on a filled primary surface with a large headline, supporting paragraph, scoped trial/demo mutation buttons, and a fine-print reassurance note. High-contrast and conversion-focused; CTAs record real intent instead of dead route-only navigation.',
   props: z.object({
     /** Headline. */
     heading: z.string().optional(),
@@ -28,8 +33,8 @@ export const CrmCta = defineComponent({
     note: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Ready to transform your sales process?'
     const description =
       props.description ??
@@ -50,20 +55,35 @@ export const CrmCta = defineComponent({
             {description}
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="rounded-lg bg-background px-8 py-4 text-center font-semibold text-foreground transition-colors hover:bg-muted"
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={primaryCta}
+              plan={primaryCta}
+              source="cta"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Starting
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-background px-8 py-4 text-center font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="rounded-lg border border-primary-foreground/40 px-8 py-4 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
+            </SaasPlanActionButton>
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={secondaryCta}
+              source="cta"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Sending
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-foreground/40 px-8 py-4 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
             >
               {secondaryCta}
-            </button>
+            </SaasPlanActionButton>
           </div>
           <p className="mt-6 text-sm text-primary-foreground/60">{note}</p>
         </div>

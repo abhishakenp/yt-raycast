@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * footer for wedding photographers, portrait studios, or elopement shooters.
  * Renders fully with no props via baked-in "Elena Vossen" defaults.
  */
-export const PhotographyFooter = defineComponent({
+export const PhotographyFooter = defineCapsule({
   name: 'PhotographyFooter',
   description:
     'Rich, multi-column closing footer for a fine-art / wedding photographer portfolio built on the shared SiteFooter composite: a serif wordmark + tagline + social row (Instagram, Pinterest, Behance), a responsive grid of link columns (Explore, Services, Contact) with contact details folded in as links, and a bordered-top bottom bar with an auto-updating copyright line. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for wedding photographers, portrait studios, or elopement shooters.',

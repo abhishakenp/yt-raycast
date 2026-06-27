@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * proof on a marketing / growth agency, SaaS, or B2B services landing page.
  * Renders fully with no props.
  */
-export const MarketingAgencyTestimonials = defineComponent({
+export const MarketingAgencyTestimonials = defineCapsule({
   name: 'MarketingAgencyTestimonials',
   description:
     '3-up star-rated testimonial grid: a centered eyebrow + heading + description above a responsive grid (1/3 columns) of muted rounded cards, each with a 5-star rating row, a quoted client testimonial, and an author block pairing a round avatar with a name and role. Use for social proof from founders and marketing leaders on a marketing / growth agency, SaaS, or B2B services landing page.',

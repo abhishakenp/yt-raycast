@@ -1,7 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  saasPlan,
+  useSyncSaasPlans,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * DevToolPricing — a 3-tier pricing table for a developer tool / API platform.
@@ -12,10 +19,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * routes through useNavigate. Use to present subscription tiers for developer
  * tools, API platforms, backend-as-a-service, or technical SaaS.
  */
-export const DevToolPricing = defineComponent({
+export const DevToolPricing = defineCapsule({
   name: 'DevToolPricing',
   description:
-    "3-tier pricing table for a developer tool / API platform: a muted-banded section with a centered heading + intro above a responsive 3-column grid of plan cards (name, tagline, big price + period, a checklist of features with brand checkmarks, and a CTA button). The featured tier gets a brand-colored border, shadow, and a floating 'Most Popular' pill. Every CTA routes through useNavigate. Use to present subscription tiers for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
+    "3-tier pricing table for a developer tool / API platform backed by shared Lakebed conversion state: a muted-banded section with a centered heading + intro above a responsive 3-column grid of plan cards. Plans seed the command search catalog; each CTA records scoped sign-up or sales intent with local loading. The featured tier gets a brand-colored border, shadow, and a floating 'Most Popular' pill. Use to present subscription tiers for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -35,8 +42,8 @@ export const DevToolPricing = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
@@ -89,6 +96,18 @@ export const DevToolPricing = defineComponent({
             featured: false,
           },
         ]
+
+    useSyncSaasPlans(
+      lakebed,
+      tiers.map((tier) =>
+        saasPlan({
+          name: tier.name,
+          period: tier.period,
+          price: tier.price,
+          summary: tier.tagline,
+        }),
+      ),
+    )
 
     const Check = () => (
       <svg
@@ -162,18 +181,27 @@ export const DevToolPricing = defineComponent({
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => go(tier.cta)}
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={tier.cta}
+                  plan={tier.name}
+                  source="pricing"
+                  aria-label={`${tier.cta} for ${tier.name}`}
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Selecting
+                    </>
+                  }
                   className={cn(
-                    'block w-full rounded-lg px-4 py-2.5 text-center font-medium transition-colors',
+                    'inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
                     tier.featured
                       ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                       : 'border border-input text-foreground hover:bg-muted',
                   )}
                 >
                   {tier.cta}
-                </button>
+                </SaasPlanActionButton>
               </article>
             ))}
           </div>

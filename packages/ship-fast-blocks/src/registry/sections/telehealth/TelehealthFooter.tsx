@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
-export const TelehealthFooter = defineComponent({
+export const TelehealthFooter = defineCapsule({
   name: 'TelehealthFooter',
   description:
     'Site footer for a telehealth / virtual care brand, built on the shared SiteFooter composite. Renders a calm medical brand mark and name, a short tagline, multiple link columns (Services, Company, Support, Legal), a social row, and a bottom bar with copyright and a compliance note. Fully theme-tokened and responsive. Use as the final band of any telehealth page to provide navigation, trust links, and legal context.',

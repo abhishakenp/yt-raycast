@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * magazine or publication homepage to let readers jump into top sections.
  * Renders fully with no props via baked-in defaults.
  */
-export const NewsTopics = defineComponent({
+export const NewsTopics = defineCapsule({
   name: 'NewsTopics',
   description:
     "Browse-by-topic / section nav grid for a news outlet on a card surface: a heading with a 'View all' link on the right, then a responsive grid of clickable topic tiles. Each tile is a square-ish photo card with a dark gradient scrim and an overlaid section name, a short blurb and a story count at the bottom (World, Politics, Business, Tech, Culture, Science, Health, Sports). The view-all link and every tile route through useNavigate. Use as a section-discovery band on a newspaper, magazine or publication homepage so readers can jump straight into top sections.",

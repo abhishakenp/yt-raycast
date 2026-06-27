@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * present social proof from customers of a brokerage, trading app, robo-advisor
  * or crypto exchange. Renders fully with no props via six baked-in reviews.
  */
-export const InvestingTestimonials = defineComponent({
+export const InvestingTestimonials = defineCapsule({
   name: 'InvestingTestimonials',
   description:
     'Star-rated testimonial wall for an investing / fintech page: a muted section band with a centered heading + lead above a responsive 1/2/3-column grid of review cards, each with a five-star rating row, a quote, and an investor avatar with name + role. Tokens only, no links. Use to present social proof from customers of a brokerage, trading app, robo-advisor or crypto exchange.',

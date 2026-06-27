@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * CybersecurityContactCta — dark final demo call-to-action band. A full-bleed
@@ -12,10 +17,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * SOC/MDR providers, or any B2B security SaaS. Renders fully with no props via
  * baked-in demo-CTA defaults.
  */
-export const CybersecurityContactCta = defineComponent({
+export const CybersecurityContactCta = defineCapsule({
   name: 'CybersecurityContactCta',
   description:
-    'Dark final demo call-to-action band: a full-bleed brand-surface section, centered, with a large heading, a wide supporting paragraph, dual CTAs (solid inverted primary + outlined secondary), and a small reassurance note underneath; both CTAs route through useNavigate. Use as the closing conversion band above the footer for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.',
+    'Dark final demo call-to-action band backed by shared Lakebed conversion state: a full-bleed brand-surface section with a large heading, supporting paragraph, scoped demo/trial mutation buttons, and a small reassurance note. Use as the closing conversion band above the footer for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.',
   props: z.object({
     /** Headline. */
     heading: z.string().optional(),
@@ -29,8 +34,8 @@ export const CybersecurityContactCta = defineComponent({
     note: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Ready to see SentinelGuard in action?'
     const description =
       props.description ??
@@ -53,20 +58,36 @@ export const CybersecurityContactCta = defineComponent({
             {description}
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="rounded-xl bg-background px-8 py-4 text-lg font-semibold text-foreground transition-colors hover:bg-background/90"
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={primaryCta}
+              plan={primaryCta}
+              source="cta"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Scheduling
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 text-lg font-semibold text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="rounded-xl border border-background/40 bg-transparent px-8 py-4 text-lg font-semibold text-background transition-colors hover:bg-background/10"
+            </SaasPlanActionButton>
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={secondaryCta}
+              plan={secondaryCta}
+              source="cta"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Starting
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-background/40 bg-transparent px-8 py-4 text-lg font-semibold text-background transition-colors hover:bg-background/10 disabled:pointer-events-none disabled:opacity-70"
             >
               {secondaryCta}
-            </button>
+            </SaasPlanActionButton>
           </div>
           <p className="mt-8 text-sm text-background/50">{note}</p>
         </div>

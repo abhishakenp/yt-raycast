@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * coworking, shared-office, or flex-office page to drive tour bookings. Renders
  * fully with no props via bright, modern baked-in defaults.
  */
-export const CoworkingCta = defineComponent({
+export const CoworkingCta = defineCapsule({
   name: 'CoworkingCta',
   description:
     "Bold, centered closing CTA band for a coworking or shared-workspace page built on the shared CtaBand composite at tone='primary': an eyebrow, a strong headline, a short supporting line, and a centered row of two pill CTAs (a high-contrast 'Tour the space' button plus an outlined 'View pricing' button). Both CTAs route through useNavigate. Use near the bottom of a coworking, shared-office, or flex-office page to drive tour bookings and pricing views.",

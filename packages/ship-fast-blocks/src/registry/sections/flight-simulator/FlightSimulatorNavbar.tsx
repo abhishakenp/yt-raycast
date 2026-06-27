@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -30,7 +31,7 @@ const WingMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const FlightSimulatorNavbar = defineComponent({
+export const FlightSimulatorNavbar = defineCapsule({
   name: 'FlightSimulatorNavbar',
   description:
     "Sticky flight-simulator site header built on the shared SiteNav composite: a bold wordmark + inline winged-plane line mark, centered desktop nav links (Features, Editions, Gallery, Community), and a prominent 'Get the Sim' CTA routing to the buy page, plus a real mobile drawer. Use as the header for flight simulators, combat / airliner sims, aviation training titles, or any immersive aircraft game.",

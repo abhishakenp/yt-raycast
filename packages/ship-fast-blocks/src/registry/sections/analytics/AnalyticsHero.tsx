@@ -1,8 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * AnalyticsHero — bold, data-forward split hero for an analytics product
@@ -11,14 +16,14 @@ import { Image } from '#/lib/img.tsx'
  * supporting paragraph, dual CTAs (filled-primary "Start Free Trial" + outlined
  * "Book a demo"), and a compact three-stat proof strip; the right column frames
  * a product dashboard screenshot inside a bordered card with a faux toolbar dot
- * row. Sharp, marketing-grade, conversion-focused; CTAs route through
- * useNavigate. Use as the opening hero for analytics, BI, dashboards, product
+ * row. Sharp, marketing-grade, conversion-focused; CTAs write to Lakebed.
+ * Use as the opening hero for analytics, BI, dashboards, product
  * metrics, or data-product sites. Renders fully with no props.
  */
-export const AnalyticsHero = defineComponent({
+export const AnalyticsHero = defineCapsule({
   name: 'AnalyticsHero',
   description:
-    "Bold, data-forward split hero for an analytics product landing page. The left column carries an eyebrow status pill, a large headline with one phrase in the primary highlight, a supporting paragraph, dual CTAs (filled-primary 'Start Free Trial' + outlined 'Book a demo'), and a compact three-stat proof strip; the right column frames a product dashboard screenshot inside a bordered card with a faux toolbar dot row. Sharp, marketing-grade and conversion-focused; CTAs route through useNavigate. Use as the opening hero for analytics, BI, dashboards, product metrics, or data-product sites.",
+    "Bold, data-forward split hero for an analytics product landing page. The left column carries an eyebrow status pill, a large headline with one phrase in the primary highlight, a supporting paragraph, dual fullstack CTAs (filled-primary 'Start Free Trial' + outlined 'Book a demo'), and a compact three-stat proof strip; the right column frames a product dashboard screenshot inside a bordered card with a faux toolbar dot row. Sharp, marketing-grade and conversion-focused; CTAs write to shared Lakebed conversion state. Use as the opening hero for analytics, BI, dashboards, product metrics, or data-product sites.",
   props: z.object({
     /** Eyebrow status / announcement pill text. */
     eyebrow: z.string().optional(),
@@ -38,8 +43,8 @@ export const AnalyticsHero = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const eyebrow = props.eyebrow ?? 'Real-time product analytics'
     const heading = props.heading ?? 'Turn raw events into'
     const highlight = props.highlight ?? 'decisions you can ship'
@@ -80,16 +85,32 @@ export const AnalyticsHero = defineComponent({
               {subheading}
             </p>
             <div className="mt-8 flex flex-wrap gap-3.5">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={primaryCta}
+                plan={primaryCta}
+                source="hero"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Starting
+                  </>
+                }
                 className="inline-flex items-center justify-center rounded-lg bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
+              </SaasPlanActionButton>
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={secondaryCta}
+                plan={secondaryCta}
+                source="hero"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Opening
+                  </>
+                }
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-7 py-3.5 text-base font-semibold text-foreground transition-colors hover:bg-muted"
               >
                 <svg
@@ -107,7 +128,7 @@ export const AnalyticsHero = defineComponent({
                   <polygon points="10 8 16 12 10 16 10 8" />
                 </svg>
                 {secondaryCta}
-              </button>
+              </SaasPlanActionButton>
             </div>
             <dl className="mt-10 flex flex-wrap gap-8 border-t border-border pt-8">
               {stats.map((s) => (

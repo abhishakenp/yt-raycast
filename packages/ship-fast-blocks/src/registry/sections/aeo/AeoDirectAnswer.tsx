@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
-export const AeoDirectAnswer = defineComponent({
+export const AeoDirectAnswer = defineCapsule({
   name: 'AeoDirectAnswer',
   description:
     'A concise direct-answer band for answer-engine optimization: a short overview paragraph near the top of a page that clearly states what the product or site does, plus an optional who-this-is-for line. Use immediately after the hero on home and key landing pages.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * check — on loan, debt-consolidation, or fintech landing pages. Renders fully
  * with no props via baked-in "ClearLoan" defaults.
  */
-export const LendingBenefits = defineComponent({
+export const LendingBenefits = defineCapsule({
   name: 'LendingBenefits',
   description:
     "'Why borrowers choose us' benefits grid for a lending or fintech marketing page: centered heading + supporting description above a responsive 3-up grid of white benefit cards, each with a rounded muted icon tile (cycling line glyphs), a bold title and a descriptive paragraph. Use to spell out product advantages — fast funding, no hidden fees, fixed rates, paperless apply, human support, soft credit check — on loan, debt-consolidation, or fintech landing pages.",

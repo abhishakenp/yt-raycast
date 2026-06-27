@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * beauty value propositions (clean ingredients, cruelty-free, sustainable, free
  * shipping) or any e-commerce trust / UVP block. Tokens-only, no links.
  */
-export const BeautyStoreBenefits = defineComponent({
+export const BeautyStoreBenefits = defineCapsule({
   name: 'BeautyStoreBenefits',
   description:
     "Four-up 'why choose us' benefits grid for a beauty / skincare / cosmetics storefront: centered section heading and intro paragraph above a responsive grid of cards, each with a rounded tinted icon circle (rotating inline line-icons), a bold title, and a short description. Use for clean-beauty value propositions (clean ingredients, cruelty-free, sustainable, fast shipping) or any e-commerce trust / UVP block.",

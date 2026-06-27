@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * shots, lifestyle photography, packaging, or in-use imagery for a launching
  * product, maker project, or any visual-led campaign.
  */
-export const CrowdfundingGallery = defineComponent({
+export const CrowdfundingGallery = defineCapsule({
   name: 'CrowdfundingGallery',
   description:
     'A product photo GALLERY for a crowdfunding / campaign landing page on a muted band: a centered uppercase eyebrow + heading above a responsive 1/2/3-column grid of rounded 4:3 image tiles that gently zoom on hover. Imagery uses the alt-driven Image component. Use to showcase product shots, lifestyle photography, packaging, or in-use imagery for a launching product, maker project, or any visual-led campaign.',

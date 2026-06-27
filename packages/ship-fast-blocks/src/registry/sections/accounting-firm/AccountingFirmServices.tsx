@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -14,7 +15,7 @@ import { cn } from '#/lib/utils.ts'
  * & assurance, estate or retirement planning, or financial advisory sites.
  * Renders fully with no props via baked-in defaults.
  */
-export const AccountingFirmServices = defineComponent({
+export const AccountingFirmServices = defineCapsule({
   name: 'AccountingFirmServices',
   description:
     'Services / capabilities grid for a CPA / accounting-firm site: a centered heading + lede above a responsive 1-to-3 column grid of bordered service cards, each with a filled primary icon tile, a title, a description, and a check-marked feature list. A rotating set of finance-themed line icons (document, chart, report, cash, scale, trend) cycles across cards. Calm professional-services look. Use to present offerings on accounting firms, CPA practices, tax-preparation, bookkeeping/payroll, audit & assurance, estate or retirement planning, or financial advisory sites.',

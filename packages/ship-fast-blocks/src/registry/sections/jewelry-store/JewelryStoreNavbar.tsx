@@ -1,48 +1,60 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAccountButton,
+  CommerceCartButton,
+  CommerceMobileMenu,
+  CommerceSearchButton,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * JewelryStoreNavbar — fixed, translucent top navigation bar for a luxury
  * fine-jewelry boutique on a near-black canvas. A backdrop-blurred bordered
  * header pinned to the top: a serif gold maison wordmark on the left,
  * wide letter-spaced uppercase nav links in the center (desktop), and a
- * search icon, wishlist icon, and an underlined "Book Appointment" CTA on
- * the right. Every link and the CTA route through useNavigate so labels
- * drive page-switching. Use as the sticky site header for fine jewelers,
- * diamond houses, engagement-ring boutiques, watch or high-jewelry maisons.
- * Renders fully with no props via baked-in "Maison Noir" defaults.
+ * product command search, Shoo account dropdown, shared cart drawer, mobile
+ * drawer, and an underlined "Book Appointment" CTA on the right. Every link and
+ * the CTA route through useNavigate so labels drive page-switching. Use as the
+ * sticky site header for fine jewelers, diamond houses, engagement-ring
+ * boutiques, watch or high-jewelry maisons. Renders fully with no props via
+ * baked-in "Maison Noir" defaults.
  */
-export const JewelryStoreNavbar = defineComponent({
+export const JewelryStoreNavbar = defineCapsule({
   name: 'JewelryStoreNavbar',
   description:
-    'Fixed translucent top navigation bar for a luxury fine-jewelry boutique on a near-black canvas: backdrop-blurred bordered header with a serif gold maison wordmark on the left, wide letter-spaced uppercase nav links in the center (desktop), and search + wishlist icons plus an underlined Book Appointment CTA on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.',
+    'Fixed translucent top navigation bar for a luxury fine-jewelry boutique on a near-black canvas: backdrop-blurred bordered header with a serif gold maison wordmark on the left, wide letter-spaced uppercase nav links in the center (desktop), product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, a real mobile drawer, and an underlined Book Appointment CTA on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.',
   props: z.object({
     /** Maison / brand name shown as the wordmark. */
     brand: z.string().optional(),
     /** Top-level nav link labels (must match site routes for page switching). */
     nav: z.array(z.string()).optional(),
-    /** Navigation target for the wordmark / search clicks. */
+    /** Navigation target for the wordmark. */
     homeTarget: z.string().optional(),
-    /** Navigation target for the wishlist icon. */
-    wishlistTarget: z.string().optional(),
     /** Underlined CTA label on the right. */
     ctaLabel: z.string().optional(),
     /** Navigation target for the Book Appointment CTA. */
     ctaTarget: z.string().optional(),
+    /** Initial cart badge fallback before Lakebed state is available. */
+    cartCount: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Maison Noir'
     const nav = props.nav?.length
       ? props.nav
       : ['Collections', 'Pieces', 'Craftsmanship', 'Heritage']
     const homeTarget = props.homeTarget ?? nav[0]
-    const wishlistTarget = props.wishlistTarget ?? nav[1] ?? nav[0]
     const ctaLabel = props.ctaLabel ?? 'Book Appointment'
     const ctaTarget = props.ctaTarget ?? 'Book Private Appointment'
+    const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
+    const utilityButtonClass =
+      'text-muted-foreground transition-colors hover:text-primary'
 
     return (
       <header
@@ -53,13 +65,21 @@ export const JewelryStoreNavbar = defineComponent({
       >
         <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="flex h-20 items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(homeTarget)}
-              className="font-serif text-2xl tracking-wider text-primary"
-            >
-              {brand}
-            </button>
+            <div className="flex items-center gap-4">
+              <CommerceMobileMenu
+                brand={brand}
+                nav={nav}
+                homeTarget={homeTarget}
+                buttonClassName="text-muted-foreground transition-colors hover:text-primary md:hidden"
+              />
+              <button
+                type="button"
+                onClick={() => go(homeTarget)}
+                className="font-serif text-2xl tracking-wider text-primary"
+              >
+                {brand}
+              </button>
+            </div>
             <nav className="hidden items-center space-x-10 md:flex">
               {nav.map((label) => (
                 <button
@@ -73,11 +93,9 @@ export const JewelryStoreNavbar = defineComponent({
               ))}
             </nav>
             <div className="flex items-center space-x-6">
-              <button
-                type="button"
-                aria-label="Search"
-                onClick={() => go(homeTarget)}
-                className="text-muted-foreground transition-colors hover:text-primary"
+              <CommerceSearchButton
+                lakebed={lakebed}
+                buttonClassName={utilityButtonClass}
               >
                 <svg
                   className="h-5 w-5"
@@ -93,12 +111,10 @@ export const JewelryStoreNavbar = defineComponent({
                     d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
                   />
                 </svg>
-              </button>
-              <button
-                type="button"
-                aria-label="Wishlist"
-                onClick={() => go(wishlistTarget)}
-                className="text-muted-foreground transition-colors hover:text-primary"
+              </CommerceSearchButton>
+              <CommerceAccountButton
+                lakebed={lakebed}
+                buttonClassName={utilityButtonClass}
               >
                 <svg
                   className="h-5 w-5"
@@ -111,10 +127,31 @@ export const JewelryStoreNavbar = defineComponent({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="1.5"
-                    d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0"
                   />
                 </svg>
-              </button>
+              </CommerceAccountButton>
+              <CommerceCartButton
+                lakebed={lakebed}
+                fallbackCount={initialCartCount}
+                buttonClassName={cn('relative', utilityButtonClass)}
+                label="Cart"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.35 12A1.5 1.5 0 0 1 19.466 22H4.534a1.5 1.5 0 0 1-1.49-1.493l1.35-12A1.5 1.5 0 0 1 5.884 7.2h12.232a1.5 1.5 0 0 1 1.49 1.307Z"
+                  />
+                </svg>
+              </CommerceCartButton>
               <button
                 type="button"
                 onClick={() => go(ctaTarget)}

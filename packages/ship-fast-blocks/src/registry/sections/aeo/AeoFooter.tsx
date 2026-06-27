@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -30,7 +31,7 @@ const BrandMark = () => (
   </span>
 )
 
-export const AeoFooter = defineComponent({
+export const AeoFooter = defineCapsule({
   name: 'AeoFooter',
   description:
     'Multi-column site footer for an Answer-Engine-Optimization (AEO) product built on the shared SiteFooter composite: a citation-spark brand block with tagline and social row, link columns (Product, Resources, Company, Legal), a bottom note, and legal links. All links route through useNavigate. Use as the closing footer on AEO, generative-search visibility, or brand-citation analytics sites.',

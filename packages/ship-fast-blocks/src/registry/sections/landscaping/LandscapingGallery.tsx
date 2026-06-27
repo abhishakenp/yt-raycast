@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * for landscapers, garden designers, hardscaping contractors or grounds-keeping
  * companies. Renders fully with no props via baked-in six-project defaults.
  */
-export const LandscapingGallery = defineComponent({
+export const LandscapingGallery = defineCapsule({
   name: 'LandscapingGallery',
   description:
     'Centered-header selected-projects portfolio grid for a landscaping / outdoor-design company: a heading + description introduce a responsive 1/2/3-column grid of rounded image tiles; each tile zooms its photo on hover and reveals a bottom gradient overlay with a location eyebrow and a project title, with a centered outlined pill CTA closing the section. Tiles and the CTA route through useNavigate and imagery uses the alt-driven Image component. Calm, organic and premium on the card surface. Use to showcase completed work for landscapers, garden designers, hardscaping contractors or grounds-keeping companies.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * brokers, or financial-protection products. Renders fully with no props via
  * baked-in defaults.
  */
-export const InsuranceFaq = defineComponent({
+export const InsuranceFaq = defineCapsule({
   name: 'InsuranceFaq',
   description:
     'Frequently-asked-questions stack for an insurance page on a soft muted canvas: a centered eyebrow chip + heading + lede above a narrow column of bordered question/answer cards, each showing the question as a bold heading over a muted answer paragraph. Use to address common coverage, claims, billing, premium and cancellation questions for insurance carriers, insurtech startups, brokers, or financial-protection products.',

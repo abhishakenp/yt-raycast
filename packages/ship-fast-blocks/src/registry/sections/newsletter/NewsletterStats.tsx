@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * publications, blogs, or content creators. Renders fully with no props via
  * baked-in defaults.
  */
-export const NewsletterStats = defineComponent({
+export const NewsletterStats = defineCapsule({
   name: 'NewsletterStats',
   description:
     'Compact subscriber stats strip for an editorial newsletter: a subtle muted band, separated by a top border, holding a centered 2-up (mobile) / 4-up (desktop) grid of figures where each cell stacks a large serif value over a small muted label. Warm, calm, literary mood with generous vertical padding. Use directly beneath a newsletter hero to surface subscriber count, open rate, tenure, and issues sent, or any quick social-proof metrics for newsletters, publications, blogs, or content creators.',

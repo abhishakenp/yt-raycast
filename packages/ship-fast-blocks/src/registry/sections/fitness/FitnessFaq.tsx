@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * Use to answer common questions (trial, freezing, discounts, hours, booking,
  * cancellation) on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
-export const FitnessFaq = defineComponent({
+export const FitnessFaq = defineCapsule({
   name: 'FitnessFaq',
   description:
     'Native-details FAQ accordion for a gym or fitness studio: a centered heading and lead paragraph above a narrow stack of bordered card-surface disclosure rows, each a question summary with a chevron that rotates open to reveal the answer (uses native <details>, no JS state). Use to answer common questions — free trial, freezing membership, discounts, hours, advance booking, cancellation — on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.',

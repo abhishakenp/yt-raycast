@@ -1,7 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+  localServiceItem,
+  useSyncLocalServices,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * DentalServices — 6-up services grid for a dental practice / dentist site. A
@@ -12,7 +20,7 @@ import { cn } from '#/lib/utils.ts'
  * Use as the core services overview for dentists, dental offices,
  * orthodontists, or cosmetic / restorative dental clinics.
  */
-export const DentalServices = defineComponent({
+export const DentalServices = defineCapsule({
   name: 'DentalServices',
   description:
     '6-up services grid for a dental practice / dentist site: a centered eyebrow + heading + lede intro above a responsive 1-to-3 column grid of soft muted cards, each with a rounded tinted icon tile (rotating shield / sparkle / implant / smile / crown / alert glyphs), a service title, a description, and a check-marked bullet list; cards lift and brighten on hover. Use as the core services overview for dentists, dental offices, orthodontists, or cosmetic / restorative dental clinics.',
@@ -31,7 +39,8 @@ export const DentalServices = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const servicesEyebrow = props.eyebrow ?? 'Our Services'
     const servicesHeading =
       props.heading ?? 'Comprehensive dental care for your entire family'
@@ -102,6 +111,15 @@ export const DentalServices = defineComponent({
             ],
           },
         ]
+    useSyncLocalServices(
+      lakebed,
+      serviceItems.map((item) =>
+        localServiceItem({
+          name: item.title,
+          summary: item.description,
+        }),
+      ),
+    )
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -219,9 +237,14 @@ export const DentalServices = defineComponent({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {serviceItems.map((item, i) => (
-              <div
+              <LocalServiceBookingButton
                 key={item.title}
-                className="group rounded-2xl border border-transparent bg-muted p-8 transition-all hover:border-border hover:bg-card hover:shadow-xl"
+                lakebed={lakebed}
+                intentLabel={`Book ${item.title}`}
+                service={item.title}
+                source="services"
+                pendingChildren={<LocalServiceMutationSpinner />}
+                className="group rounded-2xl border border-transparent bg-muted p-8 text-left transition-all hover:border-border hover:bg-card hover:shadow-xl disabled:pointer-events-none disabled:opacity-70"
               >
                 <div className="mb-6 grid size-14 place-items-center rounded-xl bg-primary/10 text-primary transition-transform group-hover:scale-110">
                   {serviceIcons[i % serviceIcons.length]}
@@ -240,7 +263,7 @@ export const DentalServices = defineComponent({
                     </li>
                   ))}
                 </ul>
-              </div>
+              </LocalServiceBookingButton>
             ))}
           </div>
         </div>

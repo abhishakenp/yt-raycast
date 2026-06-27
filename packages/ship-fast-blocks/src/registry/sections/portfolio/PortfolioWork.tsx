@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * motion designer, or director's reel-style projects, case studies, or featured
  * work. Renders fully with no props via six baked-in default projects.
  */
-export const PortfolioWork = defineComponent({
+export const PortfolioWork = defineCapsule({
   name: 'PortfolioWork',
   description:
     "Selected-work / project gallery for a dark creative portfolio: a heading block (cyan uppercase label, big display title, lead paragraph) above a responsive 3-up grid of clickable project cards. Each card has a 16:10 alt-driven thumbnail that zooms on hover, a title, a short blurb, and a row of tool/tag chips, on a raised card surface that lifts and gains a cyan glow on hover. Cards route through useNavigate. Use to showcase a 3D artist, motion designer, or director's reel-style projects, case studies, or featured work.",

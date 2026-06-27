@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -61,7 +62,7 @@ const FeatureIcon = ({ glyph }: { glyph: ReactNode }) => (
   </svg>
 )
 
-export const VideoStreamingFeatures = defineComponent({
+export const VideoStreamingFeatures = defineCapsule({
   name: 'VideoStreamingFeatures',
   description:
     'A 4-column feature grid for a video-streaming landing page built on the shared FeatureGrid composite: a centered heading + subheading above a responsive grid of feature cards, each pairing an inline stroke-SVG glyph (cycled per index) with a bold title and a muted blurb. Use to spell out streaming value props — 4K Ultra HD, offline downloads, watch on any device, zero ads, Dolby Atmos, profiles — beneath a streaming hero.',

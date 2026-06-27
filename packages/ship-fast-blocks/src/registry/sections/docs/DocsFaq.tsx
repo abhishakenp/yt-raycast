@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -16,7 +17,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * Renders fully with no props via baked-in developer-docs defaults. Clean docs aesthetic,
  * theme tokens only.
  */
-export const DocsFaq = defineComponent({
+export const DocsFaq = defineCapsule({
   name: 'DocsFaq',
   description:
     "Accessible, JS-free FAQ section for a developer DOCUMENTATION / API-reference home: a centered max-w-3xl column with a kit SectionHeading (uppercase 'FAQ' eyebrow, semibold 'Frequently asked questions' title, muted subtitle) above a vertical stack of native <details>/<summary> accordions. Each accordion is a rounded bordered card on bg-card whose summary shows the question and a chevron SVG that rotates 180° on open (group-open), with a muted answer paragraph revealed on expand. Pure semantic HTML — keyboard- and screen-reader-accessible by default, no client state and no navigation; the first item opens via defaultOpen. Use for docs homes, API references, SDK guides, developer portals, or knowledge-base FAQ bands. Clean developer-docs aesthetic, theme tokens only.",

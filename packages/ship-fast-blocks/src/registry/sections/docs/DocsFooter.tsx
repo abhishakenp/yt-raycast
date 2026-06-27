@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -30,7 +31,7 @@ const LogoMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const DocsFooter = defineComponent({
+export const DocsFooter = defineCapsule({
   name: 'DocsFooter',
   description:
     'Clean, multi-column closing footer for a developer platform or documentation site: a responsive grid with a brand block (stacked-cube mark + wordmark + product tagline + social row of GitHub/Discord/Twitter) and link columns (Docs, Resources, Community, Company); a bordered-top bottom bar holds an auto-updating copyright line and Privacy/Terms/Security legal links. Every brand, social, column, and legal link routes through useNavigate. Use as the site-wide footer for developer docs, API platforms, SDKs, CLIs, or any technical product landing page.',

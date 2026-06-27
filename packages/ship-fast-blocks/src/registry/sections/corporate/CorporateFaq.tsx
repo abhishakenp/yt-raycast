@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * Use to answer common questions about pricing, security, deployment, and support
  * on SaaS and enterprise product pages.
  */
-export const CorporateFaq = defineComponent({
+export const CorporateFaq = defineCapsule({
   name: 'CorporateFaq',
   description:
     'Accordion FAQ section for an enterprise / corporate B2B site: centered heading above a stacked set of native HTML5 details/summary items with a smooth open ring highlight and a chevron icon that rotates on open. Use to answer common questions about pricing, security, deployment, and support on SaaS and enterprise product pages.',

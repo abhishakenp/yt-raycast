@@ -1,7 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
+import { useState } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  saasPlan,
+  useSyncSaasPlans,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * NoCodePricing — 3-tier pricing table on a subtle muted band. A centered header
@@ -13,10 +21,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use as the pricing section for a no-code builder, SaaS, or any
  * subscription product. Renders fully with no props.
  */
-export const NoCodePricing = defineComponent({
+export const NoCodePricing = defineCapsule({
   name: 'NoCodePricing',
   description:
-    "3-tier pricing table on a subtle muted band: a centered header (eyebrow, heading, paragraph) above a monthly/yearly toggle switch with a 'save' badge, then a 1-to-3 column grid of plan cards where the featured plan renders on the inverse foreground surface with a floating 'Most Popular' badge; each card has a name, tagline, big price + period, a full-width CTA, and a checkmarked feature list. CTAs and the toggle route through useNavigate. Use as the pricing section for a no-code / app-builder SaaS or any subscription product.",
+    '3-tier pricing table backed by shared Lakebed conversion state: a centered header above an interactive monthly/yearly toggle, then plan cards where CTAs have scoped mutation loading. Plans seed command search and every CTA records selected plan or sales intent. Use as the pricing section for a no-code / app-builder SaaS or any subscription product.',
   props: z.object({
     /** Muted uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -47,8 +55,9 @@ export const NoCodePricing = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
+    const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly')
     const eyebrow = props.eyebrow ?? 'Pricing'
     const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
@@ -104,6 +113,19 @@ export const NoCodePricing = defineComponent({
             ],
           },
         ]
+    const isYearly = billing === 'yearly'
+
+    useSyncSaasPlans(
+      lakebed,
+      plans.map((plan) =>
+        saasPlan({
+          name: plan.name,
+          period: plan.period,
+          price: plan.price,
+          summary: plan.tagline || plan.features.at(0) || '',
+        }),
+      ),
+    )
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -146,12 +168,21 @@ export const NoCodePricing = defineComponent({
               <button
                 type="button"
                 role="switch"
-                aria-checked="false"
+                aria-checked={isYearly}
                 aria-label="Toggle yearly billing"
-                onClick={() => go(yearlyLabel)}
+                onClick={() =>
+                  setBilling((current) =>
+                    current === 'monthly' ? 'yearly' : 'monthly',
+                  )
+                }
                 className="relative h-8 w-14 rounded-full bg-foreground p-1"
               >
-                <span className="block size-6 rounded-full bg-background shadow transition-transform" />
+                <span
+                  className={cn(
+                    'block size-6 rounded-full bg-background shadow transition-transform',
+                    isYearly ? 'translate-x-6' : 'translate-x-0',
+                  )}
+                />
               </button>
               <span className="text-sm font-medium text-muted-foreground">
                 {yearlyLabel}
@@ -222,18 +253,27 @@ export const NoCodePricing = defineComponent({
                       </span>
                     )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => go(plan.cta)}
+                  <SaasPlanActionButton
+                    lakebed={lakebed}
+                    intentLabel={plan.cta}
+                    plan={plan.name}
+                    source={`pricing-${billing}`}
+                    aria-label={`${plan.cta} for ${plan.name}`}
+                    pendingChildren={
+                      <>
+                        <SaasMutationSpinner className="size-4" />
+                        Selecting
+                      </>
+                    }
                     className={cn(
-                      'mb-6 block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors',
+                      'mb-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
                       featured
                         ? 'bg-background text-foreground hover:bg-background/90'
                         : 'border border-border text-card-foreground hover:bg-accent',
                     )}
                   >
                     {plan.cta}
-                  </button>
+                  </SaasPlanActionButton>
                   <ul className="space-y-3" role="list">
                     {plan.features.map((feat) => (
                       <li key={feat} className="flex items-start gap-3">

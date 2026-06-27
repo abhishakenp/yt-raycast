@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * resorts, spa retreats, inns, or wellness destinations. Renders fully with no
  * props via baked-in resort defaults.
  */
-export const HotelResortStats = defineComponent({
+export const HotelResortStats = defineCapsule({
   name: 'HotelResortStats',
   description:
     'Quiet KPI stats band for a luxury hotel / resort & spa site: a muted-surface section with a 2-up (mobile) / 4-up (desktop) grid of centered figures, each a large thin value over a small uppercase tracked label. Editorial and understated. Use beneath a hero to surface signature numbers — suite count, Michelin stars, spa square footage, miles of beach — for hotels, resorts, spa retreats, inns, or wellness destinations.',

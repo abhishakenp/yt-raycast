@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * bootcamps, dev academies, or career-switch programs by showcasing graduate
  * success stories.
  */
-export const BootcampTestimonials = defineComponent({
+export const BootcampTestimonials = defineCapsule({
   name: 'BootcampTestimonials',
   description:
     "6-up student-story testimonial grid for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive 2/3-column grid of rounded bordered cards. Each card has a round alt-driven avatar, the graduate's name and role, a pull-quote, and an inline 5-star rating row. Use to build social proof for bootcamps, dev academies, or career-switch programs by showcasing graduate success stories.",

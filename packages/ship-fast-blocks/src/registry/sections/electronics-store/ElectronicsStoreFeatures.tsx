@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import type { ReactNode } from 'react'
 
@@ -11,7 +12,7 @@ import type { ReactNode } from 'react'
  * electronics stores, gadget shops, consumer-tech retailers, or any product
  * catalog that wants quick reassurance under the hero.
  */
-export const ElectronicsStoreFeatures = defineComponent({
+export const ElectronicsStoreFeatures = defineCapsule({
   name: 'ElectronicsStoreFeatures',
   description:
     'Centered 3-up benefits / trust row for an electronics storefront: each cell stacks a rounded muted icon tile (check / box / refresh glyphs rotated across cells) above a bold title and a muted description. Use to surface shipping, authenticity and returns guarantees (e.g. Certified Authentic, Free Express Shipping, 30-Day Returns) on electronics stores, gadget shops, consumer-tech retailers, or any product catalog that wants quick reassurance beneath the hero.',

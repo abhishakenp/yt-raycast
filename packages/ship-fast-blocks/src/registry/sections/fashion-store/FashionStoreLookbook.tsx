@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * uses the alt-driven Image component. Use to present a seasonal editorial
  * lookbook for clothing brands, boutiques, or lifestyle commerce.
  */
-export const FashionStoreLookbook = defineComponent({
+export const FashionStoreLookbook = defineCapsule({
   name: 'FashionStoreLookbook',
   description:
     "Editorial Lookbook masonry gallery for a minimalist fashion store: a subtle muted-band section with a split intro (eyebrow + serif heading on the left, right-aligned description on the right) above a mixed-span 2-to-3 column masonry grid of look tiles — each a portrait image with an overlaid uppercase look label and optional serif title, sized as feature (2x2), wide (2-wide) or small — closed by an outlined 'Explore Full Lookbook' CTA. Every tile and CTA routes through useNavigate and imagery uses the alt-driven Image component. Use to present a seasonal editorial lookbook for clothing brands, boutiques, or lifestyle commerce.",

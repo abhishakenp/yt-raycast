@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -10,7 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * logo button routes through useNavigate. Use to display protocol partners,
  * institutional backers, integrated chains, or ecosystem partners.
  */
-export const CryptoLogos = defineComponent({
+export const CryptoLogos = defineCapsule({
   name: 'CryptoLogos',
   description:
     'Trusted-by protocol logo strip for a crypto / DeFi landing page: a bordered card band with centered heading and responsive grid of text-based logo buttons (2-up mobile, 3-up tablet, 6-up desktop). Each logo routes through useNavigate. Use to display protocol partners, institutional backers, integrated chains, or ecosystem partners.',

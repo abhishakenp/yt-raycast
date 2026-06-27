@@ -1,13 +1,20 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+  localServiceItem,
+  useSyncLocalServices,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * CleaningServiceServices — a 6-up cleaning-services capabilities grid for a home-cleaning / maid-service landing page. A centered section heading + lead paragraph above a responsive 1/2/3-column grid of clickable service cards; each card has a rounded icon tile (cycling through inline line-icons), a title, a description, and a from-price line. Cards gain a border highlight and lift shadow on hover, and each routes through useNavigate on click. Use for "what we do" / services blocks for residential cleaning companies, maid services, housekeeping platforms, or local home-service brands. Renders fully with no props via six baked-in default services.
  */
-export const CleaningServiceServices = defineComponent({
+export const CleaningServiceServices = defineCapsule({
   name: 'CleaningServiceServices',
   description:
     "A 6-up cleaning-services capabilities grid for a home-cleaning / maid-service landing page: centered heading and lead paragraph above a responsive 1/2/3-column grid of clickable service cards, each with a rounded icon tile (cycling inline line-icons), title, description, and from-price line. Cards gain border highlight and lift shadow on hover; each routes through useNavigate on click. Use for 'what we do' services blocks for residential cleaning, maid services, housekeeping, or local home-service brands.",
@@ -28,8 +35,8 @@ export const CleaningServiceServices = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Services designed around your life'
     const description =
       props.description ??
@@ -74,6 +81,16 @@ export const CleaningServiceServices = defineComponent({
             price: 'From $159 per visit',
           },
         ]
+    useSyncLocalServices(
+      lakebed,
+      items.map((item) =>
+        localServiceItem({
+          name: item.title,
+          price: item.price,
+          summary: item.description,
+        }),
+      ),
+    )
 
     const serviceIcons: ReactNode[] = [
       <svg
@@ -173,11 +190,14 @@ export const CleaningServiceServices = defineComponent({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <button
+              <LocalServiceBookingButton
                 key={item.title}
-                type="button"
-                onClick={() => go(item.title)}
-                className="group rounded-2xl border border-border bg-muted/40 p-8 text-left transition-all hover:border-primary/30 hover:shadow-lg"
+                lakebed={lakebed}
+                intentLabel={`Book ${item.title}`}
+                service={item.title}
+                source="services"
+                pendingChildren={<LocalServiceMutationSpinner />}
+                className="group rounded-2xl border border-border bg-muted/40 p-8 text-left transition-all hover:border-primary/30 hover:shadow-lg disabled:pointer-events-none disabled:opacity-70"
               >
                 <div className="mb-6 grid size-14 place-items-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                   {serviceIcons[i % serviceIcons.length]}
@@ -189,7 +209,7 @@ export const CleaningServiceServices = defineComponent({
                   {item.description}
                 </p>
                 <p className="font-semibold text-primary">{item.price}</p>
-              </button>
+              </LocalServiceBookingButton>
             ))}
           </div>
         </div>

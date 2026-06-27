@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
+import {
+  InquiryActionButton,
+  InquiryMutationSpinner,
+} from '../contact/inquiry-interactions.tsx'
 
 /**
  * EventPlannerPricing — three-tier planning-packages block on a muted band. A
@@ -9,13 +14,15 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * of rounded package cards; the "popular" tier is filled with the primary color
  * and lifted with a shadow plus a corner ribbon, while the others are plain cards.
  * Each card shows name, tagline, large light price, a check-marked feature list,
- * and a full-width pill CTA routed through useNavigate. Use to present tiered
- * pricing for event/wedding planners or premium service businesses.
+ * and a full-width pill CTA that records a real Lakebed pricing action. Use to
+ * present tiered pricing for event/wedding planners or premium service
+ * businesses.
  */
-export const EventPlannerPricing = defineComponent({
+export const EventPlannerPricing = defineCapsule({
   name: 'EventPlannerPricing',
   description:
-    "Three-tier planning-packages block on a muted band: a centered intro (uppercase eyebrow, thin light heading, lede) above a 3-up grid of rounded package cards; the 'popular' tier is filled with the primary color and lifted with a shadow plus a corner ribbon, while the others are plain cards. Each card shows name, tagline, large light price, a check-marked feature list, and a full-width pill CTA routed through useNavigate. Use to present tiered pricing (e.g. Essential, Signature, White Glove) for event/wedding planners or premium service businesses.",
+    "Three-tier planning-packages block on a muted band: a centered intro (uppercase eyebrow, thin light heading, lede) above a 3-up grid of rounded package cards; the 'popular' tier is filled with the primary color and lifted with a shadow plus a corner ribbon, while the others are plain cards. Each card shows name, tagline, large light price, a check-marked feature list, and a full-width pill CTA that records a real Lakebed pricing action. Use to present tiered pricing (e.g. Essential, Signature, White Glove) for event/wedding planners or premium service businesses.",
+  lakebed: inquiryLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -35,8 +42,7 @@ export const EventPlannerPricing = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  component: ({ props, lakebed }) => {
     const pricingEyebrow = props.eyebrow ?? 'Investment'
     const pricingHeading = props.heading ?? 'Planning Packages'
     const pricingDesc =
@@ -189,18 +195,27 @@ export const EventPlannerPricing = defineComponent({
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => go(`${pricingCta} ${tier.name}`)}
+                <InquiryActionButton
+                  lakebed={lakebed}
+                  label={`${pricingCta} ${tier.name}`}
+                  source="Event planner pricing"
+                  target={tier.name}
+                  kind="pricing"
+                  pendingChildren={
+                    <>
+                      <InquiryMutationSpinner />
+                      Recording
+                    </>
+                  }
                   className={cn(
-                    'block w-full rounded-full px-6 py-3 text-center font-medium transition-colors',
+                    'inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
                     tier.popular
                       ? 'bg-background text-foreground hover:bg-muted'
                       : 'border border-border text-foreground hover:bg-muted',
                   )}
                 >
                   {pricingCta}
-                </button>
+                </InquiryActionButton>
               </article>
             ))}
           </div>

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -20,7 +21,7 @@ const BrandTile = ({ letter }: { letter: string }) => (
   </span>
 )
 
-export const CoworkingNavbar = defineComponent({
+export const CoworkingNavbar = defineCapsule({
   name: 'CoworkingNavbar',
   description:
     "Sticky coworking / workspace site header built on the shared SiteNav composite: a rounded brand-initial logo tile beside the workspace name, centered desktop nav links, an optional front-desk phone number, a single 'Book a Tour' pill CTA, and a real mobile drawer. All links route through useNavigate. Use as the sticky site header for coworking spaces, shared offices, flex-office platforms, or workspace membership pages.",

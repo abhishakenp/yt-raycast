@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const Mark = ({ className }: { className?: string }) => (
@@ -21,7 +22,7 @@ const Mark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const SalonBarberNavbar = defineComponent({
+export const SalonBarberNavbar = defineCapsule({
   name: 'SalonBarberNavbar',
   description:
     "Sticky barbershop / salon header built on the shared SiteNav composite. Renders a confident grooming brand with a scissors brand mark, desktop nav links, a tap-to-call phone number, and a primary booking CTA, plus a real mobile drawer. Use it as the top-of-page header for any barbershop, salon, or men's grooming site, or as the global nav band when composing a multi-page grooming experience.",

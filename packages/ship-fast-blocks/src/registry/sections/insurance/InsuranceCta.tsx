@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * insurtech, brokers, or financial-protection products. Renders fully with no
  * props via baked-in defaults.
  */
-export const InsuranceCta = defineComponent({
+export const InsuranceCta = defineCapsule({
   name: 'InsuranceCta',
   description:
     'Full-bleed closing call-to-action panel for an insurance page: a rounded brand-colored panel with a subtle dotted overlay, centered heading and lede, dual CTAs (a solid get-a-quote button and an outline call/phone button), and a small footnote of trust points. Both CTAs route through useNavigate. Use as the final conversion push near the footer for insurance carriers, insurtech startups, brokers, or financial-protection products.',

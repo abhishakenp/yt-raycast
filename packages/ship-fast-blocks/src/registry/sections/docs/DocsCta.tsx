@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -15,7 +16,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * quickstart. Renders fully with no props via crisp, developer-friendly baked-in
  * defaults.
  */
-export const DocsCta = defineComponent({
+export const DocsCta = defineCapsule({
   name: 'DocsCta',
   description:
     "Clean, centered closing call-to-action band for a developer documentation home page: a full-width section wrapping a primary-colored band with a short eyebrow, a confident headline, a concise supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Start building' button that routes to the quickstart plus an outlined 'View API Reference' button). Both CTAs route through useNavigate. Use near the bottom of a docs home, API reference, SDK guide, or developer portal page to push readers into getting started.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * All buttons route through useNavigate. Use as a closing conversion action
  * for protocols, chains, DeFi platforms, or Web3 infrastructure sites.
  */
-export const CryptoContactCta = defineComponent({
+export const CryptoContactCta = defineCapsule({
   name: 'CryptoContactCta',
   description:
     'Inverted dark final call-to-action band for a crypto / DeFi landing page: centered bg-foreground section with a large headline, supporting paragraph, dual buttons (filled light primary + outlined secondary), and trust chips with check-circle icons beneath. All buttons route through useNavigate. Use as a closing conversion action for protocols, chains, DeFi platforms, or Web3 infrastructure sites.',

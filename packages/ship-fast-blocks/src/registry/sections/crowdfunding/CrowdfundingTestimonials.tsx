@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * component. Use as social proof on a product launch, pre-order, fundraiser, or
  * maker campaign where reviewer credibility and ratings build trust.
  */
-export const CrowdfundingTestimonials = defineComponent({
+export const CrowdfundingTestimonials = defineCapsule({
   name: 'CrowdfundingTestimonials',
   description:
     'A 3-up backer TESTIMONIALS grid for a crowdfunding / campaign landing page on a muted band: a centered uppercase eyebrow + heading above a responsive three-column grid of raised card quotes, each with a 5-star rating row (chart-toned star glyphs), the quote, and an alt-driven avatar with name + role. Imagery (including avatars) uses the Image component. Use as social proof on a product launch, pre-order, fundraiser, or maker campaign where reviewer credibility and ratings build trust.',

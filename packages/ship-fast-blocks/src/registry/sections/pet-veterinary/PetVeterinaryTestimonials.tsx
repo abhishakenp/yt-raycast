@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 const DEFAULT_REVIEWS: {
@@ -35,7 +36,7 @@ const DEFAULT_REVIEWS: {
   },
 ]
 
-export const PetVeterinaryTestimonials = defineComponent({
+export const PetVeterinaryTestimonials = defineCapsule({
   name: 'PetVeterinaryTestimonials',
   description:
     "Warm social-proof band for a veterinary clinic site, composing the TestimonialGrid kit composite into a row of heartfelt pet-parent reviews. Each card shows a five-star rating, a caring quote about real experiences, and an avatar with the reviewer's name, role (e.g. 'Dog mom', 'Cat dad'), and their pet's name. Accepts a public `reviews` prop to override the quotes. Use it to build trust and reassure hesitant pet parents before they book a visit.",

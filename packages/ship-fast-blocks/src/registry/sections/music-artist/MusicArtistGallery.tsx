@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * behind-the-scenes / photo showcase for musicians, bands, or artist EPK pages.
  * Renders fully with no props via baked-in defaults.
  */
-export const MusicArtistGallery = defineComponent({
+export const MusicArtistGallery = defineCapsule({
   name: 'MusicArtistGallery',
   description:
     "'Behind the music' masonry photo gallery for a music artist / band page: a centered eyebrow and thin heading over a responsive grid of square images where the second tile spans two rows for a masonry feel, each image gently scaling on hover. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. All imagery uses the alt-driven Image component. Use as a behind-the-scenes / photo showcase for musicians, singers, bands, or artist EPK pages.",

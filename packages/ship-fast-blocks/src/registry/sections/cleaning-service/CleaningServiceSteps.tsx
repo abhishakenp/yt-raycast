@@ -1,12 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
  * CleaningServiceSteps — a "how it works" + "what's included" combo section for a home-cleaning / maid-service landing page. A muted-band background with a centered heading + lead paragraph above a responsive 3-column grid of numbered step cards (with connector lines on desktop), followed by a split-row card: left side shows a "what's included" checklist with checkmark icons, right side shows a 2x2 lazy-loaded photo grid. Use for process-explanation / expectations-setting blocks for residential cleaning companies, maid services, or home-service platforms. Renders fully with no props via baked-in defaults.
  */
-export const CleaningServiceSteps = defineComponent({
+export const CleaningServiceSteps = defineCapsule({
   name: 'CleaningServiceSteps',
   description:
     "A 'how it works' + 'what\'s included' combo section for a home-cleaning / maid-service landing page: muted-band background with centered heading + lead above a 3-column numbered step-card grid (with desktop connector lines), followed by a split-row card with a checklist on the left and a 2x2 lazy-loaded photo grid on the right. Use for process-explanation / expectations-setting blocks for residential cleaning, maid services, or home-service platforms.",

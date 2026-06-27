@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * Image component; logos route through useNavigate. Use as the social-proof section for
  * food trucks, restaurants, caterers or street-food vendors showing reviews and press.
  */
-export const FoodTruckTestimonials = defineComponent({
+export const FoodTruckTestimonials = defineCapsule({
   name: 'FoodTruckTestimonials',
   description:
     'Customer-reviews section with a press-logo strip: a centered eyebrow + heading above a 3-up grid of muted quote cards, each with a five-star row, a quote and an avatar + name + role byline, followed by a centered row of clickable press / publication logos. Avatars use the alt-driven Image component; logos route through useNavigate. Use as the social-proof / testimonials section for food trucks, restaurants, caterers or street-food vendors showing reviews and press mentions.',

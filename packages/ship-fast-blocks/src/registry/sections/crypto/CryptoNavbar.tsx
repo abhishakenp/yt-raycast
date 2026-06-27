@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * site header for crypto protocols, layer-1/layer-2 chains, DeFi platforms,
  * bridges, staking networks, or Web3 infrastructure sites.
  */
-export const CryptoNavbar = defineComponent({
+export const CryptoNavbar = defineCapsule({
   name: 'CryptoNavbar',
   description:
     'Glassy sticky top navigation bar for a crypto / DeFi infrastructure landing page: backdrop-blurred, border-bottomed header with a high-contrast brand bolt icon + protocol name on the left, horizontal nav links in the center, and a dual button group on the right (secondary text link + primary filled CTA). All links route through useNavigate. Use as the sticky site header for crypto protocols, layer-1/layer-2 chains, DeFi platforms, bridges, staking networks, or Web3 infrastructure sites.',

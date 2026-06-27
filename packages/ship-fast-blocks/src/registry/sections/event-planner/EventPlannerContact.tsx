@@ -1,7 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
+import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
 /**
  * EventPlannerContact — dark split contact section with a full inquiry form. A
@@ -9,14 +12,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * light heading, lede, and click-to-email / click-to-call buttons plus an address
  * row with inline icons) beside a right rounded card form (first/last name, email,
  * event-type + guest-count selects, event date, vision textarea, and a full-width
- * primary submit pill). Buttons and submit route through useNavigate. Use as the
- * booking/inquiry section above the footer for event/wedding planners or premium
- * service businesses.
+ * primary submit pill). Contact buttons route through useNavigate; submit writes
+ * a Lakebed inquiry. Use as the booking/inquiry section above the footer for
+ * event/wedding planners or premium service businesses.
  */
-export const EventPlannerContact = defineComponent({
+export const EventPlannerContact = defineCapsule({
   name: 'EventPlannerContact',
   description:
-    'Dark split contact section with a full inquiry form: a primary-colored two-column band with a left details column (uppercase eyebrow, thin light heading, lede, click-to-email / click-to-call buttons and an address row with inline icons) beside a right rounded card form (first/last name, email, event-type and guest-count selects, event date, vision textarea, and a full-width primary submit pill). Buttons and submit route through useNavigate. Use as the booking/inquiry section above the footer for event/wedding planners, gala organizers, or premium service businesses.',
+    'Dark split contact section with a full Lakebed inquiry form: a primary-colored two-column band with a left details column (uppercase eyebrow, thin light heading, lede, click-to-email / click-to-call buttons and an address row with inline icons) beside a right rounded card form (first/last name, email, event-type and guest-count selects, event date, vision textarea, and a full-width primary submit pill). Contact buttons route through useNavigate; submit writes a shared inquiry record. Use as the booking/inquiry section above the footer for event/wedding planners, gala organizers, or premium service businesses.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -29,7 +32,8 @@ export const EventPlannerContact = defineComponent({
     submit: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: inquiryLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const contactEyebrow = props.eyebrow ?? 'Start Your Journey'
     const contactHeading = props.heading ?? "Let's Create Something Beautiful"
@@ -61,6 +65,12 @@ export const EventPlannerContact = defineComponent({
           '200+ guests',
         ]
     const contactSubmit = props.submit ?? 'Send Inquiry'
+    const inquiry = useInquirySubmission({
+      lakebed,
+      source: 'Event planner inquiry',
+      successMessage:
+        "Thanks. We've received your event inquiry and will follow up shortly.",
+    })
 
     const inputCls =
       'w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-transparent focus:ring-2 focus:ring-ring'
@@ -154,10 +164,7 @@ export const EventPlannerContact = defineComponent({
             </div>
             <form
               className="rounded-2xl bg-card p-8 lg:p-10"
-              onSubmit={(e) => {
-                e.preventDefault()
-                go(contactSubmit)
-              }}
+              onSubmit={inquiry.submitForm}
             >
               <div className="space-y-6">
                 <div className="grid gap-6 sm:grid-cols-2">
@@ -170,6 +177,7 @@ export const EventPlannerContact = defineComponent({
                     </label>
                     <input
                       id="ep-first"
+                      name="firstName"
                       type="text"
                       required
                       placeholder="Jane"
@@ -185,6 +193,7 @@ export const EventPlannerContact = defineComponent({
                     </label>
                     <input
                       id="ep-last"
+                      name="lastName"
                       type="text"
                       required
                       placeholder="Smith"
@@ -201,6 +210,7 @@ export const EventPlannerContact = defineComponent({
                   </label>
                   <input
                     id="ep-email"
+                    name="email"
                     type="email"
                     required
                     placeholder="jane@example.com"
@@ -216,6 +226,7 @@ export const EventPlannerContact = defineComponent({
                   </label>
                   <select
                     id="ep-type"
+                    name="eventType"
                     required
                     className={cn(inputCls, 'appearance-none')}
                   >
@@ -234,7 +245,12 @@ export const EventPlannerContact = defineComponent({
                     >
                       Event Date
                     </label>
-                    <input id="ep-date" type="date" className={inputCls} />
+                    <input
+                      id="ep-date"
+                      name="date"
+                      type="date"
+                      className={inputCls}
+                    />
                   </div>
                   <div>
                     <label
@@ -245,6 +261,7 @@ export const EventPlannerContact = defineComponent({
                     </label>
                     <select
                       id="ep-guests"
+                      name="guestCount"
                       className={cn(inputCls, 'appearance-none')}
                     >
                       {guestRanges.map((opt) => (
@@ -264,6 +281,7 @@ export const EventPlannerContact = defineComponent({
                   </label>
                   <textarea
                     id="ep-message"
+                    name="vision"
                     rows={4}
                     placeholder="Share details about your dream event, preferred style, venues you're considering, or any questions you have..."
                     className={cn(inputCls, 'resize-none')}
@@ -271,10 +289,15 @@ export const EventPlannerContact = defineComponent({
                 </div>
                 <button
                   type="submit"
-                  className="w-full rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  aria-busy={inquiry.isPending}
+                  disabled={inquiry.isPending}
+                  className="w-full rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
-                  {contactSubmit}
+                  {inquiry.isPending ? 'Sending' : contactSubmit}
                 </button>
+                <p className="text-sm text-muted-foreground" aria-live="polite">
+                  {inquiry.statusText}
+                </p>
               </div>
             </form>
           </div>

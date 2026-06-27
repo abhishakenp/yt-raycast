@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * carriers, insurtech, brokers, or financial-protection products. Renders fully
  * with no props via baked-in defaults.
  */
-export const InsuranceCoverage = defineComponent({
+export const InsuranceCoverage = defineCapsule({
   name: 'InsuranceCoverage',
   description:
     "4-up coverage product grid for an insurance page: a centered eyebrow chip + heading + lede above a responsive grid of coverage cards (e.g. Home / Auto / Life / Health), each with a tinted line-icon tile, a title, a description with a starting price, and a per-card feature checklist with check bullets. Cards lift and brighten on hover; icons rotate through a small token-colored set. Use as the main 'what we cover' section for insurance carriers, insurtech startups, brokers, or financial-protection products.",

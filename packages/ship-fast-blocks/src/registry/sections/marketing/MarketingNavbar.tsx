@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * MarketingNavbar — glassy, sticky top navigation bar for a product-marketing /
@@ -13,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * routes through useNavigate. Use as the sticky site header for B2B SaaS,
  * team/project-management tools, developer platforms, or modern software products.
  */
-export const MarketingNavbar = defineComponent({
+export const MarketingNavbar = defineCapsule({
   name: 'MarketingNavbar',
   description:
     "Glassy, sticky, backdrop-blurred top navigation bar for a product-marketing / SaaS landing page: border-bottomed header with an indigo brand-initial logo tile + product name on the left, horizontal nav links on the right (desktop), and a 'Log in' outline button plus a filled primary 'Get started' CTA, collapsing to a hamburger on mobile. Clean, premium indigo-on-light aesthetic. All links and CTAs route through useNavigate. Use as the sticky site header for B2B SaaS, team/project-management tools, developer platforms, workspaces, or modern software products.",
@@ -98,28 +100,13 @@ export const MarketingNavbar = defineComponent({
             >
               {ctaLabel}
             </button>
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => go(homeTarget)}
-              className="grid size-10 place-items-center rounded-lg border border-border bg-background text-foreground md:hidden"
-            >
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            </button>
+            <MobileNavDrawer
+              brand={brand}
+              nav={nav}
+              homeTarget={homeTarget}
+              cta={{ label: ctaLabel, target: ctaTarget }}
+              buttonClassName="grid size-10 place-items-center rounded-lg border border-border bg-background text-foreground md:hidden"
+            />
           </div>
         </nav>
       </header>

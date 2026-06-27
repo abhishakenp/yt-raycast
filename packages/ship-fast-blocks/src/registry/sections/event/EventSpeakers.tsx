@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * through useNavigate. Use to showcase keynote and session speakers on tech
  * conference, summit, meetup, or festival pages.
  */
-export const EventSpeakers = defineComponent({
+export const EventSpeakers = defineCapsule({
   name: 'EventSpeakers',
   description:
     "Featured-speakers grid for a conference or event page: a muted band with a heading + description on the left and a 'view all' link (with arrow) on the right, above a responsive 4-up grid of bordered speaker cards. Each card shows a circular alt-driven headshot, the speaker name, role, and a short bio, and routes through useNavigate on click. Use to showcase keynote and session speakers on tech conference, summit, meetup, festival, or workshop pages.",

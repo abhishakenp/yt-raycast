@@ -1,12 +1,22 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceAccountButton,
+  LocalServiceBookingButton,
+  LocalServiceIntentBadge,
+  LocalServiceMobileMenu,
+  LocalServiceMutationSpinner,
+  LocalServiceSearchButton,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * CleaningServiceNavbar — sticky, translucent top navigation bar for a home-cleaning / maid-service landing page. A blurred, border-bottomed header pinned to the top with a brand sparkle-mark logo tile + company name on the left, a horizontal row of service-section nav links on the desktop center, and a phone number + pill-shaped "Book Cleaning" CTA on the right. Every brand click, nav link, phone button, and CTA routes through useNavigate. Use as the sticky site header for residential cleaning companies, maid services, housekeeping platforms, janitorial businesses, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
  */
-export const CleaningServiceNavbar = defineComponent({
+export const CleaningServiceNavbar = defineCapsule({
   name: 'CleaningServiceNavbar',
   description:
     "Sticky translucent top navigation bar for a home-cleaning / maid-service landing page: blurred border-bottomed header with a brand sparkle-mark logo tile + company name on the left, horizontal nav links on desktop center, and a phone number + pill-shaped 'Book Cleaning' CTA on the right. Brand click, nav links, phone button, and CTA route through useNavigate. Use as the sticky site header for residential cleaning companies, maid services, housekeeping, janitorial, or local home-service brands.",
@@ -25,7 +35,8 @@ export const CleaningServiceNavbar = defineComponent({
     phone: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'PureSpace'
     const nav = props.nav?.length
@@ -107,7 +118,16 @@ export const CleaningServiceNavbar = defineComponent({
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <LocalServiceIntentBadge lakebed={lakebed} />
+              <LocalServiceSearchButton
+                lakebed={lakebed}
+                buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+              />
+              <LocalServiceAccountButton
+                lakebed={lakebed}
+                buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+              />
               <button
                 type="button"
                 onClick={() => go(phone)}
@@ -116,13 +136,24 @@ export const CleaningServiceNavbar = defineComponent({
                 <PhoneIcon className="size-4" />
                 {phone}
               </button>
-              <button
-                type="button"
-                onClick={() => go(ctaTarget)}
-                className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+              <LocalServiceBookingButton
+                lakebed={lakebed}
+                intentLabel={ctaTarget}
+                service={ctaLabel}
+                source="navbar"
+                pendingChildren={
+                  <LocalServiceMutationSpinner className="text-primary-foreground" />
+                }
+                className="hidden items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
               >
                 {ctaLabel}
-              </button>
+              </LocalServiceBookingButton>
+              <LocalServiceMobileMenu
+                brand={brand}
+                homeTarget={homeTarget}
+                nav={nav}
+                buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted md:hidden"
+              />
             </div>
           </div>
         </div>

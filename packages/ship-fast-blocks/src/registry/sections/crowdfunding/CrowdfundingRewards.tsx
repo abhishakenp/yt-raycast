@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -16,7 +17,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * / pledge tiers for a Kickstarter/Indiegogo-style raise, pre-order, or
  * fundraiser where reward levels and stretch goals must be front and center.
  */
-export const CrowdfundingRewards = defineComponent({
+export const CrowdfundingRewards = defineCapsule({
   name: 'CrowdfundingRewards',
   description:
     "A 4-tier REWARDS / pledge grid with a stretch-goals checklist for a crowdfunding / campaign landing page on a card surface: a centered eyebrow + heading + intro above a responsive 1/2/4-column grid of bordered pledge cards (claimed-count meta, tier name, big price, description, check-marked perk list, and a select CTA), with one highlighted 'Best Value' tier wearing a primary border, tinted fill and a floating badge. Below sits a muted stretch-goals panel listing unlocked goals (check icon, card surface) and dimmed in-progress goals (question-mark icon, secondary surface) with a status label each. All buttons route through useNavigate. Use as the pricing / pledge tiers for a Kickstarter/Indiegogo-style raise, pre-order, or fundraiser where reward levels and stretch goals must be front and center.",

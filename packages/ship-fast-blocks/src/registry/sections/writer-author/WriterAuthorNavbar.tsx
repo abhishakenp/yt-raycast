@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -31,7 +32,7 @@ const FeatherMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const WriterAuthorNavbar = defineComponent({
+export const WriterAuthorNavbar = defineCapsule({
   name: 'WriterAuthorNavbar',
   description:
     "Sticky author / novelist site header with a serif, letterpress feel, built on the shared SiteNav composite: serif wordmark + an open-book feather mark, centered desktop nav links, an optional press phone number, a 'Get the Book' CTA routing to the Books page, and a real mobile drawer. Use as the header for author landing pages, book-launch microsites, poets, essayists, or any writer's personal brand.",

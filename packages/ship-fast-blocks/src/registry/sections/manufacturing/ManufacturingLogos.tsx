@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * or industrial-engineering landing pages. Renders fully with no props via
  * baked-in defaults.
  */
-export const ManufacturingLogos = defineComponent({
+export const ManufacturingLogos = defineCapsule({
   name: 'ManufacturingLogos',
   description:
     "A 'trusted by industry leaders' client-logo strip for a precision-manufacturing / industrial B2B site: a muted, top-and-bottom-bordered band with a small uppercase tracked heading above a responsive grid of monochrome client wordmarks, each a small cube glyph plus name that brightens on hover and routes through useNavigate. Quiet, credible social proof. Use directly beneath the hero on machine-shop, fabricator, contract-manufacturer or industrial-engineering landing pages.",

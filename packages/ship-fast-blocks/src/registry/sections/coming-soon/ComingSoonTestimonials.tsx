@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * SaaS waitlists, app pre-launch pages, or beta sign-up landers. Renders fully
  * with no props via three baked-in default testimonials.
  */
-export const ComingSoonTestimonials = defineComponent({
+export const ComingSoonTestimonials = defineCapsule({
   name: 'ComingSoonTestimonials',
   description:
     "Early-access testimonial wall for a 'launching soon' / waitlist pre-launch landing page: centered heading and lead paragraph above a responsive 1/2/3-column grid of bordered quote cards on a card-colored band. Each card shows a 5-star rating row, quote text, and an attribution row with a round alt-driven avatar beside reviewer name and role. Avatars use the alt-driven <Image> component. Use as social-proof / early-feedback section on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",

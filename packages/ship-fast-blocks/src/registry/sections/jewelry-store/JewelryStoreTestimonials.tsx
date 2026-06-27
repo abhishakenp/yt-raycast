@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * houses, engagement-ring boutiques, or high-jewelry maisons. Renders fully
  * with no props via baked-in defaults.
  */
-export const JewelryStoreTestimonials = defineComponent({
+export const JewelryStoreTestimonials = defineCapsule({
   name: 'JewelryStoreTestimonials',
   description:
     'Client testimonials grid for a luxury jewelry maison on a subtle muted band: a centered gold eyebrow + serif heading introduce a responsive 1/3-column grid of quote cards, each on a raised background surface with a five-star gold rating row, a quote wrapped in typographic quotation marks, and a round avatar beside the client name and location. Use as social proof for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',

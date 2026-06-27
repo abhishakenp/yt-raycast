@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * design-build, pre-construction. Renders fully with no props via baked-in
  * defaults.
  */
-export const ConstructionServices = defineComponent({
+export const ConstructionServices = defineCapsule({
   name: 'ConstructionServices',
   description:
     "Six-up services grid for a construction / general contractor page: a centered section heading above a responsive 1/2/3-column grid of hover-highlight cards, each with a rounded icon tile (rotating inline line-icons), a title, a description, and a 'Learn more' link that routes through useNavigate. Use to present a construction firm's offerings (commercial, residential, renovation, project management, design-build, pre-construction).",

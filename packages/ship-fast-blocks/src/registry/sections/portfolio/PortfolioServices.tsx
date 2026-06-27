@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
  * branding — on a designer, animator, or director personal site. Renders fully
  * with no props via baked-in defaults (six services).
  */
-export const PortfolioServices = defineComponent({
+export const PortfolioServices = defineCapsule({
   name: 'PortfolioServices',
   description:
     "'What I do' capability grid for a creative-individual portfolio built on the shared FeatureGrid composite: a centered heading above a responsive 3-up grid of service cards, each with an icon tile, a service title, and a short description. Use to outline the disciplines a freelancer or studio offers — art direction, motion, 3D, branding, web — on a designer, animator, or director personal site.",

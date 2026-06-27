@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * useNavigate. Use as the opening hero for yoga studios, movement spaces,
  * pilates studios, and mindfulness centers. Renders fully with no props.
  */
-export const YogaStudioHero = defineComponent({
+export const YogaStudioHero = defineCapsule({
   name: 'YogaStudioHero',
   description:
     "Calm full-bleed hero for a yoga-studio landing page: a warm movement or studio-space photo fills the band under a soft token-based overlay so light text stays readable. Centered content has an uppercase eyebrow, a large headline, a grounding supporting paragraph, and dual CTAs (filled 'Try a Class' + outlined 'See Schedule'). CTAs route through useNavigate. Use as the opening hero for yoga studios, movement spaces, pilates studios, and mindfulness centers.",

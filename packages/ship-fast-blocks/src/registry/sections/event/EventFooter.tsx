@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * social icons, and every link route through useNavigate. Use as the closing site
  * footer for tech conference, summit, festival, meetup, or workshop pages.
  */
-export const EventFooter = defineComponent({
+export const EventFooter = defineCapsule({
   name: 'EventFooter',
   description:
     'Rich, dark multi-column footer for a conference or event page: a full-bleed inverted (foreground background, light text) band with a brand block (square brand-initials mark, event name, tagline, Twitter/LinkedIn/YouTube social icons), one or more link columns, a contact column, and a bottom bar with a copyright note and legal links. The brand mark, social icons, and every link route through useNavigate. Use as the closing site footer for tech conference, summit, festival, meetup, or workshop pages.',

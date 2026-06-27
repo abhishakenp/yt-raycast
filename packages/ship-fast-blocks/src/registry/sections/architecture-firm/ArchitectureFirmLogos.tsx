@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * or any portfolio site that wants understated editorial credibility. Renders
  * fully with no props via baked-in publication defaults.
  */
-export const ArchitectureFirmLogos = defineComponent({
+export const ArchitectureFirmLogos = defineCapsule({
   name: 'ArchitectureFirmLogos',
   description:
     "Quiet 'Featured in' publication strip for an architecture-studio / design-practice page: a bordered band on a subtle card surface with a centered wide letter-spaced label above a wrapping, dimmed row of publication names rendered as light wordmarks. Calm, editorial, monochrome. Tokens-only, no links. Use as a press / 'as seen in' / featured social-proof strip for architecture firms, design studios, interior designers or any portfolio site wanting understated editorial credibility.",

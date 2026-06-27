@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * service business that needs to address client concerns transparently.
  * Renders fully with no props via baked-in defaults.
  */
-export const ConstructionFaq = defineComponent({
+export const ConstructionFaq = defineCapsule({
   name: 'ConstructionFaq',
   description:
     'Six-item FAQ accordion for a construction / general contractor page: a centered section heading above a responsive stack of expandable details cards with animated chevron icons. Use as a common questions section for construction firms, contractors, builders, or any service business that needs to address client concerns transparently.',

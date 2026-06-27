@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * photos. Use to showcase instructor credibility for bootcamps, academies, or
  * cohort-based education programs.
  */
-export const BootcampMentors = defineComponent({
+export const BootcampMentors = defineCapsule({
   name: 'BootcampMentors',
   description:
     'World-class mentors gallery for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive grid of clickable headshot cards. Each card features an alt-driven square portrait with a bottom company overlay, plus name and role beneath. Below the cards sits a 3-column row of classroom photos. Cards route through useNavigate. Use to showcase instructor credibility for bootcamps, academies, or cohort-based education programs.',

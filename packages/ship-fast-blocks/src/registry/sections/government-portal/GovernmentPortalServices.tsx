@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { type ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -69,7 +70,7 @@ const cardIcons: Record<string, ReactNode> = {
   ),
 }
 
-export const GovernmentPortalServices = defineComponent({
+export const GovernmentPortalServices = defineCapsule({
   name: 'GovernmentPortalServices',
   description:
     'Row of four colored quick-link department cards (Power Generation #74C7A1, Business #E2CA96, Environment #E6AD97, Sustainability #94BEE0) with line icons, generalising to any classic indian government / PSU department set. Official, civic navigation tiles for public sector, municipal, utility, power and electricity board portals linking to tender, notice and service sections of a government portal. Use for the department quick-links band of a classic government portal.',

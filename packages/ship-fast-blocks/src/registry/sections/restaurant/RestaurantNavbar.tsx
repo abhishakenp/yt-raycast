@@ -1,6 +1,18 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
-import { SiteNav } from '#/section-kit/SiteNav.tsx'
+
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  RestaurantAccountButton,
+  RestaurantMobileMenu,
+  RestaurantMutationSpinner,
+  RestaurantReservationButton,
+  RestaurantReservationCount,
+  RestaurantSearchButton,
+  RestaurantSelectedMenuBadge,
+} from './restaurant-interactions.tsx'
+import { restaurantLakebed } from './restaurant-lakebed.ts'
 
 /**
  * RestaurantNavbar — sticky site header for a restaurant (casual neighborhood
@@ -29,7 +41,7 @@ const ForkKnifeMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const RestaurantNavbar = defineComponent({
+export const RestaurantNavbar = defineCapsule({
   name: 'RestaurantNavbar',
   description:
     "Sticky restaurant site header (casual or upscale dining) built on the shared SiteNav composite: serif wordmark + fork-and-knife mark, centered desktop nav links, a reservations phone number, a 'Book a Table' CTA, and a real mobile drawer. Use as the header for bistros, trattorias, steak houses, sushi counters, or any dining brand where reservations matter.",
@@ -48,24 +60,92 @@ export const RestaurantNavbar = defineComponent({
     ctaTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: restaurantLakebed,
+  component: ({ props, lakebed }) => {
+    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['Menu', 'About', 'Gallery', 'Reservations', 'Contact']
+    const brand = props.brand ?? 'Saffron & Sage'
+    const homeTarget = props.homeTarget ?? nav[0]
+    const phone = props.phone ?? '(415) 555-0182'
+    const ctaLabel = props.ctaLabel ?? 'Book a Table'
+    const ctaTarget = props.ctaTarget ?? 'Reservations'
+
     return (
-      <SiteNav
-        brand={props.brand ?? 'Saffron & Sage'}
-        brandMark={<ForkKnifeMark className="size-8 text-primary" />}
-        brandClassName="font-serif text-xl font-medium"
-        nav={nav}
-        phone={props.phone ?? '(415) 555-0182'}
-        cta={{
-          label: props.ctaLabel ?? 'Book a Table',
-          target: props.ctaTarget ?? 'Reservations',
-        }}
-        homeTarget={props.homeTarget ?? nav[0]}
-        className={props.className}
-      />
+      <header
+        className={cn(
+          'sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
+          props.className,
+        )}
+      >
+        <nav
+          className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8"
+          aria-label="Main navigation"
+        >
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="flex items-center gap-3"
+          >
+            <ForkKnifeMark className="size-8 text-primary" />
+            <span className="font-serif text-xl font-medium text-foreground">
+              {brand}
+            </span>
+          </button>
+
+          <div className="hidden items-center gap-8 md:flex">
+            {nav.map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => go(label)}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <RestaurantSearchButton
+              lakebed={lakebed}
+              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            />
+            <RestaurantSelectedMenuBadge lakebed={lakebed} />
+            <RestaurantAccountButton
+              lakebed={lakebed}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+            />
+            <RestaurantReservationCount
+              lakebed={lakebed}
+              className="hidden lg:inline-flex"
+            />
+            {phone.trim() ? (
+              <a
+                href={`tel:${phone.replace(/[^\d+]/g, '')}`}
+                className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground xl:inline"
+              >
+                {phone}
+              </a>
+            ) : null}
+            <RestaurantReservationButton
+              lakebed={lakebed}
+              input={{ label: ctaLabel, source: ctaTarget }}
+              className="hidden items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50 sm:inline-flex"
+              pendingChildren={<RestaurantMutationSpinner />}
+            >
+              {ctaLabel}
+            </RestaurantReservationButton>
+            <RestaurantMobileMenu
+              brand={brand}
+              nav={nav}
+              homeTarget={homeTarget}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            />
+          </div>
+        </nav>
+      </header>
     )
   },
 })

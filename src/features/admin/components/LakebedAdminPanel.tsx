@@ -32,6 +32,7 @@ import { useLakebedSession } from '@ship-fast/lakebed/react'
 
 import { api } from '../../../../convex/_generated/api'
 import {
+  canAddRowsToTable,
   createLakebedAdminTables,
   parseAdminValue,
   previewAdminValue,
@@ -40,7 +41,6 @@ import type {
   JsonRecord,
   LakebedAdminRow,
   LakebedAdminTable,
-  LakebedSessionDataDoc,
 } from '@/features/admin/services/lakebed-admin-model'
 
 type SortState = {
@@ -58,16 +58,6 @@ type LakebedDocument = JsonRecord & {
   __rowId: string
 }
 
-type LakebedSessionArgs = {
-  anonymousOwnerSecret?: string
-  sessionId: string
-}
-
-type ReplaceSessionDataArgs = LakebedSessionArgs & {
-  capsule: string
-  data: JsonRecord
-}
-
 type ResizableColumn = Column<LakebedDocument> & {
   disableResizing?: boolean
   minWidth?: number
@@ -81,23 +71,7 @@ type ResizableHeader = ReturnType<
   getResizerProps?: () => React.HTMLAttributes<HTMLDivElement>
 }
 
-const lakebedApi = (
-  api as unknown as {
-    lakebed: {
-      listSessionData: unknown
-      replaceSessionData: unknown
-    }
-  }
-).lakebed
-
-const useLakebedSessionData = useQuery as (
-  query: unknown,
-  args: LakebedSessionArgs | 'skip',
-) => LakebedSessionDataDoc[] | undefined
-
-const useReplaceSessionData = useMutation as (
-  mutation: unknown,
-) => (args: ReplaceSessionDataArgs) => Promise<unknown>
+const lakebedApi = api.lakebed
 
 const rowHeight = 38
 
@@ -282,10 +256,8 @@ export function LakebedAdminPanel() {
     }),
     [session],
   )
-  const docs = useLakebedSessionData(lakebedApi.listSessionData, sessionArgs)
-  const replaceSessionData = useReplaceSessionData(
-    lakebedApi.replaceSessionData,
-  )
+  const docs = useQuery(lakebedApi.listSessionData, sessionArgs)
+  const replaceSessionData = useMutation(lakebedApi.replaceSessionData)
 
   const tables = useMemo(() => createLakebedAdminTables(docs), [docs])
   const [selectedTableId, setSelectedTableId] = useState<string>()
@@ -309,9 +281,16 @@ export function LakebedAdminPanel() {
     tables.find((table) => table.id === selectedTableId) ??
     visibleTables[0] ??
     tables[0]
-  const selectedDoc = docs?.find(
-    (doc) => doc.capsule === selectedTable?.capsule,
+  const docForCapsule = useCallback(
+    (capsule: string | undefined) =>
+      docs?.find((doc) => doc.capsule === capsule),
+    [docs],
   )
+  const addTargetCapsule =
+    selectedTable && selectedTable.sourceCapsules.length === 1
+      ? selectedTable.sourceCapsules[0]
+      : undefined
+  const selectedDoc = docForCapsule(addTargetCapsule)
 
   useEffect(() => {
     if (!selectedTable) return
@@ -359,44 +338,56 @@ export function LakebedAdminPanel() {
   )
 
   const saveData = useCallback(
-    async (table: LakebedAdminTable, data: JsonRecord) => {
-      if (!selectedDoc) return
+    async (
+      table: LakebedAdminTable,
+      data: JsonRecord,
+      capsule = table.capsule,
+      options: { surfacePanelError?: boolean; surfacePanelSaving?: boolean } = {},
+    ) => {
       setError(undefined)
-      setIsSaving(true)
+      if (options.surfacePanelSaving !== false) setIsSaving(true)
       try {
         await replaceSessionData({
           ...(session.anonymousOwnerSecret
             ? { anonymousOwnerSecret: session.anonymousOwnerSecret }
             : {}),
-          capsule: table.capsule,
+          capsule,
           data,
           sessionId: session.sessionId,
         })
       } catch (saveError) {
-        setError(saveError instanceof Error ? saveError.message : 'Save failed')
+        const message =
+          saveError instanceof Error ? saveError.message : 'Save failed'
+        if (options.surfacePanelError !== false) setError(message)
+        throw new Error(message)
       } finally {
-        setIsSaving(false)
+        if (options.surfacePanelSaving !== false) setIsSaving(false)
       }
     },
-    [replaceSessionData, selectedDoc, session],
+    [replaceSessionData, session],
   )
 
   const saveCell = useCallback(
     async (row: LakebedAdminRow, column: string, value: unknown) => {
-      if (!selectedTable || !selectedDoc || column.startsWith('_')) return
+      if (!selectedTable || column.startsWith('_')) return
+      const sourceCapsule = row.sourceCapsule ?? selectedTable.capsule
+      const sourceDoc = docForCapsule(sourceCapsule)
+      if (!sourceDoc) return
 
       const nextValue = nextRowValue(selectedTable, row, column, value)
       await saveData(
         selectedTable,
         nextDataForRowSave({
-          data: selectedDoc.data,
+          data: sourceDoc.data,
           row,
           table: selectedTable,
           value: nextValue,
         }),
+        sourceCapsule,
+        { surfacePanelError: false, surfacePanelSaving: false },
       )
     },
-    [saveData, selectedDoc, selectedTable],
+    [docForCapsule, saveData, selectedTable],
   )
 
   const addDocument = async (value: unknown) => {
@@ -409,35 +400,47 @@ export function LakebedAdminPanel() {
         table: selectedTable,
         value,
       }),
+      selectedDoc.capsule,
     )
     setPopup(undefined)
   }
 
   const saveDocument = async (row: LakebedAdminRow, value: unknown) => {
-    if (!selectedTable || !selectedDoc) return
+    if (!selectedTable) return
+    const sourceCapsule = row.sourceCapsule ?? selectedTable.capsule
+    const sourceDoc = docForCapsule(sourceCapsule)
+    if (!sourceDoc) return
     await saveData(
       selectedTable,
       nextDataForRowSave({
-        data: selectedDoc.data,
+        data: sourceDoc.data,
         row,
         table: selectedTable,
         value,
       }),
+      sourceCapsule,
     )
     setPopup(undefined)
   }
 
   const deleteRows = async (rowIds: Set<string>) => {
-    if (!selectedTable || !selectedDoc || selectedTable.storage === 'value')
+    if (!selectedTable || selectedTable.storage === 'value')
       return
-    let data = selectedDoc.data
-    for (const rowId of rowIds) {
-      const row = selectedTable.rows.find((candidate) => candidate.id === rowId)
-      if (row) {
+    const rowsByCapsule = new Map<string, LakebedAdminRow[]>()
+    for (const row of selectedTable.rows) {
+      if (!rowIds.has(row.id)) continue
+      const capsule = row.sourceCapsule ?? selectedTable.capsule
+      rowsByCapsule.set(capsule, [...(rowsByCapsule.get(capsule) ?? []), row])
+    }
+    for (const [capsule, rows] of rowsByCapsule) {
+      const doc = docForCapsule(capsule)
+      if (!doc) continue
+      let data = doc.data
+      for (const row of [...rows].sort((a, b) => b.index - a.index)) {
         data = nextDataForRowDelete({ data, row, table: selectedTable })
       }
+      await saveData(selectedTable, data, capsule)
     }
-    await saveData(selectedTable, data)
     setSelectedRows(new Set())
   }
 
@@ -496,6 +499,7 @@ export function LakebedAdminPanel() {
                 selectedDocument={selectedDocument}
                 selectedRows={selectedRows}
                 table={selectedTable}
+                canAddRows={canAddRowsToTable(selectedTable)}
                 onAdd={() =>
                   setPopup({ tableId: selectedTable.id, type: 'addDocuments' })
                 }
@@ -633,6 +637,7 @@ function DataSidebar({
 }
 
 function DataToolbar({
+  canAddRows,
   isSaving,
   numRows,
   onAdd,
@@ -643,6 +648,7 @@ function DataToolbar({
   selectedRows,
   table,
 }: {
+  canAddRows: boolean
   isSaving: boolean
   numRows: number
   onAdd: () => void
@@ -675,7 +681,7 @@ function DataToolbar({
         <div className="flex flex-wrap items-center gap-2">
           {(!selectionToolsEnabled || popup?.type === 'addDocuments') && (
             <ToolbarButton
-              disabled={table.storage === 'value' || isSaving}
+              disabled={!canAddRows || isSaving}
               focused={popup?.type === 'addDocuments'}
               icon={<PlusIcon />}
               onClick={onAdd}
@@ -703,8 +709,9 @@ function DataToolbar({
           )}
           <button
             type="button"
-            className="grid size-10 place-items-center rounded-md border border-[#57544f] bg-[#302e2a] text-[#f8f8f2] transition-colors hover:bg-[#383531]"
+            className="grid size-10 place-items-center rounded-md border border-[#57544f] bg-[#302e2a] text-[#f8f8f2] opacity-45"
             aria-label="Table actions"
+            disabled
           >
             <DotsVerticalIcon className="size-4" />
           </button>
@@ -776,15 +783,17 @@ function DataFilters({
           <div className="flex h-9 items-center rounded-md border border-[#57544f] bg-[#302e2a] text-[#8b8983]">
             <button
               type="button"
-              className="grid size-9 place-items-center border-r border-[#57544f]"
+              className="grid size-9 place-items-center border-r border-[#57544f] opacity-45"
               aria-label="Previous page"
+              disabled
             >
               <span aria-hidden="true">←</span>
             </button>
             <button
               type="button"
-              className="grid size-9 place-items-center"
+              className="grid size-9 place-items-center opacity-45"
               aria-label="Next page"
+              disabled
             >
               <span aria-hidden="true">→</span>
             </button>

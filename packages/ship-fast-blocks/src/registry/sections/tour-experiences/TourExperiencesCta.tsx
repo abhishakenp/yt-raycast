@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * travel-experience landing pages. Renders fully with no props via baked-in
  * defaults.
  */
-export const TourExperiencesCta = defineComponent({
+export const TourExperiencesCta = defineCapsule({
   name: 'TourExperiencesCta',
   description:
     "Closing call-to-action band for an adventure / guided-tour brand. Composes the shared CtaBand composite on a primary-tone surface with an eyebrow, a bold 'Book your adventure' title, a supporting line, and two routable actions (primary 'Book a Tour' + outline 'Talk to a guide'). Use as the conversion band before the footer on tour-operator, expedition, and travel-experience landing pages.",

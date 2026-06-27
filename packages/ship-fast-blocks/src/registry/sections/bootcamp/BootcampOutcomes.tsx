@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * outcomes validation section for bootcamps, academies, or vocational programs
  * that want to showcase placement rate and earning potential.
  */
-export const BootcampOutcomes = defineComponent({
+export const BootcampOutcomes = defineCapsule({
   name: 'BootcampOutcomes',
   description:
     'Proven outcomes / stats band for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a 4-up metrics grid of large bold figures, followed by a 3-column row of progress-bar cards showing salary before, after, and increase. Use as the outcomes validation section for bootcamps, academies, or vocational programs that want to showcase placement rate and earning potential.',

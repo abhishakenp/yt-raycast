@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * IllustratorHero — split-layout hero section for an illustrator / visual-artist
@@ -15,7 +23,7 @@ import { Image } from '#/lib/img.tsx'
  * any warm, editorial creative portfolio. Renders fully with no props via
  * baked-in "Mira Chen" defaults.
  */
-export const IllustratorHero = defineComponent({
+export const IllustratorHero = defineCapsule({
   name: 'IllustratorHero',
   description:
     'Split-layout hero section for an illustrator / visual-artist portfolio: left side with an uppercase accent eyebrow label, large serif headline with two color-highlighted phrases, supporting paragraph, and dual rounded CTAs (filled primary with arrow + outlined secondary); right side has a tall 4:5 portrait photo with two soft blurred pastel accent orbs at the corners. CTAs route through useNavigate. Use as the opening hero for illustrators, painters, picture-book artists, editorial illustrators, or warm editorial creative portfolios.',
@@ -36,11 +44,16 @@ export const IllustratorHero = defineComponent({
     primaryCta: z.string().optional(),
     /** Outlined secondary CTA label. */
     secondaryCta: z.string().optional(),
+    featuredPrintName: z.string().optional(),
+    featuredPrintPrice: z.string().optional(),
+    featuredPrintMeta: z.string().optional(),
+    addLabel: z.string().optional(),
     /** Alt text driving the tall portrait photo. */
     imageAlt: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Illustrator & Visual Artist'
     const headingStart = props.headingStart ?? 'Creating worlds through'
@@ -52,9 +65,22 @@ export const IllustratorHero = defineComponent({
       "I'm Mira Chen, an independent illustrator based in Portland, Oregon. I craft whimsical illustrations for children's books, editorial features, and digital prints that spark imagination."
     const primaryCta = props.primaryCta ?? 'View Portfolio'
     const secondaryCta = props.secondaryCta ?? 'Browse Prints'
+    const featuredPrintName = props.featuredPrintName ?? 'Golden Hour Mountains'
+    const featuredPrintPrice = props.featuredPrintPrice ?? '$48'
+    const featuredPrintMeta = props.featuredPrintMeta ?? 'Featured giclee print'
+    const addLabel = props.addLabel ?? 'Add to cart'
     const imageAlt =
       props.imageAlt ??
       'Artist studio workspace with watercolor paintings, brushes, and colorful illustration drafts spread across a wooden desk near a sunny window'
+
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt,
+        label: featuredPrintName,
+        price: featuredPrintPrice,
+        subtitle: featuredPrintMeta,
+      }),
+    ])
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -111,6 +137,18 @@ export const IllustratorHero = defineComponent({
                 >
                   {secondaryCta}
                 </button>
+                <CommerceAddItemButton
+                  lakebed={lakebed}
+                  item={{
+                    label: featuredPrintName,
+                    price: featuredPrintPrice,
+                  }}
+                  aria-label={`${addLabel} ${featuredPrintName}`}
+                  pendingChildren={<CommerceMutationSpinner />}
+                  className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                >
+                  {addLabel}
+                </CommerceAddItemButton>
               </div>
             </div>
             <div className="relative order-1 lg:order-2">

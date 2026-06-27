@@ -1,12 +1,20 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+  localServiceItem,
+  useSyncLocalServices,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * CleaningServicePricing — a 3-tier transparent pricing table for a home-cleaning / maid-service landing page. A muted-band background with a centered heading + lead paragraph above a responsive 3-column grid of pricing cards: the middle "Most Popular" plan is elevated, highlighted with the primary brand color and a badge pill; side plans sit on card surfaces with secondary CTAs. A footnote row with a phone-icon link sits below the grid. Every CTA and the footnote link route through useNavigate. Use for service-pricing / plan-selection blocks for residential cleaning companies, maid services, or any local home-service business. Renders fully with no props via three baked-in default plans.
  */
-export const CleaningServicePricing = defineComponent({
+export const CleaningServicePricing = defineCapsule({
   name: 'CleaningServicePricing',
   description:
     "A 3-tier transparent pricing table for a home-cleaning / maid-service landing page: muted-band background with centered heading + lead above a responsive 3-column grid of pricing cards. Middle 'Most Popular' plan is brand-colored, elevated, and badged; side plans sit on card surfaces with secondary CTAs. Footnote row with phone-icon link below. CTAs and footnote link route through useNavigate. Use for service-pricing / plan-selection blocks for residential cleaning, maid services, or local home-service businesses.",
@@ -36,7 +44,8 @@ export const CleaningServicePricing = defineComponent({
     footnoteCta: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heading = props.heading ?? 'Transparent pricing, no surprises'
     const description =
@@ -93,6 +102,16 @@ export const CleaningServicePricing = defineComponent({
       'Need a custom quote for a larger space or commercial property?'
     const footnoteCta =
       props.footnoteCta ?? 'Call for custom pricing: (555) 123-4567'
+    useSyncLocalServices(
+      lakebed,
+      plans.map((plan) =>
+        localServiceItem({
+          name: plan.name,
+          price: `${plan.price}${plan.period}`,
+          summary: plan.blurb,
+        }),
+      ),
+    )
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -175,13 +194,18 @@ export const CleaningServicePricing = defineComponent({
                       </li>
                     ))}
                   </ul>
-                  <button
-                    type="button"
-                    onClick={() => go(plan.cta)}
-                    className="w-full rounded-full bg-primary-foreground px-6 py-3 font-semibold text-primary shadow-lg transition-colors hover:bg-primary-foreground/90"
+                  <LocalServiceBookingButton
+                    lakebed={lakebed}
+                    intentLabel={plan.cta}
+                    service={plan.name}
+                    source="pricing"
+                    pendingChildren={
+                      <LocalServiceMutationSpinner className="text-primary" />
+                    }
+                    className="w-full rounded-full bg-primary-foreground px-6 py-3 font-semibold text-primary shadow-lg transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
                   >
                     {plan.cta}
-                  </button>
+                  </LocalServiceBookingButton>
                 </div>
               ) : (
                 <div
@@ -210,13 +234,16 @@ export const CleaningServicePricing = defineComponent({
                       </li>
                     ))}
                   </ul>
-                  <button
-                    type="button"
-                    onClick={() => go(plan.cta)}
-                    className="w-full rounded-full bg-secondary px-6 py-3 font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80"
+                  <LocalServiceBookingButton
+                    lakebed={lakebed}
+                    intentLabel={plan.cta}
+                    service={plan.name}
+                    source="pricing"
+                    pendingChildren={<LocalServiceMutationSpinner />}
+                    className="w-full rounded-full bg-secondary px-6 py-3 font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:pointer-events-none disabled:opacity-70"
                   >
                     {plan.cta}
-                  </button>
+                  </LocalServiceBookingButton>
                 </div>
               ),
             )}

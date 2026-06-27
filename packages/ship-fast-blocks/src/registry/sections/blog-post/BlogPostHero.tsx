@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * Uses semantic tokens only. Use as the article masthead for blogs, journals,
  * magazines, or editorial reading pages.
  */
-export const BlogPostHero = defineComponent({
+export const BlogPostHero = defineCapsule({
   name: 'BlogPostHero',
   description:
     'Bespoke single-article hero for an editorial blog post detail page: a narrow reading column with an uppercase category/eyebrow kicker, a large editorial headline (routable via useNavigate), an optional dek/subtitle, and a byline row showing an author avatar, name, publication date, and reading-time separated by dots, followed by a wide rounded cover image. Use as the article masthead for blogs, journals, magazines, or editorial reading pages.',

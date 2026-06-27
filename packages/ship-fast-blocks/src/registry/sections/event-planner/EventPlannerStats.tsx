@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * photos. Imagery is alt-driven. Use to convey track record and credibility for
  * event/wedding planners, agencies, or premium service businesses.
  */
-export const EventPlannerStats = defineComponent({
+export const EventPlannerStats = defineCapsule({
   name: 'EventPlannerStats',
   description:
     'Impact band pairing a stats column with a photo collage: a two-column layout with a left text column (uppercase eyebrow, thin light heading, relaxed paragraph, and a 2x2 grid of large light KPI values with muted labels) beside a right offset four-image collage in two staggered columns of rounded photos. All imagery is alt-driven. Use to convey track record and credibility for event/wedding planners, agencies, or premium service businesses.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * marketplaces or recruiting platforms (active listings, companies hiring,
  * placements, time-to-hire). Static (no links). Renders fully with no props.
  */
-export const JobBoardStats = defineComponent({
+export const JobBoardStats = defineCapsule({
   name: 'JobBoardStats',
   description:
     'Dark, high-contrast metrics band for a job-board / careers site: a full-width inverted band (foreground bg, background text) holding a 2-up / 4-up grid of big bold stat figures each above a muted caption label. Use as a confidence-building break between sections on job boards, hiring marketplaces or recruiting platforms (active listings, companies hiring, placements, time-to-hire).',

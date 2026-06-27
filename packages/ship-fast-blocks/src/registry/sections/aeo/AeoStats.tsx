@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -11,7 +12,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * and heading per kit convention. Use to build credibility on AEO,
  * generative-search visibility, or brand-citation analytics pages.
  */
-export const AeoStats = defineComponent({
+export const AeoStats = defineCapsule({
   name: 'AeoStats',
   description:
     'Proof-point statistics band for an Answer-Engine-Optimization (AEO) product: a centered heading above a responsive grid of headline metrics (prompts tracked, citations earned, brands optimized, average visibility uplift). Use to establish scale and credibility on AEO, generative-search visibility, or brand-citation analytics landing pages.',

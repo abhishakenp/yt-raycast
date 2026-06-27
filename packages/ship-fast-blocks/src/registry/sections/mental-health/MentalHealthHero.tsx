@@ -1,8 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * MentalHealthHero — a split, two-column hero for a therapy / counseling
@@ -14,7 +20,7 @@ import { Image } from '#/lib/img.tsx'
  * aesthetic. CTAs route through useNavigate. Use as the top hero for therapists,
  * counselors, psychologists, wellness centers, or telehealth practices.
  */
-export const MentalHealthHero = defineComponent({
+export const MentalHealthHero = defineCapsule({
   name: 'MentalHealthHero',
   description:
     "Split, two-column hero for a therapy / counseling practice: a large two-line headline (second line in the primary accent color), a reassuring sub-paragraph, dual rounded CTAs (filled primary + outline), and a row of licensed-clinician trust checks on the left; a calming therapy-office photo with a floating 'Next Available' appointment card on the right. Sits on a soft primary-tinted gradient canvas with a calm, warm, sage-and-sand wellness aesthetic. CTAs route through useNavigate. Use as the top hero for therapists, counselors, psychologists, wellness centers, or telehealth practices.",
@@ -33,7 +39,8 @@ export const MentalHealthHero = defineComponent({
     bookLabel: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const headingTop = props.headingTop ?? 'Find your calm.'
     const highlight = props.highlight ?? 'Begin healing.'
@@ -92,13 +99,18 @@ export const MentalHealthHero = defineComponent({
                 {subheading}
               </p>
               <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
-                <button
-                  type="button"
-                  onClick={() => go(bookLabel)}
-                  className="rounded-full bg-primary px-8 py-4 text-center font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
+                <LocalServiceBookingButton
+                  lakebed={lakebed}
+                  intentLabel={bookLabel}
+                  service={primaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <LocalServiceMutationSpinner className="text-primary-foreground" />
+                  }
+                  className="rounded-full bg-primary px-8 py-4 text-center font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
-                </button>
+                </LocalServiceBookingButton>
                 <button
                   type="button"
                   onClick={() => go(secondaryCta)}

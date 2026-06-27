@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -17,7 +18,7 @@ import { Image } from '#/lib/img.tsx'
  * to spotlight top vendors / featured authors on online marketplaces,
  * multi-vendor or maker/artisan platforms, and seller communities.
  */
-export const MarketplaceAuthors = defineComponent({
+export const MarketplaceAuthors = defineCapsule({
   name: 'MarketplaceAuthors',
   description:
     "'Featured Sellers' section serving the Authors role for a marketplace (the vendors / creators behind the storefronts): a heading + description on the left and a 'View all sellers' link on the right cap a responsive 2/4-column grid of vendor storefront cards, each stacking a rounded cover photo (with a star-rating chip and an optional eco-verified badge overlaid) above a row pairing a circular seller avatar with the store name, location, and a product-count + follower-count meta line. Clean, neutral, light e-commerce aesthetic. Cards and the view-all link route through useNavigate; cover and avatar use the alt-driven Image component. Use to spotlight top vendors / featured authors on online marketplaces, multi-vendor or maker/artisan platforms, and seller communities.",

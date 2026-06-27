@@ -1,9 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
 
-export const UniversityFaq = defineComponent({
+export const UniversityFaq = defineCapsule({
   name: 'UniversityFaq',
   description:
     'Bespoke admissions Q&A band for the University page family with a prestigious, collegiate aesthetic. Opens with a SectionHeading, then renders a vertical list of native <details>/<summary> disclosures covering application deadlines, requirements, financial aid, campus tours, and transfer pathways. Border-divided rows keep the list quiet and authoritative; theme tokens throughout. Use to answer common prospective-student questions on a university homepage or admissions page.',

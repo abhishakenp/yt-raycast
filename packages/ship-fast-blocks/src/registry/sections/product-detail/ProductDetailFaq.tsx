@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
-export const ProductDetailFaq = defineComponent({
+export const ProductDetailFaq = defineCapsule({
   name: 'ProductDetailFaq',
   description:
     'Accessible frequently-asked-questions section for the Product Detail page family, tuned for a premium single-product purchase flow (Aurora Pro Headphones). Renders a centered heading with an optional subheading above a stack of native HTML <details> / <summary> accordion cards — the first item opens by default and each row reveals a believable answer covering shipping, returns, warranty, Bluetooth compatibility, and battery life. Built on native disclosure elements so it works without client-side state, using token-based styling throughout. Use when a product detail page needs a trustworthy Q&A band to address buyer objections.',

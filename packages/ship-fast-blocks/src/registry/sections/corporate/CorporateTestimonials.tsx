@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -9,7 +10,7 @@ import { Image } from '#/lib/img.tsx'
  * grid of cards with star ratings, a quote, and an avatar + name + role footer.
  * Use to build social proof on SaaS, consultancy, or managed services landing pages.
  */
-export const CorporateTestimonials = defineComponent({
+export const CorporateTestimonials = defineCapsule({
   name: 'CorporateTestimonials',
   description:
     '3-up customer testimonial grid for an enterprise / corporate B2B site: centered heading above a responsive 1/2/3-column grid of cards with a 5-star rating row, a quote, and an avatar + name + role footer. Use to build social proof on SaaS, consultancy, or managed services landing pages.',

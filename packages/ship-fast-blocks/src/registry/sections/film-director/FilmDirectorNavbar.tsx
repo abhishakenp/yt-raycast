@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * FilmDirectorNavbar — fixed, backdrop-blurred top navigation bar for a film
@@ -13,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * for filmmakers, directors, cinematographers, DPs, or video production houses
  * wanting a clean, editorial, light-canvas aesthetic.
  */
-export const FilmDirectorNavbar = defineComponent({
+export const FilmDirectorNavbar = defineCapsule({
   name: 'FilmDirectorNavbar',
   description:
     "Fixed, backdrop-blurred top navigation bar for a film director / cinematographer / DP portfolio: a border-bottomed translucent header with the director's UPPERCASE name on the left, a row of thin minimal text links on the right (desktop), the last nav item rendered as a filled primary pill CTA, and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for filmmakers, directors, cinematographers, DPs, or video production houses wanting a clean, editorial, light-canvas aesthetic.",
@@ -66,25 +68,14 @@ export const FilmDirectorNavbar = defineComponent({
                 {nav[nav.length - 1]}
               </button>
             </div>
-            <button
-              type="button"
-              aria-label="Menu"
-              onClick={() => go(nav[0])}
-              className="p-2 md:hidden"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-6"
-                aria-hidden="true"
-              >
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            <MobileNavDrawer
+              brand={brand}
+              nav={nav}
+              homeTarget={nav[0]}
+              cta={{ label: nav[nav.length - 1], target: nav[nav.length - 1] }}
+              label="Menu"
+              buttonClassName="p-2 md:hidden"
+            />
           </div>
         </div>
       </header>

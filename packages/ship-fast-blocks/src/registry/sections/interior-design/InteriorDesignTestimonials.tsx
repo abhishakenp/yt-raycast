@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * for interior designers, design studios or architecture firms. Renders fully
  * with no props via baked-in defaults.
  */
-export const InteriorDesignTestimonials = defineComponent({
+export const InteriorDesignTestimonials = defineCapsule({
   name: 'InteriorDesignTestimonials',
   description:
     'Three-up client testimonials grid for an upscale interior-design / architecture studio: a centered uppercase eyebrow + light-weight heading above a responsive three-column grid of quote blocks, each with a five-star row, an italic relaxed quote and an author row pairing a round headshot with a name + role/project line. Editorial, warm and trust-building; headshots use the alt-driven Image component. Use as social proof for interior designers, design studios or architecture firms.',

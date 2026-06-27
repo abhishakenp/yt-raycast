@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -10,7 +11,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * and social proof on tour-operator, expedition, and travel-experience landing
  * pages. Renders fully with no props via baked-in defaults.
  */
-export const TourExperiencesTestimonials = defineComponent({
+export const TourExperiencesTestimonials = defineCapsule({
   name: 'TourExperiencesTestimonials',
   description:
     "Traveler-review wall for an adventure / guided-tour brand. Composes the shared TestimonialGrid composite as three five-star reviews from past travelers, each with a vivid quote, name, star rating, and a tour/role line (e.g. 'Adventure tour, 2025'). Use to build trust and social proof on tour-operator, expedition, and travel-experience landing pages.",

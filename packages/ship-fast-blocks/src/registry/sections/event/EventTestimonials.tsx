@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -10,7 +11,7 @@ import { Image } from '#/lib/img.tsx'
  * alt-driven avatar, name, role). Use to surface social proof from past attendees
  * on tech conference, summit, festival, meetup, or workshop pages.
  */
-export const EventTestimonials = defineComponent({
+export const EventTestimonials = defineCapsule({
   name: 'EventTestimonials',
   description:
     'Attendee-testimonial grid for a conference or event page: a centered heading + description above a responsive 3-up grid of bordered quote cards, each with a 5-star rating row, a quote, and an attendee identity (circular alt-driven avatar, name, role). Use to surface social proof and reviews from past attendees on tech conference, summit, festival, meetup, or workshop pages.',

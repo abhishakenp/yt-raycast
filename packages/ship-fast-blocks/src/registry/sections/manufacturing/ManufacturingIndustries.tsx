@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -14,7 +15,7 @@ import { cn } from '#/lib/utils.ts'
  * semiconductor, industrial) on machine-shop or fabricator pages. Renders fully
  * with no props via baked-in defaults.
  */
-export const ManufacturingIndustries = defineComponent({
+export const ManufacturingIndustries = defineCapsule({
   name: 'ManufacturingIndustries',
   description:
     'An 8-up industries-served grid for a precision-manufacturing site: a left-aligned eyebrow + heading + description intro above a responsive four-column grid of bordered cards, each with a tinted rounded icon tile (rotating through chart/primary tokens for a multi-color decorative set), a sector title, a short description and a certification tag. Clean, neutral, industrial. Use to show specialized expertise across critical sectors (aerospace, automotive, energy, medical, defense, robotics, semiconductor, industrial) on machine-shop or fabricator pages.',

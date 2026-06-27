@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const Mark = ({ className }: { className?: string }) => (
@@ -21,7 +22,7 @@ const Mark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const SalonBarberFooter = defineComponent({
+export const SalonBarberFooter = defineCapsule({
   name: 'SalonBarberFooter',
   description:
     "Barbershop / salon site footer built on the shared SiteFooter composite. Renders a grooming brand with a scissors brand mark, a tagline, social links, and columns for hours, location, services, and quick links. Use it as the closing footer on any barbershop, salon, or men's grooming site to surface hours, address, and contact details below the fold.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * models on consulting, advisory, or professional-services sites. Renders fully
  * with no props via three baked-in default tiers.
  */
-export const ConsultingPricing = defineComponent({
+export const ConsultingPricing = defineCapsule({
   name: 'ConsultingPricing',
   description:
     '3-tier engagement-models pricing block for a management-consulting firm page: a centered heading and lead paragraph above a responsive 3-column grid of tier cards, with an optional featured middle tier (dark primary card with a badge). Each tier shows name, price, unit, description, a feature list with check icons, and a CTA button. All CTAs route through useNavigate. Use for pricing, service tiers, or engagement models on consulting, advisory, or professional-services sites.',

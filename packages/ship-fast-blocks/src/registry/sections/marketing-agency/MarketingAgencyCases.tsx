@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * through useNavigate. Use to showcase client outcomes for a marketing / growth
  * agency. Renders fully with no props.
  */
-export const MarketingAgencyCases = defineComponent({
+export const MarketingAgencyCases = defineCapsule({
   name: 'MarketingAgencyCases',
   description:
     '6-up case-study gallery: a centered eyebrow + heading + description above a responsive grid (1/2/3 columns) of clickable card buttons, each with a cover image (zooming on hover) carrying a rotating colored category tag, a client name, a short summary, and a dual result-metric row split by a divider. Category tags rotate through the chart token palette. Links route through useNavigate. Use to showcase client outcomes and results for a marketing / growth / performance agency across SaaS, e-commerce, fintech, and B2B services.',

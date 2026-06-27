@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * crypto protocols, chains, bridges, DeFi platforms, or Web3 infrastructure
  * sites.
  */
-export const CryptoFooter = defineComponent({
+export const CryptoFooter = defineCapsule({
   name: 'CryptoFooter',
   description:
     'Rich multi-column footer for a crypto / DeFi infrastructure landing page: bg-foreground footer with brand bolt icon + protocol name, description, social-link buttons with first-letter avatars, a multi-column link grid, auto-updating copyright line, and legal links. All buttons route through useNavigate. Use as the closing site footer for crypto protocols, chains, bridges, DeFi platforms, or Web3 infrastructure sites.',

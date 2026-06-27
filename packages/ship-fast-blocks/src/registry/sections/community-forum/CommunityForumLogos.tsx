@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -10,7 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use as a social-proof / trusted-by section for community platforms, SaaS products,
  * or online forums.
  */
-export const CommunityForumLogos = defineComponent({
+export const CommunityForumLogos = defineCapsule({
   name: 'CommunityForumLogos',
   description:
     'Logo trust strip for a community-platform / discussion-forum landing page: a centered section heading over a muted band with a horizontal row of faux-logos (initial-letter icon + name) that route through useNavigate on click. Use as a social-proof / trusted-by section for community platforms, SaaS products, or online forums.',

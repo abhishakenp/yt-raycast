@@ -1,7 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+  localServiceItem,
+  useSyncLocalServices,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * DentalPricing — transparent pricing / in-house membership block for a dental
@@ -13,7 +20,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use to present exam fees, membership tiers, or treatment packages for
  * dentists, dental offices, or clinics.
  */
-export const DentalPricing = defineComponent({
+export const DentalPricing = defineCapsule({
   name: 'DentalPricing',
   description:
     'Transparent pricing / in-house membership block for a dental practice site: a centered eyebrow + heading + lede above a 3-up plan grid where the featured plan is filled in the primary color with an optional corner badge and the others are bordered muted cards. Each plan shows a name, tagline, big price + period, a check-marked feature list, and a full-width CTA button, with a small reassurance note under the grid. CTAs route through useNavigate. Use to present exam fees, membership tiers, or treatment packages for dentists, dental offices, or clinics.',
@@ -38,8 +45,8 @@ export const DentalPricing = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const pricingEyebrow = props.eyebrow ?? 'Pricing & Membership'
     const pricingHeading =
       props.heading ?? 'Transparent pricing for every budget'
@@ -95,6 +102,16 @@ export const DentalPricing = defineComponent({
             cta: 'Book Consultation',
           },
         ]
+    useSyncLocalServices(
+      lakebed,
+      pricingPlans.map((plan) =>
+        localServiceItem({
+          name: plan.name,
+          price: `${plan.price}${plan.period}`,
+          summary: plan.tagline,
+        }),
+      ),
+    )
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -195,18 +212,26 @@ export const DentalPricing = defineComponent({
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => go(plan.cta)}
+                <LocalServiceBookingButton
+                  lakebed={lakebed}
+                  intentLabel={plan.cta}
+                  service={plan.name}
+                  source="pricing"
+                  pendingChildren={
+                    <LocalServiceMutationSpinner
+                      className={plan.featured ? 'text-primary' : undefined}
+                    />
+                  }
                   className={cn(
                     'block w-full rounded-xl py-3 text-center font-semibold transition-colors',
                     plan.featured
                       ? 'bg-background text-primary hover:bg-muted'
                       : 'border-2 border-border bg-background text-foreground hover:border-primary hover:text-primary',
+                    'disabled:pointer-events-none disabled:opacity-70',
                   )}
                 >
                   {plan.cta}
-                </button>
+                </LocalServiceBookingButton>
               </div>
             ))}
           </div>

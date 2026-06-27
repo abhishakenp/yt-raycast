@@ -1,21 +1,23 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * BeautyStoreNewsletter — a dark newsletter CTA band for a beauty / skincare /
  * cosmetics storefront. A wide rounded-foreground card with a background image,
  * a centered eyebrow, a serif heading, a supporting paragraph, and a real email-
- * capture form (email input + submit button). Form submit routes through
- * useNavigate. Use as a list-building / first-order-discount conversion block for
- * e-commerce, beauty boxes, or DTC personal-care brands.
+ * capture form (email input + submit button). Form submit writes to the shared
+ * Lakebed subscriber list. Use as a list-building / first-order-discount
+ * conversion block for e-commerce, beauty boxes, or DTC personal-care brands.
  */
-export const BeautyStoreNewsletter = defineComponent({
+export const BeautyStoreNewsletter = defineCapsule({
   name: 'BeautyStoreNewsletter',
   description:
-    'Dark newsletter CTA band for a beauty / skincare / cosmetics storefront: a wide rounded-foreground card with a background image, centered eyebrow, serif heading, supporting paragraph, and a real email-capture form (email input + submit button). Form submit routes through useNavigate. Use as a list-building / first-order-discount conversion block for e-commerce, beauty boxes, or DTC personal-care brands.',
+    'Dark newsletter CTA band for a beauty / skincare / cosmetics storefront: a wide rounded-foreground card with a background image, centered eyebrow, serif heading, supporting paragraph, and a real email-capture form (email input + submit button). Form submit writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use as a list-building / first-order-discount conversion block for e-commerce, beauty boxes, or DTC personal-care brands.',
   props: z.object({
     /** Eyebrow text above heading. */
     eyebrow: z.string().optional(),
@@ -31,12 +33,12 @@ export const BeautyStoreNewsletter = defineComponent({
     note: z.string().optional(),
     /** Alt text driving the background image. */
     imageAlt: z.string().optional(),
-    /** Navigation target for form submit. */
+    /** Subscriber source label recorded when the form is submitted. */
     submitTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const eyebrow = props.eyebrow ?? 'Limited Time Offer'
     const heading = props.heading ?? 'Join Our Beauty Community'
     const description =
@@ -73,27 +75,17 @@ export const BeautyStoreNewsletter = defineComponent({
               <p className="mx-auto mb-8 max-w-xl text-lg text-background/70">
                 {description}
               </p>
-              <form
+              <NewsletterSubscribeForm
+                lakebed={lakebed}
+                source={submitTarget}
+                placeholder={placeholder}
+                buttonLabel={submit}
+                successMessage="You're in. Your beauty offer and product edits will arrive by email."
                 className="mx-auto flex max-w-md flex-col gap-4 sm:flex-row"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  go(submitTarget)
-                }}
-              >
-                <input
-                  type="email"
-                  required
-                  aria-label="Email address"
-                  placeholder={placeholder}
-                  className="flex-1 rounded-full border border-border bg-background/10 px-6 py-4 text-background placeholder:text-background/50 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <button
-                  type="submit"
-                  className="whitespace-nowrap rounded-full bg-primary px-8 py-4 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  {submit}
-                </button>
-              </form>
+                inputClassName="flex-1 rounded-full border border-border bg-background/10 px-6 py-4 text-background placeholder:text-background/50 focus:outline-none focus:ring-2 focus:ring-primary"
+                buttonClassName="whitespace-nowrap rounded-full bg-primary px-8 py-4 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                statusClassName="text-background/60"
+              />
               <p className="mt-4 text-sm text-background/60">{note}</p>
             </div>
           </div>

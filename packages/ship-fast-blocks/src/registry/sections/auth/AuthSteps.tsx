@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -13,7 +14,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * auth platform, identity API, or login SDK integrates. Renders fully with no
  * props.
  */
-export const AuthSteps = defineComponent({
+export const AuthSteps = defineCapsule({
   name: 'AuthSteps',
   description:
     "Bespoke three-step drop-in integration guide for a developer-auth product: a centered SectionHeading ('Drop-in auth in three steps') above a responsive 3-column grid of numbered step cards, each pairing a big token-circle number with a title, a short description, and a small font-mono command snippet line. Baked steps walk through installing the SDK, adding the provider, and shipping protected routes. Use to show how fast an auth platform, identity API, or login SDK integrates.",

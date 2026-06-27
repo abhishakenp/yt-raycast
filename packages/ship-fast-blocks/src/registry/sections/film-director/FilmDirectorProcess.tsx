@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * alt-driven Image component. Use to explain a collaborative production workflow
  * for filmmakers, directors, DPs, or video production houses.
  */
-export const FilmDirectorProcess = defineComponent({
+export const FilmDirectorProcess = defineCapsule({
   name: 'FilmDirectorProcess',
   description:
     "Split, numbered 'how we work' process / about band for a film director or cinematographer: a two-column layout with a left text column (uppercase tracked eyebrow, thin heading, muted intro, then a vertical list of numbered circular badges paired with step title + description) beside a tall 3:4 photo with a floating overlapping client pull-quote card (italic quote + attribution) anchored at its lower-left on desktop. Imagery uses the Image component. Use to explain a collaborative production workflow for filmmakers, directors, DPs, or video production houses.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * highlight a product's standout capabilities with visual rhythm. Renders fully
  * with no props via baked-in defaults; no CTAs.
  */
-export const SaasBento = defineComponent({
+export const SaasBento = defineCapsule({
   name: 'SaasBento',
   description:
     "Asymmetric bento grid of product capabilities for a B2B SaaS / AI-product landing page: a centered heading + optional subheading above a responsive 6-column bento (md:grid-cols-6) where each tile's optional span ('wide' → 4 cols, 'tall' → 2 rows) creates a balanced mix of large and small cards. One feature tile carries a gradient accent and a product-dashboard screenshot. Rounded-2xl card/muted surfaces with subtle borders. Use to highlight a product's standout capabilities with visual rhythm; no CTAs.",

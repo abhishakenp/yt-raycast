@@ -1,25 +1,27 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { analyticsAdminLakebed } from './analytics-admin-lakebed.ts'
 
 /**
  * AnalyticsSidebar — fixed left dashboard sidebar for a SaaS analytics / admin
  * product. A full-height, bordered card column (hidden below lg) with a brand
  * header (solid token logo tile + product name), a primary nav list with
  * line-icons, an active first item, and a count badge on the Notifications item,
- * plus a bottom user profile card (avatar, name, role). Every nav item and the
- * profile route through useNavigate so labels can drive page-switching. Use as
+ * plus a bottom user profile card (avatar, name, role). Nav items route through
+ * useNavigate; notification count and profile auth use shared Lakebed state. Use as
  * the persistent left rail for analytics dashboards, admin panels, BI consoles,
  * or any data-product control surface. Renders fully with no props via baked-in
  * "DataFlow" defaults.
  */
-export const AnalyticsSidebar = defineComponent({
+export const AnalyticsSidebar = defineCapsule({
   name: 'AnalyticsSidebar',
   description:
-    'Fixed left dashboard sidebar for a SaaS analytics / admin product: a full-height bordered card column (hidden below lg) with a brand header (solid token logo tile + product name), a primary nav list with line-icons and an active first item, a count badge on the Notifications item, and a bottom user profile card (avatar, name, role). Every nav item and the profile route through useNavigate for page-switching. Use as the persistent left rail for analytics dashboards, admin panels, business-intelligence consoles, or any data-product control surface.',
+    'Fixed left dashboard sidebar for a SaaS analytics / admin product: a full-height bordered card column (hidden below lg) with a brand header (solid token logo tile + product name), a primary nav list with line-icons and an active first item, a shared Lakebed count badge on the Notifications item, and a bottom Shoo/Lakebed profile card. Nav items route through useNavigate for page-switching. Use as the persistent left rail for analytics dashboards, admin panels, business-intelligence consoles, or any data-product control surface.',
   props: z.object({
     /** Brand / product name shown in the sidebar header. */
     brand: z.string().optional(),
@@ -37,8 +39,11 @@ export const AnalyticsSidebar = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: analyticsAdminLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const auth = lakebed.useAuth()
+    const unreadCount = lakebed.useQuery('unreadNotificationCount') ?? 0
     const brand = props.brand ?? 'DataFlow'
     const nav = props.nav?.length
       ? props.nav
@@ -50,9 +55,13 @@ export const AnalyticsSidebar = defineComponent({
           'Notifications',
           'Settings',
         ]
-    const notificationCount = props.notificationCount ?? '3'
-
-    const userName = props.user?.name ?? 'Marcus Chen'
+    const notificationCount =
+      unreadCount > 0 ? String(unreadCount) : (props.notificationCount ?? '3')
+    const authUser = auth.user
+    const isSignedIn = auth.isAuthenticated && !authUser?.isGuest
+    const userName = isSignedIn
+      ? (authUser?.displayName ?? authUser?.email ?? 'Account')
+      : (props.user?.name ?? 'Marcus Chen')
     const userRole = props.user?.role ?? 'Product Manager'
     const userAvatarAlt =
       props.user?.avatarAlt ??
@@ -164,7 +173,15 @@ export const AnalyticsSidebar = defineComponent({
         <div className="border-t border-border p-4">
           <button
             type="button"
-            onClick={() => go(userName)}
+            aria-label={isSignedIn ? 'Sign out' : 'Sign in with Shoo'}
+            onClick={() => {
+              if (isSignedIn) {
+                lakebed.signOut()
+                return
+              }
+
+              void lakebed.signInWithGoogle()
+            }}
             className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-muted"
           >
             <Image

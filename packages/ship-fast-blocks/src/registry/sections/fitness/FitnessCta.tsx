@@ -1,20 +1,23 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * FitnessCta — bold primary-filled email-capture call-to-action for a gym or fitness
  * studio. A centered heading + supporting paragraph over an inline email input +
  * submit button, a "questions?" line with click-to-call phone and email buttons, and
- * a footer row of a pin-icon location and a clock-icon hours. The form and contact
- * links route through useNavigate. Use as the closing trial / sign-up banner above
+ * a footer row of a pin-icon location and a clock-icon hours. The form writes to
+ * the shared Lakebed subscriber list and contact links route through useNavigate. Use as the closing trial / sign-up banner above
  * the footer on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
-export const FitnessCta = defineComponent({
+export const FitnessCta = defineCapsule({
   name: 'FitnessCta',
   description:
-    "Bold primary-filled email-capture call-to-action for a gym or fitness studio: a centered heading and supporting paragraph over an inline email input + submit button, a 'questions?' line with click-to-call phone and email buttons, and a footer row of a pin-icon location and a clock-icon hours. The form submit and contact links route through useNavigate. Use as the closing free-trial / sign-up conversion banner above the footer on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.",
+    "Bold primary-filled email-capture call-to-action for a gym or fitness studio: a centered heading and supporting paragraph over an inline email input + submit button, a 'questions?' line with click-to-call phone and email buttons, and a footer row of a pin-icon location and a clock-icon hours. The form submit writes to the shared Lakebed subscriber list and contact links route through useNavigate. Use as the closing free-trial / sign-up conversion banner above the footer on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -26,7 +29,8 @@ export const FitnessCta = defineComponent({
     hours: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const ctaHeading = props.heading ?? 'Start your 7-day free trial'
     const ctaDesc =
@@ -50,27 +54,18 @@ export const FitnessCta = defineComponent({
             {ctaDesc}
           </p>
 
-          <form
-            className="mx-auto mb-8 flex max-w-md flex-col gap-4 sm:flex-row"
-            onSubmit={(e) => {
-              e.preventDefault()
-              go(ctaSubmit)
-            }}
-          >
-            <input
-              type="email"
-              required
-              placeholder={ctaPlaceholder}
-              aria-label={ctaPlaceholder}
-              className="flex-1 rounded-sm border-0 bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            <button
-              type="submit"
-              className="rounded-sm bg-primary-foreground px-6 py-3 font-medium text-primary transition-colors hover:bg-primary-foreground/90"
-            >
-              {ctaSubmit}
-            </button>
-          </form>
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={ctaSubmit}
+            placeholder={ctaPlaceholder}
+            buttonLabel={ctaSubmit}
+            successMessage="You're signed up. Trial details will arrive by email."
+            className="mx-auto flex max-w-md flex-col gap-4 sm:flex-row"
+            inputClassName="flex-1 rounded-sm border-0 bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            buttonClassName="rounded-sm bg-primary-foreground px-6 py-3 font-medium text-primary transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+            emailLabel={ctaPlaceholder}
+            statusClassName="mb-8 text-primary-foreground/60"
+          />
 
           <p className="text-sm text-primary-foreground/60">
             Questions? Call us at{' '}

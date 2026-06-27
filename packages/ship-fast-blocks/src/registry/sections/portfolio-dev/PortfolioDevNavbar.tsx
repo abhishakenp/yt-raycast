@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const CodeMark = ({ className }: { className?: string }) => (
@@ -18,7 +19,7 @@ const CodeMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const PortfolioDevNavbar = defineComponent({
+export const PortfolioDevNavbar = defineCapsule({
   name: 'PortfolioDevNavbar',
   description:
     "Sticky developer-portfolio header built on the shared SiteNav composite: a mono wordmark beside an inline </> code mark, centered desktop nav links, and a 'Hire Me' CTA that routes to Contact. Includes a real mobile drawer on small screens and omits the phone slot, matching how engineers, freelancers, and indie hackers present themselves. Use as the site-wide header for developer, engineer, or freelancer portfolios; renders fully with no props via baked-in 'alex.dev' defaults.",

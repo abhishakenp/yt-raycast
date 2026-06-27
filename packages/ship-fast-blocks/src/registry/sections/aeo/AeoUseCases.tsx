@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
-export const AeoUseCases = defineComponent({
+export const AeoUseCases = defineCapsule({
   name: 'AeoUseCases',
   description:
     'A use-cases section that explains practical scenarios and outcomes for the product or service. Use on SaaS, services, and product landing pages.',

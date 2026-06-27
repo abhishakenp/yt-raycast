@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -29,7 +30,7 @@ const BroadcastMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const WebinarNavbar = defineComponent({
+export const WebinarNavbar = defineCapsule({
   name: 'WebinarNavbar',
   description:
     "Sticky webinar/virtual-event site header built on the shared SiteNav composite: a semibold wordmark + broadcast-calendar mark, centered desktop nav links (Overview, Agenda, Speakers, FAQ), a high-contrast 'Register' CTA, and a real mobile drawer. Use as the header for webinars, summits, masterclasses, product launches, or any registration-driven event landing page.",

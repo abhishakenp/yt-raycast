@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * Use directly below the hero on nutrition, diet, wellness, health-media or
  * meal-subscription pages to signal credibility.
  */
-export const NutritionLogos = defineComponent({
+export const NutritionLogos = defineCapsule({
   name: 'NutritionLogos',
   description:
     'Press / featured-in social-proof strip for a wellness or nutrition-coaching site: a bordered card-toned band with a centered muted uppercase heading above a faded responsive grid of publication wordmarks (2-up on mobile, 5-up on desktop). Use directly below the hero on nutrition, diet, wellness, health-media or meal-subscription pages to signal credibility and authority.',

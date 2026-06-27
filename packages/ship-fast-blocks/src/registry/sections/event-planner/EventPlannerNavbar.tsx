@@ -1,21 +1,30 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
+import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
+import {
+  InquiryActionButton,
+  InquiryMutationSpinner,
+} from '../contact/inquiry-interactions.tsx'
 
 /**
  * EventPlannerNavbar — fixed translucent top navigation for a luxury event-planning
  * agency site. A backdrop-blurred, border-bottomed header pinned to the top with a
  * thin clock-glyph logo + light-weight brand name on the left, horizontal nav links
  * in the center-right (desktop), a filled primary pill "Book Consultation" CTA, and
- * a hamburger menu button on mobile. All links and CTAs route through useNavigate.
- * Use as the sticky site header for wedding/event planners, party and gala
- * organizers, or any premium hospitality service.
+ * a hamburger menu button on mobile. Nav links route through useNavigate while
+ * consultation CTAs record real Lakebed contact actions. Use as the sticky site
+ * header for wedding/event planners, party and gala organizers, or any premium
+ * hospitality service.
  */
-export const EventPlannerNavbar = defineComponent({
+export const EventPlannerNavbar = defineCapsule({
   name: 'EventPlannerNavbar',
   description:
-    "Fixed translucent top navigation bar for a luxury event-planning agency site: backdrop-blurred, border-bottomed header with a thin clock-glyph logo + light-weight brand name on the left, horizontal nav links on the right (desktop), a filled primary pill 'Book Consultation' CTA, and a hamburger menu button on mobile. All links and CTAs route through useNavigate. Use as the sticky site header for wedding/event planners, party, celebration, corporate-event and gala organizers, or any premium hospitality service.",
+    "Fixed translucent top navigation bar for a luxury event-planning agency site: backdrop-blurred, border-bottomed header with a thin clock-glyph logo + light-weight brand name on the left, horizontal nav links on the right (desktop), a filled primary pill 'Book Consultation' CTA, and a hamburger menu button on mobile. Nav links route through useNavigate while consultation CTAs record real Lakebed contact actions. Use as the sticky site header for wedding/event planners, party, celebration, corporate-event and gala organizers, or any premium hospitality service.",
+  lakebed: inquiryLakebed,
   props: z.object({
     /** Brand / studio name shown beside the logo. */
     brand: z.string().optional(),
@@ -25,7 +34,7 @@ export const EventPlannerNavbar = defineComponent({
     ctaLabel: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Serene Events'
     const nav = props.nav?.length
@@ -83,35 +92,48 @@ export const EventPlannerNavbar = defineComponent({
                   {label}
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => go(ctaLabel)}
-                className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              <InquiryActionButton
+                lakebed={lakebed}
+                label={ctaLabel}
+                source="Event planner navbar"
+                target={ctaLabel}
+                kind="cta"
+                pendingChildren={
+                  <>
+                    <InquiryMutationSpinner />
+                    Recording
+                  </>
+                }
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
               >
                 {ctaLabel}
-              </button>
+              </InquiryActionButton>
             </div>
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => go(nav[0])}
-              className="p-2 text-muted-foreground md:hidden"
-            >
-              <svg
-                className="size-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1.5"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
+            <MobileNavDrawer
+              brand={brand}
+              nav={nav}
+              homeTarget={nav[0]}
+              buttonClassName="p-2 text-muted-foreground md:hidden"
+              footer={(close) => (
+                <InquiryActionButton
+                  lakebed={lakebed}
+                  label={ctaLabel}
+                  source="Event planner mobile menu"
+                  target={ctaLabel}
+                  kind="cta"
+                  onRecorded={close}
+                  pendingChildren={
+                    <>
+                      <InquiryMutationSpinner />
+                      Recording
+                    </>
+                  }
+                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                >
+                  {ctaLabel}
+                </InquiryActionButton>
+              )}
+            />
           </nav>
         </div>
       </header>

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * services, garden designers, hardscaping contractors or grounds-keeping
  * companies. Renders fully with no props via baked-in "Earth & Edge" defaults.
  */
-export const LandscapingFooter = defineComponent({
+export const LandscapingFooter = defineCapsule({
   name: 'LandscapingFooter',
   description:
     'Slim, calm closing footer for a landscaping / outdoor-design company on the card surface: a bordered-top band with a left brand column (layered-diamond mark + wordmark above a short tagline) beside a wrapping row of footer links, and a bordered sub-bar below carrying an auto-updating copyright line. Stacks centered on mobile, spreads on desktop; the brand button and every link route through useNavigate. Calm, organic and premium with a sage-green accent. Use as the closing site footer for landscapers, lawn-care services, garden designers, hardscaping contractors or grounds-keeping companies.',

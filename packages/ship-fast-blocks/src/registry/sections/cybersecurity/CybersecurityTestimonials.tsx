@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * cybersecurity vendors, SOC/MDR providers, or any enterprise B2B security
  * SaaS. Renders fully with no props via baked-in CISO-quote defaults.
  */
-export const CybersecurityTestimonials = defineComponent({
+export const CybersecurityTestimonials = defineCapsule({
   name: 'CybersecurityTestimonials',
   description:
     "CISO / security-leader testimonial wall: a light section with a centered heading + subheading above a responsive 2-to-3 column grid of muted, bordered quote cards, each stacking a 5-star rating, a verbatim quote, then an alt-driven avatar beside the leader's name and role. Pure display, no links. Use to deliver authoritative social proof for cybersecurity vendors, SOC/MDR providers, or any enterprise B2B security SaaS.",

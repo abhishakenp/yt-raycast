@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useCommerceFilteredProducts,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * EcommerceGallery — Featured Products grid for a general online store. A
@@ -10,14 +18,14 @@ import { Image } from '#/lib/img.tsx'
  * of square product cards, each inside a rounded bordered card with imagery,
  * an optional "Sale" corner badge, the product title, a price row with an
  * optional strikethrough original price, and a persistent full-width "Add to
- * cart" button. Every card action routes through useNavigate and all imagery
+ * cart" button backed by the shared Lakebed cart. All imagery
  * uses the alt-driven Image component. Use to merchandise best sellers or a
  * featured catalog for any general retail / online store storefront.
  */
-export const EcommerceGallery = defineComponent({
+export const EcommerceGallery = defineCapsule({
   name: 'EcommerceGallery',
   description:
-    "Featured Products grid for a general online store: a centered heading + optional subheading above a responsive 3-to-4 column grid of square product cards, each inside a rounded bordered card with imagery, an optional 'Sale' corner badge, the product title, a price row with an optional strikethrough original price, and a persistent full-width 'Add to cart' button. Every card action routes through useNavigate and all imagery uses the alt-driven Image component. Use to merchandise best sellers or a featured catalog for any general retail / online store storefront (electronics, home goods, accessories, lifestyle products).",
+    "Featured Products grid for a general online store: a centered heading + optional subheading above a responsive 3-to-4 column grid of square product cards, each inside a rounded bordered card with imagery, an optional 'Sale' corner badge, the product title, a price row with an optional strikethrough original price, and a persistent full-width 'Add to cart' button backed by the shared Lakebed cart. All imagery uses the alt-driven Image component. Use to merchandise best sellers or a featured catalog for any general retail / online store storefront (electronics, home goods, accessories, lifestyle products).",
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -35,8 +43,8 @@ export const EcommerceGallery = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const galleryHeading = props.heading ?? 'Featured Products'
     const gallerySubheading =
       props.subheading ??
@@ -102,6 +110,28 @@ export const EcommerceGallery = defineComponent({
               'Premium hardcover dotted notebook in charcoal on a clean studio background, online store product photo',
           },
         ]
+    useSyncCommerceCatalog(
+      lakebed,
+      galleryProducts.map((product) =>
+        commerceProduct({
+          imageAlt: product.imageAlt,
+          label: product.name,
+          price: product.price,
+          subtitle: product.badge,
+        }),
+      ),
+    )
+    const visibleProducts = useCommerceFilteredProducts(
+      lakebed,
+      galleryProducts,
+      (product) => [
+        product.name,
+        product.price,
+        product.oldPrice,
+        product.badge,
+        product.imageAlt,
+      ],
+    )
 
     return (
       <section
@@ -121,7 +151,7 @@ export const EcommerceGallery = defineComponent({
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-            {galleryProducts.map((product) => (
+            {visibleProducts.map((product) => (
               <article
                 key={product.name}
                 className="group overflow-hidden rounded-lg border border-border bg-card"
@@ -157,13 +187,22 @@ export const EcommerceGallery = defineComponent({
                       </span>
                     ) : null}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => go(product.name)}
-                    className="mt-4 w-full rounded-md border border-primary bg-primary py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-background hover:text-foreground"
+                  <CommerceAddItemButton
+                    lakebed={lakebed}
+                    item={{
+                      label: product.name,
+                      price: product.price,
+                    }}
+                    pendingChildren={
+                      <>
+                        <CommerceMutationSpinner />
+                        Adding
+                      </>
+                    }
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md border border-primary bg-primary py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-70"
                   >
                     {addToCartLabel}
-                  </button>
+                  </CommerceAddItemButton>
                 </div>
               </article>
             ))}

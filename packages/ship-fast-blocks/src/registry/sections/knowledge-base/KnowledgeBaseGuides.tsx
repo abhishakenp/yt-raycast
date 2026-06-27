@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * alt-driven Image component. Use to spotlight walkthroughs on a knowledge base
  * or docs site. Renders fully with no props via baked-in defaults.
  */
-export const KnowledgeBaseGuides = defineComponent({
+export const KnowledgeBaseGuides = defineCapsule({
   name: 'KnowledgeBaseGuides',
   description:
     "Featured step-by-step guides gallery for a help center: a heading + description with a bordered 'view all' button on one side, above a responsive 1/2/3-up grid of card buttons — each with a wide cover image plus an overlaid token-colored difficulty badge (Beginner/Intermediate/Advanced), a title, a description and read-time + step-count meta with icons; cards lift on hover and the image zooms. Calm, light, editorial; guide cards and the 'view all' button route through useNavigate and covers use the alt-driven Image component. Use to spotlight walkthroughs on a knowledge base, support portal or docs site.",

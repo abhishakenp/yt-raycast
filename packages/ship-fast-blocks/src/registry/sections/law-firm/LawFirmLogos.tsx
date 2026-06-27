@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * credibility with recognizable client names. Renders fully with no props via
  * baked-in defaults.
  */
-export const LawFirmLogos = defineComponent({
+export const LawFirmLogos = defineCapsule({
   name: 'LawFirmLogos',
   description:
     "Quiet 'trusted by industry leaders' client logo strip on the card surface, bordered top and bottom: a centered tracked-uppercase heading above a faded responsive grid of serif wordmark 'logos' that brighten on hover. Restrained, authoritative editorial aesthetic. Each wordmark routes through useNavigate. Use directly under the hero on law-firm, attorney, corporate-counsel, consulting, accounting or professional-services pages to establish credibility with recognizable client names.",

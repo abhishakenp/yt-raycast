@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
 
-export const PetVeterinaryStats = defineComponent({
+export const PetVeterinaryStats = defineCapsule({
   name: 'PetVeterinaryStats',
   description:
     'Warm key-figures band for a veterinary clinic site, composing the shared StatGrid kit composite into a friendly four-column row of headline metrics — happy pets cared for, years caring for the community, veterinarians and staff on the team, and client satisfaction. When a heading is provided it wraps the grid in a SectionHeading; otherwise it renders the stats bare. Accepts a public `stats` prop to override the figures. Use it to build trust and convey caring experience between the hero and services bands.',

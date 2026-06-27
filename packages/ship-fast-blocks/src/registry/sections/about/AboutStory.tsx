@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * with a team or office photo. Renders fully with no props via baked-in
  * "Kinetic Labs" defaults.
  */
-export const AboutStory = defineComponent({
+export const AboutStory = defineCapsule({
   name: 'AboutStory',
   description:
     "'Our story' split band for a modern company / ABOUT page: a left-aligned eyebrow pill + heading + lead above a two-column layout with an alt-driven 4:3 photo in a soft-shadowed token card and a floating 'founded' badge pill (calendar icon) on the left, and one or more narrative paragraphs plus an indigo-accented left-bordered pull-quote on the right. Tokens-only, no links. Use for an about page's origin story / company history / mission narrative paired with a team or office photo.",

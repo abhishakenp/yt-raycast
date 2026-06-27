@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
@@ -15,7 +16,7 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * municipal, utility, power and electricity board portals. Renders fully with no
  * props via baked-in defaults.
  */
-export const GovernmentPortalFooter = defineComponent({
+export const GovernmentPortalFooter = defineCapsule({
   name: 'GovernmentPortalFooter',
   description:
     'Indigo (#4B57A0) classic indian government / PSU footer: an organisation blurb, Navigation, Head Office and Plant Office columns, an important-links partner strip and an auto-updating copyright row. Official, civic closing chrome for public sector, municipal, utility, power and electricity board portals carrying tender and notice links. Use for the footer of any classic government portal.',

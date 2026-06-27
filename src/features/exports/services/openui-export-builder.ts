@@ -25,6 +25,7 @@ type ParsedOpenUIProgram = {
   root: ElementNode
   routes: string[]
   pages: ElementNode[]
+  targetMap: Record<string, string>
   projectName: string
 }
 
@@ -32,6 +33,7 @@ type ExportRoute = {
   label: string
   path: string
   componentName: string
+  node: ElementNode
   props: Record<string, unknown>
 }
 
@@ -383,6 +385,13 @@ const exportedBlockSourceOutPath = (sourcePath: string): string => {
   if (sourcePath.startsWith('src/components/')) return sourcePath
   if (sourcePath.startsWith('src/hooks/')) return sourcePath
   if (sourcePath.startsWith('src/lib/')) return sourcePath
+  if (sourcePath.startsWith('src/section-kit/')) return sourcePath
+  if (sourcePath.startsWith('src/registry/')) {
+    return `src/vendor/blocks/${sourcePath}`
+  }
+  if (sourcePath.startsWith('src/capsules/')) {
+    return `src/vendor/blocks/${sourcePath}`
+  }
   throw new Error(`Unsupported block dependency source path: ${sourcePath}`)
 }
 
@@ -399,8 +408,29 @@ const shouldTransformSourceImports = (sourcePath: string): boolean =>
 const normalizeRouteTarget = (value: string): string =>
   value.trim().toLowerCase()
 
-const resolveRouteTarget = (target: string, routes: ExportRoute[]): string => {
+const resolveMappedRouteTarget = (
+  target: string,
+  routes: ExportRoute[],
+): string | null => {
+  const [pageLabel, sectionId] = target.split('#')
+  const exact = routes.find(
+    (route) =>
+      normalizeRouteTarget(route.label) ===
+      normalizeRouteTarget(pageLabel ?? ''),
+  )
+  if (!exact) return null
+  return sectionId ? `${exact.path}#${sectionId}` : exact.path
+}
+
+const resolveRouteTarget = (
+  target: string,
+  routes: ExportRoute[],
+  sourceTargetMap: Record<string, string>,
+): string | null => {
   const normalized = normalizeRouteTarget(target)
+  const mapped = sourceTargetMap[target] ?? sourceTargetMap[normalized]
+  if (mapped) return resolveMappedRouteTarget(mapped, routes)
+
   const exact = routes.find(
     (route) => normalizeRouteTarget(route.label) === normalized,
   )
@@ -427,7 +457,7 @@ const resolveRouteTarget = (target: string, routes: ExportRoute[]): string => {
       find(/feature|service|how|class|home/)) ||
     null
 
-  return byKeyword?.path ?? routes[0]?.path ?? '/'
+  return byKeyword?.path ?? null
 }
 
 const navigationKeyPattern =
@@ -458,16 +488,26 @@ const collectNavigationStrings = (
   return values
 }
 
-const buildRouteTargetMap = (routes: ExportRoute[]): Record<string, string> => {
+const buildRouteTargetMap = (
+  routes: ExportRoute[],
+  sourceTargetMap: Record<string, string>,
+): Record<string, string> => {
   const targets = new Set<string>()
   for (const route of routes) {
     targets.add(route.label)
     collectNavigationStrings(route.props, targets)
   }
+  for (const target of Object.keys(sourceTargetMap)) targets.add(target)
   return Object.fromEntries(
     [...targets]
       .sort((a, b) => a.localeCompare(b))
-      .map((target) => [target, resolveRouteTarget(target, routes)]),
+      .map((target) => [
+        target,
+        resolveRouteTarget(target, routes, sourceTargetMap),
+      ])
+      .filter(
+        (entry): entry is [string, string] => typeof entry[1] === 'string',
+      ),
   )
 }
 
@@ -490,7 +530,7 @@ let manifestSourceIndex: Record<
 let componentSourceIndex: Map<string, ReactExportSourceEntry> | null = null
 
 const isExportableComponentFactory = (expression: string): boolean =>
-  expression === 'defineComponent' || expression === 'defineCapsule'
+  expression === 'defineCapsule'
 
 const getManifestSourceIndex = (): Record<
   string,
@@ -750,11 +790,29 @@ const transformComponentImports = (
     const specifier = statement.moduleSpecifier
     if (!ts.isStringLiteral(specifier)) continue
     const moduleName = specifier.text
+    const importClause = statement.importClause
+
+    if (
+      moduleName === '@ship-fast/lakebed/react' ||
+      moduleName === '@ship-fast/lakebed/server'
+    ) {
+      imports.push(
+        rewriteImportModule(
+          statement,
+          sourceFile,
+          moduleName,
+          relativeImportPath(generatedFilePath, 'src/lib/site-data.ts'),
+        ),
+      )
+      continue
+    }
+
+    if (importClause?.isTypeOnly) continue
 
     if (moduleName === '@openuidev/react-lang') continue
     if (moduleName === 'zod' || moduleName.startsWith('zod/')) continue
     if (moduleName === './openui.ts') continue
-    if (moduleName === '@ship-fast/lakebed/server') continue
+    if (moduleName === '#/capsules/openui.ts') continue
     if (moduleName === '#/lib/utils.ts') {
       imports.push(
         rewriteImportModule(
@@ -807,6 +865,12 @@ const transformComponentImports = (
       throw new Error(
         `React export does not support private helper import in ${componentName}: ${moduleName}`,
       )
+    }
+    if (
+      moduleName.startsWith('.') &&
+      /(?:^|\/)[\w-]+-lakebed(?:\.[cm]?[jt]sx?)?$/.test(moduleName)
+    ) {
+      continue
     }
     if (moduleName.startsWith('.') && sourcePath) {
       const relativeSourcePath = resolveRelativeBlockSourcePath(
@@ -1250,9 +1314,9 @@ const renderNavigationArgument = (
   const trimmed = argument.trim()
   if (isStringLiteralSource(trimmed)) {
     const literal = parseStringLiteralSource(trimmed)
-    if (literal) return JSON.stringify(routeTargets[literal] ?? '/')
+    if (literal) return JSON.stringify(routeTargets[literal]) ?? 'undefined'
   }
-  return `(routePaths[String(${trimmed})] ?? '/')`
+  return `routePaths[String(${trimmed})]`
 }
 
 const rewriteNavigationCalls = (
@@ -1301,6 +1365,7 @@ const lakebedDataImport = `import {
   siteMutationKey,
   siteQueryKey,
   updateSiteQueries,
+  useLakebedAdapter,
 } from '../lib/site-data'`
 
 const renderTranslatedQuery = (variableName: string, queryName: string) =>
@@ -1318,12 +1383,25 @@ const renderTranslatedMutation = (variableName: string, mutationName: string) =>
     mutationFn: (args: unknown[]) => runSiteMutation(${mutationName}, args),
     onSuccess: () => invalidateSiteQueries(queryClient, ${mutationName}),
   });
-  const ${variableName} = (...args: any[]) => {
+  const ${variableName} = Object.assign(async (...args: any[]) => {
     const result = applySiteMutation(${mutationName}, args);
     updateSiteQueries(queryClient, ${mutationName});
-    ${variableName}Mutation.mutate(args);
+    await ${variableName}Mutation.mutateAsync(args);
     return result;
-  };`
+  }, {
+    get isPending() {
+      return ${variableName}Mutation.isPending;
+    },
+    get lastError() {
+      return ${variableName}Mutation.error ?? null;
+    },
+    get pendingCount() {
+      return ${variableName}Mutation.isPending ? 1 : 0;
+    },
+    reset() {
+      ${variableName}Mutation.reset();
+    },
+  });`
 
 const translateLakebedRuntimeCalls = (body: string) => {
   let usesQuery = false
@@ -1404,6 +1482,10 @@ const translateLakebedRuntimeCalls = (body: string) => {
   }
 }
 
+const sourceUsesLakebedRuntime = (source: string): boolean =>
+  /\blakebed\b/.test(source) ||
+  /@ship-fast\/lakebed\/(?:react|server)/.test(source)
+
 const extractComponent = (
   componentName: string,
   stack: ExportStack,
@@ -1423,9 +1505,14 @@ const extractComponent = (
     componentName,
     stack,
     generatedFilePath,
+    entry.file,
   )
   const functionBody = isExpressionBody ? `return ${body}` : body
-  const usesLakebed = /\blakebed\./.test(functionBody)
+  const usesLakebed =
+    sourceUsesLakebedRuntime(functionBody) ||
+    [...blockSources].some((sourcePath) =>
+      sourceUsesLakebedRuntime(getBlockSourceFile(sourcePath)),
+    )
   const translatedLakebed = usesLakebed
     ? translateLakebedRuntimeCalls(functionBody)
     : {
@@ -1435,15 +1522,25 @@ const extractComponent = (
         usesMutation: false,
         usesQuery: false,
       }
-  const rewrittenNavigation = rewriteNavigationCalls(
+  const needsLakebedAdapter = usesLakebed && /\blakebed\b/.test(
     translatedLakebed.body,
+  )
+  const translatedBody = needsLakebedAdapter
+    ? `const lakebed = useLakebedAdapter()\n${translatedLakebed.body}`
+    : translatedLakebed.body
+  const rewrittenNavigation = rewriteNavigationCalls(
+    translatedBody,
     stack,
     routeTargets,
   )
   const routePaths = rewrittenNavigation.usesNavigation
     ? `\nconst routePaths: Record<string, string> = ${JSON.stringify(routeTargets, null, 2)}\n`
     : ''
-  const queryHookImport = usesLakebed
+  const queryHookImport =
+    usesLakebed &&
+    (translatedLakebed.usesAuth ||
+      translatedLakebed.usesMutation ||
+      translatedLakebed.usesQuery)
     ? `\nimport { useMutation, useQuery${translatedLakebed.needsQueryClient ? ', useQueryClient' : ''} } from '@tanstack/react-query'`
     : ''
   const componentSource = `${preludeSources.join('\n\n')}\n${rewrittenNavigation.body}`
@@ -1537,10 +1634,227 @@ const buildRoutes = (parsed: ParsedOpenUIProgram): ExportRoute[] => {
     return {
       label,
       path: uniqueRoutePath(label, index, used),
-      componentName: page.typeName,
+      componentName: `RoutePage${index + 1}${toIdentifier(label)}`,
+      node: page,
       props: page.props as Record<string, unknown>,
     }
   })
+}
+
+const routeRenderPrimitives = new Set([
+  'Box',
+  'Grid',
+  'Heading',
+  'PageSwitch',
+  'Section',
+  'SectionAnchor',
+  'Spacer',
+  'Stack',
+  'Text',
+])
+
+const isOpenUIElementNode = (value: unknown): value is ElementNode =>
+  value !== null &&
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  'type' in value &&
+  value.type === 'element' &&
+  'typeName' in value &&
+  typeof value.typeName === 'string'
+
+const collectNodeComponentNames = (
+  value: unknown,
+  names = new Set<string>(),
+): Set<string> => {
+  if (Array.isArray(value)) {
+    for (const item of value) collectNodeComponentNames(item, names)
+    return names
+  }
+
+  if (!isOpenUIElementNode(value)) return names
+  if (value.typeName && !routeRenderPrimitives.has(value.typeName)) {
+    names.add(value.typeName)
+  }
+  for (const propValue of Object.values(value.props ?? {})) {
+    collectNodeComponentNames(propValue, names)
+  }
+  return names
+}
+
+const collectRouteComponentNames = (routes: ExportRoute[]): string[] => [
+  ...new Set(routes.flatMap((route) => [...collectNodeComponentNames(route.node)])),
+]
+
+const routeGapClass = (value: unknown): string => {
+  if (value === 'none') return 'gap-0'
+  if (value === 'xs') return 'gap-1'
+  if (value === 'sm') return 'gap-2'
+  if (value === 'lg') return 'gap-6'
+  if (value === 'xl') return 'gap-10'
+  return 'gap-4'
+}
+
+const routeAlignClass = (value: unknown): string => {
+  if (value === 'start') return 'items-start'
+  if (value === 'center') return 'items-center'
+  if (value === 'end') return 'items-end'
+  if (value === 'stretch') return 'items-stretch'
+  return ''
+}
+
+const routeJustifyClass = (value: unknown): string => {
+  if (value === 'start') return 'justify-start'
+  if (value === 'center') return 'justify-center'
+  if (value === 'end') return 'justify-end'
+  if (value === 'between') return 'justify-between'
+  if (value === 'around') return 'justify-around'
+  return ''
+}
+
+const routeHeadingClass = (level: unknown): string => {
+  if (level === '1') return 'text-4xl font-bold tracking-tight md:text-5xl'
+  if (level === '3') return 'text-2xl font-semibold'
+  if (level === '4') return 'text-lg font-semibold'
+  return 'text-3xl font-semibold tracking-tight'
+}
+
+const routeSpacerClass = (size: unknown): string => {
+  if (size === 'xs') return 'h-2'
+  if (size === 'sm') return 'h-4'
+  if (size === 'lg') return 'h-16'
+  if (size === 'xl') return 'h-28'
+  return 'h-8'
+}
+
+const routeGridClass = (cols: unknown, gap: unknown, className: unknown) => {
+  const colsClass =
+    cols === '1'
+      ? 'grid-cols-1'
+      : cols === '2'
+        ? 'grid-cols-1 sm:grid-cols-2'
+        : cols === '4'
+          ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+          : cols === '5'
+            ? 'grid-cols-2 lg:grid-cols-5'
+            : cols === '6'
+              ? 'grid-cols-2 lg:grid-cols-6'
+              : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+  return ['grid', colsClass, routeGapClass(gap), className]
+    .filter((item): item is string => typeof item === 'string' && item.length > 0)
+    .join(' ')
+}
+
+const routeStackClass = (props: Record<string, unknown>) =>
+  [
+    'flex',
+    props.direction === 'row' ? 'flex-row' : 'flex-col',
+    routeGapClass(props.gap),
+    routeAlignClass(props.align),
+    routeJustifyClass(props.justify),
+    props.wrap === true ? 'flex-wrap' : '',
+    props.className,
+  ]
+    .filter((item): item is string => typeof item === 'string' && item.length > 0)
+    .join(' ')
+
+const jsxAttribute = (name: string, value: unknown): string =>
+  typeof value === 'string' && value.length > 0
+    ? ` ${name}=${JSON.stringify(value)}`
+    : ''
+
+const renderRouteNodeChildren = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return value.map((item) => renderRouteNode(item)).join('\n')
+  }
+  return renderRouteNode(value)
+}
+
+const renderRouteNode = (value: unknown): string => {
+  if (!isOpenUIElementNode(value)) return ''
+
+  const props = value.props ?? {}
+  if (value.typeName === 'Stack') {
+    return `<div className=${JSON.stringify(routeStackClass(props))}>
+${renderRouteNodeChildren(props.children)}
+</div>`
+  }
+  if (value.typeName === 'Grid') {
+    return `<div className=${JSON.stringify(routeGridClass(props.cols, props.gap, props.className))}>
+${renderRouteNodeChildren(props.children)}
+</div>`
+  }
+  if (value.typeName === 'Box') {
+    return `<div${jsxAttribute('className', props.className)}>
+${renderRouteNodeChildren(props.children)}
+</div>`
+  }
+  if (value.typeName === 'Section') {
+    return `<section className=${JSON.stringify(
+      ['w-full px-4 py-12 md:py-20', props.className]
+        .filter(
+          (item): item is string => typeof item === 'string' && item.length > 0,
+        )
+        .join(' '),
+    )}>
+  <div className="mx-auto max-w-6xl">
+${renderRouteNodeChildren(props.children)}
+  </div>
+</section>`
+  }
+  if (value.typeName === 'SectionAnchor') {
+    return `<div${jsxAttribute('id', props.id)}${jsxAttribute('className', props.className)}>
+${renderRouteNodeChildren(props.children)}
+</div>`
+  }
+  if (value.typeName === 'Spacer') {
+    return `<div className=${JSON.stringify(routeSpacerClass(props.size))} />`
+  }
+  if (value.typeName === 'Heading') {
+    return `<h2 className=${JSON.stringify(
+      [routeHeadingClass(props.level), props.className]
+        .filter(
+          (item): item is string => typeof item === 'string' && item.length > 0,
+        )
+        .join(' '),
+    )}>{${JSON.stringify(String(props.text ?? ''))}}</h2>`
+  }
+  if (value.typeName === 'Text') {
+    return `<p className=${JSON.stringify(
+      [
+        'leading-7',
+        props.tone === 'muted' ? 'text-muted-foreground' : '',
+        props.className,
+      ]
+        .filter(
+          (item): item is string => typeof item === 'string' && item.length > 0,
+        )
+        .join(' '),
+    )}>{${JSON.stringify(String(props.text ?? ''))}}</p>`
+  }
+  if (!value.typeName || value.typeName === 'PageSwitch') return ''
+
+  return `<${value.typeName} {...${JSON.stringify(props)}} />`
+}
+
+const renderRouteComponentSource = (
+  route: ExportRoute,
+  nestedComponentNames: string[],
+): string => {
+  const imports = nestedComponentNames
+    .map((name) => `import { ${name} } from './${name}'`)
+    .join('\n')
+  return `${imports}
+
+export type ${route.componentName}Props = Record<string, never>
+
+export function ${route.componentName}(_props: ${route.componentName}Props) {
+  return (
+    <>
+${renderRouteNode(route.node)}
+    </>
+  )
+}
+`
 }
 
 const dependencyVersions: Record<string, string> = {
@@ -1809,11 +2123,13 @@ async function writeRemote(name: string, args: unknown[]): Promise<unknown> {
 }
 `
 
-  return `import type { QueryClient } from '@tanstack/react-query'
+  return `import { useCallback, useMemo, useRef, useState } from 'react'
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { routes } from '../data/pages'
 ${nextActionImport}
 
 type Store = Record<string, unknown>
+type FieldBuilder = { default(value: unknown): FieldBuilder }
 type AuthState = {
   displayName: string | null
   email: string | null
@@ -1828,6 +2144,41 @@ type AuthState = {
   } | null
   userId: string
 }
+type LakebedMutation = ((...args: unknown[]) => Promise<unknown>) & {
+  isPending: boolean
+  lastError: unknown | null
+  pendingCount: number
+  reset(): void
+}
+export type LakebedClientRuntime<_Definition = unknown> = {
+  signInWithGoogle(): Promise<AuthState>
+  signOut(): void
+  useAuth(): AuthState
+  useMutation(name: string): LakebedMutation
+  useQuery<TValue = unknown>(name: string): TValue
+}
+
+export const string = (): FieldBuilder => ({
+  default: () => string(),
+})
+
+export const number = (): FieldBuilder => ({
+  default: () => number(),
+})
+
+export const table = <TTable extends Record<string, unknown>>(
+  definition: TTable,
+): TTable => definition
+
+export const createLakebedDefinition = <TSchema extends Record<string, unknown>>(
+  schema: TSchema,
+) => ({
+  schema,
+  mutation: <TInput extends unknown[], TResult>(
+    handler: (ctx: unknown, ...input: TInput) => TResult,
+  ) => handler,
+  query: <TResult>(handler: (ctx: unknown) => TResult) => handler,
+})
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value)
@@ -2211,6 +2562,122 @@ export function invalidateSiteQueries(queryClient: QueryClient, name: string) {
   for (const queryName of affectedQueryNames(name)) {
     void queryClient.invalidateQueries({ queryKey: siteQueryKey(queryName) })
   }
+}
+
+export function useLakebedAdapter(): LakebedClientRuntime {
+  const queryClient = useQueryClient()
+
+  return {
+    async signInWithGoogle() {
+      const auth = (await writeRemote('auth:signIn', [])) as AuthState
+      queryClient.setQueryData(siteAuthQueryKey, auth)
+      return auth
+    },
+    signOut() {
+      void writeRemote('auth:signOut', []).then((auth) => {
+        queryClient.setQueryData(siteAuthQueryKey, auth as AuthState)
+      })
+    },
+    useAuth() {
+      const { data = guestAuth } = useQuery({
+        queryKey: siteAuthQueryKey,
+        queryFn: readSiteAuth,
+        initialData: guestAuth,
+        staleTime: Infinity,
+        gcTime: Infinity,
+      })
+      return data
+    },
+    useMutation(name: string) {
+      const mutation = useMutation({
+        mutationKey: siteMutationKey(name),
+        mutationFn: (args: unknown[]) => runSiteMutation(name, args),
+        onSuccess: () => invalidateSiteQueries(queryClient, name),
+      })
+      return Object.assign(
+        async (...args: unknown[]) => {
+          const result = applySiteMutation(name, args)
+          updateSiteQueries(queryClient, name)
+          await mutation.mutateAsync(args)
+          return result
+        },
+        {
+          get isPending() {
+            return mutation.isPending
+          },
+          get lastError() {
+            return mutation.error ?? null
+          },
+          get pendingCount() {
+            return mutation.isPending ? 1 : 0
+          },
+          reset() {
+            mutation.reset()
+          },
+        },
+      )
+    },
+    useQuery<TValue = unknown>(name: string): TValue {
+      const { data = defaultSiteQueryValue(name) } = useQuery({
+        queryKey: siteQueryKey(name),
+        queryFn: () => readSiteData(name),
+        initialData: () => readSiteDataSnapshot(name),
+        staleTime: Infinity,
+        gcTime: Infinity,
+      })
+      return data as TValue
+    },
+  }
+}
+
+export function useKeyedLakebedMutation(
+  lakebed: LakebedClientRuntime,
+  name: string,
+) {
+  const mutation = lakebed.useMutation(name)
+  const [pendingKeys, setPendingKeys] = useState<readonly string[]>([])
+  const pendingKeySetRef = useRef(new Set<string>())
+  const syncPendingKeys = useCallback(() => {
+    setPendingKeys(Array.from(pendingKeySetRef.current))
+  }, [])
+  const run = useCallback(
+    async (key: string, ...args: unknown[]) => {
+      if (pendingKeySetRef.current.has(key)) return undefined
+
+      pendingKeySetRef.current.add(key)
+      syncPendingKeys()
+      try {
+        return await mutation(...args)
+      } finally {
+        pendingKeySetRef.current.delete(key)
+        syncPendingKeys()
+      }
+    },
+    [mutation, syncPendingKeys],
+  )
+  const isPending = useCallback(
+    (key: string) => pendingKeys.includes(key),
+    [pendingKeys],
+  )
+  const reset = useCallback(() => {
+    pendingKeySetRef.current.clear()
+    syncPendingKeys()
+    mutation.reset()
+  }, [mutation, syncPendingKeys])
+  const pendingKey = pendingKeys[0] ?? null
+
+  return useMemo(
+    () => ({
+      hasPending: pendingKeys.length > 0,
+      isPending,
+      lastError: mutation.lastError,
+      pendingKey,
+      pendingKeys,
+      reset,
+      run,
+    }),
+    [isPending, mutation.lastError, pendingKey, pendingKeys, reset, run],
+  )
 }
 `
 }
@@ -2887,6 +3354,10 @@ export function parseOpenUIForExport(
     result.root.typeName === 'PageSwitch' ? result.root.props.routes : undefined
   const rawPages =
     result.root.typeName === 'PageSwitch' ? result.root.props.pages : undefined
+  const rawTargetMap =
+    result.root.typeName === 'PageSwitch'
+      ? result.root.props.targetMap
+      : undefined
   const routes = Array.isArray(rawRoutes)
     ? rawRoutes.filter(
         (route): route is string =>
@@ -2902,11 +3373,23 @@ export function parseOpenUIForExport(
       )
     : [result.root]
   const siteSpec = parseSiteSpec(siteSpecJson)
+  const targetMap =
+    rawTargetMap &&
+    typeof rawTargetMap === 'object' &&
+    !Array.isArray(rawTargetMap)
+      ? Object.fromEntries(
+          Object.entries(rawTargetMap).filter(
+            (entry): entry is [string, string] =>
+              typeof entry[0] === 'string' && typeof entry[1] === 'string',
+          ),
+        )
+      : {}
 
   return {
     root: result.root,
     routes: routes.length > 0 ? routes : ['Home'],
     pages: pages.length > 0 ? pages : [result.root],
+    targetMap,
     projectName: readProjectName(siteSpec, routes[0] ?? 'Generated Site'),
   }
 }
@@ -3053,9 +3536,11 @@ const renderRouteData = (
   routes: ExportRoute[],
   componentNames: string[],
 ): string => {
-  const serializedRoutes = routes.map(({ componentName, ...route }) => ({
-    ...route,
-    component: componentName,
+  const serializedRoutes = routes.map((route) => ({
+    label: route.label,
+    path: route.path,
+    component: route.componentName,
+    props: route.props,
   }))
   const typeImports = componentNames
     .map((name) => `import type { ${name}Props } from '../components/${name}'`)
@@ -3209,7 +3694,7 @@ const collectExportComponents = (
   stack: ExportStack,
   routeTargets: Record<string, string>,
 ): ExtractedComponent[] => {
-  const names = [...new Set(routes.map((route) => route.componentName))]
+  const names = collectRouteComponentNames(routes)
   return names.map((name) => extractComponent(name, stack, routeTargets))
 }
 
@@ -3234,8 +3719,13 @@ const buildReactExport = (
   parsed: ParsedOpenUIProgram,
 ): BuiltExport => {
   const routes = buildRoutes(parsed)
-  const routeTargets = buildRouteTargetMap(routes)
+  const routeTargets = buildRouteTargetMap(routes, parsed.targetMap)
   const components = collectExportComponents(routes, 'react', routeTargets)
+  const nestedComponentNames = components.map((component) => component.name)
+  const routeComponents = routes.map((route) => ({
+    name: route.componentName,
+    source: renderRouteComponentSource(route, nestedComponentNames),
+  }))
   const blockSources = collectBlockSourceFiles(
     components.flatMap((component) => [...component.blockSources]),
     'react',
@@ -3247,7 +3737,7 @@ const buildReactExport = (
     ],
     'react',
   )
-  const componentNames = components.map((component) => component.name)
+  const routeComponentNames = routeComponents.map((component) => component.name)
   const usesLakebed = components.some((component) => component.usesLakebed)
   const imageSources = extractImageSources(input.previewHtml)
   const styleOverrides = extractStyleOverrides(input.previewHtml)
@@ -3268,8 +3758,8 @@ const buildReactExport = (
     'src/vite-env.d.ts': renderViteEnv(),
     'vite.config.ts': renderViteConfig(),
     'src/main.tsx': renderReactMain(usesLakebed),
-    'src/App.tsx': renderReactApp(componentNames),
-    'src/data/pages.ts': renderRouteData(routes, componentNames),
+    'src/App.tsx': renderReactApp(routeComponentNames),
+    'src/data/pages.ts': renderRouteData(routes, routeComponentNames),
     'src/lib/cn.ts': renderLibCn(),
     'src/lib/image.tsx': renderImageHelper('react', imageSources),
     'src/lib/style-overrides.tsx': renderStyleOverridesRuntime(styleOverrides),
@@ -3279,6 +3769,9 @@ const buildReactExport = (
   if (usesLakebed)
     files['src/lib/site-data.ts'] = renderSiteDataRuntime('react')
 
+  for (const component of routeComponents) {
+    files[`src/components/${component.name}.tsx`] = component.source
+  }
   for (const component of components) {
     files[`src/components/${component.name}.tsx`] = component.source
   }
@@ -3297,8 +3790,13 @@ const buildNextExport = (
   parsed: ParsedOpenUIProgram,
 ): BuiltExport => {
   const routes = buildRoutes(parsed)
-  const routeTargets = buildRouteTargetMap(routes)
+  const routeTargets = buildRouteTargetMap(routes, parsed.targetMap)
   const components = collectExportComponents(routes, 'next', routeTargets)
+  const nestedComponentNames = components.map((component) => component.name)
+  const routeComponents = routes.map((route) => ({
+    name: route.componentName,
+    source: renderRouteComponentSource(route, nestedComponentNames),
+  }))
   const blockSources = collectBlockSourceFiles(
     components.flatMap((component) => [...component.blockSources]),
     'next',
@@ -3310,9 +3808,9 @@ const buildNextExport = (
     ],
     'next',
   )
-  const componentNames = components.map((component) => component.name)
+  const routeComponentNames = routeComponents.map((component) => component.name)
   const usesLakebed = components.some((component) => component.usesLakebed)
-  const endpoints = collectNextEndpoints(componentNames, input.source)
+  const endpoints = collectNextEndpoints(nestedComponentNames, input.source)
   const imageSources = extractImageSources(input.previewHtml)
   const styleOverrides = extractStyleOverrides(input.previewHtml)
   if (usesLakebed) {
@@ -3348,7 +3846,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 }
 `,
     'app/globals.css': renderThemeCss(input),
-    'src/data/pages.ts': renderRouteData(routes, componentNames),
+    'src/data/pages.ts': renderRouteData(routes, routeComponentNames),
     'src/lib/cn.ts': renderLibCn(),
     'src/lib/image.tsx': renderImageHelper('next', imageSources),
     'src/lib/style-overrides.tsx': renderStyleOverridesRuntime(styleOverrides),
@@ -3365,6 +3863,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   }
   Object.assign(files, renderNextEndpointRouteFiles(endpoints))
 
+  for (const component of routeComponents) {
+    files[`src/components/${component.name}.tsx`] = asClientComponent(
+      component.source,
+    )
+  }
   for (const component of components) {
     files[`src/components/${component.name}.tsx`] = asClientComponent(
       component.source,
@@ -3459,9 +3962,8 @@ export async function buildOpenUIExport(
   input: OpenUIExportInput,
 ): Promise<BuiltExport> {
   if (input.target === 'html') {
-    const { buildOpenUIHtmlExport } = await import(
-      './openui-html-export-builder'
-    )
+    const { buildOpenUIHtmlExport } =
+      await import('./openui-html-export-builder')
     return buildOpenUIHtmlExport(input)
   }
 

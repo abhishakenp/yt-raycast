@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
-export const TelehealthHero = defineComponent({
+export const TelehealthHero = defineCapsule({
   name: 'TelehealthHero',
   description:
     "Bespoke, token-styled hero band for a telehealth / virtual care homepage. Lays out a calm availability badge pill, a large reassuring headline ('See a doctor in minutes'), a supporting lede about on-demand virtual care, a dual call-to-action row (a primary 'Get Started' pill that routes to booking plus an outlined 'How it works' button), and a divider-separated trust strip beneath the CTAs (24/7 availability, insurance, board-certified doctors). A soft image panel sits alongside on large screens. Use as the opening viewport of a telehealth landing page to establish trust and drive booking.",

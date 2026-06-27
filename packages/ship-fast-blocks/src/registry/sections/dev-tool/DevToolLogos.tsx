@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use directly beneath a hero to establish credibility for
  * developer tools, API platforms, or technical SaaS.
  */
-export const DevToolLogos = defineComponent({
+export const DevToolLogos = defineCapsule({
   name: 'DevToolLogos',
   description:
     "Slim 'trusted by' social-proof logo strip for a developer tool / API platform: a bordered band with a centered uppercase caption above a responsive 3-up (mobile) / 6-up (desktop) grid of wordmark company names as muted text buttons that brighten on hover. Each routes through useNavigate. Use beneath a hero to establish credibility for developer tools, API platforms, or technical SaaS.",

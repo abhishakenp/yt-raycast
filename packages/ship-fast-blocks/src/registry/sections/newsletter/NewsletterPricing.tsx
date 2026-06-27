@@ -1,7 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from './newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
 
 /**
  * NewsletterPricing — two-tier Free vs Paid pricing comparison for a newsletter.
@@ -11,15 +14,16 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * the Paid card is an inverted foreground panel with a "Most Popular" badge, a
  * serif price + period, tagline, a check-marked feature list, an inverted email
  * capture + submit, and a small note. A centered footnote with an inline link
- * (e.g. team/enterprise contact) closes the section. Each form submit and the
- * footnote link route through useNavigate. Use for free/paid subscription tiers
- * on newsletters, publications, blogs, or content creators. Renders fully with no
- * props via baked-in defaults.
+ * (e.g. team/enterprise contact) closes the section. Each form submit writes to
+ * the shared Lakebed subscriber list and the footnote link routes through
+ * useNavigate. Use for free/paid subscription tiers on newsletters,
+ * publications, blogs, or content creators. Renders fully with no props via
+ * baked-in defaults.
  */
-export const NewsletterPricing = defineComponent({
+export const NewsletterPricing = defineCapsule({
   name: 'NewsletterPricing',
   description:
-    "Two-tier Free vs Paid pricing comparison for a newsletter on a muted band bordered top and bottom: a centered serif heading + lede over a 2-up grid. The Free card is a light bordered panel with a serif price, tagline, a check-marked feature list, and its own inline email capture + solid submit; the Paid card is an inverted foreground panel with a 'Most Popular' badge, a serif price + period, tagline, a check-marked feature list, an inverted email capture + submit, and a small note. A centered footnote with an inline link (e.g. team/enterprise contact) closes the section. Each form submit and the footnote link route through useNavigate. Use for free/paid subscription tiers on newsletters, publications, blogs, or content creators.",
+    "Two-tier Free vs Paid pricing comparison for a newsletter on a muted band bordered top and bottom: a centered serif heading + lede over a 2-up grid. The Free card is a light bordered panel with a serif price, tagline, a check-marked feature list, and its own inline email capture + solid submit; the Paid card is an inverted foreground panel with a 'Most Popular' badge, a serif price + period, tagline, a check-marked feature list, an inverted email capture + submit, and a small note. A centered footnote with an inline link (e.g. team/enterprise contact) closes the section. Each form submit writes to the shared Lakebed subscriber list and the footnote link routes through useNavigate. Use for free/paid subscription tiers on newsletters, publications, blogs, or content creators.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -56,7 +60,8 @@ export const NewsletterPricing = defineComponent({
     footnoteSuffix: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heading = props.heading ?? 'Choose Your Experience'
     const description =
@@ -143,27 +148,17 @@ export const NewsletterPricing = defineComponent({
                 ))}
               </ul>
 
-              <form
+              <NewsletterSubscribeForm
+                lakebed={lakebed}
+                source={freeSubmit}
+                placeholder={emailPlaceholder}
+                buttonLabel={freeSubmit}
+                successMessage="You're on the free list. The next issue will arrive by email."
                 className="space-y-3"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  go(freeSubmit)
-                }}
-              >
-                <input
-                  type="email"
-                  required
-                  placeholder={emailPlaceholder}
-                  aria-label="Email address for free subscription"
-                  className="w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <button
-                  type="submit"
-                  className="w-full rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                >
-                  {freeSubmit}
-                </button>
-              </form>
+                inputClassName="w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+                buttonClassName="w-full rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
+                emailLabel="Email address for free subscription"
+              />
             </div>
 
             {/* Paid Plan */}
@@ -191,27 +186,18 @@ export const NewsletterPricing = defineComponent({
                 ))}
               </ul>
 
-              <form
+              <NewsletterSubscribeForm
+                lakebed={lakebed}
+                source={paidSubmit}
+                placeholder={emailPlaceholder}
+                buttonLabel={paidSubmit}
+                successMessage="You're on the paid list. Watch your inbox for next steps."
                 className="space-y-3"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  go(paidSubmit)
-                }}
-              >
-                <input
-                  type="email"
-                  required
-                  placeholder={emailPlaceholder}
-                  aria-label="Email address for paid subscription"
-                  className="w-full rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder-background/50 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-background"
-                />
-                <button
-                  type="submit"
-                  className="w-full rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-background focus:ring-offset-2"
-                >
-                  {paidSubmit}
-                </button>
-              </form>
+                inputClassName="w-full rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder-background/50 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-background"
+                buttonClassName="w-full rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-background focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
+                emailLabel="Email address for paid subscription"
+                statusClassName="text-background/60"
+              />
 
               <p className="mt-4 text-center text-sm text-background/60">
                 {paidNote}

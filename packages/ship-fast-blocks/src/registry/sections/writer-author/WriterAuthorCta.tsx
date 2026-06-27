@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -14,7 +15,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * of an author, novelist, poet, or book-launch page to drive sales. Renders
  * fully with no props via baked-in "Eleanor Vance" defaults.
  */
-export const WriterAuthorCta = defineComponent({
+export const WriterAuthorCta = defineCapsule({
   name: 'WriterAuthorCta',
   description:
     "Bold, centered book-purchase band for a literary author home page: a full-width primary-toned section with an 'Out now' eyebrow, a serif headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Buy the Book' button plus an outlined 'Find a Store' button). Both CTAs route through useNavigate. Use near the bottom of an author, novelist, poet, or book-launch page to drive book sales.",

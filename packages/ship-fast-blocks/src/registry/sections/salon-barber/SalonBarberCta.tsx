@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
-export const SalonBarberCta = defineComponent({
+export const SalonBarberCta = defineCapsule({
   name: 'SalonBarberCta',
   description:
     "Barbershop / salon booking call-to-action band built on the shared CtaBand composite with a confident primary surface. Surfaces opening hours / walk-in availability as an eyebrow, a direct grooming headline, and twin actions to book online or call. Use it as the conversion band on any barbershop, salon, or men's grooming homepage — typically the closing section that turns browsers into booked appointments.",

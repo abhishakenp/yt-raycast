@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { SiteNav } from '#/section-kit/SiteNav.tsx'
  * bathhouses, and treatment clinics. Renders fully with no props via baked-in
  * defaults.
  */
-export const SpaWellnessNavbar = defineComponent({
+export const SpaWellnessNavbar = defineCapsule({
   name: 'SpaWellnessNavbar',
   description:
     "Serene top navigation bar for a day-spa / wellness site built on the shared SiteNav composite: a light bordered-bottom bar with a serif wordmark on the left, centered nav links (Treatments / Memberships / Gift Cards / Contact), a filled primary 'Book Now' CTA on the right, and a real mobile drawer. The wordmark and links route through useNavigate. Use as the opening site navigation for spas, wellness retreats, massage studios, bathhouses, and treatment clinics.",

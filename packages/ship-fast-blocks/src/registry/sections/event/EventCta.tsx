@@ -1,20 +1,25 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  EventActionButton,
+  EventMutationSpinner,
+} from './event-interactions.tsx'
+import { eventLakebed } from './event-lakebed.ts'
 
 /**
  * EventCta — a final call-to-action band for a conference or event page. A
  * centered, large heading with a supporting paragraph, dual primary/secondary
- * CTAs (get ticket / download brochure), and a closing email line with an inline
- * mailto-style link. All actions route through useNavigate. Use as the closing
+ * CTAs (get ticket / download brochure), and a closing email line with a real
+ * mailto link. CTAs write shared Lakebed event actions. Use as the closing
  * conversion band before the footer on tech conference, summit, festival, or
  * workshop pages.
  */
-export const EventCta = defineComponent({
+export const EventCta = defineCapsule({
   name: 'EventCta',
   description:
-    'Final call-to-action band for a conference or event page: a centered large heading with a supporting paragraph, dual primary/secondary CTAs (get ticket / download brochure), and a closing email line with an inline contact link. All actions route through useNavigate. Use as the closing conversion band before the footer on tech conference, summit, festival, meetup, or workshop pages.',
+    'Final call-to-action band for a conference or event page: a centered large heading with a supporting paragraph, dual primary/secondary CTAs (get ticket / download brochure), and a closing email line with a real mailto contact link. CTAs write shared Lakebed event actions. Use as the closing conversion band before the footer on tech conference, summit, festival, meetup, or workshop pages.',
   props: z.object({
     /** Heading text. */
     heading: z.string().optional(),
@@ -30,8 +35,8 @@ export const EventCta = defineComponent({
     email: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: eventLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Ready to join us in San Francisco?'
     const description =
       props.description ??
@@ -51,30 +56,47 @@ export const EventCta = defineComponent({
             {description}
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-4 text-lg font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            <EventActionButton
+              lakebed={lakebed}
+              action="ticket"
+              label={primaryCta}
+              intentKey="cta-ticket"
+              source="cta"
+              pendingChildren={
+                <>
+                  <EventMutationSpinner />
+                  Reserving
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-lg font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-8 py-4 text-lg font-medium text-foreground transition-colors hover:bg-muted"
+            </EventActionButton>
+            <EventActionButton
+              lakebed={lakebed}
+              action="download"
+              label={secondaryCta}
+              intentKey="cta-download"
+              source="cta"
+              pendingChildren={
+                <>
+                  <EventMutationSpinner />
+                  Preparing
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-8 py-4 text-lg font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
             >
               {secondaryCta}
-            </button>
+            </EventActionButton>
           </div>
           <p className="mt-8 text-sm text-muted-foreground">
             {emailLabel}{' '}
-            <button
-              type="button"
-              onClick={() => go(email)}
+            <a
+              href={`mailto:${email}`}
               className="text-foreground underline hover:no-underline"
             >
               {email}
-            </button>
+            </a>
           </p>
         </div>
       </section>

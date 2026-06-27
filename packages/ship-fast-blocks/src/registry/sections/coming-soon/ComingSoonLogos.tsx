@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * app pre-launch pages, or any early-access landing page. Renders fully with no
  * props via baked-in default names.
  */
-export const ComingSoonLogos = defineComponent({
+export const ComingSoonLogos = defineCapsule({
   name: 'ComingSoonLogos',
   description:
     "'Trusted by' logo strip for a 'launching soon' / waitlist pre-launch landing page: bordered-top section with a centered eyebrow heading above a flex-wrap row of company-name text buttons (stand-ins for logos) in muted, slightly translucent text. Each name routes through useNavigate. Use as social-proof / trust-signal band on SaaS waitlists, app pre-launch pages, or early-access landing pages.",

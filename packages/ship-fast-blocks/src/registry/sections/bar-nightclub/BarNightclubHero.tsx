@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * BarNightclubHero — full-bleed atmospheric hero band for a cocktail-bar /
@@ -16,7 +24,7 @@ import { Image } from '#/lib/img.tsx'
  * nightclubs, lounges, speakeasies, or live-music venues. Renders fully with no
  * props via baked-in "NOIR" defaults.
  */
-export const BarNightclubHero = defineComponent({
+export const BarNightclubHero = defineCapsule({
   name: 'BarNightclubHero',
   description:
     'Full-bleed atmospheric hero band for a cocktail-bar / nightclub landing page: near-full-viewport centered section over a dimmed object-cover ambient bar photo with a bottom-up token gradient scrim, a wide letter-spaced uppercase established-year eyebrow, a huge two-line light-weight editorial headline, a supporting paragraph, dual CTAs (filled reserve + outlined view-menu), and a bouncing scroll cue pinned to the bottom. Moody, upscale and after-dark; CTAs route through useNavigate and the backdrop photo uses the alt-driven Image component. Use as the opening hero for cocktail bars, nightclubs, lounges, speakeasies, or live-music venues.',
@@ -33,13 +41,18 @@ export const BarNightclubHero = defineComponent({
     primaryCta: z.string().optional(),
     /** Outlined secondary CTA label. */
     secondaryCta: z.string().optional(),
+    featuredItemName: z.string().optional(),
+    featuredItemPrice: z.string().optional(),
+    featuredItemSubtitle: z.string().optional(),
+    addLabel: z.string().optional(),
     /** Alt text driving the ambient backdrop photo. */
     imageAlt: z.string().optional(),
     /** Scroll-cue label pinned to the bottom. */
     scroll: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Est. 2019 — Downtown Chicago'
     const headingTop = props.headingTop ?? 'Where Night'
@@ -49,10 +62,24 @@ export const BarNightclubHero = defineComponent({
       'Craft cocktails, world-class DJs, and intimate vibes. NOIR is your destination for unforgettable evenings.'
     const primaryCta = props.primaryCta ?? 'Reserve a Table'
     const secondaryCta = props.secondaryCta ?? 'View Menu'
+    const featuredItemName = props.featuredItemName ?? 'Midnight in Paris'
+    const featuredItemPrice = props.featuredItemPrice ?? '$18'
+    const featuredItemSubtitle =
+      props.featuredItemSubtitle ?? 'House signature cocktail'
+    const addLabel = props.addLabel ?? 'Add to cart'
     const imageAlt =
       props.imageAlt ??
       'Elegant bar interior with ambient lighting and bottles on shelves'
     const scroll = props.scroll ?? 'Scroll'
+
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt,
+        label: featuredItemName,
+        price: featuredItemPrice,
+        subtitle: featuredItemSubtitle,
+      }),
+    ])
 
     return (
       <section
@@ -97,6 +124,18 @@ export const BarNightclubHero = defineComponent({
             >
               {secondaryCta}
             </button>
+            <CommerceAddItemButton
+              lakebed={lakebed}
+              item={{
+                label: featuredItemName,
+                price: featuredItemPrice,
+              }}
+              aria-label={`${addLabel} ${featuredItemName}`}
+              pendingChildren={<CommerceMutationSpinner />}
+              className="inline-flex w-full items-center justify-center bg-primary px-8 py-4 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:w-auto"
+            >
+              {addLabel}
+            </CommerceAddItemButton>
           </div>
         </div>
         <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-muted-foreground">

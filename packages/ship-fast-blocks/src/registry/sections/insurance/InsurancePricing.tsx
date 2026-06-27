@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * carriers, insurtech, brokers, or financial-protection products. Renders fully
  * with no props via baked-in defaults.
  */
-export const InsurancePricing = defineComponent({
+export const InsurancePricing = defineCapsule({
   name: 'InsurancePricing',
   description:
     "3-tier transparent pricing table for an insurance page on a soft muted canvas: a centered eyebrow chip + heading + lede above a 3-column grid of plan cards (name, tagline, big monthly price + period, an included/excluded feature checklist with check or cross icons, and a CTA button). The 'Most Popular' plan is highlighted with a brand border, upward lift and a top badge. CTAs route through useNavigate. Use as the pricing section for insurance carriers, insurtech startups, brokers, or financial-protection products.",

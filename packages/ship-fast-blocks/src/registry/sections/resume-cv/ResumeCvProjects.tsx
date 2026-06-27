@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * online résumé, or professional profile page to showcase recent work. Renders
  * fully with no props via baked-in defaults.
  */
-export const ResumeCvProjects = defineComponent({
+export const ResumeCvProjects = defineCapsule({
   name: 'ResumeCvProjects',
   description:
     "Selected-work grid for a personal resume / CV / portfolio site: a left-aligned SectionHeading ('Projects' / 'Selected work') leads into a responsive grid of project cards, each with a rounded thumbnail photo, a title, a short description, a row of token tag chips, and a routable 'Case study' link. Every card link navigates through useNavigate. Clean, minimal, portfolio-style. Use on a personal portfolio, online résumé, or professional profile page to showcase recent work.",

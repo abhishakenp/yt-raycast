@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * pediatric / women's-health clinic, hospital or medical group. Renders fully
  * with no props via baked-in board-certified-physician defaults.
  */
-export const HealthcareDoctors = defineComponent({
+export const HealthcareDoctors = defineCapsule({
   name: 'HealthcareDoctors',
   description:
     "Physician team grid for a medical-clinic page: a centered eyebrow chip, heading and intro above a responsive 1/2/4-column grid of profile cards, each with a tall 3:4 alt-driven headshot that gently zooms on hover, the doctor's name, an accent-colored specialty line, and a short bio. Tokens-only, no links. Use for a 'meet our physicians' / care-team / provider-bios section of a doctors' office, family-medicine practice, pediatric / women's-health clinic, hospital or medical group.",

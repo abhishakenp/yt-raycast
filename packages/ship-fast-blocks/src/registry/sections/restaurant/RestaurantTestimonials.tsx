@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * fine dining, or any dining venue. Renders fully with no props via baked
  * defaults.
  */
-export const RestaurantTestimonials = defineComponent({
+export const RestaurantTestimonials = defineCapsule({
   name: 'RestaurantTestimonials',
   description:
     '3-up guest-review wall for a restaurant page: a centered serif heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted testimonial, and an attribution row pairing the guest name with the review source (Google, Yelp, OpenTable). Use for social-proof on restaurants, bistros, fine dining, or any dining venue.',

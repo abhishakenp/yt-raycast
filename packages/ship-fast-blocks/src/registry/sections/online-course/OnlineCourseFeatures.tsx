@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import type { ReactNode } from 'react'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
@@ -55,7 +56,7 @@ const ICONS: ReactNode[] = [
  * description. Use to summarize the concrete perks of enrolling on an
  * e-learning, bootcamp, or academy landing page. Renders fully with no props.
  */
-export const OnlineCourseFeatures = defineComponent({
+export const OnlineCourseFeatures = defineCapsule({
   name: 'OnlineCourseFeatures',
   description:
     "A 'what's included' benefits band for an online-course page built on the shared FeatureGrid composite: a heading over a four-column grid of benefit cards (lifetime access, certificate of completion, community access, hands-on projects, mobile learning, downloadable resources), each with a small line icon, a title, and a one-line description. Use to summarize the perks of enrolling on an e-learning, bootcamp, or academy landing page.",

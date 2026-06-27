@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
  * spaces, shared offices, or flex-office providers. Renders fully with no props
  * via bright, modern baked-in defaults.
  */
-export const CoworkingGallery = defineComponent({
+export const CoworkingGallery = defineCapsule({
   name: 'CoworkingGallery',
   description:
     'Captioned space-tour gallery for a coworking or shared-workspace page built on the shared GalleryGrid composite: a centered heading block above a responsive grid of alt-driven photos of the space (open desks, lounge, meeting room, shared kitchen, phone booth, rooftop terrace), each a 4:3 image with a short caption overlay. All imagery is alt-driven via the Image component. Use to let prospective members picture themselves in the space for coworking spaces, shared offices, or flex-office providers.',

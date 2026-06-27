@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Breadcrumb as UIBreadcrumb,
   BreadcrumbItem,
@@ -12,7 +13,7 @@ import {
 // Compound primitive: flatten Breadcrumb/BreadcrumbList/BreadcrumbItem/... into
 // a single `items` array. The last item renders as the current page (non-link);
 // earlier items render as links with separators between them.
-export const Breadcrumb = defineComponent({
+export const Breadcrumb = defineCapsule({
   name: 'Breadcrumb',
   description:
     'Hierarchical breadcrumb trail. `items` is ordered root -> current; the last item is the current page.',

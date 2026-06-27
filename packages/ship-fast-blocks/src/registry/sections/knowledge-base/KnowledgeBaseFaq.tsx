@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * knowledge base, support portal, docs site or any page answering common
  * questions. Renders fully with no props via baked-in defaults.
  */
-export const KnowledgeBaseFaq = defineComponent({
+export const KnowledgeBaseFaq = defineCapsule({
   name: 'KnowledgeBaseFaq',
   description:
     'Native expand/collapse FAQ accordion for a help center: a centered heading + description above a narrow stack of bordered card <details>/<summary> rows — each summary shows the question with a chevron that rotates when open, revealing the answer paragraph. Uses native HTML disclosure (no JS state). Calm, light, editorial. Use as the FAQ section of a knowledge base, support portal, docs site or any page answering common questions.',

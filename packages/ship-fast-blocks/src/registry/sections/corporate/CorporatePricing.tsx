@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * price, a feature checklist, and a CTA button that routes through useNavigate.
  * Use for SaaS, managed services, or enterprise software pricing pages.
  */
-export const CorporatePricing = defineComponent({
+export const CorporatePricing = defineCapsule({
   name: 'CorporatePricing',
   description:
     "Transparent 3-tier pricing table for an enterprise / corporate B2B site: centered heading above a responsive 1/2/3-column grid of pricing cards on a muted band, with an optional featured dark middle card and a floating 'Most Popular' badge. Each card lists plan name, blurb, price, feature checklist, and a CTA button routing through useNavigate. Use for SaaS, managed services, or enterprise software pricing.",

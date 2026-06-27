@@ -11,6 +11,8 @@ export type LakebedAdminRow = {
   id: string
   index: number
   key?: string
+  sourceCapsule?: string
+  sourceField?: string
   value: unknown
   cells: JsonRecord
 }
@@ -19,6 +21,7 @@ export type LakebedAdminTable = {
   id: string
   name: string
   capsule: string
+  sourceCapsules: string[]
   field: string
   storage: 'array' | 'map' | 'value'
   columns: string[]
@@ -33,6 +36,11 @@ const toCells = (value: unknown): JsonRecord =>
   isJsonRecord(value) ? value : { value }
 
 const tableId = (capsule: string, field: string) => `${capsule}:${field}`
+const capsuleComponentName = (capsule: string): string =>
+  capsule.split(':', 1)[0] ?? capsule
+
+const isStructuralChromeCapsule = (capsule: string): boolean =>
+  /(Navbar|Footer|Header|Topbar|Sidebar)$/.test(capsuleComponentName(capsule))
 
 const uniqueColumns = (rows: LakebedAdminRow[]): string[] => {
   const columns = new Set<string>()
@@ -56,48 +64,48 @@ const rowFromValue = (
   value: unknown,
   index: number,
   key?: string,
+  source?: { capsule: string; field: string },
 ): LakebedAdminRow => {
   const fallbackId = key ?? String(index + 1)
   const id = rowIdFromValue(value, fallbackId)
   return {
     cells: { _id: id, ...toCells(value) },
-    id: fallbackId,
+    id,
     index,
     key,
+    sourceCapsule: source?.capsule,
+    sourceField: source?.field,
     value,
   }
 }
-
-const tableNameFor = (
-  capsule: string,
-  field: string,
-  collisions: Map<string, number>,
-) => (collisions.get(field) === 1 ? field : `${capsule}.${field}`)
 
 export function createLakebedAdminTables(
   docs: LakebedSessionDataDoc[] | undefined,
 ): LakebedAdminTable[] {
   if (!docs) return []
 
-  const fields = docs.flatMap((doc) => Object.keys(doc.data))
-  const collisions = fields.reduce((counts, field) => {
-    counts.set(field, (counts.get(field) ?? 0) + 1)
-    return counts
-  }, new Map<string, number>())
-
+  const contentDocs = docs.filter(
+    (doc) => !isStructuralChromeCapsule(doc.capsule),
+  )
   const tables: LakebedAdminTable[] = []
 
-  for (const doc of docs) {
+  for (const doc of contentDocs) {
     for (const [field, value] of Object.entries(doc.data)) {
       if (Array.isArray(value)) {
-        const rows = value.map((item, index) => rowFromValue(item, index))
+        const rows = value.map((item, index) =>
+          rowFromValue(item, index, undefined, {
+            capsule: doc.capsule,
+            field,
+          }),
+        )
         tables.push({
           capsule: doc.capsule,
           columns: uniqueColumns(rows),
           field,
           id: tableId(doc.capsule, field),
-          name: tableNameFor(doc.capsule, field, collisions),
+          name: field,
           rows,
+          sourceCapsules: [doc.capsule],
           storage: 'array',
           updatedAt: doc.updatedAt,
         })
@@ -110,6 +118,7 @@ export function createLakebedAdminTables(
             { _key: key, ...(isJsonRecord(item) ? item : {}) },
             index,
             key,
+            { capsule: doc.capsule, field },
           ),
         )
         tables.push({
@@ -117,30 +126,81 @@ export function createLakebedAdminTables(
           columns: uniqueColumns(rows),
           field,
           id: tableId(doc.capsule, field),
-          name: tableNameFor(doc.capsule, field, collisions),
+          name: field,
           rows,
+          sourceCapsules: [doc.capsule],
           storage: 'map',
           updatedAt: doc.updatedAt,
         })
         continue
       }
 
-      const rows = [rowFromValue(value, 0)]
+      const rows = [
+        rowFromValue(value, 0, undefined, { capsule: doc.capsule, field }),
+      ]
       tables.push({
         capsule: doc.capsule,
         columns: uniqueColumns(rows),
         field,
         id: tableId(doc.capsule, field),
-        name: tableNameFor(doc.capsule, field, collisions),
+        name: field,
         rows,
+        sourceCapsules: [doc.capsule],
         storage: 'value',
         updatedAt: doc.updatedAt,
       })
     }
   }
 
-  return tables.sort((a, b) => a.name.localeCompare(b.name))
+  return mergeCompatibleTables(tables).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  )
 }
+
+const mergeCompatibleTables = (
+  tables: LakebedAdminTable[],
+): LakebedAdminTable[] => {
+  const grouped = new Map<string, LakebedAdminTable[]>()
+
+  for (const table of tables) {
+    const key = `${table.storage}:${table.field}`
+    grouped.set(key, [...(grouped.get(key) ?? []), table])
+  }
+
+  const merged: LakebedAdminTable[] = []
+  for (const group of grouped.values()) {
+    const sourceCapsules = [...new Set(group.map((table) => table.capsule))]
+    if (group.length === 1) {
+      merged.push({ ...group[0], name: group[0].field, sourceCapsules })
+      continue
+    }
+
+    const rows = group.flatMap((table) =>
+      table.rows.map((row) => ({
+        ...row,
+        id: `${table.capsule}:${table.field}:${row.id}`,
+        sourceCapsule: row.sourceCapsule ?? table.capsule,
+        sourceField: row.sourceField ?? table.field,
+      })),
+    )
+    merged.push({
+      capsule: group[0].capsule,
+      columns: uniqueColumns(rows),
+      field: group[0].field,
+      id: `${group[0].storage}:${group[0].field}`,
+      name: group[0].field,
+      rows,
+      sourceCapsules,
+      storage: group[0].storage,
+      updatedAt: Math.max(...group.map((table) => table.updatedAt)),
+    })
+  }
+
+  return merged
+}
+
+export const canAddRowsToTable = (table: LakebedAdminTable): boolean =>
+  table.storage !== 'value' && table.sourceCapsules.length === 1
 
 export function previewAdminValue(value: unknown): string {
   if (typeof value === 'string') return value

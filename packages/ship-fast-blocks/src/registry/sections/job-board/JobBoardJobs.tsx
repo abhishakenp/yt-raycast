@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
+import { useState } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { jobBoardLakebed } from './job-board-lakebed.ts'
+import {
+  jobBoardCatalogItem,
+  useJobBoardActions,
+  useJobBoardSearch,
+  useSyncJobBoardCatalog,
+} from './job-board-interactions.tsx'
 
 /**
  * JobBoardJobs — a featured-jobs listings feed for a job-board / careers site. A
@@ -11,14 +19,15 @@ import { Image } from '#/lib/img.tsx'
  * each with a company logo thumbnail, role title, optional New/Featured badge,
  * company + location line, skill/salary tag pills, a clamped description, a
  * posted-date and an Apply button — closing with a centered "load more" button.
- * Filters, view-all, apply and load-more route through useNavigate. Use as the
- * primary listings feed on job boards, hiring marketplaces or talent networks.
- * Renders fully with no props.
+ * Filters read/write shared Lakebed search state, applications are recorded,
+ * and load-more changes the visible job count. Use as the primary listings feed
+ * on job boards, hiring marketplaces or talent networks. Renders fully with no
+ * props.
  */
-export const JobBoardJobs = defineComponent({
+export const JobBoardJobs = defineCapsule({
   name: 'JobBoardJobs',
   description:
-    "Featured-jobs listings feed for a job-board / careers site: a header row pairing a heading + description with a 'view all' arrow link, a row of pill filter chips (first active), then a vertical stack of rich job cards — each with a company logo thumbnail, role title, optional New/Featured badge, company + location line, skill/salary tag pills, a clamped description, a posted-date and an Apply button — closing with a centered 'load more' button. Filters, view-all, apply and load-more route through useNavigate. Use as the primary listings feed on job boards, hiring marketplaces or talent networks.",
+    "Featured-jobs listings feed for a job-board / careers site: a header row pairing a heading + description with a 'view all' action, a row of pill filter chips, then a vertical stack of rich job cards — each with a company logo thumbnail, role title, optional New/Featured badge, company + location line, skill/salary tag pills, a clamped description, a posted-date and an Apply button — closing with a centered 'load more' button. The feed reacts to shared Lakebed search criteria from JobBoardHero, filters write the same search state, Apply records applications, and Load more updates visible count. Use as the primary listings feed on job boards, hiring marketplaces or talent networks.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -48,8 +57,11 @@ export const JobBoardJobs = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: jobBoardLakebed,
+  component: ({ props, lakebed }) => {
+    const jobSearch = useJobBoardSearch(lakebed)
+    const jobActions = useJobBoardActions(lakebed)
+    const [pendingRole, setPendingRole] = useState('')
     const heading = props.heading ?? 'Featured jobs'
     const description =
       props.description ?? 'Hand-picked opportunities from top companies'
@@ -119,6 +131,35 @@ export const JobBoardJobs = defineComponent({
             posted: '1 week ago',
           },
         ]
+    const syncedJobs = items.map((job) =>
+      jobBoardCatalogItem({
+        ...job,
+        tags: job.tags.join(' '),
+      }),
+    )
+    useSyncJobBoardCatalog(lakebed, syncedJobs)
+    const activeFilter = jobActions.state?.filter ?? 'All Jobs'
+    const activeLocation = jobActions.state?.location.toLowerCase() ?? ''
+    const activeQuery = jobActions.state?.query.toLowerCase() ?? ''
+    const visibleCount = jobActions.state?.visibleCount ?? 3
+    const appliedRoles = new Set(
+      jobActions.applications.map((application) => application.role),
+    )
+    const matchesSearch = (job: (typeof items)[number]) => {
+      const haystack = [job.role, job.company, job.description, ...job.tags]
+        .join(' ')
+        .toLowerCase()
+      const locationMatches =
+        !activeLocation || job.company.toLowerCase().includes(activeLocation)
+      const queryMatches = !activeQuery || haystack.includes(activeQuery)
+      const filterMatches =
+        activeFilter === 'All Jobs' ||
+        haystack.includes(activeFilter.toLowerCase())
+
+      return locationMatches && queryMatches && filterMatches
+    }
+    const matchingItems = items.filter(matchesSearch)
+    const visibleItems = matchingItems.slice(0, visibleCount)
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -150,7 +191,13 @@ export const JobBoardJobs = defineComponent({
             </div>
             <button
               type="button"
-              onClick={() => go(viewAll)}
+              onClick={() =>
+                jobSearch.chooseSearch({
+                  filter: 'All Jobs',
+                  location: '',
+                  query: '',
+                })
+              }
               className="inline-flex items-center gap-2 font-medium text-foreground hover:underline"
             >
               {viewAll}
@@ -163,10 +210,16 @@ export const JobBoardJobs = defineComponent({
               <button
                 key={filter}
                 type="button"
-                onClick={() => go(filter)}
+                onClick={() =>
+                  jobSearch.chooseSearch({
+                    filter,
+                    location: filter === 'Remote' ? 'Remote' : '',
+                    query: '',
+                  })
+                }
                 className={cn(
                   'rounded-full px-4 py-2 text-sm font-medium transition-colors',
-                  i === 0
+                  activeFilter === filter || (i === 0 && !activeFilter)
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                 )}
@@ -176,77 +229,120 @@ export const JobBoardJobs = defineComponent({
             ))}
           </div>
 
+          <p className="mb-5 text-sm text-muted-foreground" aria-live="polite">
+            {matchingItems.length} matching job
+            {matchingItems.length === 1 ? '' : 's'}
+            {jobActions.applicationCount
+              ? ` · ${jobActions.applicationCount} application${
+                  jobActions.applicationCount === 1 ? '' : 's'
+                } started`
+              : ''}
+          </p>
+
           <div className="space-y-4">
-            {items.map((job) => (
-              <article
-                key={job.role}
-                className="group rounded-xl border border-border bg-card p-6 transition-all hover:border-foreground/30 hover:shadow-lg"
-              >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                  <Image
-                    alt={job.logoAlt}
-                    w={100}
-                    h={100}
-                    loading="lazy"
-                    className="size-14 shrink-0 rounded-lg object-cover"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                      <h3 className="text-lg font-semibold text-card-foreground transition-colors group-hover:text-foreground/70">
-                        {job.role}
-                      </h3>
-                      {job.badge ? (
-                        <span
-                          className={cn(
-                            'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                            job.badge === 'New'
-                              ? 'bg-primary/10 text-primary'
-                              : 'bg-secondary text-secondary-foreground',
-                          )}
-                        >
-                          {job.badge}
-                        </span>
-                      ) : null}
+            {visibleItems.map((job) => {
+              const applied = appliedRoles.has(job.role)
+              const pending = pendingRole === job.role
+
+              return (
+                <article
+                  key={job.role}
+                  className="group rounded-xl border border-border bg-card p-6 transition-all hover:border-foreground/30 hover:shadow-lg"
+                >
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                    <Image
+                      alt={job.logoAlt}
+                      w={100}
+                      h={100}
+                      loading="lazy"
+                      className="size-14 shrink-0 rounded-lg object-cover"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                        <h3 className="text-lg font-semibold text-card-foreground transition-colors group-hover:text-foreground/70">
+                          {job.role}
+                        </h3>
+                        {job.badge ? (
+                          <span
+                            className={cn(
+                              'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                              job.badge === 'New'
+                                ? 'bg-primary/10 text-primary'
+                                : 'bg-secondary text-secondary-foreground',
+                            )}
+                          >
+                            {job.badge}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mb-3 text-muted-foreground">
+                        {job.company}
+                      </p>
+                      <div className="mb-4 flex flex-wrap gap-2">
+                        {job.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="line-clamp-2 text-sm text-muted-foreground">
+                        {job.description}
+                      </p>
                     </div>
-                    <p className="mb-3 text-muted-foreground">{job.company}</p>
-                    <div className="mb-4 flex flex-wrap gap-2">
-                      {job.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                    <div className="mt-2 flex flex-row items-center gap-3 sm:mt-0 sm:flex-col sm:items-end sm:gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {job.posted}
+                      </span>
+                      <button
+                        type="button"
+                        aria-busy={pending}
+                        disabled={pending || applied}
+                        onClick={() => {
+                          setPendingRole(job.role)
+                          void jobActions
+                            .apply({ company: job.company, role: job.role })
+                            .then(
+                              () => setPendingRole(''),
+                              () => setPendingRole(''),
+                            )
+                        }}
+                        className="whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                      >
+                        {pending
+                          ? 'Applying'
+                          : applied
+                            ? 'Applied'
+                            : applyLabel}
+                      </button>
                     </div>
-                    <p className="line-clamp-2 text-sm text-muted-foreground">
-                      {job.description}
-                    </p>
                   </div>
-                  <div className="mt-2 flex flex-row items-center gap-3 sm:mt-0 sm:flex-col sm:items-end sm:gap-2">
-                    <span className="text-sm text-muted-foreground">
-                      {job.posted}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => go(`${applyLabel}: ${job.role}`)}
-                      className="whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                    >
-                      {applyLabel}
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              )
+            })}
+            {!visibleItems.length ? (
+              <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
+                No jobs match the current search.
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-10 text-center">
             <button
               type="button"
-              onClick={() => go(loadMore)}
-              className="rounded-xl border border-input px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
+              aria-busy={jobActions.loadMorePending}
+              disabled={
+                jobActions.loadMorePending ||
+                visibleItems.length >= matchingItems.length
+              }
+              onClick={() => {
+                void jobActions.loadMore()
+              }}
+              className="rounded-xl border border-input px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
             >
-              {loadMore}
+              {jobActions.loadMorePending ? 'Loading' : loadMore}
             </button>
           </div>
         </div>

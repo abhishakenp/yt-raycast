@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * parishes, worship centers, ministries, or religious nonprofits. Renders fully with
  * no props via baked-in defaults.
  */
-export const ChurchFooter = defineComponent({
+export const ChurchFooter = defineCapsule({
   name: 'ChurchFooter',
   description:
     'Rich dark multi-column footer for a church or faith-community site: a foreground-background reversed footer with four columns (brand + about + social icons, quick links, resources, and contact info with office hours), plus a bottom row with auto-updating copyright and legal links. Every link and the brand button route through useNavigate. Use as the closing site footer for churches, parishes, worship centers, ministries, or religious nonprofits.',

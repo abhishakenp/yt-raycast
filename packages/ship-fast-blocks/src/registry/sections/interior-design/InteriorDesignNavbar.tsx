@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * InteriorDesignNavbar — fixed, translucent top navigation bar for an upscale
@@ -15,7 +17,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * staging or renovation businesses. Renders fully with no props via baked-in
  * "Atelier Studio" defaults.
  */
-export const InteriorDesignNavbar = defineComponent({
+export const InteriorDesignNavbar = defineCapsule({
   name: 'InteriorDesignNavbar',
   description:
     'Fixed translucent top navigation bar for an upscale interior-design / architecture studio site: backdrop-blurred, border-bottomed header pinned to the top with a light-weight two-tone wordmark (bold mark + faded suffix) on the left, horizontal nav links in the center, and an outlined square primary CTA on the right (desktop), plus a hamburger menu on mobile. Links and CTA route through useNavigate for page-switching. Editorial, refined and gallery-like. Use as the sticky site header for interior designers, design studios, architecture firms, home staging or renovation businesses.',
@@ -82,26 +84,13 @@ export const InteriorDesignNavbar = defineComponent({
             >
               {cta}
             </button>
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => go(nav[0])}
-              className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            <MobileNavDrawer
+              brand={brand}
+              nav={nav}
+              homeTarget={nav[0]}
+              cta={{ label: cta, target: contactTarget }}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            />
           </div>
         </div>
       </header>

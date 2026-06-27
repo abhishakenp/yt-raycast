@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Menubar as UIMenubar,
   MenubarContent,
@@ -13,7 +14,7 @@ import {
 // Compound overlay: app-style horizontal menubar. `menus` are the top-level
 // triggers, each with its own dropdown `items`. The first menu is opened by
 // default (via `defaultValue`) so its content is statically visible.
-export const Menubar = defineComponent({
+export const Menubar = defineCapsule({
   name: 'Menubar',
   description:
     "Horizontal application menu bar. `menus` are top-level menus, each with `items` (variant 'destructive', separator true for a divider, optional shortcut text). First menu opens by default for preview.",

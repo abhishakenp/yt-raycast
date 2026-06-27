@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -10,7 +11,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * to build trust on a property marketplace or search portal. Renders fully with
  * no props via baked-in defaults.
  */
-export const PropertyListingTestimonials = defineComponent({
+export const PropertyListingTestimonials = defineCapsule({
   name: 'PropertyListingTestimonials',
   description:
     'User-review wall for a property portal: a centered header above a responsive 1/2/3-column grid of review cards, each with a token-toned star rating row, a quote, and an attribution with an initial avatar chip. Defaults cover three renter/buyer stories. Use to build trust on a property marketplace or search portal.',

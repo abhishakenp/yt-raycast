@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * links. Use to explain the search-compare-connect flow on local directories,
  * find-a-service platforms, or review-and-discovery sites.
  */
-export const DirectorySteps = defineComponent({
+export const DirectorySteps = defineCapsule({
   name: 'DirectorySteps',
   description:
     'How-It-Works 3-step explainer for a local-business DIRECTORY: a card-surface section with a centered heading and description and a responsive 3-column grid of numbered steps — each a centered rounded muted-badge number above a step title and a descriptive paragraph. Static, no links. Use to explain the search / compare / connect flow on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',

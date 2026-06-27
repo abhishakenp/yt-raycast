@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -31,7 +32,7 @@ const BroadcastMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const WebinarFooter = defineComponent({
+export const WebinarFooter = defineCapsule({
   name: 'WebinarFooter',
   description:
     'Rich, multi-column closing footer for a webinar or virtual-event site built on the shared SiteFooter composite: a brand block (semibold wordmark + broadcast mark + tagline + social row of LinkedIn/Twitter/YouTube) beside link columns (Event, Resources, Company), with a bordered-top bottom bar holding an auto-updating copyright line and legal links. Use as the site-wide footer for webinars, summits, masterclasses, or any registration-driven event page.',

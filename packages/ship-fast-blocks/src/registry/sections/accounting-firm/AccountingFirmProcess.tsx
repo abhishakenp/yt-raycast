@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * practices, tax/bookkeeping providers, audit firms, or advisory practices.
  * Renders fully with no props via baked-in defaults.
  */
-export const AccountingFirmProcess = defineComponent({
+export const AccountingFirmProcess = defineCapsule({
   name: 'AccountingFirmProcess',
   description:
     'How-we-work process band for a CPA / accounting-firm site: a centered heading + lede above a responsive 3-up numbered process grid with filled circular step badges and connecting rules on desktop, followed by a bordered inline booking-CTA panel (heading + blurb + filled button). Calm professional-services look; the CTA routes through useNavigate. Use to explain the engagement flow on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or advisory practices.',

@@ -1,7 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+  localServiceItem,
+  useSyncLocalServices,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * MentalHealthServices — a centered-heading services grid for a therapy practice.
@@ -12,7 +20,7 @@ import { cn } from '#/lib/utils.ts'
  * (individual, couples, family, EMDR/trauma, anxiety & depression, life
  * transitions) for therapists, counselors, psychologists or wellness centers.
  */
-export const MentalHealthServices = defineComponent({
+export const MentalHealthServices = defineCapsule({
   name: 'MentalHealthServices',
   description:
     'Centered-heading services grid for a therapy practice: an eyebrow + heading + intro paragraph above a responsive 1/2/3-column grid of rounded bordered cards, each with a primary-tinted icon tile, a service title, a description, and a bulleted list of session details. Calm, warm, sage-and-sand wellness aesthetic with gentle hover shadow. Use to present therapy modalities (individual, couples, family, EMDR/trauma, anxiety & depression, life transitions) for therapists, counselors, psychologists or wellness centers.',
@@ -31,7 +39,8 @@ export const MentalHealthServices = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const eyebrow = props.eyebrow ?? 'Our Services'
     const heading = props.heading ?? 'Personalized care for your journey'
     const description =
@@ -97,6 +106,15 @@ export const MentalHealthServices = defineComponent({
             ],
           },
         ]
+    useSyncLocalServices(
+      lakebed,
+      items.map((item) =>
+        localServiceItem({
+          name: item.title,
+          summary: item.description,
+        }),
+      ),
+    )
 
     const serviceIcons: ReactNode[] = [
       <svg
@@ -207,9 +225,14 @@ export const MentalHealthServices = defineComponent({
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
-              <div
+              <LocalServiceBookingButton
                 key={item.title}
-                className="rounded-2xl border border-border bg-card p-8 transition-shadow hover:shadow-xl"
+                lakebed={lakebed}
+                intentLabel={`Book ${item.title}`}
+                service={item.title}
+                source="services"
+                pendingChildren={<LocalServiceMutationSpinner />}
+                className="rounded-2xl border border-border bg-card p-8 text-left transition-shadow hover:shadow-xl disabled:pointer-events-none disabled:opacity-70"
               >
                 <div className="mb-6 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
                   {serviceIcons[i % serviceIcons.length]}
@@ -228,7 +251,7 @@ export const MentalHealthServices = defineComponent({
                     </li>
                   ))}
                 </ul>
-              </div>
+              </LocalServiceBookingButton>
             ))}
           </div>
         </div>

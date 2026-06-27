@@ -1,0 +1,448 @@
+// @vitest-environment jsdom
+
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
+import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { AnalyticsHeader } from './AnalyticsHeader.tsx'
+import { AnalyticsSidebar } from './AnalyticsSidebar.tsx'
+import { analyticsAdminLakebed } from './analytics-admin-lakebed.ts'
+import type {
+  AnalyticsActionInput,
+  AnalyticsNotificationInput,
+} from './analytics-admin-lakebed.ts'
+
+type AnalyticsAdminLakebed = NonNullable<
+  Parameters<typeof AnalyticsHeader.component>[0]['lakebed']
+>
+
+type TestAction = {
+  createdAt: string
+  id: string
+  label: string
+  query: string
+  source: string
+  updatedAt: string
+}
+
+type TestNotification = {
+  createdAt: string
+  id: string
+  message: string
+  read: string
+  type: string
+  updatedAt: string
+}
+
+type MutationArgs<TMutation> = TMutation extends (
+  ctx: unknown,
+  ...args: infer TArgs
+) => unknown
+  ? TArgs
+  : never
+
+type MutationResult<TMutation> = TMutation extends (
+  ...args: ReadonlyArray<unknown>
+) => infer TResult
+  ? Awaited<TResult>
+  : never
+
+const timestamp = '2026-06-26T00:00:00.000Z'
+const navigate = vi.fn()
+const lakebedRef: { current: AnalyticsAdminLakebed | null } = {
+  current: null,
+}
+
+vi.mock('#/lib/use-navigate.tsx', () => ({
+  useNavigate: () => navigate,
+}))
+
+vi.mock('@ship-fast/lakebed/react', async () => {
+  const actual = await vi.importActual<
+    typeof import('@ship-fast/lakebed/react')
+  >('@ship-fast/lakebed/react')
+
+  return {
+    ...actual,
+    createLakebedClient: vi.fn(() => {
+      if (!lakebedRef.current) {
+        throw new Error('Missing analytics admin Lakebed client')
+      }
+      return lakebedRef.current
+    }),
+  }
+})
+
+if (typeof ResizeObserver === 'undefined') {
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    configurable: true,
+    value: class ResizeObserver {
+      disconnect() {}
+      observe() {}
+      unobserve() {}
+    },
+    writable: true,
+  })
+}
+
+function useTestMutation<TMutation>({
+  lastError,
+  pendingCount,
+  reset,
+  runMutation,
+}: {
+  lastError: unknown | null
+  pendingCount: number
+  reset(): void
+  runMutation(
+    ...args: MutationArgs<TMutation>
+  ): Promise<MutationResult<TMutation>>
+}): LakebedMutationFunction<TMutation> {
+  const emptyLastError: unknown | null = null
+  const mutation = useMemo(
+    () =>
+      Object.assign(
+        (...args: MutationArgs<TMutation>) => runMutation(...args),
+        {
+          isPending: false,
+          lastError: emptyLastError,
+          pendingCount: 0,
+          reset,
+        },
+      ),
+    [reset, runMutation],
+  )
+
+  mutation.isPending = pendingCount > 0
+  mutation.lastError = lastError
+  mutation.pendingCount = pendingCount
+  mutation.reset = reset
+
+  return mutation
+}
+
+function createAnalyticsAdminLakebedStub() {
+  let version = 0
+  const signInWithGoogle = vi.fn(async () => ({
+    bundle: { challenge: 'challenge', state: 'state', verifier: 'verifier' },
+    url: 'https://shoo.dev/auth',
+  }))
+  const signOut = vi.fn()
+  let state: {
+    actions: TestAction[]
+    notifications: TestNotification[]
+  } = {
+    actions: [],
+    notifications: [],
+  }
+  const listeners = new Set<() => void>()
+  const notify = () => {
+    version += 1
+    for (const listener of listeners) listener()
+  }
+  const syncNotifications = (notifications: AnalyticsNotificationInput[]) => {
+    const nextNotifications = [...state.notifications]
+
+    for (const notification of notifications) {
+      const message = notification.message.trim()
+      if (!message) continue
+
+      const existingIndex = nextNotifications.findIndex(
+        (item) => item.message === message,
+      )
+      const nextNotification = {
+        createdAt: timestamp,
+        id:
+          existingIndex >= 0
+            ? nextNotifications[existingIndex].id
+            : `notification-${nextNotifications.length + 1}`,
+        message,
+        read: notification.read ?? 'false',
+        type: notification.type ?? 'info',
+        updatedAt: timestamp,
+      }
+
+      if (existingIndex >= 0) {
+        nextNotifications[existingIndex] = nextNotification
+      } else {
+        nextNotifications.push(nextNotification)
+      }
+    }
+
+    state = { ...state, notifications: nextNotifications }
+  }
+  const recordAction = (input: AnalyticsActionInput) => {
+    state = {
+      ...state,
+      actions: [
+        ...state.actions,
+        {
+          createdAt: timestamp,
+          id: `action-${state.actions.length + 1}`,
+          label: input.label,
+          query: input.query ?? '',
+          source: input.source ?? '',
+          updatedAt: timestamp,
+        },
+      ],
+    }
+  }
+  const markNotificationRead = (id: string) => {
+    state = {
+      ...state,
+      notifications: state.notifications.map((notification) =>
+        notification.id === id
+          ? { ...notification, read: 'true', updatedAt: timestamp }
+          : notification,
+      ),
+    }
+  }
+  const clearAllNotifications = () => {
+    state = { ...state, notifications: [] }
+  }
+  const actionSummary = () => {
+    const current = state.actions.at(-1) ?? null
+
+    return {
+      actions: state.actions,
+      current,
+      currentLabel: current?.label ?? '',
+      currentQuery: current?.query ?? '',
+      total: state.actions.length,
+    }
+  }
+  const unreadNotificationCount = () =>
+    state.notifications.filter((notification) => notification.read === 'false')
+      .length
+
+  const lakebed = {
+    signInWithGoogle,
+    signOut,
+    useAuth: () => ({
+      isAuthenticated: true,
+      user: {
+        displayName: 'Morgan Analyst',
+        email: 'morgan@dataflow.dev',
+        isGuest: false,
+      },
+    }),
+    useData: () => state,
+    useQuery: (name) => {
+      useSyncExternalStore(
+        (listener) => {
+          listeners.add(listener)
+          return () => {
+            listeners.delete(listener)
+          }
+        },
+        () => version,
+        () => version,
+      )
+
+      if (name === 'actionSummary') return actionSummary()
+      if (name === 'notifications') return state.notifications
+      if (name === 'unreadNotificationCount') return unreadNotificationCount()
+      return null
+    },
+    useMutation: (name) => {
+      const [pendingCount, setPendingCount] = useState(0)
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const reset = useCallback(() => setLastError(null), [])
+
+      if (name === 'markNotificationRead') {
+        return useTestMutation<
+          typeof analyticsAdminLakebed.mutations.markNotificationRead
+        >({
+          lastError,
+          pendingCount,
+          reset,
+          runMutation: useCallback(async (input) => {
+            setPendingCount((count) => count + 1)
+            setLastError(null)
+            try {
+              markNotificationRead(input.id)
+              notify()
+              return state.notifications
+            } catch (error) {
+              setLastError(error)
+              throw error
+            } finally {
+              setPendingCount((count) => Math.max(0, count - 1))
+            }
+          }, []),
+        })
+      }
+
+      if (name === 'clearAllNotifications') {
+        return useTestMutation<
+          typeof analyticsAdminLakebed.mutations.clearAllNotifications
+        >({
+          lastError,
+          pendingCount,
+          reset,
+          runMutation: useCallback(async () => {
+            setPendingCount((count) => count + 1)
+            setLastError(null)
+            try {
+              clearAllNotifications()
+              notify()
+              return []
+            } catch (error) {
+              setLastError(error)
+              throw error
+            } finally {
+              setPendingCount((count) => Math.max(0, count - 1))
+            }
+          }, []),
+        })
+      }
+
+      if (name === 'syncNotifications') {
+        return useTestMutation<
+          typeof analyticsAdminLakebed.mutations.syncNotifications
+        >({
+          lastError,
+          pendingCount,
+          reset,
+          runMutation: useCallback(async (input) => {
+            setPendingCount((count) => count + 1)
+            setLastError(null)
+            try {
+              syncNotifications(input.notifications)
+              notify()
+              return state.notifications
+            } catch (error) {
+              setLastError(error)
+              throw error
+            } finally {
+              setPendingCount((count) => Math.max(0, count - 1))
+            }
+          }, []),
+        })
+      }
+
+      return useTestMutation<
+        typeof analyticsAdminLakebed.mutations.recordAction
+      >({
+        lastError,
+        pendingCount,
+        reset,
+        runMutation: useCallback(async (input) => {
+          setPendingCount((count) => count + 1)
+          setLastError(null)
+          try {
+            recordAction(input)
+            notify()
+            return state.actions
+          } catch (error) {
+            setLastError(error)
+            throw error
+          } finally {
+            setPendingCount((count) => Math.max(0, count - 1))
+          }
+        }, []),
+      })
+    },
+  } satisfies AnalyticsAdminLakebed
+
+  return {
+    lakebed,
+    signOut,
+    state: () => state,
+  }
+}
+
+const { cleanup, fireEvent, render, screen, waitFor, within } =
+  await import('@testing-library/react')
+
+afterEach(() => {
+  cleanup()
+  navigate.mockReset()
+  lakebedRef.current = null
+  document.body.removeAttribute('style')
+})
+
+describe('analytics admin fullstack behavior', () => {
+  it('shares Shoo profile, notifications, mobile drawer, and header actions through Lakebed', async () => {
+    const { lakebed, signOut, state } = createAnalyticsAdminLakebedStub()
+    lakebedRef.current = lakebed
+
+    render(
+      <>
+        <AnalyticsSidebar.component lakebed={lakebed} props={{}} />
+        <AnalyticsHeader.component lakebed={lakebed} props={{}} />
+      </>,
+    )
+
+    await waitFor(() => {
+      expect(state().notifications).toHaveLength(3)
+    })
+
+    expect(screen.getByText('Morgan Analyst')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }))
+    expect(signOut).toHaveBeenCalledTimes(1)
+    expect(navigate).not.toHaveBeenCalledWith('Morgan Analyst')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Notifications' }))
+    const notificationsDialog = await screen.findByRole('dialog', {
+      name: 'Notifications',
+    })
+    expect(within(notificationsDialog).getByText('Weekly revenue report is ready to review')).toBeTruthy()
+    fireEvent.click(
+      within(notificationsDialog).getAllByRole('button', {
+        name: 'Mark read',
+      })[0],
+    )
+
+    await waitFor(() => {
+      expect(
+        state().notifications.filter(
+          (notification) => notification.read === 'false',
+        ),
+      ).toHaveLength(1)
+    })
+
+    fireEvent.click(
+      within(notificationsDialog).getByRole('button', { name: 'Clear all' }),
+    )
+    await waitFor(() => {
+      expect(state().notifications).toHaveLength(0)
+    })
+    fireEvent.click(within(notificationsDialog).getByRole('button', { name: 'Close' }))
+
+    const searchInput = screen.getByLabelText('Search analytics')
+    fireEvent.change(searchInput, { target: { value: 'revenue' } })
+    fireEvent.submit(
+      screen.getByRole('search', { name: 'Analytics search' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Date filter' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Export' }))
+
+    await waitFor(() => {
+      expect(state().actions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            label: 'Search revenue',
+            query: 'revenue',
+            source: 'header-search',
+          }),
+          expect.objectContaining({
+            label: 'Date filter',
+            source: 'header',
+          }),
+          expect.objectContaining({
+            label: 'Export',
+            source: 'header',
+          }),
+        ]),
+      )
+    })
+    expect(navigate).not.toHaveBeenCalledWith('Search analytics...')
+    expect(navigate).not.toHaveBeenCalledWith('Date filter')
+    expect(navigate).not.toHaveBeenCalledWith('Export')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle menu' }))
+    const menuDialog = await screen.findByRole('dialog', { name: 'DataFlow' })
+    fireEvent.click(within(menuDialog).getByRole('button', { name: 'Reports' }))
+    expect(navigate).toHaveBeenCalledWith('Reports')
+  })
+})

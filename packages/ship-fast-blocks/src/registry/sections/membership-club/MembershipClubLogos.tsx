@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * filler between hero and benefits for members clubs, professional networks,
  * founders communities or alumni collectives. Renders fully with no props.
  */
-export const MembershipClubLogos = defineComponent({
+export const MembershipClubLogos = defineCapsule({
   name: 'MembershipClubLogos',
   description:
     "Quiet 'members come from' wordmark strip for a private membership club / exclusive community page: a bordered, muted-surface band with a centered uppercase caption above a responsive grid of company wordmarks rendered as low-contrast text buttons that brighten on hover (last two hide on small screens). Each wordmark routes through useNavigate. Use as a social-proof strip between hero and benefits for members clubs, professional networks, founders communities or alumni collectives.",

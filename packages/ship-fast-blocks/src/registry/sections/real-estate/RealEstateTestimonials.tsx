@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -10,7 +11,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * social proof on a real-estate brokerage or agent site. Renders fully with no
  * props via baked-in defaults.
  */
-export const RealEstateTestimonials = defineComponent({
+export const RealEstateTestimonials = defineCapsule({
   name: 'RealEstateTestimonials',
   description:
     'Client-review wall for a brokerage: a centered serif header above a responsive 1/2/3-column grid of review cards, each with a token-toned star rating row, a quote, and an attribution with an initial avatar chip. Defaults cover three buyer/seller stories. Use to build social proof on a real-estate brokerage or agent site.',

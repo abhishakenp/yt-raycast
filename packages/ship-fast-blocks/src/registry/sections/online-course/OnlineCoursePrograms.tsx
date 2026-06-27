@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -13,7 +14,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * e-learning, bootcamp, or academy landing page. Renders fully with no props
  * via baked-in defaults.
  */
-export const OnlineCoursePrograms = defineComponent({
+export const OnlineCoursePrograms = defineCapsule({
   name: 'OnlineCoursePrograms',
   description:
     "Bespoke curriculum-modules band for an online-course page: a centered SectionHeading ('Course curriculum') above a stacked list of numbered module rows in a single bordered card, each with a rounded primary-tinted number badge, the module title, and a lessons count, divided by token borders, plus a muted summary line totaling modules and lessons. Use to lay out a self-paced course syllabus on an e-learning, bootcamp, or academy landing page.",

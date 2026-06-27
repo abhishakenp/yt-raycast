@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -31,7 +32,7 @@ const ForkKnifeMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const RestaurantFooter = defineComponent({
+export const RestaurantFooter = defineCapsule({
   name: 'RestaurantFooter',
   description:
     'Rich, multi-column closing footer for a restaurant or dining site: a responsive grid with a brand block (serif wordmark + tagline + social row), an Hours column of day/time rows, a Visit column with address plus tappable phone and email, and extra link columns (Explore, About, …); a bordered-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through useNavigate. Use as the site-wide footer for restaurants, cafés, bistros, bars, or any hospitality landing page.',

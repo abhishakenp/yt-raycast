@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * featured or recently listed homes on a brokerage or agent site. Renders fully
  * with no props via baked-in defaults (six listings).
  */
-export const RealEstateGallery = defineComponent({
+export const RealEstateGallery = defineCapsule({
   name: 'RealEstateGallery',
   description:
     "Featured-listings grid for a premium brokerage: a centered serif header above a responsive 1/2/3-column grid of property cards. Each card has an alt-driven photo with an optional corner badge, a bold price, a beds / baths / sqft spec row, the address, and a 'View' link that routes through useNavigate. Use to showcase featured or recently listed homes on a brokerage or agent site.",

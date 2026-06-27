@@ -1,8 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * AeoHero — centered, data-forward landing hero for an Answer-Engine-Optimization
@@ -14,10 +19,10 @@ import { Image } from '#/lib/img.tsx'
  * opening section for AEO platforms, generative-search visibility tools, or
  * brand-citation analytics products.
  */
-export const AeoHero = defineComponent({
+export const AeoHero = defineCapsule({
   name: 'AeoHero',
   description:
-    "Centered, modern-SaaS landing hero for an Answer-Engine-Optimization (AEO) product: an eyebrow pill, a large multi-line headline about winning the AI answer and getting cited across ChatGPT, Perplexity and Google AI Overviews, a supporting paragraph, dual pill CTAs (filled 'Start Free' + outlined 'Book demo'), a row of supported answer engines, and a large rounded dashboard screenshot below the copy. CTAs route through useNavigate and the screenshot uses the alt-driven Image component. Use as the opening section for AEO platforms, generative-search visibility tools, or brand-citation analytics products.",
+    "Centered, modern-SaaS landing hero for an Answer-Engine-Optimization (AEO) product: an eyebrow pill, a large multi-line headline about winning the AI answer and getting cited across ChatGPT, Perplexity and Google AI Overviews, a supporting paragraph, Lakebed-backed dual pill CTAs (filled 'Start Free' + outlined 'Book demo'), a row of supported answer engines, and a large rounded dashboard screenshot below the copy. CTA intent is shared across sections and the screenshot uses the alt-driven Image component. Use as the opening section for AEO platforms, generative-search visibility tools, or brand-citation analytics products.",
   props: z.object({
     /** Eyebrow pill label above the headline. */
     eyebrow: z.string().optional(),
@@ -37,8 +42,8 @@ export const AeoHero = defineComponent({
     imageAlt: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const eyebrow = props.eyebrow ?? 'Answer Engine Optimization'
     const headingLead = props.headingLead ?? 'Get cited by AI answers,'
     const headingAccent = props.headingAccent ?? 'win the AI answer'
@@ -70,20 +75,36 @@ export const AeoHero = defineComponent({
             {subheading}
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={primaryCta}
+              plan={primaryCta}
+              source="hero"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Starting
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex items-center justify-center rounded-full border border-border bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-muted"
+            </SaasPlanActionButton>
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={secondaryCta}
+              plan={secondaryCta}
+              source="hero"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Sending
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
             >
               {secondaryCta}
-            </button>
+            </SaasPlanActionButton>
           </div>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <span className="font-medium text-foreground">Tracks:</span>

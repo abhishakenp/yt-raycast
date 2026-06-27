@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * FaqNavbar — sticky top navigation bar for a help-center / FAQ / support page.
@@ -13,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * for SaaS knowledge bases, help centers, documentation landings, or support pages.
  * Renders fully with no props via baked-in "FlowSync" defaults.
  */
-export const FaqNavbar = defineComponent({
+export const FaqNavbar = defineCapsule({
   name: 'FaqNavbar',
   description:
     "Sticky top navigation bar for a help-center / FAQ / support page with a clean, light, documentation aesthetic: brand logo tile + name on the left, centered text nav links on desktop, and a 'Contact Support' text link plus a solid primary 'Sign In' button on the right, with a hamburger toggle on mobile. Backdrop-blurred translucent background with a bottom border. Links route through useNavigate for page-switching. Use as the site header for SaaS knowledge bases, help centers, documentation landings, or support pages.",
@@ -125,27 +127,13 @@ export const FaqNavbar = defineComponent({
               >
                 {signIn}
               </button>
-              <button
-                type="button"
-                aria-label="Open menu"
-                onClick={() => go(homeTarget)}
-                className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-              >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  aria-hidden="true"
-                >
-                  <line x1="3" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </svg>
-              </button>
+              <MobileNavDrawer
+                brand={brand}
+                nav={nav}
+                homeTarget={homeTarget}
+                cta={{ label: contactSupport, target: contactSupport }}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+              />
             </div>
           </div>
         </div>

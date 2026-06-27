@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * beneath the hero of local directories, listing marketplaces, or
  * review-and-discovery sites to convey scale and trust.
  */
-export const DirectoryStats = defineComponent({
+export const DirectoryStats = defineCapsule({
   name: 'DirectoryStats',
   description:
     'Compact 4-up statistics band for a local-business DIRECTORY: a muted, border-topped-and-bottomed strip with a centered responsive grid of big-number metrics (value plus label) — typically businesses listed, verified reviews, cities covered, and average rating. Static, no links. Use directly beneath the hero of local directories, listing marketplaces, find-a-service platforms, or review-and-discovery sites to convey scale and trust.',

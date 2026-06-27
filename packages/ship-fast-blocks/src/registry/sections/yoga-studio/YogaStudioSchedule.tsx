@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * show a studio's weekly timetable so visitors can find a class that fits their
  * routine. Renders fully with no props via baked-in defaults.
  */
-export const YogaStudioSchedule = defineComponent({
+export const YogaStudioSchedule = defineCapsule({
   name: 'YogaStudioSchedule',
   description:
     "Weekly class-schedule grid for a yoga-studio page: a clean band with a centered heading + intro above a responsive set of day columns, each listing its classes with name, time, and teacher. Use to show a studio's weekly timetable so visitors can find a class that fits their routine.",

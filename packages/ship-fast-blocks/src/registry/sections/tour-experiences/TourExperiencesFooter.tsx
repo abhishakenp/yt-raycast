@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /** Inline compass brand mark — adventurous, currentColor → theme token. */
@@ -31,7 +32,7 @@ const CompassMark = ({ className }: { className?: string }) => (
  * operators, expedition companies, and travel-experience landing pages. Renders
  * fully with no props via baked-in "Wanderwild Tours" defaults.
  */
-export const TourExperiencesFooter = defineComponent({
+export const TourExperiencesFooter = defineCapsule({
   name: 'TourExperiencesFooter',
   description:
     'Closing multi-column footer for an adventure / guided-tour brand. Composes the shared SiteFooter composite with an inline compass brand mark, a tagline, a social row, and four link columns (Tours, Company, Support, Legal), plus an auto-updating copyright note. Every link routes through the shared navigation. Use as the site footer for tour operators, expedition companies, and travel-experience landing pages.',

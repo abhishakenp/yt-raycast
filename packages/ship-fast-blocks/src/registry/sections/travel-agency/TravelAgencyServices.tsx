@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const PlaneIcon = ({ className }: { className?: string }) => (
@@ -66,7 +67,7 @@ const ShipIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const TravelAgencyServices = defineComponent({
+export const TravelAgencyServices = defineCapsule({
   name: 'TravelAgencyServices',
   description:
     'Premium services band for the Travel Agency page family. Composes the shared FeatureGrid kit composite into a four-column row covering Flights, Hotels, Packages, and Cruises, each with a token-styled inline icon and a concise benefit-led description. Use to summarize what a travel agency offers beneath the hero. All copy is prop-driven with wanderlust-themed defaults so it renders with no props.',

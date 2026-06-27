@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * bootcamp, or academy landing page to drive enrollments. Renders fully with no
  * props.
  */
-export const OnlineCourseCta = defineComponent({
+export const OnlineCourseCta = defineCapsule({
   name: 'OnlineCourseCta',
   description:
     "Bold, centered enrollment band for an online-course page built on the shared CtaBand composite at tone='primary': a reassurance eyebrow ('30-day money-back guarantee'), a strong 'Enroll now' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Enroll now' button targeting Pricing plus an outlined 'View curriculum' button). Both CTAs route through useNavigate. Use near the bottom of an e-learning, bootcamp, or academy landing page to drive enrollments.",

@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * ArchitectureFirmNavbar — sticky, translucent top navigation bar for an
@@ -15,7 +17,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * portfolio sites. Renders fully with no props via baked-in "Atelier Móði"
  * defaults.
  */
-export const ArchitectureFirmNavbar = defineComponent({
+export const ArchitectureFirmNavbar = defineCapsule({
   name: 'ArchitectureFirmNavbar',
   description:
     'Sticky translucent top navigation bar for an architecture-studio / design-practice site: backdrop-blurred, border-bottomed header pinned to the top with a light letter-spaced studio wordmark on the left, a horizontal set of quiet monochrome nav links on the right (desktop) and a hamburger menu button on mobile. Calm, editorial, Scandinavian-minimalist aesthetic. Links route through useNavigate for page-switching. Use as the sticky site header for architecture firms, design studios, interior-design practices, landscape architects, urban planners or built-environment portfolio sites.',
@@ -64,27 +66,12 @@ export const ArchitectureFirmNavbar = defineComponent({
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => go(nav[0])}
-              className="p-2 md:hidden"
-            >
-              <svg
-                className="size-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1.5"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
+            <MobileNavDrawer
+              brand={brand}
+              nav={nav}
+              homeTarget={nav[0]}
+              buttonClassName="p-2 md:hidden"
+            />
           </div>
         </nav>
       </header>

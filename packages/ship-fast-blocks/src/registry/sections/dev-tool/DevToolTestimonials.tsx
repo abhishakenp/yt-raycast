@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * links). Use as social proof to surface engineering-team quotes for developer
  * tools, API platforms, or technical SaaS.
  */
-export const DevToolTestimonials = defineComponent({
+export const DevToolTestimonials = defineCapsule({
   name: 'DevToolTestimonials',
   description:
     '3-up developer testimonials grid for a developer tool / API platform: a centered heading + intro above a responsive 1/3-column grid of bordered cards, each with a 5-star brand-colored rating row, a blockquote, and an author row (alt-driven circular avatar + name + role). Use as social proof to surface engineering-team quotes for developer tools, API platforms, or technical SaaS.',

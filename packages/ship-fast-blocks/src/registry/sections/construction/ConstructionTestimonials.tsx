@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * contractors, builders, or any service business. Renders fully with no
  * props via baked-in defaults.
  */
-export const ConstructionTestimonials = defineComponent({
+export const ConstructionTestimonials = defineCapsule({
   name: 'ConstructionTestimonials',
   description:
     'Star-rated client testimonials grid for a construction / general contractor page: a centered section heading above a responsive grid of quote cards, each with five star icons, a quote, an alt-driven avatar, and an attribution name+role. Use as a social-proof reviews section for construction firms, contractors, builders, or any service business.',

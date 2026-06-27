@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * AiProductSteps — a numbered onboarding / how-it-works timeline for a clean,
@@ -13,10 +18,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * flow for AI tools, SaaS apps, or any product with quick onboarding. Renders
  * fully with no props via a built-in 3-step flow.
  */
-export const AiProductSteps = defineComponent({
+export const AiProductSteps = defineCapsule({
   name: 'AiProductSteps',
   description:
-    'Numbered onboarding / how-it-works timeline for a clean, light AI SaaS / product page on a subtle muted band: a centered heading and paragraph above a responsive 3-column grid of steps, each with a large near-black rounded numbered tile, a title, and a description, connected by a faint vertical rule on desktop, with a centered near-black CTA button below. The CTA routes through useNavigate. Use to explain a simple sign-up-to-value flow for AI tools, SaaS apps, or any product with quick onboarding.',
+    'Numbered onboarding / how-it-works timeline for a clean, light AI SaaS / product page on a subtle muted band: a centered heading and paragraph above a responsive 3-column grid of steps, each with a large near-black rounded numbered tile, a title, and a description, connected by a faint vertical rule on desktop, with a centered near-black fullstack CTA button below. The CTA writes to shared Lakebed conversion state. Use to explain a simple sign-up-to-value flow for AI tools, SaaS apps, or any product with quick onboarding.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -30,8 +35,8 @@ export const AiProductSteps = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Start writing smarter in 3 steps'
     const description =
       props.description ??
@@ -94,13 +99,21 @@ export const AiProductSteps = defineComponent({
             ))}
           </div>
           <div className="mt-16 text-center">
-            <button
-              type="button"
-              onClick={() => go(cta)}
-              className="inline-flex items-center justify-center rounded-lg bg-foreground px-8 py-4 text-base font-medium text-background transition-colors hover:bg-foreground/90"
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={cta}
+              plan={cta}
+              source="steps"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-5" />
+                  Starting
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-foreground px-8 py-4 text-base font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
             >
               {cta}
-            </button>
+            </SaasPlanActionButton>
           </div>
         </div>
       </section>

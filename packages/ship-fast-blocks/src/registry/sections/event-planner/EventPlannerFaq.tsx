@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * required. Use to answer common pre-booking questions for event/wedding planners,
  * agencies, or service businesses.
  */
-export const EventPlannerFaq = defineComponent({
+export const EventPlannerFaq = defineCapsule({
   name: 'EventPlannerFaq',
   description:
     'Centered accordion of common questions: a narrow centered intro (uppercase eyebrow, thin light heading, lede) above a vertical stack of native <details> disclosure cards on muted rounded panels, each with a question summary, a chevron that rotates when open, and a relaxed answer paragraph. Pure CSS disclosure, no JS. Use to answer common pre-booking questions for event/wedding planners, agencies, or premium service businesses.',

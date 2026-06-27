@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -14,7 +15,7 @@ import { cn } from '#/lib/utils.ts'
  * any consumer app landing page. Renders fully with no props via baked-in
  * defaults.
  */
-export const MobileAppFeatures = defineComponent({
+export const MobileAppFeatures = defineCapsule({
   name: 'MobileAppFeatures',
   description:
     'Centered-intro 6-up feature grid for a clean, minimalist mobile-app marketing page: a centered heading + description over a responsive 2-/3-column grid of feature cells, each with a rounded muted icon tile (warming to the accent color on hover), a short title, and a relaxed description paragraph; icons rotate through a built-in line-style glyph set. Use as the core value-prop / feature grid on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',

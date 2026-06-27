@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * tiers for a brokerage, trading app or robo-advisor. Renders fully with no
  * props via Essential / Pro / Elite defaults.
  */
-export const InvestingPricing = defineComponent({
+export const InvestingPricing = defineCapsule({
   name: 'InvestingPricing',
   description:
     "3-tier pricing table for an investing / fintech page: a muted section band with a centered heading + lead above a responsive 3-column grid of plan cards; the highlighted 'Most Popular' tier inverts to a filled primary surface with a floating badge while others use bordered cards. Each card shows name, tagline, big price + period, a check/cross feature list, and a full-width CTA button routed through useNavigate. Use to present subscription tiers for a brokerage, trading app or robo-advisor.",

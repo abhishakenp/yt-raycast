@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
  * for coworking spaces, shared offices, or flex-office providers. Renders fully
  * with no props via month-to-month baked-in defaults.
  */
-export const CoworkingPricing = defineComponent({
+export const CoworkingPricing = defineCapsule({
   name: 'CoworkingPricing',
   description:
     "Three-tier membership pricing for a coworking or shared-workspace page built on the shared PricingGrid composite: a centered heading block above three tier cards (Hot Desk, Dedicated Desk highlighted as 'Most popular', and Private Office), each with a monthly price/period, a benefit list, and a routable CTA. The highlighted tier gets a primary border and pill. Use to convert prospective members for coworking spaces, shared offices, or flex-office providers.",

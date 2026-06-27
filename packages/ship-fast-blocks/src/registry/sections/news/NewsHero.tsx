@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * front-page masthead hero for newspapers, news outlets, gazettes, dailies,
  * print-inspired publications or editorial sites. Renders fully with no props.
  */
-export const NewsHero = defineComponent({
+export const NewsHero = defineCapsule({
   name: 'NewsHero',
   description:
     "Print-style newspaper masthead hero for a news outlet: a clean front-page top band with a thin uppercase edition strip (volume/issue left, date center, 'Late Edition' right) bracketed by border-y hairline rules, a centered serif display masthead wordmark, and a top headline / lead-story line with a short standfirst beneath. Newspaper aesthetic with serif display type, hairline rules, uppercase tracking and generous whitespace. The wordmark and headline route through useNavigate. Use as the front-page masthead hero for newspapers, news outlets, gazettes, dailies, print-inspired publications or editorial content sites.",

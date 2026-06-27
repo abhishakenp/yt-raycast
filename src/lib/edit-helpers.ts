@@ -28,13 +28,10 @@ const createMarkupTolerantTextPattern = (value: string): RegExp | null => {
   const trimmed = value.trim()
   if (!trimmed) return null
 
-  // Guard against pathological backtracking.
-  if (trimmed.length > 500) return null
-
   const entityAlternations: Record<string, string> = {
     '&': '(?:&amp;|&)',
     '<': '(?:&lt;|<)',
-    '>': '(?:&gt;>)',
+    '>': '(?:&gt;|>)',
     '"': '(?:&quot;|&#34;|")',
     "'": '(?:&#39;|&apos;|\\u0027)',
     '\u2018': '(?:&#8216;|&lsquo;|\u2018)',
@@ -42,8 +39,28 @@ const createMarkupTolerantTextPattern = (value: string): RegExp | null => {
     '\u201C': '(?:&#8220;|&ldquo;|\u201C)',
     '\u201D': '(?:&#8221;|&rdquo;|\u201D)',
     '\u2014': '(?:&mdash;|&#8212;|\u2014)',
-    '\u2013': '(?:&ndash;&#8211;|\u2013)',
+    '\u2013': '(?:&ndash;|&#8211;|\u2013)',
     '\u2026': '(?:&hellip;|&#8230;|\u2026)',
+  }
+
+  // Long text: the per-character bridge interleaving below is O(n) in pattern
+  // size but nests quantifiers that risk pathological backtracking on big runs.
+  // Fall back to a token-based pattern (whitespace-collapsed, no per-char
+  // bridges) so long selections still match instead of returning null.
+  if (trimmed.length > 500) {
+    const tokens = trimmed.split(/\s+/).filter(Boolean)
+    if (tokens.length === 0) return null
+    const gap = `(?:${INLINE_TAG}|<!--[\\s\\S]*?-->|\\s|&nbsp;|&#160;)+`
+    const edgeGap = `(?:${INLINE_TAG}|<!--[\\s\\S]*?-->|\\s|&nbsp;|&#160;)*`
+    const body = tokens
+      .map((token) =>
+        token
+          .split('')
+          .map((char) => entityAlternations[char] ?? escapeRegExp(char))
+          .join(''),
+      )
+      .join(gap)
+    return new RegExp(`${edgeGap}${body}${edgeGap}`)
   }
 
   let pattern = ''
@@ -187,10 +204,137 @@ export const applyStyleEdit = (
   return { html: edited, replaced: true }
 }
 
+/** Decode a named or numeric HTML entity to its character(s), or null if not
+ *  a recognized entity. */
+const decodeEntity = (entity: string): string | null => {
+  const NAMED: Record<string, string> = {
+    '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"',
+    '&apos;': "'", '&nbsp;': '\u00a0',
+    '&lsquo;': '\u2018', '&rsquo;': '\u2019',
+    '&ldquo;': '\u201C', '&rdquo;': '\u201D',
+    '&mdash;': '\u2014', '&ndash;': '\u2013',
+    '&hellip;': '\u2026', '&copy;': '\u00A9',
+    '&reg;': '\u00AE', '&trade;': '\u2122',
+    '&deg;': '\u00B0', '&bull;': '\u2022',
+    '&middot;': '\u00B7', '&laquo;': '\u00AB',
+    '&raquo;': '\u00BB', '&times;': '\u00D7',
+    '&divide;': '\u00F7', '&euro;': '\u20AC',
+    '&pound;': '\u00A3', '&cent;': '\u00A2',
+    '&yen;': '\u00A5', '&sect;': '\u00A7',
+    '&para;': '\u00B6', '&dagger;': '\u2020',
+    '&Dagger;': '\u2021', '&permil;': '\u2030',
+    '&prime;': '\u2032', '&Prime;': '\u2033',
+  }
+  if (NAMED[entity] !== undefined) return NAMED[entity]
+  const numeric = entity.match(/^&#(\d+);$/)
+  if (numeric) {
+    const code = Number(numeric[1])
+    if (code > 0) return String.fromCodePoint(code)
+  }
+  const hex = entity.match(/^&#x([0-9a-f]+);$/i)
+  if (hex) {
+    const code = parseInt(hex[1], 16)
+    if (code > 0) return String.fromCodePoint(code)
+  }
+  return null
+}
+
+/** Walk through HTML character-by-character, skipping tags and decoding
+ *  entities, to find `target` plain text. Returns HTML byte ranges (start
+ *  inclusive, end exclusive) for each occurrence in document order.
+ *
+ *  This is the final-tier fallback when exact substring and tolerant regex
+ *  matching both fail. It handles EVERY entity encoding (named, decimal,
+ *  hex), whitespace normalization, and inline tags splitting text runs —
+ *  making TEXT_NOT_FOUND structurally impossible as long as the text exists
+ *  in the rendered content. O(n) in HTML length, no regex backtracking. */
+const findTextRangesInHtml = (
+  html: string,
+  target: string,
+): Array<{ start: number; end: number }> => {
+  const t = target.replace(/\s+/g, ' ').trim()
+  if (!t) return []
+
+  // Build extracted text with a position map: for each extracted character,
+  // record its HTML source range [start, end).
+  const textChars: string[] = []
+  const htmlStarts: number[] = []
+  const htmlEnds: number[] = []
+
+  let i = 0
+  while (i < html.length) {
+    const ch = html[i]
+
+    // Tag — skip entirely (don't add its text to the extracted stream).
+    if (ch === '<' && i + 1 < html.length && /[a-zA-Z\/!]/.test(html[i + 1])) {
+      const tagEnd = html.indexOf('>', i)
+      if (tagEnd === -1) break
+      i = tagEnd + 1
+      continue
+    }
+
+    // Entity — decode and add each decoded character.
+    if (ch === '&') {
+      const semi = html.indexOf(';', i)
+      if (semi !== -1 && semi - i <= 12) {
+        const entity = html.slice(i, semi + 1)
+        const decoded = decodeEntity(entity)
+        if (decoded !== null) {
+          for (const dc of decoded) {
+            textChars.push(dc)
+            htmlStarts.push(i)
+            htmlEnds.push(semi + 1)
+          }
+          i = semi + 1
+          continue
+        }
+      }
+    }
+
+    textChars.push(ch)
+    htmlStarts.push(i)
+    htmlEnds.push(i + 1)
+    i++
+  }
+
+  // Normalize whitespace in the extracted text and build a mapping from
+  // normalized positions back to original text-char positions.
+  const normChars: string[] = []
+  const normToText: number[] = []
+  for (let j = 0; j < textChars.length; j++) {
+    if (/\s/.test(textChars[j])) {
+      if (normChars.length === 0 || normChars[normChars.length - 1] !== ' ') {
+        normChars.push(' ')
+        normToText.push(j)
+      }
+    } else {
+      normChars.push(textChars[j])
+      normToText.push(j)
+    }
+  }
+
+  const normText = normChars.join('')
+
+  const results: Array<{ start: number; end: number }> = []
+  let pos = normText.indexOf(t)
+  while (pos >= 0) {
+    const textStart = normToText[pos]
+    const textEnd = normToText[pos + t.length - 1]
+    results.push({
+      start: htmlStarts[textStart],
+      end: htmlEnds[textEnd],
+    })
+    pos = normText.indexOf(t, pos + t.length)
+  }
+
+  return results
+}
+
 const collectTextMatches = (
   text: string,
   from: string,
 ): Array<{ index: number; length: number }> => {
+  // Tier 1: exact substring match (fast path for clean HTML).
   const exact: Array<{ index: number; length: number }> = []
   let cursor = text.indexOf(from)
   while (cursor >= 0) {
@@ -199,18 +343,26 @@ const collectTextMatches = (
   }
   if (exact.length > 0) return exact
 
+  // Tier 2: tolerant regex (handles common entity + inline-tag mismatches).
   const pattern = createMarkupTolerantTextPattern(from)
-  if (pattern === null) return []
-  const globalPattern = new RegExp(pattern.source, 'g')
-  const tolerant: Array<{ index: number; length: number }> = []
-  let match: RegExpExecArray | null
-  while ((match = globalPattern.exec(text)) !== null) {
-    if (match[0].length === 0) {
-      globalPattern.lastIndex += 1
-      continue
+  if (pattern !== null) {
+    const globalPattern = new RegExp(pattern.source, 'g')
+    const tolerant: Array<{ index: number; length: number }> = []
+    let match: RegExpExecArray | null
+    while ((match = globalPattern.exec(text)) !== null) {
+      if (match[0].length === 0) {
+        globalPattern.lastIndex += 1
+        continue
+      }
+      tolerant.push({ index: match.index, length: match[0].length })
+      globalPattern.lastIndex = match.index + match[0].length
     }
-    tolerant.push({ index: match.index, length: match[0].length })
-    globalPattern.lastIndex = match.index + match[0].length
+    if (tolerant.length > 0) return tolerant
   }
-  return tolerant
+
+  // Tier 3: character-by-character walk with full entity decoding + whitespace
+  // normalization. Handles every encoding case tiers 1 and 2 miss. This is the
+  // guarantee that TEXT_NOT_FOUND never fires as long as the text exists.
+  const ranges = findTextRangesInHtml(text, from)
+  return ranges.map((r) => ({ index: r.start, length: r.end - r.start }))
 }

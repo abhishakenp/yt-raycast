@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * hero to reassure shoppers and reduce checkout friction for any retail or
  * ecommerce storefront.
  */
-export const EcommerceLogos = defineComponent({
+export const EcommerceLogos = defineCapsule({
   name: 'EcommerceLogos',
   description:
     'Trust/brand strip for a general online store: a slim band bordered top and bottom with an optional centered uppercase tracked eyebrow above a wrapping, centered row of trust badges (free shipping, secure checkout, easy returns, 24/7 support), each a small inline-flex item with a generic shield icon next to its label. Use directly under the hero of any ecommerce or retail storefront to reassure shoppers and reduce checkout friction.',

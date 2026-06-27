@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * logistics, freight-forwarding, shipping, courier or cargo/transport companies.
  * Renders fully with no props.
  */
-export const LogisticsFaq = defineComponent({
+export const LogisticsFaq = defineCapsule({
   name: 'LogisticsFaq',
   description:
     'Narrow, native-accordion FAQ for a global-logistics / freight-forwarding company: a centered heading + lede over a single column of muted, rounded <details> rows, each summary showing the question with a chevron that rotates open to reveal the answer paragraph. Clean and corporate on a light surface, constrained to a readable measure. Use to answer common shipping questions (tracking, transit times, customs clearance, cargo types, insurance, quotes) for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.',

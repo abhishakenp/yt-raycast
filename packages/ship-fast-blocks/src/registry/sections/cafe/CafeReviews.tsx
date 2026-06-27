@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * social-proof on cafes, bakeries, tea houses, or any local service business.
  * Renders fully with no props via baked-in defaults.
  */
-export const CafeReviews = defineComponent({
+export const CafeReviews = defineCapsule({
   name: 'CafeReviews',
   description:
     "3-up customer-review wall for a cozy cafe page: centered cap and serif heading above a responsive card grid. Each card shows a 5-star rating row, a quoted testimonial, and an attribution row with a round avatar, name, and role. Below the grid, a text link with an arrow routes to a 'more reviews' destination via useNavigate. Use for social-proof on cafes, bakeries, tea houses, or local service businesses.",

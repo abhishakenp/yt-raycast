@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * alt-driven Image component; no links. Use as social proof on local directories,
  * find-a-service platforms, or review-and-discovery sites.
  */
-export const DirectoryTestimonials = defineComponent({
+export const DirectoryTestimonials = defineCapsule({
   name: 'DirectoryTestimonials',
   description:
     'Dark inverted testimonials band for a local-business DIRECTORY: a foreground-on-background inverted section with a centered heading and description and a responsive 3-column grid of quote cards on a translucent surface — each has a 5-star primary rating row, the quote in inverted text, and a customer footer with a round headshot, name, and role. Avatars use the alt-driven Image component; no links. Use as social proof on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -27,7 +28,7 @@ const ShieldMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const FintechFooter = defineComponent({
+export const FintechFooter = defineCapsule({
   name: 'FintechFooter',
   description:
     'Multi-column fintech / neobank site footer built on the shared SiteFooter composite: an inline shield brand mark + wordmark, a tagline, Product / Company / Resources / Legal link columns, a social row, and a compliance note in the bottom bar. Every link routes through useNavigate. Use as the page footer for banking apps, wallets, payments, or lending products.',

@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * showcase store guarantees, perks, or why-choose-us value props for furniture,
  * home-decor, interiors, or any warm retail brand. Renders fully with no props.
  */
-export const FurnitureStoreFeatures = defineComponent({
+export const FurnitureStoreFeatures = defineCapsule({
   name: 'FurnitureStoreFeatures',
   description:
     'Centered guarantees / value-prop grid: a padded section with a centered eyebrow + heading above a 4-up grid (1/2/4 columns responsive) of items, each a centered circular muted icon tile over a title and short paragraph; decorative outline icons rotate through a baked-in check / clock / cube / refresh set tinted primary. Use to showcase store guarantees, perks, or why-choose-us value props for furniture, home-decor, interiors, or any warm retail brand.',

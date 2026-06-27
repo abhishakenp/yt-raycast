@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * uses the alt-driven Image component. Use to show off the reception, treatment
  * rooms, and waiting area for dentists, dental offices, or clinics.
  */
-export const DentalGallery = defineComponent({
+export const DentalGallery = defineCapsule({
   name: 'DentalGallery',
   description:
     'Office-tour photo gallery for a dental practice site: a centered eyebrow + heading + lede above a responsive mosaic grid where the first image spans two columns and rows as a large feature tile and the rest are uniform thumbnails; every photo zooms slightly on hover. Imagery uses the Image component. Use to show off the reception, treatment rooms, and waiting area for dentists, dental offices, or clinics.',

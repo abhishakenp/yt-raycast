@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -15,7 +16,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * startups, product studios, agencies, or SaaS brands. Renders fully with no
  * props via baked-in "Kinetic Labs" defaults.
  */
-export const AboutHero = defineComponent({
+export const AboutHero = defineCapsule({
   name: 'AboutHero',
   description:
     'Mission hero band for a modern company / ABOUT page: a spacious section over soft blurred ambient glow orbs (primary + accent), an indigo soft-chip eyebrow pill with a sparkle icon, a huge multi-line headline with one phrase in an indigo-to-violet gradient highlight, a supporting paragraph, and dual CTAs (filled primary pill with a chevron + outlined card secondary). Premium, mission-led and conversion-focused; CTAs route through useNavigate. Use as the opening hero for an about/company/mission page of startups, product studios, agencies, or SaaS brands.',

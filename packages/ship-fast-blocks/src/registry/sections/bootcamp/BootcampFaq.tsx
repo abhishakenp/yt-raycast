@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * No links. Use to answer common questions about programs, pricing, time
  * commitment, prerequisites, job guarantees and remote options.
  */
-export const BootcampFaq = defineComponent({
+export const BootcampFaq = defineCapsule({
   name: 'BootcampFaq',
   description:
     'Accordion FAQ section for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a stacked set of native details disclosure widgets. Each item has a bold question summary with a chevron that rotates on open, and a muted paragraph answer. No links. Use to answer common questions about programs, pricing, time commitment, prerequisites, job guarantees and remote options.',

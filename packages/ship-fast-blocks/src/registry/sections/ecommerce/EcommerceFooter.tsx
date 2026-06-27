@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -22,7 +23,7 @@ const LogoTile = ({ brand }: { brand: string }) => (
   </span>
 )
 
-export const EcommerceFooter = defineComponent({
+export const EcommerceFooter = defineCapsule({
   name: 'EcommerceFooter',
   description:
     'Clean, light multi-column footer for a general online store built on the shared SiteFooter composite: a brand block (logo tile + bold wordmark + tagline + a row of social links) beside four link columns (Shop, Help, Company, Legal), closed by a bottom bar with a dynamic-year copyright. Every link, social, and the brand logo route through useNavigate. Use as the closing footer for online stores, marketplaces, retail shops, ecommerce sites, or any general storefront that needs a bright, modern footer (lighter alternative to the dark FashionStoreFooter).',

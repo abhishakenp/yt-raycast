@@ -1,7 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
+import {
+  FoodDeliveryAccountButton,
+  FoodDeliveryActionButton,
+  FoodDeliveryMobileMenu,
+  FoodDeliveryMutationSpinner,
+  FoodDeliverySearchButton,
+} from './food-delivery-interactions.tsx'
 
 /**
  * FoodDeliveryNavbar — fixed, translucent top navigation bar for a food-delivery
@@ -14,7 +23,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * restaurant aggregators, online-ordering platforms, or takeout services.
  * Renders fully with no props via baked-in "nosh" defaults.
  */
-export const FoodDeliveryNavbar = defineComponent({
+export const FoodDeliveryNavbar = defineCapsule({
   name: 'FoodDeliveryNavbar',
   description:
     'Fixed translucent top navigation bar for a food-delivery / restaurant-marketplace site: backdrop-blurred, border-bottomed header pinned to the top with a location-pin brand mark + brand name on the left, horizontal nav links in the center (desktop), and a text Sign In link plus a rounded-full filled Get Started CTA on the right. Links and CTAs route through useNavigate for page-switching. Use as the sticky site header for food-delivery apps, restaurant aggregators, online-ordering platforms, ghost-kitchen/meal-delivery startups, or takeout services.',
@@ -31,7 +40,8 @@ export const FoodDeliveryNavbar = defineComponent({
     getStarted: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: foodDeliveryLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'nosh'
     const nav = props.nav?.length
@@ -84,20 +94,30 @@ export const FoodDeliveryNavbar = defineComponent({
               ))}
             </div>
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => go(signIn)}
-                className="hidden items-center px-4 py-2 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground sm:inline-flex"
-              >
-                {signIn}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(getStarted)}
-                className="inline-flex items-center rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+              <FoodDeliverySearchButton
+                lakebed={lakebed}
+                buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              />
+              <FoodDeliveryAccountButton
+                lakebed={lakebed}
+                label={signIn}
+                buttonClassName="hidden size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+              />
+              <FoodDeliveryActionButton
+                lakebed={lakebed}
+                action={getStarted}
+                source="navbar"
+                pendingChildren={<FoodDeliveryMutationSpinner />}
+                className="hidden min-h-10 items-center rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
               >
                 {getStarted}
-              </button>
+              </FoodDeliveryActionButton>
+              <FoodDeliveryMobileMenu
+                brand={brand}
+                homeTarget={homeTarget}
+                nav={nav}
+                buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+              />
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -10,7 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * brand button route through useNavigate. Use as the closing site footer for community platforms,
  * SaaS products, or online forum services.
  */
-export const CommunityForumFooter = defineComponent({
+export const CommunityForumFooter = defineCapsule({
   name: 'CommunityForumFooter',
   description:
     'Rich multi-column footer for a community-platform / discussion-forum landing page: a top-bordered section with a brand column (logo + tagline + social icon buttons) plus a grid of link columns, and a bottom bar with copyright and legal links. Every link and the brand button route through useNavigate. Use as the closing site footer for community platforms, SaaS products, or online forum services.',

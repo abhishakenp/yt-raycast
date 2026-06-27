@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -59,7 +60,7 @@ const ServiceIcon = ({ glyph }: { glyph: ReactNode }) => (
   </svg>
 )
 
-export const PlumbingHvacServices = defineComponent({
+export const PlumbingHvacServices = defineCapsule({
   name: 'PlumbingHvacServices',
   description:
     'Centered-heading feature grid of core trade services for a plumbing & HVAC site built on the shared FeatureGrid composite: a centered heading + supporting subheading above a responsive grid of service cards, each pairing an inline stroke-SVG glyph (cycled per index) with a bold title and a muted blurb. Defaults cover the four pillars of the trade — Repair, Installation, Maintenance, and 24/7 Emergency Service. Use to showcase what a plumber or HVAC contractor offers beneath the hero.',

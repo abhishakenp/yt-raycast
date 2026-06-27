@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * clubhouses, panels — for members clubs, founders communities, professional
  * networks or curated collectives. Renders fully with no props.
  */
-export const MembershipClubGallery = defineComponent({
+export const MembershipClubGallery = defineCapsule({
   name: 'MembershipClubGallery',
   description:
     'Masonry-style photo gallery of gatherings for a private membership club / exclusive community page: a left-aligned eyebrow + thin heading above a responsive 4-column grid of alt-driven photos with alternating heights (taller on even indices, shorter on odd) for a relaxed editorial rhythm, on a muted surface band. Use to show the lived experience — dinners, retreats, clubhouses, panels — for members clubs, founders communities, professional networks or curated collectives.',

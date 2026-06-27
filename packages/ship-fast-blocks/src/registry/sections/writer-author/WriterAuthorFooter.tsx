@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -31,7 +32,7 @@ const FeatherMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const WriterAuthorFooter = defineComponent({
+export const WriterAuthorFooter = defineCapsule({
   name: 'WriterAuthorFooter',
   description:
     'Rich, multi-column closing footer for a literary author or novelist site: a responsive grid with a brand block (serif wordmark + open-book feather mark + tagline + social row of Instagram, Twitter, Goodreads), plus Books, About, and Connect link columns; a bordered-top bottom bar holds a Privacy/Terms legal row and an auto-updating copyright line. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for author landing pages, book-launch microsites, poets, or essayists.',

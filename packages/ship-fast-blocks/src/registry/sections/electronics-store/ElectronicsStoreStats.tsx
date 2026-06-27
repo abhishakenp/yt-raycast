@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * social-proof / scale strip between sections on electronics stores, gadget
  * shops, consumer-tech retailers, or any product catalog.
  */
-export const ElectronicsStoreStats = defineComponent({
+export const ElectronicsStoreStats = defineCapsule({
   name: 'ElectronicsStoreStats',
   description:
     'Compact horizontally-ruled stats band for an electronics storefront: a 2-to-4 column grid of centered metrics, each a large bold value over a muted label, framed by top and bottom borders. Use as a social-proof / scale strip (e.g. 50K+ Happy Customers, 1,200+ Products, 4.9 Average Rating, 24/7 Support) between sections on electronics stores, gadget shops, consumer-tech retailers, or any product catalog.',

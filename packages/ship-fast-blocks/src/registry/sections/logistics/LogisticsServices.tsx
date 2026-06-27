@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -14,7 +15,7 @@ import { cn } from '#/lib/utils.ts'
  * for logistics, freight-forwarding, shipping, courier or cargo/transport
  * companies. Renders fully with no props.
  */
-export const LogisticsServices = defineComponent({
+export const LogisticsServices = defineCapsule({
   name: 'LogisticsServices',
   description:
     "Services / capabilities grid for a global-logistics / freight-forwarding company on a subtle muted band: a centered heading + lede over a responsive 1 → 2 → 3 column grid of bordered cards, each with a rounded icon tile (tints rotate through theme tokens), a title, a descriptive paragraph and a small 'starting from' price line, lifting on hover. Clean and corporate on a light surface with a deep slate primary. Use to present shipping modes / a service catalog (Air Freight, Ocean Freight, Ground Transport, Warehousing, Customs Brokerage, Last-Mile Delivery) for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.",

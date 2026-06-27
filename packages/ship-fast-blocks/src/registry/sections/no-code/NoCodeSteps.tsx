@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * flow on a no-code builder, SaaS, or product landing page. Renders fully with
  * no props.
  */
-export const NoCodeSteps = defineComponent({
+export const NoCodeSteps = defineCapsule({
   name: 'NoCodeSteps',
   description:
     "Centered-header 3-step 'how it works' flow on a subtle muted band: a muted eyebrow, heading, and paragraph above a 1-to-3 column grid of numbered steps, each with a large inverse rounded number badge, a card holding a 16:9 image, a centered title, and a description, plus a connecting dotted line between steps on desktop. Use as the 'from idea to live' / onboarding flow on a no-code / app-builder SaaS or product landing page.",

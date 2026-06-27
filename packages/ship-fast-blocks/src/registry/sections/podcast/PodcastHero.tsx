@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -20,7 +21,7 @@ const PodcastHeroProps = z.object({
   className: z.string().optional(),
 })
 
-export const PodcastHero = defineComponent({
+export const PodcastHero = defineCapsule({
   name: 'PodcastHero',
   description:
     'A two-column warm podcast hero with text on the left and square album-style cover art on the right. It pairs a show name, tagline, and dual call-to-action buttons (filled Listen Now plus outline Subscribe) with a row of platform badge pills (Apple Podcasts, Spotify, Overcast, RSS). Ideal as the opening section of a podcast or audio-show landing page.',

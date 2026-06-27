@@ -1,21 +1,23 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * FashionStoreNewsletter — centered newsletter signup CTA for a minimalist
  * fashion store. A narrow, centered section with an eyebrow + serif heading +
  * description above a real inline email form (a labelled email input beside a
  * filled primary submit button) and a small disclaimer note. The form submit
- * routes through useNavigate. Use to capture subscribers for new-collection
- * drops, offers and editorial for clothing brands, boutiques, or apparel
- * shops.
+ * writes to the shared Lakebed subscriber list. Use to capture subscribers for
+ * new-collection drops, offers and editorial for clothing brands, boutiques, or
+ * apparel shops.
  */
-export const FashionStoreNewsletter = defineComponent({
+export const FashionStoreNewsletter = defineCapsule({
   name: 'FashionStoreNewsletter',
   description:
-    'Centered newsletter signup CTA for a minimalist fashion store: a narrow, centered section with an eyebrow + serif heading + description above a real inline email form (a labelled email input beside a filled primary submit button) and a small disclaimer note. The form submit routes through useNavigate. Use to capture subscribers for new-collection drops, exclusive offers and editorial content for clothing brands, boutiques, or apparel shops.',
+    'Centered newsletter signup CTA for a minimalist fashion store: a narrow, centered section with an eyebrow + serif heading + description above a real inline email form (a labelled email input beside a filled primary submit button) and a small disclaimer note. The form submit writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use to capture subscribers for new-collection drops, exclusive offers and editorial content for clothing brands, boutiques, or apparel shops.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -25,8 +27,8 @@ export const FashionStoreNewsletter = defineComponent({
     disclaimer: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const nlEyebrow = props.eyebrow ?? 'The Journal'
     const nlHeading = props.heading ?? 'Stay Informed'
     const nlDesc =
@@ -54,30 +56,16 @@ export const FashionStoreNewsletter = defineComponent({
           <p className="mx-auto mb-10 max-w-lg text-muted-foreground">
             {nlDesc}
           </p>
-          <form
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={nlSubmit}
+            placeholder={nlPlaceholder}
+            buttonLabel={nlSubmit}
+            successMessage="You're subscribed. New collection drops will arrive by email."
             className="mx-auto flex max-w-md flex-col gap-4 sm:flex-row"
-            onSubmit={(e) => {
-              e.preventDefault()
-              go(nlSubmit)
-            }}
-          >
-            <label htmlFor="fashion-store-newsletter-email" className="sr-only">
-              Email address
-            </label>
-            <input
-              id="fashion-store-newsletter-email"
-              type="email"
-              required
-              placeholder={nlPlaceholder}
-              className="flex-1 border border-input bg-background px-4 py-4 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="bg-primary px-8 py-4 text-sm font-medium tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {nlSubmit}
-            </button>
-          </form>
+            inputClassName="flex-1 border border-input bg-background px-4 py-4 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none"
+            buttonClassName="bg-primary px-8 py-4 text-sm font-medium tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+          />
           <p className="mt-4 text-xs text-muted-foreground">{nlDisclaimer}</p>
         </div>
       </section>

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -22,7 +23,7 @@ const PlayMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const VideoStreamingNavbar = defineComponent({
+export const VideoStreamingNavbar = defineCapsule({
   name: 'VideoStreamingNavbar',
   description:
     "Sticky site header for a cinematic video-streaming brand built on the shared SiteNav composite: a bold wordmark + inline primary play-triangle mark, centered desktop nav links (Browse, Shows, Movies, Pricing), a 'Start Watching' CTA, and a real mobile drawer. Use as the header for streaming services, on-demand video apps, or OTT platforms where signup is the primary action.",

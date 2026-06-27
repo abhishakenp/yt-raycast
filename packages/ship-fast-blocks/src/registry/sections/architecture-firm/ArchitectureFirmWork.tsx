@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * architects or any project-forward built-environment site. Renders fully with
  * no props via six baked-in project defaults.
  */
-export const ArchitectureFirmWork = defineComponent({
+export const ArchitectureFirmWork = defineCapsule({
   name: 'ArchitectureFirmWork',
   description:
     'Selected-work / project gallery for an architecture-studio / design-practice page: a heading row (eyebrow + light title on the left, a short descriptive paragraph on the right) above a responsive 1/2/3-column grid of tall 4:5 portrait project cards, each with an image-zoom-on-hover photo, a project title with typology/year meta and a right-aligned location caption. Calm, editorial, monochrome. Cards route through useNavigate. Use as a portfolio / selected-projects / case-study gallery for architecture firms, design studios, interior designers, landscape architects or any project-forward built-environment site.',

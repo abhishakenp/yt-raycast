@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
+import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
 /**
  * FoodTruckCatering — a dark, inverted CATERING band with a request-a-quote form. A
@@ -9,14 +11,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * paragraph, a checklist of catering options each with a check-icon tile, and a row of
  * soft event-type chips) and a right elevated card form with name, email, event date,
  * guest-count + event-type selects and a message textarea, ending in a full-width
- * submit. The form submit and any actions route through useNavigate. Use as the
- * catering / private-events lead-capture section for food trucks, caterers or
- * street-food vendors booking events.
+ * submit. The form submit writes a Lakebed inquiry. Use as the catering /
+ * private-events lead-capture section for food trucks, caterers or street-food
+ * vendors booking events.
  */
-export const FoodTruckCatering = defineComponent({
+export const FoodTruckCatering = defineCapsule({
   name: 'FoodTruckCatering',
   description:
-    'Dark, inverted CATERING band with a request-a-quote form: a foreground-filled section split into a left pitch column (eyebrow, heading, paragraph, a checklist of catering options each with a check-icon tile, and a row of soft event-type chips) and a right elevated card form with name, email, event date, guest-count and event-type selects and a message textarea, ending in a full-width submit. The form submit routes through useNavigate. Use as the catering / private-events lead-capture section for food trucks, caterers, street-food vendors or any mobile-food brand booking corporate lunches, weddings and parties.',
+    'Dark, inverted CATERING band with a Lakebed request-a-quote form: a foreground-filled section split into a left pitch column (eyebrow, heading, paragraph, a checklist of catering options each with a check-icon tile, and a row of soft event-type chips) and a right elevated card form with name, email, event date, guest-count and event-type selects and a message textarea, ending in a full-width submit. Form submit writes a shared inquiry record. Use as the catering / private-events lead-capture section for food trucks, caterers, street-food vendors or any mobile-food brand booking corporate lunches, weddings and parties.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -31,8 +33,8 @@ export const FoodTruckCatering = defineComponent({
     submit: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: inquiryLakebed,
+  component: ({ props, lakebed }) => {
     const cateringEyebrow = props.eyebrow ?? 'Private Events'
     const cateringHeading = props.heading ?? 'Catering Services'
     const cateringDesc =
@@ -74,6 +76,12 @@ export const FoodTruckCatering = defineComponent({
           'Other',
         ]
     const cateringSubmit = props.submit ?? 'Request Quote'
+    const inquiry = useInquirySubmission({
+      lakebed,
+      source: 'Food truck catering',
+      successMessage:
+        "Thanks. We've received your catering request and will follow up soon.",
+    })
 
     const inputCls =
       'w-full rounded-lg border border-input bg-background px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring'
@@ -143,13 +151,7 @@ export const FoodTruckCatering = defineComponent({
               <h3 className="mb-6 text-xl font-semibold">
                 {cateringFormTitle}
               </h3>
-              <form
-                className="space-y-4"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  go(cateringSubmit)
-                }}
-              >
+              <form className="space-y-4" onSubmit={inquiry.submitForm}>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label
@@ -160,6 +162,7 @@ export const FoodTruckCatering = defineComponent({
                     </label>
                     <input
                       id="ft-catering-name"
+                      name="name"
                       type="text"
                       placeholder="Your name"
                       className={inputCls}
@@ -174,6 +177,7 @@ export const FoodTruckCatering = defineComponent({
                     </label>
                     <input
                       id="ft-catering-email"
+                      name="email"
                       type="email"
                       placeholder="you@email.com"
                       className={inputCls}
@@ -190,6 +194,7 @@ export const FoodTruckCatering = defineComponent({
                     </label>
                     <input
                       id="ft-catering-date"
+                      name="date"
                       type="date"
                       className={inputCls}
                     />
@@ -203,6 +208,7 @@ export const FoodTruckCatering = defineComponent({
                     </label>
                     <select
                       id="ft-catering-guests"
+                      name="guestCount"
                       className={cn(inputCls, 'appearance-none')}
                     >
                       {guestCounts.map((g) => (
@@ -222,6 +228,7 @@ export const FoodTruckCatering = defineComponent({
                   </label>
                   <select
                     id="ft-catering-type"
+                    name="eventType"
                     className={cn(inputCls, 'appearance-none')}
                   >
                     {eventTypes.map((t) => (
@@ -240,6 +247,7 @@ export const FoodTruckCatering = defineComponent({
                   </label>
                   <textarea
                     id="ft-catering-message"
+                    name="message"
                     rows={3}
                     placeholder="Tell us about your event..."
                     className={cn(inputCls, 'resize-none')}
@@ -247,10 +255,15 @@ export const FoodTruckCatering = defineComponent({
                 </div>
                 <button
                   type="submit"
-                  className="w-full rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90"
+                  aria-busy={inquiry.isPending}
+                  disabled={inquiry.isPending}
+                  className="w-full rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
                 >
-                  {cateringSubmit}
+                  {inquiry.isPending ? 'Sending' : cateringSubmit}
                 </button>
+                <p className="text-sm text-muted-foreground" aria-live="polite">
+                  {inquiry.statusText}
+                </p>
               </form>
             </div>
           </div>

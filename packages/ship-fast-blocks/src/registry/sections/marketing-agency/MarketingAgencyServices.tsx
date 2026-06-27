@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * service lines (performance marketing, SEO, email, CRO, social, analytics).
  * Renders fully with no props.
  */
-export const MarketingAgencyServices = defineComponent({
+export const MarketingAgencyServices = defineCapsule({
   name: 'MarketingAgencyServices',
   description:
     '6-up services / capabilities grid: a centered eyebrow + heading + description above a responsive grid of muted rounded cards (1/2/3 columns), each with a filled primary icon tile, a service title, a short description, and a bulleted capability list with dot markers; cards lift to an accent surface on hover. Icons rotate through a built-in set (chart, search, mail, pie, users, document). Use to present marketing-agency service lines such as performance marketing, SEO & content, email, CRO, social, and analytics.',

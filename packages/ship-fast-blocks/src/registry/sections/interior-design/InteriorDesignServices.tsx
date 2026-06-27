@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * spaces, furniture curation — for interior designers, design studios or
  * architecture firms. Renders fully with no props via baked-in defaults.
  */
-export const InteriorDesignServices = defineComponent({
+export const InteriorDesignServices = defineCapsule({
   name: 'InteriorDesignServices',
   description:
     'Left-aligned three-up design-services grid for an upscale interior-design / architecture studio: a light-weight section heading with a supporting paragraph above a responsive three-column grid of services, each with a circular muted icon tile (rotating home / briefcase / sofa line icons), a medium title and a relaxed description. Editorial and airy. Use to present core offerings such as residential design, commercial spaces and furniture curation for interior designers, design studios or architecture firms.',

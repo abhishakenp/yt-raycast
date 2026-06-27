@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * musicians, bands, or artist EPK pages. Renders fully with no props via
  * baked-in defaults.
  */
-export const MusicArtistAbout = defineComponent({
+export const MusicArtistAbout = defineCapsule({
   name: 'MusicArtistAbout',
   description:
     'Split about-the-band section for a music artist / band page: on the left an eyebrow, a thin heading, several biography paragraphs, and a row of social-link buttons; on the right a pair of staggered portrait (3:4) member photos. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. Each social routes through useNavigate; photos use the alt-driven Image component. Use as the band-story / about section for musicians, singers, bands, or artist EPK pages.',

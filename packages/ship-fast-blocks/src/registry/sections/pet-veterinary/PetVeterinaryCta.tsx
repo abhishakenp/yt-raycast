@@ -1,9 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 import type { KitAction } from '#/section-kit/types.ts'
 
-export const PetVeterinaryCta = defineComponent({
+export const PetVeterinaryCta = defineCapsule({
   name: 'PetVeterinaryCta',
   description:
     "Warm closing call-to-action band for a veterinary clinic site, composing the CtaBand kit composite on a primary-toned surface. Renders a caring eyebrow, an inviting 'Schedule your pet's visit' title and subtitle, and two routed actions — a primary 'Book Appointment' and an outline 'Call Us'. Accepts public props to override the copy and CTA targets. Use it as the final conversion band of a pet-care page to gently nudge pet parents to take the next step.",

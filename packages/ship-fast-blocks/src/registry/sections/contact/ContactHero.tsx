@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * the active theme. Use as the top-of-page introduction for contact, support,
  * book-a-demo, or inquiry pages. Renders fully with no props via baked-in defaults.
  */
-export const ContactHero = defineComponent({
+export const ContactHero = defineCapsule({
   name: 'ContactHero',
   description:
     'Centered hero section for a contact / get-in-touch page: a compact text-centered band with an eyebrow rule + label, a bold multi-line heading, and a supporting lead paragraph. Token-only colors flip with the active theme. Use as the top-of-page introduction for contact, support, book-a-demo, or inquiry pages.',

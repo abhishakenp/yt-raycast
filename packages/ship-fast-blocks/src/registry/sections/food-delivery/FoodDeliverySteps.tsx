@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * food-delivery apps, restaurant aggregators, or online-ordering platforms.
  * Renders fully with no props via baked-in defaults.
  */
-export const FoodDeliverySteps = defineComponent({
+export const FoodDeliverySteps = defineCapsule({
   name: 'FoodDeliverySteps',
   description:
     "Numbered 'how it works' band for a food-delivery / restaurant-marketplace site: a centered heading + supporting paragraph above a responsive 3-up grid of centered steps, each led by a large filled circular number badge, then a title and a short description. Use to explain the 1-2-3 ordering flow (choose a restaurant, build your order, track and enjoy) for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.",

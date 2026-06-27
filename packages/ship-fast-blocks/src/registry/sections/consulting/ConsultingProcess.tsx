@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * firms, professional-services groups, or B2B advisory businesses.
  * Renders fully with no props via four baked-in default steps.
  */
-export const ConsultingProcess = defineComponent({
+export const ConsultingProcess = defineCapsule({
   name: 'ConsultingProcess',
   description:
     "Dark 4-step 'How We Work' process band for a management-consulting firm page: a centered heading and lead paragraph on a primary-background band above a responsive grid of numbered steps (01-04), each with a large muted number, a title and a description; subtle horizontal connectors between steps (hidden on mobile). Tokens-only, no links. Use as a methodology / workflow / how-it-works section for consulting firms, professional-services groups, or B2B advisory businesses.",

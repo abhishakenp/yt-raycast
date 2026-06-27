@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -15,7 +16,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * top section of personal-loan, debt-consolidation, or fintech-financing landing
  * pages. Renders fully with no props via baked-in "ClearLoan" defaults.
  */
-export const LendingHero = defineComponent({
+export const LendingHero = defineCapsule({
   name: 'LendingHero',
   description:
     "Split conversion hero for a personal-lending / loan marketing page: left column has a two-tone headline (lead + muted-accent highlight), supporting subheading, dual CTAs (solid primary 'check your rate' pill with arrow + soft play-style secondary) and check-marked trust pills; right column is a raised white loan-calculator card with a $-prefixed amount input, credit-score select, 3-up loan-term toggle, Est. APR / monthly-payment summary and a full-width CTA. Controls route through useNavigate. Use as the top section of personal-loan, debt-consolidation, BNPL, or fintech-financing landing pages.",

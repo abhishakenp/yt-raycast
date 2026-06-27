@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * debt-consolidation services, fintech credit products, or financing brands.
  * Renders fully with no props via baked-in "ClearLoan" defaults.
  */
-export const LendingNavbar = defineComponent({
+export const LendingNavbar = defineCapsule({
   name: 'LendingNavbar',
   description:
     "Sticky translucent top navigation bar for a personal-lending / loan marketing site: backdrop-blurred, border-bottomed header pinned to the top with a near-ink rounded logo tile + lender name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a solid primary 'Apply Now' CTA on the right. Nav items and CTA route through useNavigate for page-switching. Use as the clean, trustworthy site header for personal-loan lenders, lending marketplaces, debt-consolidation services, fintech credit products, or financing brands.",

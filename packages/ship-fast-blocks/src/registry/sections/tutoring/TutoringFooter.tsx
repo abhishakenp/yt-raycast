@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const brandMark = (
@@ -40,7 +41,7 @@ const DEFAULT_SOCIAL: { label: string; href?: string }[] = [
 
 const DEFAULT_LEGAL = ['Privacy', 'Terms', 'Cookies']
 
-export const TutoringFooter = defineComponent({
+export const TutoringFooter = defineCapsule({
   name: 'TutoringFooter',
   description:
     'Friendly, trustworthy site footer for the tutoring page family, composing the SiteFooter kit composite. Renders a graduation-cap brand mark, a warm tagline, social links, and four link columns (Subjects, Company, Support, Resources), plus a bottom bar with copyright, a reassuring note, and legal links. Accepts public props to override every block. Use it as the closing band of any tutoring or education site for consistent, route-aware navigation and a final note of trust.',

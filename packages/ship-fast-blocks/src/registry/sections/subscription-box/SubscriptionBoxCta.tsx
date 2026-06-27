@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -10,7 +11,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * and renders complete with no props. Use as the final push on any curated-box
  * or membership page.
  */
-export const SubscriptionBoxCta = defineComponent({
+export const SubscriptionBoxCta = defineCapsule({
   name: 'SubscriptionBoxCta',
   description:
     "Closing conversion band for a subscription-box brand built on the shared CtaBand composite (tone='primary'): an eyebrow, a 'Start your subscription' title, supporting copy, and routable actions (primary 'Build your box' + outline 'See plans'). Use as the final push on any curated-box or membership page.",

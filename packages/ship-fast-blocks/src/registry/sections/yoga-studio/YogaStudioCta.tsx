@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * useNavigate. Use as a closing conversion band inviting visitors to begin a
  * trial or reach out. Renders fully with no props via baked-in defaults.
  */
-export const YogaStudioCta = defineComponent({
+export const YogaStudioCta = defineCapsule({
   name: 'YogaStudioCta',
   description:
     "Free-trial call-to-action band for a yoga-studio page built on the shared CtaBand composite at tone='primary': a headline, a short supporting line, and dual pill CTAs (filled 'Start Free Trial' + outlined 'Contact'). Both route through useNavigate. Use as a closing conversion band inviting visitors to begin a trial or reach out.",

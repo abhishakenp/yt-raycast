@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 const DEFAULT_REVIEWS: {
@@ -35,7 +36,7 @@ const DEFAULT_REVIEWS: {
   },
 ]
 
-export const AeoTestimonials = defineComponent({
+export const AeoTestimonials = defineCapsule({
   name: 'AeoTestimonials',
   description:
     "Social-proof band for an Answer-Engine-Optimization (AEO) SaaS, composing the shared TestimonialGrid composite into a row of customer reviews. Each card shows a star rating, a results-focused quote about earning AI citations and share-of-voice, and an avatar with the reviewer's name, role, and company. Accepts a public `reviews` prop to override the quotes. Use to build trust on AEO, generative-search visibility, or brand-citation analytics landing pages.",

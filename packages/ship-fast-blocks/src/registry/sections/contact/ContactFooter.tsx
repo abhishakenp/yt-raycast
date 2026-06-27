@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * footer for contact, support, or inquiry pages. Renders fully with no props via
  * baked-in defaults.
  */
-export const ContactFooter = defineComponent({
+export const ContactFooter = defineCapsule({
   name: 'ContactFooter',
   description:
     'Minimal bottom footer for a contact page: a single bordered-top row centered with an auto-updating copyright line. Clean, unobtrusive closing surface on dark or light themes. Use as the site footer for contact, support, or inquiry pages.',

@@ -1,23 +1,26 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from './newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
 
 /**
  * NewsletterHero — centered editorial hero for a newsletter / subscription
  * landing page. On a generous paper-toned canvas: an uppercase eyebrow kicker, a
  * large two-line serif display headline, a relaxed lede paragraph, an inline
  * email subscribe form (rounded email input + solid foreground submit button
- * that stacks on mobile), and a small social-proof line with emphasized brand
- * names. Warm, calm, literary mood. The form submit and any link route through
- * useNavigate. Use as the top-of-page hero for newsletters, Substack-style
- * publications, blogs, essayists, or content creators. Renders fully with no
- * props via baked-in defaults.
+ * that stacks on mobile), a live subscriber status line, and a small
+ * social-proof line with emphasized brand names. Warm, calm, literary mood. The
+ * form submit writes to the shared Lakebed subscriber list. Use as the
+ * top-of-page hero for newsletters, Substack-style publications, blogs,
+ * essayists, or content creators. Renders fully with no props via baked-in
+ * defaults.
  */
-export const NewsletterHero = defineComponent({
+export const NewsletterHero = defineCapsule({
   name: 'NewsletterHero',
   description:
-    'Centered editorial hero for a newsletter / subscription landing page on a generous paper-toned canvas: an uppercase eyebrow kicker, a large two-line serif display headline, a relaxed lede paragraph, an inline email subscribe form (rounded email input + solid foreground submit button that stacks on mobile), and a small social-proof line with emphasized brand names. Warm, calm, literary mood. The form submit routes through useNavigate. Use as the top-of-page hero for newsletters, Substack-style publications, blogs, essayists, or content creators.',
+    'Centered editorial hero for a newsletter / subscription landing page on a generous paper-toned canvas: an uppercase eyebrow kicker, a large two-line serif display headline, a relaxed lede paragraph, an inline email subscribe form (rounded email input + solid foreground submit button that stacks on mobile), a live subscriber status line, and a small social-proof line with emphasized brand names. Warm, calm, literary mood. Submitting writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use as the top-of-page hero for newsletters, Substack-style publications, blogs, essayists, or content creators.',
   props: z.object({
     /** Uppercase eyebrow kicker above the headline. */
     eyebrow: z.string().optional(),
@@ -37,8 +40,8 @@ export const NewsletterHero = defineComponent({
     proofBrands: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const eyebrow = props.eyebrow ?? 'Every Sunday Morning'
     const headingTop = props.headingTop ?? 'Essays that slow down'
     const headingBottom = props.headingBottom ?? 'the conversation'
@@ -71,29 +74,17 @@ export const NewsletterHero = defineComponent({
               {subheading}
             </p>
 
-            <form
-              className="mx-auto mb-6 max-w-md"
-              onSubmit={(e) => {
-                e.preventDefault()
-                go(submit)
-              }}
-            >
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <input
-                  type="email"
-                  required
-                  placeholder={emailPlaceholder}
-                  aria-label="Email address for newsletter subscription"
-                  className="flex-1 rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <button
-                  type="submit"
-                  className="rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                >
-                  {submit}
-                </button>
-              </div>
-            </form>
+            <NewsletterSubscribeForm
+              lakebed={lakebed}
+              source="Newsletter hero"
+              placeholder={emailPlaceholder}
+              buttonLabel={submit}
+              successMessage="You're subscribed. Your next issue will arrive by email."
+              className="mx-auto mb-6 flex max-w-md flex-col gap-3 sm:flex-row"
+              inputClassName="flex-1 rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+              buttonClassName="rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
+              emailLabel="Email address for newsletter subscription"
+            />
 
             <p className="text-sm text-muted-foreground">
               {proofPrefix}

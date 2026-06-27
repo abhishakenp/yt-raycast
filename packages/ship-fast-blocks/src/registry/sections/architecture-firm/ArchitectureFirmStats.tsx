@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * firms, design studios, interior designers or any practice that wants a quiet
  * proof-of-scale strip. Renders fully with no props via four baked-in stats.
  */
-export const ArchitectureFirmStats = defineComponent({
+export const ArchitectureFirmStats = defineCapsule({
   name: 'ArchitectureFirmStats',
   description:
     'Inverted statistics band for an architecture-studio / design-practice page: a full-width dark band (foreground surface, background text) holding a centered 2/4-column grid of large light numerals each over a dimmed caption. Calm, editorial, high-contrast counterpoint to a warm light canvas. Tokens-only, no links. Use as a metrics / by-the-numbers / track-record band (completed projects, awards, countries, team size) for architecture firms, design studios, interior designers or any practice wanting a quiet proof-of-scale strip.',

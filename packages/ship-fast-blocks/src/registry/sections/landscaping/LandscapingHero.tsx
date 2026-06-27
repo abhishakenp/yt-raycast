@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * design services. Renders fully with no props via baked-in "Earth & Edge"
  * defaults.
  */
-export const LandscapingHero = defineComponent({
+export const LandscapingHero = defineCapsule({
   name: 'LandscapingHero',
   description:
     'Calm, premium two-column hero for a landscaping / outdoor-design company on a warm stone band: left column with a large headline, supporting paragraph, dual pill CTAs (filled primary like Request Free Consultation + outlined secondary like View Our Work), and a star-rated social-proof row with overlapping customer avatars; right column with a tall rounded garden photo and a floating projects-completed stat card overlapping its lower-left corner. Sage-green accent, amber stars, generous whitespace and soft shadows; CTAs route through useNavigate and imagery uses the alt-driven Image component. Use as the opening hero for landscapers, lawn-care and yard-maintenance services, garden designers or hardscaping contractors.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * the closing footer for event/wedding planners, agencies, or premium service
  * businesses.
  */
-export const EventPlannerFooter = defineComponent({
+export const EventPlannerFooter = defineCapsule({
   name: 'EventPlannerFooter',
   description:
     'Inverted four-column site footer: a foreground-colored band with a brand column (thin clock-glyph logo + light brand name + tagline) beside link columns of grouped navigation buttons, then a top-bordered bottom bar with a copyright line and legal links. Every link routes through useNavigate. Use as the closing footer for event/wedding planners, agencies, or premium service businesses.',

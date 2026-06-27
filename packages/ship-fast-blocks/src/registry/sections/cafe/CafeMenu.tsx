@@ -1,23 +1,32 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * CafeMenu — printed-style food and drink menu for a neighborhood cafe /
  * coffee shop page. A centered cap / heading / description above a two-column
  * grid: the left column lists coffee drinks, the right lists pastries and light
- * fare. Each item is a clickable row with a name, description, and price
+ * fare. Each item is a live add-to-cart row with a name, description, and price
  * separated by a border divider. Below the two-column grid, a teas and
- * non-coffee band shows four centered cards. Every menu row routes through
- * useNavigate. Use for cafes, bakeries, tea houses, brunch spots, or any
+ * non-coffee band shows four centered cards. Rows seed the shared product
+ * command search catalog and add into the shared Lakebed cart used by the cafe
+ * navigation. Use for cafes, bakeries, tea houses, brunch spots, or any
  * cozy eatery wanting a readable, conversion-focused menu section. Renders
  * fully with no props via baked-in defaults.
  */
-export const CafeMenu = defineComponent({
+export const CafeMenu = defineCapsule({
   name: 'CafeMenu',
   description:
-    'Printed-style food and drink menu for a cozy cafe page: centered cap, heading, and description above a two-column grid of coffee drinks and pastries/light fare. Each item is a clickable row with name, description, and price separated by a border divider. Below, a teas and non-coffee band shows four centered cards. Menu rows route through useNavigate. Use for cafes, bakeries, tea houses, brunch spots, or cozy eateries wanting a readable menu section.',
+    'Printed-style food and drink menu for a cozy cafe page: centered cap, heading, and description above a two-column grid of coffee drinks and pastries/light fare. Each item is a live add-to-cart row with name, description, price, and a scoped loading button. Below, a teas and non-coffee band shows four centered cards. Rows seed the shared product command search catalog and mutate the shared Lakebed cart used by cafe navigation. Use for cafes, bakeries, tea houses, brunch spots, or cozy eateries wanting a readable menu section.',
   props: z.object({
     /** Eyebrow / cap text above the heading. */
     cap: z.string().optional(),
@@ -63,9 +72,12 @@ export const CafeMenu = defineComponent({
       .optional(),
     /** Navigation target when a menu item is clicked. */
     menuTarget: z.string().optional(),
+    /** Label for each row add button. */
+    addLabel: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const cap = props.cap ?? 'Our Offerings'
     const heading = props.heading ?? 'Crafted with intention'
@@ -209,6 +221,48 @@ export const CafeMenu = defineComponent({
           },
         ]
     const menuTarget = props.menuTarget ?? 'View Menu'
+    const addLabel = props.addLabel ?? 'Add'
+    const allMenuItems = [
+      ...coffee.map((item) => ({ ...item, category: coffeeTitle })),
+      ...food.map((item) => ({ ...item, category: foodTitle })),
+      ...teas.map((item) => ({ ...item, category: teaTitle })),
+    ]
+
+    useSyncCommerceCatalog(
+      lakebed,
+      allMenuItems.map((item) =>
+        commerceProduct({
+          imageAlt: item.name,
+          label: item.name,
+          price: item.price,
+          subtitle: item.category,
+        }),
+      ),
+    )
+
+    const MenuAddButton = ({
+      item,
+    }: {
+      item: { name: string; price: string }
+    }) => (
+      <CommerceAddItemButton
+        lakebed={lakebed}
+        item={{
+          label: item.name,
+          price: item.price,
+        }}
+        aria-label={`${addLabel} ${item.name} to cart`}
+        pendingChildren={
+          <>
+            <CommerceMutationSpinner className="size-3" />
+            Adding
+          </>
+        }
+        className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-primary hover:text-primary-foreground disabled:pointer-events-none disabled:opacity-70"
+      >
+        {addLabel}
+      </CommerceAddItemButton>
+    )
 
     return (
       <section className={cn('py-20 lg:py-32', props.className)}>
@@ -253,23 +307,26 @@ export const CafeMenu = defineComponent({
                 <div className="space-y-6">
                   {(col.items ?? []).map((item, idx) => (
                     <div key={item.name}>
-                      <button
-                        type="button"
-                        onClick={() => go(menuTarget)}
-                        className="group flex w-full items-start justify-between gap-4 text-left"
-                      >
+                      <div className="group flex w-full items-start justify-between gap-4 text-left">
                         <div>
-                          <h4 className="font-medium text-foreground transition-colors group-hover:text-primary">
+                          <button
+                            type="button"
+                            onClick={() => go(menuTarget)}
+                            className="font-medium text-foreground transition-colors hover:text-primary"
+                          >
                             {item.name}
-                          </h4>
+                          </button>
                           <p className="mt-1 text-sm text-muted-foreground">
                             {item.description}
                           </p>
                         </div>
-                        <span className="font-serif text-lg text-foreground">
-                          {item.price}
-                        </span>
-                      </button>
+                        <div className="flex shrink-0 flex-col items-end gap-2">
+                          <span className="font-serif text-lg text-foreground">
+                            {item.price}
+                          </span>
+                          <MenuAddButton item={item} />
+                        </div>
+                      </div>
                       {idx < col.items.length - 1 ? (
                         <div className="mt-6 h-px bg-border" />
                       ) : null}
@@ -300,6 +357,9 @@ export const CafeMenu = defineComponent({
                   <span className="font-serif text-foreground">
                     {tea.price}
                   </span>
+                  <div className="mt-4 flex justify-center">
+                    <MenuAddButton item={tea} />
+                  </div>
                 </div>
               ))}
             </div>

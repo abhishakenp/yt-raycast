@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use as the pricing table for bootcamps, academies, or vocational
  * programs offering multiple payment options.
  */
-export const BootcampPricing = defineComponent({
+export const BootcampPricing = defineCapsule({
   name: 'BootcampPricing',
   description:
     '3-tier pricing / financing comparison for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive 3-column grid of plan cards. Each card shows name, blurb, price, feature list with check-icon bullets, and a CTA button. One plan can be highlighted with a primary border and floating badge. A footnote row with a clickable CTA link sits below. All routes through useNavigate. Use as the pricing table for bootcamps, academies, or vocational programs offering multiple payment options.',

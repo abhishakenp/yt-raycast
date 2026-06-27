@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * for cybersecurity vendors, SOC/MDR providers, or any agent/API-deployed
  * security SaaS. Renders fully with no props via baked-in deployment defaults.
  */
-export const CybersecuritySteps = defineComponent({
+export const CybersecuritySteps = defineCapsule({
   name: 'CybersecuritySteps',
   description:
     'Deploy-in-minutes timeline: a muted-band section with a centered heading + subheading above a 3-column step layout connected by a dashed horizontal rule (desktop). Each step has a large numbered square tile, bold title and description; step 1 adds an inline mono code snippet, step 2 a check-marked checklist, step 3 a pulsing live-status indicator. Pure display, no links. Use to explain fast onboarding for cybersecurity vendors, SOC/MDR providers, or any agent/API-deployed security SaaS.',

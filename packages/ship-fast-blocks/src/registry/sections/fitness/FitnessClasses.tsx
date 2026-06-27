@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * the alt-driven Image component. Use to showcase classes, programs or services on
  * gyms, fitness studios, CrossFit boxes, yoga / pilates / boxing / spin studios.
  */
-export const FitnessClasses = defineComponent({
+export const FitnessClasses = defineCapsule({
   name: 'FitnessClasses',
   description:
     'Responsive class / program grid for a gym or fitness studio: a centered heading and lead paragraph above a 1/2/3-column grid of bordered card-surface tiles, each with a cover photo, title, short description and a footer meta row of a clock-icon duration and a bolt-icon intensity, with cards lifting on hover. Images use the alt-driven Image component. Use to showcase classes, programs or services (strength, yoga, cycle, HIIT, pilates, boxing) on gyms, fitness studios, CrossFit boxes or yoga / pilates / boxing / spin studios.',

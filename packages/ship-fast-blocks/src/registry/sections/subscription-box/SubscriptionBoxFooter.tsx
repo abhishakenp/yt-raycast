@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -28,7 +29,7 @@ const GiftBoxMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const SubscriptionBoxFooter = defineComponent({
+export const SubscriptionBoxFooter = defineCapsule({
   name: 'SubscriptionBoxFooter',
   description:
     'Site footer for a subscription-box brand built on the shared SiteFooter composite: gift-box wordmark + ribboned mark, a playful tagline, link columns (Shop, Company, Support, Legal), a social row, and a bottom note. Use as the footer for any curated-box, recurring-delivery, or membership-kit page.',

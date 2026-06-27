@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * for dating apps, singles platforms, or social-connection products. Renders fully
  * with no props via baked-in "HeartLink" feature defaults.
  */
-export const DatingAppFeatures = defineComponent({
+export const DatingAppFeatures = defineCapsule({
   name: 'DatingAppFeatures',
   description:
     '6-up feature grid for a dating / matchmaking app: a centered heading + supporting paragraph above a responsive 1/2/3-column grid of soft muted cards, each with a rounded primary-tinted icon tile (rotating through a built-in set of decorative line icons), a bold title, and a description; cards lift to a faint primary tint on hover. Use to showcase product capabilities — smart matching, verified profiles, conversations, events, video dates, safety — for dating apps, singles platforms, or social-connection products.',

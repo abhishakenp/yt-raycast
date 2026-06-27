@@ -346,7 +346,7 @@ describe('session deployment helpers', () => {
     ).resolves.toBeNull()
   })
 
-  it('prepares static Lakebed deployments from preview HTML for HTML sessions', async () => {
+  it('rejects Lakebed deployments when only static HTML is available', async () => {
     const ctx = ctxFor({
       sessions: [
         sessionDoc({
@@ -379,14 +379,12 @@ describe('session deployment helpers', () => {
 
     await expect(
       prepareLakebedSessionDeployment(ctx, { sessionId }),
-    ).resolves.toMatchObject({
-      source:
-        '<!doctype html><html><body><h1>Static Preview</h1></body></html>',
-      sourceKind: 'html',
-      previewHtml:
-        '<!doctype html><html><body><h1>Static Preview</h1></body></html>',
-      previewVersion: 9,
-      siteSpecJson: '{"themeName":"vintage-paper"}',
+    ).rejects.toMatchObject({
+      data: {
+        code: 'FULLSTACK_SOURCE_NOT_READY',
+        message:
+          'Lakebed deploys require generated fullstack source. Regenerate this site before publishing to Lakebed.',
+      },
     })
   })
 

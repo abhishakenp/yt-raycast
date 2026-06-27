@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * and social icon routes through useNavigate. Use as the closing site footer for
  * developer tools, API platforms, backend-as-a-service, or technical SaaS.
  */
-export const DevToolFooter = defineComponent({
+export const DevToolFooter = defineCapsule({
   name: 'DevToolFooter',
   description:
     '5-column footer for a developer tool / API platform: a top-bordered section with a brand logo (blue bolt tile) + name + about blurb + social icon buttons spanning two columns on the left, followed by three titled link columns, plus a bottom copyright/legal bar. Every brand button, link, and social icon routes through useNavigate. Use as the closing site footer for developer tools, API platforms, backend-as-a-service, or technical SaaS.',

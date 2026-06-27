@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * to primary; summary includes a chevron that rotates on open. Tokens-only. Renders
  * fully on zero arguments. ID attributes are namespaced.
  */
-export const CloudInfraFaq = defineComponent({
+export const CloudInfraFaq = defineCapsule({
   name: 'CloudInfraFaq',
   description:
     'Accordion-style FAQ section for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above an accordion list of detail/summary pairs. Each details block opens with a border transition to primary, and the summary includes a chevron that rotates on open. Tokens-only. Use for FAQ bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',

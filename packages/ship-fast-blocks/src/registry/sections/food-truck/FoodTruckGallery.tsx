@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * showcase for food trucks, street-food vendors, restaurants or cafes wanting to show
  * dishes, prep and atmosphere.
  */
-export const FoodTruckGallery = defineComponent({
+export const FoodTruckGallery = defineCapsule({
   name: 'FoodTruckGallery',
   description:
     'Masonry-style food GALLERY section: a centered eyebrow + heading above a 3-column grid where each column stacks two rounded photos of staggered heights (the middle column inverts the tall/short rhythm) for a masonry feel. All imagery uses the alt-driven Image component. Use as the visual showcase for food trucks, street-food vendors, restaurants, cafes or catering brands wanting to show dishes, prep and atmosphere.',

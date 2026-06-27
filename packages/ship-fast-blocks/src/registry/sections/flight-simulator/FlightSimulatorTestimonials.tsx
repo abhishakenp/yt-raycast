@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * combat sims, or aviation titles. Renders fully with no props via baked
  * defaults.
  */
-export const FlightSimulatorTestimonials = defineComponent({
+export const FlightSimulatorTestimonials = defineCapsule({
   name: 'FlightSimulatorTestimonials',
   description:
     '3-up review wall for a flight-simulator landing page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted review, and an attribution row pairing the reviewer name with their role (real-world pilot, sim YouTuber, flight instructor). Use for social-proof on flight sims, airliner / combat sims, or aviation titles.',

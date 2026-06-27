@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * MobileAppDownloadCta — a centered, full-width final download call-to-action. A
@@ -12,10 +17,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * on a habit tracker, fitness / wellness app, productivity or to-do app, or any
  * consumer app landing page. Renders fully with no props via baked-in defaults.
  */
-export const MobileAppDownloadCta = defineComponent({
+export const MobileAppDownloadCta = defineCapsule({
   name: 'MobileAppDownloadCta',
   description:
-    'Centered full-width final download call-to-action: a large headline over a relaxed supporting paragraph, a centered pair of iOS / Android download buttons (with Apple / Play glyphs), and a wrapping row of small check-marked trust badges beneath; download buttons route through useNavigate. Use as the closing conversion band before the footer on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',
+    'Centered full-width final download call-to-action backed by shared Lakebed conversion state: iOS and Android download buttons record intent with scoped loading, followed by check-marked trust badges. Use as the closing conversion band before the footer on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -24,8 +29,8 @@ export const MobileAppDownloadCta = defineComponent({
     badges: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Start building better habits today'
     const description =
       props.description ??
@@ -89,22 +94,38 @@ export const MobileAppDownloadCta = defineComponent({
             {description}
           </p>
           <div className="mb-10 flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={primaryCta}
+              plan={primaryCta}
+              source="cta-download"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Opening
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
             >
               <AppleIcon />
               {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryCta)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
+            </SaasPlanActionButton>
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={secondaryCta}
+              plan={secondaryCta}
+              source="cta-download"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Opening
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
             >
               <PlayIcon />
               {secondaryCta}
-            </button>
+            </SaasPlanActionButton>
           </div>
           <div className="flex flex-col items-center justify-center gap-4 text-sm text-muted-foreground sm:flex-row sm:gap-6">
             {badges.map((badge) => (

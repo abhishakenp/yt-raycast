@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -10,7 +11,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * convert near the bottom of a real-estate brokerage or agent page. Renders
  * fully with no props via baked-in defaults.
  */
-export const RealEstateCta = defineComponent({
+export const RealEstateCta = defineCapsule({
   name: 'RealEstateCta',
   description:
     "Confident closing call-to-action band for a brokerage: a rounded primary-toned panel centering an eyebrow, a large serif headline, a supporting line, and dual CTAs (filled 'Find Your Home' on the card surface + outlined 'Talk to an Agent'). Both CTAs route through useNavigate. Use to convert near the bottom of a real-estate brokerage or agent page.",

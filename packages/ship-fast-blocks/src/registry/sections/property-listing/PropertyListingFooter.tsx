@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * search portal or listing marketplace. Renders fully with no props via baked
  * defaults.
  */
-export const PropertyListingFooter = defineComponent({
+export const PropertyListingFooter = defineCapsule({
   name: 'PropertyListingFooter',
   description:
     "Full sitewide footer for a property marketplace: a top region pairing a brand block (logo-tile wordmark, blurb, contact line) with several 'explore' link columns over a token surface, plus a bordered bottom row with social links and an auto-updating copyright. Wordmark and links route through useNavigate. Use as the closing footer for a property search portal or listing marketplace.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * members clubs, professional networks, mastermind groups or curated communities.
  * Renders fully with no props.
  */
-export const MembershipClubFaq = defineComponent({
+export const MembershipClubFaq = defineCapsule({
   name: 'MembershipClubFaq',
   description:
     'Accordion FAQ for a private membership club / exclusive community page: a narrow centered column with an eyebrow + thin heading above a stack of native <details> accordions, each a rounded bordered card showing a medium question and a chevron that rotates when open, revealing a relaxed answer. Use to address eligibility, acceptance rate, tier switching and policy questions for members clubs, professional networks, mastermind groups or curated communities.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * label. Use as a punchy results / proof strip between content sections on a
  * marketing-agency, growth, or B2B SaaS landing page. Renders fully with no props.
  */
-export const MarketingAgencyStats = defineComponent({
+export const MarketingAgencyStats = defineCapsule({
   name: 'MarketingAgencyStats',
   description:
     'High-contrast dark KPI / results band on the primary surface: a responsive grid (2-up mobile, 4-up desktop) of centered metrics, each a large bold value above a small muted label. Use as a punchy results / proof strip between content sections on a marketing-agency, growth, or B2B SaaS landing page to highlight revenue generated, clients served, ROI, and leads.',

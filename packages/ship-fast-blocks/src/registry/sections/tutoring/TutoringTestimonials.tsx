@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 const DEFAULT_REVIEWS: {
@@ -31,7 +32,7 @@ const DEFAULT_REVIEWS: {
   },
 ]
 
-export const TutoringTestimonials = defineComponent({
+export const TutoringTestimonials = defineCapsule({
   name: 'TutoringTestimonials',
   description:
     "Social-proof band for tutoring sites, composing the TestimonialGrid kit composite into a row of warm parent and student testimonials. Each card shows a five-star rating, a heartfelt quote about real progress, and an avatar with the reviewer's name and role (e.g. 'Parent of 10th grader', 'Student, Grade 11'). Accepts a public `reviews` prop to override the quotes. Use it to build trust and reassure hesitant families before they book.",

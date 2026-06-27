@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * closing site footer for SaaS waitlists, app pre-launch pages, beta sign-ups, or
  * any minimal coming-soon page. Renders fully with no props via baked-in defaults.
  */
-export const ComingSoonFooter = defineComponent({
+export const ComingSoonFooter = defineCapsule({
   name: 'ComingSoonFooter',
   description:
     "Slim two-row footer for a 'launching soon' / waitlist pre-launch landing page: bordered-top footer with two rows (stacks on mobile). Top row has brand name + launch note on the left and social links on the right; bottom row has copyright on the left and legal links on the right. Every brand button, social, and legal link routes through useNavigate. Use as the closing site footer for SaaS waitlists, app pre-launch pages, beta sign-ups, or minimal coming-soon pages.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * professional landing page. Renders fully with no props via baked-in
  * "Jordan Avery" defaults.
  */
-export const ResumeCvFooter = defineComponent({
+export const ResumeCvFooter = defineCapsule({
   name: 'ResumeCvFooter',
   description:
     "Clean, multi-column closing footer for a personal resume / CV / portfolio site: a brand block (initials monogram + person's name + tagline + social row of LinkedIn / GitHub / Email) and a responsive grid of link columns (Navigate, Connect), with a bordered-top bottom bar holding an auto-updating copyright line and a short note. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for personal portfolios, online résumés, designer or developer profiles, or any individual's professional landing page.",

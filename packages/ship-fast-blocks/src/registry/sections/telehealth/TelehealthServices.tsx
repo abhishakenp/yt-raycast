@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const ICONS = [
@@ -73,7 +74,7 @@ const ICONS = [
   </svg>,
 ]
 
-export const TelehealthServices = defineComponent({
+export const TelehealthServices = defineCapsule({
   name: 'TelehealthServices',
   description:
     'Services overview band for a telehealth site, built on the shared FeatureGrid composite. Renders a centered heading and a four-up card grid covering the core virtual-care offerings — Primary Care, Mental Health, Prescriptions, and Urgent Care — each with a calm primary-toned inline icon, a title, and a short description. Cards collapse to two columns and then a single column on smaller screens. Use to summarize what a telehealth provider treats and help visitors self-route to the right service.',

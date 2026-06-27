@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use to sell passes on music festivals, arts festivals, concert
  * series, or any multi-day ticketed event.
  */
-export const MusicFestivalTickets = defineComponent({
+export const MusicFestivalTickets = defineCapsule({
   name: 'MusicFestivalTickets',
   description:
     "Three-tier tickets / pricing block for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three pass cards (GA, GA+, VIP) — each with a name, tagline, big price + unit, a checkmarked feature list and a primary CTA, with the popular tier highlighted by a primary ring and a floating 'Most Popular' badge — followed by a centered add-ons row of small bordered cards (camping, RV, glamping). Every tier CTA and add-on routes through useNavigate. Use to sell passes on music festivals, arts festivals, concert series, camping/desert events, or any multi-day ticketed event.",

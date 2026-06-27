@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
-export const UniversityTestimonials = defineComponent({
+export const UniversityTestimonials = defineCapsule({
   name: 'UniversityTestimonials',
   description:
     'Student and alumni voices band for the University page family with a prestigious, collegiate aesthetic. Composes the shared TestimonialGrid kit composite, mapping a public reviews prop (quote, name, class-year role, rating) into testimonial cards with star ratings and avatars. Use to build trust through authentic graduate and current-student perspectives on a university homepage.',

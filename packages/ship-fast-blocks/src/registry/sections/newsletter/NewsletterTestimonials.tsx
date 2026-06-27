@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * blogs, essayists, or content creators. Renders fully with no props via
  * baked-in defaults.
  */
-export const NewsletterTestimonials = defineComponent({
+export const NewsletterTestimonials = defineCapsule({
   name: 'NewsletterTestimonials',
   description:
     'Reader testimonials band for an editorial newsletter on a subtle muted band bordered top and bottom: a centered serif heading + lede, a 3-up grid of rounded card quotes (round avatar + name + role, then an italic pull-quote), and below it a 2-up / 4-up row of short serif mini-quotes with an em-dash author line. Warm, calm, literary mood. Avatars use the alt-driven Image component. Use to surface social proof for newsletters, publications, blogs, essayists, or content creators.',

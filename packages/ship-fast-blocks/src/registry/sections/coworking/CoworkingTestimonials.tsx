@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * social proof on coworking spaces, shared offices, or flex-office providers.
  * Renders fully with no props via bright, modern baked-in defaults.
  */
-export const CoworkingTestimonials = defineComponent({
+export const CoworkingTestimonials = defineCapsule({
   name: 'CoworkingTestimonials',
   description:
     "3-up member-review wall for a coworking or shared-workspace page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid. Each card renders a filled star row, a quoted member testimonial, and an attribution row pairing the member's name with their role and company. Use for social proof on coworking spaces, shared offices, or flex-office providers.",

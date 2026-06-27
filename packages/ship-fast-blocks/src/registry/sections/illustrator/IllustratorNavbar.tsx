@@ -1,7 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAccountButton,
+  CommerceCartButton,
+  CommerceMobileMenu,
+  CommerceSearchButton,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * IllustratorNavbar — sticky, translucent top navigation bar for an illustrator
@@ -13,7 +21,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * picture-book artists, surface designers, or any warm, editorial creative
  * portfolio. Renders fully with no props via baked-in "Mira Chen" defaults.
  */
-export const IllustratorNavbar = defineComponent({
+export const IllustratorNavbar = defineCapsule({
   name: 'IllustratorNavbar',
   description:
     'Sticky translucent top navigation bar for an illustrator / visual-artist portfolio: backdrop-blurred header with a serif wordmark brand on the left, horizontal nav links in the center (desktop), a pill-shaped primary CTA and a hamburger menu on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for illustrators, painters, picture-book artists, surface designers, or warm editorial creative portfolios.',
@@ -28,9 +36,12 @@ export const IllustratorNavbar = defineComponent({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Initial cart badge fallback before Lakebed state is available. */
+    cartCount: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Mira Chen'
     const nav = props.nav?.length
@@ -39,6 +50,7 @@ export const IllustratorNavbar = defineComponent({
     const homeTarget = props.homeTarget ?? nav[0]
     const ctaLabel = props.ctaLabel ?? 'Visit Shop'
     const ctaTarget = props.ctaTarget ?? 'Shop'
+    const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
 
     return (
       <header
@@ -70,6 +82,19 @@ export const IllustratorNavbar = defineComponent({
                   {label}
                 </button>
               ))}
+              <CommerceSearchButton
+                lakebed={lakebed}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+              />
+              <CommerceAccountButton
+                lakebed={lakebed}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+              />
+              <CommerceCartButton
+                lakebed={lakebed}
+                fallbackCount={initialCartCount}
+                buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+              />
               <button
                 type="button"
                 onClick={() => go(ctaTarget)}
@@ -78,27 +103,27 @@ export const IllustratorNavbar = defineComponent({
                 {ctaLabel}
               </button>
             </div>
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => go(homeTarget)}
-              className="p-2 md:hidden"
-            >
-              <svg
-                className="size-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1.5"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
+            <div className="flex items-center gap-3 md:hidden">
+              <CommerceSearchButton
+                lakebed={lakebed}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+              />
+              <CommerceAccountButton
+                lakebed={lakebed}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+              />
+              <CommerceCartButton
+                lakebed={lakebed}
+                fallbackCount={initialCartCount}
+                buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+              />
+              <CommerceMobileMenu
+                brand={brand}
+                nav={nav}
+                homeTarget={homeTarget}
+                buttonClassName="p-2 text-foreground"
+              />
+            </div>
           </div>
         </nav>
       </header>

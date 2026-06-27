@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * EcommerceHero — promotional split hero for a general online store. A two-column
@@ -16,7 +24,7 @@ import { Image } from '#/lib/img.tsx'
  * promotional online shop that wants a balanced text + product-photo split rather
  * than a full-bleed editorial image.
  */
-export const EcommerceHero = defineComponent({
+export const EcommerceHero = defineCapsule({
   name: 'EcommerceHero',
   description:
     "Promotional split hero for a general online store: a two-column (lg:grid-cols-2) layout with a sale eyebrow pill, an oversized bold sans headline, a supporting subheading, dual CTAs (a solid primary 'Shop now' + an outlined 'Explore'), and a small trust row on the left, plus a large hero product Image in a rounded muted card with a floating price/discount badge overlay on the right. Every CTA routes through useNavigate and the product photo uses the alt-driven Image component. Use as the opening hero for general retail storefronts, marketplaces, deal/sale landing pages, or any promotional online shop that wants a balanced text + product-photo split rather than a full-bleed editorial image.",
@@ -26,12 +34,17 @@ export const EcommerceHero = defineComponent({
     subheading: z.string().optional(),
     primaryCta: z.string().optional(),
     secondaryCta: z.string().optional(),
+    featuredProductName: z.string().optional(),
+    featuredProductPrice: z.string().optional(),
+    featuredProductSubtitle: z.string().optional(),
+    addLabel: z.string().optional(),
     imageAlt: z.string().optional(),
     badgeText: z.string().optional(),
     trust: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'Summer Sale — Up to 50% Off'
     const heroHeading = props.heading ?? 'Everything you love, now for less'
@@ -40,6 +53,12 @@ export const EcommerceHero = defineComponent({
       'Shop thousands of top-rated products across every category. Fresh drops weekly, fast delivery, and prices you will actually love.'
     const heroPrimary = props.primaryCta ?? 'Shop now'
     const heroSecondary = props.secondaryCta ?? 'Explore'
+    const featuredProductName =
+      props.featuredProductName ?? 'Wireless Headphones'
+    const featuredProductPrice = props.featuredProductPrice ?? '$129'
+    const featuredProductSubtitle =
+      props.featuredProductSubtitle ?? 'Featured deal'
+    const addLabel = props.addLabel ?? 'Add to cart'
     const heroImageAlt =
       props.imageAlt ??
       'Modern retail product flat-lay featuring a stylish gadget, accessories, and packaging on a clean neutral background'
@@ -49,6 +68,15 @@ export const EcommerceHero = defineComponent({
       'Easy returns',
       'Secure checkout',
     ]
+
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt: heroImageAlt,
+        label: featuredProductName,
+        price: featuredProductPrice,
+        subtitle: featuredProductSubtitle,
+      }),
+    ])
 
     return (
       <section
@@ -81,6 +109,18 @@ export const EcommerceHero = defineComponent({
               >
                 {heroSecondary}
               </button>
+              <CommerceAddItemButton
+                lakebed={lakebed}
+                item={{
+                  label: featuredProductName,
+                  price: featuredProductPrice,
+                }}
+                aria-label={`${addLabel} ${featuredProductName}`}
+                pendingChildren={<CommerceMutationSpinner />}
+                className="inline-flex w-full items-center justify-center rounded-lg bg-foreground px-8 py-4 text-sm font-semibold tracking-wide text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70 sm:w-auto"
+              >
+                {addLabel}
+              </CommerceAddItemButton>
             </div>
             <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground lg:justify-start">
               {heroTrust.filter(Boolean).map((item) => (

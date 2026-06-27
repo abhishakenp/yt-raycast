@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
@@ -13,7 +14,7 @@ import { StatGrid } from '#/section-kit/StatGrid.tsx'
  * reliability figures on any analytics, BI, or data-product site. Renders fully
  * with no props via baked-in defaults.
  */
-export const AnalyticsStats = defineComponent({
+export const AnalyticsStats = defineCapsule({
   name: 'AnalyticsStats',
   description:
     'Proof-point statistics band for an analytics product, wrapping the shared StatGrid composite in a padded section with an optional centered SectionHeading. Surfaces headline numbers — events tracked, customers, and uptime — as bold value-over-label cells in a responsive grid. Sharp and data-forward. Use to back marketing claims with concrete scale and reliability figures on any analytics, BI, or data-product site.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * financial advisory practices. Renders fully with no props via baked-in
  * "Northridge" defaults.
  */
-export const AccountingFirmAbout = defineComponent({
+export const AccountingFirmAbout = defineCapsule({
   name: 'AccountingFirmAbout',
   description:
     'Split about band for a CPA / accounting-firm site: a muted two-column section with a 4:3 photo on one side and, on the other, an uppercase eyebrow, a heading, two body paragraphs, a 2x2 KPI grid of firm stats, and a founder credit row (round avatar + name + role). Calm professional-services credibility band; photo and founder avatar use the alt-driven Image component. Use to tell the firm story on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or financial advisory practices.',

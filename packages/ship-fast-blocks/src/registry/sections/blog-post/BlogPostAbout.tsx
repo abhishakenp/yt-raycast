@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * useNavigate. Use as the main content area for blogs, journals, magazines,
  * essays, or editorial reading pages.
  */
-export const BlogPostAbout = defineComponent({
+export const BlogPostAbout = defineCapsule({
   name: 'BlogPostAbout',
   description:
     'Long-form editorial article body with headings + pullquote for a blog post detail page: a centered long-form reading column with lead paragraphs (large, light), intro paragraphs, body sections (each with a SectionHeading and ordered blocks: paragraphs, h3 sub-headings, inline figures with captions, and highlighted bullet callouts), an accented serif pull-quote after the first section, closing paragraphs, tag/topic chips, and an author bio card. All interactive elements route through useNavigate. Use as the main content area for blogs, journals, magazines, essays, or editorial reading pages.',

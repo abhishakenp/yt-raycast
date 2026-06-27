@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 const DEFAULT_TIERS: {
@@ -55,7 +56,7 @@ const DEFAULT_TIERS: {
   },
 ]
 
-export const PetVeterinaryPricing = defineComponent({
+export const PetVeterinaryPricing = defineCapsule({
   name: 'PetVeterinaryPricing',
   description:
     'Transparent wellness-plan pricing band for a veterinary clinic site, composing the PricingGrid kit composite into membership tiers. Renders a Basic Wellness plan, a highlighted Plus Care plan marked as most popular, and a Complete Care plan — each with a friendly feature list and a routed CTA. Accepts a public `tiers` prop to override the plans. Use it to give pet parents clear, no-surprises options for keeping their companions healthy year-round.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use as the sticky site header for community platforms, SaaS forums,
  * knowledge bases, or membership networks.
  */
-export const CommunityForumNavbar = defineComponent({
+export const CommunityForumNavbar = defineCapsule({
   name: 'CommunityForumNavbar',
   description:
     'Sticky translucent top navigation bar for a community-platform / discussion-forum marketing site: blurred, border-bottomed header with a brand mark + product name on the left, a horizontal row of nav links on desktop, and a sign-in text button + primary CTA button on the right. Every link and the CTA route through useNavigate. Use as the sticky site header for community platforms, SaaS forums, knowledge bases, or membership networks.',

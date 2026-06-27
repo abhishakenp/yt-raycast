@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
-export const ProductDetailFooter = defineComponent({
+export const ProductDetailFooter = defineCapsule({
   name: 'ProductDetailFooter',
   description:
     'Site footer for the Product Detail page family, wrapping the shared SiteFooter composite. Renders the Aurora brand mark and tagline, multi-column Shop / Support / Company / Legal link groups, a social row, and a bottom legal bar — tuned for a premium single-product page like the Aurora Pro Headphones. Use as the closing band of a product detail page; fully prop-driven with Aurora defaults.',

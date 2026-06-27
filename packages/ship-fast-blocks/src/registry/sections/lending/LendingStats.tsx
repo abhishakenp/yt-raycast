@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * or fintech landing pages. All imagery uses the alt-driven Image component.
  * Renders fully with no props via baked-in defaults.
  */
-export const LendingStats = defineComponent({
+export const LendingStats = defineCapsule({
   name: 'LendingStats',
   description:
     'Stats / about split with a photo and a floating review card for a lending or fintech marketing page: left column has a heading, supporting paragraph and a 2x2 grid of muted stat tiles (big value + label); right column is a large rounded photo with an overlapping bottom-left review card — five star icons, a quoted testimonial, an avatar and a name/location. Use to build trust with track-record numbers and a real-borrower quote on loan, about, or fintech landing pages. Imagery uses the alt-driven Image component.',

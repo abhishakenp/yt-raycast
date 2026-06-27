@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * coverage strip directly under the hero for dealerships, used-car lots, or
  * multi-marque showrooms. Renders fully with no props via baked-in defaults.
  */
-export const AutoDealershipLogos = defineComponent({
+export const AutoDealershipLogos = defineCapsule({
   name: 'AutoDealershipLogos',
   description:
     'Trusted-brands wordmark strip for an auto dealership site: a bordered, card-surfaced band with a small uppercase caption above a responsive 3-up / 6-up grid of brand-name wordmarks (BMW, Mercedes, Audi, Lexus, Tesla, Toyota) at reduced opacity with a hover-to-full state. Each wordmark routes through useNavigate. Use as a social-proof / inventory-coverage strip directly under the hero for dealerships, used-car lots, or multi-marque showrooms.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
  * Pro, Team — on an e-learning, bootcamp, or academy landing page. Renders
  * fully with no props via baked-in defaults.
  */
-export const OnlineCoursePricing = defineComponent({
+export const OnlineCoursePricing = defineCapsule({
   name: 'OnlineCoursePricing',
   description:
     "A 3-tier enrollment-plan band for an online-course page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of plan cards (name, price, checkmark feature bullets, and a CTA). The middle 'Pro' tier is highlighted with a primary border, shadow, and a 'Most popular' pill, and every CTA routes through useNavigate. Use to present enrollment options — Free Audit, Pro, Team — on an e-learning, bootcamp, or academy landing page.",

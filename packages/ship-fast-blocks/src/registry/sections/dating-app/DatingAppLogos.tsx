@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * apps, singles platforms, or any consumer product citing press mentions. Renders
  * fully with no props via baked-in press defaults.
  */
-export const DatingAppLogos = defineComponent({
+export const DatingAppLogos = defineCapsule({
   name: 'DatingAppLogos',
   description:
     "Low-contrast 'Featured in' press-logo strip for a dating / matchmaking landing page: a subtle muted band bordered top and bottom with a small uppercase tracked label centered above a responsive grid of dimmed press logos, each a generic circular glyph beside a bold name, routed through useNavigate. Use directly below the hero as social-proof / credibility for dating apps, singles platforms, or any consumer product citing press mentions.",

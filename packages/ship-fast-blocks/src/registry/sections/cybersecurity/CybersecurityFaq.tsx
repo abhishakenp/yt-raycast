@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { useState } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * or any B2B security SaaS. Renders fully with no props via baked-in
  * security-FAQ defaults.
  */
-export const CybersecurityFaq = defineComponent({
+export const CybersecurityFaq = defineCapsule({
   name: 'CybersecurityFaq',
   description:
     'Accordion FAQ: a narrow, muted-band section with a centered heading + subheading above a vertical stack of bordered card rows, each a full-width toggle button (question + rotating chevron) that expands to reveal its answer; the first item opens by default and only one stays open at a time. Self-contained interactive state, no links. Use to answer buyer objections for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.',

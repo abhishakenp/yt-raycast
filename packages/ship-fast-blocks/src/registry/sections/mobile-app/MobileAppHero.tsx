@@ -1,8 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * MobileAppHero — a split, two-column hero for a clean, minimalist mobile-app
@@ -16,10 +21,10 @@ import { Image } from '#/lib/img.tsx'
  * meditation app, productivity or to-do app, or any consumer app-download page.
  * Renders fully with no props via baked-in "DailyFlow" defaults.
  */
-export const MobileAppHero = defineComponent({
+export const MobileAppHero = defineCapsule({
   name: 'MobileAppHero',
   description:
-    "Split two-column hero for a clean, minimalist mobile-app landing page on a calm muted band: the left column stacks a dot status pill, a large two-line headline, a relaxed subheading, App Store + Google Play download buttons (with Apple / Play glyphs), and an overlapping avatar social-proof row; the right column floats a phone mockup (soft blurred glow behind it) with two floating UI chips — a check-in 'done' card and a streak counter. Download buttons route through useNavigate and all imagery is alt-driven via <Image>. Use as the opening hero for a habit tracker, fitness / wellness / meditation app, productivity or to-do app, or any consumer app-download page.",
+    'Split two-column hero for a clean, minimalist mobile-app landing page on a calm muted band: App Store and Google Play buttons record shared Lakebed download intent with scoped loading, while the right column floats a phone mockup with progress chips. Use as the opening hero for a habit tracker, fitness / wellness / meditation app, productivity or to-do app, or any consumer app-download page.',
   props: z.object({
     badge: z.string().optional(),
     headingTop: z.string().optional(),
@@ -37,8 +42,8 @@ export const MobileAppHero = defineComponent({
     avatars: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const badge = props.badge ?? 'Trusted by 50,000+ habit builders'
     const headingTop = props.headingTop ?? 'Build better habits,'
     const headingBottom = props.headingBottom ?? 'one day at a time'
@@ -131,22 +136,38 @@ export const MobileAppHero = defineComponent({
                 {subheading}
               </p>
               <div className="mb-10 flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={primaryCta}
+                  plan={primaryCta}
+                  source="hero-download"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Opening
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   <AppleIcon />
                   {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
+                </SaasPlanActionButton>
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={secondaryCta}
+                  plan={secondaryCta}
+                  source="hero-download"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Opening
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
                 >
                   <PlayIcon />
                   {secondaryCta}
-                </button>
+                </SaasPlanActionButton>
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex -space-x-2">

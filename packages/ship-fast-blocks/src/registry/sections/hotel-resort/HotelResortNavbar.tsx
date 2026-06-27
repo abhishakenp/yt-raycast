@@ -1,23 +1,33 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  HotelAccountButton,
+  HotelBookingActionButton,
+  HotelBookingBadge,
+  HotelMobileMenu,
+  HotelMutationSpinner,
+  HotelSearchButton,
+} from './hotel-resort-interactions.tsx'
+import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
 
 /**
  * HotelResortNavbar — fixed, translucent top navigation bar for a luxury
  * hotel / resort & spa site. A backdrop-blurred, border-bottomed header pinned
  * to the top: a circular brand-initial logo mark beside the resort name on the
  * left, a horizontal set of nav links in the center (desktop), and a phone
- * number plus a solid "Book Now" CTA on the right, with a hamburger menu button
- * on mobile. Every link, the phone, and the CTA route through useNavigate so
- * labels can drive page-switching. Use as the sticky site header for hotels,
+ * number, search, profile dropdown, and a solid "Book Now" CTA on the right,
+ * with a Sheet menu on mobile. Nav links preserve page switching; booking and
+ * profile actions use shared Lakebed state. Use as the sticky site header for hotels,
  * beach or coastal resorts, spa retreats, boutique inns, villas, or wellness
  * destinations. Renders fully with no props via baked-in "Azure Coast" defaults.
  */
-export const HotelResortNavbar = defineComponent({
+export const HotelResortNavbar = defineCapsule({
   name: 'HotelResortNavbar',
   description:
-    'Fixed translucent top navigation bar for a luxury hotel / resort & spa site: backdrop-blurred, border-bottomed header pinned to the top with a circular brand-initial logo mark + resort name on the left, horizontal nav links in the center (desktop), and a phone number plus a solid Book Now CTA on the right, with a hamburger menu button on mobile. Links, phone and CTA route through useNavigate for page-switching. Use as the sticky site header for hotels, beach or coastal resorts, spa retreats, boutique inns, villas, or wellness destinations.',
+    'Fixed translucent top navigation bar for a luxury hotel / resort & spa site: backdrop-blurred, border-bottomed header pinned to the top with a circular brand-initial logo mark + resort name on the left, horizontal nav links in the center (desktop), and a phone number, room search, profile dropdown, booking badge, and a solid Book Now CTA on the right, with a real Sheet menu on mobile. Nav links route through useNavigate for page-switching while booking/profile/search actions use shared Lakebed state. Use as the sticky site header for hotels, beach or coastal resorts, spa retreats, boutique inns, villas, or wellness destinations.',
   props: z.object({
     /** Resort / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -31,7 +41,8 @@ export const HotelResortNavbar = defineComponent({
     bookTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: hotelResortLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Azure Coast'
     const nav = props.nav?.length
@@ -85,6 +96,15 @@ export const HotelResortNavbar = defineComponent({
               ))}
             </nav>
             <div className="flex items-center gap-4">
+              <HotelBookingBadge lakebed={lakebed} />
+              <HotelSearchButton
+                lakebed={lakebed}
+                buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+              />
+              <HotelAccountButton
+                lakebed={lakebed}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+              />
               <button
                 type="button"
                 onClick={() => go(phone)}
@@ -92,34 +112,30 @@ export const HotelResortNavbar = defineComponent({
               >
                 {phone}
               </button>
-              <button
-                type="button"
-                onClick={() => go(bookTarget)}
-                className="rounded-md bg-foreground px-6 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+              <HotelBookingActionButton
+                lakebed={lakebed}
+                intentLabel={bookTarget}
+                intentKey="navbar-booking"
+                source="navbar"
+                pendingChildren={
+                  <>
+                    <HotelMutationSpinner />
+                    Sending
+                  </>
+                }
+                className="hidden items-center justify-center gap-2 rounded-md bg-foreground px-6 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
               >
                 {cta}
-              </button>
-              <button
-                type="button"
-                aria-label="Open menu"
-                onClick={() => go(nav[0])}
-                className="p-2 md:hidden"
-              >
-                <svg
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
+              </HotelBookingActionButton>
+              <HotelMobileMenu
+                brand={brand}
+                nav={nav}
+                homeTarget={nav[0]}
+                lakebed={lakebed}
+                ctaLabel={cta}
+                ctaTarget={bookTarget}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+              />
             </div>
           </div>
         </div>

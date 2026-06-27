@@ -1,22 +1,25 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
+import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
 /**
  * AgencyContactCta — contact CTA + real inquiry form for a creative
  * digital-agency page. A centered heading + lead over a soft blurred glow, a
  * functional inquiry form (name, email, project-type select, message, submit
  * button with a send icon), and a footer row with an email link on the left and
- * social links on the right. Form submit, the email link, and each social link
- * route through useNavigate. Use as the closing "get in touch" / start-a-project
- * conversion section for agencies, studios, or any service business. Renders
- * fully with no props via baked-in defaults.
+ * social links on the right. Form submit writes a Lakebed inquiry; the email
+ * link and each social link route through useNavigate. Use as the closing
+ * "get in touch" / start-a-project conversion section for agencies, studios,
+ * or any service business. Renders fully with no props via baked-in defaults.
  */
-export const AgencyContactCta = defineComponent({
+export const AgencyContactCta = defineCapsule({
   name: 'AgencyContactCta',
   description:
-    "Contact CTA with a real inquiry form for a creative digital-agency page: a centered heading and lead over a soft blurred glow, a functional form (name, email, project-type select, message, submit button with a send icon), and a footer row with an email link on the left and social links on the right. Form submit, the email link and each social link route through useNavigate. Use as the closing 'get in touch' / start-a-project conversion section for agencies, studios, or any service business.",
+    "Contact CTA with a real Lakebed inquiry form for a creative digital-agency page: a centered heading and lead over a soft blurred glow, a functional form (name, email, project-type select, message, submit button with a send icon), and a footer row with an email link on the left and social links on the right. Form submit writes a shared inquiry record; the email link and each social link route through useNavigate. Use as the closing 'get in touch' / start-a-project conversion section for agencies, studios, or any service business.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -32,11 +35,12 @@ export const AgencyContactCta = defineComponent({
     projectTypes: z.array(z.string()).optional(),
     /** Social link labels on the right of the footer row. */
     socials: z.array(z.string()).optional(),
-    /** Navigation target used on form submit and email click. */
+    /** Navigation target used on email click. */
     contactTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: inquiryLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heading = props.heading ?? "Let's build something great together."
     const description =
@@ -58,6 +62,12 @@ export const AgencyContactCta = defineComponent({
       ? props.socials
       : ['Twitter', 'Instagram', 'LinkedIn', 'Dribbble']
     const contactTarget = props.contactTarget ?? 'Contact'
+    const inquiry = useInquirySubmission({
+      lakebed,
+      source: 'Agency contact',
+      successMessage:
+        "Thanks. We've received your project inquiry and will respond shortly.",
+    })
 
     const inputCls =
       'w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
@@ -85,10 +95,7 @@ export const AgencyContactCta = defineComponent({
 
           <form
             className="mx-auto max-w-xl space-y-5"
-            onSubmit={(e) => {
-              e.preventDefault()
-              go(contactTarget)
-            }}
+            onSubmit={inquiry.submitForm}
           >
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
@@ -100,6 +107,7 @@ export const AgencyContactCta = defineComponent({
                 </label>
                 <input
                   id="agency-name"
+                  name="name"
                   type="text"
                   required
                   placeholder="Jane Doe"
@@ -115,6 +123,7 @@ export const AgencyContactCta = defineComponent({
                 </label>
                 <input
                   id="agency-email"
+                  name="email"
                   type="email"
                   required
                   placeholder="jane@company.com"
@@ -131,6 +140,7 @@ export const AgencyContactCta = defineComponent({
               </label>
               <select
                 id="agency-type"
+                name="projectType"
                 className={cn(inputCls, 'appearance-none')}
               >
                 {projectTypes.map((opt) => (
@@ -149,6 +159,7 @@ export const AgencyContactCta = defineComponent({
               </label>
               <textarea
                 id="agency-message"
+                name="message"
                 rows={4}
                 required
                 placeholder="Tell us about your project, goals, and timeline."
@@ -157,9 +168,11 @@ export const AgencyContactCta = defineComponent({
             </div>
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+              aria-busy={inquiry.isPending}
+              disabled={inquiry.isPending}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
             >
-              {submit}
+              {inquiry.isPending ? 'Sending' : submit}
               <svg
                 width="20"
                 height="20"
@@ -175,6 +188,9 @@ export const AgencyContactCta = defineComponent({
                 <polygon points="22 2 15 22 11 13 2 9 22 2" />
               </svg>
             </button>
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              {inquiry.statusText}
+            </p>
           </form>
 
           <div className="mt-16 flex flex-col items-center justify-between gap-6 border-t border-border pt-10 sm:flex-row">

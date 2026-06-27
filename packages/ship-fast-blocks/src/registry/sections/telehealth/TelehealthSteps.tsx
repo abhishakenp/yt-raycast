@@ -1,9 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
-export const TelehealthSteps = defineComponent({
+export const TelehealthSteps = defineCapsule({
   name: 'TelehealthSteps',
   description:
     "Bespoke, token-styled 'how it works' band for a telehealth site. Opens with a centered SectionHeading, then lays out a three-column numbered step grid (a primary number badge, a title, and a short description) walking a new patient from sign-up to treatment: create your account, connect with a doctor, and get your treatment plan. Steps stack vertically on small screens. Use to reduce friction and reassure first-time visitors that getting care is simple.",

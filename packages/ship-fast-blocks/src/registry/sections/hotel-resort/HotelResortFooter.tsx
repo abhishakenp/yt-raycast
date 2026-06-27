@@ -1,7 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * HotelResortFooter — rich 4-column dark footer for a luxury hotel / resort &
@@ -9,15 +12,16 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * about blurb, circular social buttons), an explore-links column, a contact
  * column (address lines plus tappable phone/email), and a newsletter column
  * with an inline email-capture form, all over a bordered bottom row with an
- * auto-updating copyright line and legal links. The brand button, socials,
- * links, contact rows and newsletter all route through useNavigate. Use as the
+ * auto-updating copyright line and legal links. The newsletter capture writes to
+ * the shared Lakebed subscriber list; the brand button, socials, links, and
+ * contact rows route through useNavigate. Use as the
  * closing footer for hotels, resorts, spa retreats, villas, or inns. Renders
  * fully with no props via baked-in "Azure Coast" defaults.
  */
-export const HotelResortFooter = defineComponent({
+export const HotelResortFooter = defineCapsule({
   name: 'HotelResortFooter',
   description:
-    'Rich 4-column dark footer for a luxury hotel / resort & spa site: a foreground-surface footer with a brand column (logo mark + name, about blurb, circular social buttons), an explore-links column, a contact column (address lines plus tappable phone/email), and a newsletter column with an inline email-capture form, over a bordered bottom row with an auto-updating copyright line and legal links. Brand button, socials, links, contact rows and newsletter route through useNavigate. Use as the closing footer for hotels, resorts, spa retreats, villas, or boutique inns.',
+    'Rich 4-column dark footer for a luxury hotel / resort & spa site: a foreground-surface footer with a brand column (logo mark + name, about blurb, circular social buttons), an explore-links column, a contact column (address lines plus tappable phone/email), and a newsletter column with an inline email-capture form, over a bordered bottom row with an auto-updating copyright line and legal links. The newsletter capture writes to the shared Lakebed subscriber list; brand button, socials, links, and contact rows route through useNavigate. Use as the closing footer for hotels, resorts, spa retreats, villas, or boutique inns.',
   props: z.object({
     /** Resort / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -49,7 +53,8 @@ export const HotelResortFooter = defineComponent({
     homeTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Azure Coast'
     const about =
@@ -174,26 +179,18 @@ export const HotelResortFooter = defineComponent({
               <p className="mb-4 text-sm text-background/60">
                 {newsletterText}
               </p>
-              <form
+              <NewsletterSubscribeForm
+                lakebed={lakebed}
+                source={newsletterCta}
+                placeholder="Your email"
+                buttonLabel={newsletterCta}
+                successMessage="You're subscribed to resort updates."
                 className="flex gap-2"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  go(newsletterCta)
-                }}
-              >
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  aria-label="Your email"
-                  className="flex-1 rounded-md border border-background/20 bg-background/10 px-4 py-3 text-sm text-background placeholder:text-background/40 focus:border-background/40 focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="rounded-md bg-background px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                >
-                  {newsletterCta}
-                </button>
-              </form>
+                inputClassName="flex-1 rounded-md border border-background/20 bg-background/10 px-4 py-3 text-sm text-background placeholder:text-background/40 focus:border-background/40 focus:outline-none"
+                buttonClassName="rounded-md bg-background px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+                emailLabel="Your email"
+                statusClassName="sr-only"
+              />
             </div>
           </div>
           <div className="flex flex-col items-center justify-between gap-4 border-t border-background/10 pt-8 md:flex-row">

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * role. Avatars use the alt-driven Image component. Use to build trust with
  * social proof for clothing brands, boutiques, or premium apparel labels.
  */
-export const FashionStoreTestimonials = defineComponent({
+export const FashionStoreTestimonials = defineCapsule({
   name: 'FashionStoreTestimonials',
   description:
     'Dark inverted customer testimonials band for a minimalist fashion store: a foreground-colored section with a centered uppercase eyebrow + serif heading above a responsive 1-to-3 column grid of top-bordered quote blocks, each with a five-star rating row, a light italic pull-quote, and a footer pairing a rounded avatar with the customer name and role. Avatars use the alt-driven Image component. Use to build trust with social proof and client stories for clothing brands, boutiques, or premium apparel labels.',

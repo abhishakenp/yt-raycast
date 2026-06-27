@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * for agencies, design studios, branding shops, or production houses. Renders
  * fully with no props via baked-in "Studio Rise" defaults.
  */
-export const AgencyHero = defineComponent({
+export const AgencyHero = defineCapsule({
   name: 'AgencyHero',
   description:
     'Bold full-bleed hero band for a creative digital-agency landing page: near-full-viewport centered section over a soft token gradient with pulsing blurred glow orbs, an availability pill with a pulsing dot, a huge multi-line headline with one phrase in an indigo-violet gradient highlight, a supporting paragraph, dual pill CTAs (filled primary + outlined secondary), and an inline KPI/stats strip beneath. Cinematic, premium and conversion-focused; CTAs route through useNavigate. Use as the opening hero for agencies, design studios, branding shops, or production houses.',

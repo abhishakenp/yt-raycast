@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * through useNavigate. Use as the opening hero for spas, wellness retreats,
  * massage and facial studios, and bathhouses. Renders fully with no props.
  */
-export const SpaWellnessHero = defineComponent({
+export const SpaWellnessHero = defineCapsule({
   name: 'SpaWellnessHero',
   description:
     "Tranquil full-bleed hero for a day-spa / wellness landing page: a serene treatment-room or natural-element photo fills the band under a soft token-based overlay so light serif text stays readable. Centered content has an uppercase eyebrow, a large serif headline, a calming supporting paragraph, dual CTAs (filled 'Book a Treatment' + outlined 'View Menu'), and a divider-separated hours / location strip. CTAs route through useNavigate. Use as the opening hero for spas, wellness retreats, massage and facial studios, and bathhouses.",

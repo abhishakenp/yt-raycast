@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -14,7 +15,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * studio portfolio to establish credibility at a glance. Renders fully with no
  * props via baked-in defaults.
  */
-export const PortfolioDevStats = defineComponent({
+export const PortfolioDevStats = defineCapsule({
   name: 'PortfolioDevStats',
   description:
     'Track-record stats band for a modern developer portfolio: a full-width section wrapping a centered heading (mono-style eyebrow comment, title, subtitle) above a 4-up grid of headline numbers — years of experience, projects shipped, GitHub stars, and happy clients. Each stat stacks a bold value over a muted label. Theme-token only. Use mid-page on a freelance engineer or studio portfolio to establish credibility at a glance.',

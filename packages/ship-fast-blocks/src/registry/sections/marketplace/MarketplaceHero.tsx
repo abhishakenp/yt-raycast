@@ -1,9 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * MarketplaceHero — a split, two-column marketplace hero. The left column stacks
@@ -17,7 +25,7 @@ import { Image } from '#/lib/img.tsx'
  * Image. Use as the top hero for online marketplaces, multi-vendor or
  * maker/artisan platforms, and shopping destinations.
  */
-export const MarketplaceHero = defineComponent({
+export const MarketplaceHero = defineCapsule({
   name: 'MarketplaceHero',
   description:
     "Split, two-column marketplace hero: the left column stacks a live 'products added this week' status pill with a pulsing dot, a large tracking-tight headline with a muted-color highlight phrase, a supporting paragraph, dual CTAs (filled Explore-Products + outlined Start-Selling), and a trust row (secure-payments / fast-shipping / buyer-protection with inline icons); the right column is a staggered 4-image product collage in rounded tiles with a floating 'Verified Seller' badge card. Clean, neutral, light e-commerce aesthetic. CTAs route through useNavigate; the collage uses the alt-driven Image component. Use as the top hero for online marketplaces, multi-vendor or maker/artisan platforms, and shopping destinations.",
@@ -32,6 +40,10 @@ export const MarketplaceHero = defineComponent({
     subheading: z.string().optional(),
     primaryCta: z.string().optional(),
     secondaryCta: z.string().optional(),
+    featuredProductName: z.string().optional(),
+    featuredProductPrice: z.string().optional(),
+    featuredProductSubtitle: z.string().optional(),
+    addLabel: z.string().optional(),
     /** Trust signals beneath the hero copy. */
     trust: z.array(z.string()).optional(),
     /** Alt text for the 4 collage product images. */
@@ -40,7 +52,8 @@ export const MarketplaceHero = defineComponent({
     badgeSubtitle: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heroBadge = props.badge ?? '12,847 products added this week'
     const headingLead = props.headingLead ?? 'Discover unique products from'
@@ -51,6 +64,12 @@ export const MarketplaceHero = defineComponent({
       'Join over 2 million shoppers buying directly from independent artisans, designers, and small businesses. Quality goods, fair prices, no middlemen.'
     const heroPrimary = props.primaryCta ?? 'Explore Products'
     const heroSecondary = props.secondaryCta ?? 'Start Selling'
+    const featuredProductName =
+      props.featuredProductName ?? 'Verified Artisan Bundle'
+    const featuredProductPrice = props.featuredProductPrice ?? '$64'
+    const featuredProductSubtitle =
+      props.featuredProductSubtitle ?? 'Featured marketplace pick'
+    const addLabel = props.addLabel ?? 'Add to cart'
     const heroTrust = props.trust?.length
       ? props.trust
       : ['Secure payments', 'Fast shipping', 'Buyer protection']
@@ -64,6 +83,15 @@ export const MarketplaceHero = defineComponent({
         ]
     const heroBadgeTitle = props.badgeTitle ?? 'Verified Seller'
     const heroBadgeSubtitle = props.badgeSubtitle ?? 'Artisan Collective'
+
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt: heroGallery[0] ?? featuredProductName,
+        label: featuredProductName,
+        price: featuredProductPrice,
+        subtitle: featuredProductSubtitle,
+      }),
+    ])
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -183,6 +211,18 @@ export const MarketplaceHero = defineComponent({
                 >
                   <span>{heroSecondary}</span>
                 </button>
+                <CommerceAddItemButton
+                  lakebed={lakebed}
+                  item={{
+                    label: featuredProductName,
+                    price: featuredProductPrice,
+                  }}
+                  aria-label={`${addLabel} ${featuredProductName}`}
+                  pendingChildren={<CommerceMutationSpinner />}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-foreground px-6 py-3.5 font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+                >
+                  <span>{addLabel}</span>
+                </CommerceAddItemButton>
               </div>
               <div className="flex flex-wrap items-center gap-6 pt-4 text-sm text-muted-foreground">
                 {heroTrust.map((label, i) => (

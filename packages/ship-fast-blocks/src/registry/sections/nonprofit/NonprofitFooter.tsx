@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -30,7 +31,7 @@ const SproutMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const NonprofitFooter = defineComponent({
+export const NonprofitFooter = defineCapsule({
   name: 'NonprofitFooter',
   description:
     'Warm, mission-driven closing footer for a nonprofit / charity / NGO site built on the shared SiteFooter composite: a layered sprout-glyph logo mark + organization name, a tagline, a social row, and a responsive grid of link columns (Get Involved, About, Resources, Contact), with an auto-updating copyright line and note in the bottom bar. Every link routes through useNavigate. Use as the site-wide footer for nonprofits, charities, NGOs, foundations, or humanitarian organizations.',

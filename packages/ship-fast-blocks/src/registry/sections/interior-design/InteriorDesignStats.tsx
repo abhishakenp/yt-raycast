@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * for interior designers, design studios or architecture firms. Renders fully
  * with no props via baked-in defaults.
  */
-export const InteriorDesignStats = defineComponent({
+export const InteriorDesignStats = defineCapsule({
   name: 'InteriorDesignStats',
   description:
     'Compact metrics band on a muted surface for an upscale interior-design / architecture studio: a border-top-and-bottom muted band with a centered responsive 2/4-column grid of stats, each a large light-weight value over a small muted label. Editorial and understated. Use as a social-proof strip — projects completed, years of experience, awards, client satisfaction — for interior designers, design studios or architecture firms.',

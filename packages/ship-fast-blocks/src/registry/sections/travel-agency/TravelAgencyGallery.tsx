@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
-export const TravelAgencyGallery = defineComponent({
+export const TravelAgencyGallery = defineCapsule({
   name: 'TravelAgencyGallery',
   description:
     'Featured-destinations gallery for the Travel Agency page family. Composes the shared GalleryGrid kit composite into a three-column grid of six aspirational, alt-driven destination tiles (Santorini, Kyoto, Maldives, Swiss Alps, Marrakech, Patagonia), each with a captioned location. Use to showcase signature trips and inspire wanderlust mid-page. All images are alt-only and prop-driven with curated defaults so it renders with no props.',

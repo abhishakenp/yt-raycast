@@ -430,6 +430,7 @@ const CartContext = createContext(null)
 export function CartProvider({ children }) {
   const [cart, setCart] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [pendingActions, setPendingActions] = useState({})
 
   useEffect(() => {
     async function initCart() {
@@ -464,35 +465,62 @@ export function CartProvider({ children }) {
     if (updated) setCart(updated)
   }, [cart?.id])
 
+  const setPendingAction = useCallback((key, pending) => {
+    setPendingActions((current) => {
+      if (pending) return { ...current, [key]: true }
+      const next = { ...current }
+      delete next[key]
+      return next
+    })
+  }, [])
+
+  const isPending = useCallback(
+    (key) => Boolean(pendingActions[key]),
+    [pendingActions]
+  )
+
   const addItem = useCallback(async (variantId, quantity = 1) => {
-    if (!cart?.id) return
-    setLoading(true)
-    await addLineItem(cart.id, variantId, quantity)
-    await refreshCart()
-    setLoading(false)
-  }, [cart?.id, refreshCart])
+    if (!cart?.id || !variantId) return
+    const key = 'add:' + variantId
+    setPendingAction(key, true)
+    try {
+      await addLineItem(cart.id, variantId, quantity)
+      await refreshCart()
+    } finally {
+      setPendingAction(key, false)
+    }
+  }, [cart?.id, refreshCart, setPendingAction])
 
   const updateItem = useCallback(async (lineItemId, quantity) => {
-    if (!cart?.id) return
-    setLoading(true)
-    await updateLineItem(cart.id, lineItemId, quantity)
-    await refreshCart()
-    setLoading(false)
-  }, [cart?.id, refreshCart])
+    if (!cart?.id || !lineItemId) return
+    const key = 'update:' + lineItemId
+    setPendingAction(key, true)
+    try {
+      await updateLineItem(cart.id, lineItemId, quantity)
+      await refreshCart()
+    } finally {
+      setPendingAction(key, false)
+    }
+  }, [cart?.id, refreshCart, setPendingAction])
 
   const removeItem = useCallback(async (lineItemId) => {
-    if (!cart?.id) return
-    setLoading(true)
-    await removeLineItem(cart.id, lineItemId)
-    await refreshCart()
-    setLoading(false)
-  }, [cart?.id, refreshCart])
+    if (!cart?.id || !lineItemId) return
+    const key = 'remove:' + lineItemId
+    setPendingAction(key, true)
+    try {
+      await removeLineItem(cart.id, lineItemId)
+      await refreshCart()
+    } finally {
+      setPendingAction(key, false)
+    }
+  }, [cart?.id, refreshCart, setPendingAction])
 
   const itemCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
+  const actionPendingCount = Object.keys(pendingActions).length
 
   return (
     <CartContext.Provider
-      value={{ cart, loading, addItem, updateItem, removeItem, itemCount, refreshCart }}
+      value={{ cart, loading, pendingActions, actionPendingCount, isPending, addItem, updateItem, removeItem, itemCount, refreshCart }}
     >
       {children}
     </CartContext.Provider>
@@ -507,7 +535,7 @@ export function useCart() {
 `,
     'components/ecommerce/ProductCard.jsx': `'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import Link from 'next/link'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useCart } from './CartProvider'
@@ -527,8 +555,7 @@ const getProductBadge = (product) => {
 }
 
 export default function ProductCard({ product, variantId: forcedVariantId = null, cta = 'Add to cart' }) {
-  const { addItem } = useCart()
-  const [adding, setAdding] = useState(false)
+  const { addItem, isPending } = useCart()
   const reduceMotion = useReducedMotion()
 
   const selectedVariant = useMemo(() => {
@@ -550,12 +577,12 @@ export default function ProductCard({ product, variantId: forcedVariantId = null
   const badge = useMemo(() => getProductBadge(product), [product])
   const href = '/product/' + (product?.handle || product?.id || '')
   const hasVariant = Boolean(selectedVariant?.id)
+  const addKey = selectedVariant?.id ? 'add:' + selectedVariant.id : ''
+  const adding = addKey ? isPending(addKey) : false
 
   const onAdd = async () => {
     if (!selectedVariant?.id) return
-    setAdding(true)
     await addItem(selectedVariant.id)
-    setAdding(false)
   }
 
   return (
@@ -618,7 +645,7 @@ const formatMoney = (amount, currency) =>
     : new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }).format(amount / 100)
 
 export default function CartDrawer() {
-  const { cart, loading, updateItem, removeItem, itemCount } = useCart()
+  const { cart, loading, updateItem, removeItem, itemCount, isPending } = useCart()
   const [open, setOpen] = useState(false)
 
   const currency = cart?.region?.currency_code || 'USD'
@@ -678,15 +705,36 @@ export default function CartDrawer() {
             {!loading && (!cart?.items?.length) ? <p>Your cart is empty.</p> : null}
             <ul className="cart-items">
               {(cart?.items || []).map((item) => (
-                <li key={item?.id || Math.random()} className="cart-item">
+                <li key={item?.id || item?.title} className="cart-item">
                   <div className="cart-item__row">
                     <div className="cart-item__meta">
                       <strong className="cart-item__title">{item.title}</strong>
                       <div className="cart-item__controls">
-                        <button onClick={() => updateItem(item.id, Math.max(1, item.quantity - 1))} type="button">-</button>
+                        <button
+                          aria-busy={isPending('update:' + item.id)}
+                          disabled={isPending('update:' + item.id) || isPending('remove:' + item.id)}
+                          onClick={() => updateItem(item.id, Math.max(1, item.quantity - 1))}
+                          type="button"
+                        >
+                          {isPending('update:' + item.id) ? '…' : '-'}
+                        </button>
                         <span className="cart-item__qty" aria-label="Quantity">{item.quantity}</span>
-                        <button onClick={() => updateItem(item.id, item.quantity + 1)} type="button">+</button>
-                        <button onClick={() => removeItem(item.id)} type="button">Remove</button>
+                        <button
+                          aria-busy={isPending('update:' + item.id)}
+                          disabled={isPending('update:' + item.id) || isPending('remove:' + item.id)}
+                          onClick={() => updateItem(item.id, item.quantity + 1)}
+                          type="button"
+                        >
+                          {isPending('update:' + item.id) ? '…' : '+'}
+                        </button>
+                        <button
+                          aria-busy={isPending('remove:' + item.id)}
+                          disabled={isPending('update:' + item.id) || isPending('remove:' + item.id)}
+                          onClick={() => removeItem(item.id)}
+                          type="button"
+                        >
+                          {isPending('remove:' + item.id) ? '…' : 'Remove'}
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -715,18 +763,15 @@ export default function CartDrawer() {
 `,
     'components/ecommerce/AddToCart.jsx': `'use client'
 
-import { useState } from 'react'
 import { useCart } from './CartProvider'
 
 export default function AddToCart({ variantId, disabled }) {
-  const { addItem } = useCart()
-  const [adding, setAdding] = useState(false)
+  const { addItem, isPending } = useCart()
+  const adding = variantId ? isPending('add:' + variantId) : false
 
   async function handleClick() {
     if (!variantId) return
-    setAdding(true)
     await addItem(variantId)
-    setAdding(false)
   }
 
   return (

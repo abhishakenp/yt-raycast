@@ -1,7 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { PublicationSubscribeForm } from '../blog/publication-interactions.tsx'
+import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 /**
  * NewsroomFooter — refined editorial footer for a digital newsroom or online
@@ -10,15 +13,16 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * each with a heading and several routed links, plus an optional slim
  * newsletter mini-capture line. A divided bottom bar carries social handles,
  * an auto-updating copyright line, legal links (Privacy, Terms, Cookies) and a
- * subtle "Back to top" affordance. The wordmark and every link route through
+ * subtle "Back to top" affordance. The newsletter capture writes to the shared
+ * Lakebed subscriber list, while the wordmark and every link route through
  * useNavigate. Use as the closing footer for newspapers, magazines, publishing
  * houses or any editorial publication. Renders fully with no props via baked-in
  * "The Daily Ledger" defaults.
  */
-export const NewsroomFooter = defineComponent({
+export const NewsroomFooter = defineCapsule({
   name: 'NewsroomFooter',
   description:
-    'Refined editorial newspaper-style footer for a digital newsroom or online magazine: a large serif wordmark and a one-line tagline above a wide multi-column set of link groups (Sections, Company, Help, Legal, Follow) — each a heading plus several routed links — an optional slim newsletter mini-capture line, and a divided bottom bar with social handles, an auto-updating copyright line, legal links (Privacy, Terms, Cookies) and a subtle Back-to-top affordance. The wordmark and every link route through useNavigate. Use as the closing footer for newspapers, magazines, publishing houses or any editorial publication.',
+    'Refined editorial newspaper-style footer for a digital newsroom or online magazine: a large serif wordmark and a one-line tagline above a wide multi-column set of link groups (Sections, Company, Help, Legal, Follow) — each a heading plus several routed links — an optional slim newsletter mini-capture line, and a divided bottom bar with social handles, an auto-updating copyright line, legal links (Privacy, Terms, Cookies) and a subtle Back-to-top affordance. The newsletter capture writes to the shared Lakebed subscriber list, while the wordmark and every link route through useNavigate. Use as the closing footer for newspapers, magazines, publishing houses or any editorial publication.',
   props: z.object({
     /** Large serif wordmark / publication name. */
     brand: z.string().optional(),
@@ -36,7 +40,8 @@ export const NewsroomFooter = defineComponent({
     legal: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: publicationLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'The Daily Ledger'
     const blurb =
@@ -104,27 +109,21 @@ export const NewsroomFooter = defineComponent({
               </p>
             </div>
             <div className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:items-center">
-              <label
-                htmlFor="newsroom-footer-email"
-                className="text-sm font-medium text-foreground"
-              >
+              <label className="text-sm font-medium text-foreground">
                 The Morning Brief
               </label>
-              <div className="flex flex-1 items-center gap-2">
-                <input
-                  id="newsroom-footer-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  className="h-10 flex-1 rounded-md border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground"
-                />
-                <button
-                  type="button"
-                  onClick={() => go('Subscribe')}
-                  className="h-10 shrink-0 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-                >
-                  Subscribe
-                </button>
-              </div>
+              <PublicationSubscribeForm
+                lakebed={lakebed}
+                source="Newsroom footer"
+                placeholder="you@example.com"
+                buttonLabel="Subscribe"
+                successMessage="You're subscribed to the morning brief."
+                className="flex flex-1 items-center gap-2"
+                inputClassName="h-10 flex-1 rounded-md border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground"
+                buttonClassName="h-10 shrink-0 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-70"
+                emailLabel="Email address for The Morning Brief"
+                statusClassName="sr-only"
+              />
             </div>
           </div>
 

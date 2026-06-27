@@ -1,15 +1,23 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
-import { SiteNav } from '#/section-kit/SiteNav.tsx'
+
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAccountButton,
+  CommerceCartButton,
+  CommerceMobileMenu,
+  CommerceSearchButton,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * SubscriptionBoxNavbar — sticky, playful site header for a subscription-box
- * brand (curated monthly boxes, delightful unboxing). A thin configuration over
- * the shared SiteNav composite: a gift-box wordmark beside an inline ribboned
- * box mark, desktop nav links (How it works, Boxes, Pricing, FAQ), a "Get
- * Started" pill CTA, and a real mobile drawer (Sheet) on small screens. Use as
- * the header for any recurring-delivery, curated-box, or membership-kit brand
- * where the joy of unboxing is the hook. Renders fully with no props.
+ * brand (curated monthly boxes, delightful unboxing). A gift-box wordmark sits
+ * beside desktop nav links, command search, Shoo account dropdown, shared
+ * Lakebed cart drawer, a "Get Started" pill CTA, and a real mobile drawer. Use
+ * as the header for any recurring-delivery, curated-box, or membership-kit
+ * brand where the joy of unboxing is the hook.
  */
 const GiftBoxMark = ({ className }: { className?: string }) => (
   <svg
@@ -30,10 +38,10 @@ const GiftBoxMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const SubscriptionBoxNavbar = defineComponent({
+export const SubscriptionBoxNavbar = defineCapsule({
   name: 'SubscriptionBoxNavbar',
   description:
-    "Sticky, playful subscription-box site header built on the shared SiteNav composite: gift-box wordmark + ribboned box mark, desktop nav links (How it works, Boxes, Pricing, FAQ), a 'Get Started' pill CTA, and a real mobile drawer. Use as the header for any curated monthly box, recurring-delivery, or membership-kit brand where the unboxing experience is the hook.",
+    "Sticky, playful subscription-box site header: gift-box wordmark + ribboned box mark, desktop nav links (How it works, Boxes, Pricing, FAQ), command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, a 'Get Started' pill CTA, and a real mobile drawer. Use as the header for any curated monthly box, recurring-delivery, or membership-kit brand where the unboxing experience is the hook.",
   props: z.object({
     /** Brand / box name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -45,25 +53,84 @@ export const SubscriptionBoxNavbar = defineComponent({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Initial cart badge fallback before Lakebed state is available. */
+    cartCount: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
+    const go = useNavigate()
     const nav = props.nav?.length
       ? props.nav
       : ['How it works', 'Boxes', 'Pricing', 'FAQ']
+    const brand = props.brand ?? 'BoxJoy'
+    const homeTarget = props.homeTarget ?? nav[0]
+    const ctaLabel = props.ctaLabel ?? 'Get Started'
+    const ctaTarget = props.ctaTarget ?? 'Pricing'
+    const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
+
     return (
-      <SiteNav
-        brand={props.brand ?? 'BoxJoy'}
-        brandMark={<GiftBoxMark className="size-8 text-primary" />}
-        brandClassName="text-xl font-bold tracking-tight"
-        nav={nav}
-        cta={{
-          label: props.ctaLabel ?? 'Get Started',
-          target: props.ctaTarget ?? 'Pricing',
-        }}
-        homeTarget={props.homeTarget ?? nav[0]}
-        className={props.className}
-      />
+      <header
+        className={cn(
+          'fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm',
+          props.className,
+        )}
+      >
+        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+          <button
+            type="button"
+            onClick={() => go(homeTarget)}
+            className="flex items-center gap-3"
+          >
+            <GiftBoxMark className="size-8 text-primary" />
+            <span className="text-xl font-bold tracking-tight text-foreground">
+              {brand}
+            </span>
+          </button>
+
+          <div className="hidden items-center gap-8 md:flex">
+            {nav.map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => go(label)}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <CommerceSearchButton
+              lakebed={lakebed}
+              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            />
+            <CommerceAccountButton
+              lakebed={lakebed}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+            />
+            <CommerceCartButton
+              lakebed={lakebed}
+              fallbackCount={initialCartCount}
+              buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+            />
+            <button
+              type="button"
+              onClick={() => go(ctaTarget)}
+              className="hidden items-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+            >
+              {ctaLabel}
+            </button>
+            <CommerceMobileMenu
+              brand={brand}
+              nav={nav}
+              homeTarget={homeTarget}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            />
+          </div>
+        </nav>
+      </header>
     )
   },
 })

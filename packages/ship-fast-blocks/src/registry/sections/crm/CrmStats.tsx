@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * (active teams, pipeline managed, conversion lift, rating) for CRM,
  * sales-pipeline or B2B SaaS products. Renders fully with no props.
  */
-export const CrmStats = defineComponent({
+export const CrmStats = defineCapsule({
   name: 'CrmStats',
   description:
     'Compact KPI stats band for a CRM / SaaS landing page: a top-and-bottom-bordered strip with a responsive 2/4-up grid of centered metrics, each a large bold value above a muted label. Quietly authoritative social proof. Use between content sections to surface headline numbers (active teams, pipeline managed, conversion lift, rating) for CRM, sales-pipeline or B2B SaaS products.',

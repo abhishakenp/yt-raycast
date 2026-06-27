@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * product worth showing visually. Renders fully with no props via six built-in
  * feature tiles.
  */
-export const AiProductGallery = defineComponent({
+export const AiProductGallery = defineCapsule({
   name: 'AiProductGallery',
   description:
     'Product-screenshot showcase grid for a clean, light AI SaaS / product page: a centered heading and paragraph above a responsive 1 → 2 → 3 column grid of bordered cards, each a clickable tile with a 4:3 alt-driven image, a bold title, and a short caption, lifting with a shadow on hover. Each card routes through useNavigate. Use to surface real in-app screenshots or feature highlights for AI tools, SaaS apps, editors, dashboards, or any product worth showing visually.',

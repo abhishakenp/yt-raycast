@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * aesthetic; CTAs route through useNavigate. Use as the pricing section for B2B
  * SaaS, productivity, or developer-platform pages.
  */
-export const MarketingPricing = defineComponent({
+export const MarketingPricing = defineCapsule({
   name: 'MarketingPricing',
   description:
     "Centered-header 3-tier pricing table for a SaaS / product-marketing landing page: a bold heading + supporting line over a responsive 1/2/3-column grid of bordered plan cards (name, big price + period, description, a checkmarked feature list, and a full-width CTA); the 'most popular' plan gets a primary ring, a floating 'Most popular' badge and a filled CTA, and cards lift slightly on hover. Clean premium indigo-on-light aesthetic; CTAs route through useNavigate. Use as the pricing section for B2B SaaS, productivity, or developer-platform pages.",

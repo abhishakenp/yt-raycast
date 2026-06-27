@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * knowledge bases, help centers, documentation landings, or support pages. Renders
  * fully with no props via six baked-in support topics.
  */
-export const FaqTopics = defineComponent({
+export const FaqTopics = defineCapsule({
   name: 'FaqTopics',
   description:
     "A 'Browse by Topic' category grid for a help-center / knowledge-base page: a left-aligned section heading above a responsive 1/2/3-column grid of clickable card buttons. Each card has a tinted rounded icon tile (rotating token tints — rocket, card, kanban, plugs, shield, code), a bold title, a short description, and an article-count link with a chevron that nudges on hover. Cards route through useNavigate. Use as the topic/category browse section on SaaS knowledge bases, help centers, documentation landings, or support pages.",

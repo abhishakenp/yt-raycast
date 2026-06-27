@@ -1,19 +1,25 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { propertyListingLakebed } from './property-listing-lakebed.ts'
+import {
+  PropertyListingInquiryButton,
+  PropertyListingMutationSpinner,
+} from './property-listing-interactions.tsx'
 
 /**
  * PropertyListingCta — a closing call-to-action band for a property portal. A
  * rounded card surface centers an eyebrow, a bold headline, a supporting line,
  * and dual CTAs (filled "Start Searching" + outlined "Post a Listing") with a
- * small reassurance note beneath. Both CTAs route through useNavigate. Use to
- * convert searchers near the bottom of a property marketplace page. Renders
- * fully with no props via baked-in defaults.
+ * small reassurance note beneath. Search navigation routes through useNavigate;
+ * seller/contact intent records a shared Lakebed inquiry.
  */
-export const PropertyListingCta = defineComponent({
+export const PropertyListingCta = defineCapsule({
   name: 'PropertyListingCta',
   description:
-    "Closing call-to-action band for a property portal: a rounded card surface centering an eyebrow, a bold headline, a supporting line, and dual CTAs (filled 'Start Searching' + outlined 'Post a Listing') with a small reassurance note beneath. Both CTAs route through useNavigate. Use to convert searchers near the bottom of a property marketplace page.",
+    'Closing call-to-action band for a property portal: a rounded card surface centering an eyebrow, a bold headline, a supporting line, and dual CTAs. The search CTA keeps page navigation through useNavigate, while the seller/contact CTA records a shared Lakebed inquiry instead of faking navigation.',
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -33,7 +39,9 @@ export const PropertyListingCta = defineComponent({
     note: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: propertyListingLakebed,
+  component: ({ props, lakebed }) => {
+    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Your search starts here'
     const heading = props.heading ?? 'Find your next place'
     const subheading =
@@ -46,17 +54,47 @@ export const PropertyListingCta = defineComponent({
     const note = props.note ?? 'Free to browse · No account required to start'
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={eyebrow}
-        title={heading}
-        subtitle={note ? `${subheading} ${note}` : subheading}
-        actions={[
-          { label: primaryCta, target: primaryTarget, variant: 'primary' },
-          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
-        ]}
-        className={props.className}
-      />
+      <section
+        className={cn('bg-background px-6 py-20 lg:px-8', props.className)}
+      >
+        <div className="mx-auto max-w-5xl rounded-3xl bg-primary px-6 py-14 text-center text-primary-foreground shadow-sm sm:px-12 lg:py-16">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-foreground/75">
+            {eyebrow}
+          </p>
+          <h2 className="mx-auto mt-4 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
+            {heading}
+          </h2>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-primary-foreground/80">
+            {subheading}
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => go(primaryTarget)}
+              className="inline-flex items-center justify-center rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary-foreground/90"
+            >
+              {primaryCta}
+            </button>
+            <PropertyListingInquiryButton
+              lakebed={lakebed}
+              intent={secondaryTarget}
+              source="cta"
+              pendingChildren={
+                <>
+                  <PropertyListingMutationSpinner className="size-4" />
+                  Sending
+                </>
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-foreground/40 px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
+            >
+              {secondaryCta}
+            </PropertyListingInquiryButton>
+          </div>
+          {note ? (
+            <p className="mt-5 text-sm text-primary-foreground/70">{note}</p>
+          ) : null}
+        </div>
+      </section>
     )
   },
 })

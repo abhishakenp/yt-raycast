@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -10,7 +11,7 @@ import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
  * Rent / Invest. Use to summarize what a real-estate brokerage or agent team
  * offers. Renders fully with no props via baked-in defaults.
  */
-export const RealEstateServices = defineComponent({
+export const RealEstateServices = defineCapsule({
   name: 'RealEstateServices',
   description:
     'Clean services grid for a brokerage: a centered serif header above a responsive 1/2/4-column grid of cards, each with a numbered token-tinted index chip, a title, and a short description. Defaults cover Buy / Sell / Rent / Invest. Use to summarize what a real-estate brokerage or agent team offers.',

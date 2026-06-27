@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  commerceProduct,
+  useCommerceFilteredProducts,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * ElectronicsStoreProducts — a "Trending Products" catalog grid on a muted band
@@ -10,13 +18,13 @@ import { Image } from '#/lib/img.tsx'
  * (first chip primary-active), above a 1-to-4 column grid of product cards: a
  * square image with an optional corner badge and a floating round add-to-cart
  * button, then title, subtitle, price and a star rating. A centered outlined
- * "View All" button closes the section. Cards, chips and button route through
- * useNavigate. Use as the main catalog grid on electronics or gadget storefronts.
+ * "View All" button closes the section. Add-to-cart writes to the shared
+ * Lakebed cart; chips and view-all route through useNavigate. Use as the main catalog grid on electronics or gadget storefronts.
  */
-export const ElectronicsStoreProducts = defineComponent({
+export const ElectronicsStoreProducts = defineCapsule({
   name: 'ElectronicsStoreProducts',
   description:
-    'Trending Products catalog grid on a muted band for an electronics storefront: a header row pairs a heading with filter chips (first chip primary-active), above a 1-to-4 column grid of product cards — square image with an optional corner badge (Best Seller / New) and a floating round add-to-cart button, then title, subtitle, price and a star rating. A centered outlined View All button closes the section. Cards, chips and button route through useNavigate; imagery is alt-driven. Use as the main catalog grid on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
+    'Trending Products catalog grid on a muted band for an electronics storefront: a header row pairs a heading with filter chips (first chip primary-active), above a 1-to-4 column grid of product cards — square image with an optional corner badge (Best Seller / New) and a floating round add-to-cart button that writes to the shared Lakebed cart, then title, subtitle, price and a star rating. A centered outlined View All button closes the section. Chips and view-all route through useNavigate; imagery is alt-driven. Use as the main catalog grid on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -39,7 +47,8 @@ export const ElectronicsStoreProducts = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heading = props.heading ?? 'Trending Products'
     const filters = props.filters?.length
@@ -117,6 +126,23 @@ export const ElectronicsStoreProducts = defineComponent({
               'Canon EOS R6 Mark II mirrorless camera with RF lens attached',
           },
         ]
+    useSyncCommerceCatalog(
+      lakebed,
+      items.map((product) =>
+        commerceProduct({
+          imageAlt: product.imageAlt,
+          label: product.title,
+          price: product.price,
+          subtitle: product.subtitle,
+        }),
+      ),
+    )
+    const visibleItems = useCommerceFilteredProducts(lakebed, items, (product) => [
+      product.title,
+      product.subtitle,
+      product.price,
+      product.badge,
+    ])
 
     const ArrowRight = () => (
       <svg
@@ -171,7 +197,7 @@ export const ElectronicsStoreProducts = defineComponent({
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {items.map((p) => (
+            {visibleItems.map((p) => (
               <div
                 key={p.title}
                 className="group overflow-hidden rounded-xl bg-card text-card-foreground transition-shadow hover:shadow-lg"
@@ -196,11 +222,14 @@ export const ElectronicsStoreProducts = defineComponent({
                       {p.badge}
                     </span>
                   ) : null}
-                  <button
-                    type="button"
+                  <CommerceAddItemButton
+                    lakebed={lakebed}
+                    item={{
+                      label: p.title,
+                      price: p.price,
+                    }}
                     aria-label={`Add ${p.title} to cart`}
-                    onClick={() => go(p.title)}
-                    className="absolute bottom-3 right-3 grid size-10 place-items-center rounded-full bg-card text-card-foreground shadow-md transition-colors hover:bg-foreground hover:text-background"
+                    className="absolute bottom-3 right-3 grid size-10 place-items-center rounded-full bg-card text-card-foreground shadow-md transition-colors hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70"
                   >
                     <svg
                       className="size-5"
@@ -214,7 +243,7 @@ export const ElectronicsStoreProducts = defineComponent({
                     >
                       <path d="M12 4v16m8-8H4" />
                     </svg>
-                  </button>
+                  </CommerceAddItemButton>
                 </div>
                 <div className="p-4">
                   <h3 className="mb-1 font-medium text-card-foreground">

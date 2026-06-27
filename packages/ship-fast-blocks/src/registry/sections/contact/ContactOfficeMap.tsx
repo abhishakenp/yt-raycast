@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * location details on agency, SaaS, or startup contact pages. Renders fully with
  * no props via baked-in defaults.
  */
-export const ContactOfficeMap = defineComponent({
+export const ContactOfficeMap = defineCapsule({
   name: 'ContactOfficeMap',
   description:
     'Split office information and photo section for a contact page: a two-column card with a heading, description, and icon-prefixed meta rows (transit, parking, accessibility) on the left; a large cover photo with gradient overlay and a floating map-pin glyph on the right. Use to present physical location details on agency, SaaS, or startup contact pages.',

@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -20,7 +21,7 @@ import { Image } from '#/lib/img.tsx'
  * features section and featured content in a companion gallery section.
  * Renders fully with no props.
  */
-export const LinkInBioHero = defineComponent({
+export const LinkInBioHero = defineCapsule({
   name: 'LinkInBioHero',
   description:
     "Opening hero of a minimal LINK-IN-BIO / link-hub / bio-link page — a single centered narrow column with a calm, light, paper-toned aesthetic. Leads with a circular avatar headshot (ringed in the page color, with an online/available status dot), a name + role/tagline + short bio, then a compact set of headline (primary) link buttons (each with a leading icon tile, title + subtitle, and a trailing open-arrow or 'New' badge), and a centered row of round social icon buttons (Twitter/X, GitHub, Dribbble, LinkedIn). Use as the opening hero / profile head of a Linktree / Bento style personal landing page, creator or influencer link hub, freelancer/portfolio bio link, or social-profile splash; the full big-link button list belongs to a companion features section and featured content to a companion gallery section. Supply content only — brand/name, profile, primary links, socials; the section owns all layout and styling.",

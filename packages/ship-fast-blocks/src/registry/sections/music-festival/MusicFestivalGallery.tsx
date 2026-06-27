@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * atmosphere and social proof on music festivals, arts festivals, concert
  * series, or any recurring multi-day event.
  */
-export const MusicFestivalGallery = defineComponent({
+export const MusicFestivalGallery = defineCapsule({
   name: 'MusicFestivalGallery',
   description:
     'Dark photo gallery band of past-year memories for a music / arts festival landing page: a full-bleed inverted (foreground background, light text) section with a centered eyebrow + heading + caption, then a mosaic photo grid (one tall portrait tile spanning two rows and one wide tile spanning two columns) of festival moments like crowds, stages and installations. Photos use the alt-driven Image component. Use to convey atmosphere and social proof on music festivals, arts festivals, concert series, raves, or any recurring multi-day event.',

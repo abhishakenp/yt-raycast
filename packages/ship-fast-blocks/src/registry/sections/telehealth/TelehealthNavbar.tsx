@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
-export const TelehealthNavbar = defineComponent({
+export const TelehealthNavbar = defineCapsule({
   name: 'TelehealthNavbar',
   description:
     "Sticky top navigation header for a telehealth / virtual care site, built on the shared SiteNav composite. Renders a calm medical brand mark (heart-pulse glyph in primary), the brand name, a row of section links (How it works, Services, Pricing, Reviews, FAQ), an optional click-to-call phone number, and a prominent 'Book a Visit' CTA that routes to the contact page. Includes a real mobile drawer for small screens. Use as the first band of any telehealth page so visitors can immediately reach booking, pricing, or support.",

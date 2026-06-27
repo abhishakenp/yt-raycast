@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * or industry-specific engagements. Renders fully with no props via six
  * baked-in default case studies.
  */
-export const ConsultingCaseStudies = defineComponent({
+export const ConsultingCaseStudies = defineCapsule({
   name: 'ConsultingCaseStudies',
   description:
     "6-up case-study gallery with industry tags and engagement metrics for a management-consulting firm page: a heading and lead paragraph on the left with a 'View All' link on the right, above a 3-column grid of clickable project cards. Each card has an alt-driven image that zooms on hover, a category tag chip overlaid on the image, a title, a description, and duration/period meta. Cards and the view-all link route through useNavigate. Use to showcase consulting case studies, client success stories, or industry-specific engagements.",

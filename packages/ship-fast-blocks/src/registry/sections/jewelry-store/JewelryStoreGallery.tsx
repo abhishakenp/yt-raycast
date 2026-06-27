@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * boutiques, gifting moments — for fine jewelers, diamond houses, or any
  * premium luxury-retail brand. Renders fully with no props via baked-in defaults.
  */
-export const JewelryStoreGallery = defineComponent({
+export const JewelryStoreGallery = defineCapsule({
   name: 'JewelryStoreGallery',
   description:
     'Lifestyle masonry gallery for a luxury jewelry brand on a subtle muted band: a centered gold eyebrow + serif heading introduce a three-column masonry-style collage of editorial lifestyle images with mixed aspect ratios (3:4, square, 4:5) and the middle column nudged down, each image zooming gently on hover. Use to evoke the brand experience — clients, boutiques, gifting moments — for fine jewelers, diamond houses, or any premium luxury-retail brand.',

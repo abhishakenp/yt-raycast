@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -35,7 +36,7 @@ const PipeMark = ({ className }: { className?: string }) => (
   </span>
 )
 
-export const PlumbingHvacNavbar = defineComponent({
+export const PlumbingHvacNavbar = defineCapsule({
   name: 'PlumbingHvacNavbar',
   description:
     "Sticky top navigation bar for a local plumbing & HVAC trade site built on the shared SiteNav composite: a pipe/droplet logo mark and company wordmark, horizontal desktop nav links, a click-to-call phone number, a pill 'Schedule Service' CTA, and a real mobile drawer. Nav items and CTA route through useNavigate for page-switching. Use as the sticky site header for plumbers, HVAC contractors, drain/sewer services, water heater installers, and other licensed home-service trades.",

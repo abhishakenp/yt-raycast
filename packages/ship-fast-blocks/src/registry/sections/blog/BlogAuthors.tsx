@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * Use as the contributors / writers / "meet the team" section on blog homepages,
  * magazine about pages, or editorial landing pages.
  */
-export const BlogAuthors = defineComponent({
+export const BlogAuthors = defineCapsule({
   name: 'BlogAuthors',
   description:
     "Contributor / author cards grid for an editorial blog or publication: a centered SectionHeading (eyebrow + title + subtitle) above a responsive 1/2/3-column grid of author cards. Each card has a round avatar image resolved from a headshot alt description, the contributor's name, their role, a one-line bio, and a routable 'View profile' link wired through useNavigate. Use as the contributors / writers / meet-the-team section on blog homepages, magazine about pages, or editorial landing pages.",

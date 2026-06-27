@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * as a cinematic portfolio / reel showcase for directors, cinematographers, DPs,
  * or production houses.
  */
-export const FilmDirectorWork = defineComponent({
+export const FilmDirectorWork = defineCapsule({
   name: 'FilmDirectorWork',
   description:
     "Inverted, near-black 'Selected Work' reel grid for a film director / cinematographer portfolio: on a dark foreground band, a header row pairing a thin heading + muted lede with a set of filter pill buttons (first outlined/active), a responsive 1/2/3-column grid of 16:9 project cards each with an overlaid darkening scrim, a centered circular play button that brightens on hover, and bottom-anchored category tag / title / role captions, plus a centered outlined load-more button. Cards, filters, and load-more route through useNavigate; imagery uses the Image component. Use as a cinematic portfolio / reel showcase for directors, cinematographers, DPs, or production houses.",

@@ -1,9 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Badge as UIBadge } from '#/components/ui/badge.tsx'
 
 // Leaf primitive: small status/label pill. Mirrors shadcn badge cva variants.
-export const Badge = defineComponent({
+export const Badge = defineCapsule({
   name: 'Badge',
   description: 'Small status/label pill. Mirrors shadcn variant.',
   props: z.object({

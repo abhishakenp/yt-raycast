@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use as the closing site footer for beauty stores, skincare shops,
  * cosmetics brands, or any clean e-commerce landing page.
  */
-export const BeautyStoreFooter = defineComponent({
+export const BeautyStoreFooter = defineCapsule({
   name: 'BeautyStoreFooter',
   description:
     'Slim bottom footer for a beauty / skincare / cosmetics storefront: a single bordered-top row (stacks on mobile) with a serif brand name on the left, an auto-updating copyright line in the center, and a row of legal / utility links on the right. The brand button and every link route through useNavigate. Use as the closing site footer for beauty stores, skincare shops, cosmetics brands, or any clean e-commerce landing page.',

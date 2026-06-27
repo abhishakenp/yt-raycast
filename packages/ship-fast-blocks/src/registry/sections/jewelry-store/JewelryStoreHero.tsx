@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * JewelryStoreHero — full-bleed cinematic hero for a luxury fine-jewelry
@@ -15,10 +23,11 @@ import { Image } from '#/lib/img.tsx'
  * for fine jewelers, diamond houses, engagement-ring boutiques, watch or
  * high-jewelry maisons. Renders fully with no props via baked-in defaults.
  */
-export const JewelryStoreHero = defineComponent({
+export const JewelryStoreHero = defineCapsule({
   name: 'JewelryStoreHero',
   description:
     'Full-bleed cinematic hero for a luxury fine-jewelry boutique: a dimmed full-cover background image with a left-to-right fade-to-background gradient overlay, fronting a left-aligned column with a wide letter-spaced gold heritage eyebrow, an oversized two-line serif display headline, a relaxed subheading, and dual CTAs (solid gold primary + bordered ghost). A floating bottom-right featured-piece card shows a label, serif piece name, and price. Use as the opening hero for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.',
+  lakebed: commerceCartLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
     headingTop: z.string().optional(),
@@ -32,7 +41,7 @@ export const JewelryStoreHero = defineComponent({
     imageAlt: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Est. 1892 • Paris'
     const headingTop = props.headingTop ?? 'The Art of'
@@ -48,6 +57,14 @@ export const JewelryStoreHero = defineComponent({
     const imageAlt =
       props.imageAlt ??
       'elegant diamond necklace displayed on black velvet jewelry stand in luxury boutique lighting'
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt,
+        label: featuredName,
+        price: featuredPrice,
+        subtitle: featuredLabel,
+      }),
+    ])
 
     return (
       <section
@@ -108,6 +125,17 @@ export const JewelryStoreHero = defineComponent({
               {featuredName}
             </p>
             <p className="mt-1 text-muted-foreground">{featuredPrice}</p>
+            <CommerceAddItemButton
+              lakebed={lakebed}
+              item={{ label: featuredName, price: featuredPrice }}
+              aria-label={`Add ${featuredName} to cart`}
+              pendingChildren={
+                <CommerceMutationSpinner className="text-primary-foreground" />
+              }
+              className="mt-5 inline-flex items-center justify-center bg-primary px-5 py-3 text-xs font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            >
+              Add featured
+            </CommerceAddItemButton>
           </div>
         </div>
       </section>

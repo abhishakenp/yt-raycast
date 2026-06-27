@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * statuses. Use as a product roadmap for protocols, chains, token projects,
  * or infrastructure platforms.
  */
-export const CryptoRoadmap = defineComponent({
+export const CryptoRoadmap = defineCapsule({
   name: 'CryptoRoadmap',
   description:
     'Vertical phased timeline for a crypto / DeFi development roadmap: centered heading + description, then a vertical timeline with colored status nodes (Completed/In Progress/Planned), connecting lines, status chips with quarter labels, bold titles, and descriptive paragraphs. Completed nodes show a check mark; others show the quarter prefix. Use as a product roadmap for protocols, chains, token projects, or infrastructure platforms.',

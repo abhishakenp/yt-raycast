@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * subscription publication homepage, typically before the subscribe CTA.
  * Renders fully with no props via baked-in defaults.
  */
-export const NewsTestimonials = defineComponent({
+export const NewsTestimonials = defineCapsule({
   name: 'NewsTestimonials',
   description:
     "3-up reader-review wall for a news / editorial site built on the shared TestimonialGrid composite: a centered heading + subheading above a responsive 3-column card grid where each card renders a star row, the reader's quote, and an avatar + name + role footer. Use to build trust on a newspaper, magazine or subscription publication homepage, typically before the subscribe CTA.",

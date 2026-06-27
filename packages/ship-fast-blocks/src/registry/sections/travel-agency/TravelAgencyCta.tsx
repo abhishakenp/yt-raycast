@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
-export const TravelAgencyCta = defineComponent({
+export const TravelAgencyCta = defineCapsule({
   name: 'TravelAgencyCta',
   description:
     "Closing call-to-action band for the Travel Agency page family. Composes the shared CtaBand kit composite in the primary tone to invite visitors to start planning, with a primary 'Plan a Trip' action and an outline 'Talk to an advisor' action. Use as the final conversion band before the footer. All copy and actions are prop-driven with wanderlust-themed defaults so it renders with no props.",

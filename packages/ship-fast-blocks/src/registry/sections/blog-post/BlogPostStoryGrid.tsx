@@ -1,8 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  useSyncPublicationArticles,
+} from '../blog/publication-interactions.tsx'
+import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 /**
  * BlogPostStoryGrid — related-articles cards grid for an editorial blog post
@@ -13,7 +18,7 @@ import { Image } from '#/lib/img.tsx'
  * "related reading" / "more stories" section below the body on blogs,
  * magazines, journals, or editorial reading pages.
  */
-export const BlogPostStoryGrid = defineComponent({
+export const BlogPostStoryGrid = defineCapsule({
   name: 'BlogPostStoryGrid',
   description:
     "Related-articles cards grid for an editorial blog post detail page: a muted-background band with a left-aligned 'Related reading' heading above a responsive 1/2/3-column grid of article cards, each with a hover-zoom cover image, category/date meta, a bold title, and a short excerpt. All cards are clickable and route through useNavigate. Use as the 'related reading' / 'more stories' section below the body on blogs, magazines, journals, or editorial reading pages.",
@@ -34,7 +39,8 @@ export const BlogPostStoryGrid = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: publicationLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heading = props.heading ?? 'Related reading'
     const items = props.items?.length
@@ -68,6 +74,16 @@ export const BlogPostStoryGrid = defineComponent({
               'Laptop screen showing data analytics dashboard with charts and metrics',
           },
         ]
+    useSyncPublicationArticles(
+      lakebed,
+      items.map((post) => ({
+        category: post.category,
+        date: post.date,
+        excerpt: post.excerpt,
+        target: post.title,
+        title: post.title,
+      })),
+    )
 
     return (
       <section className={cn('bg-muted py-16 lg:py-24', props.className)}>

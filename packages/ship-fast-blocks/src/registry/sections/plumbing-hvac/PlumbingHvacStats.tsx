@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -12,7 +13,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * rating. Use as a trust band between content sections on plumber, HVAC, or
  * other home-service sites. Renders fully with no props via baked-in defaults.
  */
-export const PlumbingHvacStats = defineComponent({
+export const PlumbingHvacStats = defineCapsule({
   name: 'PlumbingHvacStats',
   description:
     'A by-the-numbers proof band for a plumbing & HVAC trade site: a centered SectionHeading (eyebrow + title + subtitle) above the shared StatGrid composite — a responsive four-column grid of big bold values over muted labels. Defaults highlight credibility metrics homeowners care about — years in business, jobs completed, certified techs, and average rating. Use as a trust band between content sections on plumber, HVAC, or other home-service sites.',

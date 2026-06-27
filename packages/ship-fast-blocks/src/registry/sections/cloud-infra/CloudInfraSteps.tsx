@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * step 2 shows a checklist; step 3 shows a metrics panel. Tokens-only. Renders
  * fully on zero arguments.
  */
-export const CloudInfraSteps = defineComponent({
+export const CloudInfraSteps = defineCapsule({
   name: 'CloudInfraSteps',
   description:
     'Three-step onboarding guide for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a 3-column step grid. Each step has a numbered circle, a title, a description, and step-specific content (CLI code box for step 1, checklist for step 2, metrics panel for step 3). Tokens-only. Use to showcase quick-start or getting-started flows on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',

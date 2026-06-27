@@ -1,21 +1,27 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  EventActionButton,
+  EventMutationSpinner,
+} from './event-interactions.tsx'
+import { eventLakebed } from './event-lakebed.ts'
 
 /**
  * EventHero — centered, editorial hero for a conference / event landing page. A
  * date + city uppercase eyebrow, a large two-line headline, a supporting
  * paragraph, dual primary/secondary CTAs (register / view agenda), and an inline
  * event-stat strip (attendees / speakers / hours) beneath. Generous vertical
- * padding on a neutral canvas. Both CTAs route through useNavigate. Use as the
+ * padding on a neutral canvas. Register records a Lakebed event action; agenda routes through useNavigate. Use as the
  * opening hero for tech conferences, summits, meetups, workshops, festivals, or
  * any ticketed event.
  */
-export const EventHero = defineComponent({
+export const EventHero = defineCapsule({
   name: 'EventHero',
   description:
-    'Centered, editorial hero for a conference / event landing page: a date + city uppercase eyebrow, a large two-line headline, a supporting paragraph, dual primary/secondary CTAs (register / view agenda), and an inline event-stat strip (attendees / speakers / hours of content) beneath. Generous vertical padding on a neutral canvas, content centered in a narrow column. Both CTAs route through useNavigate. Use as the opening hero for tech conferences, summits, meetups, workshops, festivals, webinars, or any ticketed event landing page.',
+    'Centered, editorial hero for a conference / event landing page: a date + city uppercase eyebrow, a large two-line headline, a supporting paragraph, dual primary/secondary CTAs (register / view agenda), and an inline event-stat strip (attendees / speakers / hours of content) beneath. Generous vertical padding on a neutral canvas, content centered in a narrow column. Register records a Lakebed event action while agenda routes through useNavigate. Use as the opening hero for tech conferences, summits, meetups, workshops, festivals, webinars, or any ticketed event landing page.',
   props: z.object({
     /** Date + location eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -33,7 +39,8 @@ export const EventHero = defineComponent({
     stats: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: eventLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'September 12–13, 2024 • San Francisco'
     const headingTop = props.headingTop ?? 'Where design meets'
@@ -62,13 +69,22 @@ export const EventHero = defineComponent({
               {subheading}
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              <EventActionButton
+                lakebed={lakebed}
+                action="register"
+                label={primaryCta}
+                intentKey="hero-register"
+                source="hero"
+                pendingChildren={
+                  <>
+                    <EventMutationSpinner />
+                    Registering
+                  </>
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
               >
                 {primaryCta}
-              </button>
+              </EventActionButton>
               <button
                 type="button"
                 onClick={() => go(secondaryCta)}

@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * AiProductHero — split, two-column hero for a clean, light AI SaaS / product
@@ -15,10 +20,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * the opening hero for AI writing assistants, AI copilots, or generative-AI
  * tools. Renders fully with no props.
  */
-export const AiProductHero = defineComponent({
+export const AiProductHero = defineCapsule({
   name: 'AiProductHero',
   description:
-    'Split two-column hero for a clean, light AI SaaS / product landing page: a left column with a live-status pill (pulsing dot), a large two-line headline (second line muted), a supporting paragraph, dual CTAs (near-black filled primary with arrow + outlined watch-demo secondary with play glyph), and a check-marked trust microcopy row; a right column with a mocked AI chat/editor preview card featuring a macOS-style title bar, skeleton message rows, and a highlighted AI-suggestion block with action chips, framed by soft blurred glow orbs. CTAs and chips route through useNavigate. Use as the opening hero for AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or modern SaaS launch pages.',
+    'Split two-column hero for a clean, light AI SaaS / product landing page: a left column with a live-status pill (pulsing dot), a large two-line headline (second line muted), a supporting paragraph, dual fullstack CTAs (near-black filled primary with arrow + outlined watch-demo secondary with play glyph), and a check-marked trust microcopy row; a right column with a mocked AI chat/editor preview card featuring a macOS-style title bar, skeleton message rows, and a highlighted AI-suggestion block with scoped mutation action chips, framed by soft blurred glow orbs. CTAs and chips write to shared Lakebed conversion state. Use as the opening hero for AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or modern SaaS launch pages.',
   props: z.object({
     /** Live-status pill text. */
     badge: z.string().optional(),
@@ -44,8 +49,8 @@ export const AiProductHero = defineComponent({
     previewActions: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const badge = props.badge ?? 'Now with GPT-4 powered suggestions'
     const headingTop = props.headingTop ?? 'Write faster.'
     const headingBottom = props.headingBottom ?? 'Think clearer.'
@@ -122,21 +127,36 @@ export const AiProductHero = defineComponent({
                 {subheading}
               </p>
               <div className="mb-8 flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center rounded-lg bg-foreground px-6 py-3 text-base font-medium text-background transition-colors hover:bg-foreground/90"
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={primaryCta}
+                  plan={primaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-5" />
+                      Starting
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-foreground px-6 py-3 text-base font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
                   <ArrowRight className="ml-2 size-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center justify-center rounded-lg border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
+                </SaasPlanActionButton>
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={secondaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-5" />
+                      Opening
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
                 >
                   <svg
-                    className="mr-2 size-5"
+                    className="size-5"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -149,7 +169,7 @@ export const AiProductHero = defineComponent({
                     <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   {secondaryCta}
-                </button>
+                </SaasPlanActionButton>
               </div>
               <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 {trust.map((t) => (
@@ -206,19 +226,22 @@ export const AiProductHero = defineComponent({
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {previewActions.map((action, i) => (
-                          <button
+                          <SaasPlanActionButton
                             key={action}
-                            type="button"
-                            onClick={() => go(action)}
+                            lakebed={lakebed}
+                            intentLabel={action}
+                            plan={action}
+                            source="preview"
+                            pendingChildren={<SaasMutationSpinner />}
                             className={cn(
-                              'rounded px-3 py-1.5 text-xs font-medium transition-colors',
+                              'inline-flex items-center justify-center rounded px-3 py-1.5 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
                               i === 0
                                 ? 'bg-foreground text-background hover:bg-foreground/90'
                                 : 'text-muted-foreground hover:text-foreground',
                             )}
                           >
                             {action}
-                          </button>
+                          </SaasPlanActionButton>
                         ))}
                       </div>
                     </div>

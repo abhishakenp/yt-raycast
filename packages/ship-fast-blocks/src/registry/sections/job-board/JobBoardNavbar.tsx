@@ -1,7 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { jobBoardLakebed } from './job-board-lakebed.ts'
+import {
+  JobBoardAccountButton,
+  JobBoardActionButton,
+  JobBoardMobileMenu,
+  JobBoardMutationSpinner,
+  JobBoardSearchButton,
+} from './job-board-interactions.tsx'
 
 /**
  * JobBoardNavbar — sticky, backdrop-blurred top navigation bar for a job-board /
@@ -14,7 +23,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * or talent networks. Renders fully with no props via baked-in "WorkFlow"
  * defaults.
  */
-export const JobBoardNavbar = defineComponent({
+export const JobBoardNavbar = defineCapsule({
   name: 'JobBoardNavbar',
   description:
     "Sticky backdrop-blurred top navigation bar for a job-board / careers marketplace: border-bottomed header pinned to the top with a briefcase brand-mark tile + product name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a solid primary 'Post a Job' CTA on the right. Links and CTAs route through useNavigate for page-switching. Use as the sticky site header for job boards, careers sites, hiring marketplaces, recruiting platforms or talent networks.",
@@ -31,7 +40,8 @@ export const JobBoardNavbar = defineComponent({
     homeTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: jobBoardLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'WorkFlow'
     const nav = props.nav?.length
@@ -99,21 +109,31 @@ export const JobBoardNavbar = defineComponent({
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(signIn)}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-              >
-                {signIn}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(cta)}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            <div className="flex items-center gap-2 sm:gap-3">
+              <JobBoardSearchButton
+                lakebed={lakebed}
+                buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              />
+              <JobBoardAccountButton
+                lakebed={lakebed}
+                label={signIn}
+                buttonClassName="hidden size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+              />
+              <JobBoardActionButton
+                lakebed={lakebed}
+                action={cta}
+                source="navbar"
+                pendingChildren={<JobBoardMutationSpinner />}
+                className="hidden min-h-10 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
               >
                 {cta}
-              </button>
+              </JobBoardActionButton>
+              <JobBoardMobileMenu
+                brand={brand}
+                homeTarget={homeTarget}
+                nav={nav}
+                buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+              />
             </div>
           </div>
         </nav>

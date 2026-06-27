@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * FoodTruckHero — warm, editorial split hero for a gourmet food-truck landing page.
@@ -14,7 +22,7 @@ import { Image } from '#/lib/img.tsx'
  * top hero for food trucks, street-food vendors, taco/burger/bowl concepts or
  * chef-driven mobile-food brands.
  */
-export const FoodTruckHero = defineComponent({
+export const FoodTruckHero = defineCapsule({
   name: 'FoodTruckHero',
   description:
     'Warm, editorial split hero for a gourmet food-truck landing page: a two-column layout pairing a now-serving location pill, a large stacked multi-line headline, a chef-story paragraph, dual rounded CTAs (filled primary and outlined secondary), and a star-rating + open-hours row on the left, with a tall rounded dish photo carrying a floating chef-owner card (avatar, name, role) on the right. CTAs route through useNavigate; the photos use the alt-driven Image component. Use as the top hero for food trucks, street-food vendors, taco / burger / bowl concepts, pop-up kitchens or any chef-driven mobile-food brand.',
@@ -25,6 +33,10 @@ export const FoodTruckHero = defineComponent({
     subheading: z.string().optional(),
     primaryCta: z.string().optional(),
     secondaryCta: z.string().optional(),
+    featuredItemName: z.string().optional(),
+    featuredItemPrice: z.string().optional(),
+    featuredItemSubtitle: z.string().optional(),
+    addLabel: z.string().optional(),
     rating: z.string().optional(),
     hours: z.string().optional(),
     imageAlt: z.string().optional(),
@@ -33,7 +45,8 @@ export const FoodTruckHero = defineComponent({
     chefAvatarAlt: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heroBadge = props.badge ?? 'Now serving Los Angeles'
     const heroHeadingLines = props.headingLines?.length
@@ -44,6 +57,11 @@ export const FoodTruckHero = defineComponent({
       'Chef Marcus Chen brings 15 years of fine dining experience to the streets. Seasonal ingredients, bold flavors, zero pretension.'
     const heroPrimary = props.primaryCta ?? "View Today's Menu"
     const heroSecondary = props.secondaryCta ?? 'Find Us'
+    const featuredItemName = props.featuredItemName ?? 'Korean Short Rib Tacos'
+    const featuredItemPrice = props.featuredItemPrice ?? '$14'
+    const featuredItemSubtitle =
+      props.featuredItemSubtitle ?? 'Chef favorite · signature menu'
+    const addLabel = props.addLabel ?? 'Add to cart'
     const heroRating = props.rating ?? '4.9/5 (2,847 reviews)'
     const heroHours = props.hours ?? 'Open today 11am–8pm'
     const heroImageAlt =
@@ -54,6 +72,15 @@ export const FoodTruckHero = defineComponent({
     const chefAvatarAlt =
       props.chefAvatarAlt ??
       'Professional headshot of Chef Marcus Chen in his kitchen uniform'
+
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt: heroImageAlt,
+        label: featuredItemName,
+        price: featuredItemPrice,
+        subtitle: featuredItemSubtitle,
+      }),
+    ])
 
     const Star = ({ className }: { className?: string }) => (
       <svg
@@ -102,6 +129,18 @@ export const FoodTruckHero = defineComponent({
               >
                 {heroSecondary}
               </button>
+              <CommerceAddItemButton
+                lakebed={lakebed}
+                item={{
+                  label: featuredItemName,
+                  price: featuredItemPrice,
+                }}
+                aria-label={`${addLabel} ${featuredItemName}`}
+                pendingChildren={<CommerceMutationSpinner />}
+                className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+              >
+                {addLabel}
+              </CommerceAddItemButton>
             </div>
             <div className="flex flex-wrap items-center gap-6 pt-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-2">

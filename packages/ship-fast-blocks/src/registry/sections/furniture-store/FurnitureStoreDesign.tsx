@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * home-decor, or interiors brands. Renders fully with no props via baked-in
  * "Haven & Home" defaults.
  */
-export const FurnitureStoreDesign = defineComponent({
+export const FurnitureStoreDesign = defineCapsule({
   name: 'FurnitureStoreDesign',
   description:
     'Dark primary-background design-service band: a two-column section (stacks on mobile) with a left copy column (eyebrow, heading, paragraph, numbered 3-step process list of circular index chip + title + caption, and an inverted CTA button) beside a right column with a tall image and a floating corner card showing a stat callout (label, big value, caption); CTA routes through useNavigate. Use to promote a complimentary or paid interior-design / consultation service for furniture, home-decor, or interiors brands.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * richer sections on a brokerage or trading-app page. Renders fully with no
  * props via four baked-in metrics.
  */
-export const InvestingStats = defineComponent({
+export const InvestingStats = defineCapsule({
   name: 'InvestingStats',
   description:
     'Key-metrics stat band for an investing / fintech page: a bordered band on the page surface with a responsive 1/2/4-column grid of centered metrics, each a big bold value above a muted label. Tokens only, no links. Use to surface headline trust numbers (assets under management, active investors, countries supported, uptime) between richer sections on a brokerage or trading-app page.',

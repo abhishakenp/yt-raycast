@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * carriers, insurtech, brokers, or financial-protection products. Renders fully
  * with no props via baked-in defaults.
  */
-export const InsuranceTestimonials = defineComponent({
+export const InsuranceTestimonials = defineCapsule({
   name: 'InsuranceTestimonials',
   description:
     'Customer testimonial wall for an insurance page: a centered eyebrow chip + heading + lede above a responsive grid of muted quote cards (up to 3 columns), each with a 5-star row, a quote, and an alt-driven circular headshot beside the customer name and role. Imagery uses the Image component. Use as the social-proof section for insurance carriers, insurtech startups, brokers, or financial-protection products.',

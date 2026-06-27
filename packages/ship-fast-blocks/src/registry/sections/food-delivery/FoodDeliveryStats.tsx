@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * apps, restaurant aggregators, or online-ordering platforms. Renders fully with
  * no props via baked-in defaults.
  */
-export const FoodDeliveryStats = defineComponent({
+export const FoodDeliveryStats = defineCapsule({
   name: 'FoodDeliveryStats',
   description:
     'Inverted KPI stats strip for a food-delivery / restaurant-marketplace site: a full-width foreground-on-background dark band with a responsive 2/4-up grid of big bold metric values over muted labels (happy customers, restaurant partners, cities served, avg. delivery time). Use as a punchy social-proof divider between lighter sections for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',

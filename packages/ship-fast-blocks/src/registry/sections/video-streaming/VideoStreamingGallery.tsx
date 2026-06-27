@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
  * on streaming services, OTT apps, or on-demand video platforms. Renders fully
  * with no props via baked-in defaults (eight titles + captions).
  */
-export const VideoStreamingGallery = defineComponent({
+export const VideoStreamingGallery = defineCapsule({
   name: 'VideoStreamingGallery',
   description:
     "Captioned 'Trending now' poster wall for a video-streaming page built on the shared GalleryGrid composite: a centered header above a responsive grid of show thumbnails, each an alt-driven cinematic poster / scene still with a title caption overlay. Use to surface the catalog — trending titles, originals, and new arrivals — on streaming services, OTT apps, or on-demand video platforms.",

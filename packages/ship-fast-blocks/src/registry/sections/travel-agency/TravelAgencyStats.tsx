@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
 
-export const TravelAgencyStats = defineComponent({
+export const TravelAgencyStats = defineCapsule({
   name: 'TravelAgencyStats',
   description:
     'Credibility stats band for the Travel Agency page family. Pairs a SectionHeading with the shared StatGrid kit composite to present four trust-building metrics — destinations served, travelers booked, years in business, and average rating. Use to reinforce why travelers choose the agency. All values are prop-driven with premium defaults so it renders with no props.',

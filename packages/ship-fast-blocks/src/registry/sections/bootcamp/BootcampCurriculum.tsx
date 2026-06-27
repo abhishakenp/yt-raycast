@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * bullet list of key skills. Cards subtly highlight on hover. Use to present a
  * bootcamp's syllabus, course modules, or week-by-week curriculum breakdown.
  */
-export const BootcampCurriculum = defineComponent({
+export const BootcampCurriculum = defineCapsule({
   name: 'BootcampCurriculum',
   description:
     "6-up curriculum / modules grid for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive 1/2/3-column grid of rounded cards. Each card has a rotated inline line-icon tile in primary tint, a module title, a week-range description, and a bullet list of key skills. Cards subtly highlight on hover. Use to present a bootcamp's syllabus, course modules, or week-by-week curriculum breakdown.",

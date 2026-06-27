@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -22,7 +23,7 @@ const PodcastFeaturedStoryProps = z.object({
   className: z.string().optional(),
 })
 
-export const PodcastFeaturedStory = defineComponent({
+export const PodcastFeaturedStory = defineCapsule({
   name: 'PodcastFeaturedStory',
   description:
     'A latest-episode feature section that spotlights one podcast episode inside a prominent two-column card. The left side shows a warm studio cover image while the right side stacks an episode-number eyebrow, a bold title, a duration and publish-date meta row, short show notes, and a rounded Play episode button. Best used directly below a podcast hero to surface the freshest release.',

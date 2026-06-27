@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * alt-driven Image component. Use to let shoppers browse by department for
  * clothing brands, boutiques, or apparel and accessories shops.
  */
-export const FashionStoreCollections = defineComponent({
+export const FashionStoreCollections = defineCapsule({
   name: 'FashionStoreCollections',
   description:
     'Shop-by-Category collection grid for a minimalist fashion store: a centered eyebrow + serif heading above a responsive 1-to-4 column grid of tall portrait category cards, each a full-bleed image with a darkening scrim that deepens on hover and an overlaid serif category name + piece count. Every card routes through useNavigate and imagery uses the alt-driven Image component. Use to let shoppers browse by department or collection for clothing brands, boutiques, or apparel and accessories shops.',

@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
+import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
 /**
  * BootcampApplyCta — high-contrast application CTA with a real multi-field
@@ -9,14 +11,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * and description over a primary-colored band, above a rounded card containing
  * a functional form (first name, last name, email, program select, current
  * occupation, submit button). Below the form sits a fineprint line and a row
- * of trust chips with check icons. Form submit routes through useNavigate.
- * Use as the closing conversion section for bootcamps, dev academies, or
- * career-switch programs encouraging applications.
+ * of trust chips with check icons. Form submit writes a Lakebed application
+ * inquiry. Use as the closing conversion section for bootcamps, dev academies,
+ * or career-switch programs encouraging applications.
  */
-export const BootcampApplyCta = defineComponent({
+export const BootcampApplyCta = defineCapsule({
   name: 'BootcampApplyCta',
   description:
-    'High-contrast application CTA with a real multi-field form for a coding bootcamp / career-school landing page: centered headline and description over a primary-colored band, above a rounded card containing a functional form (first name, last name, email, program select, current occupation, submit button). Below the form sits a fineprint line and a row of trust chips with check icons. Form submit routes through useNavigate. Use as the closing conversion section for bootcamps, dev academies, or career-switch programs encouraging applications.',
+    'High-contrast application CTA with a real Lakebed multi-field form for a coding bootcamp / career-school landing page: centered headline and description over a primary-colored band, above a rounded card containing a functional form (first name, last name, email, program select, current occupation, submit button). Below the form sits a fineprint line and a row of trust chips with check icons. Form submit writes a shared inquiry record. Use as the closing conversion section for bootcamps, dev academies, or career-switch programs encouraging applications.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -30,12 +32,10 @@ export const BootcampApplyCta = defineComponent({
     fineprint: z.string().optional(),
     /** Inline trust chips beneath the form card. */
     trust: z.array(z.string()).optional(),
-    /** Navigation target used on form submit. */
-    submitTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: inquiryLakebed,
+  component: ({ props, lakebed }) => {
     const applyHeading = props.heading ?? 'Ready to start your tech career?'
     const applyDesc =
       props.description ??
@@ -50,7 +50,12 @@ export const BootcampApplyCta = defineComponent({
     const applyTrust = props.trust?.length
       ? props.trust
       : ['Job guarantee', '1-on-1 mentorship', 'Career support']
-    const submitTarget = props.submitTarget ?? applySubmit
+    const inquiry = useInquirySubmission({
+      lakebed,
+      source: 'Bootcamp application',
+      successMessage:
+        "Thanks. We've received your application and will follow up soon.",
+    })
 
     const inputCls =
       'w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20'
@@ -81,13 +86,7 @@ export const BootcampApplyCta = defineComponent({
           </p>
 
           <div className="mx-auto max-w-xl rounded-2xl bg-card p-8 shadow-xl">
-            <form
-              className="space-y-4 text-left"
-              onSubmit={(e) => {
-                e.preventDefault()
-                go(submitTarget)
-              }}
-            >
+            <form className="space-y-4 text-left" onSubmit={inquiry.submitForm}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label
@@ -98,6 +97,7 @@ export const BootcampApplyCta = defineComponent({
                   </label>
                   <input
                     id="bootcamp-apply-first"
+                    name="firstName"
                     type="text"
                     required
                     placeholder="Jane"
@@ -113,6 +113,7 @@ export const BootcampApplyCta = defineComponent({
                   </label>
                   <input
                     id="bootcamp-apply-last"
+                    name="lastName"
                     type="text"
                     required
                     placeholder="Smith"
@@ -129,6 +130,7 @@ export const BootcampApplyCta = defineComponent({
                 </label>
                 <input
                   id="bootcamp-apply-email"
+                  name="email"
                   type="email"
                   required
                   placeholder="jane@example.com"
@@ -144,6 +146,7 @@ export const BootcampApplyCta = defineComponent({
                 </label>
                 <select
                   id="bootcamp-apply-program"
+                  name="program"
                   className={cn(inputCls, 'appearance-none')}
                 >
                   {applyPrograms.map((p) => (
@@ -162,6 +165,7 @@ export const BootcampApplyCta = defineComponent({
                 </label>
                 <input
                   id="bootcamp-apply-occupation"
+                  name="occupation"
                   type="text"
                   placeholder="e.g. Teacher, Retail Manager, Student"
                   className={inputCls}
@@ -169,10 +173,15 @@ export const BootcampApplyCta = defineComponent({
               </div>
               <button
                 type="submit"
-                className="w-full rounded-lg bg-primary py-3.5 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                aria-busy={inquiry.isPending}
+                disabled={inquiry.isPending}
+                className="w-full rounded-lg bg-primary py-3.5 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
               >
-                {applySubmit}
+                {inquiry.isPending ? 'Sending' : applySubmit}
               </button>
+              <p className="text-sm text-muted-foreground" aria-live="polite">
+                {inquiry.statusText}
+              </p>
             </form>
             <p className="mt-4 text-xs text-muted-foreground">
               {applyFineprint}

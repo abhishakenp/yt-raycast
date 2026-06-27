@@ -1,8 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  useSyncPublicationArticles,
+} from '../blog/publication-interactions.tsx'
+import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 /**
  * NewsroomHero — front-page lead-story hero for a digital newsroom / magazine.
@@ -17,7 +22,7 @@ import { Image } from '#/lib/img.tsx'
  * digital magazines, longform publications, investigative outlets or editorial
  * content sites. Renders fully with no props.
  */
-export const NewsroomHero = defineComponent({
+export const NewsroomHero = defineCapsule({
   name: 'NewsroomHero',
   description:
     "Front-page lead-story hero for a digital newsroom / magazine: a small uppercase category kicker, a huge serif display headline, a standfirst/dek paragraph, a byline (author avatar + name + role) carrying date and read time, a wide lead photograph with a small italic caption and a 'Read the full story' CTA, beside a slim right-hand rail of secondary 'also in the news' headlines (small tag + title) separated by hairline rules. Editorial, print-inspired magazine aesthetic with serif display type, muted contrast and generous whitespace. The CTA routes through useNavigate. Use as the masthead / front-page hero for online newspapers, digital magazines, longform publications, investigative outlets or editorial content sites.",
@@ -57,7 +62,8 @@ export const NewsroomHero = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: publicationLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const kicker = props.kicker ?? 'Investigation'
     const headline =
@@ -100,6 +106,21 @@ export const NewsroomHero = defineComponent({
         title: 'A family bakery, a rent hike, and the fight to stay open',
       },
     ]
+    useSyncPublicationArticles(lakebed, [
+      {
+        author: author.name,
+        category: kicker,
+        date,
+        excerpt: dek,
+        target: cta,
+        title: headline,
+      },
+      ...sideStories.map((story) => ({
+        category: story.tag,
+        target: story.title,
+        title: story.title ?? '',
+      })),
+    ])
 
     return (
       <section

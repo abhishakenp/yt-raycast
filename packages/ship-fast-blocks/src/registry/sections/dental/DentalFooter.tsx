@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * bar. Every link, social, phone, and email routes through useNavigate. Use as
  * the closing footer for dentists, dental offices, orthodontists, or clinics.
  */
-export const DentalFooter = defineComponent({
+export const DentalFooter = defineCapsule({
   name: 'DentalFooter',
   description:
     'Rich 4-column footer for a dental practice site: a dark inverted section on the foreground color with a brand block (mint tooth-glyph logo + practice name + tagline + initial-letter social buttons), a services link column, an office-hours column (day / time rows), and a contact column with pinned address, click-to-call phone, and email, closed by a copyright + legal bar. Every link, social, phone, and email routes through useNavigate. Use as the closing footer for dentists, dental offices, orthodontists, or clinics.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
  * and travel-experience landing pages. Renders fully with no props via baked-in
  * defaults.
  */
-export const TourExperiencesGallery = defineComponent({
+export const TourExperiencesGallery = defineCapsule({
   name: 'TourExperiencesGallery',
   description:
     'Destination gallery for an adventure / guided-tour brand. Composes the shared GalleryGrid composite as a 3-up grid of six vivid destination tiles (each an alt-driven stock photo with a caption overlay) spanning coastline, mountain trail, old town, market, waterfall, and a sunset viewpoint. Use to sell the wanderlust of a trip on tour-operator, expedition, and travel-experience landing pages.',

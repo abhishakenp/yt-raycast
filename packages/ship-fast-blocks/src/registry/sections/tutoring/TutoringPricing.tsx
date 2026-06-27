@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 const DEFAULT_TIERS: {
@@ -54,7 +55,7 @@ const DEFAULT_TIERS: {
   },
 ]
 
-export const TutoringPricing = defineComponent({
+export const TutoringPricing = defineCapsule({
   name: 'TutoringPricing',
   description:
     "Transparent pricing band for tutoring sites, composing the PricingGrid kit composite into per-session and package tiers. Renders a Single Session pay-as-you-go option, a highlighted 10-Session Pack marked as most popular, and a Monthly Unlimited plan — each with a friendly feature list and a routed 'Book now' / 'Get started' CTA. Accepts a public `tiers` prop to override the plans. Use it to give parents clear, no-surprises options and reduce sticker shock.",

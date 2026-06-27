@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -31,7 +32,7 @@ const SparkMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const LinkInBioFooter = defineComponent({
+export const LinkInBioFooter = defineCapsule({
   name: 'LinkInBioFooter',
   description:
     'Bold, mobile-first closing footer for a LINK-IN-BIO / single-page link hub (Linktree / Bento style personal landing): a creator wordmark beside an inline spark mark, a short tagline, a social row (Twitter, Instagram, GitHub, LinkedIn), and a couple of compact link columns (Links, More) in a responsive grid; a bordered-top bottom bar holds an auto-updating copyright line plus legal links. Every brand, social, and column link routes through useNavigate. Use to close a creator/influencer link hub, freelancer bio link, or personal landing page.',

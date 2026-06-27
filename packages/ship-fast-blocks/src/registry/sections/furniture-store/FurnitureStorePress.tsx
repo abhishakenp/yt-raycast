@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * for furniture, home-decor, interiors, or any editorial retail brand citing
  * design-magazine press. Renders fully with no props via baked-in defaults.
  */
-export const FurnitureStorePress = defineComponent({
+export const FurnitureStorePress = defineCapsule({
   name: 'FurnitureStorePress',
   description:
     "Slim 'featured in' press / publication-logo strip: a bordered-bottom band with a centered caption above a horizontal wrapping row of serif wordmark buttons rendered as faded muted text that brighten on hover; each routes through useNavigate. Use beneath a hero as social-proof for furniture, home-decor, interiors, or any editorial retail brand citing design-magazine press.",

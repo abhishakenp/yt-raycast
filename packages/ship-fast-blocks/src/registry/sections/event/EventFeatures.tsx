@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * what attendees receive (sessions, networking, workshops, swag, venue, party) on
  * tech conference, summit, meetup, festival, or workshop pages.
  */
-export const EventFeatures = defineComponent({
+export const EventFeatures = defineCapsule({
   name: 'EventFeatures',
   description:
     "'Everything you get' feature grid for a conference or event page: a centered heading + description above a responsive 3-up (2-up on tablet) grid of feature blocks, each with a rounded icon tile that tints on hover, a title, and a description. Icons rotate through a built-in set (lightbulb, people, wrench, gift, building, party). Use to outline what attendees receive — sessions, networking, workshops, swag, venue, closing party — on tech conference, summit, meetup, festival, or workshop pages.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * any enterprise B2B security SaaS. Renders fully with no props via baked-in
  * "SentinelGuard" defaults.
  */
-export const CybersecurityFooter = defineComponent({
+export const CybersecurityFooter = defineCapsule({
   name: 'CybersecurityFooter',
   description:
     'Dark full-bleed 5-column mega-footer on the brand surface: a wide brand column (shield logo + name, tagline, social links) beside several link-list columns, then a bordered-top bottom row with an auto-updating copyright line and legal links. The brand button, column links, social links and legal links route through useNavigate. Use as the closing site footer for cybersecurity vendors, SOC/MDR providers, or any enterprise B2B security SaaS.',

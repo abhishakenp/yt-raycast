@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * waitlists, app pre-launch pages, or beta sign-up landers. Renders fully with
  * no props via six baked-in default features.
  */
-export const ComingSoonFeatures = defineComponent({
+export const ComingSoonFeatures = defineCapsule({
   name: 'ComingSoonFeatures',
   description:
     "Product capabilities grid for a 'launching soon' / waitlist pre-launch landing page: centered heading and lead paragraph above a responsive 1/2/3-column grid of bordered card panels, each with a tinted icon tile (rotating through six inline line-icons), a title and a description. Use to present product features, platform capabilities, or 'what\'s included' on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 function UniversityBrandMark() {
@@ -21,7 +22,7 @@ function UniversityBrandMark() {
   )
 }
 
-export const UniversityNavbar = defineComponent({
+export const UniversityNavbar = defineCapsule({
   name: 'UniversityNavbar',
   description:
     "Prestigious collegiate site header for the University page family. Composes the shared SiteNav kit composite with a serif wordmark, a graduation-cap brand mark, academic nav links, an optional admissions phone line, and a prominent 'Apply' call to action targeting the Admissions page. Use as the top band of any university homepage or as the persistent header across a multi-page campus site.",

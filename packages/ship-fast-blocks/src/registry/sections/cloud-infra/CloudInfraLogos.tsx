@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -10,7 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Each item is a clickable button that routes through useNavigate. Token-only
  * colors with subtle opacity. Renders fully on zero arguments.
  */
-export const CloudInfraLogos = defineComponent({
+export const CloudInfraLogos = defineCapsule({
   name: 'CloudInfraLogos',
   description:
     'Trusted-by logo wall for a cloud-infrastructure / developer-platform SaaS landing page: a centered small-caps heading above a responsive grid of text-based logo buttons (2 cols mobile, 3 cols tablet, 6 cols desktop). Each item routes through useNavigate. Use for social proof / credibility bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',

@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
-export const TutoringHero = defineComponent({
+export const TutoringHero = defineCapsule({
   name: 'TutoringHero',
   description:
     "Friendly, trustworthy split-layout hero for tutoring sites. Renders a warm eyebrow pill, a large reassuring headline, supporting copy, primary 'Find a Tutor' and outline 'How it works' CTAs (both routed through useNavigate), and a trust strip with rating, session count, and a background-checked badge. The right column shows a rounded, bordered photo of a tutor working with a student via the alt-driven Image component. Use it as the opening viewport of a tutoring or education landing page when you want an inviting, conversion-focused first impression.",

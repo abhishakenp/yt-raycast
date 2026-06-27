@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -14,7 +15,7 @@ import { cn } from '#/lib/utils.ts'
  * hardscaping contractors or irrigation specialists. Renders fully with no props
  * via baked-in six-service defaults.
  */
-export const LandscapingServices = defineComponent({
+export const LandscapingServices = defineCapsule({
   name: 'LandscapingServices',
   description:
     'Centered-header, 6-up services grid for a landscaping / outdoor-design company: a heading + description introduce a responsive grid of soft rounded cards (1/2/3 columns), each with a tinted square line-icon tile, a title and a descriptive paragraph, lifting to a soft accent tint on hover. Icons rotate through a built-in set of garden/maintenance line glyphs (design, installation, seasonal maintenance, hardscaping, irrigation, sustainable gardens). Calm, organic and premium on the card surface with a sage-green accent. Use to showcase capabilities for landscapers, lawn-care services, garden designers, hardscaping contractors or irrigation specialists.',

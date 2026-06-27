@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * licensed clinicians, years in practice, satisfaction) for therapists,
  * counselors, psychologists or wellness centers.
  */
-export const MentalHealthStats = defineComponent({
+export const MentalHealthStats = defineCapsule({
   name: 'MentalHealthStats',
   description:
     'Bold full-bleed stats band for a therapy practice: a solid primary-colored section holding a responsive 2/4-column grid of large metric figures with soft sub-labels in primary-foreground. Calm yet confident wellness aesthetic. Use as a reassuring social-proof strip (clients supported, licensed clinicians, years in practice, satisfaction) for therapists, counselors, psychologists or wellness centers.',

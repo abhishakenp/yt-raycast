@@ -1,6 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
-import { SiteNav } from '#/section-kit/SiteNav.tsx'
+
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasAccountButton,
+  SaasIntentBadge,
+  SaasMobileMenu,
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  SaasSearchButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 const brandMark = (
   <svg
@@ -29,10 +40,10 @@ const brandMark = (
  * the first band of any analytics, BI, dashboard, or data-product landing page
  * for a consistent, route-aware site header. Renders fully with no props.
  */
-export const AnalyticsNavbar = defineComponent({
+export const AnalyticsNavbar = defineCapsule({
   name: 'AnalyticsNavbar',
   description:
-    "Sharp, data-forward top navigation header for an analytics product marketing site, composing the shared SiteNav kit composite. Renders a bar-chart brand mark, a crisp wordmark, a desktop link row (Product, Features, Pricing, Docs), and a sticky filled-primary 'Start Free' call to action with a real mobile drawer. Every link and CTA routes through useNavigate. Use it as the first band of any analytics, BI, dashboard, or data-product landing page for a consistent, route-aware site header.",
+    "Sharp, data-forward top navigation header for an analytics product marketing site. Renders a bar-chart brand mark, crisp wordmark, desktop link row (Product, Features, Pricing, Docs), command plan search, Shoo account dropdown, selected-plan badge, and a sticky filled-primary fullstack 'Start Free' call to action with a real mobile drawer. Nav routes use useNavigate while auth/search/conversion use shared Lakebed state. Use it as the first band of any analytics, BI, dashboard, or data-product landing page.",
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -43,7 +54,9 @@ export const AnalyticsNavbar = defineComponent({
     sticky: z.boolean().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
+    const go = useNavigate()
     const brand = props.brand ?? 'Pulse Analytics'
     const nav = props.nav?.length
       ? props.nav
@@ -52,17 +65,81 @@ export const AnalyticsNavbar = defineComponent({
     const ctaTarget = props.ctaTarget ?? 'Pricing'
 
     return (
-      <SiteNav
-        brand={brand}
-        brandMark={brandMark}
-        brandClassName="font-semibold tracking-tight"
-        nav={nav}
-        phone={props.phone}
-        cta={{ label: ctaLabel, target: ctaTarget, variant: 'primary' }}
-        homeTarget={props.homeTarget ?? nav[0]}
-        sticky={props.sticky ?? true}
-        className={props.className}
-      />
+      <header
+        className={cn(
+          (props.sticky ?? true)
+            ? 'sticky inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm'
+            : 'relative z-50 border-b border-border bg-background',
+          props.className,
+        )}
+      >
+        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+          <button
+            type="button"
+            onClick={() => go(props.homeTarget ?? nav[0])}
+            className="flex min-w-0 items-center gap-3"
+          >
+            {brandMark}
+            <span className="truncate text-xl font-semibold tracking-tight text-foreground">
+              {brand}
+            </span>
+          </button>
+
+          <div className="hidden items-center gap-8 md:flex">
+            {nav.map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => go(label)}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <SaasIntentBadge lakebed={lakebed} />
+            <SaasSearchButton
+              lakebed={lakebed}
+              buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            />
+            <SaasAccountButton
+              lakebed={lakebed}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+            />
+            {typeof props.phone === 'string' && props.phone.trim() ? (
+              <a
+                href={`tel:${props.phone.replace(/[^\d+]/g, '')}`}
+                className="hidden text-sm text-muted-foreground hover:text-foreground lg:inline"
+              >
+                {props.phone}
+              </a>
+            ) : null}
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={ctaTarget}
+              plan={ctaTarget}
+              source="navbar"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Starting
+                </>
+              }
+              className="hidden items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            >
+              {ctaLabel}
+            </SaasPlanActionButton>
+            <SaasMobileMenu
+              brand={brand}
+              nav={nav}
+              homeTarget={props.homeTarget ?? nav[0]}
+              buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            />
+          </div>
+        </nav>
+      </header>
     )
   },
 })

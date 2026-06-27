@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
  * photographers, studios, and elopement shooters. Renders fully with no props
  * via baked-in defaults (six portfolio frames + captions).
  */
-export const PhotographyGallery = defineComponent({
+export const PhotographyGallery = defineCapsule({
   name: 'PhotographyGallery',
   description:
     'Portfolio image grid for a fine-art / wedding photographer site built on the shared GalleryGrid composite: a centered serif header above a responsive 1/2/3-column grid of 4:3 photographs, each with a hover zoom and a token-based caption overlay. All imagery is alt-driven via the Image component. Use to showcase recent weddings, portraits, and editorial work for photographers, studios, and elopement shooters.',

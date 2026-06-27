@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * muted tone. Use directly under the hero to convey press credibility for
  * clothing brands, boutiques, or any premium retail storefront.
  */
-export const FashionStoreLogos = defineComponent({
+export const FashionStoreLogos = defineCapsule({
   name: 'FashionStoreLogos',
   description:
     "'Featured In' press logo strip for a minimalist fashion store: a slim border-bottomed band with a centered uppercase tracked eyebrow above a wrapping, centered row of serif publication wordmarks rendered in a muted tone. Use directly under the hero to convey press credibility for clothing brands, boutiques, apparel shops, or any premium retail storefront.",

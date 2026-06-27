@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * market quotes and world indices on a brokerage or trading-app home page.
  * Renders fully with no props.
  */
-export const InvestingMarkets = defineComponent({
+export const InvestingMarkets = defineCapsule({
   name: 'InvestingMarkets',
   description:
     'Live market-data section for an investing / fintech page: a centered heading + lead above a responsive 4-up grid of clickable quote tiles (colored symbol badge, company name + exchange, price, green/red change and an up/down mini sparkline), followed by a dark global-indices band pairing a 2x2 grid of index cards (value + percent change) with a full-bleed trading-floor photo. Quote tiles route through useNavigate. Use to surface real-time market quotes and world indices on a brokerage or trading-app home page.',

@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
-export const PodcastAuthors = defineComponent({
+export const PodcastAuthors = defineCapsule({
   name: 'PodcastAuthors',
   description:
     "Host roster section for a podcast site, rendering a responsive grid of warm token-styled host cards. Each card pairs a rounded avatar image with the host's name, role, a short bio, and a row of social pills. Use it to introduce the people behind a podcast and give listeners a face and voice to connect with.",

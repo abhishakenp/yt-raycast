@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * FurnitureStoreHero — split, two-column hero for a warm minimal furniture /
@@ -15,10 +23,11 @@ import { Image } from '#/lib/img.tsx'
  * warm boutique-retail landing page needing a product-forward lifestyle shot.
  * Renders fully with no props via baked-in "Haven & Home" defaults.
  */
-export const FurnitureStoreHero = defineComponent({
+export const FurnitureStoreHero = defineCapsule({
   name: 'FurnitureStoreHero',
   description:
     'Split two-column hero for a warm minimal furniture / home-decor store: a soft muted band with a tall left column (uppercase collection eyebrow, large headline, supporting paragraph, primary + secondary CTA buttons, bordered KPI strip) beside a full-bleed lifestyle room photo with a floating featured-product price card pinned to its corner; photo stacks above copy on mobile. CTAs route through useNavigate. Use as the top hero for furniture stores, home-decor or interiors brands, or any warm boutique-retail landing page needing a product-forward lifestyle shot.',
+  lakebed: commerceCartLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -28,6 +37,7 @@ export const FurnitureStoreHero = defineComponent({
     imageAlt: z.string().optional(),
     /** Floating featured-product callout over the hero image. */
     featuredLabel: z.string().optional(),
+    featuredName: z.string().optional(),
     featuredPrice: z.string().optional(),
     /** Inline KPI strip beneath the hero copy. */
     stats: z
@@ -35,7 +45,7 @@ export const FurnitureStoreHero = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Spring Collection 2026'
     const heading = props.heading ?? 'Create a home that feels like you'
@@ -48,6 +58,7 @@ export const FurnitureStoreHero = defineComponent({
       props.imageAlt ??
       'Bright modern living room with cream linen sofa, warm wood coffee table, and potted plants in natural light'
     const featuredLabel = props.featuredLabel ?? 'Featured: The Cloud Sofa'
+    const featuredName = props.featuredName ?? 'The Cloud Sofa'
     const featuredPrice = props.featuredPrice ?? 'Starting at $2,849'
     const stats = props.stats?.length
       ? props.stats
@@ -56,6 +67,14 @@ export const FurnitureStoreHero = defineComponent({
           { value: '4.9', label: 'Average Rating' },
           { value: '48h', label: 'Delivery to Metro' },
         ]
+    useSyncCommerceCatalog(lakebed, [
+      commerceProduct({
+        imageAlt,
+        label: featuredName,
+        price: featuredPrice,
+        subtitle: featuredLabel,
+      }),
+    ])
 
     const ArrowLong = ({ className }: { className?: string }) => (
       <svg
@@ -133,6 +152,15 @@ export const FurnitureStoreHero = defineComponent({
                   {featuredLabel}
                 </p>
                 <p className="text-sm text-muted-foreground">{featuredPrice}</p>
+                <CommerceAddItemButton
+                  lakebed={lakebed}
+                  item={{ label: featuredName, price: featuredPrice }}
+                  aria-label={`Add ${featuredName} to cart`}
+                  pendingChildren={<CommerceMutationSpinner />}
+                  className="mt-3 inline-flex items-center rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                >
+                  Add featured
+                </CommerceAddItemButton>
               </div>
             </div>
           </div>

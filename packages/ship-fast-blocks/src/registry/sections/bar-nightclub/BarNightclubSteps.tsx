@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * nightclubs, lounges, or any reservations-driven venue. Renders fully with no
  * props via baked-in defaults.
  */
-export const BarNightclubSteps = defineComponent({
+export const BarNightclubSteps = defineCapsule({
   name: 'BarNightclubSteps',
   description:
     "Numbered 'how to book' flow for a cocktail-bar / nightclub page: a centered eyebrow, light-weight heading and lead, then a responsive 4-up grid of steps, each with a large circle-bordered numeral, a medium title, and a short muted description. Quiet, editorial and monochrome. Use to walk guests through a reservation / booking process for bars, nightclubs, lounges, or any reservations-driven venue.",

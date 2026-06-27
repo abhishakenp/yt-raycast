@@ -1,20 +1,22 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * CafeNewsletter — newsletter sign-up CTA for a cozy cafe / coffee shop page,
  * on a soft primary/10 band. A centered serif heading and supporting paragraph
  * above a rounded email input + submit button form, plus a fine-print line
- * underneath. The form submit routes through useNavigate. Use as a list-building
- * section for cafes, bakeries, tea houses, or any small business. Renders fully
- * with no props via baked-in defaults.
+ * underneath. The form submit writes to the shared Lakebed subscriber list. Use
+ * as a list-building section for cafes, bakeries, tea houses, or any small
+ * business. Renders fully with no props via baked-in defaults.
  */
-export const CafeNewsletter = defineComponent({
+export const CafeNewsletter = defineCapsule({
   name: 'CafeNewsletter',
   description:
-    'Newsletter sign-up CTA for a cozy cafe page on a soft primary/10 band: centered serif heading and supporting paragraph above a rounded email input and submit button form, plus a fine-print line. The form submit routes through useNavigate. Use as a list-building section for cafes, bakeries, tea houses, or any small business.',
+    'Newsletter sign-up CTA for a cozy cafe page on a soft primary/10 band: centered serif heading and supporting paragraph above a rounded email input and submit button form, plus a fine-print line. The form submit writes to the shared Lakebed subscriber list. Use as a list-building section for cafes, bakeries, tea houses, or any small business.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -26,12 +28,12 @@ export const CafeNewsletter = defineComponent({
     submit: z.string().optional(),
     /** Fine print under the form. */
     fineprint: z.string().optional(),
-    /** Navigation target triggered on form submit. */
+    /** Subscriber source label recorded when the form is submitted. */
     submitTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Join the flock'
     const description =
       props.description ??
@@ -41,7 +43,7 @@ export const CafeNewsletter = defineComponent({
     const fineprint =
       props.fineprint ??
       'By subscribing, you agree to receive marketing emails. Unsubscribe anytime.'
-    const submitTarget = props.submitTarget ?? 'Location'
+    const submitTarget = props.submitTarget ?? submit
 
     return (
       <section className={cn('bg-primary/10 py-20', props.className)}>
@@ -52,27 +54,17 @@ export const CafeNewsletter = defineComponent({
           <p className="mx-auto mb-8 max-w-xl text-muted-foreground">
             {description}
           </p>
-          <form
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={submitTarget}
+            placeholder={placeholder}
+            buttonLabel={submit}
+            successMessage="You're subscribed. Cafe notes and seasonal menus will arrive by email."
             className="mx-auto flex max-w-md flex-col gap-4 sm:flex-row"
-            onSubmit={(e) => {
-              e.preventDefault()
-              go(submitTarget)
-            }}
-          >
-            <input
-              type="email"
-              required
-              placeholder={placeholder}
-              aria-label="Email address for newsletter"
-              className="flex-1 rounded-full border border-input bg-background px-5 py-3.5 text-foreground placeholder-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            <button
-              type="submit"
-              className="whitespace-nowrap rounded-full bg-foreground px-8 py-3.5 font-medium text-background transition-colors hover:bg-foreground/90"
-            >
-              {submit}
-            </button>
-          </form>
+            inputClassName="flex-1 rounded-full border border-input bg-background px-5 py-3.5 text-foreground placeholder-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+            buttonClassName="whitespace-nowrap rounded-full bg-foreground px-8 py-3.5 font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+            emailLabel="Email address for newsletter"
+          />
           <p className="mt-4 text-xs text-muted-foreground">{fineprint}</p>
         </div>
       </section>

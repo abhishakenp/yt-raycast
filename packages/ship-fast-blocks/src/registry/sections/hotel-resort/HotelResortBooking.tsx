@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { useHotelAvailabilitySubmission } from './hotel-resort-interactions.tsx'
+import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
 
 /**
  * HotelResortBooking — split booking section for a luxury hotel / resort & spa
@@ -9,14 +11,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * paragraph, then a two-column layout: numbered how-it-works steps on the left
  * and a raised light availability form on the right (check-in / check-out date
  * inputs, guests and room-type selects, a full-width submit, and a reassurance
- * note). The submit and selects route through useNavigate. Use to drive
- * reservations for hotels, resorts, spa retreats, villas, or inns. Renders
- * fully with no props via baked-in resort defaults.
+ * note). Submit writes a shared Lakebed availability request. Use to drive reservations
+ * for hotels, resorts, spa retreats, villas, or inns. Renders fully with no
+ * props via baked-in resort defaults.
  */
-export const HotelResortBooking = defineComponent({
+export const HotelResortBooking = defineCapsule({
   name: 'HotelResortBooking',
   description:
-    'Split booking section for a luxury hotel / resort & spa site: a dark foreground-surface band with an uppercase eyebrow + thin heading + paragraph, then a two-column layout pairing numbered how-it-works steps on the left with a raised light availability form on the right (check-in / check-out date inputs, guests and room-type selects, a full-width submit, and a reassurance note). The form submit routes through useNavigate. Use to drive reservations for hotels, resorts, spa retreats, villas, or boutique inns.',
+    'Split booking section for a luxury hotel / resort & spa site: a dark foreground-surface band with an uppercase eyebrow + thin heading + paragraph, then a two-column layout pairing numbered how-it-works steps on the left with a raised light Lakebed availability form on the right (check-in / check-out date inputs, guests and room-type selects, a full-width submit, and a reassurance note). Form submit writes a shared booking/inquiry record used by navbar badges and room search state. Use to drive reservations for hotels, resorts, spa retreats, villas, or boutique inns.',
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -30,7 +32,7 @@ export const HotelResortBooking = defineComponent({
       .optional(),
     /** Heading above the availability form. */
     formHeading: z.string().optional(),
-    /** Form submit button label + navigation target. */
+    /** Form submit button label. */
     submit: z.string().optional(),
     /** Reassurance note beneath the form. */
     note: z.string().optional(),
@@ -40,8 +42,8 @@ export const HotelResortBooking = defineComponent({
     roomOptions: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: hotelResortLakebed,
+  component: ({ props, lakebed }) => {
     const eyebrow = props.eyebrow ?? 'Reservations'
     const heading = props.heading ?? 'Book your escape'
     const description =
@@ -82,6 +84,12 @@ export const HotelResortBooking = defineComponent({
     const roomOptions = props.roomOptions?.length
       ? props.roomOptions
       : ['All Room Types', 'Coastal Suite', 'Azure Suite', 'Coastal Villa']
+    const inquiry = useHotelAvailabilitySubmission({
+      lakebed,
+      source: 'Hotel booking',
+      successMessage:
+        "Thanks. We've received your availability request and will respond soon.",
+    })
 
     const inputCls =
       'w-full rounded-md border border-input bg-background px-4 py-3 text-sm text-foreground transition-colors focus:border-ring focus:outline-none'
@@ -119,13 +127,7 @@ export const HotelResortBooking = defineComponent({
             </div>
             <div className="rounded-lg bg-background p-8 text-foreground">
               <h3 className="mb-6 text-xl font-medium">{formHeading}</h3>
-              <form
-                className="space-y-5"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  go(submit)
-                }}
-              >
+              <form className="space-y-5" onSubmit={inquiry.submitForm}>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label
@@ -136,6 +138,7 @@ export const HotelResortBooking = defineComponent({
                     </label>
                     <input
                       id="hotel-resort-booking-checkin"
+                      name="checkIn"
                       type="date"
                       className={inputCls}
                     />
@@ -149,6 +152,7 @@ export const HotelResortBooking = defineComponent({
                     </label>
                     <input
                       id="hotel-resort-booking-checkout"
+                      name="checkOut"
                       type="date"
                       className={inputCls}
                     />
@@ -161,7 +165,11 @@ export const HotelResortBooking = defineComponent({
                   >
                     Guests
                   </label>
-                  <select id="hotel-resort-booking-guests" className={inputCls}>
+                  <select
+                    id="hotel-resort-booking-guests"
+                    name="guests"
+                    className={inputCls}
+                  >
                     {guestOptions.map((opt) => (
                       <option key={opt} className="bg-background">
                         {opt}
@@ -178,6 +186,7 @@ export const HotelResortBooking = defineComponent({
                   </label>
                   <select
                     id="hotel-resort-booking-roomtype"
+                    name="roomType"
                     className={inputCls}
                   >
                     {roomOptions.map((opt) => (
@@ -189,10 +198,18 @@ export const HotelResortBooking = defineComponent({
                 </div>
                 <button
                   type="submit"
-                  className="w-full rounded-md bg-foreground py-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                  aria-busy={inquiry.isPending}
+                  disabled={inquiry.isPending}
+                  className="w-full rounded-md bg-foreground py-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
                 >
-                  {submit}
+                  {inquiry.isPending ? 'Sending' : submit}
                 </button>
+                <p
+                  className="text-center text-sm text-muted-foreground"
+                  aria-live="polite"
+                >
+                  {inquiry.statusText}
+                </p>
               </form>
               <p className="mt-4 text-center text-xs text-muted-foreground">
                 {note}

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 function UniversityBrandMark() {
@@ -21,7 +22,7 @@ function UniversityBrandMark() {
   )
 }
 
-export const UniversityFooter = defineComponent({
+export const UniversityFooter = defineCapsule({
   name: 'UniversityFooter',
   description:
     'Prestigious collegiate site footer for the University page family. Composes the shared SiteFooter kit composite with a serif wordmark and graduation-cap brand mark, an institutional tagline, four link columns (Academics, Admissions, Campus, About), a social row, and a legal note. Use as the closing band of any university homepage or as the persistent footer across a multi-page campus site.',

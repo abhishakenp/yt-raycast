@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * payments, business accounts). Tokens-only, no links. Renders fully with no
  * props via baked-in defaults.
  */
-export const FintechFeatures = defineComponent({
+export const FintechFeatures = defineCapsule({
   name: 'FintechFeatures',
   description:
     '6-up features grid for a digital-banking / fintech landing page: centered section heading + description above a responsive 1/2/3-column grid of border-muted cards, each with a tokenized primary-colored icon tile (rotating inline line-icons), a title and a description. Use to showcase product capabilities (transfers, cards, savings, analytics, payments, business accounts). Tokens-only, no links.',

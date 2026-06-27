@@ -1,23 +1,28 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  AutoLeadActionButton,
+  AutoMutationSpinner,
+} from './auto-dealership-interactions.tsx'
+import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
 /**
  * AutoDealershipFinancing — financing / pre-approval section for an auto
  * dealership page. Two-column layout: a large rounded finance photo on one side
  * and, on the other, a heading + lead, a vertical list of numbered step cards
  * (Apply Online, Compare Offers, Drive Away), a 3-up APR stats panel (starting
- * APR / max months / down options), and a solid primary CTA. The CTA routes
- * through useNavigate and the photo uses the alt-driven Image component. Use as
+ * APR / max months / down options), and a solid primary CTA. The CTA writes a
+ * Lakebed financing lead and the photo uses the alt-driven Image component. Use as
  * the financing / get-pre-approved section for car dealerships, used-car lots,
  * or auto sales groups. Renders fully with no props via baked-in defaults.
  */
-export const AutoDealershipFinancing = defineComponent({
+export const AutoDealershipFinancing = defineCapsule({
   name: 'AutoDealershipFinancing',
   description:
-    'Financing / pre-approval section for an auto dealership page: a two-column layout with a large rounded finance photo on one side and, on the other, a heading and lead, a vertical list of numbered step cards (Apply Online, Compare Offers, Drive Away), a 3-up APR stats panel (starting APR / max months / down options), and a solid primary CTA. The CTA routes through useNavigate and the photo uses the alt-driven Image component. Use as the financing / get-pre-approved section for car dealerships, used-car lots, or auto sales groups.',
+    'Financing / pre-approval section for an auto dealership page: a two-column layout with a large rounded finance photo on one side and, on the other, a heading and lead, a vertical list of numbered step cards (Apply Online, Compare Offers, Drive Away), a 3-up APR stats panel (starting APR / max months / down options), and a solid primary CTA. The CTA writes a Lakebed financing lead and the photo uses the alt-driven Image component. Use as the financing / get-pre-approved section for car dealerships, used-car lots, or auto sales groups.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -37,8 +42,8 @@ export const AutoDealershipFinancing = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: autoDealershipLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Flexible Financing Options'
     const description =
       props.description ??
@@ -125,13 +130,22 @@ export const AutoDealershipFinancing = defineComponent({
                   ))}
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => go(cta)}
+              <AutoLeadActionButton
+                lakebed={lakebed}
+                action="financing"
+                label={cta}
+                intentKey="financing-application"
+                source="financing"
+                pendingChildren={
+                  <>
+                    <AutoMutationSpinner />
+                    Sending
+                  </>
+                }
                 className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 {cta}
-              </button>
+              </AutoLeadActionButton>
             </div>
           </div>
         </div>

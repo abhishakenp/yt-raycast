@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
-export const PodcastTestimonials = defineComponent({
+export const PodcastTestimonials = defineCapsule({
   name: 'PodcastTestimonials',
   description:
     "A 3-up listener-review wall for the Signal & Static podcast, built on TestimonialGrid. Each card renders a star row derived from the rating, the listener's quote, their name, and the review source (Apple Podcasts, Spotify, Overcast). Use it for warm, believable social proof on a podcast or audio-show site.",

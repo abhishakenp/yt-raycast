@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * villa, or boutique short-stay page. Renders fully with no props via baked-in
  * defaults.
  */
-export const VacationRentalTestimonials = defineComponent({
+export const VacationRentalTestimonials = defineCapsule({
   name: 'VacationRentalTestimonials',
   description:
     'Guest-reviews grid for a vacation-rental listing page built on the shared TestimonialGrid composite: a Loved by guests heading above a responsive grid of review cards, each with a star rating, a quote, a guest name, and a Verified guest meta line. Theme-token only. Use to surface social proof on a vacation rental, beach house, cabin, villa, or boutique short-stay page.',

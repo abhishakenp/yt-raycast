@@ -709,8 +709,12 @@ export function assembleComposedPage(input: {
   const used = sections.filter((s) => SPINE.has(s) || keep.has(s))
   const statements: string[] = []
   const refs: string[] = []
+  const sectionIds: string[] = []
+  const composedSections: ComposedSection[] = []
   for (const sec of used) {
     const id = `${input.pageId}_${sec.toLowerCase()}`
+    const anchorId = `${id}_anchor`
+    const anchorClass = sec === 'Navbar' ? '' : 'scroll-mt-28'
     const call = buildComponentCall({
       component: `${input.family.name}${sec}`,
       props: input.propsByKey[sec.toLowerCase()] ?? {},
@@ -719,15 +723,33 @@ export function assembleComposedPage(input: {
     })
     if (!call) continue
     statements.push(`${id} = ${call}`)
-    refs.push(id)
+    statements.push(
+      anchorClass
+        ? `${anchorId} = SectionAnchor("${id}", ${id}, "${anchorClass}")`
+        : `${anchorId} = SectionAnchor("${id}", ${id})`,
+    )
+    refs.push(anchorId)
+    sectionIds.push(id)
+    composedSections.push({
+      id,
+      component: `${input.family.name}${sec}`,
+      anchorClass,
+    })
   }
   statements.push(`${input.pageId} = Stack([${refs.join(', ')}])`)
   return {
     statements,
     rootRef: input.pageId,
     family: input.family.name,
-    sectionIds: refs,
+    sectionIds,
+    sections: composedSections,
   }
+}
+
+export type ComposedSection = {
+  id: string
+  component: string
+  anchorClass: string
 }
 
 export type ComposedPage = {
@@ -735,6 +757,7 @@ export type ComposedPage = {
   rootRef: string
   family: string
   sectionIds: string[]
+  sections: ComposedSection[]
 }
 
 /**
@@ -817,7 +840,11 @@ export async function composePage(input: {
 
   const statements: string[] = []
   const refs: string[] = []
+  const sectionIds: string[] = []
+  const composedSections: ComposedSection[] = []
   for (const def of sectionDefs) {
+    const anchorId = `${def.id}_anchor`
+    const anchorClass = def.sec === 'Navbar' ? '' : 'scroll-mt-28'
     const call = buildComponentCall({
       component: def.component,
       props: props[def.id] ?? props[def.sec.toLowerCase()] ?? {},
@@ -826,14 +853,26 @@ export async function composePage(input: {
     })
     if (!call) continue
     statements.push(`${def.id} = ${call}`)
-    refs.push(def.id)
+    statements.push(
+      anchorClass
+        ? `${anchorId} = SectionAnchor("${def.id}", ${def.id}, "${anchorClass}")`
+        : `${anchorId} = SectionAnchor("${def.id}", ${def.id})`,
+    )
+    refs.push(anchorId)
+    sectionIds.push(def.id)
+    composedSections.push({
+      id: def.id,
+      component: def.component,
+      anchorClass,
+    })
   }
   statements.push(`${input.pageId} = Stack([${refs.join(', ')}])`)
   return {
     statements,
     rootRef: input.pageId,
     family: input.family.name,
-    sectionIds: refs,
+    sectionIds,
+    sections: composedSections,
   }
 }
 
@@ -850,6 +889,13 @@ export type V2Event =
   | { type: 'done' }
   | { type: 'error'; message: string }
 
+export type V2PagePlan = {
+  id: string
+  label: string
+  rootRef: string
+  sections: ComposedSection[]
+}
+
 export type V2Result = {
   source: string
   theme: string | null
@@ -858,9 +904,179 @@ export type V2Result = {
   category: string
   family: string
   artifacts: GeneratedArtifact[]
+  /** Page labels in route order (the PageSwitch nav array). */
+  routes: string[]
+  /** Structured per-page plan with composed section details. */
+  pages: V2PagePlan[]
+  /** Navigation target aliases → resolved targets (the PageSwitch targetMap). */
+  navTargets: Record<string, string>
 }
 
 type PagePlan = { id: string; label: string; sections: string[] }
+
+const navigationKeyPattern =
+  /(^|_|\b)(nav|cta|link|links|href|route|routes|action|button|buttons|primary|secondary|submit|phone|email|legal)(\b|_|$)/i
+
+const normalizeAlias = (value: string): string => value.trim().toLowerCase()
+
+const addTargetAlias = (
+  targetMap: Record<string, string>,
+  alias: string,
+  target: string,
+) => {
+  const cleanAlias = alias.trim()
+  const cleanTarget = target.trim()
+  if (!cleanAlias || !cleanTarget) return
+  targetMap[cleanAlias] = cleanTarget
+  targetMap[normalizeAlias(cleanAlias)] = cleanTarget
+}
+
+const collectNavigationStrings = (
+  value: unknown,
+  values = new Set<string>(),
+  navigationContext = false,
+  key = '',
+): Set<string> => {
+  const nextNavigationContext =
+    navigationContext || navigationKeyPattern.test(key)
+  if (typeof value === 'string') {
+    if (nextNavigationContext && value.trim()) values.add(value)
+    return values
+  }
+  if (Array.isArray(value)) {
+    for (const item of value)
+      collectNavigationStrings(item, values, nextNavigationContext, key)
+    return values
+  }
+  if (value && typeof value === 'object') {
+    for (const [entryKey, item] of Object.entries(value)) {
+      collectNavigationStrings(item, values, nextNavigationContext, entryKey)
+    }
+  }
+  return values
+}
+
+const ROLE_ALIASES: Record<string, string[]> = {
+  Pricing: ['Pricing', 'Plans', 'Memberships', 'Subscribe', 'Upgrade'],
+  Menu: ['Menu', 'Order', 'Browse Menu'],
+  Services: ['Services', 'What We Do', 'Book Service'],
+  Programs: ['Programs', 'Courses', 'Classes'],
+  Curriculum: ['Curriculum', 'Syllabus', 'Modules', 'Course Plan'],
+  Outcomes: ['Outcomes', 'Results'],
+  Mentors: ['Mentors', 'Instructors', 'Faculty'],
+  Work: ['Work', 'Portfolio', 'Case Studies', 'Projects'],
+  Projects: ['Projects', 'Portfolio', 'Case Studies'],
+  Collections: ['Collections', 'Collection', 'Shop Collections'],
+  Lookbook: ['Lookbook', 'Editorial', 'Style Guide'],
+  Gallery: ['Gallery', 'Lookbook', 'Photos'],
+  Amenities: ['Amenities', 'Facilities'],
+  Booking: ['Booking', 'Book', 'Reserve'],
+  Agenda: ['Agenda', 'Schedule'],
+  Speakers: ['Speakers', 'Lineup'],
+  Venue: ['Venue', 'Location'],
+  About: ['About', 'Story', 'Mission'],
+  Contact: ['Contact', 'Get in Touch', 'Book', 'Reserve', 'Request a Quote'],
+  Faq: ['FAQ', 'Questions'],
+  Cta: ['Get Started', 'Start', 'Join', 'Book Now'],
+  ApplyCta: ['Apply', 'Apply Now'],
+  Newsletter: ['Newsletter', 'Mailing List'],
+  Subscribe: ['Subscribe', 'Newsletter'],
+  Schedule: ['Schedule', 'Agenda'],
+  Events: ['Events'],
+  Benefits: ['Benefits', 'Why Us'],
+  Topics: ['Topics'],
+  StoryGrid: ['Articles', 'Stories', 'Read More'],
+  FeaturedStory: ['Featured', 'Latest'],
+  Products: ['Products', 'Shop', 'Collection'],
+}
+
+function buildRouteTargetMap(input: {
+  pages: PagePlan[]
+  pageProps: Record<string, Record<string, Record<string, unknown>>>
+}): Record<string, string> {
+  const targetMap: Record<string, string> = {}
+  const pagesByRole = new Map<string, PagePlan>()
+  for (const page of input.pages) {
+    addTargetAlias(targetMap, page.label, page.label)
+    addTargetAlias(targetMap, page.id, page.label)
+    for (const section of page.sections) {
+      const sectionId = `${page.id}_${section.toLowerCase()}`
+      const sectionTarget = `${page.label}#${sectionId}`
+      addTargetAlias(targetMap, sectionId, sectionTarget)
+      addTargetAlias(targetMap, section, sectionTarget)
+      for (const alias of ROLE_ALIASES[section] ?? []) {
+        addTargetAlias(targetMap, alias, sectionTarget)
+      }
+      if (!pagesByRole.has(section)) pagesByRole.set(section, page)
+    }
+  }
+
+  const semanticTargetFor = (value: string): string | null => {
+    const normalized = normalizeAlias(value)
+    const exact =
+      targetMap[value] ??
+      targetMap[normalized] ??
+      input.pages.find((page) => normalizeAlias(page.label) === normalized)
+        ?.label
+    if (exact) return exact
+    const role =
+      (/shop|store|product|buy|cart|order|browse|collection/.test(normalized) &&
+        (pagesByRole.get('Products') ??
+          pagesByRole.get('Collections') ??
+          pagesByRole.get('Lookbook') ??
+          pagesByRole.get('Menu') ??
+          pagesByRole.get('Gallery') ??
+          pagesByRole.get('Work'))) ||
+      (/price|plan|pricing|subscribe|upgrade|tier|membership/.test(
+        normalized,
+      ) &&
+        (pagesByRole.get('Pricing') ?? pagesByRole.get('Subscribe'))) ||
+      (/contact|reach|get in touch|book|reserve|demo|quote|start|join|get started|register/.test(
+        normalized,
+      ) &&
+        (pagesByRole.get('Contact') ??
+          pagesByRole.get('Booking') ??
+          pagesByRole.get('Tickets') ??
+          pagesByRole.get('ApplyCta') ??
+          pagesByRole.get('Cta') ??
+          pagesByRole.get('Subscribe'))) ||
+      (/about|story|team|who we are|mission/.test(normalized) &&
+        (pagesByRole.get('About') ?? pagesByRole.get('FeaturedStory'))) ||
+      (/blog|news|post|article|read|stories|journal|tips/.test(normalized) &&
+        (pagesByRole.get('StoryGrid') ??
+          pagesByRole.get('FeaturedStory') ??
+          pagesByRole.get('Topics'))) ||
+      (/feature|service|how it works|learn|explore|tour|class|schedule|trainer/.test(
+        normalized,
+      ) &&
+        (pagesByRole.get('Services') ??
+          pagesByRole.get('Programs') ??
+          pagesByRole.get('Curriculum') ??
+          pagesByRole.get('Agenda') ??
+          pagesByRole.get('Speakers') ??
+          pagesByRole.get('Amenities') ??
+          pagesByRole.get('Features') ??
+          pagesByRole.get('Steps') ??
+          pagesByRole.get('Schedule'))) ||
+      null
+    if (!role) return null
+    const section = role.sections.find((candidate) =>
+      Object.keys(ROLE_ALIASES).includes(candidate),
+    )
+    return section
+      ? `${role.label}#${role.id}_${section.toLowerCase()}`
+      : role.label
+  }
+
+  for (const [pageId, propsByRole] of Object.entries(input.pageProps)) {
+    if (!input.pages.some((page) => page.id === pageId)) continue
+    for (const value of collectNavigationStrings(propsByRole)) {
+      const target = semanticTargetFor(value)
+      if (target) addTargetAlias(targetMap, value, target)
+    }
+  }
+  return targetMap
+}
 
 /**
  * Auto-generated fullstack manifest: the editable collections (array-typed prop
@@ -871,6 +1087,7 @@ type PagePlan = { id: string; label: string; sections: string[] }
 function buildFullstackManifest(family: Family): GeneratedArtifact {
   const tables = new Set<string>()
   for (const sec of family.sections) {
+    if (/^(Navbar|Footer)$/.test(sec)) continue
     for (const field of arrayFieldNames(`${family.name}${sec}`))
       tables.add(field)
   }
@@ -900,59 +1117,237 @@ const SECONDARY_ROLES: {
     id: 'pricing',
     label: 'Pricing',
     need: 'Pricing',
-    want: ['Navbar', 'Hero', 'Pricing', 'Faq', 'Cta', 'Footer'],
+    want: ['Navbar', 'Pricing', 'Faq', 'Cta', 'Footer'],
   },
   {
     id: 'menu',
     label: 'Menu',
     need: 'Menu',
-    want: ['Navbar', 'Hero', 'Menu', 'Gallery', 'Footer'],
+    want: ['Navbar', 'Menu', 'Gallery', 'Footer'],
+  },
+  {
+    id: 'programs',
+    label: 'Programs',
+    need: 'Programs',
+    want: [
+      'Navbar',
+      'Programs',
+      'Overview',
+      'Schedule',
+      'Pricing',
+      'Testimonials',
+      'Faq',
+      'Cta',
+      'Footer',
+    ],
+  },
+  {
+    id: 'curriculum',
+    label: 'Curriculum',
+    need: 'Curriculum',
+    want: [
+      'Navbar',
+      'Curriculum',
+      'Outcomes',
+      'Mentors',
+      'Steps',
+      'Pricing',
+      'Testimonials',
+      'Faq',
+      'Footer',
+    ],
+  },
+  {
+    id: 'outcomes',
+    label: 'Outcomes',
+    need: 'Outcomes',
+    want: [
+      'Navbar',
+      'Outcomes',
+      'Curriculum',
+      'Mentors',
+      'Stats',
+      'Testimonials',
+      'Faq',
+      'Footer',
+    ],
   },
   {
     id: 'services',
     label: 'Services',
     need: 'Services',
-    want: ['Navbar', 'Hero', 'Services', 'Process', 'Stats', 'Cta', 'Footer'],
+    want: ['Navbar', 'Services', 'Process', 'Stats', 'Cta', 'Footer'],
+  },
+  {
+    id: 'products',
+    label: 'Shop',
+    need: 'Products',
+    want: ['Navbar', 'Products', 'Gallery', 'Testimonials', 'Cta', 'Footer'],
+  },
+  {
+    id: 'collections',
+    label: 'Collections',
+    need: 'Collections',
+    want: [
+      'Navbar',
+      'Collections',
+      'Products',
+      'Lookbook',
+      'Gallery',
+      'Testimonials',
+      'Footer',
+    ],
+  },
+  {
+    id: 'lookbook',
+    label: 'Lookbook',
+    need: 'Lookbook',
+    want: [
+      'Navbar',
+      'Lookbook',
+      'Collections',
+      'Products',
+      'Gallery',
+      'Testimonials',
+      'Footer',
+    ],
   },
   {
     id: 'work',
     label: 'Work',
     need: 'Work',
-    want: [
-      'Navbar',
-      'Hero',
-      'Work',
-      'Projects',
-      'Stats',
-      'Testimonials',
-      'Footer',
-    ],
+    want: ['Navbar', 'Work', 'Projects', 'Stats', 'Testimonials', 'Footer'],
+  },
+  {
+    id: 'projects',
+    label: 'Work',
+    need: 'Projects',
+    want: ['Navbar', 'Projects', 'Work', 'Services', 'Stats', 'Footer'],
   },
   {
     id: 'gallery',
     label: 'Gallery',
     need: 'Gallery',
-    want: ['Navbar', 'Hero', 'Gallery', 'Testimonials', 'Footer'],
+    want: ['Navbar', 'Gallery', 'Testimonials', 'Footer'],
   },
   {
     id: 'about',
     label: 'About',
     need: 'About',
-    want: [
-      'Navbar',
-      'Hero',
-      'About',
-      'Stats',
-      'Process',
-      'Testimonials',
-      'Footer',
-    ],
+    want: ['Navbar', 'About', 'Stats', 'Process', 'Testimonials', 'Footer'],
   },
   {
     id: 'contact',
     label: 'Contact',
     need: 'Contact',
-    want: ['Navbar', 'Hero', 'Contact', 'Faq', 'Footer'],
+    want: ['Navbar', 'Contact', 'Faq', 'Footer'],
+  },
+  {
+    id: 'stories',
+    label: 'Stories',
+    need: 'StoryGrid',
+    want: [
+      'Navbar',
+      'FeaturedStory',
+      'StoryGrid',
+      'Topics',
+      'Authors',
+      'Subscribe',
+      'Footer',
+    ],
+  },
+  {
+    id: 'topics',
+    label: 'Topics',
+    need: 'Topics',
+    want: ['Navbar', 'Topics', 'StoryGrid', 'Subscribe', 'Footer'],
+  },
+  {
+    id: 'subscribe',
+    label: 'Subscribe',
+    need: 'Subscribe',
+    want: ['Navbar', 'Subscribe', 'Pricing', 'Faq', 'Footer'],
+  },
+  {
+    id: 'newsletter',
+    label: 'Newsletter',
+    need: 'Newsletter',
+    want: ['Navbar', 'Newsletter', 'Subscribe', 'Products', 'Topics', 'Footer'],
+  },
+  {
+    id: 'schedule',
+    label: 'Schedule',
+    need: 'Schedule',
+    want: ['Navbar', 'Schedule', 'Events', 'Faq', 'Cta', 'Footer'],
+  },
+  {
+    id: 'agenda',
+    label: 'Agenda',
+    need: 'Agenda',
+    want: ['Navbar', 'Agenda', 'Speakers', 'Tickets', 'Venue', 'Faq', 'Footer'],
+  },
+  {
+    id: 'events',
+    label: 'Events',
+    need: 'Events',
+    want: ['Navbar', 'Events', 'Schedule', 'Gallery', 'Footer'],
+  },
+  {
+    id: 'tickets',
+    label: 'Tickets',
+    need: 'Tickets',
+    want: ['Navbar', 'Tickets', 'Schedule', 'Faq', 'Cta', 'Footer'],
+  },
+  {
+    id: 'speakers',
+    label: 'Speakers',
+    need: 'Speakers',
+    want: ['Navbar', 'Speakers', 'Agenda', 'Tickets', 'Venue', 'Faq', 'Footer'],
+  },
+  {
+    id: 'venue',
+    label: 'Venue',
+    need: 'Venue',
+    want: ['Navbar', 'Venue', 'Agenda', 'Gallery', 'Tickets', 'Faq', 'Footer'],
+  },
+  {
+    id: 'rooms',
+    label: 'Rooms',
+    need: 'Rooms',
+    want: ['Navbar', 'Rooms', 'Gallery', 'Pricing', 'Testimonials', 'Footer'],
+  },
+  {
+    id: 'amenities',
+    label: 'Amenities',
+    need: 'Amenities',
+    want: [
+      'Navbar',
+      'Amenities',
+      'Rooms',
+      'Gallery',
+      'Booking',
+      'Testimonials',
+      'Faq',
+      'Footer',
+    ],
+  },
+  {
+    id: 'booking',
+    label: 'Booking',
+    need: 'Booking',
+    want: ['Navbar', 'Booking', 'Rooms', 'Amenities', 'Faq', 'Cta', 'Footer'],
+  },
+  {
+    id: 'team',
+    label: 'Team',
+    need: 'Team',
+    want: ['Navbar', 'Team', 'About', 'Stats', 'Testimonials', 'Footer'],
+  },
+  {
+    id: 'authors',
+    label: 'Authors',
+    need: 'Authors',
+    want: ['Navbar', 'Authors', 'StoryGrid', 'Subscribe', 'Footer'],
   },
 ]
 
@@ -972,25 +1367,9 @@ function planPages(family: Family, seed: string): PagePlan[] {
       sections: family.sections.filter((s) => r.want.includes(s)),
     }),
   )
-  // Always provide an "Explore" page from sections not foregrounded elsewhere so
-  // even families with few named roles still ship a multi-page site.
-  const spine = ['Navbar', 'Hero', 'Footer']
-  const leftover = family.sections.filter(
-    (s) =>
-      !spine.includes(s) && !candidates.some((c) => c.sections.includes(s)),
-  )
-  if (leftover.length >= 2) {
-    candidates.push({
-      id: 'explore',
-      label: 'Explore',
-      sections: ['Navbar', 'Hero', ...leftover, 'Footer'].filter((s) =>
-        has.has(s),
-      ),
-    })
-  }
   const usable = candidates.filter((p) => p.sections.length >= 3)
   const shuffled = [...usable].sort(() => rng() - 0.5)
-  const count = Math.min(3, Math.max(2, shuffled.length))
+  const count = Math.min(5, shuffled.length)
   return [home, ...shuffled.slice(0, count)]
 }
 
@@ -1019,12 +1398,302 @@ function parsePropsByRole(
   return out
 }
 
+const PAGE_ROLE_CONTRACTS: Record<
+  string,
+  { purpose: string; goals: string[] }
+> = {
+  pricing: {
+    purpose:
+      'Help a visitor compare plans, understand value, and choose the next commercial step.',
+    goals: [
+      'include concrete plan names, prices or package tiers when the component supports them',
+      'answer buying objections with FAQ/CTA content',
+      'avoid generic company overview copy',
+    ],
+  },
+  menu: {
+    purpose:
+      'Show the actual menu, categories, popular items, and ordering or reservation path.',
+    goals: [
+      'make item names and descriptions specific to the business',
+      'use gallery/support sections to reinforce the menu experience',
+      'avoid broad homepage positioning copy',
+    ],
+  },
+  programs: {
+    purpose:
+      'Help visitors compare programs, courses, classes, degrees, tracks, or offerings and choose the right path.',
+    goals: [
+      'name concrete programs and who each is for',
+      'connect schedules, pricing, proof, or application CTAs to enrollment intent',
+      'avoid generic institution overview copy',
+    ],
+  },
+  curriculum: {
+    purpose:
+      'Show the learning path, modules, skills, mentors, outcomes, and commitment clearly.',
+    goals: [
+      'make modules or lessons specific and sequenced',
+      'connect outcomes and mentors to learner confidence',
+      'avoid treating this as a generic services page',
+    ],
+  },
+  outcomes: {
+    purpose:
+      'Explain measurable results, learner/customer outcomes, proof points, and next steps.',
+    goals: [
+      'make outcomes concrete and credible',
+      'tie stats, testimonials, and FAQ answers to the requested site',
+      'avoid repeating program descriptions without proof',
+    ],
+  },
+  services: {
+    purpose:
+      'Explain the service lines, process, proof, and how to start an engagement.',
+    goals: [
+      'make each service distinct and practical',
+      'connect process/stats/CTA sections to booking or inquiry intent',
+      'avoid repeating the homepage hero promise',
+    ],
+  },
+  products: {
+    purpose:
+      'Help visitors browse concrete products, collections, offers, and purchase paths.',
+    goals: [
+      'make products or collections specific to the requested store',
+      'include practical buying cues such as categories, benefits, or social proof',
+      'avoid generic brand manifesto copy',
+    ],
+  },
+  collections: {
+    purpose:
+      'Merchandise curated collections, categories, edits, or product groups for browsing and purchase.',
+    goals: [
+      'name concrete collections that fit the requested store',
+      'connect products, lookbook, and proof sections to shopping intent',
+      'avoid generic product category filler',
+    ],
+  },
+  lookbook: {
+    purpose:
+      'Present an editorial visual browsing path with seasonal looks, collections, or style stories.',
+    goals: [
+      'make each look or visual story specific to the brand',
+      'connect images and CTAs to collections or products',
+      'avoid turning the page into a plain product grid',
+    ],
+  },
+  work: {
+    purpose:
+      'Showcase representative projects, outcomes, cases, or portfolio work.',
+    goals: [
+      'name concrete project examples',
+      'emphasize outcomes, proof, and client context',
+      'make the page useful even without a full hero',
+    ],
+  },
+  projects: {
+    purpose:
+      'Show concrete projects, case studies, client work, or portfolio examples.',
+    goals: [
+      'name distinct project examples',
+      'focus on outcomes, scope, and credibility',
+      'avoid broad service-list repetition',
+    ],
+  },
+  gallery: {
+    purpose:
+      'Let visitors browse visual examples, atmosphere, products, spaces, or past work.',
+    goals: [
+      'write image/gallery labels that match the requested site',
+      'use testimonials or supporting text to add context',
+      'avoid turning the page into a generic about page',
+    ],
+  },
+  about: {
+    purpose:
+      'Explain the story, mission, credibility, team, and operating philosophy.',
+    goals: [
+      'make the origin and values specific to the brief',
+      'use stats/process/testimonials as credibility, not filler',
+      'avoid pricing or product-grid language unless relevant',
+    ],
+  },
+  contact: {
+    purpose:
+      'Give visitors clear ways to contact, book, visit, request a quote, or ask questions.',
+    goals: [
+      'include practical contact paths, hours, location, or response expectations when supported',
+      'use FAQ content for contact-specific concerns',
+      'keep calls to action direct and low-friction',
+    ],
+  },
+  stories: {
+    purpose:
+      'Give readers a useful publication index with articles, categories, authors, and reading paths.',
+    goals: [
+      'write story titles and summaries that match the topic',
+      'make categories or authors help readers choose what to read next',
+      'avoid generic homepage marketing copy',
+    ],
+  },
+  topics: {
+    purpose:
+      'Organize publication, docs, or content themes into browsable topic paths.',
+    goals: [
+      'make each topic distinct and useful',
+      'connect topics to stories, guides, or subscription intent',
+      'avoid filler category names',
+    ],
+  },
+  subscribe: {
+    purpose:
+      'Convert interested readers or customers into subscribers or members.',
+    goals: [
+      'explain what subscribers receive',
+      'make signup value concrete',
+      'handle frequency, access, or membership questions when supported',
+    ],
+  },
+  newsletter: {
+    purpose:
+      'Explain the value of joining an email list, drop list, publication, or customer update channel.',
+    goals: [
+      'make the subscriber benefit specific',
+      'connect products, topics, or offers to signup intent',
+      'avoid vague "stay updated" filler',
+    ],
+  },
+  schedule: {
+    purpose:
+      'Show the timing, agenda, classes, itinerary, or upcoming program clearly.',
+    goals: [
+      'include specific sessions, times, or sequence when supported',
+      'connect schedule content to booking or attendance',
+      'avoid generic event hype',
+    ],
+  },
+  agenda: {
+    purpose:
+      'Show a clear event, webinar, conference, retreat, or program agenda that helps visitors decide to attend.',
+    goals: [
+      'include concrete sessions, sequencing, or timing when supported',
+      'connect speakers, venue, and ticket content to registration intent',
+      'avoid generic event overview copy',
+    ],
+  },
+  events: {
+    purpose:
+      'Show upcoming events, experiences, notices, or happenings with enough detail to act.',
+    goals: [
+      'make each event distinct',
+      'include date, location, audience, or value where supported',
+      'connect to tickets, booking, or RSVP intent',
+    ],
+  },
+  tickets: {
+    purpose:
+      'Help visitors compare ticket, pass, package, or registration options.',
+    goals: [
+      'make options and inclusions concrete',
+      'answer buyer objections with FAQ/CTA content',
+      'avoid unrelated event overview copy',
+    ],
+  },
+  speakers: {
+    purpose:
+      'Introduce speakers, hosts, instructors, performers, or guests with useful credibility and context.',
+    goals: [
+      'make speaker roles and topics distinct',
+      'connect lineup content to agenda or ticket intent',
+      'avoid generic team-page language',
+    ],
+  },
+  venue: {
+    purpose:
+      'Show location, venue, access, atmosphere, and practical attendance details.',
+    goals: [
+      'make location and visitor logistics concrete',
+      'connect venue details to confidence about attending or booking',
+      'avoid unrelated broad event hype',
+    ],
+  },
+  rooms: {
+    purpose:
+      'Show lodging, rooms, suites, spaces, or stay options with booking context.',
+    goals: [
+      'describe concrete room or package options',
+      'connect gallery/pricing/testimonials to booking confidence',
+      'avoid generic hospitality slogans',
+    ],
+  },
+  amenities: {
+    purpose:
+      'Show facilities, inclusions, amenities, services, and on-site advantages that help visitors choose.',
+    goals: [
+      'make each amenity specific and useful',
+      'connect amenities to rooms, booking, or visitor confidence',
+      'avoid generic luxury adjectives without details',
+    ],
+  },
+  booking: {
+    purpose:
+      'Give visitors a clear reservation, booking, appointment, or inquiry path with practical choices.',
+    goals: [
+      'include concrete steps, options, and expectations when supported',
+      'connect room/service/product choices to the booking action',
+      'avoid generic contact-page language',
+    ],
+  },
+  team: {
+    purpose:
+      'Introduce people, roles, expertise, and credibility behind the organization.',
+    goals: [
+      'make team members or roles specific',
+      'connect credibility to services or visitor next steps',
+      'avoid generic about-page prose',
+    ],
+  },
+  authors: {
+    purpose:
+      'Introduce writers, hosts, contributors, or editorial voices behind the publication.',
+    goals: [
+      'make author beats and voices distinct',
+      'connect authors to articles or subscription intent',
+      'avoid generic team copy',
+    ],
+  },
+}
+
+function summarizeHomeProps(
+  homeProps: Record<string, Record<string, unknown>> | undefined,
+): string {
+  if (!homeProps) return 'No homepage summary available yet.'
+  const snippets: string[] = []
+  for (const role of ['hero', 'features', 'services', 'menu', 'storygrid']) {
+    const props = homeProps[role]
+    if (!props) continue
+    for (const key of ['heading', 'title', 'subheading', 'description']) {
+      const value = props[key]
+      if (typeof value === 'string' && value.trim()) snippets.push(value.trim())
+      if (snippets.length >= 4) break
+    }
+    if (snippets.length >= 4) break
+  }
+  return snippets.length
+    ? snippets.join(' | ')
+    : 'Homepage establishes the brand and primary offer.'
+}
+
 /** One model call → section props (content only) for a page's sections. No seed. */
 export async function composePageProps(input: {
   prompt: string
   family: Family
   pageId: string
+  pageLabel?: string
   sections: string[]
+  navTargets?: string[]
+  homepageSummary?: string
   modelId: string
   signal: AbortSignal
   locale?: string
@@ -1035,10 +1704,29 @@ export async function composePageProps(input: {
         `"${sec.toLowerCase()}": ${getComponentSignature(`${input.family.name}${sec}`) ?? `${input.family.name}${sec}(...)`}`,
     )
     .join('\n')
+  const contract = PAGE_ROLE_CONTRACTS[input.pageId] ?? {
+    purpose: `Make the ${input.pageLabel ?? input.pageId} page useful and distinct from the homepage.`,
+    goals: [
+      'write content for this page role only',
+      'make section copy specific to the requested site',
+      'avoid filler or repeated homepage copy',
+    ],
+  }
   const user = `Build request: ${input.prompt}
+Page contract:
+- page id: ${input.pageId}
+- page label: ${input.pageLabel ?? input.pageId}
+- site kind / family: ${input.family.name}
+- allowed sections only: ${input.sections.join(', ')}
+- nav targets available: ${(input.navTargets ?? []).join(', ')}
+- homepage summary for continuity: ${input.homepageSummary ?? 'No homepage summary available.'}
+- page purpose: ${contract.purpose}
+- content goals:
+${contract.goals.map((goal) => `  - ${goal}`).join('\n')}
+- this is a secondary page; do not write full landing-page hero content unless Hero is explicitly listed
 Return a JSON object with exactly these keys, each filled with rich props matching its signature:
 ${lines}
-Every value distinct and on-topic. Arrays should have several entries. Strings quoted.`
+Every value distinct and on-topic for this page role. Arrays should have several entries. Strings quoted. CTA/link labels may be persuasive; the engine resolves their targets deterministically.`
   const raw = await generateText(
     input.modelId,
     composeSystem(input.locale),
@@ -1103,6 +1791,20 @@ function isValidFreeForm(source: string): boolean {
     (m) => m[1],
   )
   return names.length > 0 && names.every((n) => n in COMPONENTS)
+}
+
+const EXPLICIT_APP_TERMS =
+  /\b(app|tool|widget|calculator|tracker|timer|counter|todo|kanban|game|quiz|converter|simulator|editor|dashboard|admin|form builder|chatbot)\b/i
+const WEBSITE_TERMS =
+  /\b(website|site|landing|homepage|page|blog|publication|newsletter|store|shop|restaurant|cafe|portfolio|agency|service|services|saas|startup|product|brand|company|marketing|vape|hotel|venue|event|clinic|studio|firm)\b/i
+const TOOL_ONLY_TERMS =
+  /\b(calculator|tracker|timer|counter|todo|kanban|game|quiz|converter|simulator|editor|dashboard|admin|form builder|chatbot)\b/i
+
+export function shouldConsiderFreeFormAppMode(prompt: string): boolean {
+  const text = prompt.trim()
+  if (!EXPLICIT_APP_TERMS.test(text)) return false
+  if (TOOL_ONLY_TERMS.test(text)) return true
+  return !WEBSITE_TERMS.test(text)
 }
 
 /**
@@ -1212,7 +1914,11 @@ export async function runV2ComposedGeneration(input: {
   // website) is generated FREE-FORM from the generic primitives, so the engine
   // is not limited to the curated vertical families. The classifier generalizes
   // from a principle (operated tool vs marketing site); no per-app logic here.
-  if (!input.cachedContent && !input.familyOverride) {
+  if (
+    !input.cachedContent &&
+    !input.familyOverride &&
+    shouldConsiderFreeFormAppMode(input.prompt)
+  ) {
     const mode = await classifyGenerationMode(
       input.prompt,
       input.modelId,
@@ -1240,6 +1946,9 @@ export async function runV2ComposedGeneration(input: {
         category: 'app',
         family: 'Freeform',
         artifacts: [],
+        routes: [],
+        pages: [],
+        navTargets: {},
       }
     }
   }
@@ -1274,7 +1983,12 @@ export async function runV2ComposedGeneration(input: {
   emit({ type: 'theme', name: theme })
   emit({ type: 'locale', code: locale })
   emit({ type: 'plan', ids: pages.map((p) => p.id) })
-  const skeleton = `root = PageSwitch(${JSON.stringify(nav)}, [${pages.map((p) => p.id).join(', ')}])`
+  const composedByPage = new Map<string, ComposedPage>()
+  const renderSkeleton = () => {
+    const targetMap = buildRouteTargetMap({ pages, pageProps })
+    return `root = PageSwitch(${JSON.stringify(nav)}, [${pages.map((p) => p.id).join(', ')}], "", ${JSON.stringify(targetMap)})`
+  }
+  const skeleton = renderSkeleton()
   emit({ type: 'skeleton', text: skeleton })
 
   const byPage = new Map<string, string[]>()
@@ -1284,7 +1998,7 @@ export async function runV2ComposedGeneration(input: {
       const s = byPage.get(p.id)
       if (s) stmts.push(...s)
     }
-    return `${stmts.join('\n')}\n${skeleton}`
+    return `${stmts.join('\n')}\n${renderSkeleton()}`
   }
 
   // HOME — compose from content (cached or first-pass), paint immediately.
@@ -1297,6 +2011,7 @@ export async function runV2ComposedGeneration(input: {
     seed,
   })
   byPage.set('home', home.statements)
+  composedByPage.set('home', home)
   emit({ type: 'module', id: 'home', text: home.statements.join('\n') })
   input.onSource?.(renderSource())
   emit({ type: 'source', text: renderSource() })
@@ -1309,7 +2024,10 @@ export async function runV2ComposedGeneration(input: {
           prompt: input.prompt,
           family,
           pageId: p.id,
+          pageLabel: p.label,
           sections: p.sections,
+          navTargets: nav,
+          homepageSummary: summarizeHomeProps(pageProps.home),
           modelId: input.modelId,
           signal: abort.signal,
           locale,
@@ -1325,6 +2043,7 @@ export async function runV2ComposedGeneration(input: {
         sectionFilter: (all) => all.filter((s) => p.sections.includes(s)),
       })
       byPage.set(p.id, composed.statements)
+      composedByPage.set(p.id, composed)
       emit({ type: 'module', id: p.id, text: composed.statements.join('\n') })
       input.onSource?.(renderSource())
       emit({ type: 'source', text: renderSource() })
@@ -1333,6 +2052,16 @@ export async function runV2ComposedGeneration(input: {
 
   input.onContent?.({ family: family.name, pageProps })
   const source = renderSource()
+  const navTargets = buildRouteTargetMap({ pages, pageProps })
+  const pagePlans: V2PagePlan[] = pages.map((p) => {
+    const composed = composedByPage.get(p.id)
+    return {
+      id: p.id,
+      label: p.label,
+      rootRef: composed?.rootRef ?? p.id,
+      sections: composed?.sections ?? [],
+    }
+  })
   emit({ type: 'done' })
   return {
     source,
@@ -1342,5 +2071,8 @@ export async function runV2ComposedGeneration(input: {
     category: family.name,
     family: family.name,
     artifacts: [buildFullstackManifest(family)],
+    routes: nav,
+    pages: pagePlans,
+    navTargets,
   }
 }

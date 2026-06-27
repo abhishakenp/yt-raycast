@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * LandscapingNavbar — sticky, translucent top navigation bar for a landscaping /
@@ -15,7 +17,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * designers, hardscaping/patio contractors or grounds-keeping companies. Renders
  * fully with no props via baked-in "Earth & Edge" defaults.
  */
-export const LandscapingNavbar = defineComponent({
+export const LandscapingNavbar = defineCapsule({
   name: 'LandscapingNavbar',
   description:
     'Sticky translucent top navigation bar for a landscaping / outdoor-design company: backdrop-blurred, border-bottomed header pinned to the top with a layered-diamond brand mark + wordmark on the left, horizontal nav links in the center, and a pill-shaped primary CTA on the right (desktop), plus a hamburger menu on mobile. Calm, organic and premium on a warm stone canvas with a sage-green accent. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for landscapers, lawn-care and yard-maintenance services, garden designers, hardscaping/patio contractors, irrigation specialists or grounds-keeping companies.',
@@ -96,27 +98,13 @@ export const LandscapingNavbar = defineComponent({
                 {cta}
               </button>
             </div>
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => go(homeTarget)}
-              className="p-2 text-muted-foreground md:hidden"
-            >
-              <svg
-                className="size-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
+            <MobileNavDrawer
+              brand={brand}
+              nav={nav}
+              homeTarget={homeTarget}
+              cta={{ label: cta, target: contactTarget }}
+              buttonClassName="p-2 text-muted-foreground md:hidden"
+            />
           </div>
         </div>
       </header>

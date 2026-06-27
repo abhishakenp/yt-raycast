@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * as the service-times / weekly-gatherings section for churches, worship centers,
  * parishes, or ministries. Renders fully with no props via baked-in defaults.
  */
-export const ChurchServices = defineComponent({
+export const ChurchServices = defineCapsule({
   name: 'ChurchServices',
   description:
     "Split weekly service-times section for a church or faith-community site: left column with eyebrow, heading, description, and an icon-accented list of service cards (clock/moon/hands cycle); right column with a sticky tall photo and a 'What to Expect' checklist card beneath. Warm, informative, and welcoming. Use as the service-times / weekly-gatherings section for churches, worship centers, parishes, or ministries.",

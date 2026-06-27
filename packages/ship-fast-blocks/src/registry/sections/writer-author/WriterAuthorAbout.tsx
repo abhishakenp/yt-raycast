@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -14,7 +15,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * biography section. Renders fully with no props via baked-in copy for the
  * novelist Eleanor Vance.
  */
-export const WriterAuthorAbout = defineComponent({
+export const WriterAuthorAbout = defineCapsule({
   name: 'WriterAuthorAbout',
   description:
     "A two-column 'About' band for a literary author website: a black-and-white author portrait beside a left-aligned SectionHeading (uppercase 'About' eyebrow over a serif title) and a stack of generous serif prose paragraphs telling the author's story. Columns stack on small screens and sit side by side, vertically centered, on large screens. Built for novelists, essayists, and memoirists who want a calm, reading biography section. Renders fully with no props via baked-in copy for the novelist Eleanor Vance.",

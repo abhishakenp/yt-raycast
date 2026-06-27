@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Dialog as UIDialog,
   DialogContent,
@@ -13,7 +14,7 @@ import { Button } from '#/components/ui/button.tsx'
 
 // Overlay: flatten Dialog/Trigger/Content/Header/Title/Description/Footer into
 // one node. Rendered open by default (defaultOpen) so the content is visible.
-export const Dialog = defineComponent({
+export const Dialog = defineCapsule({
   name: 'Dialog',
   description:
     'Modal dialog. Shows a trigger button and opens centered content with title, description, body (children) and footer. Open by default in preview.',

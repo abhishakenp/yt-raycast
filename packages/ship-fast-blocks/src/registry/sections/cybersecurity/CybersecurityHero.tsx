@@ -1,8 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * CybersecurityHero — split, two-column hero for an enterprise security
@@ -16,10 +21,10 @@ import { Image } from '#/lib/img.tsx'
  * zero-trust, or cloud-security SaaS. Renders fully with no props via baked-in
  * "SentinelGuard" defaults.
  */
-export const CybersecurityHero = defineComponent({
+export const CybersecurityHero = defineCapsule({
   name: 'CybersecurityHero',
   description:
-    "Split two-column hero for an enterprise cybersecurity platform: left column stacks a live-status pill (pulsing dot + certification microcopy), a large bold headline, a reassuring subheading, dual CTAs (solid primary + outlined secondary) and a row of check-marked trust proofs; right column shows a security command-center photo on a rotated gradient backdrop with a floating 'Threat Blocked' alert card overlapping its corner. CTAs and trust chips route through useNavigate; imagery is alt-driven. Use as the opening hero for cybersecurity vendors, SOC/MDR/XDR providers, threat-detection, zero-trust or cloud-security SaaS.",
+    "Split two-column hero for an enterprise cybersecurity platform: left column stacks a live-status pill, headline, subheading, scoped Lakebed demo/platform CTAs and trust proofs; right column shows a security command-center photo with a floating 'Threat Blocked' alert. CTA buttons record intent instead of colliding with navigation.",
   props: z.object({
     /** Live-status pill microcopy. */
     badge: z.string().optional(),
@@ -43,8 +48,8 @@ export const CybersecurityHero = defineComponent({
     alertMeta: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const badge = props.badge ?? 'Now SOC 2 Type II Certified'
     const heading = props.heading ?? 'Security that never sleeps, so you can'
     const subheading =
@@ -100,20 +105,35 @@ export const CybersecurityHero = defineComponent({
                 {subheading}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="rounded-xl bg-primary px-8 py-4 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={primaryCta}
+                  plan={primaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Scheduling
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="rounded-xl border border-input bg-background px-8 py-4 text-center font-semibold text-foreground transition-colors hover:bg-muted"
+                </SaasPlanActionButton>
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={secondaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Opening
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-8 py-4 text-center font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
                 >
                   {secondaryCta}
-                </button>
+                </SaasPlanActionButton>
               </div>
               <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 {proofs.map((proof) => (

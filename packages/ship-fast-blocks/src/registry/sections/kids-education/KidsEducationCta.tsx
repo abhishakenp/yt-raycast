@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * e-learning platforms, tutoring services, and family learning apps. Renders
  * fully with no props via baked-in defaults.
  */
-export const KidsEducationCta = defineComponent({
+export const KidsEducationCta = defineCapsule({
   name: 'KidsEducationCta',
   description:
     "Dark closing call-to-action band for a kids / family learning platform: a full-width dark (foreground) section with soft gradient wash and blurred glow orbs behind a centered headline, supporting paragraph, dual rounded CTAs (filled primary with arrow + outlined play-icon secondary), and a small reassurance note. CTAs route through useNavigate. Use as the final conversion band before the footer for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",

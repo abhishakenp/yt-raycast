@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * generative-search visibility, or brand-citation landing and FAQ pages.
  * Distinct from AeoFaqSection. Renders fully with no props.
  */
-export const AeoFaq = defineComponent({
+export const AeoFaq = defineCapsule({
   name: 'AeoFaq',
   description:
     'Bespoke accessible FAQ section for an Answer-Engine-Optimization (AEO) product using native <details> disclosures: a centered heading above expandable Q&A items covering what AEO is, which engines are tracked, how AEO differs from SEO, what optimization involves, and how results are measured. The first item is open by default. Use on AEO, generative-search visibility, or brand-citation landing and FAQ pages.',

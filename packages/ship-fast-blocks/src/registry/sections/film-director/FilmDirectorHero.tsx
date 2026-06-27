@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * hero for filmmakers, directors, cinematographers, DPs, or video production
  * portfolios on a clean, editorial, light canvas.
  */
-export const FilmDirectorHero = defineComponent({
+export const FilmDirectorHero = defineCapsule({
   name: 'FilmDirectorHero',
   description:
     'Full-height split hero for a film director / cinematographer portfolio: a two-column layout with a left text column (uppercase tracked eyebrow label, a thin light display headline with one emphasized phrase rendered in medium weight, a lede paragraph, a play-icon primary CTA plus an outlined secondary CTA, and a 3-up KPI strip above a top border) beside a tall 4:5 portrait photo with a soft bottom-up gradient overlay. CTAs route through useNavigate; the portrait uses the Image component. Use as the top hero for filmmakers, directors, cinematographers, DPs, or video production portfolios on a clean, editorial, light canvas.',

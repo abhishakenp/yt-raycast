@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
-export const SalonBarberTestimonials = defineComponent({
+export const SalonBarberTestimonials = defineCapsule({
   name: 'SalonBarberTestimonials',
   description:
     "Barbershop / salon client reviews section built on the shared TestimonialGrid composite. Renders a grid of star-rated quotes from regulars, each tagged with the review source (Google, Yelp), to build trust around grooming quality and consistency. Use it as the social-proof band on any barbershop, salon, or men's grooming homepage, ideally just above the booking call-to-action.",

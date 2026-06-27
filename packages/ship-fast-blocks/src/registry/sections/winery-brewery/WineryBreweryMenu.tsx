@@ -1,23 +1,31 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * WineryBreweryMenu — printed-style tasting list for a winery or craft brewery
  * page. A centered serif heading and supporting description sit above a stack
  * of categories (e.g. Reds, Whites, Seasonal Ales). Each category shows its
- * name with a divider, then lists pours in a two-column grid. Every pour is a
- * clickable row with a name, optional tag pill (Estate, Limited, Award), short
- * tasting notes, and a price, routing through useNavigate to a visit or
- * tasting-booking target. Use for wineries, vineyards, cellar doors,
- * breweries, taprooms, or cideries that want a readable, conversion-focused
- * tasting menu. Renders fully with no props via baked-in defaults.
+ * name with a divider, then lists pours in a two-column grid. Every pour seeds
+ * shared command search and includes a scoped add-to-cart control that writes to
+ * the shared Lakebed cart, while the item name still routes through useNavigate
+ * to a visit or tasting-booking target. Use for wineries, vineyards, cellar
+ * doors, breweries, taprooms, or cideries that want a readable,
+ * conversion-focused tasting menu.
  */
-export const WineryBreweryMenu = defineComponent({
+export const WineryBreweryMenu = defineCapsule({
   name: 'WineryBreweryMenu',
   description:
-    'Printed-style tasting list for a winery or craft brewery page: centered serif heading and description above a stack of categories (Reds, Whites, Seasonal Ales). Each category has a titled divider and a two-column grid of pours. Every pour is a clickable row with name, optional tag pill (Estate, Limited, Award), tasting notes, and a price, routing through useNavigate. Use for wineries, vineyards, cellar doors, breweries, taprooms, or cideries wanting a readable tasting menu.',
+    'Printed-style tasting list for a winery or craft brewery page: centered serif heading and description above a stack of categories (Reds, Whites, Seasonal Ales). Each category has a titled divider and a two-column grid of pours. Every pour seeds shared command search and has a scoped add-to-cart control that writes to the shared Lakebed cart; the item name still routes through useNavigate. Use for wineries, vineyards, cellar doors, breweries, taprooms, or cideries wanting a readable tasting menu.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -41,9 +49,12 @@ export const WineryBreweryMenu = defineComponent({
       .optional(),
     /** Navigation target when a tasting row is clicked. */
     menuTarget: z.string().optional(),
+    /** Label for each row add button. */
+    addLabel: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heading = props.heading ?? 'Tasting List'
     const description =
@@ -128,6 +139,22 @@ export const WineryBreweryMenu = defineComponent({
             ],
           },
         ]
+    const addLabel = props.addLabel ?? 'Add'
+    const allPours = categories.flatMap((category) =>
+      category.items.map((item) => ({ ...item, category: category.name })),
+    )
+
+    useSyncCommerceCatalog(
+      lakebed,
+      allPours.map((item) =>
+        commerceProduct({
+          imageAlt: item.name,
+          label: item.name,
+          price: item.price,
+          subtitle: item.tag ? `${item.category} · ${item.tag}` : item.category,
+        }),
+      ),
+    )
 
     return (
       <section className={cn('py-20 lg:py-32', props.className)}>
@@ -150,17 +177,19 @@ export const WineryBreweryMenu = defineComponent({
                 </div>
                 <div className="grid gap-x-12 gap-y-6 md:grid-cols-2">
                   {(category.items ?? []).map((item) => (
-                    <button
+                    <div
                       key={item.name}
-                      type="button"
-                      onClick={() => go(menuTarget)}
                       className="group flex w-full items-start justify-between gap-4 text-left"
                     >
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h4 className="font-medium text-foreground transition-colors group-hover:text-primary">
+                          <button
+                            type="button"
+                            onClick={() => go(menuTarget)}
+                            className="font-medium text-foreground transition-colors hover:text-primary"
+                          >
                             {item.name}
-                          </h4>
+                          </button>
                           {item.tag ? (
                             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs uppercase tracking-wide text-primary">
                               {item.tag}
@@ -171,10 +200,29 @@ export const WineryBreweryMenu = defineComponent({
                           {item.notes}
                         </p>
                       </div>
-                      <span className="font-serif text-lg text-foreground">
-                        {item.price}
-                      </span>
-                    </button>
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <span className="font-serif text-lg text-foreground">
+                          {item.price}
+                        </span>
+                        <CommerceAddItemButton
+                          lakebed={lakebed}
+                          item={{
+                            label: item.name,
+                            price: item.price,
+                          }}
+                          aria-label={`${addLabel} ${item.name} to cart`}
+                          pendingChildren={
+                            <>
+                              <CommerceMutationSpinner className="size-3" />
+                              Adding
+                            </>
+                          }
+                          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-primary hover:text-primary-foreground disabled:pointer-events-none disabled:opacity-70"
+                        >
+                          {addLabel}
+                        </CommerceAddItemButton>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>

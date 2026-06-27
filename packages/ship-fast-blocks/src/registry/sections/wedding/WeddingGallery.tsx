@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
-export const WeddingGallery = defineComponent({
+export const WeddingGallery = defineCapsule({
   name: 'WeddingGallery',
   description:
     'Photo gallery band for a wedding site, built on the shared GalleryGrid composite: a soft serif-friendly heading over a responsive grid of alt-driven engagement and couple photographs with short captions. Use to showcase engagement sessions, candid moments, and venue previews on a wedding invitation or celebration page.',

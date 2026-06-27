@@ -5,9 +5,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // these assert real, audit-backed behavior instead.
 const mocks = ((
   globalThis as typeof globalThis & {
-    __runMocks?: { generateText: ReturnType<typeof vi.fn> }
+    __runMocks?: {
+      generateText: ReturnType<typeof vi.fn>
+      detectLanguage: ReturnType<typeof vi.fn>
+    }
   }
-).__runMocks ??= { generateText: vi.fn() })
+).__runMocks ??= {
+  generateText: vi.fn(),
+  detectLanguage: vi.fn(async (_prompt: string, preferred?: string) => ({
+    code: preferred || 'en',
+  })),
+})
 
 vi.mock('../generate.ts', () => ({
   generateText: (...args: unknown[]) =>
@@ -19,9 +27,11 @@ vi.mock('../generate.ts', () => ({
   formatLlmFailureMessage: (e: unknown) => String(e),
 }))
 vi.mock('../pipeline/detect-language.js', () => ({
-  detectLanguage: async (_prompt: string, preferred?: string) => ({
-    code: preferred || 'en',
-  }),
+  detectLanguage: (...args: unknown[]) =>
+    (
+      (globalThis as typeof globalThis & { __runMocks: typeof mocks })
+        .__runMocks.detectLanguage as unknown as (...a: unknown[]) => unknown
+    )(...args),
 }))
 
 import { auditOpenUIProgram } from './openui-program-audit.ts'
@@ -57,7 +67,15 @@ const reply = (user: string) =>
   /Candidate verticals/.test(user) ? superagentReply(user) : richProps(user)
 
 describe('runHomepageOrchestrator (composable engine)', () => {
-  beforeEach(() => mocks.generateText.mockReset())
+  beforeEach(() => {
+    mocks.generateText.mockReset()
+    mocks.detectLanguage.mockClear()
+    mocks.detectLanguage.mockImplementation(
+      async (_prompt: string, preferred?: string) => ({
+        code: preferred || 'en',
+      }),
+    )
+  })
 
   it('composes a valid multi-page PageSwitch site with theme, brand and category', async () => {
     mocks.generateText.mockImplementation(async (..._a: unknown[]) =>
@@ -103,5 +121,34 @@ describe('runHomepageOrchestrator (composable engine)', () => {
       sessionSeed: 'seed-3',
     })
     expect(result.locale).toBe('fr')
+  })
+
+  it('skips language and content model calls on cached composition content', async () => {
+    const result = await runHomepageOrchestrator({
+      prompt: 'a cached crm',
+      preferredLanguage: 'es',
+      sessionSeed: 'seed-cache',
+      cachedContent: {
+        family: 'Crm',
+        pageProps: {
+          home: {
+            hero: { heading: 'Cached hero', subheading: 'Cached sub' },
+            pricing: { heading: 'Cached pricing' },
+          },
+          pricing: {
+            pricing: { heading: 'Cached pricing page' },
+            faq: { heading: 'Cached FAQ', items: [{ title: 'A' }] },
+            cta: { heading: 'Cached CTA' },
+          },
+        },
+      },
+    })
+
+    await expect(
+      auditOpenUIProgram(result.source, { expectedRoot: 'PageSwitch' }),
+    ).resolves.toBeUndefined()
+    expect(result.locale).toBe('es')
+    expect(mocks.detectLanguage).not.toHaveBeenCalled()
+    expect(mocks.generateText).not.toHaveBeenCalled()
   })
 })

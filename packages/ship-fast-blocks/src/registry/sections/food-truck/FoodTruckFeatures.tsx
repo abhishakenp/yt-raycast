@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * hero on food trucks, street-food vendors or catering businesses to spell out
  * sourcing, dietary options and catering capability.
  */
-export const FoodTruckFeatures = defineComponent({
+export const FoodTruckFeatures = defineCapsule({
   name: 'FoodTruckFeatures',
   description:
     "Compact 'why us' feature strip for a food-truck site: a top-bordered band holding a 3-up responsive grid of plain feature blocks, each with a rounded muted icon tile (sparkle glyph), a bold title and a muted supporting paragraph. No imagery or links — pure value-prop messaging. Use directly below the hero on food trucks, street-food vendors, taco / burger / bowl concepts or catering businesses to spell out sourcing, dietary options and catering capability.",

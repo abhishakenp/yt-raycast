@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * MusicArtistNavbar — fixed, backdrop-blurred top navigation for a music
@@ -13,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * sticky site header for musicians, singers, bands, or any artist EPK/press
  * site. Renders fully with no props via baked-in defaults.
  */
-export const MusicArtistNavbar = defineComponent({
+export const MusicArtistNavbar = defineCapsule({
   name: 'MusicArtistNavbar',
   description:
     'Fixed, backdrop-blurred top navigation bar for a music artist / band site: a thin-weight brand wordmark on the left, centered horizontal nav links on desktop, and a hamburger menu button on mobile, on a translucent border-bottomed header pinned to the top of the viewport. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. The brand and every nav link route through useNavigate for page-switching. Use as the sticky site header for musicians, singers, bands, indie/folk/Americana acts, or any artist EPK/press site.',
@@ -61,27 +63,12 @@ export const MusicArtistNavbar = defineComponent({
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            aria-label="Open menu"
-            onClick={() => go(homeTarget)}
-            className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-          >
-            <svg
-              className="size-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
+          <MobileNavDrawer
+            brand={brand}
+            nav={nav}
+            homeTarget={homeTarget}
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+          />
         </nav>
       </header>
     )

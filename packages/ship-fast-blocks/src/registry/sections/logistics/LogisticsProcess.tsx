@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * quote-to-delivery / booking process for logistics, freight-forwarding, shipping,
  * courier or cargo/transport companies. Renders fully with no props.
  */
-export const LogisticsProcess = defineComponent({
+export const LogisticsProcess = defineCapsule({
   name: 'LogisticsProcess',
   description:
     "Two-column 'how it works' flow for a global-logistics / freight-forwarding company: a left column with a heading + lede above a vertical list of numbered steps (each a primary circular index beside a titled paragraph), and a right column with a tall rounded warehouse photo plus a floating, shadowed metric badge (clock icon + label/value) overlapping the top-right corner. Clean and corporate on a light surface with a deep slate primary. Use to explain the quote-to-delivery / booking process for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.",

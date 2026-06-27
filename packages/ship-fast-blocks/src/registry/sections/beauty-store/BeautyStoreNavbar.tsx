@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import type { ReactNode } from 'react'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAccountButton,
+  CommerceCartButton,
+  CommerceMobileMenu,
+  CommerceSearchButton,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * BeautyStoreNavbar — sticky translucent top navigation bar for a beauty / skincare /
@@ -13,7 +21,7 @@ import type { ReactNode } from 'react'
  * for beauty stores, skincare shops, cosmetics brands, clean beauty retailers, or premium
  * personal-care DTC storefronts.
  */
-export const BeautyStoreNavbar = defineComponent({
+export const BeautyStoreNavbar = defineCapsule({
   name: 'BeautyStoreNavbar',
   description:
     'Sticky translucent top navigation bar for a beauty / skincare / cosmetics e-commerce storefront: a blurred, border-bottomed header pinned to the top with the store name in serif on the left, horizontal category nav links in the center, and utility icons (search, account, cart with a quantity badge, mobile hamburger) on the right. Every link and icon routes through useNavigate. Use as the sticky site header for beauty stores, skincare shops, cosmetics brands, clean beauty retailers, or premium personal-care DTC storefronts.',
@@ -30,15 +38,15 @@ export const BeautyStoreNavbar = defineComponent({
     contactTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Lumière'
     const nav = props.nav?.length
       ? props.nav
       : ['Bestsellers', 'New Arrivals', 'Skincare', 'Makeup', 'Brands']
-    const cartCount = props.cartCount ?? '3'
+    const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
     const homeTarget = props.homeTarget ?? nav[0]
-    const contactTarget = props.contactTarget ?? nav[nav.length - 1]
 
     const SearchIcon = (): ReactNode => (
       <svg
@@ -91,23 +99,6 @@ export const BeautyStoreNavbar = defineComponent({
       </svg>
     )
 
-    const MenuIcon = (): ReactNode => (
-      <svg
-        className="size-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M4 6h16M4 12h16M4 18h16"
-        />
-      </svg>
-    )
-
     return (
       <header
         className={cn(
@@ -139,41 +130,46 @@ export const BeautyStoreNavbar = defineComponent({
             </nav>
 
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                aria-label="Search"
-                onClick={() => go(homeTarget)}
-                className="p-2 text-muted-foreground transition-colors hover:text-foreground"
+              <CommerceSearchButton
+                lakebed={lakebed}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
               >
                 <SearchIcon />
-              </button>
-              <button
-                type="button"
-                aria-label="Account"
-                onClick={() => go(contactTarget)}
-                className="p-2 text-muted-foreground transition-colors hover:text-foreground"
+              </CommerceSearchButton>
+              <CommerceAccountButton
+                lakebed={lakebed}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
               >
                 <AccountIcon />
-              </button>
-              <button
-                type="button"
-                aria-label="Cart"
-                onClick={() => go(homeTarget)}
-                className="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+              </CommerceAccountButton>
+              <CommerceCartButton
+                lakebed={lakebed}
+                fallbackCount={initialCartCount}
+                buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
               >
                 <CartIcon />
-                <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                  {cartCount}
-                </span>
-              </button>
-              <button
-                type="button"
-                aria-label="Open menu"
-                onClick={() => go(homeTarget)}
-                className="p-2 text-muted-foreground md:hidden"
+              </CommerceCartButton>
+              <CommerceMobileMenu
+                brand={brand}
+                nav={nav}
+                homeTarget={homeTarget}
+                buttonClassName="p-2 text-muted-foreground md:hidden"
               >
-                <MenuIcon />
-              </button>
+                <svg
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </CommerceMobileMenu>
             </div>
           </div>
         </div>

@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useCommerceFilteredProducts,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * ElectronicsStoreDeals — a dark inverted "Flash Deals" band for an electronics
@@ -13,7 +21,7 @@ import { Image } from '#/lib/img.tsx'
  * route through useNavigate. Use to spotlight limited-time offers on electronics
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
-export const ElectronicsStoreDeals = defineComponent({
+export const ElectronicsStoreDeals = defineCapsule({
   name: 'ElectronicsStoreDeals',
   description:
     'Dark inverted Flash Deals band for an electronics storefront: a header row pairs a heading + muted description with a boxed countdown timer (hrs / min / sec tiles), above a responsive 1-to-4 grid of clickable product cards — square image with a destructive discount badge, then title, subtitle, current price and a struck-through original price. Cards route through useNavigate; imagery is alt-driven. Use to spotlight limited-time offers on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
@@ -43,8 +51,8 @@ export const ElectronicsStoreDeals = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Flash Deals'
     const description =
       props.description ??
@@ -97,6 +105,25 @@ export const ElectronicsStoreDeals = defineComponent({
               'Logitech MX Master 3S wireless ergonomic mouse in graphite gray',
           },
         ]
+    useSyncCommerceCatalog(
+      lakebed,
+      items.map((product) =>
+        commerceProduct({
+          imageAlt: product.imageAlt,
+          label: product.title,
+          price: product.price,
+          subtitle: product.subtitle,
+        }),
+      ),
+    )
+    const visibleItems = useCommerceFilteredProducts(lakebed, items, (product) => [
+      product.title,
+      product.subtitle,
+      product.price,
+      product.was,
+      product.discount,
+      product.imageAlt,
+    ])
 
     return (
       <section
@@ -130,11 +157,12 @@ export const ElectronicsStoreDeals = defineComponent({
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {items.map((d) => (
-              <button
+            {visibleItems.map((d) => (
+              <CommerceAddItemButton
                 key={d.title}
-                type="button"
-                onClick={() => go(d.title)}
+                lakebed={lakebed}
+                item={{ label: d.title, price: d.price }}
+                pendingChildren={<CommerceMutationSpinner />}
                 className="group block overflow-hidden rounded-xl bg-card text-left text-card-foreground transition-shadow hover:shadow-xl"
               >
                 <div className="relative aspect-square bg-muted">
@@ -165,7 +193,7 @@ export const ElectronicsStoreDeals = defineComponent({
                     </span>
                   </div>
                 </div>
-              </button>
+              </CommerceAddItemButton>
             ))}
           </div>
         </div>

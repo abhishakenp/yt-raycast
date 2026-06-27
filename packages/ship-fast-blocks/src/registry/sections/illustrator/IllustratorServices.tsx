@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * illustration, art prints & products, commissions. Renders fully with no props
  * via baked-in defaults.
  */
-export const IllustratorServices = defineComponent({
+export const IllustratorServices = defineCapsule({
   name: 'IllustratorServices',
   description:
     "Centered-heading 'what I create' services grid for an illustrator / visual-artist portfolio: a serif section title and supporting paragraph above a responsive 3-up grid of bordered cards, each with a rounded tinted icon tile (rotating pastel accent tints) that scales on hover, a serif title, and a descriptive paragraph, with the card border tinting on hover. Use to outline an artist's offerings — children's books, editorial illustration, art prints & products, commissions.",

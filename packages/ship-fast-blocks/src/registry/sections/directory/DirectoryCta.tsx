@@ -1,7 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { directoryLakebed } from './directory-lakebed.ts'
+import {
+  DirectoryLeadButton,
+  DirectoryMutationSpinner,
+} from './directory-interactions.tsx'
 
 /**
  * DirectoryCta — dark inverted conversion CTA band for a local-business
@@ -12,7 +18,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * list-your-business / sign-up conversion band on local directories,
  * marketplaces, or find-a-service platforms.
  */
-export const DirectoryCta = defineComponent({
+export const DirectoryCta = defineCapsule({
   name: 'DirectoryCta',
   description:
     'Dark inverted conversion CTA band for a local-business DIRECTORY: a foreground-on-background inverted section with a large centered headline, a supporting paragraph in muted inverted text, and a centered pair of CTAs (a filled background-surface primary button plus an outlined secondary button). Both CTAs route through useNavigate. Use as the closing list-your-business or sign-up conversion band on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
@@ -27,7 +33,8 @@ export const DirectoryCta = defineComponent({
     secondaryCta: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: directoryLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heading = props.heading ?? 'Ready to Grow Your Business?'
     const description =
@@ -51,13 +58,15 @@ export const DirectoryCta = defineComponent({
             {description}
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryCta)}
-              className="rounded-lg bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90"
+            <DirectoryLeadButton
+              lakebed={lakebed}
+              action={primaryCta}
+              source="cta"
+              pendingChildren={<DirectoryMutationSpinner />}
+              className="inline-flex min-h-14 items-center justify-center rounded-lg bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
-            </button>
+            </DirectoryLeadButton>
             <button
               type="button"
               onClick={() => go(secondaryCta)}

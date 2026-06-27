@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -16,7 +17,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * attorney, consulting or professional-services pages. Renders fully with no
  * props via baked-in defaults.
  */
-export const LawFirmPracticeAreas = defineComponent({
+export const LawFirmPracticeAreas = defineCapsule({
   name: 'LawFirmPracticeAreas',
   description:
     "Centered-intro practice-areas grid for a law firm: a tracked-uppercase eyebrow, serif heading and lead paragraph above a responsive 3-up grid of bordered cards on the card surface, each pairing a squared icon tile that fills with the primary color on hover, a serif title, a description and a 'Learn more →' link. Refined, authoritative editorial aesthetic with sharp squared corners; icons rotate through a built-in line-svg set and each card link routes through useNavigate. Use to showcase legal service lines (corporate & securities, litigation, employment, real estate, intellectual property, tax & estates) on law-firm, attorney, consulting, accounting or professional-services pages.",

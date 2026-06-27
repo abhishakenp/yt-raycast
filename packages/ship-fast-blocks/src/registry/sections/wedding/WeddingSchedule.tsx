@@ -1,9 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
-export const WeddingSchedule = defineComponent({
+export const WeddingSchedule = defineCapsule({
   name: 'WeddingSchedule',
   description:
     'Event details band for a wedding site: a SectionHeading over a two-column grid of elegant cards covering the ceremony and reception. Each card shows a serif title plus labeled time, place, and dress-code rows with an optional note. Use to give guests the practical schedule and logistics on a wedding invitation or celebration page.',

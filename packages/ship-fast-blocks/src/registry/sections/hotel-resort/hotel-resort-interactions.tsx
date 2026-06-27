@@ -1,0 +1,428 @@
+import type { ButtonHTMLAttributes, FormEvent, ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
+import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
+import { Loader2Icon, MenuIcon, SearchIcon, UserIcon } from 'lucide-react'
+
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '#/components/ui/command.tsx'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '#/components/ui/dropdown-menu.tsx'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import type {
+  HotelRoomInput,
+  hotelResortLakebed,
+} from './hotel-resort-lakebed.ts'
+
+export type HotelResortLakebed = LakebedClientRuntime<typeof hotelResortLakebed>
+
+type HotelBookingSummary = ReturnType<
+  typeof hotelResortLakebed.queries.bookingSummary
+>
+
+export const hotelRoom = ({
+  description,
+  meta,
+  name,
+  price,
+}: HotelRoomInput): HotelRoomInput => ({
+  description: description ?? '',
+  meta: meta ?? '',
+  name,
+  price: price ?? '',
+})
+
+const fieldsFromForm = (form: HTMLFormElement) => {
+  const formData = new FormData(form)
+  const fields: Record<string, string> = {}
+
+  for (const [key, value] of formData.entries()) {
+    fields[key] = String(value)
+  }
+
+  return fields
+}
+
+export function HotelMutationSpinner({ className }: { className?: string }) {
+  return (
+    <Loader2Icon
+      className={cn('size-4 animate-spin', className)}
+      aria-hidden="true"
+    />
+  )
+}
+
+export function useSyncHotelRooms(
+  lakebed: HotelResortLakebed,
+  rooms: HotelRoomInput[],
+) {
+  const syncRooms = lakebed.useMutation('syncRooms')
+  const syncRoomsRef = useRef(syncRooms)
+  const roomKey = useMemo(() => JSON.stringify(rooms), [rooms])
+  const stableRooms = useMemo(
+    () => rooms.map((room) => ({ ...room })),
+    [roomKey],
+  )
+
+  useEffect(() => {
+    syncRoomsRef.current = syncRooms
+  }, [syncRooms])
+
+  useEffect(() => {
+    if (!stableRooms.length) return
+    void syncRoomsRef.current({ rooms: stableRooms })
+  }, [stableRooms])
+}
+
+export function useHotelAvailabilitySubmission({
+  lakebed,
+  source,
+  successMessage = 'Thanks. We received your availability request.',
+}: {
+  lakebed: HotelResortLakebed
+  source: string
+  successMessage?: string
+}) {
+  const [submitted, setSubmitted] = useState(false)
+  const summary: HotelBookingSummary | null = lakebed.useQuery('bookingSummary')
+  const requestBooking = lakebed.useMutation('requestBooking')
+  const count = summary?.count ?? 0
+
+  const submitForm = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      if (requestBooking.isPending) return
+
+      const form = event.currentTarget
+      const fields = fieldsFromForm(form)
+      const room = fields.roomType ?? ''
+
+      void requestBooking({
+        action: 'availability',
+        fields,
+        label: 'Availability request',
+        room,
+        source,
+      }).then(
+        () => {
+          setSubmitted(true)
+          form.reset()
+        },
+        () => {},
+      )
+    },
+    [requestBooking, source],
+  )
+
+  return {
+    count,
+    isPending: requestBooking.isPending,
+    statusText: submitted
+      ? `${successMessage} ${count} total ${
+          count === 1 ? 'request' : 'requests'
+        }.`
+      : `${count} ${count === 1 ? 'request' : 'requests'} received.`,
+    submitForm,
+  }
+}
+
+export function HotelBookingBadge({
+  className,
+  lakebed,
+}: {
+  className?: string
+  lakebed: HotelResortLakebed
+}) {
+  const summary: HotelBookingSummary | null = lakebed.useQuery('bookingSummary')
+  const label = summary?.currentRoom || summary?.currentLabel
+
+  if (!label) return null
+
+  return (
+    <span
+      className={cn(
+        'hidden max-w-44 truncate rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary lg:inline-flex',
+        className,
+      )}
+    >
+      {label}
+    </span>
+  )
+}
+
+export function HotelBookingActionButton({
+  action = 'booking',
+  children,
+  disabled,
+  intentKey,
+  intentLabel,
+  lakebed,
+  onComplete,
+  pendingChildren,
+  room,
+  source,
+  type = 'button',
+  ...buttonProps
+}: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'onClick'> & {
+  action?: string
+  children: ReactNode
+  intentKey?: string
+  intentLabel: string
+  lakebed: HotelResortLakebed
+  onComplete?: () => void
+  pendingChildren?: ReactNode
+  room?: string
+  source?: string
+}) {
+  const booking = useKeyedLakebedMutation(lakebed, 'requestBooking')
+  const key = intentKey ?? `${source ?? 'hotel'}:${room ?? intentLabel}`
+  const isPending = booking.isPending(key)
+
+  return (
+    <button
+      {...buttonProps}
+      type={type}
+      aria-busy={isPending}
+      disabled={disabled || isPending}
+      onClick={() => {
+        void booking
+          .run(key, {
+            action,
+            label: intentLabel,
+            room: room ?? '',
+            source,
+          })
+          .then(
+            () => onComplete?.(),
+            () => onComplete?.(),
+          )
+      }}
+    >
+      {isPending ? (pendingChildren ?? <HotelMutationSpinner />) : children}
+    </button>
+  )
+}
+
+export function HotelSearchButton({
+  buttonClassName,
+  children,
+  lakebed,
+  label = 'Search rooms',
+}: {
+  buttonClassName?: string
+  children?: ReactNode
+  lakebed: HotelResortLakebed
+  label?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const booking = useKeyedLakebedMutation(lakebed, 'requestBooking')
+  const rooms = lakebed.useQuery('roomCatalog') ?? []
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label={label}
+        onClick={() => setOpen(true)}
+        className={buttonClassName}
+      >
+        {children ?? <SearchIcon className="size-5" aria-hidden="true" />}
+      </button>
+      <CommandDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Search rooms"
+        description="Search room categories and start an availability request."
+      >
+        <CommandInput placeholder="Search rooms..." />
+        <CommandList>
+          <CommandEmpty>No rooms found.</CommandEmpty>
+          <CommandGroup heading="Rooms">
+            {rooms.map((room) => (
+              <CommandItem
+                key={room.id}
+                value={`${room.name} ${room.price} ${room.meta} ${room.description}`}
+                onSelect={() => {
+                  setOpen(false)
+                  void booking.run(`search:${room.name}`, {
+                    action: 'search',
+                    label: `Selected ${room.name}`,
+                    room: room.name,
+                    source: 'search',
+                  })
+                }}
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{room.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {[room.price, room.meta, room.description]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </p>
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
+    </>
+  )
+}
+
+export function HotelAccountButton({
+  buttonClassName,
+  children,
+  lakebed,
+  label = 'Account',
+}: {
+  buttonClassName?: string
+  children?: ReactNode
+  lakebed: HotelResortLakebed
+  label?: string
+}) {
+  const auth = lakebed.useAuth()
+  const user = auth.user
+  const displayName = user?.displayName ?? 'Guest'
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button type="button" aria-label={label} className={buttonClassName}>
+          {children ?? <UserIcon className="size-5" aria-hidden="true" />}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>
+          <span className="block truncate">{displayName}</span>
+          <span className="block truncate text-xs font-normal text-muted-foreground">
+            {user?.email ?? (user?.isGuest ? 'Guest profile' : 'Signed in')}
+          </span>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {auth.isAuthenticated && !user?.isGuest ? (
+          <DropdownMenuItem onSelect={() => lakebed.signOut()}>
+            Sign out
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem
+            onSelect={() => {
+              void lakebed.signInWithGoogle()
+            }}
+          >
+            Sign in with Shoo
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+export function HotelMobileMenu({
+  brand,
+  buttonClassName,
+  ctaLabel,
+  ctaTarget,
+  homeTarget,
+  lakebed,
+  nav,
+}: {
+  brand: string
+  buttonClassName?: string
+  ctaLabel: string
+  ctaTarget: string
+  homeTarget?: string
+  lakebed: HotelResortLakebed
+  nav: string[]
+}) {
+  const [open, setOpen] = useState(false)
+  const go = useNavigate()
+
+  const navigate = useCallback(
+    (target?: string) => {
+      setOpen(false)
+      go(target)
+    },
+    [go],
+  )
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <button
+          type="button"
+          aria-label="Open menu"
+          className={buttonClassName}
+        >
+          <MenuIcon className="size-5" aria-hidden="true" />
+        </button>
+      </SheetTrigger>
+      <SheetContent
+        side="right"
+        className="w-[min(100%,22rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
+      >
+        <SheetHeader className="border-b border-border px-5 py-4 text-left">
+          <SheetTitle className="text-base font-semibold">{brand}</SheetTitle>
+          <SheetDescription className="sr-only">
+            Navigate to a resort section.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="flex flex-col gap-1 px-3 py-4">
+          <button
+            type="button"
+            onClick={() => navigate(homeTarget ?? nav[0])}
+            className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            Home
+          </button>
+          {nav.map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => navigate(item)}
+              className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              {item}
+            </button>
+          ))}
+          <HotelBookingActionButton
+            lakebed={lakebed}
+            intentLabel={ctaTarget}
+            intentKey="mobile-nav-booking"
+            source="mobile-nav"
+            onComplete={() => setOpen(false)}
+            pendingChildren={
+              <>
+                <HotelMutationSpinner />
+                Sending
+              </>
+            }
+            className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+          >
+            {ctaLabel}
+          </HotelBookingActionButton>
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
+}

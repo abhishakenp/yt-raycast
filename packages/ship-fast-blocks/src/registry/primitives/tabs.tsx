@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Tabs as UITabs,
   TabsContent,
@@ -9,7 +10,7 @@ import {
 
 // Compound: flatten Tabs/List/Trigger/Content into items:[{value,label,content}].
 // First tab active by default so a panel is visible statically.
-export const Tabs = defineComponent({
+export const Tabs = defineCapsule({
   name: 'Tabs',
   description:
     "Tabbed panels. items:[{value,label,content?}]. First tab active by default. variant 'line' for underlined tabs.",

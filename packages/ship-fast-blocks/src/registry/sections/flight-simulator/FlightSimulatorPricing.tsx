@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
  * Use to sell editions of a flight sim, airliner / combat sim, or aviation
  * title. Renders fully with no props via baked defaults.
  */
-export const FlightSimulatorPricing = defineComponent({
+export const FlightSimulatorPricing = defineCapsule({
   name: 'FlightSimulatorPricing',
   description:
     '3-tier editions table for a flight-simulator landing page built on the shared PricingGrid composite: a centered heading above three edition cards (Standard, Deluxe, Premium) each with a one-time price, a feature list of included aircraft and airports, and a buy CTA. The middle Deluxe tier is highlighted as the recommended pick and every CTA routes to the buy page. Use to sell editions of a flight sim, airliner / combat sim, or aviation title.',

@@ -18,6 +18,7 @@ type ParsedOpenUIProgram = {
   root: ElementNode
   routes: string[]
   pages: ElementNode[]
+  targetMap: Record<string, string>
   projectName: string
   library: Awaited<ReturnType<typeof loadOpenUIRuntimeLibrary>>
 }
@@ -88,10 +89,10 @@ const isUsablePreviewHtml = (html: string | undefined): html is string => {
   const trimmed = html?.trim()
   return Boolean(
     trimmed &&
-      !/\bopenui-error\b/i.test(trimmed) &&
-      !/failed to render/i.test(trimmed) &&
-      !/\bship-fast-openui-source\b/i.test(trimmed) &&
-      !/generated openui source is ready/i.test(trimmed),
+    !/\bopenui-error\b/i.test(trimmed) &&
+    !/failed to render/i.test(trimmed) &&
+    !/\bship-fast-openui-source\b/i.test(trimmed) &&
+    !/generated openui source is ready/i.test(trimmed),
   )
 }
 
@@ -273,30 +274,47 @@ const escapeHtml = (value: string): string =>
 
 const escapeAttribute = escapeHtml
 
-const buildRouteScript = (routes: string[]): string => `
+const buildRouteScript = (
+  routes: string[],
+  targetMap: Record<string, string>,
+): string => `
 (function () {
   var routes = ${stringifyJs(routes)};
+  var targetMap = ${stringifyJs(targetMap)};
   var current = 0;
   function normalize(value) { return String(value || '').trim().toLowerCase(); }
+  function parseTarget(value) {
+    var text = String(value || '').trim();
+    if (!text) return null;
+    var hash = text.indexOf('#');
+    if (hash < 0) return { page: text, sectionId: '' };
+    return { page: text.slice(0, hash).trim(), sectionId: text.slice(hash + 1).trim() };
+  }
   function findRoute(label) {
     var t = normalize(label);
     if (!t) return -1;
     var exact = routes.findIndex(function (route) { return normalize(route) === t; });
     if (exact >= 0) return exact;
     var pairs = [
-      [/shop|store|product|buy|cart|order|browse|collection/, /shop|store|product|collection|menu|work|gallery/],
-      [/price|plan|pricing|subscribe|upgrade|tier/, /pric|plan/],
-      [/contact|reach|get in touch|book|reserve|demo|quote|sign ?up|start|join|get started|register/, /contact|book|reserve|demo|start|join/],
+      [/program|course|curriculum/, /program|course|curriculum/],
+      [/lookbook|collection/, /lookbook|collection|shop|product/],
+      [/speaker|agenda|venue|ticket|schedule/, /speaker|agenda|venue|ticket|schedule/],
+      [/amenit/, /amenit/],
+      [/room/, /room|booking|reserve/],
+      [/\\b(?:book|booking|reserve)\\b/, /\\b(?:book|booking|reserve)\\b|room|contact/],
+      [/shop|store|product|buy|cart|order|browse|collection/, /shop|store|product|collection|lookbook|menu|work|gallery/],
+      [/price|plan|pricing|subscribe|upgrade|tier|membership/, /pric|plan|member/],
+      [/contact|reach|get in touch|book|reserve|demo|quote|sign ?up|start|join|get started|register/, /contact|book|booking|reserve|demo|start|join|ticket|apply/],
       [/about|story|team|who we are|mission/, /about|team|story/],
-      [/blog|news|post|article|read|stories|journal/, /blog|news|post|article|stories/],
-      [/feature|service|how it works|learn|explore|tour/, /feature|service|how/]
+      [/blog|news|post|article|read|stories|journal|tips/, /blog|news|post|article|stories|tips/],
+      [/feature|service|how it works|learn|explore|tour|class|trainer|program|course|curriculum|speaker|agenda|venue|amenit|room|lookbook/, /feature|service|how|class|schedule|program|course|curriculum|speaker|agenda|venue|amenit|room|lookbook/]
     ];
     for (var i = 0; i < pairs.length; i++) {
       if (!pairs[i][0].test(t)) continue;
       var idx = routes.findIndex(function (route) { return pairs[i][1].test(normalize(route)); });
       if (idx >= 0) return idx;
     }
-    return 0;
+    return -1;
   }
   function show(index) {
     if (index < 0 || index >= routes.length) return;
@@ -305,13 +323,170 @@ const buildRouteScript = (routes: string[]): string => `
       page.hidden = pageIndex !== current;
     });
   }
+  function fixedHeaderOffset() {
+    var headers = Array.prototype.slice.call(document.querySelectorAll('header'));
+    for (var i = 0; i < headers.length; i++) {
+      var header = headers[i];
+      var style = window.getComputedStyle(header);
+      if (style.position !== 'fixed' && style.position !== 'sticky') continue;
+      var rect = header.getBoundingClientRect();
+      if (rect.height <= 0 || rect.bottom <= 0) continue;
+      if (style.position === 'fixed' || rect.top <= 1) return Math.ceil(rect.height);
+    }
+    return 0;
+  }
+  function scrollToSection(id) {
+    requestAnimationFrame(function () {
+      var node = document.getElementById(id);
+      if (!node) return;
+      var offset = fixedHeaderOffset();
+      if (!offset) {
+        node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      var top = Math.max(0, node.getBoundingClientRect().top + window.scrollY - offset);
+      window.scrollTo({ top: top, behavior: 'smooth' });
+    });
+  }
+  function navigate(label) {
+    var text = String(label || '').trim();
+    if (!text) return false;
+    var mapped = targetMap[text] || targetMap[normalize(text)] || text;
+    var parsed = parseTarget(mapped);
+    if (!parsed) return false;
+    var idx = findRoute(parsed.page || text);
+    if (idx < 0) return false;
+    show(idx);
+    if (parsed.sectionId) {
+      window.location.hash = parsed.sectionId;
+      scrollToSection(parsed.sectionId);
+    } else {
+      history.replaceState(null, '', location.pathname + location.search);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    return true;
+  }
+  function collectDrawerLinks(trigger) {
+    var header = trigger.closest('header') || document;
+    var controls = Array.prototype.slice.call(header.querySelectorAll('a,button'));
+    var links = [];
+    controls.forEach(function (control) {
+      if (control === trigger || control.contains(trigger)) return;
+      if (control.closest('[role="dialog"]')) return;
+      var text = String(control.textContent || '').replace(/\\s+/g, ' ').trim();
+      if (!text) return;
+      var label = String(control.getAttribute('aria-label') || '').trim().toLowerCase();
+      if (/search|account|profile|cart|bag|menu/.test(label)) return;
+      if (links.some(function (entry) { return normalize(entry.label) === normalize(text); })) return;
+      links.push({ label: text });
+    });
+    return links.slice(0, 8);
+  }
+  function makeButton(label, className) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.className = className;
+    return button;
+  }
+  function createStaticDrawer(trigger) {
+    var existingId = trigger.getAttribute('data-sf-static-drawer');
+    if (existingId) {
+      return document.getElementById(existingId);
+    }
+    var links = collectDrawerLinks(trigger);
+    if (!links.length) return null;
+    var drawerId = 'sf-static-drawer-' + Math.random().toString(36).slice(2);
+    trigger.setAttribute('data-sf-static-drawer', drawerId);
+
+    var overlay = document.createElement('div');
+    overlay.id = drawerId;
+    overlay.hidden = true;
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.setAttribute('role', 'presentation');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.48);opacity:0;pointer-events:none;transition:opacity .18s ease;';
+
+    var panel = document.createElement('aside');
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-label', trigger.getAttribute('aria-label') || 'Navigation menu');
+    panel.style.cssText = 'position:absolute;top:0;right:0;height:100%;width:min(22rem,100%);box-sizing:border-box;background:var(--background,#fff);color:var(--foreground,#111);border-left:1px solid var(--border,rgba(0,0,0,.12));box-shadow:-24px 0 80px rgba(0,0,0,.22);transform:translateX(100%);transition:transform .18s ease;display:flex;flex-direction:column;';
+
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--border,rgba(0,0,0,.12));padding:1rem 1.25rem;';
+    var title = document.createElement('div');
+    title.textContent = trigger.closest('header')?.querySelector('[data-openui-component]')?.getAttribute('data-openui-component') || window.__SHIP_FAST_EXPORT__?.projectName || 'Navigation';
+    title.style.cssText = 'min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;';
+    var close = makeButton('×', '');
+    close.setAttribute('aria-label', 'Close menu');
+    close.style.cssText = 'display:inline-flex;width:2rem;height:2rem;align-items:center;justify-content:center;border:0;border-radius:.5rem;background:transparent;color:inherit;font-size:1.5rem;line-height:1;cursor:pointer;';
+    header.appendChild(title);
+    header.appendChild(close);
+
+    var nav = document.createElement('nav');
+    nav.setAttribute('aria-label', 'Mobile navigation');
+    nav.style.cssText = 'display:flex;flex-direction:column;gap:.25rem;padding:.75rem;';
+    links.forEach(function (entry) {
+      var item = makeButton(entry.label, '');
+      item.style.cssText = 'width:100%;min-height:2.75rem;border:0;border-radius:.75rem;background:transparent;color:inherit;cursor:pointer;padding:.75rem 1rem;text-align:left;font:inherit;font-weight:600;';
+      item.addEventListener('click', function () {
+        if (navigate(entry.label)) closeStaticDrawer(overlay, trigger);
+      });
+      nav.appendChild(item);
+    });
+
+    panel.appendChild(header);
+    panel.appendChild(nav);
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', function (event) {
+      if (event.target === overlay) closeStaticDrawer(overlay, trigger);
+    });
+    close.addEventListener('click', function () {
+      closeStaticDrawer(overlay, trigger);
+    });
+    return overlay;
+  }
+  function openStaticDrawer(overlay, trigger) {
+    if (!overlay) return false;
+    var panel = overlay.querySelector('[role="dialog"]');
+    overlay.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+    requestAnimationFrame(function () {
+      overlay.style.opacity = '1';
+      overlay.style.pointerEvents = 'auto';
+      if (panel) panel.style.transform = 'translateX(0)';
+    });
+    return true;
+  }
+  function closeStaticDrawer(overlay, trigger) {
+    var panel = overlay.querySelector('[role="dialog"]');
+    trigger.setAttribute('aria-expanded', 'false');
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+    if (panel) panel.style.transform = 'translateX(100%)';
+    window.setTimeout(function () {
+      overlay.hidden = true;
+      overlay.setAttribute('aria-hidden', 'true');
+    }, 190);
+  }
+  function handleStaticDrawerTrigger(target) {
+    var trigger = target.closest('[data-slot="sheet-trigger"],[aria-label="Open menu"],[aria-label="Toggle menu"]');
+    if (!trigger) return false;
+    var overlay = createStaticDrawer(trigger);
+    if (!overlay) return false;
+    overlay.setAttribute('aria-hidden', 'false');
+    return openStaticDrawer(overlay, trigger);
+  }
   document.addEventListener('click', function (event) {
     var target = event.target instanceof Element ? event.target.closest('button,a') : null;
     if (!target) return;
-    var idx = findRoute(target.textContent);
-    if (idx < 0) return;
+    if (handleStaticDrawerTrigger(target)) {
+      event.preventDefault();
+      return;
+    }
+    if (!navigate(target.textContent)) return;
     event.preventDefault();
-    show(idx);
   });
   document.addEventListener('submit', function (event) { event.preventDefault(); });
   show(0);
@@ -353,6 +528,10 @@ export async function parseOpenUIForHtmlExport(
     result.root.typeName === 'PageSwitch' ? result.root.props.routes : undefined
   const rawPages =
     result.root.typeName === 'PageSwitch' ? result.root.props.pages : undefined
+  const rawTargetMap =
+    result.root.typeName === 'PageSwitch'
+      ? result.root.props.targetMap
+      : undefined
   const routes = Array.isArray(rawRoutes)
     ? rawRoutes.filter(
         (route): route is string =>
@@ -368,11 +547,23 @@ export async function parseOpenUIForHtmlExport(
       )
     : [result.root]
   const siteSpec = parseSiteSpec(siteSpecJson)
+  const targetMap =
+    rawTargetMap &&
+    typeof rawTargetMap === 'object' &&
+    !Array.isArray(rawTargetMap)
+      ? Object.fromEntries(
+          Object.entries(rawTargetMap).filter(
+            (entry): entry is [string, string] =>
+              typeof entry[0] === 'string' && typeof entry[1] === 'string',
+          ),
+        )
+      : {}
 
   return {
     root: result.root,
     routes: routes.length > 0 ? routes : ['Home'],
     pages: pages.length > 0 ? pages : [result.root],
+    targetMap,
     projectName: readProjectName(siteSpec, routes[0] ?? 'Generated Site'),
     library,
   }
@@ -452,7 +643,7 @@ ${css}
   <script>
     window.__SHIP_FAST_EXPORT__ = ${stringifyJs({ routes: parsed.routes, projectName: parsed.projectName, themeName, mode: isDark ? 'dark' : 'light', genui })};
     ${buildInlineAdminBootstrap(genui, input.target)}
-    ${buildRouteScript(parsed.routes)}
+    ${buildRouteScript(parsed.routes, parsed.targetMap)}
   </script>
 </body>
 </html>`,

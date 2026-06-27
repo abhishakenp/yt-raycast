@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * fabricators, contract manufacturers or industrial engineering firms. Renders
  * fully with no props via baked-in "Vertex Manufacturing" defaults.
  */
-export const ManufacturingHero = defineComponent({
+export const ManufacturingHero = defineCapsule({
   name: 'ManufacturingHero',
   description:
     'Split hero band for a precision-manufacturing / industrial-fabrication landing page: two-column layout with a certification status pill (pulsing dot + label), a large semibold headline, a supporting paragraph, dual CTAs (filled + outlined) and a divided KPI stat strip on the left, and a tall CNC machining photo with a floating quality-badge card (check icon + title + subtitle) on the right. Clean, neutral, industrial B2B aesthetic; CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the opening hero for CNC machine shops, metal fabricators, contract manufacturers or industrial engineering firms.',

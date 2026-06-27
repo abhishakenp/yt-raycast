@@ -1,25 +1,28 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { logisticsLakebed } from './logistics-lakebed.ts'
+import { useShipmentTracking, useSyncShipmentCatalog } from './logistics-interactions.tsx'
 
 /**
  * LogisticsHero — a split hero for a global-logistics / freight-forwarding
  * company on a subtle muted band. Left column: a large two-line headline (the
  * second line in muted tone), a supporting paragraph, a bordered card holding a
  * real-time shipment-tracking widget (labelled input + icon "Track" button + hint
- * line), and a row of check-marked trust chips. Right column: a rounded cargo-port
- * photo with a floating, shadowed on-time delivery-rate badge overlapping the
+ * line) that queries Lakebed and renders the matched shipment status inline, and
+ * a row of check-marked trust chips. Right column: a rounded cargo-port photo
+ * with a floating, shadowed on-time delivery-rate badge overlapping the
  * lower-left corner. Clean, corporate and trust-forward on a light surface with a
- * deep slate primary. The tracking form submit routes through useNavigate. Use as
- * the top hero for logistics providers, freight forwarders, shipping carriers,
- * courier or cargo/transport companies. Renders fully with no props.
+ * deep slate primary. Use as the top hero for logistics providers, freight
+ * forwarders, shipping carriers, courier or cargo/transport companies. Renders
+ * fully with no props.
  */
-export const LogisticsHero = defineComponent({
+export const LogisticsHero = defineCapsule({
   name: 'LogisticsHero',
   description:
-    "Split hero for a global-logistics / freight-forwarding company on a subtle muted band: a left column with a large two-line headline (second line in muted tone), a supporting paragraph, a bordered card holding a real-time shipment-tracking widget (labelled input + icon 'Track' button + hint line), and a row of check-marked trust chips; a right column with a rounded cargo-port photo and a floating, shadowed on-time delivery-rate badge overlapping the lower-left corner. Clean, corporate and trust-forward on a light surface with a deep slate primary; the tracking form routes through useNavigate. Use as the top hero for logistics providers, freight forwarders, shipping carriers, courier, supply-chain or cargo/transport companies.",
+    "Split hero for a global-logistics / freight-forwarding company on a subtle muted band: a left column with a large two-line headline (second line in muted tone), a supporting paragraph, a bordered card holding a real-time shipment-tracking widget (labelled input + icon 'Track' button + hint line) that queries Lakebed and renders the matched shipment status inline, and a row of check-marked trust chips; a right column with a rounded cargo-port photo and a floating, shadowed on-time delivery-rate badge overlapping the lower-left corner. Clean, corporate and trust-forward on a light surface with a deep slate primary. Use as the top hero for logistics providers, freight forwarders, shipping carriers, courier, supply-chain or cargo/transport companies.",
   props: z.object({
     headingTop: z.string().optional(),
     /** Highlighted second line under the heading (muted tone). */
@@ -29,17 +32,28 @@ export const LogisticsHero = defineComponent({
     trackPlaceholder: z.string().optional(),
     trackButton: z.string().optional(),
     trackHint: z.string().optional(),
-    /** Navigation target when the tracking form is submitted. */
-    trackTarget: z.string().optional(),
     /** Trust chips beneath the tracking widget. */
     chips: z.array(z.string()).optional(),
+    /** Demo shipments seeded into Lakebed. */
+    shipments: z
+      .array(
+        z.object({
+          trackingId: z.string(),
+          status: z.string(),
+          origin: z.string(),
+          destination: z.string(),
+          estimatedDelivery: z.string(),
+        }),
+      )
+      .optional(),
     imageAlt: z.string().optional(),
     badgeValue: z.string().optional(),
     badgeLabel: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: logisticsLakebed,
+  component: ({ props, lakebed }) => {
+    const tracking = useShipmentTracking(lakebed)
     const headingTop = props.headingTop ?? 'Global logistics,'
     const highlight = props.highlight ?? 'simplified.'
     const subheading =
@@ -51,15 +65,44 @@ export const LogisticsHero = defineComponent({
     const trackButton = props.trackButton ?? 'Track'
     const trackHint =
       props.trackHint ?? 'Try demo: SF-2024-8841, SF-2024-7752, SF-2024-9931'
-    const trackTarget = props.trackTarget ?? 'Track'
     const chips = props.chips?.length
       ? props.chips
       : ['Real-time tracking', 'Insurance included', '24/7 support']
+    const shipments = props.shipments?.length
+      ? props.shipments
+      : [
+          {
+            trackingId: 'SF-2024-8841',
+            status: 'In transit',
+            origin: 'Shenzhen, CN',
+            destination: 'Chicago, US',
+            estimatedDelivery: 'Jul 2, 2024',
+          },
+          {
+            trackingId: 'SF-2024-7752',
+            status: 'Out for delivery',
+            origin: 'Amsterdam, NL',
+            destination: 'Berlin, DE',
+            estimatedDelivery: 'Jun 28, 2024',
+          },
+          {
+            trackingId: 'SF-2024-9931',
+            status: 'Delivered',
+            origin: 'São Paulo, BR',
+            destination: 'Lima, PE',
+            estimatedDelivery: 'Jun 25, 2024',
+          },
+        ]
     const imageAlt =
       props.imageAlt ??
       'Aerial view of a large commercial shipping port with colorful cargo containers and cranes at sunset'
     const badgeValue = props.badgeValue ?? '98.7% on-time'
     const badgeLabel = props.badgeLabel ?? 'Delivery rate in 2024'
+
+    useSyncShipmentCatalog(lakebed, shipments)
+
+    const trackingIdValue = tracking.state?.trackingId ?? ''
+    const shipment = tracking.state?.shipment
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -93,10 +136,8 @@ export const LogisticsHero = defineComponent({
               </div>
 
               <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  go(trackTarget)
-                }}
+                key={trackingIdValue}
+                onSubmit={tracking.submitTracking}
                 className="rounded-2xl border border-border bg-card p-6 shadow-sm"
               >
                 <label
@@ -108,13 +149,18 @@ export const LogisticsHero = defineComponent({
                 <div className="flex gap-3">
                   <input
                     id="logistics-hero-track"
+                    name="trackingId"
                     type="text"
+                    defaultValue={trackingIdValue}
                     placeholder={trackPlaceholder}
+                    aria-label="Tracking number"
                     className="flex-1 rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
                   />
                   <button
                     type="submit"
-                    className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    aria-busy={tracking.isPending}
+                    disabled={tracking.isPending}
+                    className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                   >
                     <svg
                       className="size-5"
@@ -134,6 +180,36 @@ export const LogisticsHero = defineComponent({
                 <p className="mt-3 text-xs text-muted-foreground">
                   {trackHint}
                 </p>
+
+                {trackingIdValue ? (
+                  <div
+                    className="mt-4 rounded-xl border border-border bg-background p-4"
+                    aria-live="polite"
+                  >
+                    {shipment ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-foreground">
+                            {shipment.trackingId}
+                          </p>
+                          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                            {shipment.status}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {shipment.origin} &rarr; {shipment.destination}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Estimated delivery: {shipment.estimatedDelivery}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No shipment found for &ldquo;{trackingIdValue}&rdquo;.
+                      </p>
+                    )}
+                  </div>
+                ) : null}
               </form>
 
               <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">

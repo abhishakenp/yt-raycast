@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import {
   NavigationMenu as UINavigationMenu,
@@ -14,7 +15,7 @@ import {
 // top-level item renders its label as a trigger-styled header with its `links`
 // listed inline beneath it (using NavigationMenuLink). Plain items (no links)
 // render as a single link styled like a trigger.
-export const NavigationMenu = defineComponent({
+export const NavigationMenu = defineCapsule({
   name: 'NavigationMenu',
   description:
     'Top navigation menu. Each `items` entry is a top-level label; entries with `links` show a labelled list of links (with optional descriptions) inline beneath them.',

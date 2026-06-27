@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { useState } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -13,7 +14,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * Use for the official FAQ / citizen-help / RTI / grievance-info section of any
  * government, civic, municipal, PSU, utility or public-sector portal.
  */
-export const GovernmentPortalFaq = defineComponent({
+export const GovernmentPortalFaq = defineCapsule({
   name: 'GovernmentPortalFaq',
   description:
     'Formal citizen-services / information accordion for a classic Indian-government / public-sector (PSU) portal: Q&A on common civic topics — RTI applications, grievance redressal, how to apply, e-tender help, public-service queries — each row toggled via useState. Gov-blue #3346B5 question rows with #640032 active accents and #333 answer body. Use for the official FAQ, citizen-help, RTI, grievance-information or how-to-apply section of any classic government, civic, municipal, PSU, utility or public-sector portal.',

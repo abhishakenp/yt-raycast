@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * any "what we do" capabilities block. Renders fully with no props via six
  * baked-in default services.
  */
-export const AgencyServices = defineComponent({
+export const AgencyServices = defineCapsule({
   name: 'AgencyServices',
   description:
     "Capabilities / services grid for a creative digital-agency page: a left-aligned section heading and lead paragraph above a responsive 1/2/3-column grid of hover-lift cards, each with a rounded tinted icon tile (rotating inline line-icons), a title and a description; cards lift and glow on hover. Tokens-only, no links. Use to present an agency's offerings (brand strategy, UI/UX, development, marketing, motion, creative direction) or any 'what we do' / capabilities block.",

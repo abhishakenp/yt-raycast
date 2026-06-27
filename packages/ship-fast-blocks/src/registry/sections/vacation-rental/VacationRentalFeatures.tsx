@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -132,7 +133,7 @@ const ICONS = {
   pet: <PetIcon />,
 } as const
 
-export const VacationRentalFeatures = defineComponent({
+export const VacationRentalFeatures = defineCapsule({
   name: 'VacationRentalFeatures',
   description:
     'Amenities grid for a vacation-rental listing page built on the shared FeatureGrid composite: an Everything you need heading above a responsive grid of amenity cards (fast wifi, private pool, full kitchen, free parking, air conditioning, pet-friendly), each with a line-icon tile, a title, and a short description. Theme-token only. Use to list the amenities of a vacation rental, beach house, cabin, villa, or boutique short-stay.',

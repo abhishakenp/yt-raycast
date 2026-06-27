@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * social-proof / client-roster band beneath the hero for filmmakers, directors,
  * cinematographers, DPs, or production houses.
  */
-export const FilmDirectorLogos = defineComponent({
+export const FilmDirectorLogos = defineCapsule({
   name: 'FilmDirectorLogos',
   description:
     "Minimal 'trusted by' brand-logo strip for a film director / cinematographer portfolio: a bordered (top + bottom) band with a small centered muted caption above a responsive 2/4/6-column grid of slightly dimmed wordmark-style brand names rendered as bold tracked text. Use as a social-proof / client-roster band beneath the hero for filmmakers, directors, cinematographers, DPs, or production houses.",

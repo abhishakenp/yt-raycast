@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * festivals, arts festivals, concert series, camping/desert events, or any
  * multi-day ticketed event.
  */
-export const MusicFestivalFooter = defineComponent({
+export const MusicFestivalFooter = defineCapsule({
   name: 'MusicFestivalFooter',
   description:
     'Four-column footer for a music / arts festival landing page: a top-bordered band with a brand block (bold wordmark + about paragraph), one or more link columns, and a social column of round initial-badge buttons that flip to primary on hover, above a bottom bar with a copyright note and legal links. Every link and social badge routes through useNavigate. Use as the closing site footer for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed event.',

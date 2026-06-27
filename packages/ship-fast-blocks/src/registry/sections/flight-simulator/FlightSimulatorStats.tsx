@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * airliner / combat sim, or aviation title. Renders fully with no props via
  * baked defaults.
  */
-export const FlightSimulatorStats = defineComponent({
+export const FlightSimulatorStats = defineCapsule({
   name: 'FlightSimulatorStats',
   description:
     '4-up headline-metrics band for a flight-simulator landing page: wraps the shared StatGrid composite in a token section with an optional SectionHeading, rendering four bold value/label pairs (aircraft, airports, active pilots, scenery area) that quantify the scale of the simulated world. Use as a credibility band beneath the hero or features of a flight sim, airliner / combat sim, or aviation title.',

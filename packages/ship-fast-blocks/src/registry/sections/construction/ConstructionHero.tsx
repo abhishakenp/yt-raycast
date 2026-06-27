@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * hero for construction companies, contractors, builders, or design-build
  * firms. Renders fully with no props via baked-in defaults.
  */
-export const ConstructionHero = defineComponent({
+export const ConstructionHero = defineCapsule({
   name: 'ConstructionHero',
   description:
     "Full-bleed dark hero section for a construction / general contractor landing page: a large left-aligned headline over a faded jobsite photo with a left-to-right scrim, a pulsing 'now booking' status pill, dual CTAs (primary filled + secondary outlined), and a trust strip with check badges beneath. CTAs route through useNavigate. Use as the opening hero for construction firms, contractors, builders, or design-build firms.",

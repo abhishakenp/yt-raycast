@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -10,7 +11,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * members, drop-in students, and newcomers. Renders fully with no props via
  * baked-in defaults.
  */
-export const YogaStudioTestimonials = defineComponent({
+export const YogaStudioTestimonials = defineCapsule({
   name: 'YogaStudioTestimonials',
   description:
     "Member-review band for a yoga-studio page built on the shared TestimonialGrid composite: a centered heading above a responsive grid of review cards, each with a star rating, a member quote, and the member's name. Use to build trust with social proof from studio members, drop-in students, and newcomers.",

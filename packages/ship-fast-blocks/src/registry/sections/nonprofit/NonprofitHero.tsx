@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * nonprofits, charities, NGOs, foundations, or humanitarian campaigns. Renders
  * fully with no props via baked-in "Roots of Hope" defaults.
  */
-export const NonprofitHero = defineComponent({
+export const NonprofitHero = defineCapsule({
   name: 'NonprofitHero',
   description:
     'Warm 2-column hero band for a nonprofit / charity landing page on a light neutral canvas: a left column with an uppercase eyebrow, a large headline with one highlighted phrase in the brand color, a supporting paragraph, dual pill CTAs (filled Donate + outlined Explore), and a row of check-marked trust badges; on the right a rounded hero photo with a floating quote card overlapping its bottom-left corner. Editorial, compassionate and donor-focused; CTAs route through useNavigate. Use as the opening hero for nonprofits, charities, NGOs, foundations, or humanitarian campaigns.',

@@ -1,7 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasAccountButton,
+  SaasIntentBadge,
+  SaasMobileMenu,
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  SaasSearchButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * MobileAppNavbar — a fixed, backdrop-blurred top navigation bar for a clean,
@@ -14,10 +24,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * app, productivity or to-do app, or any App-Store-distributed consumer product.
  * Renders fully with no props via baked-in "DailyFlow" defaults.
  */
-export const MobileAppNavbar = defineComponent({
+export const MobileAppNavbar = defineCapsule({
   name: 'MobileAppNavbar',
   description:
-    "Fixed, backdrop-blurred top navigation bar for a clean, minimalist mobile-app / consumer-product marketing site: a bordered-bottom header pinned to the top with a check-in-circle logo mark + app name on the left, horizontal nav links in the center, and a primary pill CTA button (e.g. 'Download App') plus a mobile hamburger on the right. The brand button, links and CTA route through useNavigate for page-switching. Use as the sticky site header for a habit tracker, fitness / wellness / meditation app, productivity or to-do app, or any App-Store-distributed consumer product landing page.",
+    'Fixed, backdrop-blurred top navigation bar for a clean, minimalist mobile-app / consumer-product marketing site: a bordered-bottom header pinned to the top with a check-in-circle logo mark + app name, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped download CTA, and a reusable Sheet mobile drawer. Nav links route through useNavigate while conversion CTAs write to shared Lakebed state.',
   props: z.object({
     /** Brand / app name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -29,7 +39,8 @@ export const MobileAppNavbar = defineComponent({
     homeTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'DailyFlow'
     const nav = props.nav?.length
@@ -91,32 +102,36 @@ export const MobileAppNavbar = defineComponent({
               ))}
             </div>
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(ctaLabel)}
-                className="hidden items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+              <SaasIntentBadge lakebed={lakebed} />
+              <SaasSearchButton
+                lakebed={lakebed}
+                buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+              />
+              <SaasAccountButton
+                lakebed={lakebed}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+              />
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={ctaLabel}
+                plan={ctaLabel}
+                source="navbar"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Opening
+                  </>
+                }
+                className="hidden items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
               >
                 {ctaLabel}
-              </button>
-              <button
-                type="button"
-                aria-label="Open menu"
-                onClick={() => go(homeTarget)}
-                className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="size-6"
-                  aria-hidden="true"
-                >
-                  <path d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
+              </SaasPlanActionButton>
+              <SaasMobileMenu
+                brand={brand}
+                nav={nav}
+                homeTarget={homeTarget}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+              />
             </div>
           </div>
         </nav>

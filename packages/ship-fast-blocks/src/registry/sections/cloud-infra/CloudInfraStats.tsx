@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * vertical list of trust badges (each with an icon tile + title + subtitle). Right
  * side: a 2x2 grid of big metric tiles. Tokens-only. Renders fully on zero arguments.
  */
-export const CloudInfraStats = defineComponent({
+export const CloudInfraStats = defineCapsule({
   name: 'CloudInfraStats',
   description:
     'Split stats / trust band for a cloud-infrastructure / developer-platform SaaS landing page: left side carries a heading, a description paragraph, and a vertical list of trust badges (each with an icon tile, title, and subtitle); right side is a 2x2 grid of big metric value tiles. Tokens-only. Use for credibility, social-proof, and KPI bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',

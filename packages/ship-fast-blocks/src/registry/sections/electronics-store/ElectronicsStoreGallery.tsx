@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * through useNavigate. Use to merchandise curated edits on electronics or gadget
  * storefronts.
  */
-export const ElectronicsStoreGallery = defineComponent({
+export const ElectronicsStoreGallery = defineCapsule({
   name: 'ElectronicsStoreGallery',
   description:
     'Featured Collections masonry gallery on a muted band for an electronics storefront: a left-aligned heading above a 2-to-3 column grid of clickable image tiles where the first tile is a tall 3:4 feature spanning two rows and the rest are 4:3, each under a bottom-up foreground gradient with the collection name and product count overlaid. Tiles route through useNavigate; imagery is alt-driven. Use to merchandise curated edits (Work From Home, Audio & Sound, Gaming Gear, etc.) on electronics stores, gadget shops, or consumer-tech retailers.',

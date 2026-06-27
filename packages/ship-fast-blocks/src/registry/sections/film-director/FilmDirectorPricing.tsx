@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * present project-scope packages (concept-to-delivery production services) for
  * filmmakers, directors, DPs, or video production houses.
  */
-export const FilmDirectorPricing = defineComponent({
+export const FilmDirectorPricing = defineCapsule({
   name: 'FilmDirectorPricing',
   description:
     'Investment pricing table for a film director or cinematographer: on a muted band, a centered header (thin heading + muted lede) above a 3-column grid of tier cards where standard tiers are bordered card surfaces while the highlighted tier inverts to a dark foreground card with a corner Most-Popular ribbon. Each card shows an uppercase tier name, a big thin price with optional suffix, a short description, a check-marked feature list, and a full-width CTA button routed through useNavigate. Use to present project-scope packages (concept-to-delivery production services) for filmmakers, directors, DPs, or video production houses.',

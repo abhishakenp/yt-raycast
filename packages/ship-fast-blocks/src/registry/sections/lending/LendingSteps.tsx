@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * onboarding, or fintech landing pages. Renders fully with no props via baked-in
  * defaults.
  */
-export const LendingSteps = defineComponent({
+export const LendingSteps = defineCapsule({
   name: 'LendingSteps',
   description:
     "3-step 'how it works' flow on a muted band for a lending or fintech marketing page: centered heading + description above a responsive 3-up grid of white step cards, each with a numbered primary circle badge, a title, a descriptive paragraph and a small clock-noted time estimate; connecting arrow glyphs between cards on desktop. Use to explain a simple apply-and-fund process — check rate, choose terms, get funded — on loan, onboarding, or fintech landing pages.",

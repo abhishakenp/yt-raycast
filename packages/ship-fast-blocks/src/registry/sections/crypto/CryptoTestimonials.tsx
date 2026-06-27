@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * Use for social proof from protocol users, institutional clients, or
  * developer partners.
  */
-export const CryptoTestimonials = defineComponent({
+export const CryptoTestimonials = defineCapsule({
   name: 'CryptoTestimonials',
   description:
     "6-up customer testimonial grid for a crypto / DeFi landing page: centered heading + description in a bordered card band, then a responsive three-column card grid. Each card shows an alt-driven avatar image, the person's name and role, and a quoted paragraph. Use for social proof from protocol users, institutional clients, or developer partners.",

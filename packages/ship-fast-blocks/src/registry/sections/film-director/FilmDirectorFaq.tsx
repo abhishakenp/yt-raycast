@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * international work, equipment, music licensing, agency collaboration,
  * deliverables) for filmmakers, directors, DPs, or production houses.
  */
-export const FilmDirectorFaq = defineComponent({
+export const FilmDirectorFaq = defineCapsule({
   name: 'FilmDirectorFaq',
   description:
     'Narrow, centered FAQ accordion for a film director or cinematographer: a centered header (thin heading + muted lede) above a constrained-width stack of native details disclosure cards, each a bordered rounded summary row with a question and a chevron that rotates open, revealing a muted answer paragraph. Use to answer common questions (timelines, international work, equipment, music licensing, agency collaboration, deliverables) for filmmakers, directors, DPs, or production houses.',

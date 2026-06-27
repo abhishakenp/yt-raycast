@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * pages. Use as the sticky site header for Kickstarter / Indiegogo-style
  * campaigns, pre-order launches, fundraisers, or maker/hardware projects.
  */
-export const CrowdfundingNavbar = defineComponent({
+export const CrowdfundingNavbar = defineCapsule({
   name: 'CrowdfundingNavbar',
   description:
     "Sticky, backdrop-blurred top navigation for a crowdfunding / campaign landing page: a border-bottomed header pinned to the top with a decorative leaf/sparkle brand mark in an emerald-token tile beside the campaign name on the left, a horizontal set of muted nav links in the center (hidden on mobile), and a primary 'Back This Project' pill CTA on the right. Every link and CTA routes through useNavigate so PageSwitch can swap pages. Use as the sticky site header for Kickstarter / Indiegogo-style campaigns, pre-order launches, fundraisers, or maker/hardware projects.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * foundation, or humanitarian page to drive donations and sign-ups. Renders
  * fully with no props via baked-in "Roots of Hope" defaults.
  */
-export const NonprofitCta = defineComponent({
+export const NonprofitCta = defineCapsule({
   name: 'NonprofitCta',
   description:
     "Warm, centered donation band for a nonprofit / charity / NGO page built on the shared CtaBand composite at tone='primary': an eyebrow, a strong appeal headline, a short supporting line, and a centered row of two routable pill CTAs — a high-contrast 'Donate Today' button plus an outlined 'Become a Volunteer' button. Both CTAs route through useNavigate. Use near the bottom of a nonprofit, foundation, or humanitarian page to drive donations and volunteer sign-ups.",

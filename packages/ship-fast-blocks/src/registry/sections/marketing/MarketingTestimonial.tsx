@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * social-proof / customer-quote section between features and pricing on B2B
  * SaaS, productivity, or developer-platform pages.
  */
-export const MarketingTestimonial = defineComponent({
+export const MarketingTestimonial = defineCapsule({
   name: 'MarketingTestimonial',
   description:
     'Single large, centered testimonial card for a SaaS / product-marketing landing page: on a soft muted-to-background gradient band, a rounded bordered card centers a circular indigo quote glyph above a big balanced blockquote, with an initials avatar (gradient tile) + name + role beneath. Clean premium indigo-on-light aesthetic. Use as a focused social-proof / customer-quote section between features and pricing on B2B SaaS, productivity, or developer-platform pages.',

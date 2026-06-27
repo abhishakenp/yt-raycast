@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * apps, singles platforms, or any product with a simple sign-up-to-outcome flow.
  * Renders fully with no props via baked-in "HeartLink" step defaults.
  */
-export const DatingAppSteps = defineComponent({
+export const DatingAppSteps = defineCapsule({
   name: 'DatingAppSteps',
   description:
     "4-step 'How it works' numbered timeline for a dating / matchmaking app on a soft muted band: a centered heading + supporting paragraph above a responsive 1/2/4-column row of steps, each with a large rounded primary number tile, a bold title, and a description, with a faint primary gradient connector line between steps on large screens. Use to explain onboarding — create profile, discover matches, start chatting, meet in person — for dating apps, singles platforms, or any product with a simple sign-up-to-outcome flow.",

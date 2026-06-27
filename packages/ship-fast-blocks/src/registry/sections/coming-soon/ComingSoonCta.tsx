@@ -1,21 +1,24 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * ComingSoonCta — final email-capture CTA band for a "launching soon" / waitlist
  * pre-launch landing page. A centered heading and supporting paragraph above an
  * inline email-capture form with a primary submit button, followed by a contact
- * email line below. Form submit and the contact email link route through
- * useNavigate. Use as the closing conversion push on SaaS waitlists, app pre-launch
+ * email line below. Form submit writes to the shared Lakebed subscriber list and
+ * the contact email link routes through useNavigate. Use as the closing conversion push on SaaS waitlists, app pre-launch
  * pages, beta sign-ups, or any "notify me" / early-access landing page. Renders
  * fully with no props via baked-in defaults.
  */
-export const ComingSoonCta = defineComponent({
+export const ComingSoonCta = defineCapsule({
   name: 'ComingSoonCta',
   description:
-    "Final email-capture CTA band for a 'launching soon' / waitlist pre-launch landing page: centered heading and supporting paragraph above an inline email-capture form with a primary submit button, followed by a contact email line below. Form submit and the contact email link route through useNavigate. Use as the closing conversion push on SaaS waitlists, app pre-launch pages, beta sign-ups, or 'notify me' / early-access landing pages.",
+    "Final email-capture CTA band for a 'launching soon' / waitlist pre-launch landing page: centered heading and supporting paragraph above an inline email-capture form with a primary submit button, followed by a contact email line below. Form submit writes to the shared Lakebed subscriber list and the contact email link routes through useNavigate. Use as the closing conversion push on SaaS waitlists, app pre-launch pages, beta sign-ups, or 'notify me' / early-access landing pages.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -31,7 +34,8 @@ export const ComingSoonCta = defineComponent({
     contactEmail: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heading = props.heading ?? 'Ready to transform how your team works?'
     const description =
@@ -61,31 +65,17 @@ export const ComingSoonCta = defineComponent({
           <p className="mx-auto mb-10 max-w-2xl text-lg font-light text-muted-foreground">
             {description}
           </p>
-          <form
-            className="mx-auto max-w-md"
-            aria-label="Final waitlist signup"
-            onSubmit={(e) => {
-              e.preventDefault()
-              go(submit)
-            }}
-          >
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <label htmlFor="cta-email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="cta-email"
-                type="email"
-                name="email"
-                required
-                placeholder={emailPlaceholder}
-                className={inputCls}
-              />
-              <button type="submit" className={submitCls}>
-                {submit}
-              </button>
-            </div>
-          </form>
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={submit}
+            placeholder={emailPlaceholder}
+            buttonLabel={submit}
+            successMessage="You're on the waitlist. Early access updates will arrive by email."
+            className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+            inputClassName={inputCls}
+            buttonClassName={`${submitCls} disabled:pointer-events-none disabled:opacity-70`}
+            emailLabel="Email address for final waitlist signup"
+          />
           <p className="mt-8 text-xs text-muted-foreground">
             {contactPrefix}{' '}
             <button

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Button } from '#/components/ui/button.tsx'
 import {
   DropdownMenu as UIDropdownMenu,
@@ -12,7 +13,7 @@ import {
 
 // Compound overlay: flatten trigger + content + items into one node.
 // Rendered `defaultOpen` so the menu list is statically visible.
-export const DropdownMenu = defineComponent({
+export const DropdownMenu = defineCapsule({
   name: 'DropdownMenu',
   description:
     "Button that opens a menu of actions. `items` are the menu rows (set variant 'destructive' for dangerous actions, separator true for a divider). Open by default for preview.",

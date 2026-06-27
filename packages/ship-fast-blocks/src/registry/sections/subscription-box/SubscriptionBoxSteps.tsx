@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -69,7 +70,7 @@ const TruckIcon = ({ className }: { className?: string }) => (
 
 const STEP_ICONS = [PickIcon, TuneIcon, TruckIcon]
 
-export const SubscriptionBoxSteps = defineComponent({
+export const SubscriptionBoxSteps = defineCapsule({
   name: 'SubscriptionBoxSteps',
   description:
     "Bespoke 'how it works' band for a subscription-box brand: a padded section with the shared SectionHeading over a 3-column grid of numbered step cards (Choose, Customize, Delivered), each with a playful number badge, an inline outline icon, a title, and a short description. Use to explain the recurring-box flow on any subscription or membership-kit page.",

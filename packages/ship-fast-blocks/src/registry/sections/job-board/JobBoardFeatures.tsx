@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * hiring marketplaces or recruiting platforms. Static (no links). Renders fully
  * with no props; built-in line icons rotate across the items.
  */
-export const JobBoardFeatures = defineComponent({
+export const JobBoardFeatures = defineCapsule({
   name: 'JobBoardFeatures',
   description:
     "Centered 3-up 'why choose us' feature row for a job-board / careers site: a muted band with a centered heading + description above a 3-column grid of centered feature cards, each with a rounded outlined icon chip, a bold title and a supporting paragraph. Use to explain the value proposition (verified employers, one-click apply, smart alerts) on job boards, hiring marketplaces or recruiting platforms.",

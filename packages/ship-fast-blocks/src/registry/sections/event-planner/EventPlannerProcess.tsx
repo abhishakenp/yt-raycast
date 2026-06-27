@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * (Discovery, Design, Planning, Execution) for event/wedding planners or
  * service businesses.
  */
-export const EventPlannerProcess = defineComponent({
+export const EventPlannerProcess = defineCapsule({
   name: 'EventPlannerProcess',
   description:
     "Numbered 'how we work' process row on a muted band: a centered intro (uppercase eyebrow, thin light heading, lede) above a responsive 2-up/4-up grid of steps, each with a large primary-filled zero-padded numeral circle, a medium-weight title, a relaxed description, and a thin horizontal connector line bridging steps on desktop. Use to explain a planning workflow (e.g. Discovery, Design, Planning, Execution) for event/wedding planners, agencies, or service businesses.",

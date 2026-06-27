@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * agencies, studios, branding shops, or any minimal premium landing page.
  * Renders fully with no props via baked-in "Studio Rise" defaults.
  */
-export const AgencyFooter = defineComponent({
+export const AgencyFooter = defineCapsule({
   name: 'AgencyFooter',
   description:
     'Slim bottom footer for a creative digital-agency site: a single bordered-top row (stacks on mobile) with a gradient brand-initial logo tile + studio name on the left, an auto-updating copyright line in the center, and a set of legal/utility links on the right. The brand button and every link route through useNavigate. Use as the closing site footer for agencies, studios, branding shops, or any minimal premium landing page.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * simulators, airliner / combat sims, and immersive aviation titles. Renders
  * fully with no props via baked-in defaults.
  */
-export const FlightSimulatorHero = defineComponent({
+export const FlightSimulatorHero = defineCapsule({
   name: 'FlightSimulatorHero',
   description:
     "Full-bleed cinematic hero for a flight-simulator landing page: one immersive cockpit-above-the-clouds photo fills the band edge to edge under a token-based dark overlay so light text stays readable. Centered content has an uppercase eyebrow pill, a large headline, a supporting paragraph, dual CTAs (filled 'Buy Now' + outlined translucent 'Watch Trailer'), and a divider-separated spec strip (aircraft count, scenery, platforms). CTAs route through useNavigate. Use as the opening hero for flight simulators, airliner / combat sims, and immersive aviation titles.",

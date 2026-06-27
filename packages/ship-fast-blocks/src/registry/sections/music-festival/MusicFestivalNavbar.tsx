@@ -1,7 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
  * MusicFestivalNavbar — fixed, translucent top navigation bar for a music /
@@ -13,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * sticky site header for music festivals, arts festivals, concert series,
  * camping/desert events, raves, or any multi-day ticketed live event.
  */
-export const MusicFestivalNavbar = defineComponent({
+export const MusicFestivalNavbar = defineCapsule({
   name: 'MusicFestivalNavbar',
   description:
     "Fixed, translucent top navigation bar for a music / arts festival landing page: a blurred, border-bottomed header pinned to the top with the bold festival wordmark on the left, a horizontal row of nav links in the center, a primary pill 'Get Tickets' CTA on the right, and a hamburger menu button on mobile. Every nav link and the CTA route through useNavigate, and the nav labels match site routes so PageSwitch can swap pages. Use as the sticky site header for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed live event.",
@@ -75,26 +77,13 @@ export const MusicFestivalNavbar = defineComponent({
             >
               {ctaLabel}
             </button>
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => go(homeTarget)}
-              className="p-2 md:hidden"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            <MobileNavDrawer
+              brand={brand}
+              nav={nav}
+              homeTarget={homeTarget}
+              cta={{ label: ctaLabel, target: ctaTarget }}
+              buttonClassName="p-2 md:hidden"
+            />
           </div>
         </nav>
       </header>

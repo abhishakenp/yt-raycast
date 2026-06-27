@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * Renders fully on zero args. Use as a high-contrast proof band between sections on
  * gyms, fitness studios, yoga / pilates / boxing / spin studios or wellness clubs.
  */
-export const FitnessStats = defineComponent({
+export const FitnessStats = defineCapsule({
   name: 'FitnessStats',
   description:
     'Bold primary-filled stats band for a gym or fitness studio: a full-width primary-colored strip with a centered 2/4-column row of big metric numbers over small muted labels (active members, weekly classes, expert trainers, square feet). Use as a high-contrast social-proof / by-the-numbers band between sections on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios and wellness clubs.',

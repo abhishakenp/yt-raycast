@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * studios, and editorial creatives. Renders fully with no props via baked-in
  * wedding-press defaults.
  */
-export const PhotographyLogos = defineComponent({
+export const PhotographyLogos = defineCapsule({
   name: 'PhotographyLogos',
   description:
     "A 'Featured In' publication logo strip for a fine-art / wedding photographer portfolio: a muted card band with a centered uppercase tracked label above a faded responsive grid of serif publication wordmarks (2 up on mobile, up to 6 on desktop), each routing through useNavigate. Use as a social-proof / press credibility band beneath a hero for photographers, studios, and editorial creatives.",

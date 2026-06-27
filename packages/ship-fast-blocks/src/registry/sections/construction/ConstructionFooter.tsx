@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * construction firms, contractors, builders, or trades businesses.
  * Renders fully with no props via baked-in defaults.
  */
-export const ConstructionFooter = defineComponent({
+export const ConstructionFooter = defineCapsule({
   name: 'ConstructionFooter',
   description:
     'Four-column footer for a construction / general contractor page: a multi-column layout with a brand logo tile + company blurb + social buttons on the left, service links and company links in the middle columns, and contact info (address, phone, email) on the right. Every link and social button routes through useNavigate. A bottom bar shows copyright and legal links. Use as the closing site footer for construction firms, contractors, builders, or trades businesses.',

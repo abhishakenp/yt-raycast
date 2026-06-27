@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * platforms or any marketing page that wants a logo cloud. Renders fully with no
  * props.
  */
-export const JobBoardLogos = defineComponent({
+export const JobBoardLogos = defineCapsule({
   name: 'JobBoardLogos',
   description:
     "Compact 'trusted by' social-proof strip for a job-board / careers site: a subtle muted band with a small uppercase eyebrow heading above a responsive grid of wordmark company names rendered as muted text that brighten on hover; each routes through useNavigate. Use directly below a hero to establish credibility on job boards, hiring marketplaces, recruiting platforms or any marketing page that wants a logo cloud.",

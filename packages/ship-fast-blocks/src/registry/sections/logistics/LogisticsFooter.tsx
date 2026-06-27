@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -15,7 +16,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * carriers, courier, warehousing or cargo/transport companies. Renders fully with
  * no props via baked-in "SwiftFreight" defaults.
  */
-export const LogisticsFooter = defineComponent({
+export const LogisticsFooter = defineCapsule({
   name: 'LogisticsFooter',
   description:
     'Rich multi-column footer for a global-logistics / freight-forwarding company: a border-topped band with a left brand column (bolt-mark tile + wordmark, a short blurb and a row of social links) beside Services and Company link columns and a Contact column with email, phone and address rows (each with a leading icon), plus a bordered sub-bar below carrying an auto-updating copyright and a row of legal links. Clean and corporate on a light surface with a deep slate primary; the brand button and every link route through useNavigate. Use as the closing site footer for logistics providers, freight forwarders, shipping carriers, courier, warehousing, supply-chain or cargo/transport companies.',

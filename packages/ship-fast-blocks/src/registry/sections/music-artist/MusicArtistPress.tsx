@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * acclaim / press-quote section for musicians, bands, or album-release EPK
  * pages. Renders fully with no props via baked-in defaults.
  */
-export const MusicArtistPress = defineComponent({
+export const MusicArtistPress = defineCapsule({
   name: 'MusicArtistPress',
   description:
     'Press / review testimonial grid for a music artist / band page: a centered eyebrow and thin heading over a soft muted band, then a responsive grid of bordered review cards (a row of star icons, the quote, and a reviewer avatar with name and outlet byline). Warm, airy editorial indie-folk aesthetic. Avatars use the alt-driven Image component. Use as the critical-acclaim / press-quote section for musicians, singers, bands, or album-release EPK pages.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * trucks, caterers, restaurants or street-food vendors covering dietary, booking,
  * payment and location questions.
  */
-export const FoodTruckFaq = defineComponent({
+export const FoodTruckFaq = defineCapsule({
   name: 'FoodTruckFaq',
   description:
     'Narrow accordion FAQ section: a centered eyebrow + heading above a stack of native details disclosure rows on muted rounded panels, each with a bold question summary and a rotating chevron that reveals a muted answer paragraph (no JS state). Use as the questions section for food trucks, caterers, restaurants or street-food vendors covering dietary restrictions, catering booking, payment and where-to-find-us questions.',

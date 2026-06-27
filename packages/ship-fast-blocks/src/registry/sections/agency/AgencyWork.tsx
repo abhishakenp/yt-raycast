@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * showcase an agency's portfolio, case studies, featured projects, or selected
  * work. Renders fully with no props via four baked-in default projects.
  */
-export const AgencyWork = defineComponent({
+export const AgencyWork = defineCapsule({
   name: 'AgencyWork',
   description:
     "Selected-work / case-study gallery for a creative digital-agency page on a subtle muted band: a heading and lead paragraph on the left with a 'view all' link on the right, above a 2-column grid of clickable project cards. Each card has a 4:3 alt-driven image that zooms on hover, a 'View case study' overlay pill that fades in, a title that color-shifts on hover, a description, and a category tag chip. Cards and the view-all link route through useNavigate. Use to showcase an agency's portfolio, case studies, featured projects, or selected work.",

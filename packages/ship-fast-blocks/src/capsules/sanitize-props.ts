@@ -86,6 +86,7 @@ function coerce(value: unknown, schema: unknown, depth: number): Coerced {
       return coerce(value, def.innerType, depth + 1)
 
     case 'array': {
+      if (value === undefined || value === null) return OK([])
       if (!Array.isArray(value)) return FAIL
       const out: unknown[] = []
       for (const item of value) {

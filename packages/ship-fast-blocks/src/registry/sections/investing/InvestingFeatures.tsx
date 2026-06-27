@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * auto-invest — or any "everything you need" feature block. Renders fully with
  * no props via six baked-in default features.
  */
-export const InvestingFeatures = defineComponent({
+export const InvestingFeatures = defineCapsule({
   name: 'InvestingFeatures',
   description:
     "Capabilities grid for an investing / fintech page: a muted section band with a centered heading + lead above a responsive 1/2/3-column grid of hover-lift cards, each with a rounded tinted icon tile (rotating inline line-icons in rotating token tints), a title and a description. Tokens only, no links. Use to present a brokerage's core features (advanced charting, zero commission, AI insights, security, social investing, auto-invest) or any 'everything you need' feature block.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * to tell the brand story and craftsmanship of clothing brands, boutiques,
  * or sustainable apparel labels.
  */
-export const FashionStoreAbout = defineComponent({
+export const FashionStoreAbout = defineCapsule({
   name: 'FashionStoreAbout',
   description:
     'Split brand-philosophy / about band for a minimalist fashion store: a two-column layout with a text column (eyebrow + multi-line serif heading + body paragraphs + a top-bordered three-stat trio) beside a staggered 2x2 image collage of mixed portrait / square photographs with an offset second column. All imagery uses the alt-driven Image component. Use to tell the brand story, philosophy and craftsmanship of clothing brands, boutiques, or sustainable apparel labels.',

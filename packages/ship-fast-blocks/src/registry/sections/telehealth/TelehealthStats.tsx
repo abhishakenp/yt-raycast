@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
-export const TelehealthStats = defineComponent({
+export const TelehealthStats = defineCapsule({
   name: 'TelehealthStats',
   description:
     'Trust-building statistics band for a telehealth site. Wraps the shared StatGrid composite in a section with an optional centered SectionHeading and surfaces four key proof points — patients treated, average wait time, satisfaction rating, and number of providers — as bold value-over-label cells in a four-column grid that collapses gracefully on small screens. Use to back up marketing claims with concrete numbers and reinforce confidence before a visitor books.',

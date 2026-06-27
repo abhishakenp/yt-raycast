@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * meant to sit just below a hero. Use as the logo / "trusted by" strip on any
  * SaaS, no-code builder, or product landing page. Renders fully with no props.
  */
-export const NoCodeLogos = defineComponent({
+export const NoCodeLogos = defineCapsule({
   name: 'NoCodeLogos',
   description:
     "Slim trusted-by logo strip on a card-surface band with top and bottom borders: a centered uppercase tracking label above a faded, responsive 2-to-6-column grid of lowercase wordmark names. Quiet social proof meant to sit just below a hero. Use as the logo / 'trusted by' strip on any SaaS, no-code builder, marketplace, or product landing page.",

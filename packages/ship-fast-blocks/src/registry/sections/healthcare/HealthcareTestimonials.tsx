@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * primary-care, pediatric or telehealth clinic. Renders fully with no props via
  * baked-in patient-testimonial defaults.
  */
-export const HealthcareTestimonials = defineComponent({
+export const HealthcareTestimonials = defineCapsule({
   name: 'HealthcareTestimonials',
   description:
     "Patient-review grid for a medical-clinic page: a centered eyebrow chip, heading and intro above a responsive 1/2/3-column grid of bordered quote cards, each showing a row of five accent-colored stars, the quote in curly quotes, and a footer pairing an alt-driven circular avatar with the patient's name and a 'patient since' meta line. Use for a testimonials / patient-stories / social-proof section of a doctors' office, primary-care, pediatric or telehealth clinic.",

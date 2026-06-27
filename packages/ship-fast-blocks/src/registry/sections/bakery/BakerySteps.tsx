@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -14,7 +15,7 @@ import { cn } from '#/lib/utils.ts'
  * "how it works" / process steps block for food makers. Renders fully with no
  * props via three baked-in default steps.
  */
-export const BakerySteps = defineComponent({
+export const BakerySteps = defineCapsule({
   name: 'BakerySteps',
   description:
     "'How to order' 3-step guide for an artisan-bakery page on a card surface: a centered heading and lead paragraph above a responsive 3-up grid of step cards, each with a giant faded ordinal number bleeding off the corner, a rounded tinted icon tile (rotating inline line-icons: device, phone, pin), a title, a description, and an accent-colored note line. Warm, editorial, light and craft-forward; tokens-only, no links. Use to explain a bakery's ordering options (pre-order online, call ahead, walk in) or any 'how it works' / process steps block for food makers.",

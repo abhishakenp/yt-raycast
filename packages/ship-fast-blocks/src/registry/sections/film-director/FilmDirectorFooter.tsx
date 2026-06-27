@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * on hover. Links route through useNavigate. Use as the closing site footer for
  * filmmakers, directors, DPs, or production houses.
  */
-export const FilmDirectorFooter = defineComponent({
+export const FilmDirectorFooter = defineCapsule({
   name: 'FilmDirectorFooter',
   description:
     'Slim, inverted footer for a film director or cinematographer portfolio: a dark foreground band with muted text holding a single row (stacking on mobile) that pairs a dynamic-year copyright line (brand + note) on the left with a small set of inline text links on the right that brighten on hover. Links route through useNavigate. Use as the closing site footer for filmmakers, directors, DPs, or production houses.',

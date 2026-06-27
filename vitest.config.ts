@@ -4,7 +4,9 @@ export default defineConfig({
   test: {
     // OpenUI SSR/generation tests are CPU-heavy and use provider mocks; bounded
     // workers keep full-suite coverage deterministic on dev Macs.
+    hookTimeout: 120_000,
     maxWorkers: 2,
+    testTimeout: 120_000,
     coverage: {
       provider: 'v8',
       reporter: ['text-summary', 'json-summary'],

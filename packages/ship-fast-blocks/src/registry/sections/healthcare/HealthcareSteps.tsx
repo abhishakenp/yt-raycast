@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * started" section of a doctors' office, primary-care practice or telehealth
  * clinic. Renders fully with no props via baked-in 3-step booking defaults.
  */
-export const HealthcareSteps = defineComponent({
+export const HealthcareSteps = defineCapsule({
   name: 'HealthcareSteps',
   description:
     "'How it works' booking flow for a medical-clinic page: a centered eyebrow chip, heading and intro above a responsive 1/3-column row of numbered steps, each with a solid primary rounded-square number tile, a title and a description, and a faint connecting rule running between tiles on desktop. Tokens-only, no links. Use for a booking / onboarding / 'getting started' section of a doctors' office, primary-care practice or telehealth clinic.",

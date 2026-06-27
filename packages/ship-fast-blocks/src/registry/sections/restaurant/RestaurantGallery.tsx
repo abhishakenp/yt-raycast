@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
  * dining room, and the bar for restaurants, bistros, or fine-dining venues.
  * Renders fully with no props via baked-in defaults (six dishes + captions).
  */
-export const RestaurantGallery = defineComponent({
+export const RestaurantGallery = defineCapsule({
   name: 'RestaurantGallery',
   description:
     'Captioned masonry gallery for a restaurant page: centered serif header above a responsive 1/2/3-column grid of dishes and ambiance, with a tall hero tile, hover zoom, and a token-based gradient caption strip per image. All imagery is alt-driven via the Image component. Use to showcase signature plates, the dining room, and the bar for restaurants, bistros, or fine-dining venues.',

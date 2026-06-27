@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * designers, design studios or architecture firms. Renders fully with no props
  * via baked-in defaults.
  */
-export const InteriorDesignFaq = defineComponent({
+export const InteriorDesignFaq = defineCapsule({
   name: 'InteriorDesignFaq',
   description:
     'Centered FAQ accordion on a muted surface for an upscale interior-design / architecture studio: a narrow column with a centered uppercase eyebrow + light-weight heading above a stack of native details/summary cards on a card surface, each with a question, a chevron that rotates when open and a relaxed answer (no JS state). Editorial and calm. Use to address common project, pricing and process questions for interior designers, design studios or architecture firms.',

@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -12,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * for food-delivery apps, restaurant aggregators, or online-ordering platforms.
  * Renders fully with no props via baked-in defaults.
  */
-export const FoodDeliveryFeatures = defineComponent({
+export const FoodDeliveryFeatures = defineCapsule({
   name: 'FoodDeliveryFeatures',
   description:
     'Centered 3-up features grid for a food-delivery / restaurant-marketplace site: a centered heading + supporting paragraph above three soft-bordered card panels, each with a rounded muted icon tile (clock / check-badge / heart line icons), a title and a body paragraph. Use to explain core value props like real-time GPS tracking, curated/vetted selection, and saved favorites for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',

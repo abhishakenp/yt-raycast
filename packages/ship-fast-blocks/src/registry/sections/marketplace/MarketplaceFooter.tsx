@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
@@ -15,7 +16,7 @@ import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
  * stores, and retail aggregators. Renders fully with no props via baked-in
  * "MarketHub" defaults.
  */
-export const MarketplaceFooter = defineComponent({
+export const MarketplaceFooter = defineCapsule({
   name: 'MarketplaceFooter',
   description:
     'Rich, multi-column closing footer for a multi-vendor marketplace / e-commerce site built on the shared SiteFooter composite: a brand-square logo tile beside the marketplace name, a marketplace-flavored tagline, a social row, and a responsive grid of link columns (Shop, Sell, Company, Support); a bordered-top bottom bar carries an auto-updating copyright line plus legal links. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for online marketplaces, multi-vendor or maker/artisan platforms, handmade/craft stores, and retail aggregators.',

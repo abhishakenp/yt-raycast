@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * shop or contract-manufacturer pages. Renders fully with no props via baked-in
  * defaults.
  */
-export const ManufacturingTestimonials = defineComponent({
+export const ManufacturingTestimonials = defineCapsule({
   name: 'ManufacturingTestimonials',
   description:
     'A two-tier testimonials grid for a precision-manufacturing site: a centered eyebrow + heading intro above a row of three featured quote cards (5-star rating, full quote, avatar + name + role) and, beneath, a row of three compact quote cards (short quote, smaller avatar + name + role). Bordered, muted cards with alt-driven avatars. Clean, neutral, trustworthy. Use to surface engineer and procurement social proof on machine-shop or contract-manufacturer pages.',

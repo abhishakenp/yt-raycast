@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /** Inline icon set — currentColor → theme token, adventurous line art. */
@@ -69,7 +70,7 @@ const CultureIcon = ({ className }: { className?: string }) => (
  * travel-experience landing pages. Renders fully with no props via baked-in
  * defaults.
  */
-export const TourExperiencesServices = defineComponent({
+export const TourExperiencesServices = defineCapsule({
   name: 'TourExperiencesServices',
   description:
     'Tour-category showcase for an adventure / guided-tour brand. Composes the shared FeatureGrid composite as a 4-up grid of tour types (City Tours, Food Tours, Adventure Tours, Cultural Tours), each with an inline line icon, a title, and a vivid one-line description. Use to help visitors self-select the kind of experience they want on tour-operator, expedition, and travel-experience landing pages.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * route through useNavigate. Use as the closing support / contact prompt on SaaS
  * knowledge bases, help centers, or FAQ pages. Renders fully with no props.
  */
-export const FaqContactCta = defineComponent({
+export const FaqContactCta = defineCapsule({
   name: 'FaqContactCta',
   description:
     "A 'Still need help?' contact call-to-action band for a help-center / support page: a primary-colored rounded panel centered on a muted section, with a heading, supporting description, two centered buttons (a solid 'Email Support' with mail icon and a translucent 'Start Live Chat' with chat icon), and a small response-time note with a highlighted span. Buttons route through useNavigate. Use as the closing support / contact prompt on SaaS knowledge bases, help centers, or FAQ pages.",

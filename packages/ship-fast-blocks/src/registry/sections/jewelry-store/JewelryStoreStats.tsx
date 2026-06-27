@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * global boutiques — for fine jewelers, diamond houses, or high-jewelry maisons.
  * Renders fully with no props via baked-in defaults.
  */
-export const JewelryStoreStats = defineComponent({
+export const JewelryStoreStats = defineCapsule({
   name: 'JewelryStoreStats',
   description:
     'Heritage stats band for a luxury jewelry maison: a clean centered responsive grid (1/2/4 cols) of metric blocks, each pairing a large gold serif value with a wide letter-spaced uppercase muted label. Use to convey legacy and scale — years of heritage, pieces crafted, master artisans, global boutiques — for fine jewelers, diamond houses, or high-jewelry maisons.',

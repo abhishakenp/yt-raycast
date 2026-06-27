@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * events for bars, nightclubs, lounges, or live-music venues. Renders fully with
  * no props via baked-in defaults.
  */
-export const BarNightclubEvents = defineComponent({
+export const BarNightclubEvents = defineCapsule({
   name: 'BarNightclubEvents',
   description:
     'Stacked weekly events list for a cocktail-bar / nightclub page: a left-aligned eyebrow, light-weight heading and lead, then a vertical stack of hairline-bordered event rows, each laying out a day/date block, a title + description, an alt-driven event photo, and an outlined ticket CTA that collapses to a column on mobile. Moody and editorial; each CTA routes through useNavigate and photos use the alt-driven Image component. Use to showcase an upcoming lineup of DJ nights, live performances, or themed events for bars, nightclubs, lounges, or live-music venues.',

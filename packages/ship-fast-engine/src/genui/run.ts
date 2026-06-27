@@ -56,7 +56,9 @@ export async function runHomepageOrchestrator(p: {
   onEvent?: (event: GenUIEvent) => void
   onSource?: (source: string) => void
 }): Promise<OrchestratorResult> {
-  const languageMode = await detectLanguage(p.prompt, p.preferredLanguage)
+  const languageMode = p.cachedContent
+    ? { code: p.preferredLanguage || 'en' }
+    : await detectLanguage(p.prompt, p.preferredLanguage)
   const modelId = p.modelId || DEFAULT_MODEL
   const onEvent = p.onEvent
   const result = await runV2ComposedGeneration({

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * landings, or support pages. Renders fully with no props via baked-in "FlowSync"
  * defaults.
  */
-export const FaqFooter = defineComponent({
+export const FaqFooter = defineCapsule({
   name: 'FaqFooter',
   description:
     "A five-column resource footer for a help-center / SaaS product page: a spanning brand block (logo tile + name, tagline, and small social icon buttons) beside four link columns (Product, Resources, Company, Legal) in a responsive grid, with a bottom bar holding the copyright, a Status link, and a green 'All systems operational' status pill. All links route through useNavigate. Use as the global footer for SaaS knowledge bases, help centers, documentation landings, or support pages.",

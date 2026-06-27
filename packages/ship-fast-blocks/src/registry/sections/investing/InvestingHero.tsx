@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * blurred accent blobs. Use as the opening hero for stock brokerages, trading
  * apps, robo-advisors or crypto exchanges. Renders fully with no props.
  */
-export const InvestingHero = defineComponent({
+export const InvestingHero = defineCapsule({
   name: 'InvestingHero',
   description:
     "Split hero for a modern investing / fintech brokerage landing page: bold conversion copy (AI-insights pill badge, large headline, lead paragraph, dual primary/secondary CTAs, green-checked trust ticks) on the left paired with a floating live portfolio-value card on the right showing portfolio value + today's change, 1D/1W/1M range tabs, an area-fill sparkline with an S&P 500 ticker chip, and a three-up buying-power/dividends/YTD-return stat row, over soft blurred accent blobs. All CTAs route through useNavigate. Use as the opening hero for stock brokerages, trading apps, robo-advisors or crypto exchanges.",

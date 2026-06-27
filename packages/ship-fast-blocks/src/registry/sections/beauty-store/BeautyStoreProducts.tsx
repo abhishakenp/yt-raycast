@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  commerceProduct,
+  useCommerceFilteredProducts,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * BeautyStoreProducts — shoppable bestsellers product grid for a beauty / skincare /
@@ -11,15 +19,15 @@ import { Image } from '#/lib/img.tsx'
  * cards. Each card has an alt-driven square product photo zooming on hover, an
  * optional status badge (Bestseller / Clean / New mapped to primary / secondary /
  * accent), a floating add-to-cart button that appears on hover, the brand name,
- * product title, star rating strip + review count, and price. CTAs and product
- * clicks route through useNavigate. Use on beauty store homepages, product showcase
+ * product title, star rating strip + review count, and price. Add-to-cart writes
+ * to the shared Lakebed cart; view-all routes through useNavigate. Use on beauty store homepages, product showcase
  * sections, skincare shop grids, makeup bestsellers, or any e-commerce product
  * listing. Renders fully with no props via 8 clean-beauty baked-in defaults.
  */
-export const BeautyStoreProducts = defineComponent({
+export const BeautyStoreProducts = defineCapsule({
   name: 'BeautyStoreProducts',
   description:
-    "Shoppable bestsellers product grid for a beauty / skincare / cosmetics e-commerce landing page: a section eyebrow and heading on the left with a 'view all' link on the right, above a responsive 2-to-4-column grid of product cards. Each card has an alt-driven square product photo that zooms on hover, an optional status badge (Bestseller / Clean / New), a floating add-to-cart button that appears on hover, brand name, product title, star rating strip + review count, and price. CTAs and product clicks route through useNavigate. Use on beauty store homepages, skincare shop grids, makeup bestsellers, or any e-commerce product listing.",
+    "Shoppable bestsellers product grid for a beauty / skincare / cosmetics e-commerce landing page: a section eyebrow and heading on the left with a 'view all' link on the right, above a responsive 2-to-4-column grid of product cards. Each card has an alt-driven square product photo that zooms on hover, an optional status badge (Bestseller / Clean / New), a floating add-to-cart button that appears on hover and writes to the shared Lakebed cart, brand name, product title, star rating strip + review count, and price. Use on beauty store homepages, skincare shop grids, makeup bestsellers, or any e-commerce product listing.",
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -41,7 +49,8 @@ export const BeautyStoreProducts = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Most Loved'
     const heading = props.heading ?? 'Bestsellers'
@@ -104,6 +113,23 @@ export const BeautyStoreProducts = defineComponent({
             badge: 'New',
           },
         ]
+    useSyncCommerceCatalog(
+      lakebed,
+      items.map((product) =>
+        commerceProduct({
+          imageAlt: `${product.brand} ${product.title} product photo`,
+          label: product.title,
+          price: product.price,
+          subtitle: product.brand,
+        }),
+      ),
+    )
+    const visibleItems = useCommerceFilteredProducts(lakebed, items, (product) => [
+      product.brand,
+      product.title,
+      product.price,
+      product.badge,
+    ])
 
     const Star = ({ className }: { className?: string }) => (
       <svg
@@ -176,7 +202,7 @@ export const BeautyStoreProducts = defineComponent({
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 lg:gap-8">
-            {items.map((product) => (
+            {visibleItems.map((product) => (
               <article
                 key={product.title}
                 className="group overflow-hidden rounded-xl bg-card shadow-sm transition-shadow hover:shadow-lg"
@@ -199,14 +225,17 @@ export const BeautyStoreProducts = defineComponent({
                       {product.badge}
                     </span>
                   ) : null}
-                  <button
-                    type="button"
+                  <CommerceAddItemButton
+                    lakebed={lakebed}
+                    item={{
+                      label: product.title,
+                      price: product.price,
+                    }}
                     aria-label={`Add ${product.title} to cart`}
-                    onClick={() => go(product.title)}
-                    className="absolute bottom-3 right-3 flex size-10 items-center justify-center rounded-full bg-card text-card-foreground opacity-0 shadow-md transition-opacity hover:bg-foreground hover:text-background group-hover:opacity-100"
+                    className="absolute bottom-3 right-3 flex size-10 items-center justify-center rounded-full bg-card text-card-foreground opacity-0 shadow-md transition-opacity hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100"
                   >
                     <PlusIcon />
-                  </button>
+                  </CommerceAddItemButton>
                 </div>
                 <div className="p-4">
                   <p className="mb-1 text-xs text-muted-foreground">

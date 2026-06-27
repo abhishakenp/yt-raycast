@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -11,7 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * and role/context. Imagery is alt-driven. Use to surface social proof for
  * event/wedding planners, gala organizers, or premium hospitality services.
  */
-export const EventPlannerTestimonials = defineComponent({
+export const EventPlannerTestimonials = defineCapsule({
   name: 'EventPlannerTestimonials',
   description:
     'Client-love testimonials grid on a muted band: a centered intro (uppercase eyebrow, thin light heading, lede) above a responsive 2-up/3-up grid of rounded card quotes, each with a five-star primary rating row, an italic quote, and a footer pairing a circular headshot with the client name and role/context. All imagery is alt-driven. Use to surface social proof for event/wedding planners, gala organizers, or premium hospitality services.',

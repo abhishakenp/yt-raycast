@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const Mark = ({ className }: { className?: string }) => (
@@ -19,7 +20,7 @@ const Mark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const WeddingNavbar = defineComponent({
+export const WeddingNavbar = defineCapsule({
   name: 'WeddingNavbar',
   description:
     'Elegant sticky wedding header built on the shared SiteNav composite: serif couple wordmark, interlocking-rings brand mark, romantic nav links (Story, Gallery, Details, RSVP), and an RSVP call to action. Use as the page header for a wedding invitation or celebration site, or as the top band of any generated wedding page family.',

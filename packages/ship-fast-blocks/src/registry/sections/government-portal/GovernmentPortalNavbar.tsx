@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { useState } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
@@ -23,7 +24,7 @@ const normalizeNavItem = (item: RawNavItem): NavItem => {
  * as the sticky official header for public sector, civic, municipal, utility,
  * electricity board and power-company sites with tender and notice menus.
  */
-export const GovernmentPortalNavbar = defineComponent({
+export const GovernmentPortalNavbar = defineCapsule({
   name: 'GovernmentPortalNavbar',
   description:
     'Three-tier classic indian government / PSU portal header: a light-blue (#0792D0) utility top bar (Career/Events, government emblem, A-/A/A+ font sizing, social icons), a white header band (org logo + official organisation name + Hindi subtitle + address), and a royal-blue (#3346B5) mega-nav with white 18px links and hover dropdowns. Built for public sector, civic, municipal, utility, electricity board and power-company sites with tender and notice menus. Use for the sticky official header of any classic indian government portal.',

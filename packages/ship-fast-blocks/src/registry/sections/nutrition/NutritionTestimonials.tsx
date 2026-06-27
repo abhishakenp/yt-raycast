@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * on nutrition coaches, dietitians, meal-plan subscriptions, diet / wellness
  * programs or healthy-eating apps.
  */
-export const NutritionTestimonials = defineComponent({
+export const NutritionTestimonials = defineCapsule({
   name: 'NutritionTestimonials',
   description:
     "Client transformation reviews for a nutrition-coaching or wellness site, built on the shared TestimonialGrid kit composite: an optional heading + subheading above three star-rated review cards, each with a results-focused quote, client name, a result role (e.g. 'Lost 30 lbs'), and an avatar. Use as social proof on nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs or healthy-eating apps to show real before-and-after outcomes.",

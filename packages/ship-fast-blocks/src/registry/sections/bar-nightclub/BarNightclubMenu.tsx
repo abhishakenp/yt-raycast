@@ -1,23 +1,31 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * BarNightclubMenu — two-column drinks menu for a cocktail-bar / nightclub
  * page. A centered eyebrow + light-weight heading + lead, then a responsive
  * two-column grid of named menu sections (e.g. house signatures / classics &
  * premium); each column has an underlined uppercase header and a list of items
- * showing a name, muted description, and right-aligned price. Closes with a
- * bordered footnote panel and a routable download-menu link. Editorial,
- * monochrome, hairline-bordered. The footnote link routes through useNavigate.
- * Use to present a cocktail / drinks list for bars, lounges, speakeasies, or
- * restaurants. Renders fully with no props via baked-in defaults.
+ * showing a name, muted description, right-aligned price, and scoped
+ * add-to-cart control that writes to the shared Lakebed cart. Rows seed command
+ * search, and the footnote link still routes through useNavigate. Use to
+ * present a cocktail / drinks list for bars, lounges, speakeasies, or
+ * restaurants.
  */
-export const BarNightclubMenu = defineComponent({
+export const BarNightclubMenu = defineCapsule({
   name: 'BarNightclubMenu',
   description:
-    'Two-column drinks menu for a cocktail-bar / nightclub page: a centered eyebrow, light-weight heading and lead, then a responsive two-column grid of named menu sections (such as house signatures and classics & premium), each with an underlined uppercase header and a list of items showing a name, muted description, and right-aligned price. Closes with a bordered footnote panel and a routable download-menu link. Editorial, monochrome and hairline-bordered; the footnote link routes through useNavigate. Use to present a cocktail / drinks list for bars, lounges, speakeasies, or restaurants.',
+    'Two-column drinks menu for a cocktail-bar / nightclub page: a centered eyebrow, light-weight heading and lead, then a responsive two-column grid of named menu sections (such as house signatures and classics & premium), each with an underlined uppercase header and a list of items showing a name, muted description, right-aligned price, and scoped add-to-cart control that writes to the shared Lakebed cart. Rows seed command search. Closes with a bordered footnote panel and a routable download-menu link. Editorial, monochrome and hairline-bordered. Use to present a cocktail / drinks list for bars, lounges, speakeasies, or restaurants.',
   props: z.object({
     /** Wide letter-spaced uppercase eyebrow. */
     eyebrow: z.string().optional(),
@@ -46,9 +54,12 @@ export const BarNightclubMenu = defineComponent({
     footnote: z.string().optional(),
     /** Routable footnote link label (e.g. download full menu). */
     footnoteCta: z.string().optional(),
+    /** Label for each row add button. */
+    addLabel: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Drinks Menu'
     const heading = props.heading ?? 'Signature Cocktails'
@@ -144,6 +155,22 @@ export const BarNightclubMenu = defineComponent({
       props.footnote ??
       'Full menu includes beer, wine, and non-alcoholic options'
     const footnoteCta = props.footnoteCta ?? 'Download Full Menu (PDF)'
+    const addLabel = props.addLabel ?? 'Add'
+    const allDrinks = columns.flatMap((column) =>
+      (column.items ?? []).map((item) => ({ ...item, category: column.title })),
+    )
+
+    useSyncCommerceCatalog(
+      lakebed,
+      allDrinks.map((drink) =>
+        commerceProduct({
+          imageAlt: drink.name,
+          label: drink.name,
+          price: drink.price,
+          subtitle: drink.category,
+        }),
+      ),
+    )
 
     return (
       <section
@@ -180,9 +207,28 @@ export const BarNightclubMenu = defineComponent({
                           {drink.description}
                         </p>
                       </div>
-                      <span className="whitespace-nowrap text-muted-foreground">
-                        {drink.price}
-                      </span>
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <span className="whitespace-nowrap text-muted-foreground">
+                          {drink.price}
+                        </span>
+                        <CommerceAddItemButton
+                          lakebed={lakebed}
+                          item={{
+                            label: drink.name,
+                            price: drink.price,
+                          }}
+                          aria-label={`${addLabel} ${drink.name} to cart`}
+                          pendingChildren={
+                            <>
+                              <CommerceMutationSpinner className="size-3" />
+                              Adding
+                            </>
+                          }
+                          className="inline-flex h-8 items-center justify-center gap-1.5 border border-border px-3 text-xs tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70"
+                        >
+                          {addLabel}
+                        </CommerceAddItemButton>
+                      </div>
                     </div>
                   ))}
                 </div>

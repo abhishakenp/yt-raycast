@@ -1,8 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * HealthcareHero — split hero for a primary-care / medical-clinic landing page.
@@ -16,7 +22,7 @@ import { Image } from '#/lib/img.tsx'
  * women's-health, telehealth or urgent-care clinics. Renders fully with no
  * props via baked-in "Vitality Health Partners" defaults.
  */
-export const HealthcareHero = defineComponent({
+export const HealthcareHero = defineCapsule({
   name: 'HealthcareHero',
   description:
     "Split hero for a primary-care / medical-clinic landing page: a two-column layout with a pulsing 'now accepting patients' pill, a large headline with one accent-colored word, a supporting paragraph, dual CTAs (solid primary + outlined secondary) and a check-marked trust row on the left, and a 4:3 alt-driven exam-room photo with a floating 'Open Today' hours card and a patient-count card with stacked avatars on the right. Clean, trustworthy, light clinical aesthetic. Use as the top hero for doctors' offices, family medicine, pediatric, women's-health, telehealth or urgent-care clinics.",
@@ -47,7 +53,8 @@ export const HealthcareHero = defineComponent({
     patientCount: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const badge = props.badge ?? 'Now accepting new patients'
     const headingBefore = props.headingBefore ?? 'Healthcare that puts '
@@ -131,14 +138,19 @@ export const HealthcareHero = defineComponent({
                 {subheading}
               </p>
               <div className="mb-10 flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl"
+                <LocalServiceBookingButton
+                  lakebed={lakebed}
+                  intentLabel={primaryCta}
+                  service="Healthcare appointment"
+                  source="hero"
+                  pendingChildren={
+                    <LocalServiceMutationSpinner className="text-primary-foreground" />
+                  }
+                  className="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
                   <ArrowRight className="ml-2" />
-                </button>
+                </LocalServiceBookingButton>
                 <button
                   type="button"
                   onClick={() => go(secondaryCta)}

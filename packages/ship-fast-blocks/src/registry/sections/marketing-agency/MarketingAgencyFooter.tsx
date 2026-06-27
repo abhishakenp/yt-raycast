@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * closing footer for a marketing / growth agency, SaaS, or B2B services site.
  * Renders fully with no props.
  */
-export const MarketingAgencyFooter = defineComponent({
+export const MarketingAgencyFooter = defineCapsule({
   name: 'MarketingAgencyFooter',
   description:
     '4-column site footer: a bordered footer on the page surface with a brand column (layered-diamond glyph + name + short about blurb) beside three titled link-list columns, plus a divider rule above a bottom bar holding an auto-year copyright line and a row of legal links. Every link routes through useNavigate; the brand returns to the home target. Use as the closing footer for a marketing / growth agency, SaaS, or B2B services site.',

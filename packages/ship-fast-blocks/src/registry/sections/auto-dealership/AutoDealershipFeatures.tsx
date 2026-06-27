@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * and avatar. Use as the value-prop / trust section for car dealerships, used-
  * car lots, or certified pre-owned sellers. Renders fully with no props.
  */
-export const AutoDealershipFeatures = defineComponent({
+export const AutoDealershipFeatures = defineCapsule({
   name: 'AutoDealershipFeatures',
   description:
     "'Why buy from us' trust band for an auto dealership page on a soft muted surface: a two-column layout where the left column has a heading and lead plus a 2-up grid of icon tiles (150-point inspection, 7-day money-back, 90-day warranty, no hidden fees) with rotating token-colored line icons, and the right column stacks a large rounded dealership photo over a bordered founder quote card (blockquote, round avatar, name + role). The default heading folds in the brand name. Photo and avatar use the alt-driven Image component. Use as the value-prop / trust section for car dealerships, used-car lots, or certified pre-owned sellers.",

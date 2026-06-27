@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * landing pages. All avatars use the alt-driven Image component. Renders fully
  * with no props via baked-in defaults.
  */
-export const LendingTestimonials = defineComponent({
+export const LendingTestimonials = defineCapsule({
   name: 'LendingTestimonials',
   description:
     '3-up borrower-testimonials grid on a muted band for a lending or fintech marketing page: centered heading + description above a responsive 3-up grid of white quote cards, each with a five-star row, a quoted testimonial, an avatar and a name plus location/loan-type meta. Use to surface real customer success stories on personal-loan, debt-consolidation, or fintech landing pages. Avatars use the alt-driven Image component.',

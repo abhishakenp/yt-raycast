@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * churches, ministries, nonprofits, or community organization pages. Renders fully
  * with no props via baked-in defaults.
  */
-export const ChurchStats = defineComponent({
+export const ChurchStats = defineCapsule({
   name: 'ChurchStats',
   description:
     'Bordered congregation stats band for a church or faith-community site: a simple top-and-bottom bordered row with a responsive 4-column grid (2-col on mobile) showing large value + label pairs. Clean, quick-scan, and credibility-building. Use for attendance, groups, volunteers, years serving, or any metric grid on churches, ministries, nonprofits, or community organization pages.',

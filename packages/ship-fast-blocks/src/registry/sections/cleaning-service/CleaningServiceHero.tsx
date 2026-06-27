@@ -1,13 +1,19 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * CleaningServiceHero — split-layout hero section for a home-cleaning / maid-service landing page. A muted-band background with a left text column (trust pill with checkmark icon, bold multi-line headline with an accent-colored highlight phrase, supporting paragraph, dual pill CTAs, and three trust badges with checkmarks) and a right image column (showcase photo with a floating star-rating card that overlaps the image edge, showing stacked avatars + a star icon + rating value + review count). Every CTA routes through useNavigate. Use as the primary above-the-fold hero for residential cleaning companies, maid services, housekeeping platforms, or local home-service brands. Renders fully with no props via baked-in "PureSpace" defaults.
  */
-export const CleaningServiceHero = defineComponent({
+export const CleaningServiceHero = defineCapsule({
   name: 'CleaningServiceHero',
   description:
     'Split-layout hero section for a home-cleaning / maid-service landing page: muted-band background with left text column (trust pill with checkmark, bold multi-line headline with accent-colored highlight, supporting paragraph, dual pill CTAs, three trust badges) and right image column (showcase photo with floating star-rating card showing stacked avatars, star icon, and review count). CTAs route through useNavigate. Use as the primary hero for residential cleaning, maid services, housekeeping, or local home-service brands.',
@@ -34,7 +40,8 @@ export const CleaningServiceHero = defineComponent({
     trustBadges: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const badge = props.badge ?? 'Trusted by 10,000+ homes in Seattle'
     const headingTop = props.headingTop ?? 'A cleaner home,'
@@ -117,14 +124,19 @@ export const CleaningServiceHero = defineComponent({
                 {subheading}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
+                <LocalServiceBookingButton
+                  lakebed={lakebed}
+                  intentLabel={primaryCta}
+                  service="Home cleaning"
+                  source="hero"
+                  pendingChildren={
+                    <LocalServiceMutationSpinner className="text-primary-foreground" />
+                  }
+                  className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
                   <ArrowRight className="ml-2 size-5" />
-                </button>
+                </LocalServiceBookingButton>
                 <button
                   type="button"
                   onClick={() => go(secondaryCta)}

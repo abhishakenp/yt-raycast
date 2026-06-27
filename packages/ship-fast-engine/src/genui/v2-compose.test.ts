@@ -23,6 +23,7 @@ import { getComponentSignature } from './openui-signature.ts'
 import {
   FAMILIES,
   classifyFamilies,
+  shouldConsiderFreeFormAppMode,
   resolveFamily,
   composePage,
   runV2ComposedGeneration,
@@ -128,6 +129,17 @@ describe('classifyFamilies', () => {
   })
 })
 
+describe('generation mode guard', () => {
+  it('does not consider SaaS/brand website briefs as free-form apps', () => {
+    expect(shouldConsiderFreeFormAppMode('Saas Vape')).toBe(false)
+    expect(shouldConsiderFreeFormAppMode('a website for a task app')).toBe(
+      false,
+    )
+    expect(shouldConsiderFreeFormAppMode('todo app')).toBe(true)
+    expect(shouldConsiderFreeFormAppMode('mortgage calculator')).toBe(true)
+  })
+})
+
 describe('composePage (valid by construction, no fallback)', () => {
   beforeEach(() => mocks.generateText.mockReset())
 
@@ -148,7 +160,9 @@ describe('composePage (valid by construction, no fallback)', () => {
     })
     const src = `${page.statements.join('\n')}\nroot = PageSwitch(["Home"], [home])`
     expect(await auditOk(src)).toBe(true)
-    expect(page.statements.at(-1)).toMatch(/^home = Stack\(\[/)
+    expect(page.rootRef).toBe('home')
+    expect(page.sections.length).toBeGreaterThan(0)
+    expect(page.sections.every((s) => s.component.startsWith(family.name))).toBe(true)
   })
 
   it('still produces VALID OpenUI when the model returns empty/garbage (degrades, never breaks)', async () => {
@@ -187,11 +201,203 @@ describe('runV2ComposedGeneration', () => {
       signal,
     })
     expect(await auditOk(result.source)).toBe(true)
-    expect(result.source).toMatch(/root = PageSwitch\(/)
+    expect(result.routes.length).toBeGreaterThan(0)
+    expect(Object.keys(result.navTargets)).toContain('get started')
+    const homePage = result.pages.find((p) => p.id === 'home')
+    expect(homePage).toBeTruthy()
+    expect(homePage!.sections.length).toBeGreaterThan(0)
+    // First content section keeps a scroll offset for the fixed navbar but must
+    // NOT carry redundant top padding — section components provide their own,
+    // and stacking both caused a large gap below the nav. See v2-compose.ts.
+    const firstContent = homePage!.sections.find((s) => s.id !== 'home_navbar')
+    expect(firstContent).toBeTruthy()
+    expect(firstContent!.anchorClass).toContain('scroll-mt-28')
+    expect(firstContent!.anchorClass).not.toContain('pt-24')
+    expect(
+      homePage!.sections.some((s) => s.anchorClass.includes('pt-24 sm:pt-28')),
+    ).toBe(false)
     expect(result.theme).toBeTruthy()
     expect(result.brand.length).toBeGreaterThan(0)
-    // home page statement exists and is composed via Stack
-    expect(result.source).toMatch(/\bhome = Stack\(\[/)
+    // home page exists and is composed via Stack
+    expect(result.pages.some((p) => p.id === 'home' && p.rootRef === 'home')).toBe(true)
+  })
+
+  it('keeps SaaS brand prompts on the website composer path', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+      const user = String(_a[2])
+      if (/Candidate verticals/.test(user)) return superagentReply(user)
+      return richProps(user)
+    })
+    const result = await runV2ComposedGeneration({
+      prompt: 'Saas Vape',
+      modelId: 'm',
+      sessionSeed: 'saas-vape-regression',
+      signal,
+    })
+
+    expect(await auditOk(result.source)).toBe(true)
+    expect(result.routes.length).toBeGreaterThan(0)
+    expect(result.family).not.toBe('Freeform')
+    // website composer path never emits State primitives (only family components)
+    expect(
+      result.pages.every((p) =>
+        p.sections.every((s) => !/^State(Button|Input|Text)$/.test(s.component)),
+      ),
+    ).toBe(true)
+  })
+
+  it('emits target aliases and excludes full Hero sections from secondary pages', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+      const user = String(_a[2])
+      if (/Candidate verticals/.test(user)) return superagentReply(user)
+      return richProps(user)
+    })
+    const result = await runV2ComposedGeneration({
+      prompt: 'a crm with pricing and contact pages',
+      modelId: 'm',
+      sessionSeed: 'secondary-contracts',
+      familyOverride: 'Crm',
+      signal,
+    })
+
+    expect(await auditOk(result.source)).toBe(true)
+    expect(result.navTargets['get started']).toBeTruthy()
+    // secondary pages never include a full Hero section
+    expect(
+      result.pages
+        .filter((p) => p.id !== 'home')
+        .every((p) => p.sections.every((s) => !s.id.endsWith('_hero'))),
+    ).toBe(true)
+    expect(result.routes).not.toContain('Explore')
+    expect(Object.keys(result.navTargets)).not.toContain('Explore')
+  })
+
+  it('keeps structural chrome out of the fullstack manifest', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+      const user = String(_a[2])
+      if (/Candidate verticals/.test(user)) return superagentReply(user)
+      return richProps(user)
+    })
+    const result = await runV2ComposedGeneration({
+      prompt: 'beauty store with products and editorial shopping pages',
+      modelId: 'm',
+      sessionSeed: 'fullstack-chrome-filter',
+      familyOverride: 'BeautyStore',
+      signal,
+    })
+    const manifestArtifact = result.artifacts.find(
+      (artifact) => artifact.key === 'fullstack-manifest',
+    )
+    const manifest = JSON.parse(manifestArtifact?.contentJson ?? '{}') as {
+      tables?: string[]
+    }
+
+    expect(manifest.tables).toContain('items')
+    expect(manifest.tables).not.toContain('linkColumns')
+    expect(manifest.tables).not.toContain('links')
+  })
+
+  it('keeps page planning meaningful across generic website prompt families', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+      const user = String(_a[2])
+      if (/Candidate verticals/.test(user)) return superagentReply(user)
+      return richProps(user)
+    })
+    const prompts = [
+      ['SaaS', 'Crm'],
+      ['commerce', 'FashionStore'],
+      ['restaurant', 'Cafe'],
+      ['publication', 'Blog'],
+      ['portfolio', 'PortfolioDev'],
+      ['event', 'Event'],
+    ] as const
+
+    for (const [label, familyOverride] of prompts) {
+      const result = await runV2ComposedGeneration({
+        prompt: `${label} website with rich navigation and calls to action`,
+        modelId: 'm',
+        sessionSeed: `matrix-${familyOverride}`,
+        familyOverride,
+        signal,
+      })
+      expect(await auditOk(result.source)).toBe(true)
+      const routes = result.routes
+      expect(routes.length, familyOverride).toBeGreaterThan(1)
+      expect(
+        result.pages.every((p) => p.sections.length > 0),
+        familyOverride,
+      ).toBe(true)
+      expect(result.navTargets['Home'], familyOverride).toBe('Home')
+      expect(routes, familyOverride).not.toContain('Explore')
+    }
+  })
+
+  it('plans bespoke catalog roles as real secondary pages', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) => {
+      const user = String(_a[2])
+      if (/Candidate verticals/.test(user)) return superagentReply(user)
+      return richProps(user)
+    })
+    const cases = [
+      {
+        prompt: 'university website with admissions and degree programs',
+        familyOverride: 'University',
+        expectedOneOf: ['Programs'],
+      },
+      {
+        prompt: 'coding bootcamp website with curriculum and career outcomes',
+        familyOverride: 'Bootcamp',
+        expectedOneOf: ['Curriculum', 'Outcomes'],
+      },
+      {
+        prompt: 'conference website with agenda, speakers, venue, and tickets',
+        familyOverride: 'Event',
+        expectedOneOf: ['Agenda', 'Speakers', 'Venue', 'Tickets'],
+      },
+      {
+        prompt: 'fashion store website with collections and editorial lookbook',
+        familyOverride: 'FashionStore',
+        expectedOneOf: ['Collections', 'Lookbook'],
+      },
+      {
+        prompt: 'hotel resort website with rooms, amenities, and booking',
+        familyOverride: 'HotelResort',
+        expectedOneOf: ['Amenities', 'Booking', 'Rooms'],
+      },
+      {
+        prompt: 'online course website with programs and pricing',
+        familyOverride: 'OnlineCourse',
+        expectedOneOf: ['Programs'],
+      },
+    ]
+
+    for (const testCase of cases) {
+      const result = await runV2ComposedGeneration({
+        prompt: testCase.prompt,
+        modelId: 'm',
+        sessionSeed: `bespoke-role-${testCase.familyOverride}`,
+        familyOverride: testCase.familyOverride,
+        signal,
+      })
+      expect(await auditOk(result.source)).toBe(true)
+      const routes = result.routes
+      expect(routes, testCase.familyOverride).toEqual(
+        expect.arrayContaining(['Home']),
+      )
+      expect(
+        testCase.expectedOneOf.some((label) => routes.includes(label)),
+        `${testCase.familyOverride} routes: ${routes.join(', ')}`,
+      ).toBe(true)
+      expect(routes, testCase.familyOverride).not.toContain('Explore')
+      for (const label of routes.filter((route) => route !== 'Home')) {
+        const page = result.pages.find((p) => p.label === label)
+        expect(page, `${testCase.familyOverride}:${label}`).toBeTruthy()
+        expect(
+          page!.sections.every((s) => !s.id.endsWith('_hero')),
+          `${testCase.familyOverride}:${label} has no hero section`,
+        ).toBe(true)
+      }
+    }
   })
 
   it('is deterministic per (prompt, seed) and varies composition across seeds', async () => {
@@ -217,10 +423,11 @@ describe('runV2ComposedGeneration', () => {
     for (const seed of ['s1', 's2', 's3', 's4', 's5', 's6']) {
       const r = await run(seed)
       expect(r.family).toBe(a1.family) // same vertical across seeds
-      const pageSwitch = (r.source.match(/PageSwitch\([^\]]*\][^\]]*\]/) ?? [
-        '',
-      ])[0]
-      compositions.add(`${r.theme}|${pageSwitch}|${r.source.length}`)
+      // Structural composition signature: theme + routes + per-page section ids.
+      const signature = `${r.theme}|${r.routes.join(',')}|${r.pages
+        .map((p) => `${p.id}:${p.sections.map((s) => s.id).join('+')}`)
+        .join(';')}`
+      compositions.add(signature)
     }
     expect(compositions.size).toBeGreaterThan(1) // composition differs across seeds
   })

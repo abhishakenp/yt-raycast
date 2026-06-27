@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * developer count, uptime, latency, and request volume for developer tools,
  * API platforms, or technical SaaS.
  */
-export const DevToolStats = defineComponent({
+export const DevToolStats = defineCapsule({
   name: 'DevToolStats',
   description:
     'Compact 4-up metrics band for a developer tool / API platform: a top-and-bottom bordered section with a centered 2-up (mobile) / 4-up (desktop) grid of stats, each a large bold value above a muted label. Use as a credibility strip between sections to highlight developer count, uptime, latency, and request volume for developer tools, API platforms, or technical SaaS.',

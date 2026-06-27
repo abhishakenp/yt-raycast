@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const CompassMark = ({ className }: { className?: string }) => (
@@ -18,7 +19,7 @@ const CompassMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const TravelAgencyNavbar = defineComponent({
+export const TravelAgencyNavbar = defineCapsule({
   name: 'TravelAgencyNavbar',
   description:
     "Premium, wanderlust-themed navigation header for the Travel Agency page family. Composes the shared SiteNav kit composite with a travel-forward brand, compass brandmark, destination-led links, a contact phone, and a prominent 'Plan a Trip' call to action. Use as the first band of a travel agency page or whenever a generated travel site needs a polished, token-styled top navigation without hand-rolled markup.",

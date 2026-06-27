@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * contact / booking call-to-action for filmmakers, directors, DPs, or production
  * houses.
  */
-export const FilmDirectorContactCta = defineComponent({
+export const FilmDirectorContactCta = defineCapsule({
   name: 'FilmDirectorContactCta',
   description:
     'Inverted, near-black contact CTA band for a film director or cinematographer: on a dark foreground band, a centered thin headline + muted lede, a pair of CTA buttons (a filled email button with mail icon and an outlined phone button with phone icon), and a bordered top divider leading into a 3-column detail row (studio address, representation, and a row of social links). All actions route through useNavigate. Use as the closing contact / booking call-to-action for filmmakers, directors, DPs, or production houses.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * bottom of a photographer, studio, or elopement page to drive bookings.
  * Renders fully with no props via baked-in defaults.
  */
-export const PhotographyCta = defineComponent({
+export const PhotographyCta = defineCapsule({
   name: 'PhotographyCta',
   description:
     "Warm, centered booking band for a fine-art / wedding photographer site built on the shared CtaBand composite at tone='primary': an availability eyebrow, a serif headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Book your session' button plus an outlined 'View Pricing' button). Both CTAs route through useNavigate. Use near the bottom of a photographer, studio, or elopement page to drive session bookings.",

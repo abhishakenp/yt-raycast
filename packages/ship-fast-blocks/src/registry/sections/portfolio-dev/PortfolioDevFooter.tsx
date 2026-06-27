@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const CodeMark = ({ className }: { className?: string }) => (
@@ -18,7 +19,7 @@ const CodeMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const PortfolioDevFooter = defineComponent({
+export const PortfolioDevFooter = defineCapsule({
   name: 'PortfolioDevFooter',
   description:
     "Rich, multi-column closing footer for a developer portfolio built on the shared SiteFooter composite: a brand block pairs a mono wordmark with an inline </> code mark, a tagline, and a social row (GitHub, LinkedIn, Twitter, Email), beside a responsive grid of Work and Connect link columns. A bordered-top bottom bar carries an auto-updating copyright line and a closing note. Use as the site-wide footer for developer, engineer, freelancer, or indie-hacker portfolios; renders fully with no props via baked-in 'alex.dev' defaults.",

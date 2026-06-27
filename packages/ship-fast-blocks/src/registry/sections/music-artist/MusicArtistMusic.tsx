@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * latest-release showcase for musicians, bands, or album-release pages. Renders
  * fully with no props via baked-in defaults.
  */
-export const MusicArtistMusic = defineComponent({
+export const MusicArtistMusic = defineCapsule({
   name: 'MusicArtistMusic',
   description:
     "Latest-release track grid for a music artist / band page: a centered eyebrow, thin heading and lead, then a responsive grid of bordered track cards (square cover thumbnail, title, duration, and a small 'Listen' play button), with a trailing 'view all tracks' link with an arrow. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. Each track's Listen button and the view-all link route through useNavigate; cover thumbnails use the alt-driven Image component. Use as the discography / latest-release showcase for musicians, singers, bands, or album-release pages.",

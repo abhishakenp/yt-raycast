@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -30,7 +31,7 @@ const PenMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const BlogFooter = defineComponent({
+export const BlogFooter = defineCapsule({
   name: 'BlogFooter',
   description:
     'Rich, multi-column closing footer for an editorial blog or publication: a responsive grid with a brand block (wordmark + inline glyph mark + editorial tagline + social row) and link columns (Explore, Topics, More), plus a bordered-top bottom bar holding an auto-updating copyright line and a small legal link row. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for blogs, magazines, newsrooms, or content hubs.',

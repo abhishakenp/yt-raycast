@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Button } from '#/components/ui/button.tsx'
 import {
   Popover as UIPopover,
@@ -12,7 +13,7 @@ import {
 
 // Overlay: trigger button + floating content. Rendered `defaultOpen` so the
 // popover body is statically visible. `children` render inside the content.
-export const Popover = defineComponent({
+export const Popover = defineCapsule({
   name: 'Popover',
   description:
     'Floating panel anchored to a trigger button. `triggerLabel` labels the button; title/description/children fill the panel. Open by default for preview.',

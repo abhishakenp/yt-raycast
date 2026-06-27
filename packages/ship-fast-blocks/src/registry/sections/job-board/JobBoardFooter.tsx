@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * marketplaces, recruiting platforms or talent networks. Renders fully with no
  * props.
  */
-export const JobBoardFooter = defineComponent({
+export const JobBoardFooter = defineCapsule({
   name: 'JobBoardFooter',
   description:
     'Fat, multi-column site footer for a job-board / careers site: a muted top-bordered band with a wide brand column (briefcase mark + name, tagline, and a row of square social icon buttons) beside several titled link columns, closing with a divided bottom row pairing a copyright note with inline legal links. Brand, social buttons and links route through useNavigate. Use as the global footer for job boards, hiring marketplaces, recruiting platforms or talent networks.',

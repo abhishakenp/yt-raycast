@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * contactTarget. Use as the final conversion band before the footer on a
  * marketing / growth agency or B2B services page. Renders fully with no props.
  */
-export const MarketingAgencyContactCta = defineComponent({
+export const MarketingAgencyContactCta = defineCapsule({
   name: 'MarketingAgencyContactCta',
   description:
     'High-contrast dark closing call-to-action band on the primary surface: a centered block with a large heading, a supporting paragraph, dual rounded-pill CTAs (a filled booking button with a calendar icon + an outlined email/contact button), and a row of inline reassurance checkmarks below. Links route through useNavigate; the email button routes to a separate contactTarget. Use as the final conversion band before the footer on a marketing / growth agency or B2B services landing page.',

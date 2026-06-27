@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -27,7 +28,7 @@ const BookMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const OnlineCourseFooter = defineComponent({
+export const OnlineCourseFooter = defineCapsule({
   name: 'OnlineCourseFooter',
   description:
     'Rich, multi-column closing footer for an online-course / e-learning site built on the shared SiteFooter composite: a brand block (semibold wordmark + book/open-pages mark + tagline + social row of Twitter/LinkedIn/YouTube) beside link columns (Learn, Platform, Company, Support), with a bordered-top bottom bar holding an auto-updating copyright line and legal links. Use as the site-wide footer for course platforms, e-learning marketplaces, MOOCs, bootcamps, or academies.',

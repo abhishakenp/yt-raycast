@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * sizing and materials questions for clothing brands, boutiques, or apparel
  * shops.
  */
-export const FashionStoreFaq = defineComponent({
+export const FashionStoreFaq = defineCapsule({
   name: 'FashionStoreFaq',
   description:
     "Native disclosure FAQ accordion for a minimalist fashion store: a subtle muted-band, narrow centered section with an eyebrow + serif heading above a stack of bordered <details> cards (question summary with a chevron that rotates on open, revealing one or more body paragraphs), closed by a centered footer note and an underlined 'Contact Customer Care' link that routes through useNavigate. Use to answer shipping, returns, sizing and materials questions for clothing brands, boutiques, or apparel and accessories shops.",

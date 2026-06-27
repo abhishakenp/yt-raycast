@@ -1,22 +1,23 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
+import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
 /**
  * ConstructionQuote — dark "request a free estimate" lead-capture form for a
  * construction / general contractor page. A centered heading on a dark band
  * above a functional multi-field form (name, email, phone, project type, budget,
- * timeline, project details) with a submit button that routes through
- * useNavigate, plus a privacy disclaimer. Use as the closing conversion
- * section for construction firms, contractors, builders, or any service
- * business collecting project inquiries. Renders fully with no props via
- * baked-in defaults.
+ * timeline, project details) with a submit button that writes a Lakebed inquiry,
+ * plus a privacy disclaimer. Use as the closing conversion section for
+ * construction firms, contractors, builders, or any service business collecting
+ * project inquiries. Renders fully with no props via baked-in defaults.
  */
-export const ConstructionQuote = defineComponent({
+export const ConstructionQuote = defineCapsule({
   name: 'ConstructionQuote',
   description:
-    "Dark 'request a free estimate' lead-capture form for a construction / general contractor page: a centered heading on a dark band above a functional multi-field form (name, email, phone, project type, budget, timeline, project details) with a submit button that routes through useNavigate, plus a privacy disclaimer. Use as the closing conversion section for construction firms, contractors, builders, or any service business collecting project inquiries.",
+    "Dark 'request a free estimate' Lakebed lead-capture form for a construction / general contractor page: a centered heading on a dark band above a functional multi-field form (name, email, phone, project type, budget, timeline, project details) with a submit button that writes a shared inquiry record, plus a privacy disclaimer. Use as the closing conversion section for construction firms, contractors, builders, or any service business collecting project inquiries.",
   props: z.object({
     /** Form section heading. */
     heading: z.string().optional(),
@@ -34,8 +35,8 @@ export const ConstructionQuote = defineComponent({
     timelines: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: inquiryLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Ready to start your project?'
     const description =
       props.description ??
@@ -76,6 +77,12 @@ export const ConstructionQuote = defineComponent({
           'Within 1 year',
           'Just planning',
         ]
+    const inquiry = useInquirySubmission({
+      lakebed,
+      source: 'Construction estimate',
+      successMessage:
+        "Thanks. We've received your estimate request and will respond soon.",
+    })
 
     const inputCls =
       'w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/30'
@@ -92,10 +99,7 @@ export const ConstructionQuote = defineComponent({
 
           <form
             className="rounded-xl bg-card p-8 shadow-xl lg:p-12"
-            onSubmit={(e) => {
-              e.preventDefault()
-              go(submitLabel)
-            }}
+            onSubmit={inquiry.submitForm}
           >
             <div className="mb-6 grid gap-6 md:grid-cols-2">
               <div>
@@ -107,6 +111,7 @@ export const ConstructionQuote = defineComponent({
                 </label>
                 <input
                   id="con-quote-name"
+                  name="name"
                   type="text"
                   required
                   placeholder="John Smith"
@@ -122,6 +127,7 @@ export const ConstructionQuote = defineComponent({
                 </label>
                 <input
                   id="con-quote-email"
+                  name="email"
                   type="email"
                   required
                   placeholder="john@example.com"
@@ -140,6 +146,7 @@ export const ConstructionQuote = defineComponent({
                 </label>
                 <input
                   id="con-quote-phone"
+                  name="phone"
                   type="tel"
                   required
                   placeholder="(206) 555-1234"
@@ -155,6 +162,7 @@ export const ConstructionQuote = defineComponent({
                 </label>
                 <select
                   id="con-quote-type"
+                  name="projectType"
                   required
                   className={cn(inputCls, 'appearance-none')}
                 >
@@ -177,6 +185,7 @@ export const ConstructionQuote = defineComponent({
                 </label>
                 <select
                   id="con-quote-budget"
+                  name="budget"
                   required
                   className={cn(inputCls, 'appearance-none')}
                 >
@@ -196,6 +205,7 @@ export const ConstructionQuote = defineComponent({
                 </label>
                 <select
                   id="con-quote-timeline"
+                  name="timeline"
                   required
                   className={cn(inputCls, 'appearance-none')}
                 >
@@ -217,6 +227,7 @@ export const ConstructionQuote = defineComponent({
               </label>
               <textarea
                 id="con-quote-message"
+                name="message"
                 rows={4}
                 placeholder="Tell us about your project, goals, and any specific requirements..."
                 className={cn(inputCls, 'resize-none')}
@@ -225,10 +236,16 @@ export const ConstructionQuote = defineComponent({
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-foreground py-4 text-lg font-semibold text-background transition-colors hover:bg-foreground/90"
+              aria-busy={inquiry.isPending}
+              disabled={inquiry.isPending}
+              className="w-full rounded-lg bg-foreground py-4 text-lg font-semibold text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
             >
-              {submitLabel}
+              {inquiry.isPending ? 'Sending' : submitLabel}
             </button>
+
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              {inquiry.statusText}
+            </p>
 
             <p className="mt-4 text-center text-sm text-muted-foreground">
               {disclaimer}

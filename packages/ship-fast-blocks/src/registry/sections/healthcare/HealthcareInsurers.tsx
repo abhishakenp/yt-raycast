@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * practice, telehealth or urgent-care clinic to show accepted insurance plans.
  * Renders fully with no props via baked-in major-insurer defaults.
  */
-export const HealthcareInsurers = defineComponent({
+export const HealthcareInsurers = defineCapsule({
   name: 'HealthcareInsurers',
   description:
     "Accepted-insurance logo strip for a medical-clinic page: a slim bordered band with a small uppercase caption centered above a responsive 2/3/6-column grid of insurer wordmarks rendered as muted, lightly-faded buttons that brighten on hover. Each routes through useNavigate. Use as a trust / social-proof strip under the hero of a doctors' office, primary-care practice, telehealth or urgent-care clinic to show accepted insurance plans.",

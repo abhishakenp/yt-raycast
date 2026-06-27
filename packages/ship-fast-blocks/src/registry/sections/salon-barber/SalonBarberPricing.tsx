@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { PricingGrid } from '#/section-kit/PricingGrid.tsx'
 
-export const SalonBarberPricing = defineComponent({
+export const SalonBarberPricing = defineCapsule({
   name: 'SalonBarberPricing',
   description:
     "Barbershop / salon pricing section built on the shared PricingGrid composite. Renders three confident, grooming-focused service tiers — a straight cut, a full grooming service, and a premium works package — each with a clear per-visit price, a feature list, and a Book Now CTA, with the middle tier highlighted as most popular. Use it as the menu / packages band on any barbershop, salon, or men's grooming homepage where visitors choose a service before booking.",

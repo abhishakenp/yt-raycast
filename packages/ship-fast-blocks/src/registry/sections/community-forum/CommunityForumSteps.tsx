@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * only. Use as the "how it works" / "get started" section for community platforms, SaaS onboarding
  * flows, or product walkthroughs.
  */
-export const CommunityForumSteps = defineComponent({
+export const CommunityForumSteps = defineCapsule({
   name: 'CommunityForumSteps',
   description:
     "Numbered step timeline for a community-platform / discussion-forum landing page: a centered heading and description above a responsive 3-column timeline of numbered steps, each with a primary-colored number circle, a title, and a description; a thin connector line runs between steps on desktop. No links — instructional / persuasive only. Use as the 'how it works' / 'get started' section for community platforms, SaaS onboarding flows, or product walkthroughs.",

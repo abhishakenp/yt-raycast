@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 const CompassMark = ({ className }: { className?: string }) => (
@@ -18,7 +19,7 @@ const CompassMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const TravelAgencyFooter = defineComponent({
+export const TravelAgencyFooter = defineCapsule({
   name: 'TravelAgencyFooter',
   description:
     'Premium site footer for the Travel Agency page family. Composes the shared SiteFooter kit composite with a travel-forward brand, compass brandmark, tagline, social links, four link columns (Destinations, Services, Company, Support), legal links, and a closing note. Use as the final band of a travel agency page. All content is prop-driven with wanderlust-themed defaults so it renders with no props.',

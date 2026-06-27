@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * returns, warranty, price-match and tracking questions on electronics stores,
  * gadget shops, consumer-tech retailers, or any product catalog.
  */
-export const ElectronicsStoreFaq = defineComponent({
+export const ElectronicsStoreFaq = defineCapsule({
   name: 'ElectronicsStoreFaq',
   description:
     'Centered native-disclosure FAQ accordion for an electronics storefront: a centered heading above a narrow stack of muted rounded details rows, each a clickable question summary with a chevron that rotates open to reveal a muted answer paragraph. Use to answer shipping, returns, warranty, price-match and tracking questions on electronics stores, gadget shops, consumer-tech retailers, or any product catalog.',

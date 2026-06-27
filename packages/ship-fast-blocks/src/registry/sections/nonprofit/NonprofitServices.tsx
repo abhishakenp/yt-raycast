@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -27,7 +28,7 @@ const Icon = ({ d, className }: { d: string; className?: string }) => (
   </svg>
 )
 
-export const NonprofitServices = defineComponent({
+export const NonprofitServices = defineCapsule({
   name: 'NonprofitServices',
   description:
     'Programs / causes grid for a nonprofit / charity / NGO page built on the shared FeatureGrid composite: a centered heading and supporting subheading above a responsive grid of cause cards, each pairing a small inline line-icon with a program title (Clean Water, Education, Food Security, Healthcare, …) and a short, warm mission blurb. Use to show the core programs, causes, or focus areas a nonprofit, foundation, or humanitarian organization runs.',

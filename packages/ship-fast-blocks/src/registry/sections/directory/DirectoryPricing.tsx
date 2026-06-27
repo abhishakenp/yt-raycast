@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { directoryLakebed } from './directory-lakebed.ts'
+import {
+  DirectoryLeadButton,
+  DirectoryMutationSpinner,
+} from './directory-interactions.tsx'
 
 /**
  * DirectoryPricing — 3-tier business-listing pricing table for a local-business
@@ -10,14 +15,15 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * price with optional period, a tagline, an included-features list with primary
  * check icons plus an excluded-features list with muted cross icons, and a
  * full-width CTA button. A highlighted "Most Popular" plan inverts to a dark
- * foreground surface with a floating badge. CTAs route through useNavigate. Use
- * as the listing/subscription pricing section on local directories, marketplaces,
- * or find-a-service platforms.
+ * foreground surface with a floating badge. CTAs record real Lakebed lead
+ * actions. Use as the listing/subscription pricing section on local directories,
+ * marketplaces, or find-a-service platforms.
  */
-export const DirectoryPricing = defineComponent({
+export const DirectoryPricing = defineCapsule({
   name: 'DirectoryPricing',
   description:
-    '3-tier business-listing pricing table for a local-business DIRECTORY: a card-surface section with a centered heading and description and a responsive 3-column grid of plan cards — each has an uppercase plan name, a big price with optional period, a tagline, an included-features list with primary check icons plus an excluded-features list with muted cross icons, and a full-width CTA button. A highlighted Most Popular plan inverts to a dark foreground surface with a floating badge. CTAs route through useNavigate. Use as the listing or subscription pricing section on local directories, business-listing marketplaces, or find-a-service platforms.',
+    '3-tier business-listing pricing table for a local-business DIRECTORY: a card-surface section with a centered heading and description and a responsive 3-column grid of plan cards — each has an uppercase plan name, a big price with optional period, a tagline, an included-features list with primary check icons plus an excluded-features list with muted cross icons, and a full-width CTA button. A highlighted Most Popular plan inverts to a dark foreground surface with a floating badge. CTAs record real Lakebed lead actions. Use as the listing or subscription pricing section on local directories, business-listing marketplaces, or find-a-service platforms.',
+  lakebed: directoryLakebed,
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -41,8 +47,7 @@ export const DirectoryPricing = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'List Your Business'
     const description =
       props.description ??
@@ -227,18 +232,25 @@ export const DirectoryPricing = defineComponent({
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => go(plan.cta)}
+                <DirectoryLeadButton
+                  lakebed={lakebed}
+                  action={plan.cta}
+                  source={`pricing:${plan.name}`}
+                  pendingChildren={
+                    <>
+                      <DirectoryMutationSpinner />
+                      Recording
+                    </>
+                  }
                   className={cn(
-                    'w-full rounded-lg py-3 font-medium transition-colors',
+                    'inline-flex w-full items-center justify-center gap-2 rounded-lg py-3 font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
                     plan.featured
                       ? 'bg-background text-foreground hover:bg-background/90'
                       : 'border border-input text-foreground hover:border-muted-foreground/50 hover:bg-muted',
                   )}
                 >
                   {plan.cta}
-                </button>
+                </DirectoryLeadButton>
               </div>
             ))}
           </div>

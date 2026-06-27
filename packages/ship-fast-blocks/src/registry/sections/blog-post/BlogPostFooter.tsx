@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -28,7 +29,7 @@ const FeatherMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const BlogPostFooter = defineComponent({
+export const BlogPostFooter = defineCapsule({
   name: 'BlogPostFooter',
   description:
     'Rich, multi-column closing footer for an editorial blog post / article detail page built on the shared SiteFooter composite: a feather/pen wordmark beside a tagline, a social row, a responsive grid of link columns (Explore, Company, Legal, …), and a bordered-top bottom bar with an auto-updating copyright line. Clean editorial voice. Use as the site-wide footer for a blog, magazine, journal, or any editorial publication.',

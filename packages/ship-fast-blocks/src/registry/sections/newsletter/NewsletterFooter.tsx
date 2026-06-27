@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * publications, blogs, or content creators. Renders fully with no props via
  * baked-in defaults.
  */
-export const NewsletterFooter = defineComponent({
+export const NewsletterFooter = defineCapsule({
   name: 'NewsletterFooter',
   description:
     'Inverted multi-column footer for an editorial newsletter: a full-width dark foreground band with a wide left brand column (serif initial-mark logo + name, a short tagline, and round social icon buttons — a Twitter glyph, otherwise an RSS-style glyph), then link columns of grouped routes; a bottom bar separates an auto-year copyright line from inline legal links. Warm, calm, literary mood inverted to close the page. Brand, social buttons, every link and legal item route through useNavigate. Use as the site footer for newsletters, publications, blogs, essayists, or content creators.',

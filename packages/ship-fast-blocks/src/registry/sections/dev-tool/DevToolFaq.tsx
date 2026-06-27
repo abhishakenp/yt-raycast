@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * about limits, self-hosting, supported languages, security, and trials for
  * developer tools, API platforms, or technical SaaS.
  */
-export const DevToolFaq = defineComponent({
+export const DevToolFaq = defineCapsule({
   name: 'DevToolFaq',
   description:
     'Accordion FAQ for a developer tool / API platform: a muted-banded, narrow-width section with a centered heading + intro above a stack of native <details> disclosure cards, each a bordered panel with a question summary, a rotating chevron, and a revealed answer paragraph. Uses native details open/closed semantics (no JS state). Use to answer common questions about limits, self-hosting, supported languages, security, and trials for developer tools, API platforms, or technical SaaS.',

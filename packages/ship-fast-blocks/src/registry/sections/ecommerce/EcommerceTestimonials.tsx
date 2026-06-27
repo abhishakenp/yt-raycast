@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * retail storefront, ecommerce shop, or product landing page. Renders fully
  * with no props via baked-in defaults.
  */
-export const EcommerceTestimonials = defineComponent({
+export const EcommerceTestimonials = defineCapsule({
   name: 'EcommerceTestimonials',
   description:
     "Light customer reviews grid for a general online store built on the shared TestimonialGrid composite: a centered heading (with optional subheading) above a responsive 1-to-3 column grid of review cards. Each card shows a star rating row driven by the review's numeric 1-5 rating, a customer quote, and an avatar footer with the customer name and a 'Verified Buyer' tag. Use to build trust with social proof for any retail storefront, ecommerce shop, or product landing page when showcasing customer reviews and ratings.",

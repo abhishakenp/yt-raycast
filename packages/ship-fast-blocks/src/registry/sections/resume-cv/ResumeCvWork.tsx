@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -12,7 +13,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * Use on a personal portfolio, online résumé, or professional profile page to
  * present work history. Renders fully with no props via baked-in defaults.
  */
-export const ResumeCvWork = defineComponent({
+export const ResumeCvWork = defineCapsule({
   name: 'ResumeCvWork',
   description:
     "Vertical experience timeline for a personal resume / CV / portfolio site: a left-aligned SectionHeading ('Experience' / 'Where I've worked') leads into a border-left timeline of roles, each marked by a token dot and showing a bold role title, the company, a muted date range, and two or three bullet-point accomplishments. Clean, scannable, professional. Use on a personal portfolio, online résumé, or professional profile page to present work history.",

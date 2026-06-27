@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * Use as the opening hero for coding bootcamps, software-engineering academies,
  * dev courses, or career-switch programs.
  */
-export const BootcampHero = defineComponent({
+export const BootcampHero = defineCapsule({
   name: 'BootcampHero',
   description:
     'Split-layout hero section for a coding bootcamp / career-school landing page: two-column band on a muted canvas with a soft gradient wash. Left side has a pulsing live-cohort pill badge, a bold multi-line headline with one phrase in primary accent, a supporting paragraph, dual CTAs (filled primary + outlined secondary), and an inline trust-chip row. Right side has a glowing cohort photo with a floating stat card showing graduate headshots and a placement count. CTAs route through useNavigate. Use as the opening hero for coding bootcamps, software-engineering academies, dev courses, or career-switch programs.',

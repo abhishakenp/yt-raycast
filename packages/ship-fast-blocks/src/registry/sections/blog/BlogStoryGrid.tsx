@@ -1,8 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { useSyncPublicationArticles } from './publication-interactions.tsx'
+import { publicationLakebed } from './publication-lakebed.ts'
 
 /**
  * BlogStoryGrid — responsive story-grid for an editorial blog / publication.
@@ -12,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * route through useNavigate. Use as the story grid / latest-stories / article-listing
  * section on blog homepages, magazine indexes, or editorial landing pages.
  */
-export const BlogStoryGrid = defineComponent({
+export const BlogStoryGrid = defineCapsule({
   name: 'BlogStoryGrid',
   description:
     "Responsive story-grid section for an editorial blog or publication: a section header with a heading and a 'view all' arrow-link above a 1/2/3-column grid of story cards. Each card has a tagged cover image that zooms on hover, a title, clamped excerpt, and an author/date footer. Cards and the view-all link route through useNavigate. Use as the story grid / latest-stories / article-listing section on blog homepages, magazine indexes, or editorial landing pages.",
@@ -41,7 +44,8 @@ export const BlogStoryGrid = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: publicationLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const title = props.title ?? 'Latest stories'
     const viewAll = props.viewAll ?? 'View all'
@@ -105,6 +109,17 @@ export const BlogStoryGrid = defineComponent({
             alt: 'Abstract geometric shapes in soft pastel colors',
           },
         ]
+    useSyncPublicationArticles(
+      lakebed,
+      posts.map((post) => ({
+        author: post.author,
+        category: post.tag,
+        date: post.date,
+        excerpt: post.excerpt,
+        target: postTarget,
+        title: post.title,
+      })),
+    )
 
     const Arrow = () => (
       <svg

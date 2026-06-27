@@ -1,22 +1,32 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
+  commerceProduct,
+  useSyncCommerceCatalog,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * FoodTruckMenu — a rotating seasonal MENU section for a food-truck / street-food
  * site. A centered eyebrow + heading + intro sits above a 2-up responsive grid of menu
  * category cards (one can span full width), each led by a rounded category photo and an
  * optional badge chip, then a list of priced items (name + optional dietary tag,
- * description, right-aligned price) separated by hairline dividers, with a centered
- * dietary-legend row beneath. Imagery uses the alt-driven Image component. Use as the
- * menu section for food trucks, taco/burger/bowl concepts, cafes or any chef-driven
- * mobile-food brand showing a priced, categorized menu.
+ * description, right-aligned price, and scoped add-to-cart control) separated
+ * by hairline dividers, with a centered dietary-legend row beneath. Rows seed
+ * shared command search and write to the shared Lakebed cart. Imagery uses the
+ * alt-driven Image component. Use as the menu section for food trucks,
+ * taco/burger/bowl concepts, cafes or any chef-driven mobile-food brand showing
+ * a priced, categorized menu.
  */
-export const FoodTruckMenu = defineComponent({
+export const FoodTruckMenu = defineCapsule({
   name: 'FoodTruckMenu',
   description:
-    'Rotating seasonal MENU section for a food-truck / street-food site: a centered eyebrow + heading + intro above a 2-up responsive grid of menu category cards (one card can span full width), each led by a rounded category photo and an optional badge chip, then a list of priced items (name with optional V/VG/GF dietary tag, description, right-aligned price) separated by hairline dividers, with a centered dietary-legend row beneath. Imagery uses the alt-driven Image component. Use as the menu section for food trucks, taco / burger / bowl concepts, cafes, delis or any chef-driven mobile-food brand showing a priced, categorized menu.',
+    'Rotating seasonal MENU section for a food-truck / street-food site: a centered eyebrow + heading + intro above a 2-up responsive grid of menu category cards (one card can span full width), each led by a rounded category photo and an optional badge chip, then a list of priced items (name with optional V/VG/GF dietary tag, description, right-aligned price, and scoped add-to-cart control) separated by hairline dividers, with a centered dietary-legend row beneath. Rows seed shared command search and write to the shared Lakebed cart. Imagery uses the alt-driven Image component. Use as the menu section for food trucks, taco / burger / bowl concepts, cafes, delis or any chef-driven mobile-food brand showing a priced, categorized menu.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -40,9 +50,12 @@ export const FoodTruckMenu = defineComponent({
       )
       .optional(),
     legend: z.array(z.string()).optional(),
+    /** Label for each row add button. */
+    addLabel: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const menuEyebrow = props.eyebrow ?? 'June Menu'
     const menuHeading = props.heading ?? "What's Cooking"
     const menuDesc =
@@ -172,6 +185,22 @@ export const FoodTruckMenu = defineComponent({
     const menuLegend = props.legend?.length
       ? props.legend
       : ['VG = Vegan', 'V = Vegetarian', 'GF = Gluten-Free']
+    const addLabel = props.addLabel ?? 'Add'
+    const allMenuItems = menuCategories.flatMap((category) =>
+      category.items.map((item) => ({ ...item, category: category.title })),
+    )
+
+    useSyncCommerceCatalog(
+      lakebed,
+      allMenuItems.map((item) =>
+        commerceProduct({
+          imageAlt: item.name,
+          label: item.name,
+          price: item.price,
+          subtitle: item.tag ? `${item.category} · ${item.tag}` : item.category,
+        }),
+      ),
+    )
 
     return (
       <section className={cn('px-6 py-20', props.className)}>
@@ -232,7 +261,26 @@ export const FoodTruckMenu = defineComponent({
                           {item.description}
                         </p>
                       </div>
-                      <span className="font-semibold">{item.price}</span>
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <span className="font-semibold">{item.price}</span>
+                        <CommerceAddItemButton
+                          lakebed={lakebed}
+                          item={{
+                            label: item.name,
+                            price: item.price,
+                          }}
+                          aria-label={`${addLabel} ${item.name} to cart`}
+                          pendingChildren={
+                            <>
+                              <CommerceMutationSpinner className="size-3" />
+                              Adding
+                            </>
+                          }
+                          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70"
+                        >
+                          {addLabel}
+                        </CommerceAddItemButton>
+                      </div>
                     </div>
                   ))}
                 </div>

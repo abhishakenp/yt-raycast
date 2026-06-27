@@ -1,8 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * DevToolHero — two-column product hero for a developer tool / API platform.
@@ -15,10 +21,10 @@ import { Image } from '#/lib/img.tsx'
  * through useNavigate. Use as the top hero for developer tools, API platforms,
  * backend-as-a-service, or technical SaaS landing pages.
  */
-export const DevToolHero = defineComponent({
+export const DevToolHero = defineCapsule({
   name: 'DevToolHero',
   description:
-    'Two-column product hero for a developer tool / API platform: a left content column with an animated release/version pill, a bold headline with a brand-accent highlighted phrase, a supporting paragraph, dual CTAs (filled primary + outline secondary) and a no-credit-card footnote, beside a right dark code-window mockup (traffic-light dots, filename tab, SDK code snippet) with a floating developer-avatar social-proof card. Clean light slate-and-blue aesthetic. All CTAs route through useNavigate. Use as the top hero for developer tools, API platforms, backend-as-a-service, or technical SaaS.',
+    'Two-column product hero for a developer tool / API platform: a left content column with an animated release/version pill, a bold headline with a brand-accent highlighted phrase, a supporting paragraph, a Lakebed-backed primary conversion CTA, a routable docs CTA, and a no-credit-card footnote, beside a right dark code-window mockup with a floating developer-avatar social-proof card. Clean light slate-and-blue aesthetic. Use as the top hero for developer tools, API platforms, backend-as-a-service, or technical SaaS.',
   props: z.object({
     badge: z.string().optional(),
     headingTop: z.string().optional(),
@@ -38,7 +44,8 @@ export const DevToolHero = defineComponent({
     proofSubtitle: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const badge = props.badge ?? 'v2.4 Now Available'
     const headingTop =
@@ -116,14 +123,22 @@ await ds.storage.set(\`user:\${user.id}\`, {
                 {subheading}
               </p>
               <div className="mb-8 flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={primaryCta}
+                  plan={primaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Starting
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
                   <ArrowRight />
-                </button>
+                </SaasPlanActionButton>
                 <button
                   type="button"
                   onClick={() => go(secondaryCta)}

@@ -4,6 +4,7 @@ import {
 } from '@openuidev/react-lang'
 import { createLakebedClient } from '@ship-fast/lakebed/react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
+import { mutation, query } from '@ship-fast/lakebed/server'
 import type {
   JsonRecord,
   LakebedDataFromSchema,
@@ -15,6 +16,8 @@ import type {
 import type * as OpenUI from '@openuidev/react-lang'
 import type { z } from 'zod/v4'
 import type { $ZodObject } from 'zod/v4/core'
+import { cloneElement, createElement, isValidElement } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 import { sanitizeProps } from './sanitize-props.ts'
 
 export type LakebedCapsuleDefinition<
@@ -58,6 +61,8 @@ export type CapsuleLakebedConfig<
   TClientResult = unknown,
 > = LakebedCapsuleDefinition<TProps, TSchema, TData, TQueries, TMutations> & {
   client?: LakebedClientFactory<TClientResult>
+  /** Optional shared Lakebed document key for cross-section state like Cart. */
+  dataKey?: string
   server?: LakebedServerFactory<
     LakebedCapsuleDefinition<TProps, TSchema, TData, TQueries, TMutations>
   >
@@ -130,12 +135,83 @@ export type ShipFastCapsule<
   client: TClient
   lakebed?: TServer &
     CapsuleLakebedConfig<any, any, any, any, any, TClientResult>
-}
+} & TClient
 
 export type CapsuleLibraryInput = {
   capsules: ShipFastCapsule[]
   root?: string
 }
+
+const isJsonRecord = (value: unknown): value is JsonRecord =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+
+const defaultCapsuleDataKey = (
+  capsuleName: string,
+  statementId: string | undefined,
+) => (statementId ? `${capsuleName}:${statementId}` : capsuleName)
+
+/**
+ * Stamp `data-openui-component` (capsule name) and `data-openui-var` (source
+ * variable name) on the root element of a capsule's rendered output so the
+ * element inspector can map a selected DOM node back to its OpenUI capsule.
+ *
+ * If the output is a single React element, we clone it with the data attrs
+ * merged onto its existing props (preserving any className/style the capsule
+ * set). If it's a fragment, string, array, or null, we wrap it in a `<div>`
+ * carrying the attrs so the marker is always present on a stable root.
+ */
+const stampCapsuleAttrs = (
+  output: ReactNode,
+  capsuleName: string,
+  statementId: string | undefined,
+): ReactNode => {
+  if (isValidElement(output)) {
+    const element = output as ReactElement<Record<string, unknown>>
+    const existing = (element.props ?? {}) as Record<string, unknown>
+    return cloneElement(element, {
+      ...existing,
+      'data-openui-component': capsuleName,
+      'data-openui-var': statementId,
+    })
+  }
+  return cloneElement(
+    createElement('div', {
+      'data-openui-component': capsuleName,
+      'data-openui-var': statementId,
+    }),
+    undefined,
+    output,
+  )
+}
+
+const createDefaultCapsuleLakebed = <
+  TProps extends JsonRecord,
+>(): CapsuleLakebedConfig<TProps, undefined, JsonRecord> => ({
+  queries: {
+    sectionData: query((_ctx) => _ctx.data),
+    sectionProps: query((_ctx) => ({
+      ...(isJsonRecord(_ctx.props) ? _ctx.props : {}),
+      ..._ctx.data,
+    })),
+  },
+  mutations: {
+    patchSectionProps: mutation((_ctx, patch: JsonRecord) =>
+      _ctx.setData(isJsonRecord(patch) ? patch : {}),
+    ),
+    replaceSectionProps: mutation((_ctx, data: JsonRecord) =>
+      _ctx.replaceData(isJsonRecord(data) ? data : {}),
+    ),
+    setProp: mutation((_ctx, key: string, value: unknown) =>
+      _ctx.setData({ [key]: value }),
+    ),
+    appendItem: mutation((_ctx, key: string, value: unknown) => {
+      const props: JsonRecord = isJsonRecord(_ctx.props) ? _ctx.props : {}
+      const currentValue = _ctx.data[key] ?? props[key]
+      const currentItems = Array.isArray(currentValue) ? currentValue : []
+      return _ctx.setData({ [key]: [...currentItems, value] })
+    }),
+  },
+})
 
 export const defineCapsule = <
   TProps extends $ZodObject,
@@ -174,29 +250,71 @@ export const defineCapsule = <
   TClientResult
 > => {
   const { component, lakebed, ...openUIInput } = input
+  const defaultLakebed = createDefaultCapsuleLakebed<z.infer<TProps>>()
+  const effectiveLakebed = (
+    lakebed
+      ? {
+          ...lakebed,
+          mutations: {
+            ...defaultLakebed.mutations,
+            ...lakebed.mutations,
+          },
+          queries: {
+            ...defaultLakebed.queries,
+            ...lakebed.queries,
+          },
+        }
+      : defaultLakebed
+  ) as CapsuleLakebedConfig<
+      z.infer<TProps>,
+      TSchema,
+      TData,
+      TQueries,
+      TMutations,
+      TClientResult
+    >
 
-  return {
-    client: defineOpenUIComponent({
-      ...openUIInput,
-      component: (componentInput) => {
-        // Best-effort repair of LLM-generated props against the declared schema
-        // (drop unrepairable nested items / null arrays, coerce scalars) so a
-        // single malformed value can't throw inside React and blank the whole
-        // page during SSR. Generic across every capsule — never name-specific.
-        const safeProps = sanitizeProps(componentInput.props, input.props)
-        return component({
-          ...componentInput,
+  const client = defineOpenUIComponent({
+    ...openUIInput,
+    component: (componentInput) => {
+      // Best-effort repair of LLM-generated props against the declared schema
+      // (drop unrepairable nested items / null arrays, coerce scalars) so a
+      // single malformed value can't throw inside React and blank the whole
+      // page during SSR. Generic across every capsule -- never name-specific.
+      const safeProps = sanitizeProps(componentInput.props, input.props)
+      const rendered = component({
+        ...componentInput,
+        props: safeProps,
+        lakebed: createLakebedClient({
+          capsule:
+            effectiveLakebed.dataKey ??
+            defaultCapsuleDataKey(input.name, componentInput.statementId),
+          definition: effectiveLakebed,
           props: safeProps,
-          lakebed: createLakebedClient({
-            capsule: input.name,
-            definition: lakebed,
-            props: safeProps,
-          }),
-        })
-      },
-    }),
-    ...(lakebed ? { lakebed } : {}),
-  }
+        }),
+      })
+      // Stamp capsule identification attrs on the root element so the element
+      // inspector can map a selected DOM node back to its OpenUI capsule.
+      if (rendered instanceof Promise) {
+        return rendered.then((resolved) =>
+          stampCapsuleAttrs(resolved, input.name, componentInput.statementId),
+        )
+      }
+      return stampCapsuleAttrs(
+        rendered,
+        input.name,
+        componentInput.statementId,
+      )
+    },
+  })
+
+  return Object.assign(
+    {
+      client,
+      lakebed: effectiveLakebed,
+    },
+    client,
+  )
 }
 
 export const isCapsule = (value: unknown): value is ShipFastCapsule =>

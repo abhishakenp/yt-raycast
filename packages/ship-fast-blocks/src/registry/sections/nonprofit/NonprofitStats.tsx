@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -12,7 +13,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * or humanitarian pages. Renders fully with no props via baked-in "Roots of
  * Hope" defaults.
  */
-export const NonprofitStats = defineComponent({
+export const NonprofitStats = defineCapsule({
   name: 'NonprofitStats',
   description:
     'Impact-by-the-numbers band for a nonprofit / charity / NGO page: a centered SectionHeading (eyebrow + title + subtitle) above the shared StatGrid composite laying out four headline metrics — people helped, funds raised, volunteers, and years of service — as bold values over muted labels. Use to prove credibility and momentum on nonprofit, foundation, or humanitarian pages.',

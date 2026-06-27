@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * questions on personal-loan, debt-consolidation, or financing pages. Renders
  * fully with no props via baked-in defaults.
  */
-export const LendingFaq = defineComponent({
+export const LendingFaq = defineCapsule({
   name: 'LendingFaq',
   description:
     'Native-disclosure accordion FAQ for a lending or fintech marketing page: centered heading + description above a vertical stack of bordered white <details> cards; each summary shows the question with a chevron that rotates open, revealing the answer paragraph. No JS state — native open/close handles interactivity. Use to answer common borrower questions on personal-loan, debt-consolidation, or financing pages.',

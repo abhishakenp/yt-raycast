@@ -1,7 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAccountButton,
+  CommerceCartButton,
+  CommerceMobileMenu,
+  CommerceSearchButton,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * FashionStoreNavbar — fixed, backdrop-blurred top navigation bar for a
@@ -9,14 +17,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * pinned to the top with a centered serif wordmark logo, a hamburger menu
  * button on mobile, horizontal nav links (desktop), and a trio of icon
  * actions on the right (search, account, shopping bag with an item-count
- * badge). Every nav item and action routes through useNavigate. Use as the
+ * badge). Search/account/cart use shared Lakebed commerce primitives; nav links route through useNavigate. Use as the
  * sticky site header for clothing brands, boutiques, apparel and accessories
  * shops, or any premium minimalist retail storefront.
  */
-export const FashionStoreNavbar = defineComponent({
+export const FashionStoreNavbar = defineCapsule({
   name: 'FashionStoreNavbar',
   description:
-    'Fixed, backdrop-blurred top navigation bar for a minimalist fashion / apparel store: a border-bottomed translucent header pinned to the top with a centered serif wordmark logo, a hamburger menu button on mobile, horizontal nav links on desktop, and a trio of icon actions on the right (search, account, shopping bag with an item-count badge). Every nav item and action routes through useNavigate and labels match the nav array so PageSwitch can swap pages. Use as the sticky site header for clothing brands, boutiques, apparel and accessories shops, lookbook commerce, or any premium minimalist retail storefront.',
+    'Fixed, backdrop-blurred top navigation bar for a minimalist fashion / apparel store: a border-bottomed translucent header pinned to the top with a centered serif wordmark logo, a real shadcn mobile drawer button on mobile, horizontal nav links on desktop, and a trio of fullstack commerce actions on the right (product command search, Shoo account dropdown, shopping bag with reactive item-count badge and shadcn cart drawer). Nav links route through useNavigate and labels match the nav array so PageSwitch can swap pages. Use as the sticky site header for clothing brands, boutiques, apparel and accessories shops, lookbook commerce, or any premium minimalist retail storefront.',
   props: z.object({
     /** Brand / store name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -26,13 +34,65 @@ export const FashionStoreNavbar = defineComponent({
     bagCount: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'NOIRE'
     const nav = props.nav?.length
       ? props.nav
       : ['Collections', 'Lookbook', 'New Arrivals', 'Our Story', 'Journal']
-    const bagCount = props.bagCount ?? '3'
+    const initialBagCount = Number.parseInt(props.bagCount ?? '0', 10) || 0
+
+    const SearchIcon = () => (
+      <svg
+        className="size-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        />
+      </svg>
+    )
+
+    const AccountIcon = () => (
+      <svg
+        className="size-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+        />
+      </svg>
+    )
+
+    const BagIcon = () => (
+      <svg
+        className="size-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+        />
+      </svg>
+    )
 
     return (
       <header
@@ -47,11 +107,11 @@ export const FashionStoreNavbar = defineComponent({
         >
           <div className="flex h-16 items-center justify-between lg:h-20">
             {/* Mobile menu button */}
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => go(nav[0])}
-              className="-ml-2 p-2 text-muted-foreground transition-colors hover:text-foreground lg:hidden"
+            <CommerceMobileMenu
+              brand={brand}
+              nav={nav}
+              homeTarget={nav[0]}
+              buttonClassName="-ml-2 p-2 text-muted-foreground transition-colors hover:text-foreground lg:hidden"
             >
               <svg
                 className="size-6"
@@ -67,7 +127,7 @@ export const FashionStoreNavbar = defineComponent({
                   d="M4 6h16M4 12h16M4 18h16"
                 />
               </svg>
-            </button>
+            </CommerceMobileMenu>
 
             {/* Logo */}
             <button
@@ -96,72 +156,26 @@ export const FashionStoreNavbar = defineComponent({
 
             {/* Actions */}
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                aria-label="Search"
-                onClick={() => go('Search')}
-                className="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:block"
+              <CommerceSearchButton
+                lakebed={lakebed}
+                buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:block"
               >
-                <svg
-                  className="size-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
-              <button
-                type="button"
-                aria-label="Account"
-                onClick={() => go('Account')}
-                className="p-2 text-muted-foreground transition-colors hover:text-foreground"
+                <SearchIcon />
+              </CommerceSearchButton>
+              <CommerceAccountButton
+                lakebed={lakebed}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
               >
-                <svg
-                  className="size-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </button>
-              <button
-                type="button"
-                aria-label="Shopping bag"
-                onClick={() => go('Bag')}
-                className="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+                <AccountIcon />
+              </CommerceAccountButton>
+              <CommerceCartButton
+                lakebed={lakebed}
+                label="Shopping bag"
+                fallbackCount={initialBagCount}
+                buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
               >
-                <svg
-                  className="size-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                  />
-                </svg>
-                <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                  {bagCount}
-                </span>
-              </button>
+                <BagIcon />
+              </CommerceCartButton>
             </div>
           </div>
         </nav>

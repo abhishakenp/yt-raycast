@@ -1,8 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * NoCodeHero — two-column landing hero for a no-code / drag-and-drop app-builder
@@ -16,10 +21,10 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * through useNavigate. Use as the opening hero for no-code / website-builder /
  * page-builder / SaaS platform products. Renders fully with no props.
  */
-export const NoCodeHero = defineComponent({
+export const NoCodeHero = defineCapsule({
   name: 'NoCodeHero',
   description:
-    "Two-column landing hero for a no-code / drag-and-drop app-builder SaaS on a bright neutral canvas: left column has a live-status pill (pulsing dot), a large two-tone headline (solid + muted accent), a supporting paragraph, dual CTAs (filled primary with arrow + outlined watch-demo with play icon), and checkmarked trust microcopy; right column shows a faux visual-EDITOR mockup with browser chrome traffic-light dots, a Components rail, a gridded drag-and-drop canvas with a selected block, a Properties panel, and a floating 'Published!' success toast. CTAs route through useNavigate. Use as the opening hero for no-code / website-builder / page-builder / app-builder / SaaS platform products.",
+    'Two-column landing hero for a no-code / drag-and-drop app-builder SaaS on a bright neutral canvas: left column has a live-status pill, a large two-tone headline, supporting paragraph, scoped Lakebed trial/demo CTAs, trust microcopy, and a faux visual editor mockup. CTA buttons record trial or demo intent instead of colliding with navigation.',
   props: z.object({
     /** Live-status pill text. */
     badge: z.string().optional(),
@@ -41,8 +46,8 @@ export const NoCodeHero = defineComponent({
     toast: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const badge = props.badge ?? 'Now with AI-powered components'
     const headingTop = props.headingTop ?? 'Build apps without code.'
     const headingAccent = props.headingAccent ?? 'Drag, drop, launch.'
@@ -204,22 +209,37 @@ export const NoCodeHero = defineComponent({
                 {subheading}
               </p>
               <div className="mb-8 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={primaryCta}
+                  plan={primaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Starting
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
                   <ArrowRight className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-6 py-3 font-medium text-foreground transition-colors hover:bg-accent"
+                </SaasPlanActionButton>
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={secondaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Sending
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-6 py-3 font-medium text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-70"
                 >
                   <PlayIcon />
                   {secondaryCta}
-                </button>
+                </SaasPlanActionButton>
               </div>
               <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground lg:justify-start">
                 {trust.map((t) => (

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * digital-banking, payments, SaaS or any trust-forward product page.
  * Renders fully with no props via baked-in defaults.
  */
-export const FintechLogos = defineComponent({
+export const FintechLogos = defineCapsule({
   name: 'FintechLogos',
   description:
     'Trusted-by logo strip for a fintech / neobank landing page: a single muted band bordered top and bottom with a heading label above a responsive 2/4/6-column grid of clickable partner/brand text logos. Each logo routes through useNavigate for page-switching. Use as social-proof for digital-banking, payments, SaaS or any trust-forward product page.',

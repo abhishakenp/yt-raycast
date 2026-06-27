@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * route through useNavigate. Use as the closing site footer for coding
  * bootcamps, dev academies, or any cohort-based education brand.
  */
-export const BootcampFooter = defineComponent({
+export const BootcampFooter = defineCapsule({
   name: 'BootcampFooter',
   description:
     '4-column dark footer for a coding bootcamp / career-school landing page: full-width footer on a foreground-colored band. Left column shows a brand-initial logo tile + academy name + tagline + social links; remaining columns show titled link lists. Every link and the brand button route through useNavigate. Use as the closing site footer for coding bootcamps, dev academies, or cohort-based education brands.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { StatGrid } from '#/section-kit/StatGrid.tsx'
 
@@ -12,7 +13,7 @@ import { StatGrid } from '#/section-kit/StatGrid.tsx'
  * and notices. Use for the at-a-glance metrics strip of a classic government
  * portal.
  */
-export const GovernmentPortalStats = defineComponent({
+export const GovernmentPortalStats = defineCapsule({
   name: 'GovernmentPortalStats',
   description:
     'Formal classic indian government / PSU key-figures band on a royal-blue strip (installed capacity MW, generating units, years operational, % plant availability). Official, institutional statistics for public sector, civic, municipal, utility, power and electricity board portals that publish tenders and notices. Use for the at-a-glance metrics strip of a classic government portal.',

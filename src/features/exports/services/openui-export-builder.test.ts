@@ -1,5 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
+import { parseHTML } from 'linkedom'
+import { describe, expect, it } from 'vitest'
 import { strFromU8, unzipSync } from 'fflate'
+import ts from 'typescript'
 
 import {
   buildOpenUIExport,
@@ -7,15 +9,18 @@ import {
   parseOpenUIForExport,
   renderNextEndpointRouteFiles,
 } from './openui-export-builder'
+import { resolveBlockSourceManifestPath } from './block-source-manifest'
 import {
   buildOpenUIHtmlExport,
   parseOpenUIForHtmlExport,
 } from './openui-html-export-builder'
 
-// esbuild/parse-heavy export integration tests; avoid load-induced 5s flakes
-vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 })
-
 const source = `root = SaasHero("Export Demo", ["Home"], {"heading": "Hello export", "highlight": "export"})`
+const routedSource = `root = PageSwitch(["Home", "Pricing"], [home, pricing], "", {"Get Started":"Pricing#pricing_pricing","get started":"Pricing#pricing_pricing","Pricing":"Pricing"})
+homeText = Text("Home")
+pricingText = Text("Pricing")
+home = Stack([homeText])
+pricing = Stack([pricingText])`
 
 const siteSpecJson = JSON.stringify({ projectName: 'Export Demo' })
 const rawHtmlSource = `<!DOCTYPE html>
@@ -39,6 +44,194 @@ const unzipBuiltExportTextFiles = (body: string | Uint8Array) => {
   return unzipTextFiles(body)
 }
 
+const parseTsx = (fileName: string, moduleSource: string): ts.SourceFile =>
+  ts.createSourceFile(
+    fileName,
+    moduleSource,
+    ts.ScriptTarget.Latest,
+    true,
+    fileName.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  )
+
+const importSpecifiers = (sourceFile: ts.SourceFile): string[] =>
+  sourceFile.statements
+    .filter(ts.isImportDeclaration)
+    .flatMap((statement) =>
+      ts.isStringLiteral(statement.moduleSpecifier)
+        ? [statement.moduleSpecifier.text]
+        : [],
+    )
+
+const namedImportsFromModule = (
+  sourceFile: ts.SourceFile,
+  moduleName: string,
+): string[] =>
+  sourceFile.statements
+    .filter(ts.isImportDeclaration)
+    .filter(
+      (statement) =>
+        ts.isStringLiteral(statement.moduleSpecifier) &&
+        statement.moduleSpecifier.text === moduleName,
+    )
+    .flatMap((statement) => {
+      const bindings = statement.importClause?.namedBindings
+      if (!bindings || !ts.isNamedImports(bindings)) return []
+      return bindings.elements.map((element) => element.name.text)
+    })
+
+const hasExportedFunction = (
+  sourceFile: ts.SourceFile,
+  functionName: string,
+): boolean =>
+  sourceFile.statements.some(
+    (statement) =>
+      ts.isFunctionDeclaration(statement) &&
+      statement.name?.text === functionName &&
+      statement.modifiers?.some(
+        (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
+      ),
+  )
+
+const hasVariableInitializedByCall = (
+  sourceFile: ts.SourceFile,
+  variableName: string,
+  callName: string,
+): boolean => {
+  let found = false
+
+  const visit = (node: ts.Node) => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.name.text === variableName &&
+      node.initializer &&
+      ts.isCallExpression(node.initializer) &&
+      ts.isIdentifier(node.initializer.expression) &&
+      node.initializer.expression.text === callName
+    ) {
+      found = true
+      return
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+  return found
+}
+
+const useMemoObjectPropertyNamesInFunction = (
+  sourceFile: ts.SourceFile,
+  functionName: string,
+): string[] => {
+  const names = new Set<string>()
+
+  const propertyNameText = (name: ts.PropertyName): string | null => {
+    if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text
+    return null
+  }
+
+  const collectObjectProperties = (objectLiteral: ts.ObjectLiteralExpression) => {
+    for (const property of objectLiteral.properties) {
+      if (ts.isShorthandPropertyAssignment(property)) {
+        names.add(property.name.text)
+      } else if (
+        ts.isPropertyAssignment(property) ||
+        ts.isMethodDeclaration(property)
+      ) {
+        const name = propertyNameText(property.name)
+        if (name) names.add(name)
+      }
+    }
+  }
+
+  const visitFunctionBody = (node: ts.Node) => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'useMemo'
+    ) {
+      const firstArg = node.arguments[0]
+      if (firstArg && ts.isArrowFunction(firstArg)) {
+        const body = firstArg.body
+        if (ts.isObjectLiteralExpression(body)) collectObjectProperties(body)
+        if (ts.isParenthesizedExpression(body) && ts.isObjectLiteralExpression(body.expression)) {
+          collectObjectProperties(body.expression)
+        }
+      }
+    }
+    ts.forEachChild(node, visitFunctionBody)
+  }
+
+  for (const statement of sourceFile.statements) {
+    if (
+      ts.isFunctionDeclaration(statement) &&
+      statement.name?.text === functionName &&
+      statement.body
+    ) {
+      visitFunctionBody(statement.body)
+    }
+  }
+
+  return [...names].sort()
+}
+
+const hasJsxElementNamed = (
+  sourceFile: ts.SourceFile,
+  elementName: string,
+): boolean => {
+  let found = false
+
+  const visit = (node: ts.Node) => {
+    if (
+      (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
+      ts.isIdentifier(node.tagName) &&
+      node.tagName.text === elementName
+    ) {
+      found = true
+      return
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+  return found
+}
+
+const exportedFilesLeakPackageImport = (
+  files: Record<string, string>,
+  packagePrefix: string,
+): boolean =>
+  Object.entries(files).some(([fileName, moduleSource]) =>
+    importSpecifiers(parseTsx(fileName, moduleSource)).some((specifier) =>
+      specifier.startsWith(packagePrefix),
+    ),
+  )
+
+const parseHtmlDocument = (html: string) => parseHTML(html).document
+
+const extractRouteScriptText = (html: string): string => {
+  const document = parseHtmlDocument(html)
+  for (const script of document.querySelectorAll('script')) {
+    const text = script.textContent ?? ''
+    if (text.includes('targetMap') || text.includes('__SHIP_FAST_EXPORT__')) {
+      return text
+    }
+  }
+  return ''
+}
+
+const extractTargetMap = (scriptText: string): Record<string, string> => {
+  const match = scriptText.match(/var targetMap = (\{[\s\S]*?\});/)
+  if (!match?.[1]) return {}
+  return JSON.parse(match[1]) as Record<string, string>
+}
+
+const v2ComposedExportSource = `root = PageSwitch(["Home"], [home])
+homeHero = EcommerceHero()
+homeHeroAnchor = SectionAnchor("home_hero", homeHero, "scroll-mt-28")
+homeDetail = ProductDetailHero({"title":"Aurora Pro"})
+home = Stack([homeHeroAnchor, homeDetail])`
+
 describe('openui-export-builder', () => {
   it('parses OpenUI source into export metadata', () => {
     const parsed = parseOpenUIForExport(source, siteSpecJson)
@@ -46,6 +239,14 @@ describe('openui-export-builder', () => {
     expect(parsed.projectName).toBe('Export Demo')
     expect(parsed.routes).toEqual(['Home'])
     expect(parsed.root.typeName).toBe('SaasHero')
+  })
+
+  it('parses PageSwitch target maps for route and section navigation', () => {
+    const parsed = parseOpenUIForExport(routedSource, siteSpecJson)
+
+    expect(parsed.routes).toEqual(['Home', 'Pricing'])
+    expect(parsed.targetMap['Get Started']).toBe('Pricing#pricing_pricing')
+    expect(parsed.targetMap['get started']).toBe('Pricing#pricing_pricing')
   })
 
   it('parses generated source with malformed quoted object keys', () => {
@@ -79,7 +280,36 @@ describe('openui-export-builder', () => {
     expect(JSON.stringify(parsed.library.toJSONSchema())).toContain('SaasHero')
   })
 
-  it('builds standalone HTML without exposing OpenUI source', async () => {
+  it('carries PageSwitch target maps into standalone HTML routing', async () => {
+    const result = await buildOpenUIHtmlExport({
+      source: routedSource,
+      siteSpecJson,
+      sessionId: 'routed-html',
+      target: 'html',
+    })
+    const html = decodeExportBody(result.body)
+    const document = parseHtmlDocument(html)
+    const scriptText = extractRouteScriptText(html)
+    const targetMap = extractTargetMap(scriptText)
+
+    // targetMap is embedded as JSON in the route script
+    expect(targetMap['Get Started']).toBe('Pricing#pricing_pricing')
+    expect(targetMap['get started']).toBe('Pricing#pricing_pricing')
+
+    // client-side routing helpers are defined in the route script
+    expect(scriptText).toContain('function fixedHeaderOffset()')
+    expect(scriptText).toContain('function scrollToSection(id)')
+    expect(scriptText).toContain('window.scrollTo({ top: top, behavior:')
+    expect(scriptText).toContain("window.scrollTo({ top: 0, behavior: 'smooth' })")
+
+    // routes render as data-sf-export-page sections (first visible, rest hidden)
+    const pages = document.querySelectorAll('[data-sf-export-page]')
+    expect(pages).toHaveLength(2)
+    expect(pages[0]?.getAttribute('hidden')).toBeNull()
+    expect(pages[1]?.getAttribute('hidden')).not.toBeNull()
+  })
+
+  it('builds standalone HTML with a dark shell and baked theme variables', async () => {
     const result = await buildOpenUIHtmlExport({
       source,
       siteSpecJson,
@@ -87,21 +317,22 @@ describe('openui-export-builder', () => {
       target: 'html',
     })
     const html = decodeExportBody(result.body)
+    const document = parseHtmlDocument(html)
 
     expect(result.contentType).toBe('text/html; charset=utf-8')
     expect(result.filename).toBe('index.html')
-    // Section families render from baked-in defaults in the standalone HTML
-    // preview (positionally-passed props are not the section render path), so we
-    // assert the rendered root container + dark shell + no OpenUI leakage rather
-    // than a section-specific heading string. Prop carry-through is covered by the
-    // React/Next ZIP tests asserting src/data/pages.ts contains the heading.
-    expect(html).toContain('id="openui-root"')
-    expect(html).toContain('--background:')
-    expect(html).toContain('color-scheme: dark')
-    expect(html).toContain('"mode":"dark"')
-    expect(html).not.toContain('@openuidev')
-    expect(html).not.toContain('defineComponent')
-    expect(html).not.toContain('root = Stack')
+
+    // root container + dark shell
+    const root = document.querySelector('#openui-root')
+    expect(root).not.toBeNull()
+    expect(root?.getAttribute('class')).toContain('dark')
+
+    // theme variables are baked into the :root style rule
+    const style = document.querySelector('style')
+    expect(style?.textContent).toContain('--background:')
+
+    // color-scheme is set on the root container style
+    expect(root?.getAttribute('style')).toContain('color-scheme: dark')
   })
 
   it('preserves edited preview markup in standalone HTML exports', async () => {
@@ -116,12 +347,23 @@ describe('openui-export-builder', () => {
       isDark: false,
     })
     const html = decodeExportBody(result.body)
+    const document = parseHtmlDocument(html)
+    const root = document.querySelector('#openui-root')
+    const headline = root?.querySelector('h1.hero-title')
+    const image = root?.querySelector('img')
 
-    expect(html).toContain('Edited headline')
-    expect(html).toContain('color: rgb(255, 0, 0); text-align: center;')
-    expect(html).toContain('https://cdn.example.test/edited-hero.jpg')
-    expect(html).toContain('color-scheme: light')
-    expect(html).toContain('"mode":"light"')
+    expect(headline?.textContent).toBe('Edited headline')
+    expect(headline?.getAttribute('style')).toBe(
+      'color: rgb(255, 0, 0); text-align: center;',
+    )
+    expect(image?.getAttribute('src')).toBe(
+      'https://cdn.example.test/edited-hero.jpg',
+    )
+    expect(image?.getAttribute('alt')).toBe('Edited hero image')
+
+    // light shell: no dark class, color-scheme set to light
+    expect(root?.getAttribute('class')).not.toContain('dark')
+    expect(root?.getAttribute('style')).toContain('color-scheme: light')
   })
 
   it('extracts body markup before wrapping full preview documents in standalone HTML exports', async () => {
@@ -136,15 +378,19 @@ describe('openui-export-builder', () => {
       isDark: false,
     })
     const html = decodeExportBody(result.body)
-    const rootMatch = html.match(
-      /<div id="openui-root"[\s\S]*?>([\s\S]*?)<\/div>\s*<script>/,
-    )
+    const document = parseHtmlDocument(html)
+    const roots = document.querySelectorAll('#openui-root')
 
-    expect(rootMatch?.[1]).toContain('Edited document headline')
-    expect(rootMatch?.[1]).not.toContain('<!doctype html>')
-    expect(rootMatch?.[1]).not.toContain('<html')
-    expect(rootMatch?.[1]).not.toContain('<body')
-    expect(html.match(/id="openui-root"/g)).toHaveLength(1)
+    // only one openui-root container in the wrapped output
+    expect(roots).toHaveLength(1)
+    const root = roots[0]
+    // body markup is extracted: the headline survives, no document wrappers
+    expect(root?.querySelector('main h1')?.textContent).toBe(
+      'Edited document headline',
+    )
+    expect(root?.querySelector('html')).toBeNull()
+    expect(root?.querySelector('head')).toBeNull()
+    expect(root?.querySelector('body')).toBeNull()
   })
 
   it('returns raw SFF HTML directly for HTML exports', async () => {
@@ -177,7 +423,10 @@ describe('openui-export-builder', () => {
     )
     expect(files['README.md']).not.toContain('Session:')
     expect(files['README.md']).not.toContain('Target:')
-    expect(files['package.json']).toContain('"dev": "vite --host 0.0.0.0"')
+    const pkg = JSON.parse(files['package.json']) as {
+      scripts: Record<string, string>
+    }
+    expect(pkg.scripts.dev).toBe('vite --host 0.0.0.0')
   })
 
   it('builds a React ZIP without OpenUI internals', async () => {
@@ -215,9 +464,6 @@ describe('openui-export-builder', () => {
     expect(files['README.md']).toContain(
       'Generated with [ShipFast](https://ship-fast.io) 🚀.',
     )
-    expect(Object.values(files).join('\n')).not.toContain('@openuidev')
-    expect(Object.values(files).join('\n')).not.toContain('defineComponent')
-    expect(Object.values(files).join('\n')).not.toContain('root = Stack')
   })
 
   // DELETED: 'packages UI primitive dependencies for FitnessKimiPage React exports'
@@ -239,9 +485,38 @@ describe('openui-export-builder', () => {
 
     expect(files['src/data/pages.ts']).toContain('Hello export')
     expect(files['app/layout.tsx']).toContain('Export Demo')
-    expect(Object.values(files).join('\n')).not.toContain('@openuidev')
-    expect(Object.values(files).join('\n')).not.toContain('defineComponent')
-    expect(Object.values(files).join('\n')).not.toContain('root = Stack')
+  })
+
+  // Single explicit guard: exported artifacts (standalone HTML + React/Next
+  // ZIPs) must never leak OpenUI internals (@openuidev imports, Vue
+  // defineComponent, or raw OpenUI source like "root = Stack").
+  it('does not leak OpenUI internals into exported artifacts', async () => {
+    const forbiddenTokens = ['@openuidev', 'defineComponent', 'root = Stack']
+
+    const htmlResult = await buildOpenUIHtmlExport({
+      source,
+      siteSpecJson,
+      sessionId: 'leak-html',
+      target: 'html',
+    })
+    const html = decodeExportBody(htmlResult.body)
+    for (const token of forbiddenTokens) {
+      expect(html).not.toContain(token)
+    }
+
+    for (const target of ['react', 'next'] as const) {
+      const result = await buildOpenUIExport({
+        source,
+        siteSpecJson,
+        sessionId: `leak-${target}`,
+        target,
+      })
+      const files = unzipBuiltExportTextFiles(result.body)
+      const joined = Object.values(files).join('\n')
+      for (const token of forbiddenTokens) {
+        expect(joined).not.toContain(token)
+      }
+    }
   })
 
   // DELETED: two commerce tests ("translates Lakebed-backed commerce pages to
@@ -251,6 +526,167 @@ describe('openui-export-builder', () => {
   // mutation scaffolding, formatCurrency, commerce store seeds, etc. EcommerceHero
   // is a static section that does NOT trigger the commerce/site-data path, so there
   // is no section-family equivalent to migrate these assertions to.
+
+  it('packages fullstack capsule helpers for React exports without Lakebed package leaks', async () => {
+    const result = await buildOpenUIExport({
+      source: 'root = EcommerceHero()',
+      siteSpecJson,
+      sessionId: 'react-commerce-fullstack',
+      target: 'react',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    const component = parseTsx(
+      'src/components/EcommerceHero.tsx',
+      files['src/components/EcommerceHero.tsx'] ?? '',
+    )
+    const siteData = parseTsx('src/lib/site-data.ts', files['src/lib/site-data.ts'] ?? '')
+
+    expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
+    expect(files['src/lib/site-data.ts']).toBeDefined()
+    expect(hasVariableInitializedByCall(component, 'lakebed', 'useLakebedAdapter')).toBe(
+      true,
+    )
+    expect(namedImportsFromModule(siteData, 'react')).toEqual(
+      expect.arrayContaining(['useRef']),
+    )
+    expect(hasExportedFunction(siteData, 'useLakebedAdapter')).toBe(true)
+    expect(hasExportedFunction(siteData, 'useKeyedLakebedMutation')).toBe(true)
+    expect(
+      useMemoObjectPropertyNamesInFunction(siteData, 'useKeyedLakebedMutation'),
+    ).toEqual(
+      expect.arrayContaining([
+        'hasPending',
+        'isPending',
+        'lastError',
+        'pendingKey',
+        'pendingKeys',
+        'reset',
+        'run',
+      ]),
+    )
+    expect(exportedFilesLeakPackageImport(files, '@ship-fast/lakebed')).toBe(false)
+  })
+
+  it('exports nested composed route sections in React ZIPs without exporting Stack', async () => {
+    const result = await buildOpenUIExport({
+      source: v2ComposedExportSource,
+      siteSpecJson: JSON.stringify({ projectName: 'Nested React Export' }),
+      sessionId: 'react-nested-composed',
+      target: 'react',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    const routeComponent = parseTsx(
+      'src/components/RoutePage1Home.tsx',
+      files['src/components/RoutePage1Home.tsx'] ?? '',
+    )
+
+    expect(files['src/components/RoutePage1Home.tsx']).toBeDefined()
+    expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
+    expect(files['src/components/ProductDetailHero.tsx']).toBeDefined()
+    expect(files['src/components/Stack.tsx']).toBeUndefined()
+    expect(importSpecifiers(routeComponent)).toEqual(
+      expect.arrayContaining(['./EcommerceHero', './ProductDetailHero']),
+    )
+    expect(hasJsxElementNamed(routeComponent, 'EcommerceHero')).toBe(true)
+    expect(hasJsxElementNamed(routeComponent, 'ProductDetailHero')).toBe(true)
+    expect(exportedFilesLeakPackageImport(files, '@ship-fast/')).toBe(false)
+  })
+
+  it('packages shared section-kit dependencies for React exports', async () => {
+    expect(resolveBlockSourceManifestPath('src/section-kit/SiteNav.tsx')).toBe(
+      'src/section-kit/SiteNav.tsx',
+    )
+    expect(
+      resolveBlockSourceManifestPath('src/section-kit/MobileNavDrawer.tsx'),
+    ).toBe('src/section-kit/MobileNavDrawer.tsx')
+
+    for (const [componentName, exportSource] of [
+      ['LinkInBioNavbar', 'root = LinkInBioNavbar()'],
+      ['ChurchNavbar', 'root = ChurchNavbar()'],
+    ]) {
+      const result = await buildOpenUIExport({
+        source: exportSource,
+        siteSpecJson,
+        sessionId: `react-section-kit-${componentName}`,
+        target: 'react',
+      })
+      const files = unzipBuiltExportTextFiles(result.body)
+
+      expect(files[`src/components/${componentName}.tsx`]).toBeDefined()
+      expect(exportedFilesLeakPackageImport(files, '#/')).toBe(false)
+      expect(exportedFilesLeakPackageImport(files, '@ship-fast/')).toBe(false)
+    }
+  })
+
+  it('packages fullstack capsule helpers for Next exports with the site data provider', async () => {
+    const result = await buildOpenUIExport({
+      source: 'root = EcommerceHero()',
+      siteSpecJson,
+      sessionId: 'next-commerce-fullstack',
+      target: 'next',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    const component = parseTsx(
+      'src/components/EcommerceHero.tsx',
+      files['src/components/EcommerceHero.tsx'] ?? '',
+    )
+    const layout = parseTsx('app/layout.tsx', files['app/layout.tsx'] ?? '')
+    const siteData = parseTsx('src/lib/site-data.ts', files['src/lib/site-data.ts'] ?? '')
+
+    expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
+    expect(files['app/layout.tsx']).toBeDefined()
+    expect(files['src/lib/site-data.ts']).toBeDefined()
+    expect(hasVariableInitializedByCall(component, 'lakebed', 'useLakebedAdapter')).toBe(
+      true,
+    )
+    expect(importSpecifiers(layout)).toContain('../src/lib/site-data-provider')
+    expect(namedImportsFromModule(siteData, 'react')).toEqual(
+      expect.arrayContaining(['useRef']),
+    )
+    expect(hasExportedFunction(siteData, 'useLakebedAdapter')).toBe(true)
+    expect(hasExportedFunction(siteData, 'useKeyedLakebedMutation')).toBe(true)
+    expect(
+      useMemoObjectPropertyNamesInFunction(siteData, 'useKeyedLakebedMutation'),
+    ).toEqual(
+      expect.arrayContaining([
+        'hasPending',
+        'isPending',
+        'lastError',
+        'pendingKey',
+        'pendingKeys',
+        'reset',
+        'run',
+      ]),
+    )
+    expect(exportedFilesLeakPackageImport(files, '@ship-fast/lakebed')).toBe(false)
+  })
+
+  it('exports nested composed route sections in Next ZIPs without exporting Stack', async () => {
+    const result = await buildOpenUIExport({
+      source: v2ComposedExportSource,
+      siteSpecJson: JSON.stringify({ projectName: 'Nested Next Export' }),
+      sessionId: 'next-nested-composed',
+      target: 'next',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    const routeComponent = parseTsx(
+      'src/components/RoutePage1Home.tsx',
+      files['src/components/RoutePage1Home.tsx'] ?? '',
+    )
+    const nextPage = parseTsx('app/page.tsx', files['app/page.tsx'] ?? '')
+
+    expect(files['src/components/RoutePage1Home.tsx']).toBeDefined()
+    expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
+    expect(files['src/components/ProductDetailHero.tsx']).toBeDefined()
+    expect(files['src/components/Stack.tsx']).toBeUndefined()
+    expect(importSpecifiers(routeComponent)).toEqual(
+      expect.arrayContaining(['./EcommerceHero', './ProductDetailHero']),
+    )
+    expect(hasJsxElementNamed(routeComponent, 'EcommerceHero')).toBe(true)
+    expect(hasJsxElementNamed(routeComponent, 'ProductDetailHero')).toBe(true)
+    expect(hasJsxElementNamed(nextPage, 'RoutePage1Home')).toBe(true)
+    expect(exportedFilesLeakPackageImport(files, '@ship-fast/')).toBe(false)
+  })
 
   it('translates source Lakebed endpoints to Next route handlers', () => {
     const files = renderNextEndpointRouteFiles([

@@ -1,6 +1,13 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
-import { CtaBand } from '#/section-kit/CtaBand.tsx'
+
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
  * AuthCta — bold, centered conversion band for Authly, a developer authentication
@@ -12,10 +19,10 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * near the bottom of an auth platform, identity API, or login SDK page to drive
  * sign-ups. Renders fully with no props.
  */
-export const AuthCta = defineComponent({
+export const AuthCta = defineCapsule({
   name: 'AuthCta',
   description:
-    "Bold, centered conversion band for a developer-auth product built on the shared CtaBand composite at tone='primary': an eyebrow, a strong headline ('Add auth in minutes'), a short developer-focused subtitle, and a centered row of two routable CTAs — a high-contrast 'Start Free' button routing to sign-up plus an outlined 'Read the Docs' button. Both route through useNavigate. Use near the bottom of an auth platform, identity API, or login SDK page to drive sign-ups.",
+    "Bold, centered conversion band for a developer-auth product backed by shared Lakebed conversion state: an eyebrow, a strong headline ('Add auth in minutes'), a short developer-focused subtitle, and a centered row of actions. Primary sign-up/sales actions record fullstack intent with scoped loading; secondary documentation actions still route through useNavigate. Use near the bottom of an auth platform, identity API, or login SDK page to drive sign-ups.",
   props: z.object({
     /** Small eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -33,7 +40,9 @@ export const AuthCta = defineComponent({
     secondaryTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
+    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Get started'
     const headline = props.headline ?? 'Add auth in minutes'
     const subheading =
@@ -43,19 +52,71 @@ export const AuthCta = defineComponent({
     const primaryTarget = props.primaryTarget ?? 'Sign Up'
     const secondaryCta = props.secondaryCta ?? 'Read the Docs'
     const secondaryTarget = props.secondaryTarget ?? 'Docs'
+    const secondaryIsDocs = /\b(doc|guide|learn|read)\b/i.test(secondaryCta)
 
     return (
-      <CtaBand
-        tone="primary"
-        eyebrow={eyebrow}
-        title={headline}
-        subtitle={subheading}
-        actions={[
-          { label: primaryCta, target: primaryTarget, variant: 'primary' },
-          { label: secondaryCta, target: secondaryTarget, variant: 'outline' },
-        ]}
-        className={props.className}
-      />
+      <section
+        className={cn(
+          'bg-primary py-20 text-primary-foreground',
+          props.className,
+        )}
+      >
+        <div className="mx-auto flex max-w-4xl flex-col items-center gap-7 px-6 text-center">
+          <p className="text-sm font-medium text-primary-foreground/80">
+            {eyebrow}
+          </p>
+          <div className="flex flex-col gap-4">
+            <h2 className="text-3xl font-semibold tracking-tight md:text-5xl">
+              {headline}
+            </h2>
+            <p className="mx-auto max-w-2xl text-base text-primary-foreground/80 md:text-lg">
+              {subheading}
+            </p>
+          </div>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <SaasPlanActionButton
+              lakebed={lakebed}
+              intentLabel={primaryTarget}
+              plan={primaryCta}
+              source="cta"
+              pendingChildren={
+                <>
+                  <SaasMutationSpinner className="size-4" />
+                  Starting
+                </>
+              }
+              className="inline-flex min-w-40 items-center justify-center gap-2 rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+            >
+              {primaryCta}
+            </SaasPlanActionButton>
+            {secondaryIsDocs ? (
+              <button
+                type="button"
+                onClick={() => go(secondaryTarget)}
+                className="inline-flex min-w-40 items-center justify-center rounded-full border border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
+              >
+                {secondaryCta}
+              </button>
+            ) : (
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={secondaryTarget}
+                plan={secondaryCta}
+                source="cta"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Sending
+                  </>
+                }
+                className="inline-flex min-w-40 items-center justify-center gap-2 rounded-full border border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
+              >
+                {secondaryCta}
+              </SaasPlanActionButton>
+            )}
+          </div>
+        </div>
+      </section>
     )
   },
 })

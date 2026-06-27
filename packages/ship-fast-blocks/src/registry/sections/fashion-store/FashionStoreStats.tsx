@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * surface headline metrics — customers, markets, ratings, sustainability — for
  * clothing brands, boutiques, or any premium retail storefront.
  */
-export const FashionStoreStats = defineComponent({
+export const FashionStoreStats = defineCapsule({
   name: 'FashionStoreStats',
   description:
     'Slim brand stats strip for a minimalist fashion store: a top-and-bottom bordered band with a centered 2-to-4 column grid of stat blocks, each pairing a large serif value with a small muted label. Use to surface headline metrics — happy customers, global markets, average rating, carbon neutrality — for clothing brands, boutiques, or any premium retail storefront.',

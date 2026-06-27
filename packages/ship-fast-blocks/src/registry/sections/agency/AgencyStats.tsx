@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * about-with-stats section, team credibility band, or any metric-led narrative
  * paired with a feature image. Renders fully with no props via baked-in defaults.
  */
-export const AgencyStats = defineComponent({
+export const AgencyStats = defineCapsule({
   name: 'AgencyStats',
   description:
     "Split stats / about band for a creative digital-agency page: a two-column layout with a heading, about/intro paragraph and a 2x2 grid of big metric figures (each with a left accent rule) on the left, and a 4:3 alt-driven showcase photo wrapped in a soft glowing gradient halo with a token border on the right. Tokens-only, no links. Use for an agency's 'by the numbers' / about-with-stats section, team credibility band, or any metric-led narrative paired with a feature image.",

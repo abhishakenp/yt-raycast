@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * CTA button, plus a centered footnote underneath. CTAs route through useNavigate.
  * Use for membership tiers / plans on gyms, fitness studios, yoga or boxing studios.
  */
-export const FitnessPricing = defineComponent({
+export const FitnessPricing = defineCapsule({
   name: 'FitnessPricing',
   description:
     "Three-tier membership pricing block for a gym or fitness studio: a centered heading and lead paragraph above a 3-column grid of plan cards (the 'popular' tier inverted to a primary-filled card with a corner ribbon), each with a name, tagline, big price plus period, a check / cross feature list and a full-width CTA button, plus a centered footnote underneath. CTAs route through useNavigate. Use for membership tiers, plans or pricing on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.",

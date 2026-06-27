@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -11,7 +12,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate on click. Use as the topic-browse / category-directory section for
  * community platforms, forums, or discussion-board products.
  */
-export const CommunityForumTopics = defineComponent({
+export const CommunityForumTopics = defineCapsule({
   name: 'CommunityForumTopics',
   description:
     'Colorful topic / category directory grid for a community-platform landing page: a centered heading and description above a responsive 4-column grid of rounded card tiles, each with a tinted emoji circle, a title, and an active-discussion count; cards route through useNavigate on click. Use as the topic-browse / category-directory section for community platforms, forums, or discussion-board products.',

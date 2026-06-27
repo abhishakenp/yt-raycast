@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -16,7 +17,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * professional-services sites. Renders fully with no props via baked-in
  * "Reinhart & Associates" defaults.
  */
-export const LawFirmFooter = defineComponent({
+export const LawFirmFooter = defineCapsule({
   name: 'LawFirmFooter',
   description:
     'Dark four-column site footer on the foreground surface for a law firm: a wide brand column with a squared initial tile, two-line serif wordmark (firm name + tracked-uppercase tagline), an about paragraph and an address line with a pin icon, alongside a practice-areas link column, a firm link column and a contact column with phone / email / hours rows, above a bordered-top bar with an auto-updating copyright line and legal links. High-contrast, refined, authoritative editorial aesthetic with sharp squared corners; the brand button and every link route through useNavigate. Use as the closing site footer for law firms, attorneys, legal practices, corporate counsel, consulting, accounting or professional-services sites.',

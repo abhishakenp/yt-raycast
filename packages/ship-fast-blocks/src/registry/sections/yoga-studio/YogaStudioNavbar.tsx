@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { SiteNav } from '#/section-kit/SiteNav.tsx'
  * studios, movement spaces, pilates studios, and mindfulness centers. Renders
  * fully with no props via baked-in defaults.
  */
-export const YogaStudioNavbar = defineComponent({
+export const YogaStudioNavbar = defineCapsule({
   name: 'YogaStudioNavbar',
   description:
     "Warm, grounded top navigation for a yoga-studio site built on the shared SiteNav composite: a clean bordered-bottom bar with a wordmark on the left, centered nav links (Classes / Schedule / Teachers / Pricing), a filled primary 'Start Free Trial' CTA on the right, and a real mobile drawer. The wordmark and links route through useNavigate. Use as the opening site navigation for yoga studios, movement spaces, pilates studios, and mindfulness centers.",

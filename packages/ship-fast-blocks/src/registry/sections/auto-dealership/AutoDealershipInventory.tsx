@@ -1,8 +1,16 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  AutoLeadActionButton,
+  AutoMutationSpinner,
+  autoVehicle,
+  useSyncAutoVehicles,
+} from './auto-dealership-interactions.tsx'
+import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
 /**
  * AutoDealershipInventory — featured-inventory card grid for an auto dealership
@@ -11,15 +19,16 @@ import { Image } from '#/lib/img.tsx'
  * (Certified / Electric / Hybrid — electric/hybrid tinted differently),
  * year-make-model title, a mileage / transmission / drivetrain spec line,
  * feature chips (Leather, Navigation, Autopilot…), and a price + "View Details"
- * footer. A centered "View All" button sits below the grid. Each card and the
- * View-All button route through useNavigate. Use as the primary listings /
+ * footer. A centered "View All" button sits below the grid. Cards seed shared
+ * search state and their CTAs write Lakebed vehicle-interest leads; View-All
+ * routes through useNavigate. Use as the primary listings /
  * browse-inventory section for dealerships, used-car lots, or EV/hybrid lots.
  * Renders fully with no props via baked-in defaults.
  */
-export const AutoDealershipInventory = defineComponent({
+export const AutoDealershipInventory = defineCapsule({
   name: 'AutoDealershipInventory',
   description:
-    'Featured-inventory card grid for an auto dealership / used-car page: a centered heading and lead over a responsive 3-up grid of vehicle cards (zoom-on-hover photo with a Certified/Electric/Hybrid corner badge, year-make-model title, mileage / transmission / drivetrain spec line, feature chips like Leather/Navigation/Autopilot, and a price + View Details footer), plus a centered View-All button below. Cards and the View-All button route through useNavigate and photos use the alt-driven Image component. Use as the primary listings / browse-inventory section for dealerships, used-car lots, or EV/hybrid lots.',
+    'Featured-inventory card grid for an auto dealership / used-car page backed by shared Lakebed vehicle/search state: a centered heading and lead over a responsive 3-up grid of vehicle cards (zoom-on-hover photo with a Certified/Electric/Hybrid corner badge, year-make-model title, mileage / transmission / drivetrain spec line, feature chips like Leather/Navigation/Autopilot, and a price + View Details footer), plus a centered View-All button below. Cards seed vehicle search and their CTAs write vehicle-interest leads; the View-All button routes through useNavigate and photos use the alt-driven Image component. Use as the primary listings / browse-inventory section for dealerships, used-car lots, or EV/hybrid lots.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -43,7 +52,8 @@ export const AutoDealershipInventory = defineComponent({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: autoDealershipLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const heading = props.heading ?? 'Featured Inventory'
     const description =
@@ -107,6 +117,18 @@ export const AutoDealershipInventory = defineComponent({
               'Toyota RAV4 hybrid compact SUV in white with black roof rails',
           },
         ]
+    useSyncAutoVehicles(
+      lakebed,
+      items.map((vehicle) =>
+        autoVehicle({
+          badge: vehicle.badge,
+          imageAlt: vehicle.imageAlt,
+          name: vehicle.name,
+          price: vehicle.price,
+          specs: vehicle.specs,
+        }),
+      ),
+    )
 
     return (
       <section className={cn('bg-card py-16 lg:py-24', props.className)}>
@@ -160,13 +182,23 @@ export const AutoDealershipInventory = defineComponent({
                   </div>
                   <div className="flex items-center justify-between border-t border-border pt-4">
                     <p className="text-2xl font-semibold">{v.price}</p>
-                    <button
-                      type="button"
-                      onClick={() => go(v.name)}
+                    <AutoLeadActionButton
+                      lakebed={lakebed}
+                      action="vehicle_interest"
+                      label="View Details"
+                      intentKey={`vehicle:${v.name}`}
+                      source="inventory"
+                      vehicle={v.name}
+                      pendingChildren={
+                        <>
+                          <AutoMutationSpinner />
+                          Sending
+                        </>
+                      }
                       className="text-sm font-medium transition-colors hover:text-muted-foreground"
                     >
                       View Details →
-                    </button>
+                    </AutoLeadActionButton>
                   </div>
                 </div>
               </article>

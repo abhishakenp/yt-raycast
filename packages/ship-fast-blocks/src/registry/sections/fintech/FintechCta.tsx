@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -11,7 +12,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * the conversion band near the end of the page. Renders fully with no props via
  * baked-in defaults.
  */
-export const FintechCta = defineComponent({
+export const FintechCta = defineCapsule({
   name: 'FintechCta',
   description:
     "Full-width closing call-to-action band for a fintech / neobank landing page built on the shared CtaBand composite (primary tone): an eyebrow, a 'Start banking smarter' title, a supporting subtitle, and a row of routable actions ('Open an Account' primary + 'Talk to sales' outline). Actions route through useNavigate. Use as the conversion band near the end of the page.",

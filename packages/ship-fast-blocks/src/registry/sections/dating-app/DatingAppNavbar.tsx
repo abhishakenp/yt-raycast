@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * or any friendly, conversion-focused social-connection landing page. Renders fully
  * with no props via baked-in "HeartLink" defaults.
  */
-export const DatingAppNavbar = defineComponent({
+export const DatingAppNavbar = defineCapsule({
   name: 'DatingAppNavbar',
   description:
     "Sticky, translucent top navigation bar for a dating / matchmaking app landing page: backdrop-blurred, border-bottomed header pinned to the top with a rounded rose/primary heart-glyph logo tile + app name on the left, centered horizontal nav links (desktop), and a 'Log In' text button plus a pill-shaped primary 'Get the App' CTA on the right. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for dating apps, matchmaking services, singles platforms, friend-finders, or any friendly conversion-focused social-connection landing page.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -15,7 +16,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * lawn-care services or grounds-keeping companies. Renders fully with no props
  * via baked-in three-tier defaults.
  */
-export const LandscapingPricing = defineComponent({
+export const LandscapingPricing = defineCapsule({
   name: 'LandscapingPricing',
   description:
     'Centered-header 3-tier maintenance pricing section for a landscaping / outdoor-design company on a warm stone band: a heading + description introduce three rounded plan cards (name, audience, big price + period, a check-listed feature set, and a full-width CTA button); the featured middle plan inverts to a solid primary surface, lifts slightly, and carries a corner POPULAR badge, with check marks, prices and buttons recoloring for the featured plan. Calm, organic and premium with a sage-green accent; CTAs route through useNavigate. Use for recurring care / maintenance plans for landscapers, lawn-care services, garden designers or grounds-keeping companies.',

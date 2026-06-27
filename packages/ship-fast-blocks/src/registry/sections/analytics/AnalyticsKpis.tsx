@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * headline-metric scorecard band. Renders fully with no props via four baked-in
  * default KPIs.
  */
-export const AnalyticsKpis = defineComponent({
+export const AnalyticsKpis = defineCapsule({
   name: 'AnalyticsKpis',
   description:
     'A 4-up KPI metric-card grid for a SaaS analytics dashboard: a responsive 1/2/4-column grid of bordered cards, each with a label, large value, an up/down trend delta (positive chart styling, negative destructive) with a directional arrow, a rotating icon chip, and a caption. Tokens-only, no links. Use as the top summary row of a dashboard — total revenue, active users, conversion rate, average session, or any headline-metric scorecard band.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -17,7 +18,7 @@ import { Image } from '#/lib/img.tsx'
  * family learning apps, and playful course platforms. Renders fully with no
  * props via baked-in "WonderLearn" defaults.
  */
-export const KidsEducationHero = defineComponent({
+export const KidsEducationHero = defineCapsule({
   name: 'KidsEducationHero',
   description:
     "Bright, playful split hero for a kids / family learning platform: left side with a live-learners pill (pulsing dot), bold headline with a gradient 'adventure' highlight, supporting paragraph, dual rounded CTAs (filled primary with arrow + outlined play-icon secondary), and an inline trust-points row with check icons; right side has a large rounded hero photo with soft overlay plus two floating cards (a star-rating card bottom-left and an avatar-stack '+2k today' card top-right). Decorative blurred glow orbs sit behind. CTAs route through useNavigate. Use as the opening hero for kids-education startups, children's e-learning, family learning apps, and playful course platforms.",

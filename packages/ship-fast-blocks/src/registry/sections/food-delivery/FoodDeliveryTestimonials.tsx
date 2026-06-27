@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * apps, restaurant aggregators, or online-ordering platforms. Renders fully with
  * no props via baked-in defaults.
  */
-export const FoodDeliveryTestimonials = defineComponent({
+export const FoodDeliveryTestimonials = defineCapsule({
   name: 'FoodDeliveryTestimonials',
   description:
     'Card-surfaced 3-up testimonials grid for a food-delivery / restaurant-marketplace site: a centered heading + supporting paragraph above three soft-bordered review cards, each with a 5-star row, a quoted blurb, and an alt-driven circular avatar beside a name and location. Use to build trust with customer and partner social proof for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',

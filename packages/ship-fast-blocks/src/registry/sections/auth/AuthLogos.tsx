@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * quiet social-proof band. Use beneath the hero of an auth platform, identity
  * API, or developer SaaS to establish credibility. Renders fully with no props.
  */
-export const AuthLogos = defineComponent({
+export const AuthLogos = defineCapsule({
   name: 'AuthLogos',
   description:
     "Bespoke trusted-by logo strip for a developer-auth product: a centered uppercase eyebrow ('Trusted by engineering teams at') above a responsive wrapping row of company wordmarks rendered as token-styled text spans (logos-as-text, not images) in muted foreground. Use as a quiet social-proof band beneath the hero of an auth platform, identity API, or developer SaaS landing page.",

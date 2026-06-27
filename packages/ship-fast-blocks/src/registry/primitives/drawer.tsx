@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Drawer as UIDrawer,
   DrawerContent,
@@ -13,7 +14,7 @@ import { Button } from '#/components/ui/button.tsx'
 
 // Overlay (vaul): flatten Drawer parts into one node. direction mirrors the
 // real prop. Rendered open by default so the panel content is visible.
-export const Drawer = defineComponent({
+export const Drawer = defineCapsule({
   name: 'Drawer',
   description:
     'Drawer panel that slides from an edge (vaul). direction top|right|bottom|left. Has title, description, body (children) and footer. Open by default in preview.',

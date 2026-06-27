@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * commissions, security, markets, transfers, retirement accounts, AI features.
  * Renders fully with no props via six baked-in Q&As.
  */
-export const InvestingFaq = defineComponent({
+export const InvestingFaq = defineCapsule({
   name: 'InvestingFaq',
   description:
     'Accordion FAQ for an investing / fintech page: a narrow centered column with a heading + lead above a stack of native <details> disclosure cards, each showing a bold question with a chevron that rotates when open, revealing a muted answer paragraph. Tokens only, no links, no JS. Use to answer common questions about a brokerage or trading product (commissions, security, markets, transfers, retirement accounts, AI features).',

@@ -1,8 +1,14 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  HotelBookingActionButton,
+  HotelMutationSpinner,
+} from './hotel-resort-interactions.tsx'
+import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
 
 /**
  * HotelResortHero — full-bleed oceanfront photo hero for a luxury hotel /
@@ -11,15 +17,15 @@ import { Image } from '#/lib/img.tsx'
  * uppercase location eyebrow, a thin oversized multi-line headline, a light
  * supporting paragraph, dual CTAs (solid light primary + glassy outlined
  * secondary), and a row of trust badges beneath (first with a star icon, others
- * with a location-pin icon). Editorial, airy and high-end; CTAs route through
- * useNavigate. Use as the opening hero for hotels, beach or coastal resorts,
+ * with a location-pin icon). Editorial, airy and high-end; booking CTA writes
+ * to Lakebed while the explore CTA preserves page navigation. Use as the opening hero for hotels, beach or coastal resorts,
  * spa retreats, boutique inns, villas, or wellness destinations. Renders fully
  * with no props via baked-in "Azure Coast" defaults.
  */
-export const HotelResortHero = defineComponent({
+export const HotelResortHero = defineCapsule({
   name: 'HotelResortHero',
   description:
-    'Full-bleed oceanfront photo hero for a luxury hotel / resort & spa landing page: a near-full-viewport section over a full-cover background image with a darkening token gradient, a small uppercase location eyebrow, a thin oversized multi-line headline, a light supporting paragraph, dual CTAs (solid light primary + glassy outlined secondary), and a row of trust badges beneath (a star badge plus location-pin badges). Editorial, airy and high-end; CTAs route through useNavigate and imagery uses the alt-driven Image component. Use as the opening hero for hotels, beach or coastal resorts, spa retreats, boutique inns, villas, or wellness destinations.',
+    'Full-bleed oceanfront photo hero for a luxury hotel / resort & spa landing page: a near-full-viewport section over a full-cover background image with a darkening token gradient, a small uppercase location eyebrow, a thin oversized multi-line headline, a light supporting paragraph, dual CTAs (solid light primary Lakebed booking action + glassy outlined page navigation), and a row of trust badges beneath (a star badge plus location-pin badges). Editorial, airy and high-end; imagery uses the alt-driven Image component. Use as the opening hero for hotels, beach or coastal resorts, spa retreats, boutique inns, villas, or wellness destinations.',
   props: z.object({
     /** Uppercase location eyebrow above the headline. */
     location: z.string().optional(),
@@ -39,7 +45,8 @@ export const HotelResortHero = defineComponent({
     badges: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: hotelResortLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const location = props.location ?? 'Malibu, California'
     const headingTop = props.headingTop ?? 'Where the Pacific'
@@ -99,13 +106,21 @@ export const HotelResortHero = defineComponent({
               {subheading}
             </p>
             <div className="flex flex-col gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                className="rounded-md bg-background px-8 py-4 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              <HotelBookingActionButton
+                lakebed={lakebed}
+                intentLabel={primaryCta}
+                intentKey="hero-primary-booking"
+                source="hero"
+                pendingChildren={
+                  <>
+                    <HotelMutationSpinner />
+                    Sending
+                  </>
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-background px-8 py-4 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
               >
                 {primaryCta}
-              </button>
+              </HotelBookingActionButton>
               <button
                 type="button"
                 onClick={() => go(secondaryCta)}

@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
-export const SalonBarberHero = defineComponent({
+export const SalonBarberHero = defineCapsule({
   name: 'SalonBarberHero',
   description:
     "Bespoke full-bleed hero for a modern barbershop or salon. Layers a confident grooming photograph behind a darkening overlay and gradient, then centers an eyebrow pill, a bold headline, supporting copy, and dual CTAs over it. A divider-separated hours strip sits beneath the buttons so visitors instantly know when to drop in. Use it as the opening viewport of a barbershop, salon, or men's grooming landing page when you want an editorial, high-contrast first impression.",

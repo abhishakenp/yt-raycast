@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
@@ -14,7 +15,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Use to introduce columnists, correspondents, and contributors for a news,
  * magazine, or publication site.
  */
-export const NewsroomAuthors = defineComponent({
+export const NewsroomAuthors = defineCapsule({
   name: 'NewsroomAuthors',
   description:
     "Editorial 'meet our columnists' block for a digital newsroom or magazine: a serif heading + supporting lede above a responsive 1/2/3/4-up grid of contributor cards, each with a round alt-driven avatar, a serif name, a primary-colored beat/role, a one-to-two-line bio, the linked title of their latest column, and small social handles. Links route through useNavigate; avatars use the Image component. Use to introduce columnists, correspondents, and contributors for a news, magazine, or publication site.",

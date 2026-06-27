@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 const brandMark = (
@@ -22,7 +23,7 @@ const brandMark = (
   </span>
 )
 
-export const PetVeterinaryNavbar = defineComponent({
+export const PetVeterinaryNavbar = defineCapsule({
   name: 'PetVeterinaryNavbar',
   description:
     "Warm, caring navigation header for a veterinary clinic / pet-healthcare site, composing the shared SiteNav kit composite. Renders a friendly paw-glyph brand mark in a rounded primary tile, the clinic wordmark, a desktop link row (Services, Pricing, Our Team, Reviews, Contact), an optional click-to-call phone number, and a filled primary 'Book Appointment' CTA — with a real mobile drawer on small screens. All links and the CTA route via SiteNav's useNavigate wiring. Use it as the sticky site header for veterinary clinics, animal hospitals, pet healthcare practices, vet offices, or emergency animal care.",

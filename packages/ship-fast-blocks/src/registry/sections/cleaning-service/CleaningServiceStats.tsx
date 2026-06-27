@@ -1,11 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
  * CleaningServiceStats — a brand-color stats band for a home-cleaning / maid-service landing page. A full-width primary-background band with a 4-column grid of big metric values (in primary-foreground) and descriptive labels (in muted primary-foreground). No links, no images — pure social-proof numbers. Use as a credibility / trust strip between content sections for residential cleaning companies, maid services, housekeeping platforms, or any local home-service brand. Renders fully with no props via four baked-in defaults.
  */
-export const CleaningServiceStats = defineComponent({
+export const CleaningServiceStats = defineCapsule({
   name: 'CleaningServiceStats',
   description:
     'Brand-color stats band for a home-cleaning / maid-service landing page: full-width primary-background band with a 4-column grid of big metric values and descriptive labels. No links, no images — pure social-proof numbers. Use as a credibility / trust strip between content sections for residential cleaning, maid services, housekeeping, or local home-service brands.',

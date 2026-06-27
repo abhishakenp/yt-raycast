@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -10,7 +11,7 @@ import { Image } from '#/lib/img.tsx'
  * use the alt-driven Image component. Use to introduce coaches, instructors or
  * personal trainers on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
-export const FitnessTrainers = defineComponent({
+export const FitnessTrainers = defineCapsule({
   name: 'FitnessTrainers',
   description:
     'Expert-trainers / coaches grid for a gym or fitness studio: a centered heading and lead paragraph above a 1/2/4-column grid of centered cards, each with a tall rounded headshot, name, role and a short credentials bio. Headshots use the alt-driven Image component. Use to introduce coaches, instructors, yoga directors or personal trainers on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.',

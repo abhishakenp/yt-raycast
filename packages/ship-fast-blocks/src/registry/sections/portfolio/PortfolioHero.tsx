@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * animator personal site that needs a moody, high-craft reel showcase. Renders
  * fully with no props via baked-in "Kaelen Vance" defaults.
  */
-export const PortfolioHero = defineComponent({
+export const PortfolioHero = defineCapsule({
   name: 'PortfolioHero',
   description:
     'Split, cinematic hero band for a dark creative-individual portfolio over a near-black canvas with dual radial cyan glows: a left column with a small uppercase role eyebrow, a huge display headline whose middle word is rendered in a cyan accent, a supporting paragraph, and dual pill CTAs (filled primary + outlined secondary); and a right-column showreel card — a 16:10 alt-driven thumbnail with a glassy circular play overlay and a caption pill. The reel card and both CTAs route through useNavigate. Use as the opening hero for a 3D artist, motion designer, CGI/VFX, art director, or animator personal site that needs a moody, high-craft reel showcase.',

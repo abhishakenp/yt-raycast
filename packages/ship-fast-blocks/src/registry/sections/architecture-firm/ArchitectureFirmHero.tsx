@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -16,7 +17,7 @@ import { Image } from '#/lib/img.tsx'
  * architects or any premium built-environment portfolio site. Renders fully
  * with no props.
  */
-export const ArchitectureFirmHero = defineComponent({
+export const ArchitectureFirmHero = defineCapsule({
   name: 'ArchitectureFirmHero',
   description:
     'Split editorial hero for an architecture-studio / design-practice landing page: a left-aligned content column with a wide letter-spaced eyebrow label, a serene two-line light headline, a relaxed lead paragraph and dual CTAs (solid primary + outline secondary), beside a full-height facade photograph anchored to the right edge on large screens. Calm Scandinavian-minimalist aesthetic with generous whitespace, light type weights and quiet monochrome contrast. CTAs route through useNavigate. Use as the opening hero for architecture firms, design studios, interior designers, landscape architects, urban planners or premium built-environment portfolio sites.',

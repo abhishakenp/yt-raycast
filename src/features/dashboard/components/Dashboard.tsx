@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from 'convex/react'
 import type { CSSProperties } from 'react'
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Activity,
   Bot,
@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PreviewSelection } from '@/components/GenUI/DirectPreview'
+import type { InspectorSelection } from '@/features/editing/element-path'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
 import { useClonePageNav } from '@/features/clone/hooks/useClonePageNav'
@@ -39,15 +40,12 @@ import {
 import { useEditController } from '@/features/editing/hooks/useEditController'
 import { ImageSwapPopover } from '@/features/editing/components/ImageSwapPopover'
 import { InlineEditToolbar } from '@/features/editing/components/InlineEditToolbar'
+import { SectionPromptToolbar } from '@/features/editing/components/SectionPromptToolbar'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import {
-  useOptionalAuth,
-  useOptionalClerk,
-} from '@/shared/auth/use-optional-auth'
 import ThemePicker from '@/genui/components/ThemePicker'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import { cn } from '#/lib/utils'
@@ -314,8 +312,6 @@ export function Dashboard({
   sessionId,
   initialAdminView = false,
 }: DashboardProps) {
-  const auth = useOptionalAuth()
-  const clerk = useOptionalClerk()
   const [startedFromGenerationFlow] = useState(() =>
     typeof window === 'undefined'
       ? false
@@ -326,6 +322,10 @@ export function Dashboard({
     'desktop' | 'tablet' | 'mobile'
   >('desktop')
   const [editMode, setEditMode] = useState(false)
+  const commitTextEditRef = useRef<(() => void) | null>(null)
+  const handleCommitTextReady = useCallback((fn: () => void) => {
+    commitTextEditRef.current = fn
+  }, [])
   const [agentationEnabled] = useState(false)
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
   const [imageSwapState, setImageSwapState] = useState<{
@@ -352,6 +352,12 @@ export function Dashboard({
   const [isAdminActive, setIsAdminActive] = useState(initialAdminView)
   const [isPublishing, setIsPublishing] = useState(false)
   const [publishError, setPublishError] = useState<string>()
+  // Element selected by the devtools-style inspector (pencil mode). Drives the
+  // SectionPromptToolbar (AI section-edit prompt). null = no selection.
+  const [inspectorSelection, setInspectorSelection] =
+    useState<InspectorSelection | null>(null)
+  const [isSectionEditing, setIsSectionEditing] = useState(false)
+  const [sectionEditError, setSectionEditError] = useState<string>()
   const liveGenerationView = useQuery(api.sessions.getGenerationView, {
     lookup: sessionId,
   }) as DashboardGenerationView | null | undefined
@@ -775,16 +781,57 @@ export function Dashboard({
     // Selection no longer used with inline editing
   }
 
+  const handleSectionSelect = (selection: InspectorSelection | null) => {
+    setInspectorSelection(selection)
+  }
+
+  const closeInspectorToolbar = () => {
+    setInspectorSelection(null)
+    document.dispatchEvent(new CustomEvent('ship-fast-inspector-clear'))
+  }
+
+  const handleSectionEditSubmit = async (prompt: string) => {
+    if (!inspectorSelection || !resolvedSessionId) return
+    setIsSectionEditing(true)
+    setSectionEditError(undefined)
+    try {
+      const response = await fetch(
+        `/api/sessions/${encodeURIComponent(resolvedSessionId)}/section-edit`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            instruction: prompt,
+            selection: inspectorSelection,
+            anonymousOwnerSecret: activeAnonymousOwnerSecret,
+          }),
+        },
+      )
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}))
+        throw new Error(
+          (errorBody as { error?: string }).error ??
+            `Section edit failed (${response.status})`,
+        )
+      }
+      // Success — the Convex mutation bumps previewVersion, which triggers
+      // a live query update and re-renders the preview automatically.
+      closeInspectorToolbar()
+    } catch (error) {
+      setSectionEditError(
+        error instanceof Error ? error.message : 'Section edit failed',
+      )
+    } finally {
+      setIsSectionEditing(false)
+    }
+  }
+
   const handleTextChange = async (change: {
     oldText: string
     newText: string
     element: HTMLElement
     occurrenceIndex: number
   }) => {
-    if (!auth.isSignedIn) {
-      clerk.openSignIn()
-      return
-    }
     const tag = change.element.tagName.toLowerCase()
     const text = change.element.textContent?.slice(0, 20) || ''
     const label = `${tag.toUpperCase()}: ${text}…`
@@ -821,10 +868,6 @@ export function Dashboard({
     element: HTMLImageElement
     alt: string
   }) => {
-    if (!auth.isSignedIn) {
-      clerk.openSignIn()
-      return
-    }
     // Optimistic: show the new image immediately (reverted below on failure).
     change.element.src = change.newSrc
     const label = `IMG: ${change.alt.slice(0, 20)}…`
@@ -912,11 +955,6 @@ export function Dashboard({
     style: string
     occurrenceIndex: number
   }) => {
-    if (!auth.isSignedIn) {
-      clerk.openSignIn()
-      return
-    }
-
     // Store original styles for revert
     const activeElement = toolbarState.activeElement
     const originalStyles: Record<string, string> = {}
@@ -1374,6 +1412,8 @@ export function Dashboard({
                             onTextChange={handleTextChange}
                             onImageChange={handleImageChange}
                             onElementActivate={handleElementActivate}
+                            onCommitText={handleCommitTextReady}
+                            onSectionSelect={handleSectionSelect}
                           />
                         ) : null}
                       </div>
@@ -1827,8 +1867,32 @@ export function Dashboard({
         anchorRect={toolbarState.anchorRect}
         activeElement={toolbarState.activeElement}
         onStyleApply={handleStyleApply}
+        onCommitText={() => commitTextEditRef.current?.()}
         isApplying={isApplyingStyle}
         isForking={isForkingSession}
+      />
+      <SectionPromptToolbar
+        isOpen={inspectorSelection !== null}
+        onClose={closeInspectorToolbar}
+        anchorRect={
+          inspectorSelection
+            ? ({
+                left: inspectorSelection.boundingBox.x,
+                top: inspectorSelection.boundingBox.y,
+                width: inspectorSelection.boundingBox.width,
+                height: inspectorSelection.boundingBox.height,
+                right: 0,
+                bottom: 0,
+                x: inspectorSelection.boundingBox.x,
+                y: inspectorSelection.boundingBox.y,
+                toJSON: () => '',
+              } as DOMRect)
+            : null
+        }
+        selection={inspectorSelection}
+        onSubmit={handleSectionEditSubmit}
+        isSubmitting={isSectionEditing}
+        error={sectionEditError}
       />
     </>
   )

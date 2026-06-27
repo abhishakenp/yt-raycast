@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -13,7 +14,7 @@ import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
  * freelance engineer, full-stack developer, or studio portfolio to summarize
  * offerings. Renders fully with no props via baked-in defaults.
  */
-export const PortfolioDevServices = defineComponent({
+export const PortfolioDevServices = defineCapsule({
   name: 'PortfolioDevServices',
   description:
     '4-up services band for a modern developer portfolio: a centered heading and subheading above a responsive grid of plain feature cards (no icons) describing the work the developer takes on — production web apps, cross-platform mobile, REST/GraphQL APIs, and cloud/DevOps. Each card pairs a short title with a concrete one-line description. Theme-token only. Use mid-page on a freelance engineer, full-stack developer, or studio portfolio to summarize offerings.',

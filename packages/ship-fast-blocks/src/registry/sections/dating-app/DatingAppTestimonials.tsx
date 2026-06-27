@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * for dating apps, singles platforms, or relationship products. Renders fully with
  * no props via baked-in couple-story defaults.
  */
-export const DatingAppTestimonials = defineComponent({
+export const DatingAppTestimonials = defineCapsule({
   name: 'DatingAppTestimonials',
   description:
     "3-up 'love stories' testimonial grid for a dating / matchmaking app: a centered heading + supporting paragraph above a responsive 1/2/3-column grid of soft muted cards, each with a round couple avatar beside the pair's names and a 'matched' date, a row of five primary stars, and an italic quote. Avatars are alt-driven <Image>. Use as social proof / success stories for dating apps, singles platforms, or relationship products.",

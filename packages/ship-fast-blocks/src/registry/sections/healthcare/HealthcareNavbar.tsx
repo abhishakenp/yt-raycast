@@ -1,7 +1,17 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceAccountButton,
+  LocalServiceBookingButton,
+  LocalServiceIntentBadge,
+  LocalServiceMobileMenu,
+  LocalServiceMutationSpinner,
+  LocalServiceSearchButton,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * HealthcareNavbar — sticky, translucent top navigation bar for a primary-care
@@ -14,7 +24,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * pediatric / women's-health / telehealth clinics, hospitals or medical groups.
  * Renders fully with no props via baked-in "Vitality Health Partners" defaults.
  */
-export const HealthcareNavbar = defineComponent({
+export const HealthcareNavbar = defineCapsule({
   name: 'HealthcareNavbar',
   description:
     "Sticky translucent top navigation bar for a primary-care / medical-clinic site: backdrop-blurred, border-bottomed header pinned to the top with a heart-in-tile brand mark + clinic name on the left, horizontal nav links in the center (desktop), and a phone-number link plus a solid 'Book Appointment' primary CTA on the right. Links and CTA route through useNavigate for page-switching. Use as the sticky site header for doctors' offices, family-medicine practices, pediatric / women's-health / telehealth clinics, hospitals or medical groups.",
@@ -31,7 +41,8 @@ export const HealthcareNavbar = defineComponent({
     ctaTarget: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Vitality Health Partners'
     const nav = props.nav?.length
@@ -121,13 +132,33 @@ export const HealthcareNavbar = defineComponent({
                 </svg>
                 <span className="font-medium">{phone}</span>
               </button>
-              <button
-                type="button"
-                onClick={() => go(ctaTarget)}
-                className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+              <LocalServiceIntentBadge lakebed={lakebed} />
+              <LocalServiceSearchButton
+                lakebed={lakebed}
+                buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+              />
+              <LocalServiceAccountButton
+                lakebed={lakebed}
+                buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+              />
+              <LocalServiceBookingButton
+                lakebed={lakebed}
+                intentLabel={ctaTarget}
+                service={cta}
+                source="navbar"
+                pendingChildren={
+                  <LocalServiceMutationSpinner className="text-primary-foreground" />
+                }
+                className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
               >
                 {cta}
-              </button>
+              </LocalServiceBookingButton>
+              <LocalServiceMobileMenu
+                brand={brand}
+                homeTarget={nav[0]}
+                nav={nav}
+                buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+              />
             </div>
           </div>
         </nav>

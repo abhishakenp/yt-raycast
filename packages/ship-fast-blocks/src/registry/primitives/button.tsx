@@ -1,9 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Button as UIButton } from '#/components/ui/button.tsx'
 
 // Leaf-primitive exemplar: expose the real cva variants verbatim + className.
-export const Button = defineComponent({
+export const Button = defineCapsule({
   name: 'Button',
   description: 'Clickable button. Mirrors shadcn variant/size.',
   props: z.object({

@@ -1,22 +1,30 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAccountButton,
+  CommerceCartButton,
+  CommerceMobileMenu,
+  CommerceSearchButton,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * CafeNavbar — fixed, translucent top navigation bar for a cozy neighborhood
  * cafe / coffee shop. A backdrop-blurred header pinned to the top: an inline
  * owl brand mark + cafe name on the left, horizontal nav links in the center
- * (desktop), and a pill-shaped "Visit Us" CTA plus a hamburger menu on the
- * right. Every link and the CTA route through useNavigate so labels drive
+ * (desktop), menu command search, Shoo account dropdown, shared Lakebed cart
+ * drawer, a pill-shaped "Visit Us" CTA, and a real mobile drawer on the right.
+ * Every link and the CTA route through useNavigate so labels drive
  * page-switching. Use as the sticky site header for cafes, bakeries, tea
- * houses, brunch spots, or any warm food-and-drink landing page. Renders
- * fully with no props via baked-in "Little Owl Coffee" defaults.
+ * houses, brunch spots, or any warm food-and-drink landing page.
  */
-export const CafeNavbar = defineComponent({
+export const CafeNavbar = defineCapsule({
   name: 'CafeNavbar',
   description:
-    'Fixed translucent top navigation bar for a cozy cafe / coffee shop: backdrop-blurred header with an inline owl brand mark + cafe name on the left, horizontal nav links in the center (desktop), a pill-shaped primary CTA and a hamburger menu on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink landing pages.',
+    'Fixed translucent top navigation bar for a cozy cafe / coffee shop: backdrop-blurred header with an inline owl brand mark + cafe name on the left, horizontal nav links in the center (desktop), menu command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, a pill-shaped primary CTA, and a real mobile drawer on the right. Every link and CTA route through useNavigate for page-switching. Use as the sticky site header for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink landing pages.',
   props: z.object({
     /** Cafe / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -28,9 +36,12 @@ export const CafeNavbar = defineComponent({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Initial cart badge fallback before Lakebed state is available. */
+    cartCount: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Little Owl Coffee'
     const nav = props.nav?.length
@@ -39,6 +50,7 @@ export const CafeNavbar = defineComponent({
     const homeTarget = props.homeTarget ?? nav[0]
     const ctaLabel = props.ctaLabel ?? 'Visit Us'
     const ctaTarget = props.ctaTarget ?? 'Location'
+    const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
 
     const OwlMark = ({ className }: { className?: string }) => (
       <svg
@@ -88,6 +100,19 @@ export const CafeNavbar = defineComponent({
             </div>
 
             <div className="flex items-center gap-4">
+              <CommerceSearchButton
+                lakebed={lakebed}
+                buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+              />
+              <CommerceAccountButton
+                lakebed={lakebed}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
+              />
+              <CommerceCartButton
+                lakebed={lakebed}
+                fallbackCount={initialCartCount}
+                buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+              />
               <button
                 type="button"
                 onClick={() => go(ctaTarget)}
@@ -95,27 +120,12 @@ export const CafeNavbar = defineComponent({
               >
                 {ctaLabel}
               </button>
-              <button
-                type="button"
-                aria-label="Open menu"
-                onClick={() => go(homeTarget)}
-                className="p-2 text-muted-foreground hover:text-foreground md:hidden"
-              >
-                <svg
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
+              <CommerceMobileMenu
+                brand={brand}
+                nav={nav}
+                homeTarget={homeTarget}
+                buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+              />
             </div>
           </div>
         </nav>

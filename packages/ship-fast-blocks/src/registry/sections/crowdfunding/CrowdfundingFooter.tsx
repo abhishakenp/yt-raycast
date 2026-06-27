@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * the site footer for a Kickstarter/Indiegogo-style raise, pre-order, product
  * launch, fundraiser, or maker/hardware campaign.
  */
-export const CrowdfundingFooter = defineComponent({
+export const CrowdfundingFooter = defineCapsule({
   name: 'CrowdfundingFooter',
   description:
     "A 4-column closing footer for a crowdfunding / campaign landing page: a bg-foreground footer with a decorative leaf/sparkle brand mark + campaign name and a tagline in the first cell, multiple link columns, a 'Connect' cell of first-letter social icon buttons, and a bottom row with a copyright note and legal links. All buttons route through useNavigate. Use as the site footer for a Kickstarter/Indiegogo-style raise, pre-order, product launch, fundraiser, or maker/hardware campaign.",

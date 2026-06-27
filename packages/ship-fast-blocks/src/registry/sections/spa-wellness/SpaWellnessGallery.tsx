@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
 
 /**
@@ -10,7 +11,7 @@ import { GalleryGrid } from '#/section-kit/GalleryGrid.tsx'
  * calming visual tour of treatment rooms, relaxation lounges, pools, and natural
  * details. Renders fully with no props via baked-in defaults.
  */
-export const SpaWellnessGallery = defineComponent({
+export const SpaWellnessGallery = defineCapsule({
   name: 'SpaWellnessGallery',
   description:
     "Serene image grid showcasing a spa's spaces and rituals built on the shared GalleryGrid composite: a centered heading above a responsive grid of rounded image tiles rendered through the alt-driven Image component, each with a soft caption. Use to give visitors a calming visual tour of treatment rooms, relaxation lounges, pools, and natural details.",

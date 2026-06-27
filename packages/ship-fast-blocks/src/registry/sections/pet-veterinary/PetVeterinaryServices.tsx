@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 const ICONS = {
@@ -112,7 +113,7 @@ const DEFAULT_SERVICES: {
   },
 ]
 
-export const PetVeterinaryServices = defineComponent({
+export const PetVeterinaryServices = defineCapsule({
   name: 'PetVeterinaryServices',
   description:
     'Warm, caring services band for a veterinary clinic site, composing the FeatureGrid kit composite into a grid of service cards. Each card pairs a friendly outline icon tile (text-primary) with a service name and a reassuring description — Wellness Exams, Dental Care, Surgery, and Emergency Care by default. Accepts a public `services` prop to override the offering list. Use it to show pet parents the breadth of compassionate care available in a scannable, trust-building layout.',

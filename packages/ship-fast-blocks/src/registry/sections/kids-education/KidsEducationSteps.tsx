@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -13,7 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * services, and family learning apps. Renders fully with no props via baked-in
  * defaults.
  */
-export const KidsEducationSteps = defineComponent({
+export const KidsEducationSteps = defineCapsule({
   name: 'KidsEducationSteps',
   description:
     "Playful 'how it works' flow for a kids / family learning platform: a centered eyebrow + heading + description intro above a 3-up grid of rounded white step cards on a muted band; each card has a rotating soft-tint numbered badge, a title, a description, and a photo, with large connector arrows between cards on desktop. Use to explain onboarding / get-started flows for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",

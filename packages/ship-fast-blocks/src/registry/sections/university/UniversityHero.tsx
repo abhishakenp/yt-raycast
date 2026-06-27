@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { cn } from '#/lib/utils.ts'
 
-export const UniversityHero = defineComponent({
+export const UniversityHero = defineCapsule({
   name: 'UniversityHero',
   description:
     'Bespoke full-bleed hero band for the University page family with a prestigious, collegiate aesthetic. Renders a campus photograph through the alt-driven Image component, a dark token overlay, an established-since eyebrow pill, a stately serif headline, supporting copy, dual call-to-action buttons (Apply Now + Visit Campus) routed via useNavigate, and a quick-stats strip summarizing enrollment, graduation rate, and student-faculty ratio. Use as the opening viewport of a university homepage.',

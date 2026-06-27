@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteNav } from '#/section-kit/SiteNav.tsx'
 
 /**
@@ -27,7 +28,7 @@ const Masthead = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const NewsNavbar = defineComponent({
+export const NewsNavbar = defineCapsule({
   name: 'NewsNavbar',
   description:
     "Sticky news masthead header built on the shared SiteNav composite: a bold wordmark + inline newspaper-glyph mark, a horizontal row of section links on desktop, a 'Subscribe' CTA on the right, and a real mobile drawer. Use as the sticky site header for newspapers, magazines, online publications, media brands or article-heavy blog indexes where a Subscribe action matters.",

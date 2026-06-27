@@ -88,6 +88,7 @@ export const changeGroups: ChangeGroup[] = [
       /^src\/features\/exports\/services\/openui-html-export-builder\.ts$/,
       /^src\/features\/exports\/services\/openui-(?:capsule-invariants|static-fragment-export)\.test\.ts$/,
       /^src\/features\/exports\/services\/openui-lakebed-export-builder\.(?:test\.)?ts$/,
+      /^src\/features\/exports\/services\/section-kit-render\.(?:test\.)?ts$/,
       /^src\/features\/generation\/components\/GeneratedModulePreview\.(?:test\.)?tsx$/,
       /^src\/island\/openui\//,
       /^vite\.config\.ts$/,

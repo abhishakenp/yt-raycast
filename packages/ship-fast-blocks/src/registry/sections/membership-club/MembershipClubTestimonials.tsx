@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * proof for members clubs, founders/social clubs, professional networks, curated
  * communities or alumni collectives. Renders fully with no props.
  */
-export const MembershipClubTestimonials = defineComponent({
+export const MembershipClubTestimonials = defineCapsule({
   name: 'MembershipClubTestimonials',
   description:
     "6-up member-testimonials grid for a private membership club / exclusive community page: a centered eyebrow + thin heading above a responsive 3-column grid of muted rounded quote cards, each leading with a round headshot beside the member's name and role, followed by an italic pull quote. Headshots use the alt-driven Image component. Use as warm social proof for members clubs, founders/social clubs, professional networks, curated communities or alumni collectives.",

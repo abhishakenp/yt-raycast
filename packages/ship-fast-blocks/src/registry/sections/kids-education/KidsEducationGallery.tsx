@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * kids-education startups, children's e-learning platforms, camps, and family
  * learning apps. Renders fully with no props via baked-in defaults.
  */
-export const KidsEducationGallery = defineComponent({
+export const KidsEducationGallery = defineCapsule({
   name: 'KidsEducationGallery',
   description:
     "Learning-in-action masonry photo gallery for a kids / family learning platform: a centered eyebrow + heading + description intro above a responsive masonry grid of square photo tiles (the 2nd tile spans 2x2, a later tile spans 2 columns); each tile zooms on hover and reveals a caption over a soft bottom gradient. Use to show joyful candid learner photos for kids-education startups, children's e-learning platforms, camps, and family learning apps.",

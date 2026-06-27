@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * platforms, tutoring services, and family learning apps. Renders fully with no
  * props via baked-in defaults.
  */
-export const KidsEducationLogos = defineComponent({
+export const KidsEducationLogos = defineCapsule({
   name: 'KidsEducationLogos',
   description:
     "Trusted-by school/partner logo strip for a kids / family learning platform: a bordered band with a centered uppercase eyebrow line above a responsive grid of star-mark + wordmark logo buttons rendered at reduced opacity. Each logo routes through useNavigate. Use directly beneath a hero to build parent trust for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",

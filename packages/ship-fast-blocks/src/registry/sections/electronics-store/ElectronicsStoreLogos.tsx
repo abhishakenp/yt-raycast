@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -9,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * Use beneath a hero to establish credibility on electronics stores, gadget
  * shops, consumer-tech retailers, or audio/camera storefronts.
  */
-export const ElectronicsStoreLogos = defineComponent({
+export const ElectronicsStoreLogos = defineCapsule({
   name: 'ElectronicsStoreLogos',
   description:
     'Centered trusted-brand logo strip for an electronics storefront: a small caption line above a wrapping, dimmed row of wordmark text logos for leading tech brands (e.g. Apple, Sony, Samsung, Bose, Logitech, DJI), with a bottom border separating it from neighbors. Use beneath a hero to establish credibility on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',

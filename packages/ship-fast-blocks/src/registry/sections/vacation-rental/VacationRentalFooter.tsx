@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { SiteFooter } from '#/section-kit/SiteFooter.tsx'
 
 /**
@@ -34,7 +35,7 @@ const PalmMark = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const VacationRentalFooter = defineComponent({
+export const VacationRentalFooter = defineCapsule({
   name: 'VacationRentalFooter',
   description:
     'Multi-column site footer for a vacation-rental listing page built on the shared SiteFooter composite: a palm-and-sun brand mark + wordmark, a warm tagline, a social row, and a responsive grid of link columns (Explore / Amenities / Support / Legal); below, a bordered-top bottom bar with an auto-updating copyright line and legal links. The brand, every column link, and each social link route through useNavigate. Theme-token only. Use as the closing footer for a vacation rental, beach house, cabin, villa, or boutique short-stay site.',

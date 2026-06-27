@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * platforms, or any product with punchy headline numbers. Renders fully with no
  * props via baked-in metric defaults.
  */
-export const DatingAppStats = defineComponent({
+export const DatingAppStats = defineCapsule({
   name: 'DatingAppStats',
   description:
     'Bold full-width stats band for a dating / matchmaking app: a solid rose/primary band with a responsive 2/4-column grid of centered metrics, each a large bold value over a softer label in the primary-foreground color. Use as a high-impact social-proof divider between content sections — active singles, matches this month, relationships started, app rating — for dating apps, singles platforms, or any product with punchy headline numbers.',

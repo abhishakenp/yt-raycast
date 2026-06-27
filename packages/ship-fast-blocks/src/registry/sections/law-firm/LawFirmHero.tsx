@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -17,7 +18,7 @@ import { Image } from '#/lib/img.tsx'
  * litigation boutiques or any premium professional-services landing page.
  * Renders fully with no props via baked-in defaults.
  */
-export const LawFirmHero = defineComponent({
+export const LawFirmHero = defineCapsule({
   name: 'LawFirmHero',
   description:
     'Split two-column hero for a corporate / trial law firm: left column has a tracked-uppercase eyebrow, a large serif headline with an italic muted highlight on the second line, a lead paragraph, dual CTAs (solid primary + bordered secondary) and a phone / office-address contact row with line icons; right column shows a tall office photo with a floating success-rate stat card overlapping its lower-left corner. Refined, authoritative, serif-driven editorial aesthetic on a warm neutral canvas with sharp squared corners. CTAs and contact links route through useNavigate; imagery uses the alt-driven Image component. Use as the opening hero for law firms, attorneys, legal practices, corporate counsel, litigation boutiques, estate-planning or tax practices, or any premium professional-services landing page.',

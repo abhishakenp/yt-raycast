@@ -1,7 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
+} from '../local-service/local-service-interactions.tsx'
+import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
  * MentalHealthContactCta — a final full-bleed booking CTA band for a therapy
@@ -12,7 +17,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use as the closing conversion section for therapists, counselors,
  * psychologists or wellness centers.
  */
-export const MentalHealthContactCta = defineComponent({
+export const MentalHealthContactCta = defineCapsule({
   name: 'MentalHealthContactCta',
   description:
     'Final full-bleed booking CTA band for a therapy practice: a solid primary-colored section with a centered heading + reassuring paragraph, dual rounded CTAs (a light booking button with a calendar icon + an outline phone button), and a row of trust badges (HIPAA, secure, next-day) with checkmarks. Calm yet confident wellness aesthetic. CTAs route through useNavigate. Use as the closing conversion section for therapists, counselors, psychologists or wellness centers.',
@@ -26,8 +31,8 @@ export const MentalHealthContactCta = defineComponent({
     bookLabel: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: localServiceLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Ready to take the first step?'
     const description =
       props.description ??
@@ -89,10 +94,13 @@ export const MentalHealthContactCta = defineComponent({
           </p>
 
           <div className="mb-12 flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(bookLabel)}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-8 py-4 font-medium text-primary shadow-lg transition-colors hover:bg-accent"
+            <LocalServiceBookingButton
+              lakebed={lakebed}
+              intentLabel={bookLabel}
+              service={primaryCta}
+              source="final-cta"
+              pendingChildren={<LocalServiceMutationSpinner />}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-8 py-4 font-medium text-primary shadow-lg transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-70"
             >
               <svg
                 className="size-5"
@@ -109,15 +117,20 @@ export const MentalHealthContactCta = defineComponent({
                 />
               </svg>
               {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(bookLabel)}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-foreground/30 bg-primary/80 px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/70"
+            </LocalServiceBookingButton>
+            <LocalServiceBookingButton
+              lakebed={lakebed}
+              intentLabel={secondaryCta}
+              service="Phone consultation"
+              source="final-cta-phone"
+              pendingChildren={
+                <LocalServiceMutationSpinner className="text-primary-foreground" />
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-foreground/30 bg-primary/80 px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/70 disabled:pointer-events-none disabled:opacity-70"
             >
               <Phone className="size-5" />
               {secondaryCta}
-            </button>
+            </LocalServiceBookingButton>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-primary-foreground/80">

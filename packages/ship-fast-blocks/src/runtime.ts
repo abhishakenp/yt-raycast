@@ -26,8 +26,11 @@ export {
 } from './integrations.tsx'
 
 export {
+  extractAllComponentNames,
   extractOpenUIRuntimeComponentNames,
   getOpenUIRuntimeLibraryCacheKey,
+  loadAiCapsule,
   loadOpenUIRuntimeComponent,
   loadOpenUIRuntimeLibrary,
+  type AiCapsuleRecord,
 } from './runtime-library.ts'

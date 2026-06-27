@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * construction firms, contractors, builders, or remodeling companies.
  * Renders fully with no props via baked-in defaults.
  */
-export const ConstructionPricing = defineComponent({
+export const ConstructionPricing = defineCapsule({
   name: 'ConstructionPricing',
   description:
     "Three-tier pricing table for a construction / general contractor page: a centered section heading above a responsive 3-column grid of pricing cards with a 'Most Popular' highlight on the featured tier. Each card lists features with check icons and a CTA button that routes through useNavigate. Use to present transparent project pricing for construction firms, contractors, builders, or remodeling companies.",

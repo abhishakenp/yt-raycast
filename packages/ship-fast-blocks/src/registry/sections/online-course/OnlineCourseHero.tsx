@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -15,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * course platforms, e-learning marketplaces, bootcamps, academies, or any
  * skill-learning subscription product. Renders fully with no props.
  */
-export const OnlineCourseHero = defineComponent({
+export const OnlineCourseHero = defineCapsule({
   name: 'OnlineCourseHero',
   description:
     'Split two-column hero for an online-course / e-learning landing page: left column has a pill enrollment badge with a pulsing dot, a huge tracking-tight headline, a relaxed subheading, dual CTAs (solid primary + outlined Watch Demo with a play glyph), and an overlapping avatar social-proof row; right column has a rounded showcase photo with a floating Certificate Issued card and a floating star-rating card. CTAs route through useNavigate. Use as the top hero for course platforms, e-learning marketplaces, bootcamps, academies, or skill-learning subscription products.',

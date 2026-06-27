@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * proof, verified buyer reviews, community endorsements, or any e-commerce
  * testimonial section. Tokens-only, no links.
  */
-export const BeautyStoreTestimonials = defineComponent({
+export const BeautyStoreTestimonials = defineCapsule({
   name: 'BeautyStoreTestimonials',
   description:
     'Three-up customer testimonials band for a beauty / skincare / cosmetics storefront on a soft primary-tinted background: centered eyebrow and heading above a responsive grid of cards, each with a row of star icons, a quoted review text, and an attribution row with a round avatar and name / meta. Avatars use alt-driven <Image>. Use for social proof, verified buyer reviews, community endorsements, or any e-commerce testimonial section.',

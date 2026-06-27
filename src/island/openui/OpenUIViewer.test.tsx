@@ -30,6 +30,10 @@ vi.mock('@ship-fast/blocks/runtime', () => ({
   loadOpenUIRuntimeLibrary: runtimeMock.loadOpenUIRuntimeLibrary,
 }))
 
+vi.mock('convex/react', () => ({
+  useQuery: vi.fn(() => undefined),
+}))
+
 import OpenUIViewer from './OpenUIViewer'
 
 describe('OpenUIViewer', () => {

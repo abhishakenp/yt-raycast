@@ -1,21 +1,23 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
+import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
  * ElectronicsStoreNewsletter — a dark inverted, centered newsletter CTA band for
  * an electronics storefront. A bold heading, a muted supporting paragraph, an
  * inline email capture form (translucent input + solid submit button that stacks
- * on mobile), and a fine-print disclaimer beneath. The form submit routes through
- * useNavigate. Use as a closing email-capture / discount-incentive band on
- * electronics stores, gadget shops, consumer-tech retailers, or any product
- * catalog.
+ * on mobile), and a fine-print disclaimer beneath. The form submit writes to the
+ * shared Lakebed subscriber list. Use as a closing email-capture /
+ * discount-incentive band on electronics stores, gadget shops, consumer-tech
+ * retailers, or any product catalog.
  */
-export const ElectronicsStoreNewsletter = defineComponent({
+export const ElectronicsStoreNewsletter = defineCapsule({
   name: 'ElectronicsStoreNewsletter',
   description:
-    "Dark inverted, centered newsletter CTA band for an electronics storefront: a bold heading, a muted supporting paragraph, an inline email capture form (translucent input + solid submit button that stacks on mobile), and a fine-print disclaimer beneath. The form submit routes through useNavigate. Use as a closing email-capture / discount-incentive band (e.g. 'Get 10% Off Your First Order') on electronics stores, gadget shops, consumer-tech retailers, or any product catalog.",
+    "Dark inverted, centered newsletter CTA band for an electronics storefront: a bold heading, a muted supporting paragraph, an inline email capture form (translucent input + solid submit button that stacks on mobile), and a fine-print disclaimer beneath. The form submit writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use as a closing email-capture / discount-incentive band (e.g. 'Get 10% Off Your First Order') on electronics stores, gadget shops, consumer-tech retailers, or any product catalog.",
   props: z.object({
     /** Band heading. */
     heading: z.string().optional(),
@@ -29,8 +31,8 @@ export const ElectronicsStoreNewsletter = defineComponent({
     disclaimer: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
-    const go = useNavigate()
+  lakebed: newsletterLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Get 10% Off Your First Order'
     const description =
       props.description ??
@@ -55,27 +57,18 @@ export const ElectronicsStoreNewsletter = defineComponent({
           <p className="mx-auto mb-8 max-w-xl text-background/60">
             {description}
           </p>
-          <form
+          <NewsletterSubscribeForm
+            lakebed={lakebed}
+            source={submit}
+            placeholder={placeholder}
+            buttonLabel={submit}
+            successMessage="You're subscribed. Watch your inbox for the next tech drop."
             className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-            onSubmit={(e) => {
-              e.preventDefault()
-              go(submit)
-            }}
-          >
-            <input
-              type="email"
-              required
-              placeholder={placeholder}
-              aria-label={placeholder}
-              className="flex-1 rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder:text-background/50 focus:border-background/40 focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90"
-            >
-              {submit}
-            </button>
-          </form>
+            inputClassName="flex-1 rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder:text-background/50 focus:border-background/40 focus:outline-none"
+            buttonClassName="rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
+            emailLabel={placeholder}
+            statusClassName="text-background/50"
+          />
           <p className="mt-4 text-sm text-background/50">{disclaimer}</p>
         </div>
       </section>

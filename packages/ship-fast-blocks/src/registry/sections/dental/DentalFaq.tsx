@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * insurance, visit frequency, whitening, emergencies, sedation, or implants for
  * dentists, dental offices, or clinics.
  */
-export const DentalFaq = defineComponent({
+export const DentalFaq = defineCapsule({
   name: 'DentalFaq',
   description:
     'FAQ accordion for a dental practice site: a narrow centered column with an eyebrow + heading + lede above a stack of native details/summary accordion rows on soft muted cards; each row shows a question with a chevron that rotates open to reveal the answer. No JavaScript required. Use to answer common patient questions about insurance, visit frequency, whitening, emergencies, sedation, or implants for dentists, dental offices, or clinics.',

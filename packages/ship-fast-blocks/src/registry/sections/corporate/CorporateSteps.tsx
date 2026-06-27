@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * desktop items. Use to present a methodology, onboarding flow, or project
  * roadmap for enterprise software vendors, consultancies, or managed services.
  */
-export const CorporateSteps = defineComponent({
+export const CorporateSteps = defineCapsule({
   name: 'CorporateSteps',
   description:
     'Numbered implementation timeline / process section for an enterprise / corporate B2B site: centered heading above a responsive 1/2/4-column grid of numbered phase cards with circled step numbers, titles, descriptions, and horizontal connector lines between desktop items. Use to present a methodology, onboarding flow, or project roadmap for enterprise software, consultancies, or managed services.',

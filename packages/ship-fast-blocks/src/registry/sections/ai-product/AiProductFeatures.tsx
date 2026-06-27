@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -13,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * generative-AI tools, developer-AI products, or any modern SaaS site. Renders
  * fully with no props via six built-in writing-assistant features.
  */
-export const AiProductFeatures = defineComponent({
+export const AiProductFeatures = defineCapsule({
   name: 'AiProductFeatures',
   description:
     "Centered-intro feature grid for a clean, light AI SaaS / product page: a heading and supporting paragraph centered above a responsive 1 → 2 → 3 column grid of features, each with a rounded muted icon tile (rotating line glyphs that tint to accent on hover), a bold title, and a relaxed description. Generous whitespace and neutral surfaces. Use to showcase a product's core capabilities on AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or any modern SaaS marketing site.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * screens — portfolio view, charts, insights, orders — on a brokerage or
  * trading-app page. Renders fully with no props via six baked-in screens.
  */
-export const InvestingGallery = defineComponent({
+export const InvestingGallery = defineCapsule({
   name: 'InvestingGallery',
   description:
     'Dark product-showcase gallery for an investing / fintech page: a dark (foreground-surface) section with a centered heading + lead above a responsive 1/2/3-column grid of cards, each a 4:3 gradient-tinted tile (rotating token tints) framing a mock app-screen image with a title + caption beneath. Tokens only, no links. Use to show off platform / app screens (portfolio view, charts, insights, orders) on a brokerage or trading-app page.',

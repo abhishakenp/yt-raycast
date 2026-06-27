@@ -1,8 +1,9 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
-export const TravelAgencyTestimonials = defineComponent({
+export const TravelAgencyTestimonials = defineCapsule({
   name: 'TravelAgencyTestimonials',
   description:
     'Social-proof testimonials band for the Travel Agency page family. Composes the shared TestimonialGrid kit composite into a three-column set of glowing traveler reviews, each with a quote, name, five-star rating, and the trip booked. Use to build trust before the closing call to action. All reviews are prop-driven with wanderlust-themed defaults so it renders with no props.',

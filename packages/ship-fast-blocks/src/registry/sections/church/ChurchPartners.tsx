@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * that want to show alliance credibility. Renders fully with no props via baked-in
  * defaults.
  */
-export const ChurchPartners = defineComponent({
+export const ChurchPartners = defineCapsule({
   name: 'ChurchPartners',
   description:
     'Muted partner-ministries logo-band for a church or faith-community site: a top-and-bottom bordered band with a soft muted background, a small centered label, and a flex-wrapped row of plain-text partner names at reduced opacity. Use between the hero and content sections for churches, nonprofits, ministries, or community organizations wanting to show alliance credibility.',

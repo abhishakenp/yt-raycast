@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -15,7 +16,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * consumer app landing page. Renders fully with no props via baked-in
  * "DailyFlow" defaults.
  */
-export const MobileAppFooter = defineComponent({
+export const MobileAppFooter = defineCapsule({
   name: 'MobileAppFooter',
   description:
     "Bordered-top multi-column site footer for a clean, minimalist mobile-app marketing page: a wide brand column (check-in-circle logo mark + app name, a tagline, and a row of round social icon buttons — Twitter / Instagram / LinkedIn) beside several link columns (heading over a list of nav buttons), plus a bordered-top bottom bar with an auto-updating copyright note and a 'made in' line; the brand button, social icons and every link route through useNavigate. Use as the closing footer for a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.",

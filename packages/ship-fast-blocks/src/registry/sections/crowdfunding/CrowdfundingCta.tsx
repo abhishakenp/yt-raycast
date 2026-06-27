@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * the final conversion push before the footer on any Kickstarter/Indiegogo-
  * style raise, pre-order, fundraiser, or product launch page.
  */
-export const CrowdfundingCta = defineComponent({
+export const CrowdfundingCta = defineCapsule({
   name: 'CrowdfundingCta',
   description:
     "A full-width closing CTA band for a crowdfunding / campaign landing page: a bold primary-colored, center-aligned section with a large heading, a supporting subhead, a dual button group (a solid background-filled 'Back This Project' primary plus an outlined 'Share' secondary), and a small deadline / ship-date note beneath. Buttons route through useNavigate. Use as the final conversion push before the footer on any Kickstarter/Indiegogo-style raise, pre-order, fundraiser, or product launch page.",

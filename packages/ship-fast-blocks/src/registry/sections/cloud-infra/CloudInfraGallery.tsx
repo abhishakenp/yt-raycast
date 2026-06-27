@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -10,7 +11,7 @@ import { Image } from '#/lib/img.tsx'
  * with a caption overlay using a bottom-up gradient to foreground/80. Images zoom
  * on hover. Tokens-only. Renders fully on zero arguments.
  */
-export const CloudInfraGallery = defineComponent({
+export const CloudInfraGallery = defineCapsule({
   name: 'CloudInfraGallery',
   description:
     'Developer-showcase image gallery for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a responsive grid of 6 figure cards (4:3 aspect). Each figure is an alt-driven Image with a caption overlay using a bottom-up gradient to foreground/80; images zoom on hover. Tokens-only. Use for portfolio, showcase, or proof-of-work galleries on cloud hosting, IaaS, PaaS, or developer-tooling sites.',

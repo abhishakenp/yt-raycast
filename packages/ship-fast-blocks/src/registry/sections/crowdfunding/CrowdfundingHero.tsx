@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -17,7 +18,7 @@ import { Image } from '#/lib/img.tsx'
  * launches, fundraisers, or maker/hardware campaigns where funding progress and
  * a hard deadline must lead.
  */
-export const CrowdfundingHero = defineComponent({
+export const CrowdfundingHero = defineCapsule({
   name: 'CrowdfundingHero',
   description:
     "A 2-column campaign hero for a crowdfunding / pre-order landing page with a clean, warm eco aesthetic on a card surface: on one side a large product image with a 4-up thumbnail strip, on the other a funding card showing a live badge + category, headline + subhead, the amount raised vs goal, an animated progress bar, a percent-funded / stretch-goals-unlocked banner with a check glyph, a three-up backers / early-bird / days-left stat trio, a big 'Back This Project' CTA and an all-or-nothing deadline note. Links route through useNavigate; imagery uses the alt-driven Image component. Use as the opening hero for Kickstarter/Indiegogo-style raises, product launches, fundraisers, or maker/hardware campaigns where funding progress and a hard deadline must lead.",

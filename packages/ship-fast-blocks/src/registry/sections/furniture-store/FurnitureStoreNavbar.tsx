@@ -1,7 +1,15 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
+import {
+  CommerceAccountButton,
+  CommerceCartButton,
+  CommerceMobileMenu,
+  CommerceSearchButton,
+} from '../commerce/commerce-interactions.tsx'
 
 /**
  * FurnitureStoreNavbar — sticky, backdrop-blurred top navigation bar for a warm
@@ -15,7 +23,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * warm boutique-retail landing page. Renders fully with no props via baked-in
  * "Haven & Home" defaults.
  */
-export const FurnitureStoreNavbar = defineComponent({
+export const FurnitureStoreNavbar = defineCapsule({
   name: 'FurnitureStoreNavbar',
   description:
     "Sticky backdrop-blurred top navigation bar for a warm minimal furniture / home-decor e-commerce site: bordered-bottom header pinned to the top with a house-glyph logo tile + store name on the left, horizontal category nav links (with a destructive-colored 'Sale' link) in the center, and search / account / cart icon buttons (cart shows a count badge) plus a mobile hamburger on the right. Links and icon buttons route through useNavigate for page-switching. Use as the sticky site header for furniture stores, home-decor or interiors brands, homewares retailers, or any warm boutique-retail landing page.",
@@ -28,13 +36,14 @@ export const FurnitureStoreNavbar = defineComponent({
     cartCount: z.string().optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: commerceCartLakebed,
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? 'Haven & Home'
     const nav = props.nav?.length
       ? props.nav
       : ['Room Inspiration', 'Furniture', 'Decor', 'New Arrivals', 'Sale']
-    const cartCount = props.cartCount ?? '3'
+    const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -90,11 +99,9 @@ export const FurnitureStoreNavbar = defineComponent({
             </div>
 
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go('Search')}
-                className="rounded-full p-2 transition-colors hover:bg-muted"
-                aria-label="Search"
+              <CommerceSearchButton
+                lakebed={lakebed}
+                buttonClassName="rounded-full p-2 transition-colors hover:bg-muted"
               >
                 <svg
                   className="size-5 text-muted-foreground"
@@ -108,12 +115,10 @@ export const FurnitureStoreNavbar = defineComponent({
                 >
                   <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </button>
-              <button
-                type="button"
-                onClick={() => go('Account')}
-                className="hidden rounded-full p-2 transition-colors hover:bg-muted sm:flex"
-                aria-label="Account"
+              </CommerceSearchButton>
+              <CommerceAccountButton
+                lakebed={lakebed}
+                buttonClassName="hidden rounded-full p-2 transition-colors hover:bg-muted sm:flex"
               >
                 <svg
                   className="size-5 text-muted-foreground"
@@ -127,12 +132,12 @@ export const FurnitureStoreNavbar = defineComponent({
                 >
                   <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-              </button>
-              <button
-                type="button"
-                onClick={() => go('Cart')}
-                className="relative rounded-full p-2 transition-colors hover:bg-muted"
-                aria-label="Shopping cart"
+              </CommerceAccountButton>
+              <CommerceCartButton
+                lakebed={lakebed}
+                fallbackCount={initialCartCount}
+                label="Shopping cart"
+                buttonClassName="relative rounded-full p-2 transition-colors hover:bg-muted"
               >
                 <svg
                   className="size-5 text-muted-foreground"
@@ -146,16 +151,13 @@ export const FurnitureStoreNavbar = defineComponent({
                 >
                   <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
-                <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                  {cartCount}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => go(nav[0])}
-                className="rounded-full p-2 transition-colors hover:bg-muted md:hidden"
-                aria-label="Menu"
-                aria-expanded="false"
+              </CommerceCartButton>
+              <CommerceMobileMenu
+                brand={brand}
+                nav={nav}
+                homeTarget={nav[0]}
+                label="Menu"
+                buttonClassName="rounded-full p-2 transition-colors hover:bg-muted md:hidden"
               >
                 <svg
                   className="size-5 text-muted-foreground"
@@ -169,7 +171,7 @@ export const FurnitureStoreNavbar = defineComponent({
                 >
                   <path d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
-              </button>
+              </CommerceMobileMenu>
             </div>
           </div>
         </nav>

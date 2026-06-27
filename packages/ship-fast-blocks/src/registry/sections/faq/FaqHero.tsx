@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * useNavigate. Use as the top search section for SaaS knowledge bases, help centers,
  * documentation landings, or support pages. Renders fully with no props.
  */
-export const FaqHero = defineComponent({
+export const FaqHero = defineCapsule({
   name: 'FaqHero',
   description:
     "Calm centered search hero for a help-center / FAQ / knowledge-base page with a light, documentation-style band (no big marketing imagery): large centered heading, a supporting lead paragraph, a wide rounded search input with a leading magnifier icon and a trailing ⌘K keyboard-shortcut hint, and a row of 'Popular:' keyword chips below. Search submit and chip taps route through useNavigate. Use as the top search section for SaaS knowledge bases, help centers, documentation landings, or support pages.",

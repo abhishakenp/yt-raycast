@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -13,7 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * conversion prompt for logistics, freight-forwarding, shipping, courier or
  * cargo/transport companies. Renders fully with no props.
  */
-export const LogisticsCta = defineComponent({
+export const LogisticsCta = defineCapsule({
   name: 'LogisticsCta',
   description:
     'High-contrast closing call-to-action band for a global-logistics / freight-forwarding company: a full-width solid primary section with a centered heading, a supporting paragraph, a pair of buttons (a solid background-surface primary with a trailing arrow plus an outlined secondary) and a small reassurance note. Clean and corporate, inverting the page palette for emphasis; every button routes through useNavigate. Use as the final conversion prompt for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.',

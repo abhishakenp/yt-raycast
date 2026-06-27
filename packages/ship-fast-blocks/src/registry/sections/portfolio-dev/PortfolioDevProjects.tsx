@@ -1,11 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
-export const PortfolioDevProjects = defineComponent({
+export const PortfolioDevProjects = defineCapsule({
   name: 'PortfolioDevProjects',
   description:
     'A selected-work project grid for a modern developer portfolio. Renders a SectionHeading (Work / Selected projects) above a responsive grid of project cards, each with an alt-driven thumbnail Image, a title, a short description, a mono tech-tag pill row, and Live / Code links that route via useNavigate. Token-only styling with mono accents, no hardcoded colors. Ideal for developer, engineer, and freelancer portfolios showcasing shipped projects.',

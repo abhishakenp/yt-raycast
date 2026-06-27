@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * hiring marketplaces or recruiting platforms. Static (no links). Renders fully
  * with no props.
  */
-export const JobBoardSteps = defineComponent({
+export const JobBoardSteps = defineCapsule({
   name: 'JobBoardSteps',
   description:
     "3-step 'how it works' timeline for a job-board / careers site: a muted band with a centered heading + description above a 3-column grid connected by a horizontal rule on desktop, each step showing a numbered round primary badge, a title and a supporting paragraph. Use to explain the candidate journey (create profile, discover & apply, get hired) on job boards, hiring marketplaces or recruiting platforms.",

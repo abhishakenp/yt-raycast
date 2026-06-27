@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * (insurance, session length, virtual vs in-person, cancellation) for therapists,
  * counselors, psychologists or wellness centers.
  */
-export const MentalHealthFaq = defineComponent({
+export const MentalHealthFaq = defineCapsule({
   name: 'MentalHealthFaq',
   description:
     "Centered FAQ accordion for a therapy practice: a narrow eyebrow + heading + intro above a stack of native details rows on a muted surface, each with a rotating chevron toggle, then a centered 'still have questions?' prompt and a rounded phone CTA. Calm, reassuring wellness aesthetic. The CTA routes through useNavigate. Use to answer common questions (insurance, session length, virtual vs in-person, cancellation) for therapists, counselors, psychologists or wellness centers.",

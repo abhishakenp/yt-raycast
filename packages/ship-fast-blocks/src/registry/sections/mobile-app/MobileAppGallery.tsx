@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -12,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * a habit tracker, fitness / wellness app, productivity or to-do app, or any
  * consumer app landing page. Renders fully with no props via baked-in defaults.
  */
-export const MobileAppGallery = defineComponent({
+export const MobileAppGallery = defineCapsule({
   name: 'MobileAppGallery',
   description:
     'Centered-intro masonry-style app-screenshot gallery: a centered heading + description over a responsive up-to-4-column grid of rounded, shadowed screenshot tiles, with alternating tiles nudged down and given a taller aspect for a staggered masonry rhythm; all imagery is alt-driven via <Image>. Use to showcase UI / product screenshots on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',

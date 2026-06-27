@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * Renders fully on zero args. Use to publish a weekly timetable on gyms, fitness
  * studios, yoga / pilates / boxing / spin studios, or class-booking sites.
  */
-export const FitnessSchedule = defineComponent({
+export const FitnessSchedule = defineCapsule({
   name: 'FitnessSchedule',
   description:
     'Scrollable weekly class-schedule table for a gym or fitness studio on a muted card-surface band: a centered heading and lead paragraph above a horizontally-scrollable table with a Time column and one column per day, row-hover highlight, dashed empty slots dimmed, and a centered color-dot legend underneath. Use to publish a weekly timetable / class calendar on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios and class-booking sites.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
@@ -12,7 +13,7 @@ import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
  * social proof on e-learning, bootcamp, or academy landing pages. Renders fully
  * with no props.
  */
-export const OnlineCourseTestimonials = defineComponent({
+export const OnlineCourseTestimonials = defineCapsule({
   name: 'OnlineCourseTestimonials',
   description:
     'A 3-up graduate-review wall for an online-course page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid where each card renders a filled star row matching the rating, a quoted review, and a graduate name paired with their outcome role. Use for social proof on e-learning, bootcamp, or academy landing pages.',

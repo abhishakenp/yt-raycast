@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -10,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * Use to explain the join / application process for members clubs, professional
  * networks, mastermind groups or curated communities. Renders fully with no props.
  */
-export const MembershipClubSteps = defineComponent({
+export const MembershipClubSteps = defineCapsule({
   name: 'MembershipClubSteps',
   description:
     "3-step 'How it works' application flow for a private membership club / exclusive community page: a centered eyebrow + thin heading + supporting line above a responsive 3-column grid of steps, each led by a numbered primary circle followed by a medium title and a relaxed description. Use to explain the join / application process for members clubs, professional networks, mastermind groups or curated communities.",

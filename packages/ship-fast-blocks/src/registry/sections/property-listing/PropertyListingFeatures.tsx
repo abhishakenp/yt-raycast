@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
 
 /**
@@ -10,7 +11,7 @@ import { FeatureGrid } from '#/section-kit/FeatureGrid.tsx'
  * and virtual tours. Use to explain why renters and buyers should search on the
  * portal. Renders fully with no props via baked-in defaults.
  */
-export const PropertyListingFeatures = defineComponent({
+export const PropertyListingFeatures = defineCapsule({
   name: 'PropertyListingFeatures',
   description:
     'Portal-benefits grid for a property marketplace: a centered header above a responsive 1/2/4-column grid of benefit cards, each with a token-tinted square icon chip, a title, and a short description. Defaults cover verified listings, map search, saved alerts, and virtual tours. Use to explain why renters and buyers should search on the portal.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -11,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * tolerances, ITAR, finishes, assembly, tracking) on machine-shop or fabricator
  * pages. Renders fully with no props via baked-in defaults.
  */
-export const ManufacturingFaq = defineComponent({
+export const ManufacturingFaq = defineCapsule({
   name: 'ManufacturingFaq',
   description:
     'A static FAQ list for a precision-manufacturing site: on a muted band, a centered eyebrow + heading intro above a narrow column of bordered card rows, each a definition-list question/answer pair with a bold card-foreground question over muted answer copy. Clean, neutral, readable. Use to answer common procurement questions (file formats, lead times, certs, tolerances, ITAR, finishes, assembly, tracking) on machine-shop or fabricator pages.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -12,7 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * that routes through useNavigate. Use as the schedule/where-to-find-us section for food
  * trucks, street-food vendors or pop-up kitchens that rotate locations.
  */
-export const FoodTruckLocations = defineComponent({
+export const FoodTruckLocations = defineCapsule({
   name: 'FoodTruckLocations',
   description:
     'Weekly LOCATIONS schedule section for a food-truck site: on a subtle muted band, a centered eyebrow + heading + intro above a 3-up responsive grid of day cards, each with a rotating chart-tinted initial tile, the day name + neighborhood, and a key/value list of address, times and notes; a full-width inverted banner beneath promotes private-events availability with an info icon and a pill CTA that routes through useNavigate. Use as the schedule / where-to-find-us section for food trucks, street-food vendors, taco trucks or pop-up kitchens that rotate locations across a city.',

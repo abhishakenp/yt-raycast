@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
@@ -10,7 +11,7 @@ import { Image } from '#/lib/img.tsx'
  * zoom on hover. Use to show last year's highlights, venue atmosphere, or past
  * event photos on tech conference, summit, festival, or meetup pages.
  */
-export const EventGallery = defineComponent({
+export const EventGallery = defineCapsule({
   name: 'EventGallery',
   description:
     "Dark photo highlights gallery for a conference or event page: a full-bleed inverted (foreground background, light text) band with a centered heading + description above a responsive 3-up grid of 4:3 alt-driven photos that gently zoom on hover. Use to show last year's highlights, venue atmosphere, networking moments, or past event photos on tech conference, summit, festival, or meetup pages.",

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Card, CardContent } from '#/components/ui/card.tsx'
 import {
   Carousel as UICarousel,
@@ -19,7 +20,7 @@ const basisMap = {
   third: 'md:basis-1/3',
 } as const
 
-export const Carousel = defineComponent({
+export const Carousel = defineCapsule({
   name: 'Carousel',
   description:
     "Sliding carousel with previous/next arrows. Each `slides` entry is one slide's content. `basis` controls slides-per-view.",

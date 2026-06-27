@@ -1,6 +1,7 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { useState } from 'react'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -15,7 +16,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * central updates / e-procurement panel for any government, public-sector,
  * PSU, municipal, civic or utility portal.
  */
-export const GovernmentPortalEvents = defineComponent({
+export const GovernmentPortalEvents = defineCapsule({
   name: 'GovernmentPortalEvents',
   description:
     'Classic Indian-government / public-sector (PSU) four-tab live notice board (Tenders | Notices | Downloads | Public Notices) — the signature element of an official government portal. Each tab is a scrollable DataTables-style list of PDF-link rows (NIT number + title + date), with gov-blue #3346B5 tabs, tender titles in #350788 and dates in #640032. Tabs swap via useState. Use for the central updates / tender / e-procurement / public-notice panel of any classic government, civic, municipal, PSU, electricity-board or utility portal.',

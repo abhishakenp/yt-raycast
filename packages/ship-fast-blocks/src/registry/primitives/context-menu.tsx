@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   ContextMenu as UIContextMenu,
   ContextMenuContent,
@@ -13,7 +14,7 @@ import {
 // and the menu shown via an inline preview region so content is visible
 // statically (context menus only open on right-click, which can't be forced
 // declaratively). The trigger area plus the menu content are both rendered.
-export const ContextMenu = defineComponent({
+export const ContextMenu = defineCapsule({
   name: 'ContextMenu',
   description:
     "Right-click context menu. `items` are the menu rows (variant 'destructive' for dangerous, separator true for a divider). Shows the trigger area and an inline preview of the menu.",

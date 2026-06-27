@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
@@ -14,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * the opening hero for real-estate brokerages, agent sites, and listing portals.
  * Renders fully with no props via baked-in defaults.
  */
-export const RealEstateHero = defineComponent({
+export const RealEstateHero = defineCapsule({
   name: 'RealEstateHero',
   description:
     "Full-bleed property hero for a premium brokerage: a striking home photo fills the band under a token-based dark overlay so light text reads cleanly. Centered content has an uppercase eyebrow, a large serif headline, a supporting paragraph, dual CTAs ('Search Homes' filled + 'Talk to an Agent' outlined), and a search-bar affordance card with location / type / price inputs and a search button. CTAs and search route through useNavigate. Use as the opening hero for real-estate brokerages, agent sites, and listing portals.",

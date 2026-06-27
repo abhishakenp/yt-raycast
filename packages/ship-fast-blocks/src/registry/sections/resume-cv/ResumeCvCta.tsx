@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { CtaBand } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -14,7 +15,7 @@ import { CtaBand } from '#/section-kit/CtaBand.tsx'
  * portfolio, online résumé, or professional profile page to drive contact and
  * CV downloads. Renders fully with no props via baked-in defaults.
  */
-export const ResumeCvCta = defineComponent({
+export const ResumeCvCta = defineCapsule({
   name: 'ResumeCvCta',
   description:
     "Focused closing call-to-action band for a personal resume / CV / portfolio site: a full-width primary-colored band with an availability eyebrow, a warm 'Let's work together' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Get in Touch' button plus an outlined 'Download CV' button). Both CTAs route through useNavigate. Use near the bottom of a personal portfolio, online résumé, or professional profile page to drive contact and CV downloads.",

@@ -1,9 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Textarea as UITextarea } from '#/components/ui/textarea.tsx'
 
 // Leaf primitive: native textarea. No cva variants in shadcn source.
-export const Textarea = defineComponent({
+export const Textarea = defineCapsule({
   name: 'Textarea',
   description: 'Multi-line text input. Mirrors shadcn Textarea.',
   props: z.object({
