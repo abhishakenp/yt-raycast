@@ -155,7 +155,15 @@ function repairMalformedQuotedObjectKeys(code: string): string {
     ) {
       const rest = code.slice(index + 1)
       const malformedKey = rest.match(/^([A-Za-z_$][\w$]*):/)
-      if (malformedKey) {
+      // Guard: do not strip the quote if the `:` is followed by `//` — that's a
+      // URL scheme (e.g. "https://..."), not a malformed key-value separator.
+      // The prevSig check above cannot distinguish a comma before an array
+      // value (where the next token is a URL string) from a comma before an
+      // object property (where the next token could be a key).
+      if (
+        malformedKey &&
+        !rest.slice(malformedKey[0].length).startsWith('//')
+      ) {
         result += `${malformedKey[1]}:`
         prevSig = ':'
         index += malformedKey[0].length

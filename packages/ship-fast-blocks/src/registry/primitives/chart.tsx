@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-
 const DEFAULT_DATA = [
   { label: 'Jan', value: 186 },
   { label: 'Feb', value: 305 },

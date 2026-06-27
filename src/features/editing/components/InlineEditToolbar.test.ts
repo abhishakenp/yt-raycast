@@ -28,7 +28,9 @@ const makeRect = (): DOMRect =>
  * handful of properties, so a partial object cast to CSSStyleDeclaration is
  * sufficient and keeps the test independent of jsdom's style resolver.
  */
-const makeComputed = (overrides: Partial<{ textAlign: string }> = {}): CSSStyleDeclaration =>
+const makeComputed = (
+  overrides: Partial<{ textAlign: string }> = {},
+): CSSStyleDeclaration =>
   ({
     fontSize: '16px',
     fontWeight: '400',
@@ -38,11 +40,14 @@ const makeComputed = (overrides: Partial<{ textAlign: string }> = {}): CSSStyleD
     ...overrides,
   }) as CSSStyleDeclaration
 
-const onStyleApply = vi.fn<(payload: {
-  sourceAnchor: string
-  style: string
-  occurrenceIndex: number
-}) => void>()
+const onStyleApply =
+  vi.fn<
+    (payload: {
+      sourceAnchor: string
+      style: string
+      occurrenceIndex: number
+    }) => void
+  >()
 const onCommitText = vi.fn()
 const onClose = vi.fn()
 
@@ -74,19 +79,18 @@ describe('InlineEditToolbar — behavioral', () => {
     document.body.appendChild(activeElement)
 
     originalGetComputedStyle = window.getComputedStyle
-    vi.spyOn(window, 'getComputedStyle').mockImplementation(() => makeComputed())
+    vi.spyOn(window, 'getComputedStyle').mockImplementation(() =>
+      makeComputed(),
+    )
 
     // Run rAF callbacks synchronously so styleReadCompleteRef flips true right
     // after the initial computed-style read effect, enabling the live-preview
     // effect when the user later modifies a control.
     originalRequestAnimationFrame = globalThis.requestAnimationFrame
-    vi.stubGlobal(
-      'requestAnimationFrame',
-      (cb: FrameRequestCallback) => {
-        cb(0)
-        return 0
-      },
-    )
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0)
+      return 0
+    })
   })
 
   afterEach(() => {
@@ -103,7 +107,9 @@ describe('InlineEditToolbar — behavioral', () => {
 
     // Simulate the live-preview having mutated the element's inline style.
     activeElement.setAttribute('style', 'color: blue; font-weight: 700')
-    expect(activeElement.getAttribute('style')).toBe('color: blue; font-weight: 700')
+    expect(activeElement.getAttribute('style')).toBe(
+      'color: blue; font-weight: 700',
+    )
 
     fireEvent.click(screenlessCloseButton())
 
@@ -179,7 +185,11 @@ describe('InlineEditToolbar — behavioral', () => {
     return buttons.find((b) => b.textContent?.includes('Apply'))!
   }
   const leftAlignButton = () =>
-    document.querySelector('button[aria-label="Align left"]') as HTMLButtonElement
+    document.querySelector(
+      'button[aria-label="Align left"]',
+    ) as HTMLButtonElement
   const centerAlignButton = () =>
-    document.querySelector('button[aria-label="Align center"]') as HTMLButtonElement
+    document.querySelector(
+      'button[aria-label="Align center"]',
+    ) as HTMLButtonElement
 })

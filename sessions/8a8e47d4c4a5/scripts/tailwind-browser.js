@@ -13766,16 +13766,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             let w = l(v, h)
             ;(s.add(w),
               e.candidateRuleMap.has(w) || e.candidateRuleMap.set(w, []),
-              e.candidateRuleMap
-                .get(w)
-                .push([
-                  {
-                    sort: n.create('components'),
-                    layer: 'components',
-                    options: h,
-                  },
-                  y,
-                ]))
+              e.candidateRuleMap.get(w).push([
+                {
+                  sort: n.create('components'),
+                  layer: 'components',
+                  options: h,
+                },
+                y,
+              ]))
           }
         },
         addUtilities(p, h) {
@@ -13788,16 +13786,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             let w = l(v, h)
             ;(s.add(w),
               e.candidateRuleMap.has(w) || e.candidateRuleMap.set(w, []),
-              e.candidateRuleMap
-                .get(w)
-                .push([
-                  {
-                    sort: n.create('utilities'),
-                    layer: 'utilities',
-                    options: h,
-                  },
-                  y,
-                ]))
+              e.candidateRuleMap.get(w).push([
+                {
+                  sort: n.create('utilities'),
+                  layer: 'utilities',
+                  options: h,
+                },
+                y,
+              ]))
           }
         },
         matchUtilities: function (p, h) {

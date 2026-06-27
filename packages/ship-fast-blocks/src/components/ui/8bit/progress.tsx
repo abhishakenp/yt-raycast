@@ -22,7 +22,8 @@ export const progressVariants = cva('', {
 })
 
 export interface BitProgressProps
-  extends React.ComponentProps<typeof ProgressPrimitive.Root>,
+  extends
+    React.ComponentProps<typeof ProgressPrimitive.Root>,
     VariantProps<typeof progressVariants> {
   className?: string
   font?: VariantProps<typeof progressVariants>['font']

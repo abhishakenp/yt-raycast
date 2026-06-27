@@ -89,10 +89,8 @@ export type DefineCapsuleInput<
     z.infer<TProps>,
     TData
   >,
-  TMutations extends LakebedMutationMap<
-    z.infer<TProps>,
-    TData
-  > = LakebedMutationMap<z.infer<TProps>, TData>,
+  TMutations extends LakebedMutationMap<z.infer<TProps>, TData> =
+    LakebedMutationMap<z.infer<TProps>, TData>,
   TClientResult = unknown,
 > = {
   name: string
@@ -122,14 +120,8 @@ export type DefineCapsuleInput<
 
 export type ShipFastCapsule<
   TClient extends OpenUI.DefinedComponent<any> = OpenUI.DefinedComponent<any>,
-  TServer extends CapsuleLakebedConfig<
-    any,
-    any,
-    any,
-    any,
-    any,
-    any
-  > = CapsuleLakebedConfig<any, any, any, any, any, any>,
+  TServer extends CapsuleLakebedConfig<any, any, any, any, any, any> =
+    CapsuleLakebedConfig<any, any, any, any, any, any>,
   TClientResult = unknown,
 > = {
   client: TClient
@@ -223,10 +215,8 @@ export const defineCapsule = <
     z.infer<TProps>,
     TData
   >,
-  TMutations extends LakebedMutationMap<
-    z.infer<TProps>,
-    TData
-  > = LakebedMutationMap<z.infer<TProps>, TData>,
+  TMutations extends LakebedMutationMap<z.infer<TProps>, TData> =
+    LakebedMutationMap<z.infer<TProps>, TData>,
   TClientResult = unknown,
 >(
   input: DefineCapsuleInput<
@@ -266,13 +256,13 @@ export const defineCapsule = <
         }
       : defaultLakebed
   ) as CapsuleLakebedConfig<
-      z.infer<TProps>,
-      TSchema,
-      TData,
-      TQueries,
-      TMutations,
-      TClientResult
-    >
+    z.infer<TProps>,
+    TSchema,
+    TData,
+    TQueries,
+    TMutations,
+    TClientResult
+  >
 
   const client = defineOpenUIComponent({
     ...openUIInput,
@@ -300,11 +290,7 @@ export const defineCapsule = <
           stampCapsuleAttrs(resolved, input.name, componentInput.statementId),
         )
       }
-      return stampCapsuleAttrs(
-        rendered,
-        input.name,
-        componentInput.statementId,
-      )
+      return stampCapsuleAttrs(rendered, input.name, componentInput.statementId)
     },
   })
 

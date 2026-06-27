@@ -131,9 +131,8 @@ export const deploy = action({
           logLakebedDeploy(artifact.sessionId, 'prebuilt:loaded', {
             fileCount: Object.keys(files).length,
           })
-          const { deployLakebedProjectFiles } = await import(
-            '../src/features/deployments/server/lakebed-deploy-service'
-          )
+          const { deployLakebedProjectFiles } =
+            await import('../src/features/deployments/server/lakebed-deploy-service')
           const deployed = await deployLakebedProjectFiles({
             files,
             log: (message, details) =>
@@ -187,9 +186,8 @@ export const deploy = action({
           'Lakebed deploys require generated fullstack source. Regenerate this site before publishing to Lakebed.',
         )
       } else {
-        const { buildOpenUILakebedProjectFiles } = await import(
-          '../src/features/exports/services/openui-lakebed-export-builder'
-        )
+        const { buildOpenUILakebedProjectFiles } =
+          await import('../src/features/exports/services/openui-lakebed-export-builder')
         project = await buildOpenUILakebedProjectFiles({
           source: prepared.source,
           siteSpecJson: prepared.siteSpecJson,
@@ -212,9 +210,8 @@ export const deploy = action({
 
       const deployStartedAt = Date.now()
       logLakebedDeploy(prepared.sessionId, 'lakebed-api:module-import:start')
-      const { deployLakebedProjectFiles } = await import(
-        '../src/features/deployments/server/lakebed-deploy-service'
-      )
+      const { deployLakebedProjectFiles } =
+        await import('../src/features/deployments/server/lakebed-deploy-service')
       logLakebedDeploy(
         prepared.sessionId,
         'lakebed-api:module-import:complete',

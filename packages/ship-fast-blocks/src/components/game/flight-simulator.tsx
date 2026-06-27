@@ -116,9 +116,8 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
     ;(async () => {
       try {
         const THREE = await import('three')
-        const { GLTFLoader } = await import(
-          'three/addons/loaders/GLTFLoader.js'
-        )
+        const { GLTFLoader } =
+          await import('three/addons/loaders/GLTFLoader.js')
         if (disposed) return
 
         // --- Configuration ---

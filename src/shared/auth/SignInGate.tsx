@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react'
 
 import { isClerkClientEnabled } from '@/shared/auth/clerk-runtime'
-import { useOptionalAuth, useOptionalClerk } from '@/shared/auth/use-optional-auth'
+import {
+  useOptionalAuth,
+  useOptionalClerk,
+} from '@/shared/auth/use-optional-auth'
 
 type SignInGateValue = {
   isLoaded: boolean

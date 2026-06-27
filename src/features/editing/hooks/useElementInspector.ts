@@ -20,10 +20,7 @@ const createOverlay = (baseStyle: string, role: 'hover' | 'selected') => {
   return el
 }
 
-const positionOverlay = (
-  overlay: HTMLDivElement,
-  rect: DOMRect,
-) => {
+const positionOverlay = (overlay: HTMLDivElement, rect: DOMRect) => {
   // Set individual properties rather than replacing cssText — concatenating a
   // long style string is brittle (one unparseable declaration can drop the
   // rest in stricter CSS parsers), and we want the base styles from

@@ -1,6 +1,14 @@
 import { useMutation, useQuery } from 'convex/react'
 import type { CSSProperties, ReactNode } from 'react'
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   Activity,
   Bot,
@@ -1500,90 +1508,100 @@ export function Dashboard({
                       locked={
                         <RailLockedButton
                           label="Edit content"
-                          icon={<Edit3 className="size-3.5" strokeWidth={1.9} />}
+                          icon={
+                            <Edit3 className="size-3.5" strokeWidth={1.9} />
+                          }
                           badges={<span className={newBadgeClass}>NEW</span>}
                         />
                       }
                     >
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className={cn(
-                            railRowClass,
-                            'border-white/20 bg-[linear-gradient(135deg,#ff7a68_0%,#ef3e2d_55%,#b9251a_100%)] text-white shadow-[0_8px_20px_-10px_rgba(239,62,45,0.55)] hover:border-white/30 hover:bg-[linear-gradient(135deg,#ff8876_0%,#f04d3c_55%,#c62b20_100%)]',
-                          )}
-                          data-rail-action="cms-studio"
-                          aria-haspopup="dialog"
-                        >
-                          <span
-                            className="grid size-7 shrink-0 place-items-center text-white transition-transform duration-150 group-hover:-translate-y-px"
-                            aria-hidden="true"
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className={cn(
+                              railRowClass,
+                              'border-white/20 bg-[linear-gradient(135deg,#ff7a68_0%,#ef3e2d_55%,#b9251a_100%)] text-white shadow-[0_8px_20px_-10px_rgba(239,62,45,0.55)] hover:border-white/30 hover:bg-[linear-gradient(135deg,#ff8876_0%,#f04d3c_55%,#c62b20_100%)]',
+                            )}
+                            data-rail-action="cms-studio"
+                            aria-haspopup="dialog"
                           >
-                            <svg
-                              viewBox="0 -10 28 32"
-                              width="30"
-                              height="32"
-                              xmlns="http://www.w3.org/2000/svg"
-                              style={{ overflow: 'visible' }}
+                            <span
+                              className="grid size-7 shrink-0 place-items-center text-white transition-transform duration-150 group-hover:-translate-y-px"
+                              aria-hidden="true"
                             >
-                              <path
-                                d="M21.5 6.5c0-1.9-1.55-2.95-3.65-2.95h-4.2c-2.55 0-4.25 1.45-4.25 3.65 0 1.9 1.35 2.95 3.65 3.4l4.2 0.9c2.3 0.45 3.6 1.5 3.6 3.4 0 2.15-1.7 3.5-4.25 3.5H11.9"
-                                fill="none"
-                                stroke="#ffffff"
-                                strokeWidth="2.2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <path
-                                d="M20.4 5.2 C 20.9 -0.6 21.6 -3 23.3 -6 C 23.7 -2 23.2 1 22.3 5.2 Z"
-                                fill="#ffffff"
-                              />
-                            </svg>
-                          </span>
-                          <span className="min-w-0 flex-1 truncate">
-                            Edit content
-                          </span>
-                          <span className={newBadgeClass}>NEW</span>
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        align="start"
-                        side="left"
-                        sideOffset={12}
-                        className="z-[140] max-h-[min(720px,calc(100vh-32px))] w-[min(420px,calc(100vw-24px))] overflow-y-auto border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
-                      >
-                        <Suspense fallback={<ToolPopoverFallback />}>
-                          <CmsPanel
-                            sessionId={activeSessionId}
-                            prompt={generationView?.session.prompt ?? ''}
-                          />
-                        </Suspense>
-                      </PopoverContent>
-                    </Popover>
+                              <svg
+                                viewBox="0 -10 28 32"
+                                width="30"
+                                height="32"
+                                xmlns="http://www.w3.org/2000/svg"
+                                style={{ overflow: 'visible' }}
+                              >
+                                <path
+                                  d="M21.5 6.5c0-1.9-1.55-2.95-3.65-2.95h-4.2c-2.55 0-4.25 1.45-4.25 3.65 0 1.9 1.35 2.95 3.65 3.4l4.2 0.9c2.3 0.45 3.6 1.5 3.6 3.4 0 2.15-1.7 3.5-4.25 3.5H11.9"
+                                  fill="none"
+                                  stroke="#ffffff"
+                                  strokeWidth="2.2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                <path
+                                  d="M20.4 5.2 C 20.9 -0.6 21.6 -3 23.3 -6 C 23.7 -2 23.2 1 22.3 5.2 Z"
+                                  fill="#ffffff"
+                                />
+                              </svg>
+                            </span>
+                            <span className="min-w-0 flex-1 truncate">
+                              Edit content
+                            </span>
+                            <span className={newBadgeClass}>NEW</span>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="start"
+                          side="left"
+                          sideOffset={12}
+                          className="z-[140] max-h-[min(720px,calc(100vh-32px))] w-[min(420px,calc(100vw-24px))] overflow-y-auto border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                        >
+                          <Suspense fallback={<ToolPopoverFallback />}>
+                            <CmsPanel
+                              sessionId={activeSessionId}
+                              prompt={generationView?.session.prompt ?? ''}
+                            />
+                          </Suspense>
+                        </PopoverContent>
+                      </Popover>
                     </SignInGate>
                     <SignInGate
                       locked={
                         <RailLockedButton
                           label="Chat refine"
-                          icon={<MessageSquare className="size-3.5" strokeWidth={1.9} />}
+                          icon={
+                            <MessageSquare
+                              className="size-3.5"
+                              strokeWidth={1.9}
+                            />
+                          }
                           badges={<span className={newBadgeClass}>AI</span>}
                         />
                       }
                     >
-                    <button
-                      type="button"
-                      className={railRowClass}
-                      data-rail-action="chat"
-                    >
-                      <span className={railIconClass} aria-hidden="true">
-                        <MessageSquare className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate">
-                        Chat refine
-                      </span>
-                      <span className={newBadgeClass}>AI</span>
-                    </button>
+                      <button
+                        type="button"
+                        className={railRowClass}
+                        data-rail-action="chat"
+                      >
+                        <span className={railIconClass} aria-hidden="true">
+                          <MessageSquare
+                            className="size-3.5"
+                            strokeWidth={1.9}
+                          />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">
+                          Chat refine
+                        </span>
+                        <span className={newBadgeClass}>AI</span>
+                      </button>
                     </SignInGate>
                     <SignInGate
                       locked={
@@ -1593,47 +1611,55 @@ export function Dashboard({
                         />
                       }
                     >
-                    <button
-                      type="button"
-                      className={railRowClass}
-                      data-rail-action="annotations"
-                    >
-                      <span className={railIconClass} aria-hidden="true">
-                        <Bot className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate">
-                        Annotations
-                      </span>
-                    </button>
+                      <button
+                        type="button"
+                        className={railRowClass}
+                        data-rail-action="annotations"
+                      >
+                        <span className={railIconClass} aria-hidden="true">
+                          <Bot className="size-3.5" strokeWidth={1.9} />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">
+                          Annotations
+                        </span>
+                      </button>
                     </SignInGate>
                     <SignInGate
                       locked={
                         <RailLockedButton
                           label="Activity"
-                          icon={<Activity className="size-3.5" strokeWidth={1.9} />}
+                          icon={
+                            <Activity className="size-3.5" strokeWidth={1.9} />
+                          }
                         />
                       }
                     >
-                    <button
-                      type="button"
-                      className={railRowClass}
-                      data-rail-action="activity"
-                    >
-                      <span className={railIconClass} aria-hidden="true">
-                        <Activity className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate">Activity</span>
-                    </button>
+                      <button
+                        type="button"
+                        className={railRowClass}
+                        data-rail-action="activity"
+                      >
+                        <span className={railIconClass} aria-hidden="true">
+                          <Activity className="size-3.5" strokeWidth={1.9} />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">
+                          Activity
+                        </span>
+                      </button>
                     </SignInGate>
                     <SignInGate
                       locked={
                         <RailLockedButton
                           label="E-commerce"
-                          icon={<Package className="size-3.5" strokeWidth={1.9} />}
+                          icon={
+                            <Package className="size-3.5" strokeWidth={1.9} />
+                          }
                           badges={
                             <>
                               <span className={newBadgeClass}>
-                                {commerceConfig?.status === 'ready' ? 'READY' : 'NEW'}
+                                {commerceConfig?.status === 'ready'
+                                  ? 'READY'
+                                  : 'NEW'}
                               </span>
                               <span
                                 className={premiumBadgeClass}
@@ -1647,49 +1673,49 @@ export function Dashboard({
                         />
                       }
                     >
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className={railRowClass}
-                          data-rail-action="ecommerce"
-                          aria-haspopup="dialog"
-                        >
-                          <span className={railIconClass} aria-hidden="true">
-                            <Package className="size-3.5" strokeWidth={1.9} />
-                          </span>
-                          <span className="min-w-0 flex-1 truncate">
-                            E-commerce
-                          </span>
-                          <span className={newBadgeClass}>
-                            {commerceConfig?.status === 'ready'
-                              ? 'READY'
-                              : 'NEW'}
-                          </span>
-                          <span
-                            className={premiumBadgeClass}
-                            aria-label="Pro only - upgrade to unlock"
-                            tabIndex={0}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className={railRowClass}
+                            data-rail-action="ecommerce"
+                            aria-haspopup="dialog"
                           >
-                            {crownIcon}
-                          </span>
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        align="start"
-                        side="left"
-                        sideOffset={12}
-                        className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
-                      >
-                        <Suspense fallback={<ToolPopoverFallback />}>
-                          <CommercePanel
-                            sessionId={activeSessionId}
-                            visualProductCount={visualProductCount}
-                            visualProducts={visualProducts}
-                          />
-                        </Suspense>
-                      </PopoverContent>
-                    </Popover>
+                            <span className={railIconClass} aria-hidden="true">
+                              <Package className="size-3.5" strokeWidth={1.9} />
+                            </span>
+                            <span className="min-w-0 flex-1 truncate">
+                              E-commerce
+                            </span>
+                            <span className={newBadgeClass}>
+                              {commerceConfig?.status === 'ready'
+                                ? 'READY'
+                                : 'NEW'}
+                            </span>
+                            <span
+                              className={premiumBadgeClass}
+                              aria-label="Pro only - upgrade to unlock"
+                              tabIndex={0}
+                            >
+                              {crownIcon}
+                            </span>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="start"
+                          side="left"
+                          sideOffset={12}
+                          className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                        >
+                          <Suspense fallback={<ToolPopoverFallback />}>
+                            <CommercePanel
+                              sessionId={activeSessionId}
+                              visualProductCount={visualProductCount}
+                              visualProducts={visualProducts}
+                            />
+                          </Suspense>
+                        </PopoverContent>
+                      </Popover>
                     </SignInGate>
                   </div>
                   <div className="grid gap-2">
@@ -1700,103 +1726,110 @@ export function Dashboard({
                       locked={
                         <RailLockedButton
                           label="Theme"
-                          icon={<Palette className="size-3.5" strokeWidth={1.9} />}
+                          icon={
+                            <Palette className="size-3.5" strokeWidth={1.9} />
+                          }
                           sublabel={activeThemeLabel}
                         />
                       }
                     >
-                    <ThemePicker
-                      value={effectiveTheme}
-                      isDark={isDark}
-                      onSelect={(theme: string) => {
-                        setSelectedTheme(theme)
-                        if (resolvedSessionId) {
-                          setThemeOverrideMutation({
-                            sessionId: resolvedSessionId,
-                            anonymousOwnerSecret: activeAnonymousOwnerSecret,
-                            themeOverride: theme,
-                            themeMode: isDark ? 'dark' : 'light',
-                          })
-                        }
-                      }}
-                      onToggleMode={() => {
-                        setIsDark((dark) => {
-                          const nextMode = dark ? 'light' : 'dark'
+                      <ThemePicker
+                        value={effectiveTheme}
+                        isDark={isDark}
+                        onSelect={(theme: string) => {
+                          setSelectedTheme(theme)
                           if (resolvedSessionId) {
                             setThemeOverrideMutation({
                               sessionId: resolvedSessionId,
                               anonymousOwnerSecret: activeAnonymousOwnerSecret,
-                              themeMode: nextMode,
+                              themeOverride: theme,
+                              themeMode: isDark ? 'dark' : 'light',
                             })
                           }
-                          return !dark
-                        })
-                      }}
-                      trigger={
-                        <button
-                          type="button"
-                          className={cn(
-                            railRowClass,
-                            'border-white/14 bg-white/[0.04] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]',
-                          )}
-                          style={activeThemeButtonStyle}
-                          data-rail-action="palette"
-                        >
-                          <span
+                        }}
+                        onToggleMode={() => {
+                          setIsDark((dark) => {
+                            const nextMode = dark ? 'light' : 'dark'
+                            if (resolvedSessionId) {
+                              setThemeOverrideMutation({
+                                sessionId: resolvedSessionId,
+                                anonymousOwnerSecret:
+                                  activeAnonymousOwnerSecret,
+                                themeMode: nextMode,
+                              })
+                            }
+                            return !dark
+                          })
+                        }}
+                        trigger={
+                          <button
+                            type="button"
                             className={cn(
-                              railIconClass,
-                              'bg-black/22 text-white/88 backdrop-blur-md group-hover:bg-black/28',
+                              railRowClass,
+                              'border-white/14 bg-white/[0.04] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]',
                             )}
-                            aria-hidden="true"
+                            style={activeThemeButtonStyle}
+                            data-rail-action="palette"
                           >
-                            <Palette className="size-3.5" strokeWidth={1.9} />
-                          </span>
-                          <span className="grid min-w-0 flex-1 gap-0.5">
-                            <span className="truncate">Theme</span>
-                            <span className="truncate font-mono text-[10px] leading-tight tracking-[0.04em] text-white/64">
-                              {activeThemeLabel}
+                            <span
+                              className={cn(
+                                railIconClass,
+                                'bg-black/22 text-white/88 backdrop-blur-md group-hover:bg-black/28',
+                              )}
+                              aria-hidden="true"
+                            >
+                              <Palette className="size-3.5" strokeWidth={1.9} />
                             </span>
-                          </span>
-                          <span
-                            className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/12 bg-black/18 text-white/72 backdrop-blur-md"
-                            aria-hidden="true"
-                          >
-                            <Palette className="size-4" strokeWidth={1.8} />
-                          </span>
-                        </button>
-                      }
-                    />
+                            <span className="grid min-w-0 flex-1 gap-0.5">
+                              <span className="truncate">Theme</span>
+                              <span className="truncate font-mono text-[10px] leading-tight tracking-[0.04em] text-white/64">
+                                {activeThemeLabel}
+                              </span>
+                            </span>
+                            <span
+                              className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/12 bg-black/18 text-white/72 backdrop-blur-md"
+                              aria-hidden="true"
+                            >
+                              <Palette className="size-4" strokeWidth={1.8} />
+                            </span>
+                          </button>
+                        }
+                      />
                     </SignInGate>
                     <SignInGate
                       locked={
                         <RailLockedButton
                           label="Brand and media"
-                          icon={<Building2 className="size-3.5" strokeWidth={1.9} />}
+                          icon={
+                            <Building2 className="size-3.5" strokeWidth={1.9} />
+                          }
                           sublabel="Brandfetch / Pexels"
                         />
                       }
                     >
-                    <button
-                      type="button"
-                      className={railRowClass}
-                      data-rail-action="brand-media"
-                    >
-                      <span className={railIconClass} aria-hidden="true">
-                        <Building2 className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="grid min-w-0 flex-1 gap-0.5">
-                        <span className="truncate">Brand and media</span>
-                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
-                          Brandfetch / Pexels
+                      <button
+                        type="button"
+                        className={railRowClass}
+                        data-rail-action="brand-media"
+                      >
+                        <span className={railIconClass} aria-hidden="true">
+                          <Building2 className="size-3.5" strokeWidth={1.9} />
                         </span>
-                      </span>
-                    </button>
+                        <span className="grid min-w-0 flex-1 gap-0.5">
+                          <span className="truncate">Brand and media</span>
+                          <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
+                            Brandfetch / Pexels
+                          </span>
+                        </span>
+                      </button>
                     </SignInGate>
                     <SignInGate
                       locked={
                         <RailLockedButton
                           label="Localization"
-                          icon={<Languages className="size-3.5" strokeWidth={1.9} />}
+                          icon={
+                            <Languages className="size-3.5" strokeWidth={1.9} />
+                          }
                           sublabel={
                             generationView?.session.preferredLanguage ??
                             'default locale'
@@ -1804,28 +1837,30 @@ export function Dashboard({
                         />
                       }
                     >
-                    <button
-                      type="button"
-                      className={railRowClass}
-                      data-rail-action="localization"
-                    >
-                      <span className={railIconClass} aria-hidden="true">
-                        <Languages className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="grid min-w-0 flex-1 gap-0.5">
-                        <span className="truncate">Localization</span>
-                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
-                          {generationView?.session.preferredLanguage ??
-                            'default locale'}
+                      <button
+                        type="button"
+                        className={railRowClass}
+                        data-rail-action="localization"
+                      >
+                        <span className={railIconClass} aria-hidden="true">
+                          <Languages className="size-3.5" strokeWidth={1.9} />
                         </span>
-                      </span>
-                    </button>
+                        <span className="grid min-w-0 flex-1 gap-0.5">
+                          <span className="truncate">Localization</span>
+                          <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
+                            {generationView?.session.preferredLanguage ??
+                              'default locale'}
+                          </span>
+                        </span>
+                      </button>
                     </SignInGate>
                     <SignInGate
                       locked={
                         <RailLockedButton
                           label="GitHub"
-                          icon={<Github className="size-3.5" strokeWidth={1.9} />}
+                          icon={
+                            <Github className="size-3.5" strokeWidth={1.9} />
+                          }
                           badges={
                             <span
                               className={premiumBadgeClass}
@@ -1838,46 +1873,51 @@ export function Dashboard({
                         />
                       }
                     >
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className={railRowClass}
-                          data-rail-action="github"
-                          aria-haspopup="dialog"
-                        >
-                          <span className={railIconClass} aria-hidden="true">
-                            <Github className="size-3.5" strokeWidth={1.9} />
-                          </span>
-                          <span className="min-w-0 flex-1 truncate">
-                            GitHub
-                          </span>
-                          <span
-                            className={premiumBadgeClass}
-                            aria-label="Pro only - upgrade to unlock"
-                            tabIndex={0}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className={railRowClass}
+                            data-rail-action="github"
+                            aria-haspopup="dialog"
                           >
-                            {crownIcon}
-                          </span>
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        align="start"
-                        side="left"
-                        sideOffset={12}
-                        className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
-                      >
-                        <Suspense fallback={<ToolPopoverFallback />}>
-                          <GitHubPanel sessionId={sessionId} />
-                        </Suspense>
-                      </PopoverContent>
-                    </Popover>
+                            <span className={railIconClass} aria-hidden="true">
+                              <Github className="size-3.5" strokeWidth={1.9} />
+                            </span>
+                            <span className="min-w-0 flex-1 truncate">
+                              GitHub
+                            </span>
+                            <span
+                              className={premiumBadgeClass}
+                              aria-label="Pro only - upgrade to unlock"
+                              tabIndex={0}
+                            >
+                              {crownIcon}
+                            </span>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="start"
+                          side="left"
+                          sideOffset={12}
+                          className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                        >
+                          <Suspense fallback={<ToolPopoverFallback />}>
+                            <GitHubPanel sessionId={sessionId} />
+                          </Suspense>
+                        </PopoverContent>
+                      </Popover>
                     </SignInGate>
                     <SignInGate
                       locked={
                         <RailLockedButton
                           label="Billing"
-                          icon={<CreditCard className="size-3.5" strokeWidth={1.9} />}
+                          icon={
+                            <CreditCard
+                              className="size-3.5"
+                              strokeWidth={1.9}
+                            />
+                          }
                           badges={
                             <span
                               className={premiumBadgeClass}
@@ -1890,29 +1930,31 @@ export function Dashboard({
                         />
                       }
                     >
-                    <button
-                      type="button"
-                      className={railRowClass}
-                      data-rail-action="billing"
-                    >
-                      <span className={railIconClass} aria-hidden="true">
-                        <CreditCard className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate">Billing</span>
-                      <span
-                        className={premiumBadgeClass}
-                        aria-label="Pro only - upgrade to unlock"
-                        tabIndex={0}
+                      <button
+                        type="button"
+                        className={railRowClass}
+                        data-rail-action="billing"
                       >
-                        {crownIcon}
-                      </span>
-                    </button>
+                        <span className={railIconClass} aria-hidden="true">
+                          <CreditCard className="size-3.5" strokeWidth={1.9} />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">Billing</span>
+                        <span
+                          className={premiumBadgeClass}
+                          aria-label="Pro only - upgrade to unlock"
+                          tabIndex={0}
+                        >
+                          {crownIcon}
+                        </span>
+                      </button>
                     </SignInGate>
                     <SignInGate
                       locked={
                         <RailLockedButton
                           label="Export"
-                          icon={<Download className="size-3.5" strokeWidth={1.9} />}
+                          icon={
+                            <Download className="size-3.5" strokeWidth={1.9} />
+                          }
                           sublabel="HTML / React / Next.js"
                           badges={
                             <div
@@ -1928,85 +1970,90 @@ export function Dashboard({
                         />
                       }
                     >
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className={railRowClass}
-                          data-rail-action="export"
-                          aria-haspopup="dialog"
-                        >
-                          <span className={railIconClass} aria-hidden="true">
-                            <Download className="size-3.5" strokeWidth={1.9} />
-                          </span>
-                          <span className="grid min-w-0 flex-1 gap-0.5">
-                            <span className="truncate">Export</span>
-                            <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
-                              HTML / React / Next.js
-                            </span>
-                          </span>
-                          <div
-                            className={cn(
-                              stateBadgeClass,
-                              'bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)]',
-                            )}
-                            data-state="premium"
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className={railRowClass}
+                            data-rail-action="export"
+                            aria-haspopup="dialog"
                           >
-                            <span className="text-[#0a0a0b]">Pro only</span>
-                          </div>
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        align="start"
-                        side="left"
-                        sideOffset={12}
-                        className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
-                      >
-                        <Suspense fallback={<ToolPopoverFallback />}>
-                          <ExportPanel sessionId={sessionId} />
-                        </Suspense>
-                      </PopoverContent>
-                    </Popover>
+                            <span className={railIconClass} aria-hidden="true">
+                              <Download
+                                className="size-3.5"
+                                strokeWidth={1.9}
+                              />
+                            </span>
+                            <span className="grid min-w-0 flex-1 gap-0.5">
+                              <span className="truncate">Export</span>
+                              <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
+                                HTML / React / Next.js
+                              </span>
+                            </span>
+                            <div
+                              className={cn(
+                                stateBadgeClass,
+                                'bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)]',
+                              )}
+                              data-state="premium"
+                            >
+                              <span className="text-[#0a0a0b]">Pro only</span>
+                            </div>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="start"
+                          side="left"
+                          sideOffset={12}
+                          className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                        >
+                          <Suspense fallback={<ToolPopoverFallback />}>
+                            <ExportPanel sessionId={sessionId} />
+                          </Suspense>
+                        </PopoverContent>
+                      </Popover>
                     </SignInGate>
                     <SignInGate
                       locked={
                         <RailLockedButton
                           label="Deployment URL"
-                          icon={<Globe2 className="size-3.5" strokeWidth={1.9} />}
+                          icon={
+                            <Globe2 className="size-3.5" strokeWidth={1.9} />
+                          }
                           sublabel={deploymentStatus?.slug ?? 'publish slug'}
                         />
                       }
                     >
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className={railRowClass}
-                          data-rail-action="domain"
-                          aria-haspopup="dialog"
-                        >
-                          <span className={railIconClass} aria-hidden="true">
-                            <Globe2 className="size-3.5" strokeWidth={1.9} />
-                          </span>
-                          <span className="grid min-w-0 flex-1 gap-0.5">
-                            <span className="truncate">Deployment URL</span>
-                            <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
-                              {deploymentStatus?.slug ?? 'publish slug'}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className={railRowClass}
+                            data-rail-action="domain"
+                            aria-haspopup="dialog"
+                          >
+                            <span className={railIconClass} aria-hidden="true">
+                              <Globe2 className="size-3.5" strokeWidth={1.9} />
                             </span>
-                          </span>
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        align="end"
-                        side="left"
-                        sideOffset={12}
-                        className="z-[140] w-80 border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
-                      >
-                        <Suspense fallback={<ToolPopoverFallback />}>
-                          <DeploymentPanel sessionId={sessionId} />
-                        </Suspense>
-                      </PopoverContent>
-                    </Popover>
+                            <span className="grid min-w-0 flex-1 gap-0.5">
+                              <span className="truncate">Deployment URL</span>
+                              <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
+                                {deploymentStatus?.slug ?? 'publish slug'}
+                              </span>
+                            </span>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="end"
+                          side="left"
+                          sideOffset={12}
+                          className="z-[140] w-80 border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                        >
+                          <Suspense fallback={<ToolPopoverFallback />}>
+                            <DeploymentPanel sessionId={sessionId} />
+                          </Suspense>
+                        </PopoverContent>
+                      </Popover>
                     </SignInGate>
                   </div>
                   <div className="grid gap-2">
@@ -2031,34 +2078,34 @@ export function Dashboard({
                         />
                       }
                     >
-                    <button
-                      type="button"
-                      className={cn(
-                        railRowClass,
-                        'cursor-not-allowed bg-white/[0.025] text-white/34 opacity-55 hover:translate-y-0 hover:border-white/8 hover:bg-white/[0.025] hover:text-white/34',
-                      )}
-                      disabled
-                      data-rail-action="3d"
-                    >
-                      <span
+                      <button
+                        type="button"
                         className={cn(
-                          railIconClass,
-                          'text-white/38 group-hover:translate-y-0 group-hover:border-white/8 group-hover:bg-white/[0.05] group-hover:text-white/38',
+                          railRowClass,
+                          'cursor-not-allowed bg-white/[0.025] text-white/34 opacity-55 hover:translate-y-0 hover:border-white/8 hover:bg-white/[0.025] hover:text-white/34',
                         )}
-                        aria-hidden="true"
+                        disabled
+                        data-rail-action="3d"
                       >
-                        <Box className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate">3D</span>
-                      <span
-                        className={cn(
-                          stateBadgeClass,
-                          'bg-white/[0.06] text-white/38',
-                        )}
-                      >
-                        SOON
-                      </span>
-                    </button>
+                        <span
+                          className={cn(
+                            railIconClass,
+                            'text-white/38 group-hover:translate-y-0 group-hover:border-white/8 group-hover:bg-white/[0.05] group-hover:text-white/38',
+                          )}
+                          aria-hidden="true"
+                        >
+                          <Box className="size-3.5" strokeWidth={1.9} />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">3D</span>
+                        <span
+                          className={cn(
+                            stateBadgeClass,
+                            'bg-white/[0.06] text-white/38',
+                          )}
+                        >
+                          SOON
+                        </span>
+                      </button>
                     </SignInGate>
                   </div>
                 </div>

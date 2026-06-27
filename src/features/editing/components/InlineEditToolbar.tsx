@@ -103,7 +103,12 @@ export function InlineEditToolbar({
   // this guard, the toolbar applies default values (16px, #ffffff, 400) on mount
   // before the element's real styles are read, causing a flash + layout shift.
   useEffect(() => {
-    if (!activeElement || !styleReadCompleteRef.current || !userModifiedRef.current) return
+    if (
+      !activeElement ||
+      !styleReadCompleteRef.current ||
+      !userModifiedRef.current
+    )
+      return
 
     activeElement.style.fontSize = `${fontSize}px`
     activeElement.style.fontWeight = isBold ? '700' : '400'

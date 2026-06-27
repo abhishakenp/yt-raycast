@@ -48,7 +48,10 @@ describe('defineCapsule Lakebed contract', () => {
     })
     await capsule.lakebed?.mutations?.appendItem(context, 'items', 'Live')
 
-    expect(writes).toEqual([{ title: 'Edited' }, { items: ['generated', 'Live'] }])
+    expect(writes).toEqual([
+      { title: 'Edited' },
+      { items: ['generated', 'Live'] },
+    ])
   })
 
   it('preserves custom Lakebed data keys for shared state like cart', () => {

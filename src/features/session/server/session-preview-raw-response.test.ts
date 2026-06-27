@@ -14,9 +14,8 @@ vi.mock('@/shared/convex/http-client', () => ({
   createRuntimeConvexHttpClient: () => ({ query }),
 }))
 
-const { createSessionPreviewRawResponse } = await import(
-  './session-preview-raw-response'
-)
+const { createSessionPreviewRawResponse } =
+  await import('./session-preview-raw-response')
 
 describe('createSessionPreviewRawResponse', () => {
   it('serves stored public preview HTML as a standalone document', async () => {

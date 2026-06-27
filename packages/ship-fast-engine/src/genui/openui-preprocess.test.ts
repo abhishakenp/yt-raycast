@@ -50,4 +50,21 @@ describe('preprocessOpenUIResponse', () => {
       'imageAlt:"Storefront"), "Trusted by Leading Brands"',
     )
   })
+
+  it('does not strip quotes from URL string values inside object values (regression: https:// in targetMap)', () => {
+    // The targetMap in PageSwitch contains URL strings as object keys, e.g.
+    // {"https://facebook.com/blogdogs":"Home#home_storygrid"}.
+    // repairMalformedQuotedObjectKeys must NOT strip the opening quote from
+    // these URL strings — "https:" matches the malformed-key regex but is a
+    // URL scheme, not a key-value separator. Stripping the quote corrupts the
+    // string boundaries, causing balancePartial to add an extra paren, which
+    // makes the parser flag meta.incomplete=true and exports fail.
+    const source =
+      'root = PageSwitch(["Home"], [home], "", {"Contact":"Home#hero","https://facebook.com/blog":"Home#hero"})\nhome = Text("Home")'
+
+    const result = preprocessOpenUIResponse(source, { resolveRefs: false })
+
+    expect(result).toContain('"https://facebook.com/blog"')
+    expect(result).not.toContain(',https://facebook.com/blog"')
+  })
 })

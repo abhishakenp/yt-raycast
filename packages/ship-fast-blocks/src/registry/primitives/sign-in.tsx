@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-
 import { SignInButton } from '#/section-kit/SignInButton.tsx'
 
 export const SignIn = defineCapsule({

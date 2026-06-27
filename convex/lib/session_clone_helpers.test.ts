@@ -472,8 +472,9 @@ describe('session clone helpers', () => {
           normalizeId: vi.fn(() => sessionId),
         },
         storage: {
-          getUrl: vi.fn(async (storageId: Id<'_storage'>) =>
-            `https://storage.test/${storageId}`,
+          getUrl: vi.fn(
+            async (storageId: Id<'_storage'>) =>
+              `https://storage.test/${storageId}`,
           ),
         },
       } as unknown as Pick<QueryCtx, 'db' | 'storage'>
@@ -506,8 +507,9 @@ describe('session clone helpers', () => {
           normalizeId: vi.fn(() => sessionId),
         },
         storage: {
-          getUrl: vi.fn(async (storageId: Id<'_storage'>) =>
-            `https://storage.test/${storageId}`,
+          getUrl: vi.fn(
+            async (storageId: Id<'_storage'>) =>
+              `https://storage.test/${storageId}`,
           ),
         },
       } as unknown as Pick<QueryCtx, 'db' | 'storage'>

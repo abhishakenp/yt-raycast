@@ -109,16 +109,16 @@ describe('edit-helpers (shared)', () => {
     // These entities are NOT in the regex alternation table, so tier 2 fails.
     // The character walk decodes them and finds the match.
     const html = '<p>Cost: &#8364;100 (&#x20AC;)</p>'
-    expect(applyPreviewTextEdit(html, 'Cost: \u20AC100 (\u20AC)', 'Free').html).toBe(
-      '<p>Free</p>',
-    )
+    expect(
+      applyPreviewTextEdit(html, 'Cost: \u20AC100 (\u20AC)', 'Free').html,
+    ).toBe('<p>Free</p>')
   })
 
   it('matches text with mixed named + numeric entities', () => {
     const html = '<p>&ldquo;Hello&#8221; &amp; goodbye</p>'
-    expect(applyPreviewTextEdit(html, '\u201CHello\u201D & goodbye', 'Hi').html).toBe(
-      '<p>Hi</p>',
-    )
+    expect(
+      applyPreviewTextEdit(html, '\u201CHello\u201D & goodbye', 'Hi').html,
+    ).toBe('<p>Hi</p>')
   })
 
   it('matches text split across multiple inline tags', () => {
@@ -163,12 +163,7 @@ describe('edit-helpers (shared)', () => {
   it('finds multiple occurrences via character walk with occurrenceIndex', () => {
     // Both occurrences fail tier 1 (entities) and tier 2 (same reason).
     const html = '<p>&ldquo;Hi&#8221;</p><p>&ldquo;Hi&#8221;</p>'
-    const result = applyPreviewTextEdit(
-      html,
-      '\u201CHi\u201D',
-      'Hello',
-      1,
-    )
+    const result = applyPreviewTextEdit(html, '\u201CHi\u201D', 'Hello', 1)
     expect(result.replaced).toBe(true)
     expect(result.html).toBe('<p>&ldquo;Hi&#8221;</p><p>Hello</p>')
   })

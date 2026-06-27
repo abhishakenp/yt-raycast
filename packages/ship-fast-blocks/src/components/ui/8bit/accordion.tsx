@@ -15,8 +15,9 @@ import {
 
 import '#/components/ui/8bit/styles/retro.css'
 
-export interface BitAccordionItemProps
-  extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> {
+export interface BitAccordionItemProps extends React.ComponentPropsWithoutRef<
+  typeof AccordionPrimitive.Item
+> {
   asChild?: boolean
 }
 
@@ -38,8 +39,9 @@ function AccordionItem({
   )
 }
 
-export interface BitAccordionTriggerProps
-  extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger> {
+export interface BitAccordionTriggerProps extends React.ComponentPropsWithoutRef<
+  typeof AccordionPrimitive.Trigger
+> {
   font?: 'normal' | 'retro'
 }
 
@@ -59,8 +61,9 @@ function AccordionTrigger({
   )
 }
 
-export interface BitAccordionContentProps
-  extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content> {
+export interface BitAccordionContentProps extends React.ComponentPropsWithoutRef<
+  typeof AccordionPrimitive.Content
+> {
   font?: 'normal' | 'retro'
 }
 

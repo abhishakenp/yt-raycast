@@ -130,7 +130,9 @@ const useMemoObjectPropertyNamesInFunction = (
     return null
   }
 
-  const collectObjectProperties = (objectLiteral: ts.ObjectLiteralExpression) => {
+  const collectObjectProperties = (
+    objectLiteral: ts.ObjectLiteralExpression,
+  ) => {
     for (const property of objectLiteral.properties) {
       if (ts.isShorthandPropertyAssignment(property)) {
         names.add(property.name.text)
@@ -154,7 +156,10 @@ const useMemoObjectPropertyNamesInFunction = (
       if (firstArg && ts.isArrowFunction(firstArg)) {
         const body = firstArg.body
         if (ts.isObjectLiteralExpression(body)) collectObjectProperties(body)
-        if (ts.isParenthesizedExpression(body) && ts.isObjectLiteralExpression(body.expression)) {
+        if (
+          ts.isParenthesizedExpression(body) &&
+          ts.isObjectLiteralExpression(body.expression)
+        ) {
           collectObjectProperties(body.expression)
         }
       }
@@ -300,7 +305,9 @@ describe('openui-export-builder', () => {
     expect(scriptText).toContain('function fixedHeaderOffset()')
     expect(scriptText).toContain('function scrollToSection(id)')
     expect(scriptText).toContain('window.scrollTo({ top: top, behavior:')
-    expect(scriptText).toContain("window.scrollTo({ top: 0, behavior: 'smooth' })")
+    expect(scriptText).toContain(
+      "window.scrollTo({ top: 0, behavior: 'smooth' })",
+    )
 
     // routes render as data-sf-export-page sections (first visible, rest hidden)
     const pages = document.querySelectorAll('[data-sf-export-page]')
@@ -539,13 +546,16 @@ describe('openui-export-builder', () => {
       'src/components/EcommerceHero.tsx',
       files['src/components/EcommerceHero.tsx'] ?? '',
     )
-    const siteData = parseTsx('src/lib/site-data.ts', files['src/lib/site-data.ts'] ?? '')
+    const siteData = parseTsx(
+      'src/lib/site-data.ts',
+      files['src/lib/site-data.ts'] ?? '',
+    )
 
     expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
     expect(files['src/lib/site-data.ts']).toBeDefined()
-    expect(hasVariableInitializedByCall(component, 'lakebed', 'useLakebedAdapter')).toBe(
-      true,
-    )
+    expect(
+      hasVariableInitializedByCall(component, 'lakebed', 'useLakebedAdapter'),
+    ).toBe(true)
     expect(namedImportsFromModule(siteData, 'react')).toEqual(
       expect.arrayContaining(['useRef']),
     )
@@ -564,7 +574,9 @@ describe('openui-export-builder', () => {
         'run',
       ]),
     )
-    expect(exportedFilesLeakPackageImport(files, '@ship-fast/lakebed')).toBe(false)
+    expect(exportedFilesLeakPackageImport(files, '@ship-fast/lakebed')).toBe(
+      false,
+    )
   })
 
   it('exports nested composed route sections in React ZIPs without exporting Stack', async () => {
@@ -631,14 +643,17 @@ describe('openui-export-builder', () => {
       files['src/components/EcommerceHero.tsx'] ?? '',
     )
     const layout = parseTsx('app/layout.tsx', files['app/layout.tsx'] ?? '')
-    const siteData = parseTsx('src/lib/site-data.ts', files['src/lib/site-data.ts'] ?? '')
+    const siteData = parseTsx(
+      'src/lib/site-data.ts',
+      files['src/lib/site-data.ts'] ?? '',
+    )
 
     expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
     expect(files['app/layout.tsx']).toBeDefined()
     expect(files['src/lib/site-data.ts']).toBeDefined()
-    expect(hasVariableInitializedByCall(component, 'lakebed', 'useLakebedAdapter')).toBe(
-      true,
-    )
+    expect(
+      hasVariableInitializedByCall(component, 'lakebed', 'useLakebedAdapter'),
+    ).toBe(true)
     expect(importSpecifiers(layout)).toContain('../src/lib/site-data-provider')
     expect(namedImportsFromModule(siteData, 'react')).toEqual(
       expect.arrayContaining(['useRef']),
@@ -658,7 +673,9 @@ describe('openui-export-builder', () => {
         'run',
       ]),
     )
-    expect(exportedFilesLeakPackageImport(files, '@ship-fast/lakebed')).toBe(false)
+    expect(exportedFilesLeakPackageImport(files, '@ship-fast/lakebed')).toBe(
+      false,
+    )
   })
 
   it('exports nested composed route sections in Next ZIPs without exporting Stack', async () => {

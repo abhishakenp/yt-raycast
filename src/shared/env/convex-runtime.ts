@@ -10,9 +10,9 @@ export const getRuntimeConvexUrl = (
 ): string => {
   const url =
     env.CONVEX_SELF_HOSTED_URL ??
-    env.CONVEX_URL ??
     env.VITE_CONVEX_SELF_HOSTED_URL ??
-    env.VITE_CONVEX_URL
+    env.VITE_CONVEX_URL ??
+    env.CONVEX_URL
 
   if (!url) {
     throw new Error('Convex URL is not configured')
