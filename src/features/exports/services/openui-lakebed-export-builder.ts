@@ -810,7 +810,7 @@ const printNode = (node: ts.Node, sourceFile: ts.SourceFile): string =>
     .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
     .printNode(ts.EmitHint.Unspecified, node, sourceFile)
 
-const isExportableFactory = (expression: string): boolean =>
+export const isExportableFactory = (expression: string): boolean =>
   expression === 'defineCapsule'
 
 const propertyNameText = (name: ts.PropertyName, sourceFile: ts.SourceFile) => {
@@ -1017,15 +1017,14 @@ const lakebedSchemaSource = (
     .filter(ts.isPropertyAssignment)
     .map((property) => {
       const initializer = unwrapExpression(property.initializer)
-      const tableSource =
-        ts.isObjectLiteralExpression(initializer)
-          ? initializer.properties.find(
-              (item): item is ts.SpreadAssignment =>
-                ts.isSpreadAssignment(item) &&
-                ts.isCallExpression(item.expression) &&
-                item.expression.expression.getText(sourceFile) === 'table',
-            )?.expression
-          : undefined
+      const tableSource = ts.isObjectLiteralExpression(initializer)
+        ? initializer.properties.find(
+            (item): item is ts.SpreadAssignment =>
+              ts.isSpreadAssignment(item) &&
+              ts.isCallExpression(item.expression) &&
+              item.expression.expression.getText(sourceFile) === 'table',
+          )?.expression
+        : undefined
       return `${property.name.getText(sourceFile)}: ${printNode(
         tableSource ?? initializer,
         sourceFile,
@@ -1052,7 +1051,10 @@ const findVariableInitializer = (
   for (const statement of sourceFile.statements) {
     if (!ts.isVariableStatement(statement)) continue
     for (const declaration of statement.declarationList.declarations) {
-      if (!ts.isIdentifier(declaration.name) || declaration.name.text !== name) {
+      if (
+        !ts.isIdentifier(declaration.name) ||
+        declaration.name.text !== name
+      ) {
         continue
       }
       return declaration.initializer
@@ -1132,7 +1134,10 @@ const readImportedLakebedObject = (
 ): LakebedObjectSource | null => {
   const imported = importedLakebedName(sourceFile, localName)
   if (!imported || !imported.moduleName.startsWith('.')) return null
-  const sourcePath = resolveRelativeBlockSourcePath(entry.file, imported.moduleName)
+  const sourcePath = resolveRelativeBlockSourcePath(
+    entry.file,
+    imported.moduleName,
+  )
   if (!sourcePath) return null
   const source = getBlockSourceFile(sourcePath)
   const importedSourceFile = ts.createSourceFile(
@@ -1217,7 +1222,10 @@ export const readLakebedDefinition = (
             property.name.text === name,
         )?.initializer
 
-      const schema = resolveSchemaObject(prop('schema'), lakebedSource.sourceFile)
+      const schema = resolveSchemaObject(
+        prop('schema'),
+        lakebedSource.sourceFile,
+      )
       return {
         schemaSource: normalizeLakebedSchemaSource(
           schema ? lakebedSchemaSource(schema, lakebedSource.sourceFile) : null,
@@ -1493,7 +1501,9 @@ const collectNodeComponentNames = (
 }
 
 const collectRouteComponentNames = (routes: LakebedRoute[]): string[] => [
-  ...new Set(routes.flatMap((route) => [...collectNodeComponentNames(route.node)])),
+  ...new Set(
+    routes.flatMap((route) => [...collectNodeComponentNames(route.node)]),
+  ),
 ]
 
 const routeGapClass = (value: unknown): string => {
@@ -1532,7 +1542,9 @@ const routeStackClass = (props: Record<string, unknown>) =>
     props.wrap === true ? 'flex-wrap' : '',
     props.className,
   ]
-    .filter((item): item is string => typeof item === 'string' && item.length > 0)
+    .filter(
+      (item): item is string => typeof item === 'string' && item.length > 0,
+    )
     .join(' ')
 
 const routeGridClass = (cols: unknown, gap: unknown, className: unknown) => {
@@ -1549,7 +1561,9 @@ const routeGridClass = (cols: unknown, gap: unknown, className: unknown) => {
               ? 'grid-cols-2 lg:grid-cols-6'
               : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
   return ['grid', colsClass, routeGapClass(gap), className]
-    .filter((item): item is string => typeof item === 'string' && item.length > 0)
+    .filter(
+      (item): item is string => typeof item === 'string' && item.length > 0,
+    )
     .join(' ')
 }
 
@@ -2615,7 +2629,7 @@ function copyBlocksClientSourceForLakebed(
         ? `client/${blocksRel.slice('src/'.length)}`
         : blocksRel.startsWith('src/section-kit/')
           ? `client/${blocksRel.slice('src/'.length)}`
-        : `client/vendor/ship-fast-blocks/${blocksRel}`
+          : `client/vendor/ship-fast-blocks/${blocksRel}`
   if (seenBlockFiles.has(outPath)) return outPath
   seenBlockFiles.add(outPath)
   const source = getBlockSourceFile(sourcePath)
@@ -3742,10 +3756,7 @@ export async function buildOpenUILakebedProjectFiles(
   const routeClientComponents = routes.map((route) =>
     renderRouteClientComponentDefinition(route, componentNames),
   )
-  const clientComponents = [
-    ...routeClientComponents,
-    ...nestedClientComponents,
-  ]
+  const clientComponents = [...routeClientComponents, ...nestedClientComponents]
   const themeName = readThemeName(input.siteSpecJson, input.themeName)
   const themeCss = buildLakebedThemeCss(
     resolveThemeStyles(themeName),

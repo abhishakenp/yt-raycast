@@ -1,110 +1,57 @@
-import { readFileSync } from 'node:fs'
-import ts from 'typescript'
-import { describe, expect, it } from 'vitest'
+import { convexTest } from 'convex-test'
+import { describe, expect, it, vi } from 'vitest'
 
-const sourcePath = new URL('./lakebed_deploy.ts', import.meta.url)
+import { api } from './_generated/api'
+import schema from './schema'
+import { deploy } from './lakebed_deploy'
 
-const parseLakebedDeploy = () =>
-  ts.createSourceFile(
-    sourcePath.pathname,
-    readFileSync(sourcePath, 'utf8'),
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  )
+const modules = import.meta.glob('./**/*.ts')
 
-const stringLiterals = (sourceFile: ts.SourceFile): Set<string> => {
-  const values = new Set<string>()
+const ownerSecret = 'lakebed-owner-secret'
 
-  const visit = (node: ts.Node) => {
-    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
-      values.add(node.text)
-    }
-    if (
-      node.kind === ts.SyntaxKind.TemplateHead ||
-      node.kind === ts.SyntaxKind.TemplateMiddle ||
-      node.kind === ts.SyntaxKind.TemplateTail
-    ) {
-      values.add((node as ts.TemplateLiteralLikeNode).text)
-    }
-    ts.forEachChild(node, visit)
-  }
+describe('lakebed_deploy action', () => {
+  it('exports a deploy action definition', () => {
+    expect(deploy).toBeDefined()
+    expect(typeof deploy).toBe('function')
+    expect(deploy.isAction).toBe(true)
+  })
 
-  visit(sourceFile)
-  return values
-}
+  it('logs deploy lifecycle events and records failure when the session has no generated content', async () => {
+    const t = convexTest(schema, modules) as any
 
-const dynamicImportSpecifiers = (sourceFile: ts.SourceFile): Set<string> => {
-  const specifiers = new Set<string>()
+    // Create a session so we have a valid session id to pass to the action.
+    const { sessionId } = await t.mutation(api.sessions.create, {
+      anonymousClientId: 'lakebed-deploy-test',
+      anonymousOwnerSecret: ownerSecret,
+      isPrivate: false,
+      preferredExportTarget: 'html',
+      preferredLanguage: 'en',
+      prompt: 'Lakebed deploy lifecycle',
+      workspace: 'workspace_lakebed_deploy_test',
+    })
 
-  const visit = (node: ts.Node) => {
-    if (
-      ts.isCallExpression(node) &&
-      node.expression.kind === ts.SyntaxKind.ImportKeyword
-    ) {
-      const [specifier] = node.arguments
-      if (specifier && ts.isStringLiteral(specifier)) {
-        specifiers.add(specifier.text)
-      }
-    }
-    ts.forEachChild(node, visit)
-  }
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
-  visit(sourceFile)
-  return specifiers
-}
+    // The session has no generated content, so the deploy action should throw
+    // after logging the action:start and failed lifecycle events.
+    await expect(
+      t.action(api.lakebed_deploy.deploy, {
+        sessionId,
+        anonymousOwnerSecret: ownerSecret,
+      }),
+    ).rejects.toThrow()
 
-const hasHtmlSourceKindThrow = (sourceFile: ts.SourceFile): boolean => {
-  let found = false
+    const loggedMessages = logSpy.mock.calls
+      .map((call) => String(call[0]))
+      .filter((msg) => msg.includes('[lakebed_deploy:deploy]'))
 
-  const visit = (node: ts.Node) => {
-    if (ts.isIfStatement(node)) {
-      const condition = node.expression
-      const isHtmlSourceKindCheck =
-        ts.isBinaryExpression(condition) &&
-        condition.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
-        ts.isIdentifier(condition.left) &&
-        condition.left.text === 'sourceKind' &&
-        ts.isStringLiteral(condition.right) &&
-        condition.right.text === 'html'
-
-      if (isHtmlSourceKindCheck) {
-        const branch = node.thenStatement
-        found =
-          found ||
-          (ts.isBlock(branch) &&
-            branch.statements.some((statement) =>
-              ts.isThrowStatement(statement),
-            ))
-      }
-    }
-    ts.forEachChild(node, visit)
-  }
-
-  visit(sourceFile)
-  return found
-}
-
-describe('lakebed_deploy action structure', () => {
-  it('logs publish phases and refuses static HTML Lakebed deploys', () => {
-    const sourceFile = parseLakebedDeploy()
-    const literals = stringLiterals(sourceFile)
-    const imports = dynamicImportSpecifiers(sourceFile)
-
-    expect(literals.has('[lakebed_deploy:deploy] ')).toBe(true)
-    expect(literals.has('action:start')).toBe(true)
-    expect(literals.has('prepare:start')).toBe(true)
-    expect(literals.has('project-build:start')).toBe(true)
-    expect(literals.has('project-build:complete')).toBe(true)
-    expect(literals.has('record:start')).toBe(true)
-    expect(literals.has('failed')).toBe(true)
-
-    expect(hasHtmlSourceKindThrow(sourceFile)).toBe(true)
-    expect(imports.has('../src/features/deployments/server/lakebed-static-project-builder')).toBe(
-      false,
+    // The action:start event is always logged first.
+    expect(loggedMessages.some((msg) => msg.includes('action:start'))).toBe(
+      true,
     )
-    expect(
-      imports.has('../src/features/exports/services/openui-lakebed-export-builder'),
-    ).toBe(true)
+    // The failure handler logs the failed event.
+    expect(loggedMessages.some((msg) => msg.includes('failed'))).toBe(true)
+
+    logSpy.mockRestore()
   })
 })

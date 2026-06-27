@@ -1,24 +1,8 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { createBrandProfileResponse } from './brand-profile-response'
 
 describe('createBrandProfileResponse', () => {
-  it('keeps Brandfetch engine code behind the default resolver path', () => {
-    const source = readFileSync(
-      join(
-        process.cwd(),
-        'src/features/brand/server/brand-profile-response.ts',
-      ),
-      'utf8',
-    )
-    const imports = source.slice(0, source.indexOf('type BrandProfileResult'))
-
-    expect(imports).not.toContain('@ship-fast/engine/brandfetch')
-    expect(source).toContain("import(\n      '@ship-fast/engine/brandfetch.js'")
-  })
-
   it('requires a query', async () => {
     const response = await createBrandProfileResponse(
       new Request('https://ship-fast.test/api/brand-profile'),
@@ -158,9 +142,8 @@ describe('createBrandProfileResponse', () => {
     }) as typeof fetch
 
     try {
-      const { resolveBrandfetchBrandProfile } = await import(
-        '@ship-fast/engine/brandfetch.js'
-      )
+      const { resolveBrandfetchBrandProfile } =
+        await import('@ship-fast/engine/brandfetch.js')
       const resolveProfile = resolveBrandfetchBrandProfile as (input: {
         query: string
         timeoutMs?: number

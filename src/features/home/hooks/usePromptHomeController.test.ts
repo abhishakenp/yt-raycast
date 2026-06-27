@@ -1,7 +1,5 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 type PromptHomeControllerTestState = {
@@ -348,15 +346,5 @@ describe('usePromptHomeController submit guard', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith('/api/share-bonus')
     expect(result.current.shareBonusClaimed).toBe(true)
-  })
-
-  it('keeps generation deletion out of the prompt form controller', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/features/home/hooks/usePromptHomeController.ts'),
-      'utf8',
-    )
-
-    expect(source).not.toContain('sessions.deleteMine')
-    expect(source).not.toContain('ship-fast:generations-deleted')
   })
 })

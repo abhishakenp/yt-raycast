@@ -1,9 +1,7 @@
-import { readFileSync } from 'node:fs'
-
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
-import type { MutationCtx } from '../_generated/server'
+import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { hashOwnerSecret } from './session_access_helpers'
 import {
   loadSessionCommerceConfig,
@@ -11,6 +9,44 @@ import {
   syncSessionMedusaProducts,
   upsertSessionCommerceConfig,
 } from './session_commerce_helpers'
+
+type MutationHandler<Args> = (ctx: MutationCtx, args: Args) => Promise<unknown>
+type QueryHandler<Args> = (ctx: QueryCtx, args: Args) => Promise<unknown>
+
+type UpsertCommerceConfigArgs = {
+  sessionId: Id<'sessions'>
+  anonymousOwnerSecret?: string
+  backendUrl?: string
+  adminUrl?: string
+  storefrontUrl?: string
+  configJson?: string
+  errorMessage?: string
+  productCount?: number
+}
+
+type SessionIdArgs = {
+  sessionId: Id<'sessions'>
+}
+
+type ProvisionMedusaTenantArgs = {
+  sessionId: Id<'sessions'>
+  backendUrl: string
+  adminUrl: string
+  storefrontUrl: string
+}
+
+type MedusaProduct = {
+  id: string
+  title: string
+  handle: string
+  price: number
+  description?: string
+}
+
+type SyncMedusaProductsArgs = {
+  sessionId: Id<'sessions'>
+  products: MedusaProduct[]
+}
 
 type CommerceConfigDoc = Doc<'commerceConfigs'>
 
@@ -274,23 +310,88 @@ describe('session commerce helpers', () => {
     })
   })
 
-  it('keeps session commerce and Medusa handlers delegated', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
+  it('session commerce and Medusa handlers delegate to commerce helpers', async () => {
+    vi.resetModules()
+    vi.doMock('./session_commerce_helpers', () => ({
+      upsertSessionCommerceConfig: vi.fn(async () => null),
+      loadSessionCommerceConfig: vi.fn(async () => null),
+      provisionSessionMedusaTenant: vi.fn(async () => null),
+      syncSessionMedusaProducts: vi.fn(async () => null),
+    }))
+    try {
+      const {
+        upsertCommerceConfig,
+        getCommerceConfig,
+        provisionMedusaTenant,
+        syncMedusaProducts,
+      } = await import('../sessions')
+      const mockedModule = await import('./session_commerce_helpers')
+      const mockedUpsertSessionCommerceConfig = vi.mocked(
+        mockedModule.upsertSessionCommerceConfig,
+      )
+      const mockedLoadSessionCommerceConfig = vi.mocked(
+        mockedModule.loadSessionCommerceConfig,
+      )
+      const mockedProvisionSessionMedusaTenant = vi.mocked(
+        mockedModule.provisionSessionMedusaTenant,
+      )
+      const mockedSyncSessionMedusaProducts = vi.mocked(
+        mockedModule.syncSessionMedusaProducts,
+      )
+      const ctx = { db: {} } as unknown as MutationCtx
 
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => upsertSessionCommerceConfig(ctx, args)',
-    )
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => loadSessionCommerceConfig(ctx, args.sessionId)',
-    )
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => provisionSessionMedusaTenant(ctx, args)',
-    )
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => syncSessionMedusaProducts(ctx, args)',
-    )
-    expect(sessionsSource).not.toContain(
-      "message: 'Medusa commerce config not found'",
-    )
+      const upsertArgs: UpsertCommerceConfigArgs = {
+        sessionId: 's1' as Id<'sessions'>,
+        backendUrl: 'https://b.test',
+      }
+      const upsertHandler =
+        upsertCommerceConfig as unknown as MutationHandler<UpsertCommerceConfigArgs>
+      await upsertHandler(ctx, upsertArgs)
+      expect(mockedUpsertSessionCommerceConfig).toHaveBeenCalledWith(
+        ctx,
+        upsertArgs,
+      )
+
+      const queryCtx = { db: {} } as unknown as QueryCtx
+      const getArgs: SessionIdArgs = {
+        sessionId: 's1' as Id<'sessions'>,
+      }
+      const getHandler =
+        getCommerceConfig as unknown as QueryHandler<SessionIdArgs>
+      await getHandler(queryCtx, getArgs)
+      expect(mockedLoadSessionCommerceConfig).toHaveBeenCalledWith(
+        queryCtx,
+        getArgs.sessionId,
+      )
+
+      const provisionArgs: ProvisionMedusaTenantArgs = {
+        sessionId: 's1' as Id<'sessions'>,
+        backendUrl: 'https://b.test',
+        adminUrl: 'https://a.test',
+        storefrontUrl: 'https://s.test',
+      }
+      const provisionHandler =
+        provisionMedusaTenant as unknown as MutationHandler<ProvisionMedusaTenantArgs>
+      await provisionHandler(ctx, provisionArgs)
+      expect(mockedProvisionSessionMedusaTenant).toHaveBeenCalledWith(
+        ctx,
+        provisionArgs,
+      )
+
+      const syncArgs: SyncMedusaProductsArgs = {
+        sessionId: 's1' as Id<'sessions'>,
+        products: [],
+      }
+      const syncHandler =
+        syncMedusaProducts as unknown as MutationHandler<SyncMedusaProductsArgs>
+      await syncHandler(ctx, syncArgs)
+      expect(mockedSyncSessionMedusaProducts).toHaveBeenCalledWith(
+        ctx,
+        syncArgs,
+      )
+    } finally {
+      vi.doUnmock('./session_commerce_helpers')
+      vi.resetModules()
+    }
   })
 })

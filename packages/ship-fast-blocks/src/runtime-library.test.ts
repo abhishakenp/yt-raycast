@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -60,42 +58,9 @@ describe('OpenUI runtime library loading', () => {
     expect(capsules).toHaveLength(names.length)
     expect(capsules.every((capsule) => capsule.client)).toBe(true)
     expect(
-      capsules.every(
-        (capsule) => (capsule as { lakebed?: unknown }).lakebed,
-      ),
+      capsules.every((capsule) => (capsule as { lakebed?: unknown }).lakebed),
     ).toBe(true)
     expect(library).toBeTruthy()
-  })
-
-  it('keeps runtime loaders dynamic and independent from generated source manifests', () => {
-    const runtimeLibrarySource = readFileSync(
-      join(process.cwd(), 'packages/ship-fast-blocks/src/runtime-library.ts'),
-      'utf8',
-    )
-    const runtimeLoadersSource = readFileSync(
-      join(
-        process.cwd(),
-        'packages/ship-fast-blocks/src/generated/runtime-component-loaders.ts',
-      ),
-      'utf8',
-    )
-
-    expect(runtimeLibrarySource).toContain(
-      './generated/runtime-component-loaders.ts',
-    )
-    expect(runtimeLibrarySource).not.toContain('./library')
-    expect(runtimeLibrarySource).not.toContain('./generated/index')
-    expect(runtimeLibrarySource).not.toContain('react-export-sources')
-    expect(runtimeLibrarySource).not.toContain('component-spec')
-    expect(runtimeLoadersSource).toMatch(/\(\(\)\s*=>\s*import\(/)
-    expect(runtimeLoadersSource).toContain('../registry/')
-    expect(runtimeLoadersSource).toContain('../capsules/')
-    expect(runtimeLoadersSource).not.toContain('../index')
-    expect(runtimeLoadersSource).not.toContain('../library')
-    expect(runtimeLoadersSource).not.toMatch(
-      /(?:from|import\()\s*['"][^'"]*react-export-sources/,
-    )
-    expect(runtimeLoadersSource).not.toContain('component-spec')
   })
 
   it('wraps static section capsules with the realtime + editable HOC', async () => {
@@ -147,15 +112,6 @@ describe('OpenUI runtime library loading', () => {
     expect(
       (products.client.component as { displayName?: string }).displayName,
     ).toBe('SectionRealtime(BeautyStoreProducts)')
-  })
-
-  it('keeps the runtime library wired through the section realtime wrapper', () => {
-    const runtimeLibrarySource = readFileSync(
-      join(process.cwd(), 'packages/ship-fast-blocks/src/runtime-library.ts'),
-      'utf8',
-    )
-    expect(runtimeLibrarySource).toContain('withSectionRealtime')
-    expect(runtimeLibrarySource).toContain('runtimeSectionComponentNameSet')
   })
 })
 

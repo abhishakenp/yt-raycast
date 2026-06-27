@@ -1,170 +1,257 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+// @vitest-environment jsdom
+import { cleanup, fireEvent, render } from '@testing-library/react'
+import { createElement, type RefObject, useRef } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const read = (path: string): string =>
-  readFileSync(join(process.cwd(), path), 'utf8')
+import { useTextEdit } from './hooks/useTextEdit'
+import {
+  applyImageSwap,
+  applyPreviewTextEdit,
+  applyStyleEdit,
+} from '../../lib/edit-helpers'
+import { Image } from '../../../packages/ship-fast-blocks/src/lib/img'
+import schema from '../../../convex/schema'
 
-const sliceAfter = (src: string, marker: string, len = 1200): string => {
-  const i = src.indexOf(marker)
-  expect(i, `marker not found: ${marker}`).toBeGreaterThan(-1)
-  return src.slice(i, i + len)
+// ─── helpers ──────────────────────────────────────────────────────────────
+
+/** Collect every Text node under `el` in document order. */
+const textNodesOf = (el: Node): Text[] => {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+  const nodes: Text[] = []
+  let current = walker.nextNode()
+  while (current) {
+    nodes.push(current as Text)
+    current = walker.nextNode()
+  }
+  return nodes
 }
 
-describe('inline text edit — structure-preserving, no double-submit', () => {
-  const src = read('src/features/editing/hooks/useTextEdit.ts')
+type TextChangeHandler = (change: {
+  oldText: string
+  newText: string
+  element: HTMLElement
+  occurrenceIndex: number
+}) => void
 
-  it('clears activeEditRef BEFORE invoking the change callback', () => {
-    // cleanupElement() resets contentEditable, which blurs the element and
-    // re-enters finishEdit via the capture blur listener. Clearing the ref first
-    // makes the re-entrant call a no-op (otherwise the edit fires twice: the 2nd
-    // sends stale text → TEXT_NOT_FOUND and its error path reverts the DOM).
-    const finishEdit = sliceAfter(src, 'const finishEdit = ()')
-    const clearIdx = finishEdit.indexOf('activeEditRef.current = null')
-    const callbackIdx = finishEdit.indexOf('callbackRef.current(')
-    expect(clearIdx).toBeGreaterThan(-1)
-    expect(callbackIdx).toBeGreaterThan(-1)
-    expect(clearIdx).toBeLessThan(callbackIdx)
-  })
+/** Render a harness that wires useTextEdit to a container div. Returns the
+ *  container element and the hook's commitEdit function. */
+function renderEditor(onTextChange: TextChangeHandler, editMode = true) {
+  const hookReturn = { current: { commitEdit: () => {} } }
 
-  it('edits per text-node (preserves <br>/<span>) instead of flattening textContent', () => {
-    // The element is diffed node-by-node so inline structure survives and each
-    // change is a precise text run that maps cleanly to BOTH preview.html and
-    // openUiSource (so it persists and never throws TEXT_NOT_FOUND).
-    expect(src).toContain('collectTextNodes')
-    expect(src).toContain('originalNodes')
-    const finishEdit = sliceAfter(src, 'const finishEdit = ()')
-    expect(finishEdit).toContain('diffEdits')
-  })
-
-  it('places the caret at the click point rather than selecting all', () => {
-    // Select-all means the first keystroke replaces the whole element, flattening
-    // structure. Caret placement keeps edits surgical.
-    expect(src).toContain('caretRangeFromPoint')
-    const handleClick = sliceAfter(src, 'const handleClick =', 2000)
-    expect(handleClick).not.toContain(
-      'range.selectNodeContents(textEl)\n      const sel',
+  function Harness() {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const result = useTextEdit(
+      containerRef as RefObject<HTMLElement | null>,
+      editMode,
+      onTextChange,
     )
+    hookReturn.current = result
+    return createElement('div', { ref: containerRef, 'data-testid': 'editor' })
+  }
+
+  const { container: renderContainer } = render(createElement(Harness))
+  const editorDiv = renderContainer.querySelector(
+    '[data-testid="editor"]',
+  ) as HTMLDivElement
+
+  return {
+    container: editorDiv,
+    commitEdit: () => hookReturn.current.commitEdit(),
+  }
+}
+
+// ─── useTextEdit ───────────────────────────────────────────────────────────
+
+describe('useTextEdit — behavioral', () => {
+  beforeEach(() => {
+    // Run rAF callbacks synchronously so deferred blur handlers fire
+    // immediately — this exercises the re-entrant finishEdit path.
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0)
+      return 0
+    })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    cleanup()
+  })
+
+  it('preserves <br> structure when editing a text node', () => {
+    const onTextChange = vi.fn<TextChangeHandler>()
+    const { container, commitEdit } = renderEditor(onTextChange)
+
+    container.innerHTML = '<p>Line one<br>Line two</p>'
+    const p = container.querySelector('p')!
+
+    // Activate editing by clicking the text element
+    fireEvent.click(p, { clientX: 5, clientY: 5 })
+
+    // Modify only the first text node — <br> stays in place
+    const nodes = textNodesOf(p)
+    expect(nodes.length).toBe(2)
+    nodes[0].nodeValue = 'Line one edited'
+
+    commitEdit()
+
+    expect(onTextChange).toHaveBeenCalledTimes(1)
+    expect(onTextChange.mock.calls[0][0].oldText).toBe('Line one')
+    expect(onTextChange.mock.calls[0][0].newText).toBe('Line one edited')
+    // <br> is preserved in the DOM
+    expect(p.innerHTML).toContain('<br>')
+    expect(p.innerHTML).toContain('Line two')
+  })
+
+  it('preserves <span> structure when editing a text node', () => {
+    const onTextChange = vi.fn<TextChangeHandler>()
+    const { container, commitEdit } = renderEditor(onTextChange)
+
+    container.innerHTML = '<p>Hello <span>beautiful</span> world</p>'
+    const p = container.querySelector('p')!
+
+    fireEvent.click(p, { clientX: 5, clientY: 5 })
+
+    // Edit the text inside the <span>
+    const nodes = textNodesOf(p)
+    const spanNode = nodes.find((n) => n.nodeValue === 'beautiful')!
+    spanNode.nodeValue = 'amazing'
+
+    commitEdit()
+
+    expect(onTextChange).toHaveBeenCalledTimes(1)
+    expect(onTextChange.mock.calls[0][0].oldText).toBe('beautiful')
+    expect(onTextChange.mock.calls[0][0].newText).toBe('amazing')
+    // <span> is preserved
+    expect(p.innerHTML).toContain('<span>amazing</span>')
+  })
+
+  it('places the caret at the click point rather than selecting all text', () => {
+    const onTextChange = vi.fn<TextChangeHandler>()
+    const { container } = renderEditor(onTextChange)
+
+    container.innerHTML = '<p>Some longer text content here</p>'
+    const p = container.querySelector('p')!
+
+    fireEvent.click(p, { clientX: 50, clientY: 10 })
+
+    const sel = window.getSelection()
+    expect(sel).not.toBeNull()
+    expect(sel!.rangeCount).toBe(1)
+    // The range must be collapsed (a caret), not a select-all selection
+    expect(sel!.getRangeAt(0).collapsed).toBe(true)
+  })
+
+  it('clears activeEditRef before the callback fires (no double-submit)', () => {
+    const onTextChange = vi.fn<TextChangeHandler>()
+    const { container, commitEdit } = renderEditor(onTextChange)
+
+    container.innerHTML = '<p>Original text</p>'
+    const p = container.querySelector('p')!
+
+    fireEvent.click(p, { clientX: 5, clientY: 5 })
+    p.firstChild!.nodeValue = 'Modified text'
+
+    // Commit — cleanupElement removes contenteditable which can trigger a
+    // re-entrant blur → finishEdit. The ref is cleared first, so the
+    // re-entrant call is a no-op and the callback fires exactly once.
+    commitEdit()
+
+    // Simulate a re-entrant blur to verify no double-submit
+    fireEvent.blur(p)
+
+    expect(onTextChange).toHaveBeenCalledTimes(1)
+    expect(onTextChange.mock.calls[0][0].newText).toBe('Modified text')
   })
 })
 
-describe('inline edit — preview does not remount per edit (Dashboard key)', () => {
-  const src = read('src/features/dashboard/components/Dashboard.tsx')
+// ─── edit-helpers ──────────────────────────────────────────────────────────
 
-  it('keys normal GeneratedModulePreview renders on homeModule.updatedAt', () => {
-    expect(src).not.toContain(
-      'key={`${generationView.session.previewVersion}:${homeModule.updatedAt}`}',
-    )
-    expect(src).toContain('const renderedPreviewKey = cmsPreviewSource')
-    expect(src).toContain(
-      ': `${homeModule?.updatedAt ?? generationView?.session.previewVersion}`',
-    )
-    expect(src).toContain('key={renderedPreviewKey}')
+describe('edit-helpers — behavioral', () => {
+  it('applyImageSwap anchors on the alt attribute, not the src', () => {
+    const html =
+      '<img src="old.jpg" alt="Hero" /><img src="other.jpg" alt="Logo" />'
+    const result = applyImageSwap(html, 'Hero', 'new.jpg')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="new.jpg"')
+    expect(result.html).toContain('alt="Hero"')
+    // The second image (different alt) is unchanged
+    expect(result.html).toContain('src="other.jpg"')
+    expect(result.html).toContain('alt="Logo"')
   })
 
-  it('builds image, style, and text override maps from recorded edits', () => {
-    expect(src).toContain('const imageOverrides = useMemo(')
-    expect(src).toContain('const styleOverrides = useMemo(')
-    expect(src).toContain('const textOverrides = useMemo(')
-    expect(src).toContain("edit.editType === 'style'")
-    expect(src).toContain("edit.editType === 'text'")
-    expect(src).toContain('imageOverrides={imageOverrides}')
-    expect(src).toContain('styleOverrides={styleOverrides}')
-    expect(src).toContain('textOverrides={textOverrides}')
-  })
-})
-
-describe('inline edit — overrides applied at render', () => {
-  it('img.tsx honors an alt-keyed override before the stock lookup', () => {
-    const src = read('packages/ship-fast-blocks/src/lib/img.tsx')
-    expect(src).toContain('overrides')
-    const imageSrc = sliceAfter(src, 'const imageSrc =', 400)
-    expect(imageSrc).toContain('overrideSrc')
-  })
-
-  it('DirectPreview re-applies style overrides and re-runs on subtree mutations', () => {
-    const src = read('src/components/GenUI/DirectPreview.tsx')
-    expect(src).toContain('styleOverrides')
-    // Text edits now persist in homeModule.source (server patches it), so
-    // DirectPreview no longer applies client-side text overrides.
-    expect(src).not.toContain('textOverrides')
-    expect(src).toContain('setProperty')
-    expect(src).toContain('MutationObserver')
-  })
-
-  it('GeneratedModulePreview threads all override maps down', () => {
-    const src = read(
-      'src/features/generation/components/GeneratedModulePreview.tsx',
-    )
-    expect(src).toContain('imageOverrides')
-    expect(src).toContain('styleOverrides')
-    expect(src).toContain('textOverrides')
+  it('applyStyleEdit anchors on the class attribute', () => {
+    const html =
+      '<div class="hero-section">Content</div><div class="footer">Footer</div>'
+    const result = applyStyleEdit(html, 'hero-section', 'color: red;')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('class="hero-section"')
+    expect(result.html).toContain('style="color: red;"')
+    // The footer div is unchanged — no style attribute added
+    const footerMatch = result.html.match(/<div class="footer"[^>]*>/)
+    expect(footerMatch).not.toBeNull()
+    expect(footerMatch![0]).not.toContain('style=')
   })
 })
 
-describe('inline edit — server anchors & persistence (convex)', () => {
-  const editHelpers = read('src/lib/edit-helpers.ts')
-  const editMutationHelpers = read(
-    'convex/lib/session_edit_mutation_helpers.ts',
-  )
-  const previewHistoryHelpers = read(
-    'convex/lib/session_preview_history_helpers.ts',
-  )
+// ─── Img component ─────────────────────────────────────────────────────────
 
-  it('image swaps anchor on the alt attribute, not the (context-dependent) src', () => {
-    const fn = sliceAfter(editHelpers, 'export const applyImageSwap = (')
-    expect(fn).toContain('altAnchor')
-    expect(fn).toContain('altMatch')
-    expect(editHelpers).not.toContain('normalizeImageSrc')
+describe('Img component — override src', () => {
+  it('uses the override src from context overrides before the stock lookup', () => {
+    const markup = renderToStaticMarkup(
+      createElement(Image, {
+        alt: 'Hero image',
+        context: {
+          overrides: { 'Hero image': 'https://cdn.example.com/override.jpg' },
+        },
+      }),
+    )
+    expect(markup).toContain('src="https://cdn.example.com/override.jpg"')
+    // Should NOT fall back to the Pexels proxy
+    expect(markup).not.toContain('/api/pexels')
   })
+})
 
-  it('style edits anchor on the class attribute', () => {
-    const fn = sliceAfter(editHelpers, 'export const applyStyleEdit = (')
-    expect(fn).toContain('classAnchor')
-    expect(fn).toContain('class="')
+// ─── schema ────────────────────────────────────────────────────────────────
+
+describe('schema — edits table', () => {
+  it('includes the image edit type literal and occurrenceIndex field', () => {
+    const editsTable = schema.tables.edits
+    expect(editsTable).toBeDefined()
+
+    interface ConvexFieldValidator {
+      kind: string
+      value?: string
+      isOptional?: string
+      members?: ConvexFieldValidator[]
+    }
+    const validator = editsTable.validator as {
+      fields: Record<string, ConvexFieldValidator>
+    }
+
+    // editType is a union of literals — 'image' must be among them
+    const editTypeValues = (validator.fields.editType.members ?? []).map(
+      (m) => m.value,
+    )
+    expect(editTypeValues).toContain('image')
+
+    // occurrenceIndex is an optional field
+    expect(validator.fields.occurrenceIndex).toBeDefined()
+    expect(validator.fields.occurrenceIndex.isOptional).toBeTruthy()
   })
+})
 
-  it('text edits patch canonical artifacts; image/style use the snapshot+override pattern', () => {
-    // Text edits MUST patch homeModule.source + siteSpec (the Dashboard renders
-    // from homeModule.source, so an unpatched source makes edits vanish on
-    // reload). Image/style edits keep the snapshot pattern and replay via
-    // client-side override maps.
-    expect(editMutationHelpers).toContain(
-      'applyTextEditToCurrentArtifacts',
-    )
-    expect(editMutationHelpers).toContain(
-      "args.editType !== 'style'",
-    )
-    expect(editMutationHelpers).toContain(
-      "args.editType !== 'image'",
-    )
-    expect(editMutationHelpers).toContain('snapshotCurrentArtifacts')
-  })
+// ─── export helpers ────────────────────────────────────────────────────────
 
-  it('records every edit (incl. image) with its occurrenceIndex for override rebuild', () => {
-    expect(editMutationHelpers).toContain(
-      'Record edit history for all edit types',
-    )
-    expect(editMutationHelpers).toContain(
-      'occurrenceIndex: args.occurrenceIndex',
-    )
-    expect(previewHistoryHelpers).toContain(
-      'occurrenceIndex: edit.occurrenceIndex',
-    )
-  })
+describe('export helpers — exported functions', () => {
+  it('applyPreviewTextEdit, applyImageSwap, and applyStyleEdit are exported functions', () => {
+    expect(typeof applyPreviewTextEdit).toBe('function')
+    expect(typeof applyImageSwap).toBe('function')
+    expect(typeof applyStyleEdit).toBe('function')
 
-  it('edits schema stores occurrenceIndex and the image edit type', () => {
-    const schema = read('convex/schema.ts')
-    const edits = sliceAfter(schema, 'edits: defineTable(', 600)
-    expect(edits).toContain("v.literal('image')")
-    expect(edits).toContain('occurrenceIndex: v.optional(v.number())')
-  })
-
-  it('export helpers apply edits to source before export', () => {
-    const exportHelpers = read('convex/lib/session_export_helpers.ts')
-    expect(exportHelpers).toContain('applyEditsToSource')
-    expect(exportHelpers).toContain('applyPreviewTextEdit')
-    expect(exportHelpers).toContain('applyImageSwap')
-    expect(exportHelpers).toContain('applyStyleEdit')
+    // Quick behavioral smoke: applyPreviewTextEdit replaces text in HTML
+    const result = applyPreviewTextEdit('<p>Hello world</p>', 'Hello', 'Hi')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toBe('<p>Hi world</p>')
   })
 })

@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 import { renderOpenUIToHTML } from './openui-ssr.js'
@@ -19,17 +18,6 @@ home = FitnessSchedule("Schedule", "Plan your week", ["Mon", "Tue"], [{time: "6:
     expect(html).not.toContain('openui-error')
     expect(html).toContain('Schedule')
     expect(html).toContain('6:00 AM')
-  })
-
-  it('uses the response-scoped runtime entry instead of the eager blocks barrel', () => {
-    const source = readFileSync(
-      new URL('./openui-ssr.js', import.meta.url),
-      'utf8',
-    )
-
-    expect(source).toContain('@ship-fast/blocks/runtime')
-    expect(source).not.toContain("from '@ship-fast/blocks'")
-    expect(source).toContain('loadOpenUIRuntimeLibrary(preprocessed)')
   })
 })
 

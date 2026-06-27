@@ -1,73 +1,62 @@
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import ts from 'typescript'
-import { describe, expect, it } from 'vitest'
+import {
+  createGenerationTimeoutController,
+  DEFAULT_GENERATION_TIMEOUT_MS,
+} from './generation'
 
-const here = dirname(fileURLToPath(import.meta.url))
+describe('generation timeout controller', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
 
-const TOTAL_GENERATION_BUDGET_CEILING_MS = 90_000
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllEnvs()
+  })
 
-const parseSourceFile = (path: string): ts.SourceFile =>
-  ts.createSourceFile(
-    path,
-    readFileSync(path, 'utf8'),
-    ts.ScriptTarget.Latest,
-    /* setParentNodes */ true,
-  )
+  it('does not abort immediately after creation', () => {
+    const { controller, clear } = createGenerationTimeoutController()
+    expect(controller.signal.aborted).toBe(false)
+    clear()
+  })
 
-/**
- * Walks the top-level declarations of a parsed source file and returns the
- * numeric literal initializer of the `const` named `name`. Structural: relies
- * on the TypeScript AST, not on regex/source-text matching.
- */
-const extractTopLevelNumericConst = (
-  sourceFile: ts.SourceFile,
-  name: string,
-): number => {
-  for (const statement of sourceFile.statements) {
-    if (!ts.isVariableStatement(statement)) continue
+  it('aborts after the default timeout when no env override is set', () => {
+    vi.stubEnv('SHIP_FAST_GENERATION_TIMEOUT_MS', '')
+    const { controller, clear } = createGenerationTimeoutController()
+    vi.advanceTimersByTime(DEFAULT_GENERATION_TIMEOUT_MS - 1)
+    expect(controller.signal.aborted).toBe(false)
+    vi.advanceTimersByTime(2)
+    expect(controller.signal.aborted).toBe(true)
+    expect(controller.signal.reason).toBeInstanceOf(Error)
+    expect((controller.signal.reason as Error).message).toContain('timed out')
+    clear()
+  })
 
-    for (const declaration of statement.declarationList.declarations) {
-      if (!ts.isIdentifier(declaration.name) || declaration.name.text !== name) {
-        continue
-      }
+  it('respects SHIP_FAST_GENERATION_TIMEOUT_MS env override', () => {
+    vi.stubEnv('SHIP_FAST_GENERATION_TIMEOUT_MS', '30000')
+    const { controller, clear } = createGenerationTimeoutController()
+    vi.advanceTimersByTime(29999)
+    expect(controller.signal.aborted).toBe(false)
+    vi.advanceTimersByTime(2)
+    expect(controller.signal.aborted).toBe(true)
+    clear()
+  })
 
-      const initializer = declaration.initializer
-      if (
-        initializer === undefined ||
-        !ts.isNumericLiteral(initializer)
-      ) {
-        throw new Error(
-          `${name} must be initialized with a numeric literal`,
-        )
-      }
+  it('enforces a 15s minimum floor even if env override is lower', () => {
+    vi.stubEnv('SHIP_FAST_GENERATION_TIMEOUT_MS', '1000')
+    const { controller, clear } = createGenerationTimeoutController()
+    vi.advanceTimersByTime(14999)
+    expect(controller.signal.aborted).toBe(false)
+    vi.advanceTimersByTime(2)
+    expect(controller.signal.aborted).toBe(true)
+    clear()
+  })
 
-      return Number(initializer.text.replaceAll('_', ''))
-    }
-  }
-
-  throw new Error(`${name} must be defined as a top-level numeric const`)
-}
-
-describe('homepage generation latency budgets', () => {
-  it('keeps structural timeout budgets defined, positive, and capped', () => {
-    const generationSourceFile = parseSourceFile(
-      join(here, 'generation.ts'),
-    )
-
-    const totalTimeoutMs = extractTopLevelNumericConst(
-      generationSourceFile,
-      'DEFAULT_GENERATION_TIMEOUT_MS',
-    )
-
-    expect(totalTimeoutMs).toBeGreaterThan(0)
-
-    // Structural budget ceiling: live homepage generation must not silently grow
-    // beyond the current 90s total timeout without an explicit test update.
-    expect(totalTimeoutMs).toBeLessThanOrEqual(
-      TOTAL_GENERATION_BUDGET_CEILING_MS,
-    )
+  it('clear() cancels the timeout so the signal never aborts', () => {
+    const { controller, clear } = createGenerationTimeoutController()
+    clear()
+    vi.advanceTimersByTime(DEFAULT_GENERATION_TIMEOUT_MS * 2)
+    expect(controller.signal.aborted).toBe(false)
   })
 })

@@ -1,11 +1,24 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
 import { forkSessionForOwner } from './session_fork_helpers'
+
+type MutationHandler<Args> = (ctx: MutationCtx, args: Args) => Promise<unknown>
+
+type ForkSessionArgs = {
+  sourceSessionId: Id<'sessions'>
+  anonymousOwnerSecret?: string
+  edit?: {
+    editType: 'text' | 'ai_rewrite' | 'chat' | 'style' | 'image'
+    targetLabel?: string
+    beforeText?: string
+    afterText?: string
+    afterHtml?: string
+    instruction?: string
+    occurrenceIndex?: number
+  }
+}
 
 type EditRecord = Doc<'edits'>
 type GeneratedModuleRecord = Doc<'generatedModules'>
@@ -352,13 +365,35 @@ describe('forkSessionForOwner', () => {
 })
 
 describe('forkSession delegation', () => {
-  it('keeps fork orchestration delegated out of convex/sessions.ts', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'convex/sessions.ts'),
-      'utf8',
-    )
-
-    expect(source).toContain('forkSessionForOwner')
-    expect(source).not.toContain('Sign in to save your changes')
+  it('forkSession handler delegates to forkSessionForOwner helper with sendOperationalNotification reference', async () => {
+    vi.resetModules()
+    vi.doMock('./session_fork_helpers', () => ({
+      forkSessionForOwner: vi.fn(async () => ({
+        sessionId: 'forked',
+        editPreviewVersion: undefined,
+      })),
+    }))
+    try {
+      const { forkSession } = await import('../sessions')
+      const mockedModule = await import('./session_fork_helpers')
+      const mockedForkSessionForOwner = vi.mocked(
+        mockedModule.forkSessionForOwner,
+      )
+      const ctx = { db: {} } as unknown as MutationCtx
+      const args: ForkSessionArgs = {
+        sourceSessionId: 's1' as Id<'sessions'>,
+      }
+      const handler = forkSession as unknown as MutationHandler<ForkSessionArgs>
+      await handler(ctx, args)
+      expect(mockedForkSessionForOwner).toHaveBeenCalledTimes(1)
+      const [callCtx, callArgs, notifyRef] =
+        mockedForkSessionForOwner.mock.calls[0]
+      expect(callCtx).toBe(ctx)
+      expect(callArgs).toBe(args)
+      expect(notifyRef).toEqual(expect.anything())
+    } finally {
+      vi.doUnmock('./session_fork_helpers')
+      vi.resetModules()
+    }
   })
 })

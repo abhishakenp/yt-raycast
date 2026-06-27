@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs'
-
 import { describe, it, expect } from 'vitest'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
@@ -138,17 +136,6 @@ describe('chat message history helpers', () => {
       expect.objectContaining({ messageId: 'chat_old', createdAt: 100 }),
       expect.objectContaining({ messageId: 'chat_new', createdAt: 300 }),
     ])
-  })
-
-  it('keeps the public listChatMessages query delegated to chat helpers', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
-
-    expect(sessionsSource).toMatch(
-      /import\s*\{\s*listSessionChatMessages\s*\}\s*from\s*['"]\.\/lib\/chat_refinement_helpers['"]/,
-    )
-    expect(sessionsSource).toMatch(
-      /handler:\s*async\s*\(ctx,\s*args\)\s*=>\s*listSessionChatMessages\(ctx,\s*args\.sessionId\)/,
-    )
   })
 })
 

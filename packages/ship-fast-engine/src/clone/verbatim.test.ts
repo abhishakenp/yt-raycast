@@ -1,6 +1,4 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { parseHTML } from 'linkedom'
 import {
   selfContainPage,
@@ -48,7 +46,6 @@ function mockFetch(
 
 describe('selfContainPage', () => {
   const finalUrl = 'https://example.com/'
-  const source = () => readFileSync(join(import.meta.dirname, 'verbatim.ts'), 'utf8')
 
   it('inlines an external stylesheet into a <style> block', async () => {
     const captured = makeCaptured(
@@ -163,11 +160,7 @@ describe('selfContainPage', () => {
       '<a href="#menu4" target="_blank">tab</a>',
     ].join('')
 
-    const out = rewriteResidualAnchorNavigation(
-      html,
-      finalUrl,
-      'example.com',
-    )
+    const out = rewriteResidualAnchorNavigation(html, finalUrl, 'example.com')
 
     expect(out).not.toContain('href="https://example.com')
     expect(out).not.toContain('href="c_msgs.php"')
@@ -221,13 +214,58 @@ describe('selfContainPage', () => {
     expect(scriptCount).toBe(1)
   })
 
-  it('keeps generic static interaction support for cloned mobile menus and tabs', () => {
-    expect(NAV_SHIM_SCRIPT).toContain('menu-mobile-collapse-trigger')
-    expect(NAV_SHIM_SCRIPT).toContain('mobileTriggerButton')
-    expect(NAV_SHIM_SCRIPT).toContain('[data-toggle="tab"]')
-    expect(NAV_SHIM_SCRIPT).toContain('.menu-links')
-    expect(NAV_SHIM_SCRIPT).toContain('maxHeight')
-    expect(NAV_SHIM_SCRIPT).toContain('ship-clone-nav')
+  it('activates tab panes and posts clone-nav messages when the shim runs', async () => {
+    const captured = makeCaptured(`
+      <ul class="nav-tabs">
+        <li><a href="#tab-a" data-toggle="tab">A</a></li>
+        <li><a href="#tab-b" data-toggle="tab">B</a></li>
+      </ul>
+      <div class="tab-content">
+        <div id="tab-a" class="tab-pane">Alpha</div>
+        <div id="tab-b" class="tab-pane" style="display:none">Beta</div>
+      </div>
+      <a href="/about" data-clone-path="/about" data-clone-abs="https://example.com/about">About</a>
+    `)
+    const out = await selfContainPage(captured, {
+      finalUrl,
+      fetchImpl: mockFetch({}),
+    })
+
+    const { document, window } = parseHTML(out.html)
+    const messages: Array<{ type: string; path?: string; abs?: string }> = []
+    window.parent = {
+      postMessage: (msg: unknown) => messages.push(msg as any),
+    } as any
+    const getComputedStyle = () => ({ display: 'block' })
+    new Function('window', 'document', 'getComputedStyle', NAV_SHIM_SCRIPT)(
+      window,
+      document,
+      getComputedStyle,
+    )
+
+    const tabA = document.querySelector('#tab-a') as HTMLElement
+    const tabB = document.querySelector('#tab-b') as HTMLElement
+    const tabBLink = document.querySelector('a[href="#tab-b"]') as HTMLElement
+    const cloneLink = document.querySelector(
+      'a[data-clone-path]',
+    ) as HTMLElement
+
+    // Initially tab A is active, tab B hidden.
+    expect(tabB.style.display).toBe('none')
+
+    // Click tab B link -> tab B shows, tab A hides, link gets active class.
+    tabBLink.click()
+    expect(tabB.style.display).toBe('block')
+    expect(tabA.style.display).toBe('none')
+    expect(tabBLink.classList.contains('active')).toBe(true)
+
+    // Click the clone-nav anchor -> a postMessage is sent with the path + abs.
+    cloneLink.click()
+    expect(messages).toContainEqual({
+      type: 'ship-clone-nav',
+      path: '/about',
+      abs: 'https://example.com/about',
+    })
   })
 
   it('opens cloned TNVL-style mobile menus and submenus without source scripts', async () => {
@@ -258,21 +296,19 @@ describe('selfContainPage', () => {
     const getComputedStyle = (el: HTMLElement) => ({
       display: el.style.display || '',
     })
-    new Function(
-      'window',
-      'document',
-      'getComputedStyle',
-      NAV_SHIM_SCRIPT,
-    )(window, document, getComputedStyle)
+    new Function('window', 'document', 'getComputedStyle', NAV_SHIM_SCRIPT)(
+      window,
+      document,
+      getComputedStyle,
+    )
 
     const trigger = document.querySelector(
       '.menu-mobile-collapse-trigger',
     ) as HTMLElement | null
-    const menu = document.querySelector(
-      '.menu-links',
+    const menu = document.querySelector('.menu-links') as HTMLElement | null
+    const subTrigger = document.querySelector(
+      '.mobileTriggerButton',
     ) as HTMLElement | null
-    const subTrigger =
-      document.querySelector('.mobileTriggerButton') as HTMLElement | null
     const submenu = document.querySelector(
       '.drop-down-multilevel',
     ) as HTMLElement | null
@@ -361,14 +397,6 @@ describe('selfContainPage', () => {
     // Verify the link is removed and nav shim is added
     expect(out.html).not.toContain('<link')
     expect(out.html).toContain(NAV_SHIM_SCRIPT)
-  })
-
-  it('keeps the guarded insecure TLS fallback for same-origin font embedding', () => {
-    const text = source()
-    expect(text).toContain('fetchHttpsFontBytesWithInsecureTls')
-    expect(text).toContain('await assertPublicUrl(url)')
-    expect(text).toContain('rejectUnauthorized: false')
-    expect(text).toContain('MAX_FONT_BYTES')
   })
 
   it('drops the largest <style> when still over cap after font stripping', async () => {

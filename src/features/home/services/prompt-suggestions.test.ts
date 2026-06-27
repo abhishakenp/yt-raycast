@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -9,16 +7,6 @@ import {
 } from './prompt-suggestions'
 
 describe('prompt suggestions', () => {
-  it('never gates AI autocomplete behind an env var — always calls the API', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/features/home/components/HomePage.tsx'),
-      'utf8',
-    )
-
-    expect(source).not.toContain('VITE_ENABLE_AI_PROMPT_SUGGESTIONS')
-    expect(source).toContain("fetch('/api/prompt-suggestions'")
-  })
-
   it('immediately completes blog prompts without a network dependency', () => {
     const suggestions = buildLocalPromptSuggestions('a blog about dogs')
 

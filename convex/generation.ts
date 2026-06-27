@@ -13,7 +13,7 @@ import { buildOpenUiHandoffHtml } from './lib/openui_handoff_html'
 
 const internalFunctions = internal as any
 
-const DEFAULT_GENERATION_TIMEOUT_MS = 90_000
+export const DEFAULT_GENERATION_TIMEOUT_MS = 90_000
 
 type GenUIEvent =
   | { type: 'status'; message: string }
@@ -51,14 +51,13 @@ const artifactsByKey = (
 }
 
 const loadGenerationRuntime = async () => {
-  const { runHomepageOrchestrator } = await import(
-    '../packages/ship-fast-engine/src/genui/run.ts'
-  )
+  const { runHomepageOrchestrator } =
+    await import('../packages/ship-fast-engine/src/genui/run.ts')
 
   return { runHomepageOrchestrator }
 }
 
-const createGenerationTimeoutController = () => {
+export const createGenerationTimeoutController = () => {
   const controller = new AbortController()
   const timeoutMs = Math.max(
     15_000,

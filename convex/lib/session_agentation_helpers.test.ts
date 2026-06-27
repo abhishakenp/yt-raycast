@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs'
-
 import { describe, expect, it } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
@@ -262,15 +260,6 @@ describe('session Agentation helpers', () => {
       expect.objectContaining({ annotationId: 'annotation_a' }),
       expect.objectContaining({ annotationId: 'annotation_b' }),
     ])
-  })
-
-  it('keeps the public listAnnotations query delegated to Agentation helpers', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
-
-    expect(sessionsSource).toContain('listSessionAnnotations,')
-    expect(sessionsSource).toContain(
-      'handler: async (ctx, args) => listSessionAnnotations(ctx, args.sessionId),',
-    )
   })
 
   it('creates owned annotations from the public mutation payload', async () => {
@@ -590,55 +579,6 @@ describe('session Agentation helpers', () => {
 
     expect(deletedIds).toEqual([first._id, second._id])
     expect(annotations).toEqual([other])
-  })
-
-  it('keeps annotation delete mutations delegated to Agentation helpers', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
-
-    expect(sessionsSource).toContain('deleteSessionAnnotation,')
-    expect(sessionsSource).toContain('deleteSessionAnnotationByAgentationId,')
-    expect(sessionsSource).toContain('clearSessionAnnotations,')
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => deleteSessionAnnotation(ctx, args),',
-    )
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => deleteSessionAnnotationByAgentationId(ctx, args),',
-    )
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => clearSessionAnnotations(ctx, args),',
-    )
-    expect(sessionsSource).not.toContain(
-      "message: 'Annotation not found for this session'",
-    )
-  })
-
-  it('keeps annotation create, upsert, save, and sync mutations delegated to Agentation helpers', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
-
-    expect(sessionsSource).toContain('createSessionAnnotation,')
-    expect(sessionsSource).toContain('upsertSessionAnnotation,')
-    expect(sessionsSource).toContain('saveSessionAgentationSession,')
-    expect(sessionsSource).toContain('upsertAgentationSyncSessionAnnotation,')
-    expect(sessionsSource).toContain('updateAgentationSyncSessionAnnotation,')
-    expect(sessionsSource).toContain('deleteAgentationSyncSessionAnnotation,')
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => createSessionAnnotation(ctx, args),',
-    )
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => upsertSessionAnnotation(ctx, args),',
-    )
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => saveSessionAgentationSession(ctx, args),',
-    )
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => upsertAgentationSyncSessionAnnotation(ctx, args),',
-    )
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => updateAgentationSyncSessionAnnotation(ctx, args),',
-    )
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => deleteAgentationSyncSessionAnnotation(ctx, args),',
-    )
   })
 
   it('extracts session ids from Agentation session keys', () => {

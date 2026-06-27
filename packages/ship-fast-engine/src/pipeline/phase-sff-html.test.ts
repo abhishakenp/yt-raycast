@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -68,16 +68,43 @@ describe('phase-sff-html', () => {
     expect(prompt).toContain('https://cdn.brandfetch.io/launch/logo.svg')
   })
 
-  it('keeps SFF generation aligned with Pexels, Brandfetch, and Lucide instead of long SVG pictograms', () => {
-    expect(SFF_HTML_SYSTEM_PROMPT).toContain('verified Pexels media')
-    expect(SFF_HTML_SYSTEM_PROMPT).toContain('Brandfetch/brand-profile')
-    expect(SFF_HTML_SYSTEM_PROMPT).toContain('Lucide placeholders')
-    expect(SFF_HTML_SYSTEM_PROMPT).toContain(
-      'do not generate long inline SVG pictogram sets',
-    )
-    expect(SFF_HTML_SYSTEM_PROMPT).not.toContain(
-      'images.unsplash.com or picsum.photos',
-    )
+  it('passes the system prompt to the generator and injects the Lucide runtime when the model emits icon placeholders', async () => {
+    const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-sff-lucide-'))
+    let capturedSystem: string | undefined
+    const lucideHtml = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><script src="https://cdn.tailwindcss.com"></script></head>
+<body><main><i data-lucide="sparkles" class="w-5 h-5"></i></main></body>
+</html>`
+
+    try {
+      await writeSffHtmlHome({
+        workspace,
+        prompt: 'A landing page with icons',
+        siteSpec: { projectName: 'Icon Co' },
+        sessionCtx: { broadcast: () => {} },
+        generateHtml: async ({ system, onToken }) => {
+          capturedSystem = system
+          onToken?.('<!DOCTYPE html>', '<!DOCTYPE html>')
+          onToken?.(lucideHtml.slice('<!DOCTYPE html>'.length), lucideHtml)
+          return { content: lucideHtml, cost: 0.001 }
+        },
+      })
+
+      // The system prompt must be wired through to the model call — if someone
+      // forgets to pass it, generation runs without the SFF rules.
+      expect(capturedSystem).toBe(SFF_HTML_SYSTEM_PROMPT)
+
+      // The Lucide runtime must be injected into the persisted file so the
+      // placeholder actually renders. Catches breakage in the
+      // ensureLucideIconRuntime integration.
+      const written = readFileSync(join(workspace, 'index.html'), 'utf8')
+      expect(written).toContain('unpkg.com/lucide@latest')
+      expect(written).toContain('sf-lucide-bootstrap')
+      expect(written).toContain('data-lucide="sparkles"')
+    } finally {
+      rmSync(workspace, { recursive: true, force: true })
+    }
   })
 
   it('writes index.html and the persisted module source as raw SFF HTML', async () => {

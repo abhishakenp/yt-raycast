@@ -1,10 +1,17 @@
-import { readFileSync } from 'node:fs'
-
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
 import { sendSessionChatMessage } from './session_chat_helpers'
+
+type MutationHandler<Args> = (ctx: MutationCtx, args: Args) => Promise<unknown>
+
+type SendChatMessageArgs = {
+  sessionId: Id<'sessions'>
+  anonymousOwnerSecret?: string
+  content: string
+  refinementPlanJson?: string
+}
 
 type ChatMessageRecord = Doc<'chatMessages'>
 type EditRecord = Doc<'edits'>
@@ -326,13 +333,29 @@ describe('sendSessionChatMessage', () => {
     ).rejects.toMatchObject({ data: { code: 'PREVIEW_NOT_READY' } })
   })
 
-  it('keeps the public sessions mutation delegated to chat helpers', () => {
-    const source = readFileSync('convex/sessions.ts', 'utf8')
-
-    expect(source).toContain(
-      'handler: (ctx, args) => sendSessionChatMessage(ctx, args)',
-    )
-    expect(source).not.toContain('chat_refinement_started')
-    expect(source).not.toContain('Preview updated from chat refinement')
+  it('sendChatMessage handler delegates to sendSessionChatMessage helper', async () => {
+    vi.resetModules()
+    vi.doMock('./session_chat_helpers', () => ({
+      sendSessionChatMessage: vi.fn(async () => ({ ok: true })),
+    }))
+    try {
+      const { sendChatMessage } = await import('../sessions')
+      const mockedModule = await import('./session_chat_helpers')
+      const mockedSendSessionChatMessage = vi.mocked(
+        mockedModule.sendSessionChatMessage,
+      )
+      const ctx = { db: {} } as unknown as MutationCtx
+      const args: SendChatMessageArgs = {
+        sessionId: 's1' as Id<'sessions'>,
+        content: 'hi',
+      }
+      const handler =
+        sendChatMessage as unknown as MutationHandler<SendChatMessageArgs>
+      await handler(ctx, args)
+      expect(mockedSendSessionChatMessage).toHaveBeenCalledWith(ctx, args)
+    } finally {
+      vi.doUnmock('./session_chat_helpers')
+      vi.resetModules()
+    }
   })
 })

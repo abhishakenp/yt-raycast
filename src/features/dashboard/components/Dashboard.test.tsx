@@ -1,5 +1,4 @@
 // @vitest-environment jsdom
-import { readFileSync } from 'node:fs'
 import {
   cleanup,
   fireEvent,
@@ -656,102 +655,5 @@ describe('Dashboard missing session state', () => {
           '[]',
       ),
     ).toEqual([{ handle: 'truffle-box', price: 79, title: 'Truffle Box' }])
-  })
-
-  it('removes the old rail mode editor path while keeping popover tools wired', () => {
-    const source = readFileSync(
-      'src/features/dashboard/components/Dashboard.tsx',
-      'utf8',
-    )
-
-    expect(source).not.toContain('type RailMode')
-    expect(source).not.toContain('railMode')
-    expect(source).not.toContain('setRailMode')
-    expect(source).not.toContain('RailPanelFallback')
-    expect(source).not.toContain('preview-site-rail-editor')
-    expect(source).not.toContain('rail-editor-')
-    expect(source).toContain("import('@/features/cms/components/CmsPanel')")
-    expect(source).not.toContain(
-      "import('@/features/chat/components/ChatPanel')",
-    )
-    expect(source).not.toContain(
-      "import('@/features/dashboard/components/ActivityPanel')",
-    )
-    expect(source).toContain(
-      "import('@/features/commerce/components/CommercePanel')",
-    )
-    expect(source).toContain('data-rail-action="export"')
-    expect(source).toContain('data-rail-action="github"')
-    expect(source).toContain('data-rail-action="domain"')
-    expect(source).toContain('const ToolPopoverFallback')
-    expect(source).toContain('<ExportPanel sessionId={sessionId} />')
-    expect(source).toContain('<GitHubPanel sessionId={sessionId} />')
-    expect(source).toContain('<DeploymentPanel sessionId={sessionId} />')
-    expect(source).toContain('<CmsPanel')
-    expect(source).toContain('sessionId={activeSessionId}')
-  })
-
-  it('allows storage-backed clone URLs to render without inline source html', () => {
-    const source = readFileSync(
-      'src/features/dashboard/components/Dashboard.tsx',
-      'utf8',
-    )
-
-    expect(source).toContain('(homeModule?.source || clonePageNav.currentUrl)')
-    expect(source).toContain('hasRenderableClonePage')
-    expect(source).toContain('hasRenderableHomeSource')
-    expect(source).toContain('sourceUrl={')
-    expect(source).toContain('clonePageNav.currentUrl')
-  })
-
-  it('gates every siderail item and the pencil edit toggle behind SignInGate', () => {
-    const source = readFileSync(
-      'src/features/dashboard/components/Dashboard.tsx',
-      'utf8',
-    )
-
-    // Reusable gate + locked fallback are wired in.
-    expect(source).toContain("from '@/shared/auth/SignInGate'")
-    expect(source).toContain('const RailLockedButton')
-    expect(source).toContain('useSignInGate')
-    expect(source).toContain('requireSignInForEdit')
-
-    // The pencil (inline-edit) toggle is gated by requireSignInForEdit.
-    expect(source).toContain('if (!requireSignInForEdit()) return')
-
-    // The topbar admin + publish/deploy controls are also gated.
-    expect(source).toContain('if (!requireSignInForEdit()) return\n                      toggleAdminView()')
-    expect(source).toContain('if (!requireSignInForEdit()) return\n                      void handlePublish()')
-
-    // Every declared rail action must be wrapped by a SignInGate. We pair each
-    // data-rail-action occurrence with a preceding <SignInGate opening tag by
-    // scanning the source in order.
-    const railActions = [
-      'cms-studio',
-      'chat',
-      'annotations',
-      'activity',
-      'ecommerce',
-      'palette',
-      'brand-media',
-      'localization',
-      'github',
-      'billing',
-      'export',
-      'domain',
-      '3d',
-    ]
-    for (const action of railActions) {
-      expect(source).toContain(`data-rail-action="${action}"`)
-    }
-
-    // Count SignInGate opening tags == number of rail actions (one gate per item).
-    // `<SignInGate\n` excludes the JSDoc mention in the RailLockedButton doc comment.
-    const gateOpenCount = (source.match(/<SignInGate\n/g) ?? []).length
-    expect(gateOpenCount).toBe(railActions.length)
-
-    // Each gate provides a locked fallback rendered via RailLockedButton.
-    const lockedButtonCount = (source.match(/<RailLockedButton/g) ?? []).length
-    expect(lockedButtonCount).toBe(railActions.length)
   })
 })

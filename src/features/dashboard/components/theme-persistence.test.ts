@@ -1,108 +1,139 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { convexTest } from 'convex-test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
+import schema from '../../../../convex/schema'
+import { serializeSession } from '../../../../convex/lib/session_serialization_helpers'
+
+const modules = import.meta.glob('../../../../convex/**/*.ts')
+
+type SerializedSession = ReturnType<typeof serializeSession>
+
+const mockSession = (
+  overrides: Partial<Parameters<typeof serializeSession>[0]> = {},
+): Parameters<typeof serializeSession>[0] =>
+  ({
+    _id: 'session-1' as unknown as Id<'sessions'>,
+    prompt: 'A themed website',
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    createdAt: 100,
+    ...overrides,
+  }) as Parameters<typeof serializeSession>[0]
 
 describe('Theme persistence', () => {
-  describe('serializeSession includes themeOverride', () => {
-    const sessionsSource = readFileSync(
-      resolve(__dirname, '../../../../convex/sessions.ts'),
-      'utf-8',
-    )
-    const serializationHelpersSource = readFileSync(
-      resolve(
-        __dirname,
-        '../../../../convex/lib/session_serialization_helpers.ts',
-      ),
-      'utf-8',
-    )
-    const readinessHelpersSource = readFileSync(
-      resolve(__dirname, '../../../../convex/lib/session_readiness_helpers.ts'),
-      'utf-8',
-    )
-    const schemaSource = readFileSync(
-      resolve(__dirname, '../../../../convex/schema.ts'),
-      'utf-8',
-    )
-
-    it('serializeSession returns theme override and mode fields', () => {
-      const serializeMatch = serializationHelpersSource.match(
-        /export const serializeSession[\s\S]*?\n\}\)/,
+  describe('serializeSession', () => {
+    it('returns themeOverride and themeMode fields from the session document', () => {
+      const serialized: SerializedSession = serializeSession(
+        mockSession({ themeOverride: 'midnight', themeMode: 'dark' }),
       )
-      expect(serializeMatch).not.toBeNull()
-      expect(serializeMatch![0]).toContain('themeOverride')
-      expect(serializeMatch![0]).toContain('themeMode')
-      expect(schemaSource).toContain('themeMode')
+
+      expect(serialized.themeOverride).toBe('midnight')
+      expect(serialized.themeMode).toBe('dark')
+      expect(serialized.sessionId).toBe('session-1')
+      expect(serialized.prompt).toBe('A themed website')
     })
 
-    it('session query helpers use the extracted serializer', () => {
-      expect(sessionsSource).toContain("from './lib/session_readiness_helpers'")
-      expect(sessionsSource).toContain('loadSessionReadiness(ctx, args.lookup)')
-      expect(readinessHelpersSource).toContain(
-        "from './session_serialization_helpers'",
+    it('coerces missing theme fields to null', () => {
+      const serialized: SerializedSession = serializeSession(mockSession())
+
+      expect(serialized.themeOverride).toBeNull()
+      expect(serialized.themeMode).toBeNull()
+    })
+
+    it('coerces an invalid themeMode value to null', () => {
+      const serialized: SerializedSession = serializeSession(
+        mockSession({ themeMode: 'purple' as unknown as 'light' | 'dark' }),
       )
-      expect(readinessHelpersSource).toContain('serializeSession(session)')
+
+      expect(serialized.themeMode).toBeNull()
     })
   })
 
-  describe('setThemeOverride mutation exists', () => {
-    const sessionsSource = readFileSync(
-      resolve(__dirname, '../../../../convex/sessions.ts'),
-      'utf-8',
-    )
-    const accessHelpersSource = readFileSync(
-      resolve(__dirname, '../../../../convex/lib/session_access_helpers.ts'),
-      'utf-8',
-    )
-    const validatorsSource = readFileSync(
-      resolve(__dirname, '../../../../convex/lib/session_validators.ts'),
-      'utf-8',
-    )
+  describe('setThemeOverride mutation', () => {
+    beforeEach(() => {
+      // Bypass ownership checks so the mutation can run without an auth
+      // identity or anonymous owner secret in the test environment.
+      vi.stubEnv('DISABLE_PAYWALL', 'true')
+    })
 
-    it('exports a setThemeOverride mutation', () => {
-      expect(sessionsSource).toContain(
-        'export const setThemeOverride = mutation(',
+    afterEach(() => {
+      vi.unstubAllEnvs()
+    })
+
+    it('patches themeOverride and themeMode on the session document', async () => {
+      const t = convexTest(schema, modules)
+      const sessionId = await t.run(async (ctx) =>
+        ctx.db.insert('sessions', {
+          prompt: 'A themed website',
+          preferredLanguage: 'en',
+          preferredExportTarget: 'html',
+          isPrivate: false,
+          createdAt: 100,
+        }),
       )
+
+      await t.mutation(api.sessions.setThemeOverride, {
+        sessionId,
+        themeOverride: 'ocean',
+        themeMode: 'dark',
+      })
+
+      const patched = await t.run(async (ctx) => ctx.db.get(sessionId))
+      expect(patched?.themeOverride).toBe('ocean')
+      expect(patched?.themeMode).toBe('dark')
     })
 
-    it('mutation delegates to the access helper that patches themeOverride', () => {
-      const mutationMatch = sessionsSource.match(
-        /export const setThemeOverride = mutation\([\s\S]*?\n\}\)/,
+    it('clears theme fields when null is passed', async () => {
+      const t = convexTest(schema, modules)
+      const sessionId = await t.run(async (ctx) =>
+        ctx.db.insert('sessions', {
+          prompt: 'A themed website',
+          preferredLanguage: 'en',
+          preferredExportTarget: 'html',
+          isPrivate: false,
+          createdAt: 100,
+          themeOverride: 'sunset',
+          themeMode: 'light',
+        }),
       )
-      expect(mutationMatch).not.toBeNull()
-      expect(mutationMatch![0]).toContain('args: setThemeOverrideArgs')
-      expect(mutationMatch![0]).toContain('setSessionThemeOverride(ctx, args)')
-      expect(validatorsSource).toContain('export const setThemeOverrideArgs =')
-      expect(validatorsSource).toContain('themeOverride')
-      expect(validatorsSource).toContain('themeMode')
-      expect(accessHelpersSource).toContain('setSessionThemeOverride')
-      expect(accessHelpersSource).toContain('themeOverride')
-      expect(accessHelpersSource).toContain('themeMode')
-      expect(accessHelpersSource).toContain('ctx.db.patch')
-    })
-  })
 
-  describe('Dashboard wires theme persistence', () => {
-    const dashboardSource = readFileSync(
-      resolve(__dirname, 'Dashboard.tsx'),
-      'utf-8',
-    )
+      await t.mutation(api.sessions.setThemeOverride, {
+        sessionId,
+        themeOverride: null,
+        themeMode: null,
+      })
 
-    it('calls setThemeOverride mutation', () => {
-      expect(dashboardSource).toContain('setThemeOverrideMutation')
+      const patched = await t.run(async (ctx) => ctx.db.get(sessionId))
+      expect(patched?.themeOverride).toBeUndefined()
+      expect(patched?.themeMode).toBeUndefined()
     })
 
-    it('initializes selectedTheme from serverThemeOverride', () => {
-      expect(dashboardSource).toContain('serverThemeOverride')
-      expect(dashboardSource).toContain('setSelectedTheme(serverThemeOverride)')
-    })
+    it('leaves theme fields untouched when they are omitted from the args', async () => {
+      const t = convexTest(schema, modules)
+      const sessionId = await t.run(async (ctx) =>
+        ctx.db.insert('sessions', {
+          prompt: 'A themed website',
+          preferredLanguage: 'en',
+          preferredExportTarget: 'html',
+          isPrivate: false,
+          createdAt: 100,
+          themeOverride: 'forest',
+          themeMode: 'light',
+        }),
+      )
 
-    it('passes themeOverride when calling mutation on select', () => {
-      expect(dashboardSource).toContain('themeOverride: theme')
-    })
+      await t.mutation(api.sessions.setThemeOverride, {
+        sessionId,
+        themeOverride: 'ocean',
+      })
 
-    it('persists the current light/dark mode when toggled', () => {
-      expect(dashboardSource).toContain('serverThemeMode')
-      expect(dashboardSource).toContain('themeMode: nextMode')
+      const patched = await t.run(async (ctx) => ctx.db.get(sessionId))
+      expect(patched?.themeOverride).toBe('ocean')
+      // themeMode was omitted from the mutation args, so it must be preserved.
+      expect(patched?.themeMode).toBe('light')
     })
   })
 })

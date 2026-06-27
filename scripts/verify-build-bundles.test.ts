@@ -162,7 +162,7 @@ describe('verifyBuildBundles', () => {
     writeAsset(
       root,
       '.output/server/_ssr/openui-runtime-core-test.mjs',
-      'x'.repeat(9_000_000),
+      'x'.repeat(10_000_000),
     )
 
     expect(() => verifyBuildBundles(root)).toThrow(

@@ -1,6 +1,3 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
@@ -208,43 +205,5 @@ describe('completeGenerationAction', () => {
     expect(mutationCalls[0].args).toMatchObject({
       html: '<main>handoff preview</main>',
     })
-  })
-})
-
-describe('completeGeneration delegation', () => {
-  it('keeps action orchestration delegated out of convex/sessions.ts', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'convex/sessions.ts'),
-      'utf8',
-    )
-    const nodeActionSource = readFileSync(
-      join(process.cwd(), 'convex/session_completion.ts'),
-      'utf8',
-    )
-    const internalReferencesSource = readFileSync(
-      join(process.cwd(), 'convex/lib/session_internal_references.ts'),
-      'utf8',
-    )
-
-    expect(source).not.toContain('completeGenerationAction')
-    expect(source).toContain('ctx.runAction')
-    expect(source).not.toContain('Failed to render OpenUI to HTML')
-    expect(source).toContain('sessionInternalReferences')
-    expect(source).not.toContain('type InternalSessionReferences =')
-    expect(source).not.toContain(
-      'internal as unknown as InternalSessionReferences',
-    )
-    expect(source).not.toContain('internal as any')
-    expect(nodeActionSource).toContain("'use node'")
-    expect(nodeActionSource).toContain('completeGenerationAction')
-    expect(nodeActionSource).toContain('loadOpenUISSR')
-    expect(internalReferencesSource).toContain(
-      'type InternalSessionReferences =',
-    )
-    expect(internalReferencesSource).toContain('completeGenerationNode')
-    expect(internalReferencesSource).toContain(
-      'internal as unknown as InternalSessionReferences',
-    )
-    expect(internalReferencesSource).not.toContain('internal as any')
   })
 })

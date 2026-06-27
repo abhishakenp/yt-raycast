@@ -1,5 +1,4 @@
-import { readFileSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
@@ -9,6 +8,28 @@ import {
   recordSessionUsageMetric,
   summarizeUsageMetrics,
 } from './session_usage_metrics_helpers'
+
+type MutationHandler<Args> = (ctx: MutationCtx, args: Args) => Promise<unknown>
+type QueryHandler<Args> = (ctx: QueryCtx, args: Args) => Promise<unknown>
+
+type RecordUsageMetricArgs = {
+  sessionId: Id<'sessions'>
+  eventType: string
+  elapsedMs: number
+  cost: number
+  provider: string
+  userId?: string
+  anonymousClientIdHash?: string
+}
+
+type SessionIdArgs = {
+  sessionId: Id<'sessions'>
+}
+
+type UserUsageMetricsArgs = {
+  userId: string
+  since?: number
+}
 
 type UsageMetricRecord = Doc<'usageMetrics'>
 type ReadLog = {
@@ -267,14 +288,68 @@ describe('session usage metrics helpers', () => {
     ])
   })
 
-  it('keeps public usage metric functions delegated to usage helpers', () => {
-    const source = readFileSync('convex/sessions.ts', 'utf8')
+  it('public usage metric handlers delegate to usage helpers', async () => {
+    vi.resetModules()
+    vi.doMock('./session_usage_metrics_helpers', () => ({
+      recordSessionUsageMetric: vi.fn(async () => null),
+      loadSessionUsageMetrics: vi.fn(async () => []),
+      loadUserUsageMetrics: vi.fn(async () => []),
+    }))
+    try {
+      const { recordUsageMetric, getUsageMetrics, getUserUsageMetrics } =
+        await import('../sessions')
+      const mockedModule = await import('./session_usage_metrics_helpers')
+      const mockedRecordSessionUsageMetric = vi.mocked(
+        mockedModule.recordSessionUsageMetric,
+      )
+      const mockedLoadSessionUsageMetrics = vi.mocked(
+        mockedModule.loadSessionUsageMetrics,
+      )
+      const mockedLoadUserUsageMetrics = vi.mocked(
+        mockedModule.loadUserUsageMetrics,
+      )
+      const ctx = { db: {} } as unknown as MutationCtx
 
-    expect(source).toContain('recordSessionUsageMetric(ctx, args)')
-    expect(source).toContain('loadSessionUsageMetrics(ctx, args.sessionId)')
-    expect(source).toContain('loadUserUsageMetrics(ctx, args)')
-    expect(source).not.toContain(
-      "export const getUsageMetrics = query({\n  args: {\n    sessionId: v.id('sessions'),\n  },\n  handler: async",
-    )
+      const recordArgs: RecordUsageMetricArgs = {
+        sessionId: 's1' as Id<'sessions'>,
+        eventType: 'run_completed',
+        elapsedMs: 100,
+        cost: 0.1,
+        provider: 'groq',
+      }
+      const recordHandler =
+        recordUsageMetric as unknown as MutationHandler<RecordUsageMetricArgs>
+      await recordHandler(ctx, recordArgs)
+      expect(mockedRecordSessionUsageMetric).toHaveBeenCalledWith(
+        ctx,
+        recordArgs,
+      )
+
+      const queryCtx = { db: {} } as unknown as QueryCtx
+      const metricsArgs: SessionIdArgs = {
+        sessionId: 's1' as Id<'sessions'>,
+      }
+      const getHandler =
+        getUsageMetrics as unknown as QueryHandler<SessionIdArgs>
+      await getHandler(queryCtx, metricsArgs)
+      expect(mockedLoadSessionUsageMetrics).toHaveBeenCalledWith(
+        queryCtx,
+        metricsArgs.sessionId,
+      )
+
+      const userArgs: UserUsageMetricsArgs = {
+        userId: 'u1',
+      }
+      const userHandler =
+        getUserUsageMetrics as unknown as QueryHandler<UserUsageMetricsArgs>
+      await userHandler(queryCtx, userArgs)
+      expect(mockedLoadUserUsageMetrics).toHaveBeenCalledWith(
+        queryCtx,
+        userArgs,
+      )
+    } finally {
+      vi.doUnmock('./session_usage_metrics_helpers')
+      vi.resetModules()
+    }
   })
 })

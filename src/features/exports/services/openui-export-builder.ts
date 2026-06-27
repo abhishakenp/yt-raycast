@@ -529,7 +529,7 @@ let manifestSourceIndex: Record<
 > | null = null
 let componentSourceIndex: Map<string, ReactExportSourceEntry> | null = null
 
-const isExportableComponentFactory = (expression: string): boolean =>
+export const isExportableComponentFactory = (expression: string): boolean =>
   expression === 'defineCapsule'
 
 const getManifestSourceIndex = (): Record<
@@ -1522,9 +1522,8 @@ const extractComponent = (
         usesMutation: false,
         usesQuery: false,
       }
-  const needsLakebedAdapter = usesLakebed && /\blakebed\b/.test(
-    translatedLakebed.body,
-  )
+  const needsLakebedAdapter =
+    usesLakebed && /\blakebed\b/.test(translatedLakebed.body)
   const translatedBody = needsLakebedAdapter
     ? `const lakebed = useLakebedAdapter()\n${translatedLakebed.body}`
     : translatedLakebed.body
@@ -1541,8 +1540,8 @@ const extractComponent = (
     (translatedLakebed.usesAuth ||
       translatedLakebed.usesMutation ||
       translatedLakebed.usesQuery)
-    ? `\nimport { useMutation, useQuery${translatedLakebed.needsQueryClient ? ', useQueryClient' : ''} } from '@tanstack/react-query'`
-    : ''
+      ? `\nimport { useMutation, useQuery${translatedLakebed.needsQueryClient ? ', useQueryClient' : ''} } from '@tanstack/react-query'`
+      : ''
   const componentSource = `${preludeSources.join('\n\n')}\n${rewrittenNavigation.body}`
   const componentImports = ensureReactNodeImport(imports, componentSource)
   const source = `${componentImports.join('\n')}${queryHookImport}${usesLakebed ? `\n${lakebedDataImport}` : ''}${routePaths}
@@ -1682,7 +1681,9 @@ const collectNodeComponentNames = (
 }
 
 const collectRouteComponentNames = (routes: ExportRoute[]): string[] => [
-  ...new Set(routes.flatMap((route) => [...collectNodeComponentNames(route.node)])),
+  ...new Set(
+    routes.flatMap((route) => [...collectNodeComponentNames(route.node)]),
+  ),
 ]
 
 const routeGapClass = (value: unknown): string => {
@@ -1740,7 +1741,9 @@ const routeGridClass = (cols: unknown, gap: unknown, className: unknown) => {
               ? 'grid-cols-2 lg:grid-cols-6'
               : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
   return ['grid', colsClass, routeGapClass(gap), className]
-    .filter((item): item is string => typeof item === 'string' && item.length > 0)
+    .filter(
+      (item): item is string => typeof item === 'string' && item.length > 0,
+    )
     .join(' ')
 }
 
@@ -1754,7 +1757,9 @@ const routeStackClass = (props: Record<string, unknown>) =>
     props.wrap === true ? 'flex-wrap' : '',
     props.className,
   ]
-    .filter((item): item is string => typeof item === 'string' && item.length > 0)
+    .filter(
+      (item): item is string => typeof item === 'string' && item.length > 0,
+    )
     .join(' ')
 
 const jsxAttribute = (name: string, value: unknown): string =>

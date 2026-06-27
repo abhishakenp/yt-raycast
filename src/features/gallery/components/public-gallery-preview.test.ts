@@ -1,33 +1,83 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-const readProjectFile = (path: string): string =>
-  readFileSync(join(process.cwd(), path), 'utf8')
+import { getGalleryImageUrl, type GallerySession } from './PublicGallery'
+import {
+  createGalleryThumbnailResponse,
+  generateDeterministicThumbnailSvg,
+  getGalleryCategories,
+} from '../server/gallery-thumbnail-response'
 
 describe('public gallery preview cards', () => {
-  it('renders stored generated previews first and keeps generated thumbnails as fallback only', () => {
-    const gallerySource = readProjectFile(
-      'src/features/gallery/components/PublicGallery.tsx',
+  it('builds the gallery thumbnail URL from the session id and preview version', () => {
+    const session: GallerySession = {
+      sessionId: 'abc-123',
+      previewVersion: 4,
+    }
+
+    expect(getGalleryImageUrl(session)).toBe(
+      '/api/sessions/abc-123/gallery-thumb?v=4',
     )
-    const responseSource = readProjectFile(
-      'src/features/gallery/server/gallery-thumbnail-response.ts',
+  })
+
+  it('falls back to version 0 when previewVersion is missing', () => {
+    expect(getGalleryImageUrl({ sessionId: 'xyz' })).toBe(
+      '/api/sessions/xyz/gallery-thumb?v=0',
     )
-    const captureSource = readProjectFile(
-      'src/features/gallery/server/gallery-thumbnail-capture.ts',
+  })
+
+  it('prefers a stored imageUrl when present', () => {
+    expect(
+      getGalleryImageUrl({
+        sessionId: 'abc-123',
+        previewVersion: 4,
+        imageUrl: 'https://cdn.example.com/thumb.png',
+      }),
+    ).toBe('https://cdn.example.com/thumb.png')
+  })
+
+  it('returns a deterministic SVG thumbnail when no cached capture exists and capture is skipped', async () => {
+    const clientOverride = {
+      query: async () => ({
+        prompt: 'A cozy coffee shop landing page',
+        status: 'done',
+        categories: ['commerce'],
+        previewVersion: 0,
+      }),
+    }
+
+    const request = new Request(
+      'https://example.test/api/sessions/sess-1/gallery-thumb?fallback=1',
     )
-    expect(gallerySource).toContain('/gallery-thumb?v=')
-    expect(gallerySource).toContain('URL.createObjectURL(blob)')
-    expect(gallerySource).toContain('moduleSource !== undefined ?')
-    expect(gallerySource).toContain('previewDocument !== undefined ?')
-    expect(gallerySource).toContain(
-      'moduleSource === undefined && previewDocument === undefined',
+
+    const response = await createGalleryThumbnailResponse(
+      'sess-1',
+      request,
+      clientOverride as never,
     )
-    expect(gallerySource).not.toContain('/preview-raw')
-    expect(gallerySource).not.toContain('fallback=1')
-    expect(gallerySource).not.toContain('<iframe')
-    expect(gallerySource).not.toContain('gallery-preview-frame')
-    expect(responseSource).toContain("searchParams.get('fallback') !== '1'")
-    expect(captureSource).not.toContain(`agent-${'browser'}`)
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('Content-Type')).toContain('image/svg+xml')
+    const body = await response.text()
+    expect(body).toContain('<svg')
+    expect(body).toContain('A cozy coffee shop')
+  })
+
+  it('derives gallery categories from the prompt', () => {
+    expect(getGalleryCategories('a cozy coffee shop')).toEqual(['commerce'])
+    expect(getGalleryCategories('a saas analytics dashboard')).toContain('saas')
+    expect(getGalleryCategories('a personal portfolio site')).toContain(
+      'portfolio',
+    )
+  })
+
+  it('generates a deterministic thumbnail SVG with prompt and status', () => {
+    const svg = generateDeterministicThumbnailSvg(
+      'blog about dogs',
+      ['blog'],
+      'done',
+    )
+    expect(svg).toContain('<svg')
+    expect(svg).toContain('Ready')
+    expect(svg).toContain('Blog')
   })
 })

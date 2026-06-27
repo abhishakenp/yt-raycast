@@ -1,179 +1,362 @@
-import { readFileSync } from 'node:fs'
-
+import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
+import { convexTest } from 'convex-test'
+import type { FunctionArgs } from 'convex/server'
 import { describe, expect, it } from 'vitest'
 
+import { api } from '../_generated/api'
+import schema from '../schema'
+
+import {
+  addGenerationEventArgs,
+  agentationSyncAnnotationArgs,
+  annotationFields,
+  claimAnonymousArgs,
+  completeGenerationArgs,
+  createEditArgs,
+  createGenerationSessionArgs,
+  deleteMineArgs,
+  deleteOwnedAnnotationArgs,
+  deploymentSlugArgs,
+  editType,
+  engineTask,
+  eventStreamArgs,
+  exportRecordArgs,
+  exportTarget,
+  extractCmsBindingsArgs,
+  failGenerationArgs,
+  forkSessionArgs,
+  generationViewArgs,
+  insertCmsBindingArgs,
+  listCmsRevisionsArgs,
+  lookupArgs,
+  medusaProduct,
+  operationalNotificationArgs,
+  ownedAnnotationArgs,
+  ownedExportArgs,
+  ownedSessionArgs,
+  provisionMedusaTenantArgs,
+  publicGallerySessionArgs,
+  publicGallerySessionsArgs,
+  publishPreviewArgs,
+  recordOperationalEventArgs,
+  recordUsageMetricArgs,
+  restoreCmsRevisionArgs,
+  restorePreviewVersionArgs,
+  saveAgentationSessionArgs,
+  sendChatMessageArgs,
+  sessionIdArgs,
+  sessionEditFields,
+  setThemeOverrideArgs,
+  slackNotificationArgs,
+  syncMedusaProductsArgs,
+  telegramNotificationArgs,
+  updateAgentationSyncAnnotationArgs,
+  updateCmsEntryArgs,
+  upsertCmsCollectionItemArgs,
+  upsertCmsConfigArgs,
+  upsertCommerceConfigArgs,
+  upsertGeneratedModuleArgs,
+  upsertGenerationTaskArgs,
+  userUsageMetricsArgs,
+} from './session_validators'
+
+const modules = import.meta.glob('../**/*.ts')
+
+const sessionValidatorsConvexTest = () => {
+  const t = convexTest(schema, modules)
+  registerDebouncer(t)
+  return t
+}
+
 describe('session validators boundary', () => {
-  it('keeps shared Convex validators out of convex/sessions.ts', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
-    const validatorsSource = readFileSync(
-      'convex/lib/session_validators.ts',
-      'utf8',
-    )
+  it('exports the shared validator objects with expected field shapes', () => {
+    // Representative sample of the validator objects that sessions.ts imports.
+    // Each must be a plain object whose keys map to Convex validators.
+    expect(sessionIdArgs).toMatchObject({
+      sessionId: expect.any(Object),
+    })
+    expect(lookupArgs).toMatchObject({
+      lookup: expect.any(Object),
+    })
+    expect(generationViewArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      lookup: expect.any(Object),
+    })
+    expect(eventStreamArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      lookup: expect.any(Object),
+      since: expect.any(Object),
+      limit: expect.any(Object),
+      anonymousOwnerSecret: expect.any(Object),
+    })
+    expect(deleteMineArgs).toMatchObject({
+      anonymousClientId: expect.any(Object),
+      sessionId: expect.any(Object),
+    })
+    expect(createGenerationSessionArgs).toMatchObject({
+      prompt: expect.any(Object),
+      preferredLanguage: expect.any(Object),
+      preferredExportTarget: expect.any(Object),
+      isPrivate: expect.any(Object),
+      workspace: expect.any(Object),
+    })
+    expect(ownedSessionArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      anonymousOwnerSecret: expect.any(Object),
+    })
+    expect(claimAnonymousArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      anonymousOwnerSecret: expect.any(Object),
+    })
+    expect(publishPreviewArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      anonymousOwnerSecret: expect.any(Object),
+      requestedSlug: expect.any(Object),
+    })
+    expect(exportRecordArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      target: expect.any(Object),
+    })
+    expect(ownedExportArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      anonymousOwnerSecret: expect.any(Object),
+      target: expect.any(Object),
+    })
+    expect(upsertGenerationTaskArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      task: expect.any(Object),
+      order: expect.any(Object),
+    })
+    expect(upsertGeneratedModuleArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      moduleKey: expect.any(Object),
+      source: expect.any(Object),
+    })
+    expect(addGenerationEventArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      eventType: expect.any(Object),
+    })
+    expect(completeGenerationArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      html: expect.any(Object),
+      tasks: expect.any(Object),
+    })
+    expect(failGenerationArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      message: expect.any(Object),
+    })
+    expect(sessionEditFields).toMatchObject({
+      editType: expect.any(Object),
+      targetLabel: expect.any(Object),
+    })
+    expect(createEditArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      editType: expect.any(Object),
+    })
+    expect(forkSessionArgs).toMatchObject({
+      sourceSessionId: expect.any(Object),
+    })
+    expect(restorePreviewVersionArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      version: expect.any(Object),
+    })
+    expect(sendChatMessageArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      content: expect.any(Object),
+    })
+    expect(setThemeOverrideArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      themeOverride: expect.any(Object),
+    })
+    expect(annotationFields).toMatchObject({
+      annotationId: expect.any(Object),
+      agentationSessionKey: expect.any(Object),
+      comment: expect.any(Object),
+    })
+    expect(ownedAnnotationArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      annotationId: expect.any(Object),
+    })
+    expect(saveAgentationSessionArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      agentationSessionId: expect.any(Object),
+    })
+    expect(agentationSyncAnnotationArgs).toMatchObject({
+      annotationId: expect.any(Object),
+    })
+    expect(updateAgentationSyncAnnotationArgs).toMatchObject({
+      annotationId: expect.any(Object),
+    })
+    expect(deleteOwnedAnnotationArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      annotationId: expect.any(Object),
+    })
+    expect(upsertCmsConfigArgs).toMatchObject({
+      sessionId: expect.any(Object),
+    })
+    expect(upsertCommerceConfigArgs).toMatchObject({
+      sessionId: expect.any(Object),
+    })
+    expect(publicGallerySessionsArgs).toMatchObject({
+      limit: expect.any(Object),
+      page: expect.any(Object),
+    })
+    expect(publicGallerySessionArgs).toMatchObject({
+      sessionId: expect.any(Object),
+    })
+    expect(deploymentSlugArgs).toMatchObject({
+      slug: expect.any(Object),
+    })
+    expect(extractCmsBindingsArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      html: expect.any(Object),
+    })
+    expect(updateCmsEntryArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      bindingId: expect.any(Object),
+      content: expect.any(Object),
+    })
+    expect(restoreCmsRevisionArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      revisionId: expect.any(Object),
+    })
+    expect(provisionMedusaTenantArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      backendUrl: expect.any(Object),
+    })
+    expect(syncMedusaProductsArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      products: expect.any(Object),
+    })
+    expect(recordUsageMetricArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      eventType: expect.any(Object),
+      elapsedMs: expect.any(Object),
+      cost: expect.any(Object),
+      provider: expect.any(Object),
+    })
+    expect(userUsageMetricsArgs).toMatchObject({
+      userId: expect.any(Object),
+    })
+    expect(upsertCmsCollectionItemArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      collectionKey: expect.any(Object),
+      fields: expect.any(Object),
+    })
+    expect(insertCmsBindingArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      selector: expect.any(Object),
+      type: expect.any(Object),
+    })
+    expect(listCmsRevisionsArgs).toMatchObject({
+      entryId: expect.any(Object),
+    })
+    expect(operationalNotificationArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      eventType: expect.any(Object),
+    })
+    expect(recordOperationalEventArgs).toMatchObject({
+      sessionId: expect.any(Object),
+      eventType: expect.any(Object),
+    })
+    expect(slackNotificationArgs).toMatchObject({
+      message: expect.any(Object),
+    })
+    expect(telegramNotificationArgs).toMatchObject({
+      message: expect.any(Object),
+    })
+  })
 
-    expect(sessionsSource).toContain("from './lib/session_validators'")
-    expect(sessionsSource).toContain('args: generationViewArgs')
-    expect(sessionsSource).toContain('args: eventStreamArgs')
-    expect(sessionsSource).toContain('args: lookupArgs')
-    expect(sessionsSource).toContain('args: sessionIdArgs')
-    expect(sessionsSource).toContain('args: deleteMineArgs')
-    expect(sessionsSource).toContain('args: createGenerationSessionArgs')
-    expect(sessionsSource).toContain('args: upsertGenerationTaskArgs')
-    expect(sessionsSource).toContain('args: upsertGeneratedModuleArgs')
-    expect(sessionsSource).toContain('args: addGenerationEventArgs')
-    expect(sessionsSource).toContain('args: completeGenerationArgs')
-    expect(sessionsSource).toContain('args: failGenerationArgs')
-    expect(sessionsSource).toContain('args: publishPreviewArgs')
-    expect(sessionsSource).toContain('args: claimAnonymousArgs')
-    expect(sessionsSource).toContain('args: ownedExportArgs')
-    expect(sessionsSource).toContain('args: exportRecordArgs')
-    expect(sessionsSource).toContain('args: createEditArgs')
-    expect(sessionsSource).toContain('args: forkSessionArgs')
-    expect(sessionsSource).toContain('args: restorePreviewVersionArgs')
-    expect(sessionsSource).toContain('args: sendChatMessageArgs')
-    expect(sessionsSource).toContain('args: setThemeOverrideArgs')
-    expect(sessionsSource).toContain('args: ownedAnnotationArgs')
-    expect(sessionsSource).toContain('args: saveAgentationSessionArgs')
-    expect(sessionsSource).toContain('args: agentationSyncAnnotationArgs')
-    expect(sessionsSource).toContain('args: updateAgentationSyncAnnotationArgs')
-    expect(sessionsSource).toContain('args: annotationIdArgs')
-    expect(sessionsSource).toContain('args: deleteOwnedAnnotationArgs')
-    expect(sessionsSource).toContain(
-      'args: deleteOwnedAnnotationByAgentationIdArgs',
-    )
-    expect(sessionsSource).toContain('args: ownedSessionArgs')
-    expect(sessionsSource).toContain('args: upsertCmsConfigArgs')
-    expect(sessionsSource).toContain('args: upsertCommerceConfigArgs')
-    expect(sessionsSource).toContain('args: publicGallerySessionsArgs')
-    expect(sessionsSource).toContain('args: publicGallerySessionArgs')
-    expect(sessionsSource).toContain('args: deploymentSlugArgs')
-    expect(sessionsSource).toContain('args: extractCmsBindingsArgs')
-    expect(sessionsSource).toContain('args: updateCmsEntryArgs')
-    expect(sessionsSource).toContain('args: restoreCmsRevisionArgs')
-    expect(sessionsSource).toContain('args: provisionMedusaTenantArgs')
-    expect(sessionsSource).toContain('args: syncMedusaProductsArgs')
-    expect(sessionsSource).toContain('args: recordUsageMetricArgs')
-    expect(sessionsSource).toContain('args: userUsageMetricsArgs')
-    expect(sessionsSource).toContain('args: cmsEntryRevisionsArgs')
-    expect(sessionsSource).toContain('args: upsertCmsContentEntryArgs')
-    expect(sessionsSource).toContain('args: restoreCmsContentRevisionArgs')
-    expect(sessionsSource).toContain('args: cmsCollectionItemsArgs')
-    expect(sessionsSource).toContain('args: upsertCmsCollectionItemArgs')
-    expect(sessionsSource).toContain('args: deleteCmsCollectionItemArgs')
-    expect(sessionsSource).toContain('args: insertCmsBindingArgs')
-    expect(sessionsSource).toContain('args: listCmsRevisionsArgs')
-    expect(sessionsSource).not.toContain('const exportTarget = v.union')
-    expect(sessionsSource).not.toContain("from 'convex/values'")
-    expect(sessionsSource).not.toContain('const engineTaskStatus = v.union')
-    expect(sessionsSource).not.toContain('const engineTask = v.object')
-    expect(sessionsSource).not.toContain(
-      "sessionId: v.optional(v.id('sessions'))",
-    )
-    expect(sessionsSource).not.toContain('lookup: v.string()')
-    expect(sessionsSource).not.toContain('editType: v.union')
-    expect(sessionsSource).not.toContain('type: v.union')
-    expect(sessionsSource).not.toContain('products: v.array(\n      v.object')
-    expect(sessionsSource).toContain('args: recordOperationalEventArgs')
-    expect(sessionsSource).toContain('args: operationalNotificationArgs')
-    expect(sessionsSource).toContain('args: slackNotificationArgs')
-    expect(sessionsSource).toContain('args: telegramNotificationArgs')
-    expect(sessionsSource).not.toContain('cacheHit: v.optional(v.boolean())')
+  it('exports the shared union/object validators used across sessions', () => {
+    expect(exportTarget).toBeDefined()
+    expect(engineTask).toBeDefined()
+    expect(editType).toBeDefined()
+    expect(medusaProduct).toBeDefined()
+  })
 
-    expect(validatorsSource).toContain('export const exportTarget = v.union')
-    expect(validatorsSource).toContain('export const engineTask = v.object')
-    expect(validatorsSource).toContain('export const editType = v.union')
-    expect(validatorsSource).toContain('export const cmsContentType = v.union')
-    expect(validatorsSource).toContain('export const medusaProduct = v.object')
-    expect(validatorsSource).toContain('export const sessionIdArgs =')
-    expect(validatorsSource).toContain('export const lookupArgs =')
-    expect(validatorsSource).toContain('export const generationViewArgs =')
-    expect(validatorsSource).toContain('export const eventStreamArgs =')
-    expect(validatorsSource).toContain('export const deleteMineArgs =')
-    expect(validatorsSource).toMatch(
-      /export const deleteMineArgs = \{\s+anonymousClientId: v\.optional\(v\.string\(\)\),\s+sessionId: v\.optional\(v\.id\('sessions'\)\),\s+\}/,
-    )
-    expect(validatorsSource).toContain(
-      'export const createGenerationSessionArgs =',
-    )
-    expect(validatorsSource).toContain(
-      'export const upsertGenerationTaskArgs =',
-    )
-    expect(validatorsSource).toContain(
-      'export const upsertGeneratedModuleArgs =',
-    )
-    expect(validatorsSource).toContain('export const addGenerationEventArgs =')
-    expect(validatorsSource).toContain('export const completeGenerationArgs =')
-    expect(validatorsSource).toContain('export const failGenerationArgs =')
-    expect(validatorsSource).toContain('export const publishPreviewArgs =')
-    expect(validatorsSource).toContain('export const claimAnonymousArgs =')
-    expect(validatorsSource).toContain('export const ownedExportArgs =')
-    expect(validatorsSource).toContain('export const exportRecordArgs =')
-    expect(validatorsSource).toContain('export const sessionEditFields =')
-    expect(validatorsSource).toContain('export const createEditArgs =')
-    expect(validatorsSource).toContain('export const forkSessionArgs =')
-    expect(validatorsSource).toContain(
-      'export const restorePreviewVersionArgs =',
-    )
-    expect(validatorsSource).toContain('export const sendChatMessageArgs =')
-    expect(validatorsSource).toContain('export const setThemeOverrideArgs =')
-    expect(validatorsSource).toContain('export const annotationFields =')
-    expect(validatorsSource).toContain('export const ownedAnnotationArgs =')
-    expect(validatorsSource).toContain(
-      'export const saveAgentationSessionArgs =',
-    )
-    expect(validatorsSource).toContain(
-      'export const agentationSyncAnnotationArgs =',
-    )
-    expect(validatorsSource).toContain(
-      'export const updateAgentationSyncAnnotationArgs =',
-    )
-    expect(validatorsSource).toContain('export const annotationIdArgs =')
-    expect(validatorsSource).toContain(
-      'export const deleteOwnedAnnotationArgs =',
-    )
-    expect(validatorsSource).toContain(
-      'export const deleteOwnedAnnotationByAgentationIdArgs =',
-    )
-    expect(validatorsSource).toContain('export const upsertCmsConfigArgs =')
-    expect(validatorsSource).toContain(
-      'export const upsertCommerceConfigArgs =',
-    )
-    expect(validatorsSource).toContain(
-      'export const publicGallerySessionsArgs =',
-    )
-    expect(validatorsSource).toContain(
-      'export const publicGallerySessionArgs =',
-    )
-    expect(validatorsSource).toContain('export const deploymentSlugArgs =')
-    expect(validatorsSource).toContain('export const extractCmsBindingsArgs =')
-    expect(validatorsSource).toContain('export const updateCmsEntryArgs =')
-    expect(validatorsSource).toContain('export const restoreCmsRevisionArgs =')
-    expect(validatorsSource).toContain(
-      'export const provisionMedusaTenantArgs =',
-    )
-    expect(validatorsSource).toContain('export const syncMedusaProductsArgs =')
-    expect(validatorsSource).toContain('export const recordUsageMetricArgs =')
-    expect(validatorsSource).toContain('export const userUsageMetricsArgs =')
-    expect(validatorsSource).toContain('export const cmsEntryRevisionsArgs =')
-    expect(validatorsSource).toContain(
-      'export const upsertCmsContentEntryArgs =',
-    )
-    expect(validatorsSource).toContain(
-      'export const restoreCmsContentRevisionArgs =',
-    )
-    expect(validatorsSource).toContain('export const cmsCollectionItemsArgs =')
-    expect(validatorsSource).toContain(
-      'export const upsertCmsCollectionItemArgs =',
-    )
-    expect(validatorsSource).toContain(
-      'export const deleteCmsCollectionItemArgs =',
-    )
-    expect(validatorsSource).toContain('export const insertCmsBindingArgs =')
-    expect(validatorsSource).toContain('export const listCmsRevisionsArgs =')
-    expect(validatorsSource).toContain(
-      'export const operationalNotificationArgs =',
-    )
-    expect(validatorsSource).toContain(
-      'export const recordOperationalEventArgs =',
-    )
+  it('create accepts a valid generation session payload', async () => {
+    const t = sessionValidatorsConvexTest()
+    await expect(
+      t.mutation(api.sessions.create, {
+        prompt: 'A simple landing page',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: 'workspace_validators_test',
+        anonymousClientId: 'anon_validators_test',
+        anonymousOwnerSecret: 'owner-secret',
+      }),
+    ).resolves.toMatchObject({ sessionId: expect.any(String) })
+  })
+
+  it('create rejects an invalid payload (missing required field)', async () => {
+    const t = sessionValidatorsConvexTest()
+    await expect(
+      t.mutation(api.sessions.create, {
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: 'workspace_invalid',
+      } as unknown as FunctionArgs<typeof api.sessions.create>),
+    ).rejects.toThrow()
+  })
+
+  it('create rejects an invalid export target', async () => {
+    const t = sessionValidatorsConvexTest()
+    await expect(
+      t.mutation(api.sessions.create, {
+        prompt: 'Bad target',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'not-a-real-target',
+        isPrivate: false,
+        workspace: 'workspace_bad_target',
+        anonymousClientId: 'anon_bad_target',
+        anonymousOwnerSecret: 'owner-secret',
+      } as unknown as FunctionArgs<typeof api.sessions.create>),
+    ).rejects.toThrow()
+  })
+
+  it('getGenerationView accepts valid optional args and returns null for unknown session', async () => {
+    const t = sessionValidatorsConvexTest()
+    await expect(
+      t.query(api.sessions.getGenerationView, { lookup: 'does-not-exist' }),
+    ).resolves.toBeNull()
+  })
+
+  it('getDeploymentBySlug accepts a valid slug string', async () => {
+    const t = sessionValidatorsConvexTest()
+    await expect(
+      t.query(api.sessions.getDeploymentBySlug, { slug: 'no-such-slug' }),
+    ).resolves.toBeNull()
+  })
+
+  it('getDeploymentBySlug rejects a non-string slug', async () => {
+    const t = sessionValidatorsConvexTest()
+    await expect(
+      t.query(api.sessions.getDeploymentBySlug, {
+        slug: 123,
+      } as unknown as FunctionArgs<typeof api.sessions.getDeploymentBySlug>),
+    ).rejects.toThrow()
+  })
+
+  it('listPublicSessions accepts valid optional pagination args', async () => {
+    const t = sessionValidatorsConvexTest()
+    await expect(
+      t.query(api.sessions.listPublicSessions, {
+        limit: 10,
+        page: 1,
+        search: 'test',
+        category: 'blog',
+      }),
+    ).resolves.toMatchObject({ availableCategories: expect.any(Array) })
+  })
+
+  it('listPublicSessions rejects an invalid arg type', async () => {
+    const t = sessionValidatorsConvexTest()
+    await expect(
+      t.query(api.sessions.listPublicSessions, {
+        limit: 'not-a-number',
+      } as unknown as FunctionArgs<typeof api.sessions.listPublicSessions>),
+    ).rejects.toThrow()
   })
 })

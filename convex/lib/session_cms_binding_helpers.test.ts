@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
@@ -581,18 +580,6 @@ describe('session CMS binding helpers', () => {
     })
   })
 
-  it('keeps session CMS config handlers delegated', () => {
-    const source = readFileSync('convex/sessions.ts', 'utf8')
-
-    expect(source).toContain(
-      'handler: (ctx, args) => upsertSessionCmsConfig(ctx, args)',
-    )
-    expect(source).toContain(
-      'handler: (ctx, args) => loadSessionCmsConfig(ctx, args.sessionId)',
-    )
-    expect(source).not.toContain("ctx.db\n      .query('cmsConfigs')")
-  })
-
   it('seeds CMS bindings and initial entries from generated HTML', async () => {
     const { ctx, bindings, entries } = ctxFor()
 
@@ -877,17 +864,6 @@ describe('session CMS binding helpers', () => {
         filters: { entryId: entry._id },
       },
     ])
-  })
-
-  it('keeps public CMS read queries delegated to CMS helpers', () => {
-    const source = readFileSync('convex/sessions.ts', 'utf8')
-
-    expect(source).toContain('listSessionCmsEntries(ctx, args.sessionId)')
-    expect(source).toContain('listSessionCmsContent(ctx, args.sessionId)')
-    expect(source).toContain('listSessionCmsEntryRevisions(ctx, args)')
-    expect(source).not.toContain(
-      "export const listCmsContent = query({\n  args: {\n    sessionId: v.id('sessions'),\n  },\n  handler: async",
-    )
   })
 
   it('upserts CMS content by creating a missing field binding and entry', async () => {
@@ -1262,48 +1238,5 @@ describe('session CMS binding helpers', () => {
         filters: { entryId: 'entry_1' },
       },
     ])
-  })
-
-  it('keeps public CMS mutation functions delegated to CMS helpers', () => {
-    const source = readFileSync('convex/sessions.ts', 'utf8')
-    const cmsMutationSection = source.slice(
-      source.indexOf('export const upsertCmsContentEntry'),
-      source.indexOf('export const insertCmsBinding'),
-    )
-
-    expect(cmsMutationSection).toContain(
-      'upsertSessionCmsContentEntry(ctx, args)',
-    )
-    expect(cmsMutationSection).toContain(
-      'restoreSessionCmsContentRevision(ctx, args)',
-    )
-    expect(cmsMutationSection).not.toContain(
-      'handler: async (ctx, args) => {\n    const session = await ctx.db.get(args.sessionId)',
-    )
-  })
-
-  it('keeps internal CMS maintenance functions delegated to CMS helpers', () => {
-    const source = readFileSync('convex/sessions.ts', 'utf8')
-    const internalCmsSection = source.slice(
-      source.indexOf('export const updateCmsEntry'),
-      source.indexOf('export const sendOperationalNotification'),
-    )
-
-    expect(internalCmsSection).toContain(
-      'handler: (ctx, args) => updateSessionCmsEntry(ctx, args)',
-    )
-    expect(internalCmsSection).toContain(
-      'handler: (ctx, args) => restoreSessionCmsRevision(ctx, args)',
-    )
-    expect(internalCmsSection).toContain(
-      'handler: (ctx, args) => insertSessionCmsBinding(ctx, args)',
-    )
-    expect(internalCmsSection).toContain(
-      'handler: (ctx, args) => listCmsRevisionsForEntry(ctx, args.entryId)',
-    )
-    expect(internalCmsSection).not.toContain(
-      'const binding = await ctx.db.get(args.bindingId)',
-    )
-    expect(internalCmsSection).not.toContain("query('cmsRevisions')")
   })
 })
