@@ -83,7 +83,9 @@ const expectAeoMetadata = (document: Document) => {
   expect(document.querySelector('meta[name="description"]')).toBeTruthy()
   const robots = document.querySelector('meta[name="robots"]')
   expect(robots?.getAttribute('content')).toBe('index, follow')
-  expect(document.querySelector('script[type="application/ld+json"]')).toBeTruthy()
+  expect(
+    document.querySelector('script[type="application/ld+json"]'),
+  ).toBeTruthy()
   expect(document.querySelector('link[href="/llms.txt"]')).toBeTruthy()
 }
 
@@ -94,7 +96,11 @@ const expectLlmsTxtHasBrand = (content: string) => {
 
 /** Assert robots.txt declares the sitemap URL. */
 const expectRobotsHasSitemap = (content: string) => {
-  expect(content.split('\n').some((l) => l === 'Sitemap: https://preview.example/sitemap.xml')).toBe(true)
+  expect(
+    content
+      .split('\n')
+      .some((l) => l === 'Sitemap: https://preview.example/sitemap.xml'),
+  ).toBe(true)
 }
 
 /** Assert sitemap.xml contains the home URL in a <loc> element. */
@@ -108,7 +114,9 @@ describe('renderer Tailwind preview CSS', () => {
   it('uses a local Tailwind CSS asset for static HTML exports', () => {
     const rendered = renderProject(siteSpec, 'html')
     expectNoTailwindCdn(getDocument(rendered.files['index.html']))
-    expect(rendered.files['scripts/tailwind-browser.js']?.length).toBeGreaterThan(0)
+    expect(
+      rendered.files['scripts/tailwind-browser.js']?.length,
+    ).toBeGreaterThan(0)
   })
 
   it('advertises AEO metadata assets for static HTML session renders', () => {
@@ -130,9 +138,12 @@ describe('renderer Tailwind preview CSS', () => {
         'page Home { Text "Hello" }',
       )
       await renderPreviewToWorkspace(siteSpec, workspace)
-      expectNoTailwindCdn(getDocument(readFileSync(join(workspace, 'index.html'), 'utf8')))
+      expectNoTailwindCdn(
+        getDocument(readFileSync(join(workspace, 'index.html'), 'utf8')),
+      )
       expect(
-        readFileSync(join(workspace, 'scripts/tailwind-browser.js'), 'utf8').length,
+        readFileSync(join(workspace, 'scripts/tailwind-browser.js'), 'utf8')
+          .length,
       ).toBeGreaterThan(0)
     } finally {
       rmSync(workspace, { recursive: true, force: true })
@@ -149,11 +160,17 @@ describe('renderer Tailwind preview CSS', () => {
       )
       await renderPreviewToWorkspace(siteSpec, workspace)
 
-      const document = getDocument(readFileSync(join(workspace, 'index.html'), 'utf8'))
+      const document = getDocument(
+        readFileSync(join(workspace, 'index.html'), 'utf8'),
+      )
       expectAeoMetadata(document)
       expectLlmsTxtHasBrand(readFileSync(join(workspace, 'llms.txt'), 'utf8'))
-      expectRobotsHasSitemap(readFileSync(join(workspace, 'robots.txt'), 'utf8'))
-      expectSitemapHasHomeUrl(readFileSync(join(workspace, 'sitemap.xml'), 'utf8'))
+      expectRobotsHasSitemap(
+        readFileSync(join(workspace, 'robots.txt'), 'utf8'),
+      )
+      expectSitemapHasHomeUrl(
+        readFileSync(join(workspace, 'sitemap.xml'), 'utf8'),
+      )
     } finally {
       rmSync(workspace, { recursive: true, force: true })
     }
@@ -163,7 +180,9 @@ describe('renderer Tailwind preview CSS', () => {
     const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-streaming-shell-'))
     try {
       writeStreamingShellToWorkspace(workspace, 'Streaming Brand', null)
-      expectNoTailwindCdn(getDocument(readFileSync(join(workspace, 'index.html'), 'utf8')))
+      expectNoTailwindCdn(
+        getDocument(readFileSync(join(workspace, 'index.html'), 'utf8')),
+      )
     } finally {
       rmSync(workspace, { recursive: true, force: true })
     }
@@ -175,10 +194,14 @@ describe('renderer Tailwind preview CSS', () => {
       writeFileSync(join(workspace, 'site-spec.json'), JSON.stringify(siteSpec))
       writeStreamingShellToWorkspace(workspace, 'Preview Brand', null)
 
-      const document = getDocument(readFileSync(join(workspace, 'index.html'), 'utf8'))
+      const document = getDocument(
+        readFileSync(join(workspace, 'index.html'), 'utf8'),
+      )
       expectAeoMetadata(document)
       expectLlmsTxtHasBrand(readFileSync(join(workspace, 'llms.txt'), 'utf8'))
-      expectRobotsHasSitemap(readFileSync(join(workspace, 'robots.txt'), 'utf8'))
+      expectRobotsHasSitemap(
+        readFileSync(join(workspace, 'robots.txt'), 'utf8'),
+      )
     } finally {
       rmSync(workspace, { recursive: true, force: true })
     }
@@ -235,7 +258,9 @@ describe('Next.js Medusa export', () => {
           if (
             ts.isCallExpression(call) &&
             ts.isPropertyAccessExpression(call.expression) &&
-            call.expression.getText(sourceFile).includes('initiatePaymentSession') &&
+            call.expression
+              .getText(sourceFile)
+              .includes('initiatePaymentSession') &&
             call.arguments.length > 0
           ) {
             const firstArg = call.arguments[0]

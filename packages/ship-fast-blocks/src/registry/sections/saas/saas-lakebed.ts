@@ -90,35 +90,34 @@ export const saasLakebed = {
 
       return []
     }),
-    recordAuthSession: saas.mutation(
-      (_ctx, input: SaasAuthSessionInput) => {
-        const email = normalizeEmail(input.email)
-        if (!email) return _ctx.db.authSessions.orderBy('signedInAt', 'desc').all()
-
-        const provider = input.provider?.trim() || 'Shoo'
-        const existing =
-          _ctx.db.authSessions
-            .all()
-            .find(
-              (session) =>
-                session.email === email && session.provider === provider,
-            ) ?? null
-        const next = {
-          displayName: input.displayName?.trim() ?? '',
-          email,
-          provider,
-          signedInAt: new Date().toISOString(),
-        }
-
-        if (existing) {
-          _ctx.db.authSessions.update(existing.id, next)
-        } else {
-          _ctx.db.authSessions.insert(next)
-        }
-
+    recordAuthSession: saas.mutation((_ctx, input: SaasAuthSessionInput) => {
+      const email = normalizeEmail(input.email)
+      if (!email)
         return _ctx.db.authSessions.orderBy('signedInAt', 'desc').all()
-      },
-    ),
+
+      const provider = input.provider?.trim() || 'Shoo'
+      const existing =
+        _ctx.db.authSessions
+          .all()
+          .find(
+            (session) =>
+              session.email === email && session.provider === provider,
+          ) ?? null
+      const next = {
+        displayName: input.displayName?.trim() ?? '',
+        email,
+        provider,
+        signedInAt: new Date().toISOString(),
+      }
+
+      if (existing) {
+        _ctx.db.authSessions.update(existing.id, next)
+      } else {
+        _ctx.db.authSessions.insert(next)
+      }
+
+      return _ctx.db.authSessions.orderBy('signedInAt', 'desc').all()
+    }),
     requestDemo: saas.mutation((_ctx, input: SaasIntentInput) => {
       const label = normalizeLabel(input.label)
       _ctx.db.intents.insert({

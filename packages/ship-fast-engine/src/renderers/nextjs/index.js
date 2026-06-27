@@ -1221,7 +1221,7 @@ function renderSanityNextExportFiles(siteSpec, session) {
     'production'
   const prefilled = Boolean(
     String(session?.sanityConfig?.projectId || '').trim() ||
-      String(session?.sanityConfig?.dataset || '').trim(),
+    String(session?.sanityConfig?.dataset || '').trim(),
   )
 
   return {

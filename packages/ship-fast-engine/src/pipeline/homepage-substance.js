@@ -136,7 +136,7 @@ export function shouldReplaceLlmHomepageWithRenderer(html, siteSpec) {
 export function htmlDocumentPassesPreviewQuality(html, siteSpec) {
   return Boolean(
     html &&
-      typeof html === 'string' &&
-      !shouldReplaceLlmHomepageWithRenderer(html, siteSpec),
+    typeof html === 'string' &&
+    !shouldReplaceLlmHomepageWithRenderer(html, siteSpec),
   )
 }

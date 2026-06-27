@@ -119,7 +119,8 @@ describe('useElementInspector — behavioral', () => {
   })
 
   it('commits a section selection and calls onSectionSelect with element info', () => {
-    const onSectionSelect = vi.fn<(selection: InspectorSelection | null) => void>()
+    const onSectionSelect =
+      vi.fn<(selection: InspectorSelection | null) => void>()
     const { getByTestId } = render(
       <Harness active={true} onSectionSelect={onSectionSelect} />,
     )
@@ -207,7 +208,8 @@ describe('useElementInspector — behavioral', () => {
   })
 
   it('calls onSectionSelect(null) on Escape (not just hides the overlay)', () => {
-    const onSectionSelect = vi.fn<(selection: InspectorSelection | null) => void>()
+    const onSectionSelect =
+      vi.fn<(selection: InspectorSelection | null) => void>()
     const { getByTestId } = render(
       <Harness active={true} onSectionSelect={onSectionSelect} />,
     )
@@ -218,7 +220,9 @@ describe('useElementInspector — behavioral', () => {
     act(() => {
       fireClick(card)
     })
-    expect(onSectionSelect).toHaveBeenCalledWith(expect.objectContaining({ tag: 'div' }))
+    expect(onSectionSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ tag: 'div' }),
+    )
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
     })
@@ -226,7 +230,8 @@ describe('useElementInspector — behavioral', () => {
   })
 
   it('clears selection on mousedown outside the container (click-away)', () => {
-    const onSectionSelect = vi.fn<(selection: InspectorSelection | null) => void>()
+    const onSectionSelect =
+      vi.fn<(selection: InspectorSelection | null) => void>()
     const { getByTestId } = render(
       <Harness active={true} onSectionSelect={onSectionSelect} />,
     )
@@ -249,7 +254,8 @@ describe('useElementInspector — behavioral', () => {
   })
 
   it('does NOT clear when mousedown lands on the prompt toolbar', () => {
-    const onSectionSelect = vi.fn<(selection: InspectorSelection | null) => void>()
+    const onSectionSelect =
+      vi.fn<(selection: InspectorSelection | null) => void>()
     const { getByTestId } = render(
       <Harness active={true} onSectionSelect={onSectionSelect} />,
     )
@@ -265,9 +271,7 @@ describe('useElementInspector — behavioral', () => {
     toolbar.className = 'section-prompt-toolbar'
     document.body.appendChild(toolbar)
     act(() => {
-      toolbar.dispatchEvent(
-        new MouseEvent('mousedown', { bubbles: true }),
-      )
+      toolbar.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
     })
     expect(onSectionSelect).toHaveBeenCalledTimes(1) // not cleared
     toolbar.remove()

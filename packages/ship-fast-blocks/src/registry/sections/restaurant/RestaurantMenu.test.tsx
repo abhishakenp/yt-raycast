@@ -39,9 +39,9 @@ type RestaurantMutationName = Extract<
 
 vi.mock('@ship-fast/lakebed/react', () => ({
   createLakebedClient: vi.fn(() => {
-      if (!lakebedRef.current) throw new Error('Missing test Lakebed client')
-      return lakebedRef.current
-    }),
+    if (!lakebedRef.current) throw new Error('Missing test Lakebed client')
+    return lakebedRef.current
+  }),
   useKeyedLakebedMutation: (
     lakebed: RestaurantLakebed,
     name: RestaurantMutationName,

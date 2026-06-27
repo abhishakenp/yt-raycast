@@ -19,7 +19,7 @@ import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.t
 export const EcommerceCta = defineCapsule({
   name: 'EcommerceCta',
   description:
-    "High-contrast sale / newsletter band for a general online store: a bold headline + sub paragraph over a primary surface, an email capture form backed by the shared Lakebed newsletter subscriber table, and a small disclaimer. Use as a prominent storewide conversion band to capture subscribers, advertise a first-order discount, or push a sale for any ecommerce or online retail site.",
+    'High-contrast sale / newsletter band for a general online store: a bold headline + sub paragraph over a primary surface, an email capture form backed by the shared Lakebed newsletter subscriber table, and a small disclaimer. Use as a prominent storewide conversion band to capture subscribers, advertise a first-order discount, or push a sale for any ecommerce or online retail site.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -42,7 +42,10 @@ export const EcommerceCta = defineCapsule({
 
     return (
       <section
-        className={cn('w-full bg-primary text-primary-foreground', props.className)}
+        className={cn(
+          'w-full bg-primary text-primary-foreground',
+          props.className,
+        )}
       >
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-5 px-6 py-16 text-center lg:px-8">
           <span className="text-sm font-medium uppercase tracking-wide opacity-80">

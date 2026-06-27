@@ -680,7 +680,11 @@ function serializeCloneDocument(
   finalUrl: string,
   finalHost: string,
 ): string {
-  return rewriteResidualAnchorNavigation(serialize(document), finalUrl, finalHost)
+  return rewriteResidualAnchorNavigation(
+    serialize(document),
+    finalUrl,
+    finalHost,
+  )
 }
 
 function serialize(document: {

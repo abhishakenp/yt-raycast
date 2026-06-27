@@ -74,12 +74,12 @@ describe('route target resolution', () => {
       amenities: 'Amenities#amenities_amenities',
     }
 
-    expect(resolveRouteTarget('Explore Full Lookbook', routes, targetMap)).toEqual(
-      {
-        page: 'Lookbook',
-        type: 'page',
-      },
-    )
+    expect(
+      resolveRouteTarget('Explore Full Lookbook', routes, targetMap),
+    ).toEqual({
+      page: 'Lookbook',
+      type: 'page',
+    })
     expect(resolveRouteTarget('Explore program', routes, targetMap)).toEqual({
       page: 'Programs',
       type: 'page',

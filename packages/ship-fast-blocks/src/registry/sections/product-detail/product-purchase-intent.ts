@@ -1,4 +1,5 @@
-const purchaseIntent = /\b(?:buy|checkout|order|pre[-\s]?order|purchase|reserve)\b/i
+const purchaseIntent =
+  /\b(?:buy|checkout|order|pre[-\s]?order|purchase|reserve)\b/i
 const nonCartAddIntent = /\b(?:favorite|favourite|save|wishlist)\b/i
 const cartContainerIntent = /\badd\s+(?:to\s+)?(?:bag|basket|cart)\b/i
 

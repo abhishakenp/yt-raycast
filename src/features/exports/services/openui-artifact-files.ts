@@ -342,9 +342,8 @@ const unzipTextFiles = (body: Uint8Array) =>
 
 export async function buildOpenUIArtifactFiles(input: OpenUIExportInput) {
   if (input.target === 'html') {
-    const { buildOpenUIHtmlExport } = await import(
-      './openui-html-export-builder'
-    )
+    const { buildOpenUIHtmlExport } =
+      await import('./openui-html-export-builder')
     const download = await buildOpenUIHtmlExport(input)
     if (typeof download?.body === 'string') {
       const files = createHtmlExportFiles(
@@ -361,9 +360,8 @@ export async function buildOpenUIArtifactFiles(input: OpenUIExportInput) {
   }
 
   if (input.target === 'lakebed') {
-    const { buildOpenUILakebedProjectFiles } = await import(
-      './openui-lakebed-export-builder'
-    )
+    const { buildOpenUILakebedProjectFiles } =
+      await import('./openui-lakebed-export-builder')
     const project = await buildOpenUILakebedProjectFiles(input)
     return { files: withGenUIExportMetadata(input, project.files) }
   }

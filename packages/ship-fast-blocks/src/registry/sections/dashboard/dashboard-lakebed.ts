@@ -70,14 +70,12 @@ export const dashboardLakebed = {
 
       return _ctx.db.orders.orderBy('createdAt').all()
     }),
-    removeOrder: dashboard.mutation(
-      (_ctx, input: DashboardOrderTarget) => {
-        const order = _ctx.db.orders.get(input.id)
-        if (order) _ctx.db.orders.delete(order.id)
+    removeOrder: dashboard.mutation((_ctx, input: DashboardOrderTarget) => {
+      const order = _ctx.db.orders.get(input.id)
+      if (order) _ctx.db.orders.delete(order.id)
 
-        return _ctx.db.orders.orderBy('createdAt').all()
-      },
-    ),
+      return _ctx.db.orders.orderBy('createdAt').all()
+    }),
     setOrderStatus: dashboard.mutation(
       (_ctx, input: DashboardOrderStatusInput) => {
         const order = _ctx.db.orders.get(input.id)

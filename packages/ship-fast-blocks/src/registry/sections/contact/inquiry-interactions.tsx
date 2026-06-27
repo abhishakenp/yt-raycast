@@ -311,7 +311,11 @@ export function InquiryMobileMenu({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button type="button" aria-label="Open menu" className={buttonClassName}>
+        <button
+          type="button"
+          aria-label="Open menu"
+          className={buttonClassName}
+        >
           <MenuIcon className="size-5" aria-hidden="true" />
         </button>
       </SheetTrigger>

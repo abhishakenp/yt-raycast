@@ -59,8 +59,7 @@ export const analyticsAdminLakebed = {
       _ctx.db.notifications.orderBy('createdAt').all(),
     ),
     unreadNotificationCount: analyticsAdmin.query(
-      (_ctx) =>
-        _ctx.db.notifications.where('read', 'false').all().length,
+      (_ctx) => _ctx.db.notifications.where('read', 'false').all().length,
     ),
   },
   mutations: {

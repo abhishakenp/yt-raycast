@@ -109,7 +109,10 @@ describe('government-portal sections (batch B)', () => {
 
   describe('GovernmentPortalContact', () => {
     it('renders a grievance / enquiry form with the four fields and a submit flow', async () => {
-      const { container } = renderCapsule(GovernmentPortalContact.client.component, {})
+      const { container } = renderCapsule(
+        GovernmentPortalContact.client.component,
+        {},
+      )
       const form = container.querySelector('form')
       expect(form).not.toBeNull()
       // The four enquiry fields are labelled and present.
@@ -152,9 +155,7 @@ describe('government-portal sections (batch B)', () => {
       expect(screen.getByText('Managing Director')).toBeTruthy()
       // Overview prose column heading + body.
       expect(screen.getByText('About / Overview')).toBeTruthy()
-      expect(
-        screen.getByText(/State Government undertaking/),
-      ).toBeTruthy()
+      expect(screen.getByText(/State Government undertaking/)).toBeTruthy()
     })
 
     it('routes the read-more link through useNavigate', () => {
@@ -173,8 +174,7 @@ describe('government-portal sections (batch B)', () => {
       expect(questions.length).toBeGreaterThanOrEqual(4)
 
       // First item is expanded by default — its answer is visible.
-      const firstAnswer =
-        'Submit your Right to Information request in writing'
+      const firstAnswer = 'Submit your Right to Information request in writing'
       expect(screen.getByText(new RegExp(firstAnswer))).toBeTruthy()
 
       // The first question button reports aria-expanded=true initially.

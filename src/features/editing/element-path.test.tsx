@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  buildInspectorSelection,
-  getElementPath,
-} from './element-path'
+import { buildInspectorSelection, getElementPath } from './element-path'
 
 const buildDOM = () => {
   const root = document.createElement('div')

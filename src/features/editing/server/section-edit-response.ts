@@ -224,15 +224,15 @@ const compileTsx = async (tsxSource: string): Promise<CompileResult> => {
   }
 }
 
-type SmokeTestResult =
-  | { ok: true }
-  | { ok: false; error: string }
+type SmokeTestResult = { ok: true } | { ok: false; error: string }
 
 /** Dynamic-import the compiled JS and verify it exports a renderable component.
  *  Uses a data: URL which works in both Node.js (>=20) and browsers.
  *  Sets up globalThis.React and globalThis.__jsxRuntime so the compiled JS
  *  (which references these globals instead of importing 'react') can run. */
-const smokeTestCapsule = async (compiledJs: string): Promise<SmokeTestResult> => {
+const smokeTestCapsule = async (
+  compiledJs: string,
+): Promise<SmokeTestResult> => {
   try {
     const smokeGlobals: CapsuleSmokeGlobals = globalThis
     // Set up globals that the compiled JS references instead of 'react' imports
@@ -300,7 +300,11 @@ const compileAndValidateWithAutoFix = async (
 
     const smoke = await smokeTestCapsule(compiled.compiledJs)
     if (smoke.ok) {
-      return { ok: true, compiledJs: compiled.compiledJs, tsxSource: currentSource }
+      return {
+        ok: true,
+        compiledJs: compiled.compiledJs,
+        tsxSource: currentSource,
+      }
     }
 
     if (attempt >= MAX_AUTO_FIX_RETRIES) {
@@ -437,7 +441,8 @@ export const createSectionEditResponse = async (
   const htmlSession = isHtmlSession(generationView)
   const runtime = options.generate ? null : await loadGenerateTextRuntime()
   const generate = options.generate ?? runtime!.generateText
-  const model = options.model ?? runtime?.DEFAULT_MODEL ?? DEFAULT_SECTION_EDIT_MODEL
+  const model =
+    options.model ?? runtime?.DEFAULT_MODEL ?? DEFAULT_SECTION_EDIT_MODEL
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), SECTION_EDIT_TIMEOUT_MS)
@@ -446,7 +451,11 @@ export const createSectionEditResponse = async (
     if (htmlSession) {
       // ─── HTML Session: generate replacement HTML ───
       const previewHtml = generationView.latestPreview?.html ?? ''
-      const prompt = buildHtmlSectionEditPrompt(selection, instruction, previewHtml)
+      const prompt = buildHtmlSectionEditPrompt(
+        selection,
+        instruction,
+        previewHtml,
+      )
 
       const replacementHtml = await generate(
         model,
@@ -483,7 +492,8 @@ export const createSectionEditResponse = async (
       }
 
       // Load capsule source from the generated manifest
-      const { findSimilarCapsules } = await import('@ship-fast/blocks/generated')
+      const { findSimilarCapsules } =
+        await import('@ship-fast/blocks/generated')
       const similar = findSimilarCapsules(capsuleName, 5)
 
       // Load the capsule source for the LLM prompt
@@ -524,7 +534,10 @@ export const createSectionEditResponse = async (
       }
 
       // Generate deterministic AI capsule name (re-edits update same row)
-      const aiCapsuleName = generateAiCapsuleName(capsuleName, selection.openuiVar)
+      const aiCapsuleName = generateAiCapsuleName(
+        capsuleName,
+        selection.openuiVar,
+      )
 
       // Patch the OpenUI source to reference the new AI capsule
       const originalSource = generationView.homeModule?.source ?? ''
@@ -551,7 +564,8 @@ export const createSectionEditResponse = async (
       return json({ ...result, mode: 'openui', aiCapsuleName })
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Section edit failed'
+    const message =
+      error instanceof Error ? error.message : 'Section edit failed'
     return json({ error: message }, { status: 500 })
   } finally {
     clearTimeout(timeout)
@@ -572,17 +586,18 @@ const generateAiCapsuleName = (
 }
 
 // Cache for decompressed capsule source manifest
-let capsuleSourceIndex: Record<string, { file: string; source: string } | undefined> | null = null
+let capsuleSourceIndex: Record<
+  string,
+  { file: string; source: string } | undefined
+> | null = null
 
 /** Load the actual TSX source code of a capsule by name from the compressed
  *  react-export-sources manifest. This gives the LLM the real source to edit. */
 const loadCapsuleSource = async (capsuleName: string): Promise<string> => {
   try {
     if (capsuleSourceIndex === null) {
-      const {
-        reactExportSourcesBase64,
-        reactExportSourcesEncoding,
-      } = await import('@ship-fast/blocks/generated')
+      const { reactExportSourcesBase64, reactExportSourcesEncoding } =
+        await import('@ship-fast/blocks/generated')
       if (reactExportSourcesEncoding !== 'br+base64') {
         throw new Error(`Unsupported encoding: ${reactExportSourcesEncoding}`)
       }

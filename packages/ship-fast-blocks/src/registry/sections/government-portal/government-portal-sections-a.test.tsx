@@ -71,16 +71,23 @@ describe('government-portal sections (batch A — spine)', () => {
 
   describe('GovernmentPortalNavbar', () => {
     it('renders the three-tier gov header with emblem, org name and mega-nav', () => {
-      const { container } = renderCapsule(GovernmentPortalNavbar.client.component, {})
+      const { container } = renderCapsule(
+        GovernmentPortalNavbar.client.component,
+        {},
+      )
       // Utility top bar carries the light-blue token; mega-nav carries royal-blue.
       expect(container.innerHTML).toContain(TOPBAR_BLUE)
       expect(container.innerHTML).toContain(NAV_BLUE)
       // Official org name + Hindi subtitle render in the white header band
       // (also echoed by the mobile SiteNav brand, so assert presence).
       expect(container.textContent).toContain('TENUGHAT VIDYUT NIGAM LIMITED')
-      expect(container.textContent).toMatch(/A Government of Jharkhand Undertaking/)
+      expect(container.textContent).toMatch(
+        /A Government of Jharkhand Undertaking/,
+      )
       // Mega-nav exposes the tender / notice retrieval anchors.
-      expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeTruthy()
+      expect(
+        screen.getByRole('navigation', { name: 'Main navigation' }),
+      ).toBeTruthy()
       expect(screen.getAllByText('Tenders').length).toBeGreaterThan(0)
       expect(screen.getAllByText('Notices').length).toBeGreaterThan(0)
     })
@@ -120,7 +127,10 @@ describe('government-portal sections (batch A — spine)', () => {
 
   describe('GovernmentPortalHero', () => {
     it('renders the notice ticker with gov / tender terms', () => {
-      const { container } = renderCapsule(GovernmentPortalHero.client.component, {})
+      const { container } = renderCapsule(
+        GovernmentPortalHero.client.component,
+        {},
+      )
       expect(container.innerHTML).toContain(NAV_BLUE)
       expect(container.innerHTML).toContain(TOPBAR_BLUE)
       // Ticker bar renders the welcome + tender notice text.
@@ -149,15 +159,18 @@ describe('government-portal sections (batch A — spine)', () => {
   describe('GovernmentPortalServices', () => {
     it('renders the four colored department quick-link cards', () => {
       renderCapsule(GovernmentPortalServices.client.component, {})
-      const titles = ['Power Generation', 'Business', 'Environment', 'Sustainability']
+      const titles = [
+        'Power Generation',
+        'Business',
+        'Environment',
+        'Sustainability',
+      ]
       for (const title of titles) {
         const card = screen.getByRole('button', { name: new RegExp(title) })
         // Each card carries its signature color as an inline background.
         expect(card.style.backgroundColor).not.toBe('')
       }
-      expect(
-        screen.getByText('Citizen Services & Departments'),
-      ).toBeTruthy()
+      expect(screen.getByText('Citizen Services & Departments')).toBeTruthy()
     })
 
     it('routes a card click through useNavigate', () => {
@@ -169,7 +182,10 @@ describe('government-portal sections (batch A — spine)', () => {
 
   describe('GovernmentPortalStats', () => {
     it('renders the formal key-figures strip on the gov-blue band', () => {
-      const { container } = renderCapsule(GovernmentPortalStats.client.component, {})
+      const { container } = renderCapsule(
+        GovernmentPortalStats.client.component,
+        {},
+      )
       expect(container.innerHTML).toContain(NAV_BLUE)
       expect(screen.getByText('TVNL at a Glance')).toBeTruthy()
       // The section-kit StatGrid composite renders the figure cells.
@@ -180,10 +196,15 @@ describe('government-portal sections (batch A — spine)', () => {
 
   describe('GovernmentPortalFooter', () => {
     it('renders the indigo gov footer with important links + auto-year copyright', () => {
-      const { container } = renderCapsule(GovernmentPortalFooter.client.component, {})
+      const { container } = renderCapsule(
+        GovernmentPortalFooter.client.component,
+        {},
+      )
       expect(container.innerHTML).toContain(FOOTER_INDIGO)
       expect(screen.getByText('Important Links:')).toBeTruthy()
-      const govLink = screen.getByRole('link', { name: 'Government of Jharkhand' })
+      const govLink = screen.getByRole('link', {
+        name: 'Government of Jharkhand',
+      })
       expect(govLink.getAttribute('href')).toBe('https://www.jharkhand.gov.in/')
       // Copyright row auto-updates via getFullYear — the year is split across
       // text nodes, so assert it appears in the rendered text content.

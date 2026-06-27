@@ -103,13 +103,11 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
-const { AutoDealershipFinancing } = await import(
-  './AutoDealershipFinancing.tsx'
-)
+const { AutoDealershipFinancing } =
+  await import('./AutoDealershipFinancing.tsx')
 const { AutoDealershipHero } = await import('./AutoDealershipHero.tsx')
-const { AutoDealershipInventory } = await import(
-  './AutoDealershipInventory.tsx'
-)
+const { AutoDealershipInventory } =
+  await import('./AutoDealershipInventory.tsx')
 const { AutoDealershipNavbar } = await import('./AutoDealershipNavbar.tsx')
 
 function useTestMutation<TMutation>({
@@ -182,9 +180,7 @@ function createAutoDealershipLakebedStub() {
       const name = vehicle.name.trim()
       if (!name) continue
 
-      const existingIndex = nextVehicles.findIndex(
-        (item) => item.name === name,
-      )
+      const existingIndex = nextVehicles.findIndex((item) => item.name === name)
       const nextVehicle = {
         badge: vehicle.badge ?? '',
         createdAt: timestamp,

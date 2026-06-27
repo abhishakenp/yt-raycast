@@ -342,7 +342,10 @@ export function LakebedAdminPanel() {
       table: LakebedAdminTable,
       data: JsonRecord,
       capsule = table.capsule,
-      options: { surfacePanelError?: boolean; surfacePanelSaving?: boolean } = {},
+      options: {
+        surfacePanelError?: boolean
+        surfacePanelSaving?: boolean
+      } = {},
     ) => {
       setError(undefined)
       if (options.surfacePanelSaving !== false) setIsSaving(true)
@@ -424,8 +427,7 @@ export function LakebedAdminPanel() {
   }
 
   const deleteRows = async (rowIds: Set<string>) => {
-    if (!selectedTable || selectedTable.storage === 'value')
-      return
+    if (!selectedTable || selectedTable.storage === 'value') return
     const rowsByCapsule = new Map<string, LakebedAdminRow[]>()
     for (const row of selectedTable.rows) {
       if (!rowIds.has(row.id)) continue

@@ -29,7 +29,9 @@ describe('createHtmlExportFiles', () => {
     const document = parseHtmlDocument(files['index.html'])
 
     // llms.txt discovery link is injected into <head>
-    const llmsLink = document.querySelector('link[rel="alternate"][href="/llms.txt"]')
+    const llmsLink = document.querySelector(
+      'link[rel="alternate"][href="/llms.txt"]',
+    )
     expect(llmsLink).not.toBeNull()
     expect(llmsLink?.getAttribute('type')).toBe('text/plain')
     expect(llmsLink?.getAttribute('title')).toBe('LLM-readable site summary')

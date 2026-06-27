@@ -116,14 +116,18 @@ export const ElectronicsStoreDeals = defineCapsule({
         }),
       ),
     )
-    const visibleItems = useCommerceFilteredProducts(lakebed, items, (product) => [
-      product.title,
-      product.subtitle,
-      product.price,
-      product.was,
-      product.discount,
-      product.imageAlt,
-    ])
+    const visibleItems = useCommerceFilteredProducts(
+      lakebed,
+      items,
+      (product) => [
+        product.title,
+        product.subtitle,
+        product.price,
+        product.was,
+        product.discount,
+        product.imageAlt,
+      ],
+    )
 
     return (
       <section

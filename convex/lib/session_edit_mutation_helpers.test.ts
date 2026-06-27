@@ -132,7 +132,9 @@ describe('session edit mutation helpers', () => {
       occurrenceIndex: 0,
     })
 
-    await expect(t.query(api.sessions.listEdits, { sessionId })).resolves.toEqual(
+    await expect(
+      t.query(api.sessions.listEdits, { sessionId }),
+    ).resolves.toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           editType: 'text',

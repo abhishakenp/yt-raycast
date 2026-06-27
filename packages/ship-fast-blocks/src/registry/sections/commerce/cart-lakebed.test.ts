@@ -215,7 +215,9 @@ describe('commerceCartLakebed', () => {
       selectedLabel: 'Hydrating Serum',
     })
 
-    expect(commerceCartLakebed.queries.commerceSearchState(context.context)).toMatchObject({
+    expect(
+      commerceCartLakebed.queries.commerceSearchState(context.context),
+    ).toMatchObject({
       query: 'Hydrating Serum',
       selectedLabel: 'Hydrating Serum',
       searches: [

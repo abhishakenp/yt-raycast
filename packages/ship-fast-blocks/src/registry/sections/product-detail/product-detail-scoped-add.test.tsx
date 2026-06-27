@@ -139,7 +139,9 @@ function createCommerceLakebedStub() {
     items: state.items,
   })
   const syncCatalog = (
-    products: MutationArgs<typeof commerceCartLakebed.mutations.syncCatalog>[0]['products'],
+    products: MutationArgs<
+      typeof commerceCartLakebed.mutations.syncCatalog
+    >[0]['products'],
   ) => {
     state = {
       ...state,

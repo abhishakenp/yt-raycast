@@ -394,7 +394,8 @@ describe('docs fullstack search', () => {
     expect(searches()[0]).toMatchObject({ query: 'webhook' })
 
     const resultsRegion = screen.getByText(/articles match/).closest('div')
-    if (!resultsRegion) throw new Error('Expected sidebar search results region')
+    if (!resultsRegion)
+      throw new Error('Expected sidebar search results region')
     expect(within(resultsRegion).getByText('Webhooks')).toBeTruthy()
     expect(within(resultsRegion).queryByText('Introduction')).toBeNull()
     expect(navigate).not.toHaveBeenCalled()

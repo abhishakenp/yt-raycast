@@ -112,13 +112,11 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
-const { GovernmentPortalContact } = await import(
-  './GovernmentPortalContact.tsx'
-)
+const { GovernmentPortalContact } =
+  await import('./GovernmentPortalContact.tsx')
 
-const isInquiryInput = (
-  input: InquiryMutationInput,
-): input is InquiryInput => !('label' in input)
+const isInquiryInput = (input: InquiryMutationInput): input is InquiryInput =>
+  !('label' in input)
 
 function createInquiryLakebedStub() {
   let version = 0
@@ -276,8 +274,7 @@ describe('GovernmentPortalContact fullstack behavior', () => {
   it('submits the grievance form through the Lakebed inquiry mutation', async () => {
     const { inquiries, lakebed } = createInquiryLakebedStub()
     lakebedRef.current = lakebed
-    const Contact: InquiryComponent =
-      GovernmentPortalContact.client.component
+    const Contact: InquiryComponent = GovernmentPortalContact.client.component
 
     render(<Contact props={{}} />)
 
@@ -294,9 +291,7 @@ describe('GovernmentPortalContact fullstack behavior', () => {
       target: { value: 'My pension has not been credited for three months.' },
     })
 
-    const form = screen
-      .getByRole('button', { name: 'Submit' })
-      .closest('form')
+    const form = screen.getByRole('button', { name: 'Submit' }).closest('form')
     if (!form) throw new Error('Expected submit button inside a form')
     fireEvent.submit(form)
 
@@ -316,16 +311,13 @@ describe('GovernmentPortalContact fullstack behavior', () => {
         message: 'My pension has not been credited for three months.',
       }),
     )
-    expect(
-      screen.getAllByText(/1 total inquiry/i).length,
-    ).toBeGreaterThan(0)
+    expect(screen.getAllByText(/1 total inquiry/i).length).toBeGreaterThan(0)
   })
 
   it('keeps the officials directory and office address cards rendered', () => {
     const { lakebed } = createInquiryLakebedStub()
     lakebedRef.current = lakebed
-    const Contact: InquiryComponent =
-      GovernmentPortalContact.client.component
+    const Contact: InquiryComponent = GovernmentPortalContact.client.component
 
     render(<Contact props={{}} />)
 

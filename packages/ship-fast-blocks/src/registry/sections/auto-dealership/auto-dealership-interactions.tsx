@@ -215,9 +215,7 @@ export function AutoSearchButton({
                 }}
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    {vehicle.name}
-                  </p>
+                  <p className="truncate text-sm font-medium">{vehicle.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
                     {[vehicle.price, vehicle.specs, vehicle.badge]
                       .filter(Boolean)

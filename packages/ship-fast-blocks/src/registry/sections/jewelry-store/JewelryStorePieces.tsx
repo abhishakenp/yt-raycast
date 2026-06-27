@@ -122,13 +122,17 @@ export const JewelryStorePieces = defineCapsule({
         }),
       ),
     )
-    const visibleItems = useCommerceFilteredProducts(lakebed, items, (piece) => [
-      piece.title,
-      piece.spec,
-      piece.price,
-      piece.badge,
-      piece.imageAlt,
-    ])
+    const visibleItems = useCommerceFilteredProducts(
+      lakebed,
+      items,
+      (piece) => [
+        piece.title,
+        piece.spec,
+        piece.price,
+        piece.badge,
+        piece.imageAlt,
+      ],
+    )
 
     return (
       <section className={cn('bg-background py-32', props.className)}>

@@ -63,8 +63,7 @@ export const CrowdfundingFooter = defineCapsule({
     const footerSocials = props.socials?.length
       ? props.socials
       : ['Instagram', 'Twitter', 'YouTube']
-    const footerNote =
-      props.note ?? '© 2026 EcoBrush Inc. All rights reserved.'
+    const footerNote = props.note ?? '© 2026 EcoBrush Inc. All rights reserved.'
     const footerLegal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']

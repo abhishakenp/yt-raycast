@@ -108,7 +108,8 @@ const { ConstructionQuote } =
   await import('../construction/ConstructionQuote.tsx')
 const { EventPlannerContact } =
   await import('../event-planner/EventPlannerContact.tsx')
-const { EventPlannerHero } = await import('../event-planner/EventPlannerHero.tsx')
+const { EventPlannerHero } =
+  await import('../event-planner/EventPlannerHero.tsx')
 const { EventPlannerNavbar } =
   await import('../event-planner/EventPlannerNavbar.tsx')
 const { EventPlannerPricing } =
@@ -130,9 +131,8 @@ const submitButtonForm = (button: HTMLElement) => {
   fireEvent.submit(form)
 }
 
-const isInquiryInput = (
-  input: InquiryMutationInput,
-): input is InquiryInput => !isActionInput(input)
+const isInquiryInput = (input: InquiryMutationInput): input is InquiryInput =>
+  !isActionInput(input)
 
 const isActionInput = (
   input: InquiryMutationInput,
@@ -348,9 +348,7 @@ describe('inquiry submission capsules', () => {
 
     render(<Navbar props={{ nav: ['Services', 'FAQ'] }} />)
 
-    fireEvent.pointerDown(
-      screen.getByRole('button', { name: /shoo account/i }),
-    )
+    fireEvent.pointerDown(screen.getByRole('button', { name: /shoo account/i }))
     fireEvent.click(await screen.findByText('Sign in with Shoo'))
     expect(lakebed.signInWithGoogle).toHaveBeenCalledTimes(1)
     expect(navigate).not.toHaveBeenCalled()
@@ -403,9 +401,7 @@ describe('inquiry submission capsules', () => {
       </>,
     )
 
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Book Consultation' }),
-    )
+    fireEvent.click(screen.getByRole('button', { name: 'Book Consultation' }))
     await waitFor(() => expect(actions()).toHaveLength(1))
     expect(actions()[0]).toMatchObject({
       kind: 'cta',

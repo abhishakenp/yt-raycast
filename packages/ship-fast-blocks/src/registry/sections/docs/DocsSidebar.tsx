@@ -4,10 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { docsLakebed } from './docs-lakebed.ts'
-import {
-  useDocsSearch,
-  useSyncDocsCatalog,
-} from './docs-interactions.tsx'
+import { useDocsSearch, useSyncDocsCatalog } from './docs-interactions.tsx'
 
 /**
  * DocsSidebar — persistent left navigation sidebar for a developer
@@ -287,7 +284,9 @@ export const DocsSidebar = defineCapsule({
               <p className="px-2 py-1.5 text-xs text-muted-foreground">
                 {matchingArticles.length} article
                 {matchingArticles.length === 1 ? '' : 's'} match{' '}
-                <span className="font-medium text-foreground">{queryValue}</span>
+                <span className="font-medium text-foreground">
+                  {queryValue}
+                </span>
               </p>
               <ul className="max-h-60 overflow-y-auto">
                 {matchingArticles.map((article) => (

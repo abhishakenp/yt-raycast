@@ -124,12 +124,11 @@ export const BeautyStoreProducts = defineCapsule({
         }),
       ),
     )
-    const visibleItems = useCommerceFilteredProducts(lakebed, items, (product) => [
-      product.brand,
-      product.title,
-      product.price,
-      product.badge,
-    ])
+    const visibleItems = useCommerceFilteredProducts(
+      lakebed,
+      items,
+      (product) => [product.brand, product.title, product.price, product.badge],
+    )
 
     const Star = ({ className }: { className?: string }) => (
       <svg

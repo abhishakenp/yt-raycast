@@ -189,9 +189,8 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor, within } =
+  await import('@testing-library/react')
 
 function useTestMutation<TMutation>({
   lastError,
@@ -639,9 +638,7 @@ describe('hotel resort rendered section behavior', () => {
     )
 
     await waitFor(() => {
-      expect(state().rooms.map((room) => room.name)).toEqual([
-        'Coastal Suite',
-      ])
+      expect(state().rooms.map((room) => room.name)).toEqual(['Coastal Suite'])
     })
 
     fireEvent.click(screen.getByRole('button', { name: 'Hero Reserve' }))

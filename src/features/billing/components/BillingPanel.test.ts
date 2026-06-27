@@ -10,9 +10,8 @@ import { BillingPanel } from './BillingPanel'
  * imports) can reference the same `getToken` spy the tests assert against.
  */
 const auth = vi.hoisted(() => ({
-  getToken: vi.fn<
-    (options?: { template?: string }) => Promise<string | null>
-  >(),
+  getToken:
+    vi.fn<(options?: { template?: string }) => Promise<string | null>>(),
   isSignedIn: true,
 }))
 
@@ -43,7 +42,10 @@ describe('BillingPanel — Convex JWT usage', () => {
       const url = String(input)
       if (url.includes('/api/billing-overview')) {
         return Promise.resolve(
-          json({ credits: { remaining: 5 }, exportAccess: { unlocked: false } }),
+          json({
+            credits: { remaining: 5 },
+            exportAccess: { unlocked: false },
+          }),
         )
       }
       // checkout/start — return a subscription id so the component sets
@@ -84,9 +86,9 @@ describe('BillingPanel — Convex JWT usage', () => {
       expect(auth.getToken).toHaveBeenCalledTimes(1)
     })
 
-    const upgradeButton = Array.from(
-      document.querySelectorAll('button'),
-    ).find((b) => b.textContent?.includes('Upgrade to Pro'))!
+    const upgradeButton = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent?.includes('Upgrade to Pro'),
+    )!
     fireEvent.click(upgradeButton)
 
     await waitFor(() => {
@@ -123,9 +125,9 @@ describe('BillingPanel — Convex JWT usage', () => {
       expect(auth.getToken).toHaveBeenCalledTimes(1)
     })
 
-    const upgradeButton = Array.from(
-      document.querySelectorAll('button'),
-    ).find((b) => b.textContent?.includes('Upgrade to Pro'))!
+    const upgradeButton = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent?.includes('Upgrade to Pro'),
+    )!
     fireEvent.click(upgradeButton)
 
     await waitFor(() => {

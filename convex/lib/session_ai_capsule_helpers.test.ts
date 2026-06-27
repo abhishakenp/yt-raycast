@@ -37,12 +37,17 @@ const queryCtxFor = (rows: AiCapsuleRecord[] = []) => {
         throw new Error(`Unexpected table: ${table}`)
       }
       return {
-        withIndex: vi.fn((_index: string, apply: (q: typeof indexBuilder) => typeof indexBuilder) => {
-          apply(indexBuilder)
-          return {
-            collect: vi.fn(async () => rows),
-          }
-        }),
+        withIndex: vi.fn(
+          (
+            _index: string,
+            apply: (q: typeof indexBuilder) => typeof indexBuilder,
+          ) => {
+            apply(indexBuilder)
+            return {
+              collect: vi.fn(async () => rows),
+            }
+          },
+        ),
       }
     }),
   }
@@ -52,7 +57,10 @@ const queryCtxFor = (rows: AiCapsuleRecord[] = []) => {
 const mutationCtxFor = (existing: AiCapsuleRecord[] = []) => {
   const rows = [...existing]
   const inserted: AiCapsuleRecord[] = []
-  const patched: Array<{ id: Id<'aiCapsules'>; patch: Record<string, unknown> }> = []
+  const patched: Array<{
+    id: Id<'aiCapsules'>
+    patch: Record<string, unknown>
+  }> = []
   let nextId = 1
 
   const indexBuilder = {
@@ -64,12 +72,17 @@ const mutationCtxFor = (existing: AiCapsuleRecord[] = []) => {
         throw new Error(`Unexpected table: ${table}`)
       }
       return {
-        withIndex: vi.fn((_index: string, apply: (q: typeof indexBuilder) => typeof indexBuilder) => {
-          apply(indexBuilder)
-          return {
-            unique: vi.fn(async () => rows[0] ?? null),
-          }
-        }),
+        withIndex: vi.fn(
+          (
+            _index: string,
+            apply: (q: typeof indexBuilder) => typeof indexBuilder,
+          ) => {
+            apply(indexBuilder)
+            return {
+              unique: vi.fn(async () => rows[0] ?? null),
+            }
+          },
+        ),
       }
     }),
     insert: vi.fn(async (_table: string, doc: Record<string, unknown>) => {
@@ -79,11 +92,13 @@ const mutationCtxFor = (existing: AiCapsuleRecord[] = []) => {
       rows.push(record)
       return id
     }),
-    patch: vi.fn(async (id: Id<'aiCapsules'>, patch: Record<string, unknown>) => {
-      patched.push({ id, patch })
-      const row = rows.find((r) => r._id === id)
-      if (row) Object.assign(row, patch)
-    }),
+    patch: vi.fn(
+      async (id: Id<'aiCapsules'>, patch: Record<string, unknown>) => {
+        patched.push({ id, patch })
+        const row = rows.find((r) => r._id === id)
+        if (row) Object.assign(row, patch)
+      },
+    ),
   }
   return { db, inserted, patched } as unknown as MutationCtx & {
     inserted: AiCapsuleRecord[]
@@ -93,7 +108,10 @@ const mutationCtxFor = (existing: AiCapsuleRecord[] = []) => {
 
 describe('listSessionAiCapsules', () => {
   it('queries aiCapsules by sessionId', async () => {
-    const rows = [capsuleRow(), capsuleRow({ capsuleName: 'AICustom_BlogFooter_v1' })]
+    const rows = [
+      capsuleRow(),
+      capsuleRow({ capsuleName: 'AICustom_BlogFooter_v1' }),
+    ]
     const ctx = queryCtxFor(rows)
     const result = await listSessionAiCapsules(ctx, sessionId)
     expect(result).toHaveLength(2)

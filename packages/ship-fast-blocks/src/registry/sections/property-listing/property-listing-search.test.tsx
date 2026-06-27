@@ -188,7 +188,8 @@ const { PropertyListingHero } = await import('./PropertyListingHero.tsx')
 const { PropertyListingGallery } = await import('./PropertyListingGallery.tsx')
 const { PropertyListingNavbar } = await import('./PropertyListingNavbar.tsx')
 const { PropertyListingCta } = await import('./PropertyListingCta.tsx')
-const { PropertyListingOverview } = await import('./PropertyListingOverview.tsx')
+const { PropertyListingOverview } =
+  await import('./PropertyListingOverview.tsx')
 
 const now = '2026-06-26T00:00:00.000Z'
 

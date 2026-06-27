@@ -672,9 +672,9 @@ describe('SaaS fullstack generated section behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
 
     const dialog = screen.getByRole('dialog')
-    expect(within(dialog).getAllByRole('button', { name: 'Home' })).toHaveLength(
-      1,
-    )
+    expect(
+      within(dialog).getAllByRole('button', { name: 'Home' }),
+    ).toHaveLength(1)
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Home' }))
 
@@ -704,9 +704,11 @@ describe('SaaS fullstack generated section behavior', () => {
       },
       userId: 'google:avery',
     } satisfies TestAuthValue
-    const { lakebed, signInWithGoogle, signOut, state } = createSaasLakebedStub({
-      auth: signedInAuth,
-    })
+    const { lakebed, signInWithGoogle, signOut, state } = createSaasLakebedStub(
+      {
+        auth: signedInAuth,
+      },
+    )
     lakebedRef.current = lakebed
 
     function SaasProbe() {
@@ -753,7 +755,9 @@ describe('SaaS fullstack generated section behavior', () => {
 
     await waitFor(() => {
       expect(state().sessions).toEqual([])
-      expect(within(historyDialog).getByText('No sessions recorded')).toBeTruthy()
+      expect(
+        within(historyDialog).getByText('No sessions recorded'),
+      ).toBeTruthy()
     })
 
     const closeHistoryButton = within(historyDialog)

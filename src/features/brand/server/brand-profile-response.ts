@@ -45,9 +45,8 @@ const providerStatus = (value: number | undefined): number =>
 
 const loadDefaultBrandProfileResolver =
   async (): Promise<BrandProfileResolver> => {
-    const { resolveBrandfetchBrandProfile } = await import(
-      '@ship-fast/engine/brandfetch.js'
-    )
+    const { resolveBrandfetchBrandProfile } =
+      await import('@ship-fast/engine/brandfetch.js')
 
     return resolveBrandfetchBrandProfile
   }

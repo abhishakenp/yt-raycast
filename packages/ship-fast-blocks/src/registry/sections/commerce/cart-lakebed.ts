@@ -205,24 +205,22 @@ export const commerceCartLakebed = {
 
       return []
     }),
-    setCommerceSearch: commerce.mutation(
-      (_ctx, input: CommerceSearchInput) => {
-        const query = clean(input.query)
-        const selectedLabel = clean(input.selectedLabel)
-        const current = _ctx.db.state.orderBy('createdAt').all().at(0)
-        const next = { query, selectedLabel }
+    setCommerceSearch: commerce.mutation((_ctx, input: CommerceSearchInput) => {
+      const query = clean(input.query)
+      const selectedLabel = clean(input.selectedLabel)
+      const current = _ctx.db.state.orderBy('createdAt').all().at(0)
+      const next = { query, selectedLabel }
 
-        if (current) {
-          _ctx.db.state.update(current.id, next)
-        } else {
-          _ctx.db.state.insert(next)
-        }
+      if (current) {
+        _ctx.db.state.update(current.id, next)
+      } else {
+        _ctx.db.state.insert(next)
+      }
 
-        _ctx.db.searches.insert(next)
+      _ctx.db.searches.insert(next)
 
-        return _ctx.db.state.orderBy('createdAt').all()
-      },
-    ),
+      return _ctx.db.state.orderBy('createdAt').all()
+    }),
     syncCatalog: commerce.mutation(
       (_ctx, input: { products: CommerceCatalogProductInput[] }) => {
         for (const product of input.products) {

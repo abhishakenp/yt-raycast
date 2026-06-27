@@ -40,11 +40,7 @@ export function SectionPromptToolbar({
   const { refs, floatingStyles } = useFloating({
     open: isOpen,
     placement: 'bottom-start',
-    middleware: [
-      offset(8),
-      flip({ padding: 8 }),
-      shift({ padding: 8 }),
-    ],
+    middleware: [offset(8), flip({ padding: 8 }), shift({ padding: 8 })],
     whileElementsMounted: autoUpdate,
   })
 

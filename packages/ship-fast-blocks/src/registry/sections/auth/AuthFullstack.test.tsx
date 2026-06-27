@@ -680,9 +680,11 @@ describe('auth fullstack generated section behavior', () => {
       },
       userId: 'google:avery',
     } satisfies TestAuthValue
-    const { lakebed, signInWithGoogle, signOut, state } = createAuthLakebedStub({
-      auth: signedInAuth,
-    })
+    const { lakebed, signInWithGoogle, signOut, state } = createAuthLakebedStub(
+      {
+        auth: signedInAuth,
+      },
+    )
     lakebedRef.current = lakebed
 
     function AuthProbe() {
@@ -729,7 +731,9 @@ describe('auth fullstack generated section behavior', () => {
 
     await waitFor(() => {
       expect(state().sessions).toEqual([])
-      expect(within(historyDialog).getByText('No sessions recorded')).toBeTruthy()
+      expect(
+        within(historyDialog).getByText('No sessions recorded'),
+      ).toBeTruthy()
     })
 
     const closeHistoryButton = within(historyDialog)

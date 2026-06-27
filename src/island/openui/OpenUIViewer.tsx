@@ -273,12 +273,19 @@ export default function OpenUIViewer({
   )
   const aiCapsules: AiCapsuleRecord[] | undefined = useMemo(() => {
     if (!aiCapsulesQuery) return undefined
-    return aiCapsulesQuery.map((row: { capsuleName: string; parentCapsule: string; compiledJs: string; description: string }) => ({
-      capsuleName: row.capsuleName,
-      parentCapsule: row.parentCapsule,
-      compiledJs: row.compiledJs,
-      description: row.description,
-    }))
+    return aiCapsulesQuery.map(
+      (row: {
+        capsuleName: string
+        parentCapsule: string
+        compiledJs: string
+        description: string
+      }) => ({
+        capsuleName: row.capsuleName,
+        parentCapsule: row.parentCapsule,
+        compiledJs: row.compiledJs,
+        description: row.description,
+      }),
+    )
   }, [aiCapsulesQuery])
   const runtimeLibraryKey = useMemo(
     () => getOpenUIRuntimeLibraryCacheKey(preparedResponse, aiCapsules),

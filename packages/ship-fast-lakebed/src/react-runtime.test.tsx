@@ -35,8 +35,8 @@ const mocks = vi.hoisted(() => {
 })
 
 vi.mock('convex/react', () => ({
-  useMutation: () =>
-    async (input: { data?: JsonRecord; patch?: JsonRecord }) => {
+  useMutation:
+    () => async (input: { data?: JsonRecord; patch?: JsonRecord }) => {
       if (!mocks.sessionState) throw new Error('Missing session state')
 
       if ('data' in input && input.data) {
@@ -65,16 +65,9 @@ vi.mock('convex/react', () => ({
   useQuery: () => mocks.sessionState,
 }))
 
-const {
-  createLakebedClient,
-  LakebedSessionProvider,
-  useKeyedLakebedMutation,
-} = await import('./react.tsx')
-const {
-  createLakebedDefinition,
-  string,
-  table,
-} = await import('./server.ts')
+const { createLakebedClient, LakebedSessionProvider, useKeyedLakebedMutation } =
+  await import('./react.tsx')
+const { createLakebedDefinition, string, table } = await import('./server.ts')
 
 const cartDefinition = createLakebedDefinition({
   items: {
@@ -161,22 +154,25 @@ describe('createLakebedClient mutation runtime', () => {
   })
 
   it('serializes concurrent mutations against the latest capsule data snapshot', async () => {
-    const { result } = renderHook(() => {
-      const lakebed = useMemo(
-        () =>
-          createLakebedClient({
-            capsule: 'CommerceCart',
-            definition: cartLakebed,
-            props: {},
-          }),
-        [],
-      )
+    const { result } = renderHook(
+      () => {
+        const lakebed = useMemo(
+          () =>
+            createLakebedClient({
+              capsule: 'CommerceCart',
+              definition: cartLakebed,
+              props: {},
+            }),
+          [],
+        )
 
-      return {
-        addFirst: lakebed.useMutation('addItem'),
-        addSecond: lakebed.useMutation('addItem'),
-      }
-    }, { wrapper })
+        return {
+          addFirst: lakebed.useMutation('addItem'),
+          addSecond: lakebed.useMutation('addItem'),
+        }
+      },
+      { wrapper },
+    )
 
     await act(async () => {
       await Promise.all([
@@ -203,22 +199,25 @@ describe('createLakebedClient mutation runtime', () => {
 
   it('reports pending only for the mutation currently executing from the queue', async () => {
     const deferred = createDeferred()
-    const { result } = renderHook(() => {
-      const lakebed = useMemo(
-        () =>
-          createLakebedClient({
-            capsule: 'CommerceCart',
-            definition: cartLakebed,
-            props: {},
-          }),
-        [],
-      )
+    const { result } = renderHook(
+      () => {
+        const lakebed = useMemo(
+          () =>
+            createLakebedClient({
+              capsule: 'CommerceCart',
+              definition: cartLakebed,
+              props: {},
+            }),
+          [],
+        )
 
-      return {
-        queuedAdd: lakebed.useMutation('addItem'),
-        runningAdd: lakebed.useMutation('waitAndAddItem'),
-      }
-    }, { wrapper })
+        return {
+          queuedAdd: lakebed.useMutation('addItem'),
+          runningAdd: lakebed.useMutation('waitAndAddItem'),
+        }
+      },
+      { wrapper },
+    )
 
     let runningAddPromise: Promise<unknown> | undefined
     let queuedAddPromise: Promise<unknown> | undefined
@@ -255,22 +254,25 @@ describe('createLakebedClient mutation runtime', () => {
 
   it('keeps keyed visual pending scoped to queued mutation execution', async () => {
     const deferred = createDeferred()
-    const { result } = renderHook(() => {
-      const lakebed = useMemo(
-        () =>
-          createLakebedClient({
-            capsule: 'CommerceCart',
-            definition: cartLakebed,
-            props: {},
-          }),
-        [],
-      )
+    const { result } = renderHook(
+      () => {
+        const lakebed = useMemo(
+          () =>
+            createLakebedClient({
+              capsule: 'CommerceCart',
+              definition: cartLakebed,
+              props: {},
+            }),
+          [],
+        )
 
-      return {
-        keyedAdd: useKeyedLakebedMutation(lakebed, 'addItem'),
-        runningAdd: lakebed.useMutation('waitAndAddItem'),
-      }
-    }, { wrapper })
+        return {
+          keyedAdd: useKeyedLakebedMutation(lakebed, 'addItem'),
+          runningAdd: lakebed.useMutation('waitAndAddItem'),
+        }
+      },
+      { wrapper },
+    )
 
     let runningAddPromise: Promise<unknown> | undefined
     let firstQueuedAddPromise: Promise<unknown> | undefined

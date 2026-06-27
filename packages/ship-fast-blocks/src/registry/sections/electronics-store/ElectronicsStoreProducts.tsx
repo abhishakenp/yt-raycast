@@ -137,12 +137,16 @@ export const ElectronicsStoreProducts = defineCapsule({
         }),
       ),
     )
-    const visibleItems = useCommerceFilteredProducts(lakebed, items, (product) => [
-      product.title,
-      product.subtitle,
-      product.price,
-      product.badge,
-    ])
+    const visibleItems = useCommerceFilteredProducts(
+      lakebed,
+      items,
+      (product) => [
+        product.title,
+        product.subtitle,
+        product.price,
+        product.badge,
+      ],
+    )
 
     const ArrowRight = () => (
       <svg

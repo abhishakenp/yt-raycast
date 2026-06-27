@@ -162,7 +162,9 @@ describe('composePage (valid by construction, no fallback)', () => {
     expect(await auditOk(src)).toBe(true)
     expect(page.rootRef).toBe('home')
     expect(page.sections.length).toBeGreaterThan(0)
-    expect(page.sections.every((s) => s.component.startsWith(family.name))).toBe(true)
+    expect(
+      page.sections.every((s) => s.component.startsWith(family.name)),
+    ).toBe(true)
   })
 
   it('still produces VALID OpenUI when the model returns empty/garbage (degrades, never breaks)', async () => {
@@ -219,7 +221,9 @@ describe('runV2ComposedGeneration', () => {
     expect(result.theme).toBeTruthy()
     expect(result.brand.length).toBeGreaterThan(0)
     // home page exists and is composed via Stack
-    expect(result.pages.some((p) => p.id === 'home' && p.rootRef === 'home')).toBe(true)
+    expect(
+      result.pages.some((p) => p.id === 'home' && p.rootRef === 'home'),
+    ).toBe(true)
   })
 
   it('keeps SaaS brand prompts on the website composer path', async () => {
@@ -241,7 +245,9 @@ describe('runV2ComposedGeneration', () => {
     // website composer path never emits State primitives (only family components)
     expect(
       result.pages.every((p) =>
-        p.sections.every((s) => !/^State(Button|Input|Text)$/.test(s.component)),
+        p.sections.every(
+          (s) => !/^State(Button|Input|Text)$/.test(s.component),
+        ),
       ),
     ).toBe(true)
   })

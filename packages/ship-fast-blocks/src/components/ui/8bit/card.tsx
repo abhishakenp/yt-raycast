@@ -27,8 +27,7 @@ export const cardVariants = cva('', {
 })
 
 export interface BitCardProps
-  extends React.ComponentProps<'div'>,
-    VariantProps<typeof cardVariants> {
+  extends React.ComponentProps<'div'>, VariantProps<typeof cardVariants> {
   asChild?: boolean
 }
 

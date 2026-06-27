@@ -57,9 +57,8 @@ const buildGitHubFiles = async (
   download?: BuiltExport
 }> => {
   try {
-    const { buildOpenUIArtifactFiles } = await import(
-      '../src/features/exports/services/openui-artifact-files'
-    )
+    const { buildOpenUIArtifactFiles } =
+      await import('../src/features/exports/services/openui-artifact-files')
     return await buildOpenUIArtifactFiles({
       source: prepared.source,
       siteSpecJson: prepared.siteSpecJson,
@@ -92,9 +91,8 @@ const buildDownload = async (
     download?: BuiltExport
   },
 ): Promise<BuiltExport> => {
-  const { buildDownloadFromArtifactFiles } = await import(
-    '../src/features/exports/services/openui-artifact-files'
-  )
+  const { buildDownloadFromArtifactFiles } =
+    await import('../src/features/exports/services/openui-artifact-files')
   return await buildDownloadFromArtifactFiles(
     {
       source: prepared.source,
@@ -121,9 +119,8 @@ const deployLakebedIfRequested = async (
   }
 
   try {
-    const { deployLakebedProjectFiles } = await import(
-      '../src/features/deployments/server/lakebed-deploy-service'
-    )
+    const { deployLakebedProjectFiles } =
+      await import('../src/features/deployments/server/lakebed-deploy-service')
     const deployed = await deployLakebedProjectFiles({ files })
     await ctx.runMutation(internal.sessions.recordLakebedDeploymentSuccess, {
       sessionId: prepared.sessionId,

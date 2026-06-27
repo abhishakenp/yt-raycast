@@ -380,11 +380,10 @@ describe('image hints media hydration', () => {
     const progressEvents: ResolverProgressEvent[] = []
 
     try {
-      const { resolvePexelsImageHints } = (await import(
-        './image-hints.js'
-      )) as unknown as {
-        resolvePexelsImageHints: ResolvePexelsImageHints
-      }
+      const { resolvePexelsImageHints } =
+        (await import('./image-hints.js')) as unknown as {
+          resolvePexelsImageHints: ResolvePexelsImageHints
+        }
 
       const resolved = await resolvePexelsImageHints(
         {

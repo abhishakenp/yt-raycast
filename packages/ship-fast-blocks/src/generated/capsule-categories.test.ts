@@ -59,16 +59,16 @@ describe('@ship-fast/blocks generated package subpaths', () => {
   })
 
   it('imports capsule category helpers through the package export map', async () => {
-    const module = await import('@ship-fast/blocks/generated/capsule-categories')
+    const module =
+      await import('@ship-fast/blocks/generated/capsule-categories')
 
     expect(module.findSimilarCapsules('SaasHero').length).toBeGreaterThan(0)
     expect(module.capsuleCategories['SaasHero']?.functionalType).toBe('Hero')
   })
 
   it('imports runtime component loaders through the package export map', async () => {
-    const module = await import(
-      '@ship-fast/blocks/generated/runtime-component-loaders'
-    )
+    const module =
+      await import('@ship-fast/blocks/generated/runtime-component-loaders')
 
     expect(typeof module.runtimeComponentLoaders.SaasHero).toBe('function')
   })

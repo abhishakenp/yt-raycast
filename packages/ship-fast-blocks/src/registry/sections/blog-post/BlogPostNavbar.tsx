@@ -40,7 +40,7 @@ const FeatherMark = ({ className }: { className?: string }) => (
 export const BlogPostNavbar = defineCapsule({
   name: 'BlogPostNavbar',
   description:
-    "Sticky reading-page header for a single-article / editorial blog page: a feather/pen wordmark, centered desktop nav links, command article search, a Shoo profile dropdown, a Lakebed subscribe drawer, and a real mobile drawer on small screens. Clean editorial voice. Use as the sticky site header for a blog post, magazine article, journal, or any editorial publication detail page.",
+    'Sticky reading-page header for a single-article / editorial blog page: a feather/pen wordmark, centered desktop nav links, command article search, a Shoo profile dropdown, a Lakebed subscribe drawer, and a real mobile drawer on small screens. Clean editorial voice. Use as the sticky site header for a blog post, magazine article, journal, or any editorial publication detail page.',
   props: z.object({
     /** Publication / brand name shown in the navbar. */
     brand: z.string().optional(),

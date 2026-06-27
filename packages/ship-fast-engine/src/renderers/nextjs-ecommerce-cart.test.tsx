@@ -48,8 +48,7 @@ vi.mock('framer-motion', async () => {
           ...props
         },
         ref,
-      ) =>
-        React.createElement(tag, { ...props, ref }, children),
+      ) => React.createElement(tag, { ...props, ref }, children),
     )
 
   return {
@@ -86,9 +85,8 @@ for (const key of [
   })
 }
 
-const { act, cleanup, fireEvent, render, screen, waitFor } = await import(
-  '@testing-library/react'
-)
+const { act, cleanup, fireEvent, render, screen, waitFor } =
+  await import('@testing-library/react')
 const React = await import('react')
 
 type GeneratedCartProviderModule = {

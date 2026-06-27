@@ -95,7 +95,10 @@ export function resolveRouteTarget(
     (/program|course|curriculum/.test(normalized) &&
       find(/program|course|curriculum/, /program|curriculum/)) ||
     (/lookbook|collection/.test(normalized) &&
-      find(/lookbook|collection|shop|product/, /lookbook|collection|product/)) ||
+      find(
+        /lookbook|collection|shop|product/,
+        /lookbook|collection|product/,
+      )) ||
     (/speaker|agenda|venue|ticket/.test(normalized) &&
       find(
         /speaker|agenda|venue|ticket|schedule/,

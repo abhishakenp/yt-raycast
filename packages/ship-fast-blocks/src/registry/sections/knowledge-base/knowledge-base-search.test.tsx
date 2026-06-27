@@ -315,16 +315,18 @@ describe('knowledge base fullstack search', () => {
 
     render(<Hero props={{}} statementId="kb_hero" />)
 
-    expect(screen.getByRole('search', { name: 'Knowledge base search' })).toBeTruthy()
+    expect(
+      screen.getByRole('search', { name: 'Knowledge base search' }),
+    ).toBeTruthy()
 
     fireEvent.change(screen.getByLabelText('Search help articles'), {
       target: { value: 'Billing' },
     })
-    fireEvent.submit(screen.getByRole('search', { name: 'Knowledge base search' }))
-
-    await waitFor(() =>
-      expect(state()).toMatchObject({ query: 'Billing' }),
+    fireEvent.submit(
+      screen.getByRole('search', { name: 'Knowledge base search' }),
     )
+
+    await waitFor(() => expect(state()).toMatchObject({ query: 'Billing' }))
     expect(searches()).toHaveLength(1)
     expect(searches()[0]).toMatchObject({ query: 'Billing' })
 
@@ -340,13 +342,13 @@ describe('knowledge base fullstack search', () => {
 
     render(<Hero props={{}} statementId="kb_hero" />)
 
-    expect(screen.getByRole('search', { name: 'Knowledge base search' })).toBeTruthy()
+    expect(
+      screen.getByRole('search', { name: 'Knowledge base search' }),
+    ).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: 'API keys' }))
 
-    await waitFor(() =>
-      expect(state()).toMatchObject({ query: 'API keys' }),
-    )
+    await waitFor(() => expect(state()).toMatchObject({ query: 'API keys' }))
     expect(screen.getByText('Generating and rotating API keys')).toBeTruthy()
     expect(screen.queryByText('Billing and subscription plans')).toBeNull()
     expect(navigate).not.toHaveBeenCalled()

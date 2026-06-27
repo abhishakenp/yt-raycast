@@ -164,8 +164,7 @@ function createLogisticsLakebedStub() {
     const trackingId = state?.trackingId ?? ''
     const shipment = trackingId
       ? shipments.find(
-          (item) =>
-            item.trackingId.toLowerCase() === trackingId.toLowerCase(),
+          (item) => item.trackingId.toLowerCase() === trackingId.toLowerCase(),
         )
       : undefined
     return { searches, shipment, trackingId }

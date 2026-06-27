@@ -4,7 +4,10 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { logisticsLakebed } from './logistics-lakebed.ts'
-import { useShipmentTracking, useSyncShipmentCatalog } from './logistics-interactions.tsx'
+import {
+  useShipmentTracking,
+  useSyncShipmentCatalog,
+} from './logistics-interactions.tsx'
 
 /**
  * LogisticsHero — a split hero for a global-logistics / freight-forwarding

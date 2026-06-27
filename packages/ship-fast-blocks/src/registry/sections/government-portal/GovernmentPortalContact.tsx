@@ -90,8 +90,7 @@ export const GovernmentPortalContact = defineCapsule({
     const inquiry = useInquirySubmission({
       lakebed,
       source: 'Government portal grievance',
-      successMessage:
-        'Thank you — your enquiry has been received.',
+      successMessage: 'Thank you — your enquiry has been received.',
     })
 
     const fieldClass =

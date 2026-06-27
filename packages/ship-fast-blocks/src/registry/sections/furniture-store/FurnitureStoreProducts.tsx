@@ -111,13 +111,17 @@ export const FurnitureStoreProducts = defineCapsule({
         }),
       ),
     )
-    const visibleItems = useCommerceFilteredProducts(lakebed, items, (product) => [
-      product.name,
-      product.variant,
-      product.price,
-      product.oldPrice,
-      product.badge,
-    ])
+    const visibleItems = useCommerceFilteredProducts(
+      lakebed,
+      items,
+      (product) => [
+        product.name,
+        product.variant,
+        product.price,
+        product.oldPrice,
+        product.badge,
+      ],
+    )
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg

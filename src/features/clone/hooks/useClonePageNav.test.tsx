@@ -16,11 +16,14 @@ type CloneHookState = {
     byteLength: number
     truncated?: boolean
   }>
-  previews: Record<string, {
-    html: string | null
-    url: string | null
-    version: number
-  }>
+  previews: Record<
+    string,
+    {
+      html: string | null
+      url: string | null
+      version: number
+    }
+  >
 }
 
 const getState = (): CloneHookState => {

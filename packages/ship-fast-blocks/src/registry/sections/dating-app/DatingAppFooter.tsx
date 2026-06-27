@@ -66,8 +66,7 @@ export const DatingAppFooter = defineCapsule({
     const socials = props.socials?.length
       ? props.socials
       : ['Twitter', 'Instagram', 'LinkedIn']
-    const footerNote =
-      props.note ?? `© 2024 ${brand} Inc. All rights reserved.`
+    const footerNote = props.note ?? `© 2024 ${brand} Inc. All rights reserved.`
     const footerLegal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']

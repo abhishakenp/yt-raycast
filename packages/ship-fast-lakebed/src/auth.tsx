@@ -49,8 +49,10 @@ export interface PkceBundle {
   verifier: string
 }
 
-export interface SignInWithGoogleProps
-  extends Omit<ComponentPropsWithoutRef<'button'>, 'children' | 'onClick'> {
+export interface SignInWithGoogleProps extends Omit<
+  ComponentPropsWithoutRef<'button'>,
+  'children' | 'onClick'
+> {
   callbackPath?: string
   children?: ReactNode
   clientId?: string

@@ -84,20 +84,18 @@ export const inquiryLakebed = {
     }),
   },
   mutations: {
-    recordContactAction: inquiry.mutation(
-      (_ctx, input: InquiryActionInput) => {
-        const label = clean(input.label) || 'Contact'
+    recordContactAction: inquiry.mutation((_ctx, input: InquiryActionInput) => {
+      const label = clean(input.label) || 'Contact'
 
-        _ctx.db.actions.insert({
-          kind: clean(input.kind) || 'contact',
-          label,
-          source: clean(input.source),
-          target: clean(input.target),
-        })
+      _ctx.db.actions.insert({
+        kind: clean(input.kind) || 'contact',
+        label,
+        source: clean(input.source),
+        target: clean(input.target),
+      })
 
-        return _ctx.db.actions.orderBy('createdAt').all()
-      },
-    ),
+      return _ctx.db.actions.orderBy('createdAt').all()
+    }),
     submitInquiry: inquiry.mutation((_ctx, input: InquirySubmissionInput) => {
       const fields = input.fields ?? {}
       const email = normalizeEmail(

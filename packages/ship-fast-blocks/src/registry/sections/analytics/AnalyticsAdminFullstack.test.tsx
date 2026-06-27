@@ -386,7 +386,11 @@ describe('analytics admin fullstack behavior', () => {
     const notificationsDialog = await screen.findByRole('dialog', {
       name: 'Notifications',
     })
-    expect(within(notificationsDialog).getByText('Weekly revenue report is ready to review')).toBeTruthy()
+    expect(
+      within(notificationsDialog).getByText(
+        'Weekly revenue report is ready to review',
+      ),
+    ).toBeTruthy()
     fireEvent.click(
       within(notificationsDialog).getAllByRole('button', {
         name: 'Mark read',
@@ -407,13 +411,13 @@ describe('analytics admin fullstack behavior', () => {
     await waitFor(() => {
       expect(state().notifications).toHaveLength(0)
     })
-    fireEvent.click(within(notificationsDialog).getByRole('button', { name: 'Close' }))
+    fireEvent.click(
+      within(notificationsDialog).getByRole('button', { name: 'Close' }),
+    )
 
     const searchInput = screen.getByLabelText('Search analytics')
     fireEvent.change(searchInput, { target: { value: 'revenue' } })
-    fireEvent.submit(
-      screen.getByRole('search', { name: 'Analytics search' }),
-    )
+    fireEvent.submit(screen.getByRole('search', { name: 'Analytics search' }))
     fireEvent.click(screen.getByRole('button', { name: 'Date filter' }))
     fireEvent.click(screen.getByRole('button', { name: 'Export' }))
 

@@ -124,7 +124,10 @@ type LakebedMutationCoordinator = {
   queue: Promise<unknown>
 }
 
-const lakebedMutationCoordinators = new Map<string, LakebedMutationCoordinator>()
+const lakebedMutationCoordinators = new Map<
+  string,
+  LakebedMutationCoordinator
+>()
 
 const mutationCoordinatorKey = ({
   anonymousOwnerSecret,
@@ -653,8 +656,9 @@ export function createLakebedClient<
         if (data !== null) coordinator.data = data as JsonRecord
       }, [coordinator, data])
 
-      type ActiveMutation =
-        LakebedMutationsOf<NonNullable<TDefinition>>[typeof name]
+      type ActiveMutation = LakebedMutationsOf<
+        NonNullable<TDefinition>
+      >[typeof name]
 
       const runMutationWithLifecycle = useCallback(
         async (

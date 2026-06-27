@@ -3,7 +3,10 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { knowledgeBaseLakebed } from './knowledge-base-lakebed.ts'
-import { useKbSearch, useSyncKbCatalog } from './knowledge-base-interactions.tsx'
+import {
+  useKbSearch,
+  useSyncKbCatalog,
+} from './knowledge-base-interactions.tsx'
 
 /**
  * KnowledgeBaseHero — centered help-center hero on a raised card surface. A

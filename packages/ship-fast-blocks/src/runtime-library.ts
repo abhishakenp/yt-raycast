@@ -4,7 +4,11 @@ import {
   type SectionRenderer,
 } from '@ship-fast/lakebed/react'
 import { z } from 'zod/v4'
-import { createLibrary, defineCapsule, type ShipFastCapsule } from './capsules/openui.ts'
+import {
+  createLibrary,
+  defineCapsule,
+  type ShipFastCapsule,
+} from './capsules/openui.ts'
 import {
   runtimeComponentLoaders,
   type RuntimeComponentName,
@@ -125,7 +129,9 @@ const aiCapsuleCache = new Map<string, Promise<ShipFastCapsule>>()
  *  The compiled JS references globalThis.React and globalThis.__jsxRuntime
  *  instead of importing 'react', so it can be loaded via Blob URL without
  *  an import map. */
-export function loadAiCapsule(record: AiCapsuleRecord): Promise<ShipFastCapsule> {
+export function loadAiCapsule(
+  record: AiCapsuleRecord,
+): Promise<ShipFastCapsule> {
   let cached = aiCapsuleCache.get(record.capsuleName)
   if (!cached) {
     cached = (async () => {

@@ -127,8 +127,9 @@ const Avatar = forwardRef<
 })
 Avatar.displayName = AvatarPrimitive.Root.displayName
 
-interface BitAvatarImageProps
-  extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image> {
+interface BitAvatarImageProps extends React.ComponentPropsWithoutRef<
+  typeof AvatarPrimitive.Image
+> {
   font?: 'normal' | 'retro'
   variant?: 'default' | 'retro' | 'pixel'
 }

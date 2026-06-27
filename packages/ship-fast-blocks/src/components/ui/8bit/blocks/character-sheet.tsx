@@ -56,7 +56,8 @@ export const characterSheetVariants = cva('', {
 })
 
 export interface CharacterSheetProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof characterSheetVariants> {
   characterName: string
   characterClass?: string

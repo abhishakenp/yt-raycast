@@ -80,13 +80,10 @@ describe('static HTML fragment exports', () => {
           {
             name: 'react-router-dom-stub',
             setup(pluginBuild) {
-              pluginBuild.onResolve(
-                { filter: /^react-router-dom$/ },
-                () => ({
-                  namespace: 'react-router-dom-stub',
-                  path: 'react-router-dom',
-                }),
-              )
+              pluginBuild.onResolve({ filter: /^react-router-dom$/ }, () => ({
+                namespace: 'react-router-dom-stub',
+                path: 'react-router-dom',
+              }))
               pluginBuild.onLoad(
                 {
                   filter: /^react-router-dom$/,

@@ -121,7 +121,10 @@ const schemaFieldDefaultValue = ({
       const schemaInitializer = schemaName
         ? objectProperty(node.initializer, schemaName)?.initializer
         : node.initializer
-      if (!schemaInitializer || !ts.isObjectLiteralExpression(schemaInitializer)) {
+      if (
+        !schemaInitializer ||
+        !ts.isObjectLiteralExpression(schemaInitializer)
+      ) {
         return
       }
       const tableProperty = objectProperty(schemaInitializer, tableName)
@@ -627,7 +630,9 @@ export function signOut() {}
         target: 'lakebed',
       })
 
-      expect(built.files[`client/components/${componentName}.tsx`]).toBeDefined()
+      expect(
+        built.files[`client/components/${componentName}.tsx`],
+      ).toBeDefined()
       for (const fileName of sectionKitFiles) {
         expect(built.files[`client/section-kit/${fileName}.tsx`]).toBeDefined()
       }

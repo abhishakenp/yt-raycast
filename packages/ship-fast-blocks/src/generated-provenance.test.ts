@@ -68,9 +68,9 @@ describe('generated OpenUI artifact provenance', () => {
     expect(provenance.componentCount).toBeGreaterThan(1_000)
     // The exported runtime names (direct module import) must match the
     // provenance manifest exactly — no regex extraction from source text.
-    expect(provenance.components.map(({ name }) => name)).toEqual(
-      [...runtimeComponentNames],
-    )
+    expect(provenance.components.map(({ name }) => name)).toEqual([
+      ...runtimeComponentNames,
+    ])
     expect(provenance.components).toContainEqual({
       name: 'Stack',
       sourceFile: 'src/registry/primitives/layout.tsx',

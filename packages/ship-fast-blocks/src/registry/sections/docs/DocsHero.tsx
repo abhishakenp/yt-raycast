@@ -4,10 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { docsLakebed } from './docs-lakebed.ts'
-import {
-  useDocsSearch,
-  useSyncDocsCatalog,
-} from './docs-interactions.tsx'
+import { useDocsSearch, useSyncDocsCatalog } from './docs-interactions.tsx'
 
 /**
  * DocsHero — search-forward hero band for a developer DOCUMENTATION / API-reference

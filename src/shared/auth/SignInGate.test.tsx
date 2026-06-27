@@ -49,7 +49,6 @@ afterEach(() => {
 })
 
 describe('SignInGate', () => {
-
   describe('when signed out', () => {
     it('renders the locked fallback', () => {
       setAuth(true, false)
@@ -122,7 +121,11 @@ describe('SignInGate', () => {
 })
 
 describe('useSignInGate', () => {
-  const Probe = ({ onValue }: { onValue: (v: ReturnType<typeof useSignInGate>) => void }) => {
+  const Probe = ({
+    onValue,
+  }: {
+    onValue: (v: ReturnType<typeof useSignInGate>) => void
+  }) => {
     onValue(useSignInGate())
     return null
   }

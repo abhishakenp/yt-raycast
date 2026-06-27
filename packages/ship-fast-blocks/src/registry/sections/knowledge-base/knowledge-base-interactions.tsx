@@ -8,8 +8,9 @@ import type {
   KnowledgeBaseSearchInput,
 } from './knowledge-base-lakebed.ts'
 
-export type KnowledgeBaseLakebed =
-  LakebedClientRuntime<typeof knowledgeBaseLakebed>
+export type KnowledgeBaseLakebed = LakebedClientRuntime<
+  typeof knowledgeBaseLakebed
+>
 
 export const kbArticleItem = ({
   category,

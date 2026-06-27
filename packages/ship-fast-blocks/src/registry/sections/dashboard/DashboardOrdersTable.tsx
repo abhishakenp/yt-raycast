@@ -260,7 +260,8 @@ export const DashboardOrdersTable = defineCapsule({
                 const date = row.date ?? row.eta ?? ''
                 const amount = row.amount ?? row.priority ?? ''
                 const status = row.status ?? 'Active'
-                const tone = statusTones[row.statusTone ?? 'sky'] ?? statusTones.sky
+                const tone =
+                  statusTones[row.statusTone ?? 'sky'] ?? statusTones.sky
                 const initial = customer.charAt(0).toUpperCase()
                 const rowActionKey = `complete:${row.dbId || id}`
                 const rowPending = setOrderStatus.isPending(rowActionKey)

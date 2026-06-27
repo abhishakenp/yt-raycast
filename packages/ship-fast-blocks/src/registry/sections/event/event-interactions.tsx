@@ -127,8 +127,9 @@ export function EventRegistrationBadge({
   className?: string
   lakebed: EventLakebed
 }) {
-  const summary: EventRegistrationSummary | null =
-    lakebed.useQuery('registrationSummary')
+  const summary: EventRegistrationSummary | null = lakebed.useQuery(
+    'registrationSummary',
+  )
   const label = summary?.currentTier || summary?.currentLabel
 
   if (!label) return null

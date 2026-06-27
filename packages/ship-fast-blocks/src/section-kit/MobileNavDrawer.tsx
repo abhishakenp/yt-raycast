@@ -47,8 +47,7 @@ export function MobileNavDrawer({
     return navLabel && navLabel.toLowerCase() !== normalizedHomeLabel
   })
   const close = () => setOpen(false)
-  const footerContent =
-    typeof footer === 'function' ? footer(close) : footer
+  const footerContent = typeof footer === 'function' ? footer(close) : footer
 
   const navigate = (target: string) => {
     close()
