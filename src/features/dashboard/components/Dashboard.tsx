@@ -1188,7 +1188,10 @@ export function Dashboard({
                         ? 'border-cyan-300/30 bg-cyan-300/14 text-cyan-100'
                         : 'border-white/10 bg-white/[0.055]',
                     )}
-                    onClick={toggleAdminView}
+                    onClick={() => {
+                      if (!requireSignInForEdit()) return
+                      toggleAdminView()
+                    }}
                     data-tip={
                       isAdminActive ? 'View generated site' : 'Open auto admin'
                     }
@@ -1203,7 +1206,10 @@ export function Dashboard({
                     type="button"
                     className="dashboard-publish-button inline-flex h-9 items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/12 px-3 text-xs font-bold text-cyan-100 transition-colors hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-45"
                     disabled={!isPreviewReady || isPublishing}
-                    onClick={() => void handlePublish()}
+                    onClick={() => {
+                      if (!requireSignInForEdit()) return
+                      void handlePublish()
+                    }}
                     data-tip={
                       publishedUrl
                         ? 'Republish latest preview'

@@ -719,6 +719,10 @@ describe('Dashboard missing session state', () => {
     // The pencil (inline-edit) toggle is gated by requireSignInForEdit.
     expect(source).toContain('if (!requireSignInForEdit()) return')
 
+    // The topbar admin + publish/deploy controls are also gated.
+    expect(source).toContain('if (!requireSignInForEdit()) return\n                      toggleAdminView()')
+    expect(source).toContain('if (!requireSignInForEdit()) return\n                      void handlePublish()')
+
     // Every declared rail action must be wrapped by a SignInGate. We pair each
     // data-rail-action occurrence with a preceding <SignInGate opening tag by
     // scanning the source in order.
