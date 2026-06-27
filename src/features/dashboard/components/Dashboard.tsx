@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from 'convex/react'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Activity,
@@ -13,6 +13,7 @@ import {
   Github,
   Globe2,
   Languages,
+  Lock,
   MessageSquare,
   Package,
   Palette,
@@ -48,6 +49,7 @@ import {
 } from '@/components/ui/popover'
 import ThemePicker from '@/genui/components/ThemePicker'
 import { resolveThemeStyles } from '@/genui/theme-apply'
+import { SignInGate, useSignInGate } from '@/shared/auth/SignInGate'
 import { cn } from '#/lib/utils'
 
 const LakebedAdminPanel = lazy(() =>
@@ -161,6 +163,56 @@ const newBadgeClass =
 
 const stateBadgeClass =
   'shrink-0 rounded-md border border-white/12 bg-black/30 px-1.5 py-[3px] font-mono text-[9px] font-bold leading-none tracking-[0.04em] text-white/60'
+
+const lockBadgeClass =
+  'grid size-5 shrink-0 place-items-center rounded-md border border-white/12 bg-white/[0.06] text-white/56'
+
+type RailLockedButtonProps = {
+  label: string
+  icon: ReactNode
+  badges?: ReactNode
+  sublabel?: string
+}
+
+/**
+ * Locked fallback for a gated siderail item. Mirrors the real rail row's
+ * styling (icon tile + label + optional sublabel + badges) but adds a lock
+ * glyph and routes the click to the Clerk sign-in modal via `useSignInGate`.
+ * Rendered by `<SignInGate locked={...}>` when the user is signed out.
+ */
+const RailLockedButton = ({
+  label,
+  icon,
+  badges,
+  sublabel,
+}: RailLockedButtonProps) => {
+  const { openSignIn } = useSignInGate()
+  return (
+    <button
+      type="button"
+      className={railRowClass}
+      aria-label={`${label} — sign in to unlock`}
+      aria-haspopup="dialog"
+      onClick={openSignIn}
+    >
+      <span className={railIconClass} aria-hidden="true">
+        {icon}
+      </span>
+      <span className="grid min-w-0 flex-1 gap-0.5">
+        <span className="truncate">{label}</span>
+        {sublabel ? (
+          <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
+            {sublabel}
+          </span>
+        ) : null}
+      </span>
+      {badges}
+      <span className={lockBadgeClass} aria-hidden="true">
+        <Lock className="size-3" strokeWidth={2} />
+      </span>
+    </button>
+  )
+}
 
 const formatThemeName = (
   name: string | { styles?: unknown } | null | undefined,
@@ -322,6 +374,7 @@ export function Dashboard({
     'desktop' | 'tablet' | 'mobile'
   >('desktop')
   const [editMode, setEditMode] = useState(false)
+  const { requireSignIn: requireSignInForEdit } = useSignInGate()
   const commitTextEditRef = useRef<(() => void) | null>(null)
   const handleCommitTextReady = useCallback((fn: () => void) => {
     commitTextEditRef.current = fn
@@ -1317,7 +1370,10 @@ export function Dashboard({
                       data-tip="Edit"
                       aria-label="Toggle inline edit mode"
                       aria-pressed={editMode}
-                      onClick={() => setEditMode((mode) => !mode)}
+                      onClick={() => {
+                        if (!requireSignInForEdit()) return
+                        setEditMode((mode) => !mode)
+                      }}
                     >
                       <Edit3 className="size-4" aria-hidden="true" />
                     </button>
@@ -1434,6 +1490,15 @@ export function Dashboard({
                     <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">
                       Manage content
                     </div>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="Edit content"
+                          icon={<Edit3 className="size-3.5" strokeWidth={1.9} />}
+                          badges={<span className={newBadgeClass}>NEW</span>}
+                        />
+                      }
+                    >
                     <Popover>
                       <PopoverTrigger asChild>
                         <button
@@ -1490,6 +1555,16 @@ export function Dashboard({
                         </Suspense>
                       </PopoverContent>
                     </Popover>
+                    </SignInGate>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="Chat refine"
+                          icon={<MessageSquare className="size-3.5" strokeWidth={1.9} />}
+                          badges={<span className={newBadgeClass}>AI</span>}
+                        />
+                      }
+                    >
                     <button
                       type="button"
                       className={railRowClass}
@@ -1503,6 +1578,15 @@ export function Dashboard({
                       </span>
                       <span className={newBadgeClass}>AI</span>
                     </button>
+                    </SignInGate>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="Annotations"
+                          icon={<Bot className="size-3.5" strokeWidth={1.9} />}
+                        />
+                      }
+                    >
                     <button
                       type="button"
                       className={railRowClass}
@@ -1515,6 +1599,15 @@ export function Dashboard({
                         Annotations
                       </span>
                     </button>
+                    </SignInGate>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="Activity"
+                          icon={<Activity className="size-3.5" strokeWidth={1.9} />}
+                        />
+                      }
+                    >
                     <button
                       type="button"
                       className={railRowClass}
@@ -1525,6 +1618,29 @@ export function Dashboard({
                       </span>
                       <span className="min-w-0 flex-1 truncate">Activity</span>
                     </button>
+                    </SignInGate>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="E-commerce"
+                          icon={<Package className="size-3.5" strokeWidth={1.9} />}
+                          badges={
+                            <>
+                              <span className={newBadgeClass}>
+                                {commerceConfig?.status === 'ready' ? 'READY' : 'NEW'}
+                              </span>
+                              <span
+                                className={premiumBadgeClass}
+                                aria-label="Pro only - upgrade to unlock"
+                                tabIndex={0}
+                              >
+                                {crownIcon}
+                              </span>
+                            </>
+                          }
+                        />
+                      }
+                    >
                     <Popover>
                       <PopoverTrigger asChild>
                         <button
@@ -1568,11 +1684,21 @@ export function Dashboard({
                         </Suspense>
                       </PopoverContent>
                     </Popover>
+                    </SignInGate>
                   </div>
                   <div className="grid gap-2">
                     <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">
                       Design
                     </div>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="Theme"
+                          icon={<Palette className="size-3.5" strokeWidth={1.9} />}
+                          sublabel={activeThemeLabel}
+                        />
+                      }
+                    >
                     <ThemePicker
                       value={effectiveTheme}
                       isDark={isDark}
@@ -1634,6 +1760,16 @@ export function Dashboard({
                         </button>
                       }
                     />
+                    </SignInGate>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="Brand and media"
+                          icon={<Building2 className="size-3.5" strokeWidth={1.9} />}
+                          sublabel="Brandfetch / Pexels"
+                        />
+                      }
+                    >
                     <button
                       type="button"
                       className={railRowClass}
@@ -1649,6 +1785,19 @@ export function Dashboard({
                         </span>
                       </span>
                     </button>
+                    </SignInGate>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="Localization"
+                          icon={<Languages className="size-3.5" strokeWidth={1.9} />}
+                          sublabel={
+                            generationView?.session.preferredLanguage ??
+                            'default locale'
+                          }
+                        />
+                      }
+                    >
                     <button
                       type="button"
                       className={railRowClass}
@@ -1665,6 +1814,24 @@ export function Dashboard({
                         </span>
                       </span>
                     </button>
+                    </SignInGate>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="GitHub"
+                          icon={<Github className="size-3.5" strokeWidth={1.9} />}
+                          badges={
+                            <span
+                              className={premiumBadgeClass}
+                              aria-label="Pro only - upgrade to unlock"
+                              tabIndex={0}
+                            >
+                              {crownIcon}
+                            </span>
+                          }
+                        />
+                      }
+                    >
                     <Popover>
                       <PopoverTrigger asChild>
                         <button
@@ -1699,6 +1866,24 @@ export function Dashboard({
                         </Suspense>
                       </PopoverContent>
                     </Popover>
+                    </SignInGate>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="Billing"
+                          icon={<CreditCard className="size-3.5" strokeWidth={1.9} />}
+                          badges={
+                            <span
+                              className={premiumBadgeClass}
+                              aria-label="Pro only - upgrade to unlock"
+                              tabIndex={0}
+                            >
+                              {crownIcon}
+                            </span>
+                          }
+                        />
+                      }
+                    >
                     <button
                       type="button"
                       className={railRowClass}
@@ -1716,6 +1901,27 @@ export function Dashboard({
                         {crownIcon}
                       </span>
                     </button>
+                    </SignInGate>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="Export"
+                          icon={<Download className="size-3.5" strokeWidth={1.9} />}
+                          sublabel="HTML / React / Next.js"
+                          badges={
+                            <div
+                              className={cn(
+                                stateBadgeClass,
+                                'bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)]',
+                              )}
+                              data-state="premium"
+                            >
+                              <span className="text-[#0a0a0b]">Pro only</span>
+                            </div>
+                          }
+                        />
+                      }
+                    >
                     <Popover>
                       <PopoverTrigger asChild>
                         <button
@@ -1755,6 +1961,16 @@ export function Dashboard({
                         </Suspense>
                       </PopoverContent>
                     </Popover>
+                    </SignInGate>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="Deployment URL"
+                          icon={<Globe2 className="size-3.5" strokeWidth={1.9} />}
+                          sublabel={deploymentStatus?.slug ?? 'publish slug'}
+                        />
+                      }
+                    >
                     <Popover>
                       <PopoverTrigger asChild>
                         <button
@@ -1785,11 +2001,30 @@ export function Dashboard({
                         </Suspense>
                       </PopoverContent>
                     </Popover>
+                    </SignInGate>
                   </div>
                   <div className="grid gap-2">
                     <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">
                       Three JS
                     </div>
+                    <SignInGate
+                      locked={
+                        <RailLockedButton
+                          label="3D"
+                          icon={<Box className="size-3.5" strokeWidth={1.9} />}
+                          badges={
+                            <span
+                              className={cn(
+                                stateBadgeClass,
+                                'bg-white/[0.06] text-white/38',
+                              )}
+                            >
+                              SOON
+                            </span>
+                          }
+                        />
+                      }
+                    >
                     <button
                       type="button"
                       className={cn(
@@ -1818,6 +2053,7 @@ export function Dashboard({
                         SOON
                       </span>
                     </button>
+                    </SignInGate>
                   </div>
                 </div>
                 <div
