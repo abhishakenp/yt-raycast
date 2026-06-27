@@ -82,12 +82,13 @@ describe('inline edit — overrides applied at render', () => {
     expect(imageSrc).toContain('overrideSrc')
   })
 
-  it('DirectPreview re-applies style and text overrides and re-runs on subtree mutations', () => {
+  it('DirectPreview re-applies style overrides and re-runs on subtree mutations', () => {
     const src = read('src/components/GenUI/DirectPreview.tsx')
     expect(src).toContain('styleOverrides')
-    expect(src).toContain('textOverrides')
+    // Text edits now persist in homeModule.source (server patches it), so
+    // DirectPreview no longer applies client-side text overrides.
+    expect(src).not.toContain('textOverrides')
     expect(src).toContain('setProperty')
-    expect(src).toContain('applyPreviewTextEdit')
     expect(src).toContain('MutationObserver')
   })
 
@@ -123,15 +124,21 @@ describe('inline edit — server anchors & persistence (convex)', () => {
     expect(fn).toContain('class="')
   })
 
-  it('all edit types (text, image, style) skip artifact mutation and use override pattern', () => {
+  it('text edits patch canonical artifacts; image/style use the snapshot+override pattern', () => {
+    // Text edits MUST patch homeModule.source + siteSpec (the Dashboard renders
+    // from homeModule.source, so an unpatched source makes edits vanish on
+    // reload). Image/style edits keep the snapshot pattern and replay via
+    // client-side override maps.
     expect(editMutationHelpers).toContain(
-      'All edit types now use the same pattern',
+      'applyTextEditToCurrentArtifacts',
+    )
+    expect(editMutationHelpers).toContain(
+      "args.editType !== 'style'",
+    )
+    expect(editMutationHelpers).toContain(
+      "args.editType !== 'image'",
     )
     expect(editMutationHelpers).toContain('snapshotCurrentArtifacts')
-    // The function still exists for legacy reasons but is no longer called
-    expect(editMutationHelpers).toContain(
-      'artifactSnapshot = await snapshotCurrentArtifacts',
-    )
   })
 
   it('records every edit (incl. image) with its occurrenceIndex for override rebuild', () => {
