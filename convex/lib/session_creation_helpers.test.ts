@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs'
-
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { Doc } from '../_generated/dataModel'
@@ -19,6 +17,24 @@ import {
   RATE_WINDOW_MS,
   SHARE_BONUS_EXTRA,
 } from '../../src/billing/constants'
+
+type MutationHandler<Args> = (ctx: MutationCtx, args: Args) => Promise<unknown>
+
+type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
+
+type CreateGenerationSessionArgs = {
+  prompt: string
+  preferredLanguage: string
+  preferredExportTarget: ExportTarget
+  isPrivate: boolean
+  workspace: string
+  anonymousOwnerSecret?: string
+  anonymousClientId?: string
+  designReferenceUrls?: string[]
+  designReferenceNotes?: string
+  cloneUrl?: string
+  engineVersion?: string
+}
 
 type QueryTable = 'sessions' | 'subscriptions'
 type QueryRows = {
@@ -601,25 +617,43 @@ describe('session creation helpers', () => {
     expect(runAfter).not.toHaveBeenCalled()
   })
 
-  it('keeps create mutation delegated to creation helpers', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
-    const helperSource = readFileSync(
-      'convex/lib/session_creation_helpers.ts',
-      'utf8',
-    )
-
-    expect(sessionsSource).toContain('handler: (ctx, args) =>')
-    expect(sessionsSource).toContain('createGenerationSession(ctx, args, {')
-    expect(sessionsSource).not.toContain('const disableLimits =')
-    expect(helperSource).toContain('await loadGenerationAdmission(ctx, {')
-    expect(helperSource).toContain(
-      'await findIdempotentWorkspaceSession(ctx, {',
-    )
-    expect(helperSource).toContain(
-      'await findReusablePromptCacheSession(ctx, promptCacheKey)',
-    )
-    expect(sessionsSource).not.toContain(
-      'const recentCutoff = now - RATE_WINDOW_MS',
-    )
+  it('create handler delegates to createGenerationSession helper with references', async () => {
+    vi.resetModules()
+    vi.doMock('./session_creation_helpers', () => ({
+      createGenerationSession: vi.fn(async () => ({
+        sessionId: 's1',
+        cached: false,
+      })),
+    }))
+    try {
+      const { create } = await import('../sessions')
+      const mockedModule = await import('./session_creation_helpers')
+      const mockedCreateGenerationSession = vi.mocked(
+        mockedModule.createGenerationSession,
+      )
+      const ctx = { db: {} } as unknown as MutationCtx
+      const args: CreateGenerationSessionArgs = {
+        prompt: 'build a site',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: 'ws1',
+      }
+      const handler =
+        create as unknown as MutationHandler<CreateGenerationSessionArgs>
+      await handler(ctx, args)
+      expect(mockedCreateGenerationSession).toHaveBeenCalledTimes(1)
+      const [callCtx, callArgs, refs] =
+        mockedCreateGenerationSession.mock.calls[0]
+      expect(callCtx).toBe(ctx)
+      expect(callArgs).toBe(args)
+      expect(refs).toMatchObject({
+        startGeneration: expect.anything(),
+        sendOperationalNotification: expect.anything(),
+      })
+    } finally {
+      vi.doUnmock('./session_creation_helpers')
+      vi.resetModules()
+    }
   })
 })

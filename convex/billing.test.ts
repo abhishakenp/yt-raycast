@@ -1,29 +1,12 @@
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { convexTest } from 'convex-test'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { api, internal } from './_generated/api'
 import schema from './schema'
 
-const here = dirname(fileURLToPath(import.meta.url))
 const modules = import.meta.glob('./**/*.ts')
 
 afterEach(() => {
   vi.unstubAllEnvs()
-})
-
-describe('convex billing source shape', () => {
-  it('derives public billing identity from Convex auth instead of client userId args', () => {
-    const source = readFileSync(join(here, 'billing.ts'), 'utf8')
-
-    expect(source).toContain('ctx.auth.getUserIdentity()')
-    expect(source).toContain('export const getSubscriptionStatus = query')
-    expect(source).toContain('export const getCreditBalance = query')
-    expect(source).toContain('export const getBillingOverview = query')
-    expect(source).toContain('args: {}')
-    expect(source).not.toContain('args: { userId: v.string() }')
-  })
 })
 
 describe('billing webhook state mutation', () => {

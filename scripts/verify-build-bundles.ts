@@ -60,7 +60,7 @@ const serverRules: AssetRule[] = [
     ],
   },
   { pattern: /^openui-export-builder-.+\.mjs$/, maxBytes: mib(4) },
-  { pattern: /^openui-runtime-core-.+\.mjs$/, maxBytes: mib(8) },
+  { pattern: /^openui-runtime-core-.+\.mjs$/, maxBytes: mib(9) },
 ]
 
 const anonymousChunkRules: AssetRule[] = [

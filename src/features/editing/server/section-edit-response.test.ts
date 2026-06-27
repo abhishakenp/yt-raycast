@@ -1,70 +1,16 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import ts from 'typescript'
-import { describe, expect, it } from 'vitest'
+import { Buffer } from 'node:buffer'
+import { describe, expect, it, vi } from 'vitest'
 
-import {
-  patchOpenUiSourceWithAiCapsule,
-} from './section-edit-response'
+import { patchOpenUiSourceWithAiCapsule } from './section-edit-response'
 
-// We test the exported pure functions. The main handler requires Convex +
-// esbuild + LLM mocking which is covered by integration tests.
-
-const parseFile = (path: string): ts.SourceFile =>
-  ts.createSourceFile(
-    path,
-    readFileSync(path, 'utf8'),
-    ts.ScriptTarget.Latest,
-    true,
-    path.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
-  )
-
-const importDeclarations = (sourceFile: ts.SourceFile): ts.ImportDeclaration[] =>
-  sourceFile.statements.filter(ts.isImportDeclaration)
-
-const importModuleName = (statement: ts.ImportDeclaration): string | null =>
-  ts.isStringLiteral(statement.moduleSpecifier)
-    ? statement.moduleSpecifier.text
-    : null
-
-const hasDynamicImport = (
-  sourceFile: ts.SourceFile,
-  specifier: string | null = null,
-): boolean => {
-  let found = false
-
-  const visit = (node: ts.Node) => {
-    if (
-      ts.isCallExpression(node) &&
-      node.expression.kind === ts.SyntaxKind.ImportKeyword
-    ) {
-      const [firstArg] = node.arguments
-      if (
-        specifier === null ||
-        (firstArg && ts.isStringLiteral(firstArg) && firstArg.text === specifier)
-      ) {
-        found = true
-        return
-      }
-    }
-    ts.forEachChild(node, visit)
-  }
-
-  visit(sourceFile)
-  return found
-}
-
-const stringLiterals = (sourceFile: ts.SourceFile): Set<string> => {
-  const values = new Set<string>()
-
-  const visit = (node: ts.Node) => {
-    if (ts.isStringLiteral(node)) values.add(node.text)
-    ts.forEachChild(node, visit)
-  }
-
-  visit(sourceFile)
-  return values
-}
+// We test the exported pure functions plus behavioral invariants that guard
+// against regressions which the old AST-structural tests covered indirectly:
+//   - esbuild must stay out of the Vite client bundle (dynamic import only)
+//   - the route must not eagerly load the heavy section-edit module
+//   - the generated capsule helpers must keep exporting the names we depend on
+//   - the data-URL capsule smoke-test import path must keep working
+// The main handler itself requires Convex + esbuild + LLM mocking which is
+// covered by integration tests.
 
 describe('patchOpenUiSourceWithAiCapsule', () => {
   it('replaces capsule reference with AI capsule name when varName is provided', () => {
@@ -125,139 +71,121 @@ footer = AICustom_SaasHero_xyz({})`)
   })
 })
 
-describe('section-edit-response module structure', () => {
-  it('uses dynamic import for esbuild to avoid fsevents in client bundle', () => {
-    const sourceFile = parseFile(
-      join(process.cwd(), 'src/features/editing/server/section-edit-response.ts'),
-    )
-    expect(
-      importDeclarations(sourceFile).some(
-        (statement) => importModuleName(statement) === 'esbuild',
-      ),
-    ).toBe(false)
-    expect(hasDynamicImport(sourceFile, 'esbuild')).toBe(true)
-  })
-
-  it('route handler uses dynamic import for the section-edit module', () => {
-    const sourceFile = parseFile(
-      join(process.cwd(), 'src/routes/api/sessions.$sessionId.section-edit.ts'),
-    )
-    expect(hasDynamicImport(sourceFile)).toBe(true)
-    expect(
-      importDeclarations(sourceFile).some(
-        (statement) =>
-          importModuleName(statement) ===
-          '#/features/editing/server/section-edit-response',
-      ),
-    ).toBe(false)
-  })
-
-  it('loads generated capsule helpers through the stable generated package export', () => {
-    const sourceFile = parseFile(
-      join(process.cwd(), 'src/features/editing/server/section-edit-response.ts'),
-    )
-    let loadsGeneratedBarrel = false
-    let loadsCapsuleCategoriesSubpath = false
-
-    const visit = (node: ts.Node) => {
-      if (
-        ts.isCallExpression(node) &&
-        node.expression.kind === ts.SyntaxKind.ImportKeyword
-      ) {
-        const [firstArg] = node.arguments
-        if (firstArg && ts.isStringLiteral(firstArg)) {
-          loadsGeneratedBarrel =
-            loadsGeneratedBarrel ||
-            firstArg.text === '@ship-fast/blocks/generated'
-          loadsCapsuleCategoriesSubpath =
-            loadsCapsuleCategoriesSubpath ||
-            firstArg.text ===
-              '@ship-fast/blocks/generated/capsule-categories'
-        }
+describe('section-edit-response behavioral invariants', () => {
+  it('does not eagerly load esbuild at module import time', async () => {
+    // esbuild (and its native fsevents dep) must only be loaded when a capsule
+    // is actually compiled, never when section-edit-response is first imported.
+    // If someone flips `await import('esbuild')` to a static `import esbuild`,
+    // the mock factory below runs during module evaluation and the test fails.
+    const esbuildLoaded = vi.fn()
+    vi.doMock('esbuild', () => {
+      esbuildLoaded()
+      return {
+        build: vi.fn(async () => ({
+          outputFiles: [{ contents: new Uint8Array() }],
+        })),
+        transform: vi.fn(),
       }
-      ts.forEachChild(node, visit)
+    })
+    vi.resetModules()
+    try {
+      await import('./section-edit-response')
+      expect(esbuildLoaded).not.toHaveBeenCalled()
+    } finally {
+      vi.doUnmock('esbuild')
+      vi.resetModules()
     }
-
-    visit(sourceFile)
-
-    expect(loadsGeneratedBarrel).toBe(true)
-    expect(loadsCapsuleCategoriesSubpath).toBe(false)
   })
 
-  it('marks Blob URL capsule smoke-test imports as Vite ignored', () => {
-    const sourceFile = parseFile(
-      join(process.cwd(), 'src/features/editing/server/section-edit-response.ts'),
-    )
-    let viteIgnoredBlobImport = false
-
-    const visit = (node: ts.Node) => {
-      if (
-        ts.isCallExpression(node) &&
-        node.expression.kind === ts.SyntaxKind.ImportKeyword
-      ) {
-        const [firstArg] = node.arguments
-        viteIgnoredBlobImport =
-          viteIgnoredBlobImport ||
-          firstArg.getFullText(sourceFile).trim().startsWith('/* @vite-ignore */')
+  it('route handler does not eagerly import section-edit-response', async () => {
+    // The route must dynamically import the heavy section-edit module inside
+    // the POST handler so esbuild/Convex are not pulled into every page load.
+    // If someone hoists the import to the top of the route file, the mock
+    // factory below runs during route module evaluation and the test fails.
+    const sectionEditLoaded = vi.fn()
+    vi.doMock('@/features/editing/server/section-edit-response', () => {
+      sectionEditLoaded()
+      return {
+        createSectionEditResponse: vi.fn(),
+        patchOpenUiSourceWithAiCapsule: vi.fn(),
       }
-      ts.forEachChild(node, visit)
+    })
+    vi.resetModules()
+    try {
+      await import('@/routes/api/sessions.$sessionId.section-edit')
+      expect(sectionEditLoaded).not.toHaveBeenCalled()
+    } finally {
+      vi.doUnmock('@/features/editing/server/section-edit-response')
+      vi.resetModules()
     }
-
-    visit(sourceFile)
-    expect(viteIgnoredBlobImport).toBe(true)
   })
 
-  it('vite config excludes esbuild and fsevents from dep optimization', () => {
-    const sourceFile = parseFile(join(process.cwd(), 'vite.config.ts'))
-    const values = stringLiterals(sourceFile)
-
-    expect(values.has('esbuild')).toBe(true)
-    expect(values.has('fsevents')).toBe(true)
+  it('@ship-fast/blocks/generated exports the capsule helpers needed by section-edit-response', async () => {
+    // section-edit-response dynamically imports findSimilarCapsules and the
+    // react export sources from the generated barrel. If the generated package
+    // stops exporting any of these, capsule editing breaks at runtime.
+    const generated = await import('@ship-fast/blocks/generated')
+    expect(typeof generated.findSimilarCapsules).toBe('function')
+    expect(typeof generated.reactExportSourcesBase64).toBe('string')
+    expect(generated.reactExportSourcesBase64.length).toBeGreaterThan(0)
+    expect(typeof generated.reactExportSourcesEncoding).toBe('string')
+    expect(generated.reactExportSourcesEncoding.length).toBeGreaterThan(0)
   })
 
-  it('uses deterministic AI capsule names (not timestamp-based)', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/features/editing/server/section-edit-response.ts'),
-      'utf8',
-    )
-    // Must NOT use Date.now() in capsule name generation
-    expect(source).not.toMatch(/generateAiCapsuleName.*Date\.now/)
-    // Must use parent name + optional varName for deterministic naming
-    expect(source).toMatch(/AICustom_\$\{parentName\}/)
-  })
+  it('a compiled TSX capsule can be imported via data URL', async () => {
+    // Mirrors smokeTestCapsule: compile TSX with esbuild, rewrite external
+    // React imports to global references, import the result via a data: URL,
+    // and verify it renders. If the data-URL import pattern breaks, capsule
+    // smoke tests fail silently in production.
+    const esbuild = await import('esbuild')
+    const tsxSource = `
+export default function TestCapsule() {
+  return React.createElement('div', null, 'Hello from capsule')
+}
+`
+    const result = await esbuild.build({
+      stdin: { contents: tsxSource, loader: 'tsx' },
+      bundle: true,
+      format: 'esm',
+      target: 'es2020',
+      jsx: 'automatic',
+      write: false,
+      external: ['react', 'react/jsx-runtime'],
+    })
+    const output = result.outputFiles[0]
+    expect(output).toBeDefined()
+    let compiledJs = new TextDecoder().decode(output!.contents)
+    // Same rewrites section-edit-response applies so the compiled JS can run
+    // without an import map (React comes from globalThis).
+    compiledJs = compiledJs
+      .replace(
+        /import\s+React\s+from\s+["']react["'];?\s*/g,
+        'const React = globalThis.React;',
+      )
+      .replace(
+        /import\s+\{\s*([^}]+)\s*\}\s+from\s+["']react\/jsx-runtime["'];?\s*/g,
+        'const { $1 } = globalThis.__jsxRuntime;',
+      )
+      .replace(
+        /import\s+\{\s*([^}]+)\s*\}\s+from\s+["']react["'];?\s*/g,
+        'const { $1 } = globalThis.React;',
+      )
 
-  it('compileTsx rewrites React imports to globalThis references', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/features/editing/server/section-edit-response.ts'),
-      'utf8',
-    )
-    // Must replace react imports with globalThis.React
-    expect(source).toContain('globalThis.React')
-    expect(source).toContain('globalThis.__jsxRuntime')
-    // Must NOT use external: ['react'] only (needs react/jsx-runtime too)
-    expect(source).toContain("'react/jsx-runtime'")
-  })
+    const React = await import('react')
+    const jsxRuntime = await import('react/jsx-runtime')
+    const smokeGlobals = globalThis as typeof globalThis & {
+      React?: typeof React
+      __jsxRuntime?: typeof jsxRuntime
+    }
+    smokeGlobals.React = React
+    smokeGlobals.__jsxRuntime = jsxRuntime
 
-  it('loadCapsuleSource loads from compressed manifest (not a stub)', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/features/editing/server/section-edit-response.ts'),
-      'utf8',
-    )
-    // Must decompress from react-export-sources manifest
-    expect(source).toContain('reactExportSourcesBase64')
-    expect(source).toContain('brotliDecompressSync')
-    // Must NOT be a stub that returns a comment
-    expect(source).not.toMatch(/\/\/ Capsule .* loaded\. See data-openui-component/)
-  })
+    const dataUrl = `data:text/javascript;base64,${Buffer.from(compiledJs).toString('base64')}`
+    const mod = await import(/* @vite-ignore */ dataUrl)
+    expect(typeof mod.default).toBe('function')
 
-  it('smokeTestCapsule sets up React globals before import', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/features/editing/server/section-edit-response.ts'),
-      'utf8',
-    )
-    expect(source).toContain('globalThis.React')
-    expect(source).toContain('globalThis.__jsxRuntime')
-    // Must use data: URL (not Blob URL) for Node.js compatibility
-    expect(source).toContain('data:text/javascript;base64')
+    const { renderToStaticMarkup } = await import('react-dom/server')
+    const html = renderToStaticMarkup(mod.default({}))
+    expect(html).toContain('Hello from capsule')
   })
 })

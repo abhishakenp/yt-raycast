@@ -1,7 +1,4 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
@@ -11,6 +8,19 @@ import {
   loadPublicGallerySession,
   serializePublicGallerySession,
 } from './session_gallery_helpers'
+
+type QueryHandler<Args> = (ctx: QueryCtx, args: Args) => Promise<unknown>
+
+type PublicGallerySessionsArgs = {
+  limit?: number
+  page?: number
+  search?: string
+  category?: string
+}
+
+type PublicGallerySessionArgs = {
+  sessionId: string
+}
 
 type GeneratedModuleRecord = Doc<'generatedModules'>
 type PreviewRecord = Doc<'previews'>
@@ -380,25 +390,60 @@ describe('loadPublicGallerySession', () => {
 })
 
 describe('public gallery query delegation', () => {
-  it('keeps list/detail gallery query orchestration out of convex/sessions.ts', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'convex/sessions.ts'),
-      'utf8',
-    )
+  it('listPublicSessions handler delegates to listPublicGallerySessions helper', async () => {
+    vi.resetModules()
+    vi.doMock('./session_gallery_helpers', () => ({
+      listPublicGallerySessions: vi.fn(async () => []),
+      loadPublicGallerySession: vi.fn(async () => null),
+    }))
+    try {
+      const { listPublicSessions } = await import('../sessions')
+      const mockedModule = await import('./session_gallery_helpers')
+      const mockedListPublicGallerySessions = vi.mocked(
+        mockedModule.listPublicGallerySessions,
+      )
+      const ctx = { db: {} } as unknown as QueryCtx
+      const args: PublicGallerySessionsArgs = {
+        limit: 10,
+        page: 1,
+      }
+      const handler =
+        listPublicSessions as unknown as QueryHandler<PublicGallerySessionsArgs>
+      await handler(ctx, args)
+      expect(mockedListPublicGallerySessions).toHaveBeenCalledWith(ctx, args)
+    } finally {
+      vi.doUnmock('./session_gallery_helpers')
+      vi.resetModules()
+    }
+  })
 
-    expect(source).toContain('listPublicGallerySessions')
-    expect(source).toContain('loadPublicGallerySession')
-    expect(source).not.toContain('by_public_createdAt')
-    const listHandler = source.slice(
-      source.indexOf('export const listPublicSessions'),
-      source.indexOf('export const getPublicGallerySession'),
-    )
-    const detailHandler = source.slice(
-      source.indexOf('export const getPublicGallerySession'),
-      source.indexOf('export const getDeploymentBySlug'),
-    )
-    expect(listHandler).not.toContain('normalizeId')
-    expect(detailHandler).not.toContain('normalizeId')
+  it('getPublicGallerySession handler delegates to loadPublicGallerySession helper with sessionId', async () => {
+    vi.resetModules()
+    vi.doMock('./session_gallery_helpers', () => ({
+      listPublicGallerySessions: vi.fn(async () => []),
+      loadPublicGallerySession: vi.fn(async () => null),
+    }))
+    try {
+      const { getPublicGallerySession } = await import('../sessions')
+      const mockedModule = await import('./session_gallery_helpers')
+      const mockedLoadPublicGallerySession = vi.mocked(
+        mockedModule.loadPublicGallerySession,
+      )
+      const ctx = { db: {} } as unknown as QueryCtx
+      const args: PublicGallerySessionArgs = {
+        sessionId: 's1',
+      }
+      const handler =
+        getPublicGallerySession as unknown as QueryHandler<PublicGallerySessionArgs>
+      await handler(ctx, args)
+      expect(mockedLoadPublicGallerySession).toHaveBeenCalledWith(
+        ctx,
+        args.sessionId,
+      )
+    } finally {
+      vi.doUnmock('./session_gallery_helpers')
+      vi.resetModules()
+    }
   })
 })
 

@@ -69,6 +69,31 @@ if (
   document.head.appendChild(style)
 }
 
+/**
+ * Apply a completed translation to its text node: always clear the shimmer
+ * styling (even when the translation equals the original text — the original
+ * bug kept shimmer active in that case, hiding the text), and only overwrite
+ * `textContent` when the translation actually changed. Exported for behavioral
+ * testing of the shimmer-removal contract.
+ */
+export function applyTranslationResult(
+  parent: HTMLElement | null,
+  node: Text,
+  data: string,
+  text: string,
+): void {
+  if (parent) {
+    parent.classList.remove('sf-shimmer-loading')
+    parent.style.backgroundImage = ''
+    parent.style.backgroundClip = ''
+    parent.style.webkitBackgroundClip = ''
+    parent.style.color = ''
+  }
+  if (data !== text) {
+    node.textContent = data
+  }
+}
+
 // Single text node translator - uses React Query, updates DOM when done
 function TranslatedTextNode({
   text,
@@ -95,18 +120,7 @@ function TranslatedTextNode({
       }
     } else if (data) {
       // Remove shimmer (always remove when we have data, even if unchanged)
-      const parent = node.parentElement
-      if (parent) {
-        parent.classList.remove('sf-shimmer-loading')
-        parent.style.backgroundImage = ''
-        parent.style.backgroundClip = ''
-        parent.style.webkitBackgroundClip = ''
-        parent.style.color = ''
-      }
-      // Only update text content if it actually changed
-      if (data !== text) {
-        node.textContent = data
-      }
+      applyTranslationResult(node.parentElement, node, data, text)
     }
   }, [data, isLoading, text, node])
 

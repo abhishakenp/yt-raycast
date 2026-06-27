@@ -12,7 +12,6 @@ import {
   isSessionOwner,
   setSessionThemeOverride,
 } from './session_access_helpers'
-import { readFileSync } from 'node:fs'
 
 vi.mock('./session_export_helpers', () => ({
   areExportPaywallsDisabled: vi.fn(),
@@ -391,25 +390,5 @@ describe('session access helpers', () => {
     await expect(
       assertCanMutateSession(ctx, sessionDoc({ userId: 'token:owner' })),
     ).resolves.toBeUndefined()
-  })
-
-  it('keeps ownership and theme mutations delegated to access helpers', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
-
-    expect(sessionsSource).toContain('deleteOwnedSessions,')
-    expect(sessionsSource).toContain('claimAnonymousSession,')
-    expect(sessionsSource).toContain('setSessionThemeOverride,')
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => deleteOwnedSessions(ctx, args),',
-    )
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => claimAnonymousSession(ctx, args),',
-    )
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => setSessionThemeOverride(ctx, args),',
-    )
-    expect(sessionsSource).not.toContain(
-      "message: 'Invalid anonymous owner secret'",
-    )
   })
 })

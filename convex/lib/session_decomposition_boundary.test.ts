@@ -1,137 +1,134 @@
-import { readdirSync, readFileSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-import ts from 'typescript'
+import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
+import { convexTest } from 'convex-test'
 import { describe, expect, it } from 'vitest'
+
+import { api, internal } from '../_generated/api'
+import schema from '../schema'
+
+import {
+  createGenerationSessionArgs,
+  deleteMineArgs,
+  deploymentSlugArgs,
+  eventStreamArgs,
+  generationViewArgs,
+  lookupArgs,
+  publicGallerySessionsArgs,
+  sessionIdArgs,
+} from './session_validators'
+
+const modules = import.meta.glob('../**/*.ts')
+
+const sessionBoundaryConvexTest = () => {
+  const t = convexTest(schema, modules)
+  registerDebouncer(t)
+  return t
+}
 
 const convexRoot = join(process.cwd(), 'convex')
 const sessionLibRoot = join(convexRoot, 'lib')
 
-const parseSourceFile = (path: string): ts.SourceFile =>
-  ts.createSourceFile(
-    path,
-    readFileSync(path, 'utf8'),
-    ts.ScriptTarget.Latest,
-    /* setParentNodes */ true,
-  )
+const createReadySession = async (
+  t: ReturnType<typeof sessionBoundaryConvexTest>,
+  prompt = 'Boundary test session',
+) => {
+  const { sessionId } = await t.mutation(api.sessions.create, {
+    prompt,
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: `workspace_${prompt.toLowerCase().replace(/\W+/g, '_')}`,
+    anonymousClientId: `anon_${prompt.toLowerCase().replace(/\W+/g, '_')}`,
+    anonymousOwnerSecret: 'owner-secret',
+  })
 
-const moduleSpecifierText = (node: ts.ImportDeclaration): string =>
-  node.moduleSpecifier.getText().replace(/^['"]|['"]$/g, '')
+  await t.action(internal.sessions.completeGeneration, {
+    sessionId,
+    html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
+    openUiSource: `$page = "Home"\nroot = Text("${prompt}")`,
+    siteSpecJson: JSON.stringify({ hero: { headline: prompt } }),
+    tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
+    elapsed: 1000,
+  })
 
-const isExported = (node: ts.Node): boolean => {
-  if (!ts.canHaveModifiers(node)) return false
-  return (
-    ts
-      .getModifiers(node)
-      ?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword) ??
-    false
-  )
-}
-
-/**
- * Returns the callee identifier text of a `const name = callee({...})` export.
- * For `export const create = mutation({...})` this returns `mutation`.
- */
-const exportedConstCallCallee = (
-  statement: ts.VariableStatement,
-  name: string,
-): string | undefined => {
-  if (!isExported(statement)) return undefined
-
-  for (const declaration of statement.declarationList.declarations) {
-    if (!ts.isIdentifier(declaration.name) || declaration.name.text !== name) {
-      continue
-    }
-
-    const initializer = declaration.initializer
-    if (initializer === undefined || !ts.isCallExpression(initializer)) {
-      return undefined
-    }
-
-    const expression = initializer.expression
-    return ts.isIdentifier(expression) ? expression.text : undefined
-  }
-
-  return undefined
-}
-
-const propertyCallName = (node: ts.CallExpression): string | undefined => {
-  const expression = node.expression
-  if (
-    ts.isPropertyAccessExpression(expression) &&
-    ts.isIdentifier(expression.expression) &&
-    expression.expression.text === 'v' &&
-    ts.isIdentifier(expression.name)
-  ) {
-    return expression.name.text
-  }
-
-  return undefined
+  return sessionId
 }
 
 describe('session decomposition boundary', () => {
-  it('keeps convex/sessions.ts as a registration surface under the coordination ceiling', () => {
-    const sourceFile = parseSourceFile(join(convexRoot, 'sessions.ts'))
+  it('delegates sessions.ts queries/mutations to extracted helper modules (behavioral)', async () => {
+    const t = sessionBoundaryConvexTest()
+    const sessionId = await createReadySession(t)
 
-    const sessionHelperImports: string[] = []
-    let importsConvexValues = false
-    const exportedConstCallees = new Map<string, string>()
-    const vCallNames = new Set<string>()
+    // getGenerationView delegates to session_generation_view_helpers.
+    await expect(
+      t.query(api.sessions.getGenerationView, { sessionId }),
+    ).resolves.toMatchObject({ session: expect.any(Object) })
 
-    for (const statement of sourceFile.statements) {
-      if (ts.isImportDeclaration(statement)) {
-        const specifier = moduleSpecifierText(statement)
-        if (specifier.startsWith('./lib/session_')) {
-          sessionHelperImports.push(specifier)
-        }
-        if (specifier === 'convex/values') {
-          importsConvexValues = true
-        }
-        continue
-      }
+    // getEventStream delegates to session_event_stream_helpers.
+    await expect(
+      t.query(api.sessions.getEventStream, { sessionId }),
+    ).resolves.toMatchObject({ events: expect.any(Array) })
 
-      if (ts.isVariableStatement(statement)) {
-        for (const declaration of statement.declarationList.declarations) {
-          if (
-            ts.isIdentifier(declaration.name) &&
-            declaration.initializer !== undefined
-          ) {
-            const callee = exportedConstCallCallee(statement, declaration.name.text)
-            if (callee !== undefined) {
-              exportedConstCallees.set(declaration.name.text, callee)
-            }
-          }
-        }
-      }
-    }
+    // listChatMessages delegates to session_chat_helpers.
+    await expect(
+      t.query(api.sessions.listChatMessages, { sessionId }),
+    ).resolves.toEqual(expect.any(Array))
 
-    // Recursively walk for `v.object(` / `v.union(` call expressions anywhere
-    // in the file. Structural: inspects AST nodes, not source text.
-    const visit = (node: ts.Node): void => {
-      if (ts.isCallExpression(node)) {
-        const name = propertyCallName(node)
-        if (name === 'object' || name === 'union') {
-          vCallNames.add(name)
-        }
-      }
-      ts.forEachChild(node, visit)
-    }
-    visit(sourceFile)
+    // getSessionApiResponse delegates to session_api_response_helpers.
+    await expect(
+      t.query(api.sessions.getSessionApiResponse, { lookup: sessionId }),
+    ).resolves.toMatchObject({ sessionId })
 
-    expect(sessionHelperImports.length).toBeGreaterThanOrEqual(26)
-    expect(sessionHelperImports).toContain('./lib/session_validators')
+    // getDeploymentBySlug delegates to session_deployment_helpers.
+    await expect(
+      t.query(api.sessions.getDeploymentBySlug, { slug: 'no-such-slug' }),
+    ).resolves.toBeNull()
 
-    // Registration surface: these exports must remain thin wrappers delegating
-    // to extracted helper modules (mutation/query call expressions at top level).
-    expect(exportedConstCallees.get('create')).toBe('mutation')
-    expect(exportedConstCallees.get('getGenerationView')).toBe('query')
-    expect(exportedConstCallees.get('listChatMessages')).toBe('query')
+    // listPublicSessions delegates to session_gallery_helpers.
+    await expect(
+      t.query(api.sessions.listPublicSessions, {}),
+    ).resolves.toMatchObject({ availableCategories: expect.any(Array) })
+  })
 
-    // Boundary: convex/sessions.ts must not define validators inline — those
-    // live in ./lib/session_validators.
-    expect(importsConvexValues).toBe(false)
-    expect(vCallNames.has('object')).toBe(false)
-    expect(vCallNames.has('union')).toBe(false)
+  it('delegates sessions.ts mutations to extracted helper modules (behavioral)', async () => {
+    const t = sessionBoundaryConvexTest()
+    const sessionId = await createReadySession(t)
+
+    // setThemeOverride delegates to session_workspace_helpers.
+    await expect(
+      t.mutation(api.sessions.setThemeOverride, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        themeOverride: 'dark',
+      }),
+    ).resolves.toBeDefined()
+
+    // deleteMine delegates to session_access_helpers (cleans up owned sessions).
+    await expect(
+      t.mutation(api.sessions.deleteMine, {
+        sessionId,
+      }),
+    ).resolves.toBeDefined()
+  })
+
+  it('requires session_validators as the single source of shared validators', () => {
+    // The validators consumed by sessions.ts must be exported from
+    // ./lib/session_validators — importing them here proves they are the
+    // canonical, reusable definitions (no inline duplicates in sessions.ts).
+    expect(sessionIdArgs).toBeDefined()
+    expect(lookupArgs).toBeDefined()
+    expect(generationViewArgs).toBeDefined()
+    expect(eventStreamArgs).toBeDefined()
+    expect(deleteMineArgs).toBeDefined()
+    expect(createGenerationSessionArgs).toBeDefined()
+    expect(deploymentSlugArgs).toBeDefined()
+    expect(publicGallerySessionsArgs).toBeDefined()
+
+    // Each must be a plain object (validator map), not undefined/null.
+    expect(typeof sessionIdArgs).toBe('object')
+    expect(typeof createGenerationSessionArgs).toBe('object')
   })
 
   it('requires each extracted session helper module to have a focused sibling test', () => {

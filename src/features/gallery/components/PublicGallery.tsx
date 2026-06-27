@@ -86,7 +86,7 @@ const formatGenerationTime = (elapsed?: number | null) => {
   return `${minutes}m ${remainingSeconds}s`
 }
 
-const getGalleryImageUrl = (session: GallerySession): string => {
+export const getGalleryImageUrl = (session: GallerySession): string => {
   const imageUrl = session.imageUrl?.trim()
   if (imageUrl) return imageUrl
 

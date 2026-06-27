@@ -1,32 +1,90 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { describe, expect, it, vi } from 'vitest'
 
-import { describe, expect, it } from 'vitest'
+const webhookResponseMock = vi.hoisted(() => vi.fn())
 
-const read = (p: string): string => readFileSync(join(process.cwd(), p), 'utf8')
+vi.mock('@tanstack/react-router', () => ({
+  createFileRoute: (path: string) => (options: unknown) => ({ options, path }),
+}))
 
-// The Razorpay dashboard webhook URL is `/api/payments/razorpay/webhook`, which
-// differs from the canonical `/api/razorpay/webhook`. These alias routes ensure
-// dashboard-registered events reach the handler instead of 404ing.
+vi.mock('@/features/billing/server/webhook-api-response', () => ({
+  createWebhookApiResponse: webhookResponseMock,
+}))
+
+type RouteWithHandlers = {
+  path: string
+  options: {
+    server: {
+      handlers: Record<
+        string,
+        (args: { request: Request }) => Promise<Response>
+      >
+    }
+  }
+}
+
+const importRoute = async (name: string): Promise<RouteWithHandlers> => {
+  const mod = await import(name)
+  return mod.Route as unknown as RouteWithHandlers
+}
+
 describe('payments webhook alias routes', () => {
-  it('razorpay alias maps the dashboard URL to the razorpay handler', () => {
-    const src = read('src/routes/api/payments.razorpay.webhook.ts')
-    expect(src).toContain("createFileRoute('/api/payments/razorpay/webhook')")
-    expect(src).toContain("createWebhookApiResponse(request, 'razorpay')")
-  })
+  it('razorpay alias maps the dashboard URL to the razorpay handler', async () => {
+    webhookResponseMock.mockResolvedValue(new Response('{}'))
+    const Route = await importRoute('./payments.razorpay.webhook')
 
-  it('stripe alias maps the dashboard URL to the stripe handler', () => {
-    const src = read('src/routes/api/payments.stripe.webhook.ts')
-    expect(src).toContain("createFileRoute('/api/payments/stripe/webhook')")
-    expect(src).toContain("createWebhookApiResponse(request, 'stripe')")
-  })
-
-  it('canonical routes still exist', () => {
-    expect(read('src/routes/api/razorpay.webhook.ts')).toContain(
-      "createFileRoute('/api/razorpay/webhook')",
+    expect(Route.path).toBe('/api/payments/razorpay/webhook')
+    await Route.options.server.handlers.POST({
+      request: new Request(
+        'https://ship-fast.test/api/payments/razorpay/webhook',
+      ),
+    })
+    expect(webhookResponseMock).toHaveBeenCalledWith(
+      expect.any(Request),
+      'razorpay',
     )
-    expect(read('src/routes/api/stripe.webhook.ts')).toContain(
-      "createFileRoute('/api/stripe/webhook')",
+  })
+
+  it('stripe alias maps the dashboard URL to the stripe handler', async () => {
+    webhookResponseMock.mockResolvedValue(new Response('{}'))
+    const Route = await importRoute('./payments.stripe.webhook')
+
+    expect(Route.path).toBe('/api/payments/stripe/webhook')
+    await Route.options.server.handlers.POST({
+      request: new Request(
+        'https://ship-fast.test/api/payments/stripe/webhook',
+      ),
+    })
+    expect(webhookResponseMock).toHaveBeenCalledWith(
+      expect.any(Request),
+      'stripe',
+    )
+  })
+
+  it('canonical razorpay route delegates to the razorpay handler', async () => {
+    webhookResponseMock.mockResolvedValue(new Response('{}'))
+    const Route = await importRoute('./razorpay.webhook')
+
+    expect(Route.path).toBe('/api/razorpay/webhook')
+    await Route.options.server.handlers.POST({
+      request: new Request('https://ship-fast.test/api/razorpay/webhook'),
+    })
+    expect(webhookResponseMock).toHaveBeenCalledWith(
+      expect.any(Request),
+      'razorpay',
+    )
+  })
+
+  it('canonical stripe route delegates to the stripe handler', async () => {
+    webhookResponseMock.mockResolvedValue(new Response('{}'))
+    const Route = await importRoute('./stripe.webhook')
+
+    expect(Route.path).toBe('/api/stripe/webhook')
+    await Route.options.server.handlers.POST({
+      request: new Request('https://ship-fast.test/api/stripe/webhook'),
+    })
+    expect(webhookResponseMock).toHaveBeenCalledWith(
+      expect.any(Request),
+      'stripe',
     )
   })
 })

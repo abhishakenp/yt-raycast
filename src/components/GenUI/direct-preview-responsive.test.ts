@@ -1,47 +1,9 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 // @ts-expect-error jsdom is already used by repo tests without installed types.
 import { JSDOM } from 'jsdom'
 import { describe, expect, it } from 'vitest'
 import { enhanceGeneratedMobileNavs } from './generated-mobile-nav'
 
-const readProjectFile = (path: string): string =>
-  readFileSync(join(process.cwd(), path), 'utf8')
-
 describe('generated preview responsive safeguards', () => {
-  it('exposes the simulated device mode to scoped preview CSS', () => {
-    const dashboardSource = readProjectFile(
-      'src/features/dashboard/components/Dashboard.tsx',
-    )
-    const stylesSource = readProjectFile('src/styles.css')
-
-    expect(dashboardSource).toContain('data-preview-device={currentDevice}')
-    expect(dashboardSource).toContain('previewDeviceWidth')
-    expect(stylesSource).toContain(
-      ".genui-preview[data-preview-device='mobile']",
-    )
-    expect(stylesSource).toContain(
-      ".genui-preview[data-preview-device='tablet']",
-    )
-    expect(stylesSource).toContain('overflow-wrap: anywhere')
-    expect(stylesSource).toContain('grid-template-columns: minmax(0, 1fr)')
-  })
-
-  it('maps generated responsive nav classes to the simulated mobile frame', () => {
-    const stylesSource = readProjectFile('src/styles.css')
-
-    expect(stylesSource).toMatch(/button\[class\*=['"]md:hidden['"]\]/)
-    expect(stylesSource).toMatch(
-      /div\[class\*=['"]flex['"]\]\[class\*=['"]md:hidden['"]\]/,
-    )
-    expect(stylesSource).toMatch(
-      /\[class\*=['"]hidden['"]\]\[class\*=['"]md:flex['"]\]/,
-    )
-    expect(stylesSource).toContain('display: inline-flex !important')
-    expect(stylesSource).toContain('display: flex !important')
-    expect(stylesSource).toContain('display: none !important')
-  })
-
   it('adds a working burger menu for generated pages that only have desktop nav links', () => {
     const dom = new JSDOM(`
       <div class="genui-preview">

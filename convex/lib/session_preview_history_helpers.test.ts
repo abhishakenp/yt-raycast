@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs'
-
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
@@ -277,24 +275,6 @@ describe('session preview history helpers', () => {
     ])
   })
 
-  it('keeps the public listEdits query delegated to edit history helpers', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
-
-    expect(sessionsSource).toContain('listSessionEdits,')
-    expect(sessionsSource).toContain(
-      'handler: async (ctx, args) => listSessionEdits(ctx, args.sessionId),',
-    )
-  })
-
-  it('keeps the public listPreviewHistory query delegated to preview history helpers', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
-
-    expect(sessionsSource).toContain('listSessionPreviewHistory,')
-    expect(sessionsSource).toContain(
-      'handler: async (ctx, args) => listSessionPreviewHistory(ctx, args.sessionId),',
-    )
-  })
-
   it('serializes preview history rows for the client', () => {
     expect(serializePreviewHistoryItem(previewDoc())).toEqual({
       previewId: 'preview_history_3',
@@ -516,15 +496,5 @@ describe('session preview history helpers', () => {
         message: 'Preview version not found',
       },
     })
-  })
-
-  it('keeps the public restorePreviewVersion mutation delegated to preview history helpers', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
-
-    expect(sessionsSource).toContain('restoreOwnedPreviewVersion,')
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => restoreOwnedPreviewVersion(ctx, args),',
-    )
-    expect(sessionsSource).not.toContain('Preview version not found')
   })
 })

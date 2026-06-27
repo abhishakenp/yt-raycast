@@ -1,17 +1,74 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+vi.mock('@tanstack/react-router', () => ({
+  createFileRoute: (path: string) => (options: unknown) => ({ options, path }),
+}))
+
+type RouteWithHandlers = {
+  path: string
+  options: {
+    server: {
+      handlers: Record<
+        string,
+        (args: { request: Request }) => Promise<Response>
+      >
+    }
+  }
+}
+
+const requestWithIp = (ip: string, method: 'GET' | 'POST' = 'GET') =>
+  new Request('https://ship-fast.test/api/share-bonus', {
+    method,
+    headers: { 'x-forwarded-for': ip },
+  })
 
 describe('/api/share-bonus route', () => {
-  it('registers the GET and POST handlers through TanStack route metadata', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/routes/api/share-bonus.ts'),
-      'utf8',
-    )
+  it('registers GET and POST handlers at /api/share-bonus', async () => {
+    const { Route } = await import('./share-bonus')
+    const route = Route as unknown as RouteWithHandlers
 
-    expect(source).toContain("createFileRoute('/api/share-bonus')")
-    expect(source).toContain('server:')
-    expect(source).toContain('GET:')
-    expect(source).toContain('POST:')
+    expect(route.path).toBe('/api/share-bonus')
+    expect(typeof route.options.server.handlers.GET).toBe('function')
+    expect(typeof route.options.server.handlers.POST).toBe('function')
+  })
+
+  it('GET reports claimed=false for a fresh IP', async () => {
+    const { Route } = await import('./share-bonus')
+    const route = Route as unknown as RouteWithHandlers
+
+    const res = await route.options.server.handlers.GET({
+      request: requestWithIp('203.0.113.1'),
+    })
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ claimed: false })
+  })
+
+  it('POST claims the bonus for a fresh IP and then GET reports claimed', async () => {
+    const { Route } = await import('./share-bonus')
+    const route = Route as unknown as RouteWithHandlers
+
+    const claim = await route.options.server.handlers.POST({
+      request: requestWithIp('203.0.113.2', 'POST'),
+    })
+    expect(claim.status).toBe(200)
+    expect(await claim.json()).toEqual({ claimed: true, success: true })
+
+    const status = await route.options.server.handlers.GET({
+      request: requestWithIp('203.0.113.2'),
+    })
+    expect(await status.json()).toEqual({ claimed: true })
+  })
+
+  it('POST refuses to re-claim on the same day', async () => {
+    const { Route } = await import('./share-bonus')
+    const route = Route as unknown as RouteWithHandlers
+
+    await route.options.server.handlers.POST({
+      request: requestWithIp('203.0.113.3', 'POST'),
+    })
+    const second = await route.options.server.handlers.POST({
+      request: requestWithIp('203.0.113.3', 'POST'),
+    })
+    expect(await second.json()).toEqual({ claimed: true, success: false })
   })
 })

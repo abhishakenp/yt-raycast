@@ -1,18 +1,15 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-
 import { describe, expect, it } from 'vitest'
 
-const readViteConfig = (): string =>
-  readFileSync(join(process.cwd(), 'vite.config.ts'), 'utf8')
+import viteConfig from '../../vite.config.ts'
 
 describe('vite dependency optimization config', () => {
   it('excludes native server-only packages from client dependency optimization', () => {
-    const source = readViteConfig()
+    const exclude = viteConfig.optimizeDeps?.exclude
 
-    expect(source).toContain('optimizeDeps')
-    expect(source).toContain('playwright')
-    expect(source).toContain('playwright-core')
-    expect(source).toContain('fsevents')
+    expect(exclude).toBeDefined()
+    expect(Array.isArray(exclude)).toBe(true)
+    expect(exclude).toContain('playwright')
+    expect(exclude).toContain('playwright-core')
+    expect(exclude).toContain('fsevents')
   })
 })

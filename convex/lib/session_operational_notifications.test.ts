@@ -1,9 +1,7 @@
-import { readFileSync } from 'node:fs'
-
 import { describe, expect, it, vi } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
-import type { MutationCtx } from '../_generated/server'
+import type { ActionCtx, MutationCtx } from '../_generated/server'
 import {
   formatOperationalNotification,
   recordOperationalGenerationEvent,
@@ -14,6 +12,31 @@ import {
   shouldNotifyOperationalEvent,
   type OperationalNotificationPayload,
 } from './session_operational_notifications'
+
+type ActionHandler<Args> = (ctx: ActionCtx, args: Args) => Promise<unknown>
+
+type OperationalNotificationArgs = {
+  sessionId: Id<'sessions'>
+  eventType: string
+  message?: string
+  elapsedMs?: number
+  cost?: number
+  provider?: string
+  error?: string
+  quotaHit?: boolean
+  cacheHit?: boolean
+}
+
+type SlackNotificationArgs = {
+  message: string
+  webhookUrl?: string
+}
+
+type TelegramNotificationArgs = {
+  message: string
+  botToken?: string
+  chatId?: string
+}
 
 type InsertedRecord = {
   table: string
@@ -250,19 +273,63 @@ describe('session operational notifications', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('keeps Convex action handlers delegated to operational notification helpers', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
+  it('Convex action handlers delegate to operational notification helpers', async () => {
+    vi.resetModules()
+    vi.doMock('./session_operational_notifications', () => ({
+      sendOperationalNotificationAdapters: vi.fn(async () => ({ sent: true })),
+      sendSlackOperationalMessage: vi.fn(async () => ({ sent: true })),
+      sendTelegramOperationalMessage: vi.fn(async () => ({ sent: true })),
+    }))
+    try {
+      const {
+        sendOperationalNotification: mockedSendOperationalNotification,
+        sendSlackNotification,
+        sendTelegramNotification,
+      } = await import('../sessions')
+      const mockedModule = await import('./session_operational_notifications')
+      const mockedSendOperationalNotificationAdapters = vi.mocked(
+        mockedModule.sendOperationalNotificationAdapters,
+      )
+      const mockedSendSlackOperationalMessage = vi.mocked(
+        mockedModule.sendSlackOperationalMessage,
+      )
+      const mockedSendTelegramOperationalMessage = vi.mocked(
+        mockedModule.sendTelegramOperationalMessage,
+      )
+      const ctx = {} as unknown as ActionCtx
 
-    expect(sessionsSource).toContain(
-      'return sendOperationalNotificationAdapters(args)',
-    )
-    expect(sessionsSource).toContain('return sendSlackOperationalMessage(args)')
-    expect(sessionsSource).toContain(
-      'return sendTelegramOperationalMessage(args)',
-    )
-    expect(sessionsSource).not.toContain(
-      '`https://api.telegram.org/bot${telegramBotToken}/sendMessage`',
-    )
+      const opArgs: OperationalNotificationArgs = {
+        sessionId: 's1' as Id<'sessions'>,
+        eventType: 'generation_succeeded',
+      }
+      const opHandler =
+        mockedSendOperationalNotification as unknown as ActionHandler<OperationalNotificationArgs>
+      await opHandler(ctx, opArgs)
+      expect(mockedSendOperationalNotificationAdapters).toHaveBeenCalledWith(
+        opArgs,
+      )
+
+      const slackArgs: SlackNotificationArgs = {
+        message: 'hello',
+      }
+      const slackHandler =
+        sendSlackNotification as unknown as ActionHandler<SlackNotificationArgs>
+      await slackHandler(ctx, slackArgs)
+      expect(mockedSendSlackOperationalMessage).toHaveBeenCalledWith(slackArgs)
+
+      const telegramArgs: TelegramNotificationArgs = {
+        message: 'hello',
+      }
+      const telegramHandler =
+        sendTelegramNotification as unknown as ActionHandler<TelegramNotificationArgs>
+      await telegramHandler(ctx, telegramArgs)
+      expect(mockedSendTelegramOperationalMessage).toHaveBeenCalledWith(
+        telegramArgs,
+      )
+    } finally {
+      vi.doUnmock('./session_operational_notifications')
+      vi.resetModules()
+    }
   })
 
   it('schedules only alertable notifications', async () => {
