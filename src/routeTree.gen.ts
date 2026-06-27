@@ -50,6 +50,7 @@ import { Route as ApiCheckoutStartRouteImport } from './routes/api/checkout.star
 import { Route as ApiAgentationSyncSessionsRouteImport } from './routes/api/agentation-sync.sessions'
 import { Route as ApiAgentationSyncHealthRouteImport } from './routes/api/agentation-sync.health'
 import { Route as ApiSessionsSessionIdStreamRouteImport } from './routes/api/sessions.$sessionId.stream'
+import { Route as ApiSessionsSessionIdSectionEditRouteImport } from './routes/api/sessions.$sessionId.section-edit'
 import { Route as ApiSessionsSessionIdPreviewRawRouteImport } from './routes/api/sessions.$sessionId.preview-raw'
 import { Route as ApiSessionsSessionIdPreviewInlineTextRouteImport } from './routes/api/sessions.$sessionId.preview-inline-text'
 import { Route as ApiSessionsSessionIdPreviewInlineStyleRouteImport } from './routes/api/sessions.$sessionId.preview-inline-style'
@@ -284,6 +285,12 @@ const ApiSessionsSessionIdStreamRoute =
     path: '/stream',
     getParentRoute: () => ApiSessionsSessionIdRoute,
   } as any)
+const ApiSessionsSessionIdSectionEditRoute =
+  ApiSessionsSessionIdSectionEditRouteImport.update({
+    id: '/section-edit',
+    path: '/section-edit',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
 const ApiSessionsSessionIdPreviewRawRoute =
   ApiSessionsSessionIdPreviewRawRouteImport.update({
     id: '/preview-raw',
@@ -492,6 +499,7 @@ export interface FileRoutesByFullPath {
   '/api/sessions/$sessionId/preview-inline-style': typeof ApiSessionsSessionIdPreviewInlineStyleRoute
   '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
+  '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
   '/api/agentation-sync/sessions/$agentationSessionKey/annotations': typeof ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute
   '/api/agentation-sync/sessions/$agentationSessionKey/events': typeof ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute
@@ -560,6 +568,7 @@ export interface FileRoutesByTo {
   '/api/sessions/$sessionId/preview-inline-style': typeof ApiSessionsSessionIdPreviewInlineStyleRoute
   '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
+  '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
   '/api/agentation-sync/sessions/$agentationSessionKey/annotations': typeof ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute
   '/api/agentation-sync/sessions/$agentationSessionKey/events': typeof ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute
@@ -629,6 +638,7 @@ export interface FileRoutesById {
   '/api/sessions/$sessionId/preview-inline-style': typeof ApiSessionsSessionIdPreviewInlineStyleRoute
   '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
+  '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
   '/api/agentation-sync/sessions/$agentationSessionKey/annotations': typeof ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute
   '/api/agentation-sync/sessions/$agentationSessionKey/events': typeof ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute
@@ -699,6 +709,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-inline-style'
     | '/api/sessions/$sessionId/preview-inline-text'
     | '/api/sessions/$sessionId/preview-raw'
+    | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
     | '/api/agentation-sync/sessions/$agentationSessionKey/annotations'
     | '/api/agentation-sync/sessions/$agentationSessionKey/events'
@@ -767,6 +778,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-inline-style'
     | '/api/sessions/$sessionId/preview-inline-text'
     | '/api/sessions/$sessionId/preview-raw'
+    | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
     | '/api/agentation-sync/sessions/$agentationSessionKey/annotations'
     | '/api/agentation-sync/sessions/$agentationSessionKey/events'
@@ -835,6 +847,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-inline-style'
     | '/api/sessions/$sessionId/preview-inline-text'
     | '/api/sessions/$sessionId/preview-raw'
+    | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
     | '/api/agentation-sync/sessions/$agentationSessionKey/annotations'
     | '/api/agentation-sync/sessions/$agentationSessionKey/events'
@@ -1178,6 +1191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSessionsSessionIdStreamRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
     }
+    '/api/sessions/$sessionId/section-edit': {
+      id: '/api/sessions/$sessionId/section-edit'
+      path: '/section-edit'
+      fullPath: '/api/sessions/$sessionId/section-edit'
+      preLoaderRoute: typeof ApiSessionsSessionIdSectionEditRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
     '/api/sessions/$sessionId/preview-raw': {
       id: '/api/sessions/$sessionId/preview-raw'
       path: '/preview-raw'
@@ -1455,6 +1475,7 @@ interface ApiSessionsSessionIdRouteChildren {
   ApiSessionsSessionIdPreviewInlineStyleRoute: typeof ApiSessionsSessionIdPreviewInlineStyleRoute
   ApiSessionsSessionIdPreviewInlineTextRoute: typeof ApiSessionsSessionIdPreviewInlineTextRoute
   ApiSessionsSessionIdPreviewRawRoute: typeof ApiSessionsSessionIdPreviewRawRoute
+  ApiSessionsSessionIdSectionEditRoute: typeof ApiSessionsSessionIdSectionEditRoute
   ApiSessionsSessionIdStreamRoute: typeof ApiSessionsSessionIdStreamRoute
   ApiSessionsSessionIdDeployLakebedRoute: typeof ApiSessionsSessionIdDeployLakebedRoute
   ApiSessionsSessionIdDownloadTargetRoute: typeof ApiSessionsSessionIdDownloadTargetRoute
@@ -1478,6 +1499,7 @@ const ApiSessionsSessionIdRouteChildren: ApiSessionsSessionIdRouteChildren = {
   ApiSessionsSessionIdPreviewInlineTextRoute:
     ApiSessionsSessionIdPreviewInlineTextRoute,
   ApiSessionsSessionIdPreviewRawRoute: ApiSessionsSessionIdPreviewRawRoute,
+  ApiSessionsSessionIdSectionEditRoute: ApiSessionsSessionIdSectionEditRoute,
   ApiSessionsSessionIdStreamRoute: ApiSessionsSessionIdStreamRoute,
   ApiSessionsSessionIdDeployLakebedRoute:
     ApiSessionsSessionIdDeployLakebedRoute,

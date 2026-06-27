@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Avatar as UIAvatar,
   AvatarImage,
@@ -10,7 +11,7 @@ import {
 
 // Flatten Avatar/AvatarImage/AvatarFallback into one node. `src` shows an image;
 // `fallback` (initials) renders when there is no image. size mirrors shadcn.
-export const Avatar = defineComponent({
+export const Avatar = defineCapsule({
   name: 'Avatar',
   description:
     'Circular user avatar. `src` image with `fallback` initials shown when no image. size sm|default|lg.',
@@ -30,7 +31,7 @@ export const Avatar = defineComponent({
 })
 
 // Overlapping cluster of avatars with an optional "+N" overflow count.
-export const AvatarGroup = defineComponent({
+export const AvatarGroup = defineCapsule({
   name: 'AvatarGroup',
   description:
     'Overlapping cluster of avatars. `items` each {fallback, src?, alt?}; optional `overflow` shows a +N count chip.',

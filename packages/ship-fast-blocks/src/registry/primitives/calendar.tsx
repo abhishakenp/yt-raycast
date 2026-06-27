@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Calendar as UICalendar } from '#/components/ui/calendar.tsx'
 
 // Data primitive: wraps react-day-picker. Renders statically with a fixed
@@ -11,7 +12,7 @@ const selectedDay = new Date(2026, 4, 15)
 const rangeStart = new Date(2026, 4, 9)
 const rangeEnd = new Date(2026, 4, 17)
 
-export const Calendar = defineComponent({
+export const Calendar = defineCapsule({
   name: 'Calendar',
   description:
     "Month-grid date picker (react-day-picker). Renders a static month with a sample selection. mode 'single' | 'multiple' | 'range'.",

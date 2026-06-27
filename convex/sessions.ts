@@ -59,6 +59,11 @@ import {
 } from './lib/session_commerce_helpers'
 import { sendSessionChatMessage } from './lib/session_chat_helpers'
 import {
+  listSessionAiCapsules,
+  upsertSessionAiCapsule,
+} from './lib/session_ai_capsule_helpers'
+import { applySectionEditToArtifacts } from './lib/session_section_edit_helpers'
+import {
   applyCloneBriefAndGenerate as applyCloneBriefAndGenerateHelper,
   finalizeSessionClonePreview,
   generateCloneUploadUrl as generateCloneUploadUrlHelper,
@@ -189,6 +194,8 @@ import {
   slackNotificationArgs,
   syncMedusaProductsArgs,
   telegramNotificationArgs,
+  upsertAiCapsuleArgs,
+  applySectionEditArgs,
   updateCmsEntryArgs,
   updateAgentationSyncAnnotationArgs,
   upsertCmsCollectionItemArgs,
@@ -932,4 +939,19 @@ export const sendTelegramNotification = internalAction({
   handler: async (_ctx, args) => {
     return sendTelegramOperationalMessage(args)
   },
+})
+
+export const listAiCapsules = query({
+  args: sessionIdArgs,
+  handler: (ctx, args) => listSessionAiCapsules(ctx, args.sessionId),
+})
+
+export const upsertAiCapsule = internalMutation({
+  args: upsertAiCapsuleArgs,
+  handler: (ctx, args) => upsertSessionAiCapsule(ctx, args),
+})
+
+export const applySectionEdit = mutation({
+  args: applySectionEditArgs,
+  handler: (ctx, args) => applySectionEditToArtifacts(ctx, args),
 })

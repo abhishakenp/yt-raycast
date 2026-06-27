@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Command as UICommand,
   CommandEmpty,
@@ -14,7 +15,7 @@ import {
 // Compound primitive: command palette / searchable menu. Flattened to
 // groups:[{heading, items:[{label,shortcut}]}]. Rendered INLINE (not the
 // dialog variant) so it is visible as a static preview.
-export const Command = defineComponent({
+export const Command = defineCapsule({
   name: 'Command',
   description:
     'Searchable command palette rendered inline. groups:[{heading, items:[{label,shortcut}]}]. Shows a search box + grouped, selectable items.',

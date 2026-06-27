@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   RadioGroup as UIRadioGroup,
   RadioGroupItem,
@@ -8,7 +9,7 @@ import { Label as UILabel } from '#/components/ui/label.tsx'
 
 // Compound: flatten RadioGroup + RadioGroupItem into a single node taking an
 // array of { value, label } items. No cva variants in shadcn source.
-export const RadioGroup = defineComponent({
+export const RadioGroup = defineCapsule({
   name: 'RadioGroup',
   description:
     'Single-select radio list. `items` is an array of { value, label }. Mirrors shadcn RadioGroup.',

@@ -4,6 +4,7 @@ import { brotliDecompressSync } from 'node:zlib'
 import { zipSync, strToU8 } from 'fflate'
 import { format } from 'prettier'
 import ts from 'typescript'
+import type { ElementNode } from '@openuidev/lang-core'
 import {
   reactExportSourcesBase64,
   reactExportSourcesEncoding,
@@ -37,6 +38,7 @@ type LakebedRoute = {
   label: string
   path: string
   componentName: string
+  node?: ElementNode
   props: Record<string, unknown>
 }
 
@@ -809,7 +811,7 @@ const printNode = (node: ts.Node, sourceFile: ts.SourceFile): string =>
     .printNode(ts.EmitHint.Unspecified, node, sourceFile)
 
 const isExportableFactory = (expression: string): boolean =>
-  expression === 'defineComponent' || expression === 'defineCapsule'
+  expression === 'defineCapsule'
 
 const propertyNameText = (name: ts.PropertyName, sourceFile: ts.SourceFile) => {
   if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text
@@ -1000,7 +1002,169 @@ const readNumericSchemaFields = (
 }
 
 const normalizeLakebedSchemaSource = (source: string | null): string | null =>
-  source?.replace(/\bnumber\s*\(\s*\)/g, 'string()') ?? null
+  source
+    ?.replace(
+      /\bnumber\s*\(\s*\)\s*\.default\s*\(\s*([-+]?\d+(?:\.\d+)?)\s*\)/g,
+      (_match, defaultValue: string) => `string().default('${defaultValue}')`,
+    )
+    .replace(/\bnumber\s*\(\s*\)/g, 'string()') ?? null
+
+const lakebedSchemaSource = (
+  schema: ts.ObjectLiteralExpression,
+  sourceFile: ts.SourceFile,
+): string => {
+  const properties = schema.properties
+    .filter(ts.isPropertyAssignment)
+    .map((property) => {
+      const initializer = unwrapExpression(property.initializer)
+      const tableSource =
+        ts.isObjectLiteralExpression(initializer)
+          ? initializer.properties.find(
+              (item): item is ts.SpreadAssignment =>
+                ts.isSpreadAssignment(item) &&
+                ts.isCallExpression(item.expression) &&
+                item.expression.expression.getText(sourceFile) === 'table',
+            )?.expression
+          : undefined
+      return `${property.name.getText(sourceFile)}: ${printNode(
+        tableSource ?? initializer,
+        sourceFile,
+      )}`
+    })
+  return `{\n${properties.map((property) => `  ${property}`).join(',\n')}\n}`
+}
+
+const unwrapExpression = (expression: ts.Expression): ts.Expression => {
+  if (
+    ts.isAsExpression(expression) ||
+    ts.isSatisfiesExpression(expression) ||
+    ts.isParenthesizedExpression(expression)
+  ) {
+    return unwrapExpression(expression.expression)
+  }
+  return expression
+}
+
+const findVariableInitializer = (
+  sourceFile: ts.SourceFile,
+  name: string,
+): ts.Expression | null => {
+  for (const statement of sourceFile.statements) {
+    if (!ts.isVariableStatement(statement)) continue
+    for (const declaration of statement.declarationList.declarations) {
+      if (!ts.isIdentifier(declaration.name) || declaration.name.text !== name) {
+        continue
+      }
+      return declaration.initializer
+        ? unwrapExpression(declaration.initializer)
+        : null
+    }
+  }
+  return null
+}
+
+const resolveSchemaObject = (
+  schema: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+): ts.ObjectLiteralExpression | null => {
+  if (!schema) return null
+  const expression = unwrapExpression(schema)
+  if (ts.isObjectLiteralExpression(expression)) return expression
+  if (
+    !ts.isPropertyAccessExpression(expression) ||
+    expression.name.text !== 'schema' ||
+    !ts.isIdentifier(expression.expression)
+  ) {
+    return null
+  }
+  const definitionInitializer = findVariableInitializer(
+    sourceFile,
+    expression.expression.text,
+  )
+  if (
+    !definitionInitializer ||
+    !ts.isCallExpression(definitionInitializer) ||
+    definitionInitializer.expression.getText(sourceFile) !==
+      'createLakebedDefinition'
+  ) {
+    return null
+  }
+  const definitionSchema = definitionInitializer.arguments[0]
+  return definitionSchema && ts.isObjectLiteralExpression(definitionSchema)
+    ? definitionSchema
+    : null
+}
+
+type LakebedObjectSource = {
+  object: ts.ObjectLiteralExpression
+  sourceFile: ts.SourceFile
+}
+
+const importedLakebedName = (
+  sourceFile: ts.SourceFile,
+  localName: string,
+): { moduleName: string; importedName: string } | null => {
+  for (const statement of sourceFile.statements) {
+    if (!ts.isImportDeclaration(statement)) continue
+    const specifier = statement.moduleSpecifier
+    const bindings = statement.importClause?.namedBindings
+    if (!ts.isStringLiteral(specifier) || !bindings) {
+      continue
+    }
+    if (!ts.isNamedImports(bindings)) {
+      continue
+    }
+    for (const element of bindings.elements) {
+      if (element.name.text !== localName) continue
+      return {
+        importedName: (element.propertyName ?? element.name).text,
+        moduleName: specifier.text,
+      }
+    }
+  }
+  return null
+}
+
+const readImportedLakebedObject = (
+  sourceFile: ts.SourceFile,
+  entry: ReactExportSourceEntry,
+  localName: string,
+): LakebedObjectSource | null => {
+  const imported = importedLakebedName(sourceFile, localName)
+  if (!imported || !imported.moduleName.startsWith('.')) return null
+  const sourcePath = resolveRelativeBlockSourcePath(entry.file, imported.moduleName)
+  if (!sourcePath) return null
+  const source = getBlockSourceFile(sourcePath)
+  const importedSourceFile = ts.createSourceFile(
+    sourcePath,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    sourcePath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  )
+  const initializer = findVariableInitializer(
+    importedSourceFile,
+    imported.importedName,
+  )
+  return initializer && ts.isObjectLiteralExpression(initializer)
+    ? { object: initializer, sourceFile: importedSourceFile }
+    : null
+}
+
+const resolveLakebedObject = (
+  lakebed: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  entry: ReactExportSourceEntry,
+): LakebedObjectSource | null => {
+  if (!lakebed) return null
+  const expression = unwrapExpression(lakebed)
+  if (ts.isObjectLiteralExpression(expression)) {
+    return { object: expression, sourceFile }
+  }
+  return ts.isIdentifier(expression)
+    ? readImportedLakebedObject(sourceFile, entry, expression.text)
+    : null
+}
 
 export const readLakebedDefinition = (
   componentName: string,
@@ -1042,27 +1206,32 @@ export const readLakebedDefinition = (
           property.name.text === 'lakebed',
       )
       const lakebed = lakebedProperty?.initializer
-      if (!lakebed || !ts.isObjectLiteralExpression(lakebed)) return null
+      const lakebedSource = resolveLakebedObject(lakebed, sourceFile, entry)
+      if (!lakebedSource) return null
 
       const prop = (name: string) =>
-        lakebed.properties.find(
+        lakebedSource.object.properties.find(
           (property): property is ts.PropertyAssignment =>
             ts.isPropertyAssignment(property) &&
             ts.isIdentifier(property.name) &&
             property.name.text === name,
         )?.initializer
 
-      const schema = prop('schema')
+      const schema = resolveSchemaObject(prop('schema'), lakebedSource.sourceFile)
       return {
         schemaSource: normalizeLakebedSchemaSource(
-          schema && ts.isObjectLiteralExpression(schema)
-            ? printNode(schema, sourceFile)
-            : null,
+          schema ? lakebedSchemaSource(schema, lakebedSource.sourceFile) : null,
         ),
-        numericFieldNames: readNumericSchemaFields(schema, sourceFile),
-        queries: objectRecord(prop('queries'), sourceFile),
-        mutations: objectRecord(prop('mutations'), sourceFile),
-        endpoints: readEndpointRecord(prop('endpoints'), sourceFile),
+        numericFieldNames: readNumericSchemaFields(
+          schema ?? undefined,
+          lakebedSource.sourceFile,
+        ),
+        queries: objectRecord(prop('queries'), lakebedSource.sourceFile),
+        mutations: objectRecord(prop('mutations'), lakebedSource.sourceFile),
+        endpoints: readEndpointRecord(
+          prop('endpoints'),
+          lakebedSource.sourceFile,
+        ),
       }
     }
   }
@@ -1081,6 +1250,7 @@ const transformClientComponentImports = (
   files: Record<string, string>,
   seenVendorFiles: Set<string>,
   seenBlockFiles: Set<string>,
+  sourcePath?: string,
 ): { imports: string[]; vendorFiles: Set<string> } => {
   const imports: string[] = [
     'import type { ComponentChildren } from "preact"',
@@ -1095,12 +1265,20 @@ const transformClientComponentImports = (
     const moduleName = specifier.text
     const clause = statement.importClause
     if (!clause) continue
+    if (clause.isTypeOnly) continue
 
     if (
       moduleName === '@openuidev/react-lang' ||
       moduleName === './openui.ts' ||
+      moduleName === '#/capsules/openui.ts' ||
       moduleName === 'zod/v4' ||
       moduleName === '@ship-fast/lakebed/server'
+    ) {
+      continue
+    }
+    if (
+      moduleName.startsWith('.') &&
+      /(?:^|\/)[\w-]+-lakebed(?:\.[cm]?[jt]sx?)?$/.test(moduleName)
     ) {
       continue
     }
@@ -1125,6 +1303,7 @@ const transformClientComponentImports = (
         files,
         seenVendorFiles,
         seenBlockFiles,
+        sourcePath,
       },
     )
     imports.push(rewritten)
@@ -1197,6 +1376,7 @@ const readClientComponentDefinition = (
         files,
         seenVendorFiles,
         seenBlockFiles,
+        entry.file,
       )
 
       return {
@@ -1260,17 +1440,268 @@ const buildRoutes = (
   parsed: ReturnType<typeof parseOpenUIForExport>,
 ): LakebedRoute[] => {
   const used = new Set<string>()
-  return parsed.pages.map((page, index) => ({
-    label: parsed.routes[index] ?? `Page ${index + 1}`,
-    path: uniqueRoutePath(
-      parsed.routes[index] ?? `Page ${index + 1}`,
-      index,
-      used,
-    ),
-    componentName: page.typeName,
-    props: (page.props ?? {}) as Record<string, unknown>,
-  }))
+  return parsed.pages.map((page, index) => {
+    const label = parsed.routes[index] ?? `Page ${index + 1}`
+    return {
+      label,
+      path: uniqueRoutePath(label, index, used),
+      componentName: `RoutePage${index + 1}${toIdentifier(label)}`,
+      node: page,
+      props: (page.props ?? {}) as Record<string, unknown>,
+    }
+  })
 }
+
+const routeRenderPrimitives = new Set([
+  'Box',
+  'Grid',
+  'Heading',
+  'PageSwitch',
+  'Section',
+  'SectionAnchor',
+  'Spacer',
+  'Stack',
+  'Text',
+])
+
+const isOpenUIElementNode = (value: unknown): value is ElementNode =>
+  value !== null &&
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  'type' in value &&
+  value.type === 'element' &&
+  'typeName' in value &&
+  typeof value.typeName === 'string'
+
+const collectNodeComponentNames = (
+  value: unknown,
+  names = new Set<string>(),
+): Set<string> => {
+  if (Array.isArray(value)) {
+    for (const item of value) collectNodeComponentNames(item, names)
+    return names
+  }
+
+  if (!isOpenUIElementNode(value)) return names
+  if (value.typeName && !routeRenderPrimitives.has(value.typeName)) {
+    names.add(value.typeName)
+  }
+  for (const propValue of Object.values(value.props ?? {})) {
+    collectNodeComponentNames(propValue, names)
+  }
+  return names
+}
+
+const collectRouteComponentNames = (routes: LakebedRoute[]): string[] => [
+  ...new Set(routes.flatMap((route) => [...collectNodeComponentNames(route.node)])),
+]
+
+const routeGapClass = (value: unknown): string => {
+  if (value === 'none') return 'gap-0'
+  if (value === 'xs') return 'gap-1'
+  if (value === 'sm') return 'gap-2'
+  if (value === 'lg') return 'gap-6'
+  if (value === 'xl') return 'gap-10'
+  return 'gap-4'
+}
+
+const routeAlignClass = (value: unknown): string => {
+  if (value === 'start') return 'items-start'
+  if (value === 'center') return 'items-center'
+  if (value === 'end') return 'items-end'
+  if (value === 'stretch') return 'items-stretch'
+  return ''
+}
+
+const routeJustifyClass = (value: unknown): string => {
+  if (value === 'start') return 'justify-start'
+  if (value === 'center') return 'justify-center'
+  if (value === 'end') return 'justify-end'
+  if (value === 'between') return 'justify-between'
+  if (value === 'around') return 'justify-around'
+  return ''
+}
+
+const routeStackClass = (props: Record<string, unknown>) =>
+  [
+    'flex',
+    props.direction === 'row' ? 'flex-row' : 'flex-col',
+    routeGapClass(props.gap),
+    routeAlignClass(props.align),
+    routeJustifyClass(props.justify),
+    props.wrap === true ? 'flex-wrap' : '',
+    props.className,
+  ]
+    .filter((item): item is string => typeof item === 'string' && item.length > 0)
+    .join(' ')
+
+const routeGridClass = (cols: unknown, gap: unknown, className: unknown) => {
+  const colsClass =
+    cols === '1'
+      ? 'grid-cols-1'
+      : cols === '2'
+        ? 'grid-cols-1 sm:grid-cols-2'
+        : cols === '4'
+          ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+          : cols === '5'
+            ? 'grid-cols-2 lg:grid-cols-5'
+            : cols === '6'
+              ? 'grid-cols-2 lg:grid-cols-6'
+              : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+  return ['grid', colsClass, routeGapClass(gap), className]
+    .filter((item): item is string => typeof item === 'string' && item.length > 0)
+    .join(' ')
+}
+
+const routeHeadingClass = (level: unknown): string => {
+  if (level === '1') return 'text-4xl font-bold tracking-tight md:text-5xl'
+  if (level === '3') return 'text-2xl font-semibold'
+  if (level === '4') return 'text-lg font-semibold'
+  return 'text-3xl font-semibold tracking-tight'
+}
+
+const routeSpacerClass = (size: unknown): string => {
+  if (size === 'xs') return 'h-2'
+  if (size === 'sm') return 'h-4'
+  if (size === 'lg') return 'h-16'
+  if (size === 'xl') return 'h-28'
+  return 'h-8'
+}
+
+const jsxAttribute = (name: string, value: unknown): string =>
+  typeof value === 'string' && value.length > 0
+    ? ` ${name}=${JSON.stringify(value)}`
+    : ''
+
+const renderRouteNodeChildren = (value: unknown): string => {
+  if (Array.isArray(value)) {
+    return value.map((item) => renderRouteNode(item)).join('\n')
+  }
+  return renderRouteNode(value)
+}
+
+const renderRouteNode = (value: unknown): string => {
+  if (!isOpenUIElementNode(value)) return ''
+
+  const props = value.props ?? {}
+  if (value.typeName === 'Stack') {
+    return `<div className=${JSON.stringify(routeStackClass(props))}>
+${renderRouteNodeChildren(props.children)}
+</div>`
+  }
+  if (value.typeName === 'Grid') {
+    return `<div className=${JSON.stringify(routeGridClass(props.cols, props.gap, props.className))}>
+${renderRouteNodeChildren(props.children)}
+</div>`
+  }
+  if (value.typeName === 'Box') {
+    return `<div${jsxAttribute('className', props.className)}>
+${renderRouteNodeChildren(props.children)}
+</div>`
+  }
+  if (value.typeName === 'Section') {
+    return `<section className=${JSON.stringify(
+      ['w-full px-4 py-12 md:py-20', props.className]
+        .filter(
+          (item): item is string => typeof item === 'string' && item.length > 0,
+        )
+        .join(' '),
+    )}>
+  <div className="mx-auto max-w-6xl">
+${renderRouteNodeChildren(props.children)}
+  </div>
+</section>`
+  }
+  if (value.typeName === 'SectionAnchor') {
+    return `<div${jsxAttribute('id', props.id)}${jsxAttribute('className', props.className)}>
+${renderRouteNodeChildren(props.children)}
+</div>`
+  }
+  if (value.typeName === 'Spacer') {
+    return `<div className=${JSON.stringify(routeSpacerClass(props.size))} />`
+  }
+  if (value.typeName === 'Heading') {
+    return `<h2 className=${JSON.stringify(
+      [routeHeadingClass(props.level), props.className]
+        .filter(
+          (item): item is string => typeof item === 'string' && item.length > 0,
+        )
+        .join(' '),
+    )}>{${JSON.stringify(String(props.text ?? ''))}}</h2>`
+  }
+  if (value.typeName === 'Text') {
+    return `<p className=${JSON.stringify(
+      [
+        'leading-7',
+        props.tone === 'muted' ? 'text-muted-foreground' : '',
+        props.className,
+      ]
+        .filter(
+          (item): item is string => typeof item === 'string' && item.length > 0,
+        )
+        .join(' '),
+    )}>{${JSON.stringify(String(props.text ?? ''))}}</p>`
+  }
+  if (!value.typeName || value.typeName === 'PageSwitch') return ''
+
+  return `<${toIdentifier(value.typeName)}Block props={${JSON.stringify(
+    props,
+  )}} lakebed={input.lakebed} />`
+}
+
+const renderRouteClientComponentDefinition = (
+  route: LakebedRoute,
+  nestedComponentNames: string[],
+): ClientComponentDefinition => ({
+  name: route.componentName,
+  preludeSources: [],
+  source: `(input) => (
+    <>
+${renderRouteNode(route.node)}
+    </>
+  )`,
+  imports: [
+    'import type { ComponentChildren } from "preact";',
+    'import type { LakebedAdapter } from "../lib/lakebed";',
+    ...nestedComponentNames.map(
+      (name) =>
+        `import { ${toIdentifier(name)}Block } from "./${toIdentifier(name)}";`,
+    ),
+  ],
+  vendorFiles: new Set<string>(),
+})
+
+const normalizeRouteTarget = (value: string): string =>
+  value.trim().toLowerCase()
+
+const resolveLakebedRouteTarget = (
+  target: string,
+  routes: LakebedRoute[],
+): string | null => {
+  const [pageLabel, sectionId] = target.split('#')
+  const route = routes.find(
+    (entry) =>
+      normalizeRouteTarget(entry.label) ===
+      normalizeRouteTarget(pageLabel ?? ''),
+  )
+  if (!route) return null
+  return sectionId ? `${route.path}#${sectionId}` : route.path
+}
+
+const buildLakebedTargetMap = (
+  routes: LakebedRoute[],
+  sourceTargetMap: Record<string, string>,
+): Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(sourceTargetMap)
+      .map(([alias, target]) => [
+        alias,
+        resolveLakebedRouteTarget(target, routes),
+      ])
+      .filter(
+        (entry): entry is [string, string] => typeof entry[1] === 'string',
+      ),
+  )
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value)
@@ -2007,6 +2438,7 @@ const rewriteNamedBareImport = (
   const moduleName = specifier.text
   if (
     allowedLakebedClientBareImport(moduleName) ||
+    moduleName === '@ship-fast/lakebed/react' ||
     moduleName.startsWith('.') ||
     moduleName.startsWith('#/')
   ) {
@@ -2066,6 +2498,9 @@ function rewriteLakebedClientImports(
     if (moduleName.startsWith('#/lib/img')) {
       return relativeImportPath(context.outPath, 'client/lib/image.tsx')
     }
+    if (moduleName === '@ship-fast/lakebed/react') {
+      return relativeImportPath(context.outPath, 'client/lib/lakebed.ts')
+    }
     if (moduleName.startsWith('#/')) {
       const targetRel = resolveBlockSourceManifestPath(
         `src/${moduleName.slice(2)}`,
@@ -2121,6 +2556,14 @@ function rewriteLakebedClientImports(
 
   for (const statement of sourceFile.statements) {
     if (ts.isImportDeclaration(statement)) {
+      if (statement.importClause?.isTypeOnly) {
+        ranges.push({
+          start: statement.getFullStart(),
+          end: statement.getEnd(),
+          text: '',
+        })
+        continue
+      }
       const special = rewriteNamedBareImport(statement, context)
       if (special) {
         ranges.push({
@@ -2170,6 +2613,8 @@ function copyBlocksClientSourceForLakebed(
       ? 'client/lib/cn.ts'
       : blocksRel.startsWith('src/components/')
         ? `client/${blocksRel.slice('src/'.length)}`
+        : blocksRel.startsWith('src/section-kit/')
+          ? `client/${blocksRel.slice('src/'.length)}`
         : `client/vendor/ship-fast-blocks/${blocksRel}`
   if (seenBlockFiles.has(outPath)) return outPath
   seenBlockFiles.add(outPath)
@@ -2228,16 +2673,26 @@ const transformHandler = (
     .filter(ts.isVariableStatement)
     .flatMap((statement) => [...statement.declarationList.declarations])[0]
   const initializer = declaration?.initializer
-  if (!initializer || !ts.isArrowFunction(initializer)) {
+    ? unwrapExpression(declaration.initializer)
+    : undefined
+  const handler =
+    initializer && ts.isCallExpression(initializer)
+      ? initializer.arguments.find(ts.isArrowFunction)
+      : initializer
+  if (!handler || !ts.isArrowFunction(handler)) {
     return `${name}: ${wrapper}((ctx) => {
   ensureSeedData(ctx.db);
   return { ok: true, userId: ctx.auth.userId };
 })`
   }
 
-  const args = initializer.parameters
+  const firstParameter = handler.parameters[0]?.name
+  const contextName = firstParameter?.getText(sourceFile) ?? 'ctx'
+  const contextAlias =
+    contextName && contextName !== 'ctx' ? `  const ${contextName} = ctx\n` : ''
+  const args = handler.parameters
     .slice(1)
-    .map((parameter) => parameter.getText(sourceFile))
+    .map((parameter) => parameter.name.getText(sourceFile))
     .join(', ')
   const prefix = args ? `ctx, ${args}` : 'ctx'
 
@@ -2250,26 +2705,26 @@ const transformHandler = (
       numericFieldNames,
     )
 
-  if (ts.isBlock(initializer.body)) {
-    const body = initializer.body.statements
+  if (ts.isBlock(handler.body)) {
+    const body = handler.body.statements
       .map((statement) => printNode(statement, sourceFile))
       .join('\n')
     return `${name}: ${wrapper}((${prefix}) => {
   ensureSeedData(ctx.db);
   const db = ctx.db
-${normalizeHandlerSource(body)
-  .split('\n')
-  .map((line) => `  ${line}`)
-  .join('\n')}
+${contextAlias}${normalizeHandlerSource(body)
+      .split('\n')
+      .map((line) => `  ${line}`)
+      .join('\n')}
 })`
   }
 
   const expression = normalizeHandlerSource(
-    printNode(initializer.body, sourceFile),
-  ).replace(/\bdb\./g, 'ctx.db.')
+    printNode(handler.body, sourceFile),
+  ).replace(/(^|[^A-Za-z0-9_$.])db\./g, '$1ctx.db.')
   return `${name}: ${wrapper}((${prefix}) => {
   ensureSeedData(ctx.db);
-  return ${expression};
+${contextAlias}  return ${expression};
 })`
 }
 
@@ -2448,6 +2903,7 @@ export function normalizeEmail(value: string): string {
 const renderClientRoutes = (
   routes: LakebedRoute[],
   imageSources: ImageSource[],
+  targetMap: Record<string, string>,
 ): string => {
   const routeData = routes.map((route) => ({
     label: route.label,
@@ -2467,6 +2923,8 @@ export const pages = ${JSON.stringify(routeData, null, 2)} satisfies SitePage[]
 export const routeByLabel = new Map(
   pages.map((page) => [page.label, page.path]),
 )
+
+export const routeTargets = ${JSON.stringify(targetMap, null, 2)} satisfies Record<string, string>
 
 export const imageSources = ${JSON.stringify(imageSources, null, 2)} satisfies Array<{ alt: string; src: string }>
 `
@@ -2535,7 +2993,7 @@ export function StyleOverrides() {
 `
 
 const renderClientNavigation =
-  (): string => `import { routeByLabel } from "../routes";
+  (): string => `import { routeByLabel, routeTargets } from "../routes";
 
 function slugFragment(value: string): string {
   return value
@@ -2548,19 +3006,30 @@ function slugFragment(value: string): string {
 function navigateTo(path: string) {
   window.history.pushState({}, "", path);
   window.dispatchEvent(new PopStateEvent("popstate"));
-  window.scrollTo({ top: 0 });
+  const sectionId = path.includes("#") ? path.split("#").pop() : "";
+  if (sectionId) {
+    requestAnimationFrame(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  } else {
+    window.scrollTo({ top: 0 });
+  }
 }
 
 export function useNavigate() {
   return (target: unknown) => {
     if (typeof target !== "string" || !target.trim()) return;
     const value = target.trim();
-    const route = routeByLabel.get(value) ?? (value.startsWith("/") ? value : null);
+    const route =
+      routeTargets[value] ??
+      routeTargets[value.toLowerCase()] ??
+      routeByLabel.get(value) ??
+      (value.startsWith("/") ? value : null);
     if (route) {
       navigateTo(route);
       return;
     }
-    window.location.hash = slugFragment(value);
+    console.warn("[ShipFast] Unresolved navigation target:", slugFragment(value));
   };
 }
 `
@@ -2632,8 +3101,32 @@ const renderClientLakebed = (): string => `import {
   useMutation,
   useQuery,
 } from "lakebed/client";
+import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 
 export type LakebedAdapter = ReturnType<typeof useLakebedAdapter>;
+
+type LakebedMutationFunction<Args extends unknown[], Result> = ((
+  ...args: Args
+) => Promise<Result>) & {
+  isPending: boolean;
+  lastError: unknown | null;
+  pendingCount: number;
+  reset(): void;
+};
+
+export type LakebedClientRuntime<TDefinition = unknown> = LakebedAdapter & {
+  readonly __definition?: TDefinition;
+};
+
+export type LakebedKeyedMutationFunction<Args extends unknown[], Result> = {
+  hasPending: boolean;
+  isPending(key: string): boolean;
+  lastError: unknown | null;
+  pendingKey: string | null;
+  pendingKeys: readonly string[];
+  reset(): void;
+  run(key: string, ...args: Args): Promise<Result | undefined>;
+};
 
 function normalizeQueryValue(name: string, value: unknown) {
   if (!/(Names|Titles|Emails)$/.test(name)) return value;
@@ -2667,6 +3160,99 @@ function normalizeEntityListValue(name: string, value: unknown) {
   });
 }
 
+function useLakebedMutation<Args extends unknown[] = unknown[], Result = unknown>(
+  name: string,
+): LakebedMutationFunction<Args, Result> {
+  const mutation = useMutation<Args, Result>(name);
+  const mutationRef = useRef(mutation);
+  mutationRef.current = mutation;
+  const [lastError, setLastError] = useState<unknown | null>(null);
+  const [pendingCount, setPendingCount] = useState(0);
+  const reset = useCallback(() => setLastError(null), []);
+  const callable = useMemo(() => {
+    const run = (async (...args: Args) => {
+      setPendingCount((count) => count + 1);
+      setLastError(null);
+      try {
+        return await mutationRef.current(...args);
+      } catch (error) {
+        setLastError(error);
+        throw error;
+      } finally {
+        setPendingCount((count) => Math.max(0, count - 1));
+      }
+    }) as LakebedMutationFunction<Args, Result>;
+    run.isPending = false;
+    run.lastError = null;
+    run.pendingCount = 0;
+    run.reset = reset;
+    return run;
+  }, [reset]);
+
+  callable.isPending = pendingCount > 0;
+  callable.lastError = lastError;
+  callable.pendingCount = pendingCount;
+  callable.reset = reset;
+
+  return callable;
+}
+
+export function useKeyedLakebedMutation<
+  TDefinition = unknown,
+  Args extends unknown[] = unknown[],
+  Result = unknown,
+>(
+  lakebed: LakebedClientRuntime<TDefinition>,
+  name: string,
+): LakebedKeyedMutationFunction<Args, Result> {
+  const mutation = lakebed.useMutation<Args, Result>(name);
+  const [pendingKeys, setPendingKeys] = useState<readonly string[]>([]);
+  const pendingKeysRef = useRef<readonly string[]>([]);
+
+  pendingKeysRef.current = pendingKeys;
+
+  const run = useCallback(
+    async (key: string, ...args: Args): Promise<Result | undefined> => {
+      if (pendingKeysRef.current.includes(key)) return undefined;
+
+      const addKey = (current: readonly string[]) =>
+        current.includes(key) ? current : [...current, key];
+      pendingKeysRef.current = addKey(pendingKeysRef.current);
+      setPendingKeys(addKey);
+
+      try {
+        return await mutation(...args);
+      } finally {
+        const removeKey = (current: readonly string[]) =>
+          current.filter((item) => item !== key);
+        pendingKeysRef.current = removeKey(pendingKeysRef.current);
+        setPendingKeys(removeKey);
+      }
+    },
+    [mutation],
+  );
+
+  const isPending = useCallback(
+    (key: string) => pendingKeys.includes(key),
+    [pendingKeys],
+  );
+  const reset = useCallback(() => {
+    pendingKeysRef.current = [];
+    setPendingKeys([]);
+    mutation.reset();
+  }, [mutation]);
+
+  return {
+    hasPending: pendingKeys.length > 0,
+    isPending,
+    lastError: mutation.lastError,
+    pendingKey: pendingKeys[0] ?? null,
+    pendingKeys,
+    reset,
+    run,
+  };
+}
+
 export function AuthRuntime() {
   useAuth();
   return null;
@@ -2682,8 +3268,8 @@ export function useLakebedAdapter() {
     },
     useMutation<Args extends unknown[] = unknown[], Result = unknown>(
       name: string,
-    ): (...args: Args) => Promise<Result> {
-      return useMutation<Args, Result>(name);
+    ): LakebedMutationFunction<Args, Result> {
+      return useLakebedMutation<Args, Result>(name);
     },
     useAuth() {
       return auth;
@@ -3141,24 +3727,25 @@ export async function buildOpenUILakebedProjectFiles(
   }
 
   const parsed = parseOpenUIForExport(input.source, input.siteSpecJson)
-  const componentNames = [
-    ...new Set(
-      parsed.pages
-        .map((page) => page.typeName)
-        .filter((name): name is string => typeof name === 'string'),
-    ),
-  ]
   const routes = buildRoutes(parsed)
+  const componentNames = collectRouteComponentNames(routes)
   const definitions = collectDefinitions(componentNames)
   const files: Record<string, string> = {}
   const seenVendorFiles = new Set<string>()
   const seenBlockFiles = new Set<string>()
-  const clientComponents = collectClientComponents(
+  const nestedClientComponents = collectClientComponents(
     componentNames,
     files,
     seenVendorFiles,
     seenBlockFiles,
   )
+  const routeClientComponents = routes.map((route) =>
+    renderRouteClientComponentDefinition(route, componentNames),
+  )
+  const clientComponents = [
+    ...routeClientComponents,
+    ...nestedClientComponents,
+  ]
   const themeName = readThemeName(input.siteSpecJson, input.themeName)
   const themeCss = buildLakebedThemeCss(
     resolveThemeStyles(themeName),
@@ -3168,6 +3755,7 @@ export async function buildOpenUILakebedProjectFiles(
     routes,
     input.previewHtml,
   )
+  const targetMap = buildLakebedTargetMap(routes, parsed.targetMap)
   const styleOverrides = extractStyleOverrides(input.previewHtml)
   const adminAccess = readLakebedAdminAccessConfig(input.siteSpecJson)
   Object.assign(files, {
@@ -3179,7 +3767,7 @@ export async function buildOpenUILakebedProjectFiles(
       clientComponents,
       adminAccess,
     ),
-    'client/routes.ts': renderClientRoutes(routes, imageSources),
+    'client/routes.ts': renderClientRoutes(routes, imageSources, targetMap),
     'client/lib/image.tsx': renderClientImage(),
     'client/lib/lakebed.ts': renderClientLakebed(),
     'client/lib/navigation.tsx': renderClientNavigation(),

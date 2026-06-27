@@ -50,10 +50,14 @@ export type {
 } from './auth-shared.ts'
 
 export type JsonRecord = Record<string, unknown>
-export type LakebedSessionSchema = Record<string, TableDefinition>
+export type LakebedSessionSchema = Record<
+  string,
+  TableDefinition & { seedFromProps?: boolean }
+>
 export type TypedTableDefinition<TFields extends Record<string, Field<any>>> =
   TableDefinition & {
     fields: TFields
+    seedFromProps?: boolean
   }
 
 export const table = <TFields extends Record<string, Field<any>>>(
@@ -198,6 +202,25 @@ export function mutation<
   handler: LakebedMutationHandler<TProps, TData, TArgs, TResult>,
 ): LakebedMutationHandler<TProps, TData, TArgs, TResult> {
   return handler
+}
+
+export function createLakebedDefinition<
+  TSchema extends LakebedSessionSchema,
+  TProps = JsonRecord,
+>(schema: TSchema) {
+  type TData = LakebedDataFromSchema<TSchema>
+
+  return {
+    schema,
+    query<TResult>(handler: LakebedQueryHandler<TProps, TData, TResult>) {
+      return query(handler)
+    },
+    mutation<TArgs extends unknown[], TResult>(
+      handler: LakebedMutationHandler<TProps, TData, TArgs, TResult>,
+    ) {
+      return mutation(handler)
+    },
+  }
 }
 
 export function createLakebedHandlerContext<TProps, TData extends JsonRecord>({

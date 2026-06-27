@@ -1,6 +1,12 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
-import { cloneElement, isValidElement, type ReactElement } from 'react'
+
+import {
+  cloneElement,
+  isValidElement,
+  type ReactElement,
+  type ReactNode,
+} from 'react'
 import { cn } from '#/lib/utils.ts'
 
 // Layout primitives. shadcn ships no generic layout components, so these are
@@ -30,9 +36,31 @@ const justifyMap = {
   around: 'justify-around',
 } as const
 
-const withRenderKeys = (nodes: unknown): unknown => {
-  if (Array.isArray(nodes)) {
-    return nodes.map((node, index) => {
+const toReactNode = (node: unknown): ReactNode => {
+  if (
+    node === null ||
+    node === undefined ||
+    typeof node === 'string' ||
+    typeof node === 'number' ||
+    typeof node === 'bigint' ||
+    typeof node === 'boolean' ||
+    isValidElement(node)
+  ) {
+    return node
+  }
+
+  if (Array.isArray(node)) {
+    return node.map(toReactNode)
+  }
+
+  return null
+}
+
+const withRenderKeys = (nodes: unknown): ReactNode => {
+  const rendered = toReactNode(nodes)
+
+  if (Array.isArray(rendered)) {
+    return rendered.map((node, index) => {
       const keyed = withRenderKeys(node)
       return isValidElement(keyed) && keyed.key == null
         ? cloneElement(keyed, { key: `openui-child-${index}` })
@@ -40,21 +68,21 @@ const withRenderKeys = (nodes: unknown): unknown => {
     })
   }
 
-  if (isValidElement(nodes)) {
-    const childProps = nodes.props as { children?: unknown }
+  if (isValidElement(rendered)) {
+    const childProps = rendered.props as { children?: unknown }
     if (Array.isArray(childProps.children)) {
       return cloneElement(
-        nodes as ReactElement<{ children?: unknown }>,
+        rendered as ReactElement<{ children?: ReactNode }>,
         undefined,
         withRenderKeys(childProps.children),
       )
     }
   }
 
-  return nodes
+  return rendered
 }
 
-export const Stack = defineComponent({
+export const Stack = defineCapsule({
   name: 'Stack',
   description:
     "Flex container. The required root of every UI. direction 'col' (default) stacks vertically, 'row' horizontally.",
@@ -93,7 +121,7 @@ const colsMap = {
   6: 'grid-cols-2 lg:grid-cols-6',
 } as const
 
-export const Grid = defineComponent({
+export const Grid = defineCapsule({
   name: 'Grid',
   description:
     'Responsive grid container. `cols` is the column count at desktop width (collapses on mobile).',
@@ -112,12 +140,12 @@ export const Grid = defineComponent({
         props.className,
       )}
     >
-      {renderNode(props.children)}
+      {withRenderKeys(renderNode(props.children))}
     </div>
   ),
 })
 
-export const Box = defineComponent({
+export const Box = defineCapsule({
   name: 'Box',
   description:
     'Generic container div. Use `className` for arbitrary Tailwind styling.',
@@ -130,7 +158,7 @@ export const Box = defineComponent({
   ),
 })
 
-export const Section = defineComponent({
+export const Section = defineCapsule({
   name: 'Section',
   description:
     'Page section with vertical padding and a centered max-width container. Use for top-level page bands.',
@@ -145,7 +173,7 @@ export const Section = defineComponent({
   ),
 })
 
-export const Spacer = defineComponent({
+export const Spacer = defineCapsule({
   name: 'Spacer',
   description: 'Vertical spacing. size xs..xl.',
   props: z.object({
@@ -159,7 +187,7 @@ export const Spacer = defineComponent({
   },
 })
 
-export const Heading = defineComponent({
+export const Heading = defineCapsule({
   name: 'Heading',
   description: 'Section heading text. level 1 (largest) .. 4.',
   props: z.object({
@@ -178,7 +206,7 @@ export const Heading = defineComponent({
   },
 })
 
-export const Text = defineComponent({
+export const Text = defineCapsule({
   name: 'Text',
   description: "Paragraph / body text. tone 'muted' for secondary text.",
   props: z.object({

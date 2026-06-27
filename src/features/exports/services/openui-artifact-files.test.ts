@@ -1,8 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import ts from 'typescript'
 
 import { buildOpenUIArtifactFiles } from './openui-artifact-files'
-
-vi.setConfig({ testTimeout: 120_000 })
 
 const itUnlessCoverage = process.env.VITEST_COVERAGE === '1' ? it.skip : it
 
@@ -96,6 +95,60 @@ const siteSpecJsonWithSoftwareGenUI = JSON.stringify({
   },
 })
 
+const parseTsx = (fileName: string, moduleSource: string): ts.SourceFile =>
+  ts.createSourceFile(
+    fileName,
+    moduleSource,
+    ts.ScriptTarget.Latest,
+    true,
+    fileName.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  )
+
+const importSpecifiers = (sourceFile: ts.SourceFile): string[] =>
+  sourceFile.statements
+    .filter(ts.isImportDeclaration)
+    .flatMap((statement) =>
+      ts.isStringLiteral(statement.moduleSpecifier)
+        ? [statement.moduleSpecifier.text]
+        : [],
+    )
+
+const hasJsxElementNamed = (
+  sourceFile: ts.SourceFile,
+  elementName: string,
+): boolean => {
+  let found = false
+
+  const visit = (node: ts.Node) => {
+    if (
+      (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
+      ts.isIdentifier(node.tagName) &&
+      node.tagName.text === elementName
+    ) {
+      found = true
+      return
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+  return found
+}
+
+const expectRouteWrapperRenders = (
+  files: Record<string, string>,
+  routeComponent: string,
+  sectionComponent: string,
+) => {
+  const sourceFile = parseTsx(
+    `src/components/${routeComponent}.tsx`,
+    files[`src/components/${routeComponent}.tsx`] ?? '',
+  )
+
+  expect(importSpecifiers(sourceFile)).toContain(`./${sectionComponent}`)
+  expect(hasJsxElementNamed(sourceFile, sectionComponent)).toBe(true)
+}
+
 describe('openui artifact files', () => {
   it('builds React artifact files from OpenUI components instead of static preview HTML', async () => {
     const { files, download } = await buildOpenUIArtifactFiles({
@@ -108,7 +161,7 @@ describe('openui artifact files', () => {
     expect(download?.filename).toBe('artifact-demo-react.zip')
     expect(files['src/components/SaasHero.tsx']).toContain('SaasHero')
     expect(files['src/data/pages.ts']).toContain('Hello artifact')
-    expect(files['src/App.tsx']).toContain('SaasHero')
+    expectRouteWrapperRenders(files, 'RoutePage1Home', 'SaasHero')
     expect(files['vite.config.js']).toBeUndefined()
   })
 
@@ -162,7 +215,7 @@ describe('openui artifact files', () => {
     expect(download?.filename).toBe('artifact-demo-next.zip')
     expect(files['src/components/SaasHero.tsx']).toContain('SaasHero')
     expect(files['src/data/pages.ts']).toContain('Hello artifact')
-    expect(files['app/page.tsx']).toContain('SaasHero')
+    expectRouteWrapperRenders(files, 'RoutePage1Home', 'SaasHero')
     expect(files['next.config.js']).toBeUndefined()
   })
 
@@ -330,7 +383,7 @@ describe('openui artifact files', () => {
       target: 'next',
     })
     expect(next.files['app/admin/page.tsx']).toContain('ShipFastAdminGate')
-    expect(next.files['app/shop/page.tsx']).toContain('ShopOverview')
+    expectRouteWrapperRenders(next.files, 'RoutePage2Shop', 'ShopOverview')
     expect(next.files['src/ship-fast-admin.ts']).toContain('store@example.com')
 
     const lakebed = await buildOpenUIArtifactFiles({
@@ -367,8 +420,8 @@ describe('openui artifact files', () => {
       sessionId: 'software-demo',
       target: 'next',
     })
-    expect(next.files['app/docs/page.tsx']).toContain('DocsHero')
-    expect(next.files['app/contact/page.tsx']).toContain('ContactHero')
+    expectRouteWrapperRenders(next.files, 'RoutePage2Docs', 'DocsHero')
+    expectRouteWrapperRenders(next.files, 'RoutePage3Contact', 'ContactHero')
     expect(next.files['app/admin/page.tsx']).toContain('ShipFastAdminGate')
     expect(next.files['src/ship-fast-admin.ts']).toContain('saas@example.com')
   })

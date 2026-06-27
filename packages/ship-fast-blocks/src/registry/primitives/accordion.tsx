@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Accordion as UIAccordion,
   AccordionContent,
@@ -9,7 +10,7 @@ import {
 
 // Compound: flatten Accordion/Item/Trigger/Content into items:[{title, content}].
 // Renders statically open (defaultValue = first item) so a panel is visible.
-export const Accordion = defineComponent({
+export const Accordion = defineCapsule({
   name: 'Accordion',
   description:
     'Vertically stacked collapsible sections. items:[{title,content?}]. First item open by default.',

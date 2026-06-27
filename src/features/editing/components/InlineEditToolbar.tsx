@@ -20,6 +20,10 @@ interface InlineEditToolbarProps {
     style: string
     occurrenceIndex: number
   }) => void
+  /** Called when the user clicks Apply/Save. Commits any pending text edit
+   *  before style changes are saved. Always called, even if no style was
+   *  modified — so text-only edits are saved too. */
+  onCommitText?: () => void
   onClose: () => void
   isApplying?: boolean
   isForking?: boolean
@@ -30,6 +34,7 @@ export function InlineEditToolbar({
   anchorRect,
   activeElement,
   onStyleApply,
+  onCommitText,
   onClose,
   isApplying = false,
   isForking = false,
@@ -43,11 +48,20 @@ export function InlineEditToolbar({
   )
   const toolbarRef = useRef<HTMLDivElement>(null)
   const originalStyleRef = useRef<string | null>(null)
+  // Track whether the initial computed-style read is complete. The style-
+  // applying useEffect must NOT run on mount with default values (fontSize='16',
+  // color='#ffffff', fontWeight='400') — that causes a visual flash and layout
+  // shift before the element's actual styles are read. Only apply styles after
+  // the read is done AND the user has actually changed a control.
+  const styleReadCompleteRef = useRef(false)
+  const userModifiedRef = useRef(false)
 
   // Save original style and read computed styles when element changes
   useEffect(() => {
     if (!activeElement) return
 
+    styleReadCompleteRef.current = false
+    userModifiedRef.current = false
     originalStyleRef.current = activeElement.getAttribute('style')
 
     const computed = window.getComputedStyle(activeElement)
@@ -76,11 +90,20 @@ export function InlineEditToolbar({
     } else {
       setAlignment('left')
     }
+
+    // Mark read complete after state updates are processed. The style-applying
+    // useEffect checks this ref to know it's safe to apply.
+    requestAnimationFrame(() => {
+      styleReadCompleteRef.current = true
+    })
   }, [activeElement])
 
-  // Apply styles to element immediately for preview
+  // Apply styles to element for live preview — ONLY after the initial computed
+  // style read is complete AND the user has actually changed a control. Without
+  // this guard, the toolbar applies default values (16px, #ffffff, 400) on mount
+  // before the element's real styles are read, causing a flash + layout shift.
   useEffect(() => {
-    if (!activeElement) return
+    if (!activeElement || !styleReadCompleteRef.current || !userModifiedRef.current) return
 
     activeElement.style.fontSize = `${fontSize}px`
     activeElement.style.fontWeight = isBold ? '700' : '400'
@@ -88,6 +111,13 @@ export function InlineEditToolbar({
     activeElement.style.color = color
     activeElement.style.textAlign = alignment
   }, [fontSize, isBold, isItalic, color, alignment, activeElement])
+
+  // Prevent mousedown on the toolbar from stealing focus from the contentEditable
+  // element. Without this, clicking any toolbar button blurs the contentEditable,
+  // which fires finishEdit() and kills the edit before the style can be applied.
+  const preventFocusSteal = (e: React.MouseEvent) => {
+    e.preventDefault()
+  }
 
   // Close on click outside
   useEffect(() => {
@@ -117,6 +147,15 @@ export function InlineEditToolbar({
 
   const handleApply = () => {
     if (activeElement && !isApplying && !isForking) {
+      // Always commit text changes first — the user may have typed text
+      // and clicked Apply without modifying any style controls.
+      onCommitText?.()
+
+      // Only save style if the user actually modified a style control.
+      if (!userModifiedRef.current) {
+        onClose()
+        return
+      }
       // Anchor on the exact `class` attribute: it's the only stable identifier
       // present in BOTH this live DOM and the server-rendered stored preview
       // HTML (which has no data-tsd-source). occurrenceIndex disambiguates
@@ -150,6 +189,13 @@ export function InlineEditToolbar({
     }
   }
 
+  // Mark that the user has started modifying styles. The style-applying
+  // useEffect only runs after this is set, preventing the initial mount from
+  // applying default values before the computed styles are read.
+  const markUserModified = () => {
+    userModifiedRef.current = true
+  }
+
   if (!isOpen || !anchorRect || !activeElement) return null
 
   const toolbarStyle: React.CSSProperties = {
@@ -164,12 +210,16 @@ export function InlineEditToolbar({
       ref={toolbarRef}
       className="inline-edit-toolbar rounded-lg border border-white/10 bg-[#0b0d14]/95 shadow-2xl backdrop-blur-xl p-2 flex items-center gap-2"
       style={toolbarStyle}
+      onMouseDown={preventFocusSteal}
     >
       <div className="flex items-center gap-1 border-r border-white/10 pr-2">
         <Type className="size-4 text-white/40" />
         <select
           value={fontSize}
-          onChange={(e) => setFontSize(e.target.value)}
+          onChange={(e) => {
+            markUserModified()
+            setFontSize(e.target.value)
+          }}
           disabled={isApplying || isForking}
           className="bg-white/5 text-white text-xs rounded px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-300/50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -187,7 +237,10 @@ export function InlineEditToolbar({
       <div className="flex items-center gap-1 border-r border-white/10 pr-2">
         <button
           type="button"
-          onClick={() => setIsBold(!isBold)}
+          onClick={() => {
+            markUserModified()
+            setIsBold(!isBold)
+          }}
           disabled={isApplying || isForking}
           className={cn(
             'grid size-7 place-items-center rounded transition-colors',
@@ -202,7 +255,10 @@ export function InlineEditToolbar({
         </button>
         <button
           type="button"
-          onClick={() => setIsItalic(!isItalic)}
+          onClick={() => {
+            markUserModified()
+            setIsItalic(!isItalic)
+          }}
           disabled={isApplying || isForking}
           className={cn(
             'grid size-7 place-items-center rounded transition-colors',
@@ -221,7 +277,10 @@ export function InlineEditToolbar({
         <input
           type="color"
           value={color}
-          onChange={(e) => setColor(e.target.value)}
+          onChange={(e) => {
+            markUserModified()
+            setColor(e.target.value)
+          }}
           disabled={isApplying || isForking}
           className="size-7 rounded cursor-pointer bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Text color"
@@ -231,7 +290,10 @@ export function InlineEditToolbar({
       <div className="flex items-center gap-1 border-r border-white/10 pr-2">
         <button
           type="button"
-          onClick={() => setAlignment('left')}
+          onClick={() => {
+            markUserModified()
+            setAlignment('left')
+          }}
           disabled={isApplying || isForking}
           className={cn(
             'grid size-7 place-items-center rounded transition-colors',
@@ -246,7 +308,10 @@ export function InlineEditToolbar({
         </button>
         <button
           type="button"
-          onClick={() => setAlignment('center')}
+          onClick={() => {
+            markUserModified()
+            setAlignment('center')
+          }}
           disabled={isApplying || isForking}
           className={cn(
             'grid size-7 place-items-center rounded transition-colors',
@@ -261,7 +326,10 @@ export function InlineEditToolbar({
         </button>
         <button
           type="button"
-          onClick={() => setAlignment('right')}
+          onClick={() => {
+            markUserModified()
+            setAlignment('right')
+          }}
           disabled={isApplying || isForking}
           className={cn(
             'grid size-7 place-items-center rounded transition-colors',

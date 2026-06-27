@@ -606,4 +606,16 @@ export default defineSchema({
     discountSubscriptionId: v.optional(v.string()),
     updatedAt: v.number(),
   }).index('by_userId', ['userId']),
+
+  aiCapsules: defineTable({
+    sessionId: v.id('sessions'),
+    capsuleName: v.string(),
+    parentCapsule: v.string(),
+    compiledJs: v.string(),
+    description: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_sessionId_capsuleName', ['sessionId', 'capsuleName']),
 })

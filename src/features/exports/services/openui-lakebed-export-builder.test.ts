@@ -5,10 +5,8 @@ import { join } from 'node:path'
 import { build } from 'esbuild'
 // @ts-expect-error jsdom type declarations are not installed in this workspace.
 import { JSDOM } from 'jsdom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
-
-// esbuild bundling integration tests; raise timeout to avoid load-induced 5s flakes
-vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 })
+import ts from 'typescript'
+import { afterEach, describe, expect, it } from 'vitest'
 
 const itUnlessCoverage = process.env.VITEST_COVERAGE === '1' ? it.skip : it
 
@@ -31,7 +29,189 @@ afterEach(() => {
   }
 })
 
+const parseTsx = (fileName: string, moduleSource: string): ts.SourceFile =>
+  ts.createSourceFile(
+    fileName,
+    moduleSource,
+    ts.ScriptTarget.Latest,
+    true,
+    fileName.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  )
+
+const importSpecifiers = (sourceFile: ts.SourceFile): string[] =>
+  sourceFile.statements
+    .filter(ts.isImportDeclaration)
+    .flatMap((statement) =>
+      ts.isStringLiteral(statement.moduleSpecifier)
+        ? [statement.moduleSpecifier.text]
+        : [],
+    )
+
+const hasPropertyNamed = (
+  sourceFile: ts.SourceFile,
+  propertyName: string,
+): boolean => {
+  let found = false
+
+  const visit = (node: ts.Node) => {
+    if (
+      ts.isPropertyAssignment(node) &&
+      ((ts.isIdentifier(node.name) && node.name.text === propertyName) ||
+        (ts.isStringLiteral(node.name) && node.name.text === propertyName))
+    ) {
+      found = true
+      return
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+  return found
+}
+
+const schemaFieldDefaultValue = ({
+  fieldName,
+  schemaName,
+  sourceFile,
+  tableName,
+}: {
+  fieldName: string
+  schemaName?: string
+  sourceFile: ts.SourceFile
+  tableName: string
+}): string | null => {
+  const propertyNameText = (name: ts.PropertyName): string | null => {
+    if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text
+    return null
+  }
+  const objectProperty = (
+    objectLiteral: ts.ObjectLiteralExpression,
+    name: string,
+  ): ts.PropertyAssignment | null =>
+    objectLiteral.properties.find(
+      (property): property is ts.PropertyAssignment =>
+        ts.isPropertyAssignment(property) &&
+        propertyNameText(property.name) === name,
+    ) ?? null
+  const tableShape = (
+    initializer: ts.Expression,
+  ): ts.ObjectLiteralExpression | null => {
+    if (!ts.isCallExpression(initializer)) return null
+    if (initializer.expression.getText(sourceFile) !== 'table') return null
+    const [shape] = initializer.arguments
+    return shape && ts.isObjectLiteralExpression(shape) ? shape : null
+  }
+  const defaultValue = (initializer: ts.Expression): string | null => {
+    if (!ts.isCallExpression(initializer)) return null
+    if (initializer.expression.getText(sourceFile) !== 'string().default') {
+      return null
+    }
+    const [value] = initializer.arguments
+    return value && ts.isStringLiteral(value) ? value.text : null
+  }
+  let value: string | null = null
+
+  const visit = (node: ts.Node) => {
+    if (value) return
+    if (
+      ts.isPropertyAssignment(node) &&
+      propertyNameText(node.name) === 'schema' &&
+      ts.isObjectLiteralExpression(node.initializer)
+    ) {
+      const schemaInitializer = schemaName
+        ? objectProperty(node.initializer, schemaName)?.initializer
+        : node.initializer
+      if (!schemaInitializer || !ts.isObjectLiteralExpression(schemaInitializer)) {
+        return
+      }
+      const tableProperty = objectProperty(schemaInitializer, tableName)
+      if (!tableProperty) return
+      const shape = tableShape(tableProperty.initializer)
+      if (!shape) return
+      const field = objectProperty(shape, fieldName)
+      value = field ? defaultValue(field.initializer) : null
+      return
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+  return value
+}
+
+const exportedClientFilesLeakImport = (
+  files: Record<string, string>,
+  packagePrefix: string,
+): boolean =>
+  Object.entries(files)
+    .filter(([fileName]) => fileName.startsWith('client/'))
+    .filter(([fileName]) => !fileName.startsWith('client/vendor/'))
+    .some(([fileName, moduleSource]) =>
+      importSpecifiers(parseTsx(fileName, moduleSource)).some((specifier) =>
+        specifier.startsWith(packagePrefix),
+      ),
+    )
+
+const v2ComposedLakebedSource = `root = PageSwitch(["Home"], [home])
+homeHero = EcommerceHero()
+homeHeroAnchor = SectionAnchor("home_hero", homeHero, "scroll-mt-28")
+homeDetail = ProductDetailHero({"title":"Aurora Pro"})
+home = Stack([homeHeroAnchor, homeDetail])`
+
 describe('openui lakebed image source generation', () => {
+  it('exports nested composed route capsules as native Lakebed components and schema', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: v2ComposedLakebedSource,
+      siteSpecJson: JSON.stringify({ projectName: 'Nested Lakebed Export' }),
+      sessionId: 'lakebed-nested-composed',
+      target: 'lakebed',
+    })
+    const routeComponent = parseTsx(
+      'client/components/RoutePage1Home.tsx',
+      built.files['client/components/RoutePage1Home.tsx'] ?? '',
+    )
+    const serverIndex = parseTsx(
+      'server/index.ts',
+      built.files['server/index.ts'] ?? '',
+    )
+
+    expect(built.files['client/components/RoutePage1Home.tsx']).toBeDefined()
+    expect(built.files['client/components/EcommerceHero.tsx']).toBeDefined()
+    expect(built.files['client/components/ProductDetailHero.tsx']).toBeDefined()
+    expect(built.files['client/components/Stack.tsx']).toBeUndefined()
+    expect(importSpecifiers(routeComponent)).toEqual(
+      expect.arrayContaining(['./EcommerceHero', './ProductDetailHero']),
+    )
+    expect(hasPropertyNamed(serverIndex, 'items')).toBe(true)
+    expect(hasPropertyNamed(serverIndex, 'products')).toBe(true)
+    expect(hasPropertyNamed(serverIndex, 'cartSummary')).toBe(true)
+    expect(hasPropertyNamed(serverIndex, 'addItem')).toBe(true)
+    expect(exportedClientFilesLeakImport(built.files, '@ship-fast/')).toBe(
+      false,
+    )
+  })
+
+  it('normalizes numeric schema defaults to string defaults in Lakebed exports', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: 'root = EcommerceHero()',
+      siteSpecJson: JSON.stringify({ projectName: 'Schema Default Export' }),
+      sessionId: 'lakebed-schema-defaults',
+      target: 'lakebed',
+    })
+    const serverIndex = parseTsx(
+      'server/index.ts',
+      built.files['server/index.ts'] ?? '',
+    )
+
+    expect(
+      schemaFieldDefaultValue({
+        fieldName: 'quantity',
+        sourceFile: serverIndex,
+        tableName: 'items',
+      }),
+    ).toBe('1')
+  })
+
   itUnlessCoverage(
     'renders generated commerce components with same-file helpers and undefined query results',
     async () => {
@@ -42,6 +222,19 @@ describe('openui lakebed image source generation', () => {
         sessionId: 'demo',
         target: 'lakebed',
       })
+      const serverSource = built.files['server/index.ts'] ?? ''
+
+      expect(serverSource).toContain('items: table({')
+      expect(serverSource).toContain('products: table({')
+      expect(serverSource).toContain('cartSummary: query')
+      expect(serverSource).toContain('productCatalog: query')
+      expect(serverSource).toContain('addItem: mutation')
+      expect(serverSource).toContain('syncCatalog: mutation')
+      expect(serverSource).not.toContain('articles: table')
+      expect(serverSource).not.toContain('addToReadingList')
+      expect(serverSource).not.toContain('CommerceCartItemInput')
+      expect(serverSource).not.toContain('CommerceCatalogProductInput')
+
       const directory = mkdtempSync(join(tmpdir(), 'lakebed-commerce-export-'))
 
       try {
@@ -123,6 +316,137 @@ export function signOut() {}
         expect(
           dom.window.document.querySelector('#app')?.textContent,
         ).toContain('Shop now')
+      } finally {
+        rmSync(directory, { force: true, recursive: true })
+      }
+    },
+  )
+
+  itUnlessCoverage(
+    'exposes pending state from generated Lakebed mutation adapters',
+    async () => {
+      const built = await buildOpenUILakebedProjectFiles({
+        source:
+          'root = EcommerceHero("Lakebed Commerce", ["Home"], {"brand":"Lakebed Commerce"})',
+        siteSpecJson: JSON.stringify({ projectName: 'Lakebed Commerce' }),
+        sessionId: 'demo',
+        target: 'lakebed',
+      })
+      const directory = mkdtempSync(join(tmpdir(), 'lakebed-pending-export-'))
+
+      try {
+        for (const [path, source] of Object.entries(built.files)) {
+          const absolutePath = join(directory, path)
+          mkdirSync(join(absolutePath, '..'), { recursive: true })
+          writeFileSync(absolutePath, source)
+        }
+        const entryPath = join(directory, 'render-pending.tsx')
+        writeFileSync(
+          entryPath,
+          `import { h, render } from "preact";
+import { useLakebedAdapter } from "./client/lib/lakebed";
+
+function Probe() {
+  const lakebed = useLakebedAdapter();
+  const addItem = lakebed.useMutation("addItem");
+  return h("button", {
+    disabled: addItem.isPending,
+    onClick: () => void addItem({ label: "Hydrating Serum", price: "$28" }),
+  }, addItem.isPending ? "Adding" : "Add to cart");
+}
+
+render(h(Probe, {}), document.getElementById("app"));
+`,
+        )
+        const bundled = await build({
+          bundle: true,
+          entryPoints: [entryPath],
+          format: 'iife',
+          jsx: 'automatic',
+          jsxImportSource: 'preact',
+          logLevel: 'silent',
+          nodePaths: [join(process.cwd(), 'node_modules')],
+          platform: 'browser',
+          plugins: [
+            {
+              name: 'lakebed-client-stub',
+              setup(pluginBuild) {
+                pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                  namespace: 'lakebed-client-stub',
+                  path: 'lakebed/client',
+                }))
+                pluginBuild.onLoad(
+                  {
+                    filter: /^lakebed\/client$/,
+                    namespace: 'lakebed-client-stub',
+                  },
+                  () => ({
+                    contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; }
+export function useMutation(name) {
+  return async () => {
+    if (name !== "addItem") return undefined;
+    return await new Promise((resolve) => {
+      globalThis.__resolveAddItemMutation = () => resolve(undefined);
+    });
+  };
+}
+export function useQuery() { return undefined; }
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                    loader: 'tsx',
+                  }),
+                )
+              },
+            },
+          ],
+          write: false,
+        })
+        const dom = new JSDOM('<div id="app"></div>', {
+          runScripts: 'outside-only',
+          url: 'https://example.test/',
+        })
+
+        expect(() => dom.window.eval(bundled.outputFiles[0].text)).not.toThrow()
+        const button = Array.from(
+          dom.window.document.querySelectorAll('button'),
+        ).find((candidate): candidate is HTMLButtonElement => {
+          if (typeof candidate !== 'object' || candidate === null) return false
+          if (!(candidate instanceof dom.window.HTMLButtonElement)) return false
+          const textContent = Reflect.get(candidate, 'textContent')
+          return (
+            typeof textContent === 'string' &&
+            textContent.includes('Add to cart')
+          )
+        })
+        expect(button).toBeTruthy()
+
+        button?.dispatchEvent(
+          new dom.window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        )
+        await new Promise((resolve) => setTimeout(resolve, 20))
+
+        expect(button?.textContent).toContain('Adding')
+        expect(button?.hasAttribute('disabled')).toBe(true)
+        const resolveAddItemMutation = Reflect.get(
+          dom.window,
+          '__resolveAddItemMutation',
+        )
+        if (typeof resolveAddItemMutation === 'function') {
+          resolveAddItemMutation()
+        }
+        await new Promise((resolve) => setTimeout(resolve, 20))
+
+        expect(button?.textContent).toContain('Add to cart')
+        expect(button?.hasAttribute('disabled')).toBe(false)
       } finally {
         rmSync(directory, { force: true, recursive: true })
       }
@@ -279,6 +603,39 @@ export function signOut() {}
     expect(output).toContain('CloudInfraHero')
     expect(output).not.toContain('openui-error')
     expect(output).not.toContain('te is not a function')
+  })
+
+  it('packages shared section-kit dependencies for Lakebed exports', async () => {
+    const cases = [
+      {
+        componentName: 'LinkInBioNavbar',
+        exportSource: 'root = LinkInBioNavbar()',
+        sectionKitFiles: ['SiteNav', 'MobileNavDrawer'],
+      },
+      {
+        componentName: 'ChurchNavbar',
+        exportSource: 'root = ChurchNavbar()',
+        sectionKitFiles: ['MobileNavDrawer'],
+      },
+    ]
+
+    for (const { componentName, exportSource, sectionKitFiles } of cases) {
+      const built = await buildOpenUILakebedProjectFiles({
+        source: exportSource,
+        siteSpecJson: JSON.stringify({ projectName: componentName }),
+        sessionId: `lakebed-section-kit-${componentName}`,
+        target: 'lakebed',
+      })
+
+      expect(built.files[`client/components/${componentName}.tsx`]).toBeDefined()
+      for (const fileName of sectionKitFiles) {
+        expect(built.files[`client/section-kit/${fileName}.tsx`]).toBeDefined()
+      }
+      expect(exportedClientFilesLeakImport(built.files, '#/')).toBe(false)
+      expect(exportedClientFilesLeakImport(built.files, '@ship-fast/')).toBe(
+        false,
+      )
+    }
   })
 
   it('exports a native Lakebed app without generated block registry traces', async () => {

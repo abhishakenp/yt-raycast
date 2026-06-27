@@ -1,3 +1,4 @@
+import { parseHTML } from 'linkedom'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -14,6 +15,8 @@ const expectShipFastReadme = (readme = '') => {
   expect(readme).not.toContain('Target:')
 }
 
+const parseHtmlDocument = (html: string) => parseHTML(html).document
+
 describe('createHtmlExportFiles', () => {
   it('includes SEO and answer-engine metadata files derived from HTML', () => {
     const files = createHtmlExportFiles(
@@ -23,16 +26,31 @@ describe('createHtmlExportFiles', () => {
       { includeBadge: false, siteUrl: 'https://atlas.example/demo' },
     )
 
-    expect(files['index.html']).toContain('href="/llms.txt"')
-    expect(files['index.html']).toContain(
-      '<link rel="canonical" href="https://atlas.example/demo/" />',
-    )
+    const document = parseHtmlDocument(files['index.html'])
+
+    // llms.txt discovery link is injected into <head>
+    const llmsLink = document.querySelector('link[rel="alternate"][href="/llms.txt"]')
+    expect(llmsLink).not.toBeNull()
+    expect(llmsLink?.getAttribute('type')).toBe('text/plain')
+    expect(llmsLink?.getAttribute('title')).toBe('LLM-readable site summary')
+
+    // canonical link points at the normalized public site URL
+    const canonical = document.querySelector('link[rel="canonical"]')
+    expect(canonical).not.toBeNull()
+    expect(canonical?.getAttribute('href')).toBe('https://atlas.example/demo/')
+
+    // robots.txt references the sitemap at the public site URL
     expect(files['robots.txt']).toContain(
       'Sitemap: https://atlas.example/demo/sitemap.xml',
     )
-    expect(files['sitemap.xml']).toContain(
-      '<loc>https://atlas.example/demo/</loc>',
-    )
+
+    // sitemap.xml is well-formed XML with a <url> entry for the site root
+    const sitemapDocument = parseHTML(files['sitemap.xml']).document
+    const locs = sitemapDocument.querySelectorAll('urlset > url > loc')
+    expect(locs).toHaveLength(1)
+    expect(locs[0]?.textContent).toBe('https://atlas.example/demo/')
+
+    // llms.txt is plain text: title heading + description summary line
     expect(files['llms.txt']).toContain('# Atlas Notes')
     expect(files['llms.txt']).toContain('Shared launch docs for small teams.')
     expectShipFastReadme(files['README.md'])
@@ -46,7 +64,10 @@ describe('createHtmlExportFiles', () => {
       { includeBadge: false },
     )
 
-    expect(files['index.html']).not.toContain('rel="canonical"')
+    const document = parseHtmlDocument(files['index.html'])
+    expect(document.querySelector('link[rel="canonical"]')).toBeNull()
+
+    // robots.txt falls back to the example.com default sitemap URL
     expect(files['robots.txt']).toContain('https://example.com/sitemap.xml')
   })
 

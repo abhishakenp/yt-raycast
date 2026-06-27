@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Empty as UIEmpty,
   EmptyHeader,
@@ -13,7 +14,7 @@ import {
 // into one node. `title` + `description` form the header; `media` slot holds an
 // icon/illustration (mediaVariant mirrors shadcn: default|icon); `children` is
 // the content area (e.g. a Button to act on the empty state).
-export const Empty = defineComponent({
+export const Empty = defineCapsule({
   name: 'Empty',
   description:
     'Empty-state placeholder with title, description, optional media icon slot and content (children) for an action.',

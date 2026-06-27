@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   InputOTP as UIInputOTP,
   InputOTPGroup,
@@ -10,7 +11,7 @@ import {
 // Compound: flatten OTP input into one node. `length` slots, optional split
 // into two groups around a separator. Renders a static preview with a default
 // value so the slots show characters.
-export const InputOTP = defineComponent({
+export const InputOTP = defineCapsule({
   name: 'InputOTP',
   description:
     'One-time-passcode input with `length` slots. Set `separated` to split into two groups with a divider. Mirrors shadcn InputOTP.',

@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Alert as UIAlert,
   AlertDescription,
@@ -7,7 +8,7 @@ import {
 } from '#/components/ui/alert.tsx'
 
 // Flatten Alert/Title/Description into title + description. variant mirrors cva.
-export const Alert = defineComponent({
+export const Alert = defineCapsule({
   name: 'Alert',
   description:
     "Inline callout box with a title and optional description. variant 'destructive' for errors.",

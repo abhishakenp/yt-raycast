@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Input as UIInput } from '#/components/ui/input.tsx'
 
 // Leaf primitive: native input. shadcn ships no cva variants here; expose the
 // standard input attributes that matter for a static preview.
-export const Input = defineComponent({
+export const Input = defineCapsule({
   name: 'Input',
   description: 'Single-line text input. Mirrors shadcn Input.',
   props: z.object({

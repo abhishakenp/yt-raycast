@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent, useStateField } from '@openuidev/react-lang'
+import { useStateField } from '@openuidev/react-lang'
 import { cn } from '#/lib/utils.ts'
 import { Button as UIButton } from '#/components/ui/button.tsx'
 
@@ -17,7 +18,7 @@ const PrimitiveValue = z.union([z.number(), z.string(), z.boolean()])
  * value (optionally wrapped in prefix/suffix) and re-renders whenever any
  * StateButton/StateInput mutates that field. `initial` seeds the field.
  */
-export const StateText = defineComponent({
+export const StateText = defineCapsule({
   name: 'StateText',
   description:
     'Live text bound to a named shared state field — displays the CURRENT value of that field and updates instantly when it changes. Use the `field` string as the state key and `initial` to seed it. Pair with StateButton/StateInput to build any stateful UI (counter readouts, running totals, toggle labels). NOT a static label.',
@@ -49,7 +50,7 @@ export const StateText = defineComponent({
  * op: increment | decrement | set | toggle | reset. Generic — composes into
  * counters, steppers, toggles, "add to total", reset, etc.
  */
-export const StateButton = defineComponent({
+export const StateButton = defineCapsule({
   name: 'StateButton',
   description:
     'A button that MUTATES a named shared state field on click — op is increment | decrement | set | toggle | reset. This is REAL interactivity (not a navigation link): use it with StateText to build counters, steppers, toggles and any click-driven state. `field` is the state key; `amount` is the step for increment/decrement (default 1); `value` is the target for set; `initial` seeds/resets the field.',
@@ -98,7 +99,7 @@ export const StateButton = defineComponent({
  * field live; other primitives reading the same field react. Composes into
  * forms, search boxes, todo entry, etc.
  */
-export const StateInput = defineComponent({
+export const StateInput = defineCapsule({
   name: 'StateInput',
   description:
     'A text input two-way bound to a named shared state field — typing updates the field live and any StateText reading the same field reflects it. Use `field` as the state key. Composes into forms, search boxes, todo entry, any input-driven state.',

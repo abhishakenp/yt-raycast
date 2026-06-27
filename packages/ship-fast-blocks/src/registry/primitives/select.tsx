@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Select as UISelect,
   SelectContent,
@@ -10,7 +11,7 @@ import {
 
 // Compound overlay: flatten Select/Trigger/Content/Item into a single node.
 // Rendered with `defaultOpen` so the option list is statically visible.
-export const Select = defineComponent({
+export const Select = defineCapsule({
   name: 'Select',
   description:
     'Dropdown select. `items` are the options; `placeholder` is shown when nothing is chosen. Opens by default for preview.',

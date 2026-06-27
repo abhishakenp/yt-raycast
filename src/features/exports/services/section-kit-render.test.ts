@@ -1,9 +1,8 @@
-import { describe, expect, it, vi } from 'vitest'
+// @ts-expect-error jsdom is already used by repo tests without installed types.
+import { JSDOM } from 'jsdom'
+import { describe, expect, it } from 'vitest'
 
 import { buildOpenUIHtmlExport } from './openui-html-export-builder'
-
-// esbuild/runtime-heavy render; avoid load-induced 5s flakes
-vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 })
 
 const siteSpecJson = JSON.stringify({ projectName: 'Kit Render' })
 
@@ -34,6 +33,109 @@ describe('section-kit renders through the OpenUI runtime', () => {
     // nav links rendered by the shared SiteNav composite
     expect(html).toContain('Menu')
     expect(html).toContain('About')
+  })
+
+  it('standalone HTML export opens a static drawer from a shadcn Sheet trigger', async () => {
+    const html = await renderSource(
+      `root = SaasNavbar("Acme", ["Features", "Pricing"], "", "Get Started")`,
+    )
+    const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1]
+    const dom = new JSDOM(html.replace(/<style>[\s\S]*?<\/style>/g, ''), {
+      pretendToBeVisual: true,
+      url: 'http://localhost/',
+    })
+    if (!script) throw new Error('Expected exported HTML to include runtime')
+    dom.window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+      dom.window.setTimeout(() => callback(Date.now()), 0)
+      return 1
+    }
+    const executeScript = new Function('window', `with (window) { ${script} }`)
+    executeScript(dom.window)
+
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 0))
+
+    const trigger = dom.window.document.querySelector(
+      '[data-slot="sheet-trigger"]',
+    )
+    if (!(trigger instanceof dom.window.HTMLButtonElement)) {
+      throw new Error('Expected exported navbar to include a Sheet trigger')
+    }
+
+    expect(trigger.getAttribute('aria-expanded')).toBe('false')
+    trigger.click()
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 20))
+
+    const dialog = dom.window.document.querySelector('[role="dialog"]')
+    expect(dialog).toBeTruthy()
+    expect(dialog?.textContent).toContain('Features')
+    expect(dialog?.textContent).toContain('Pricing')
+    expect(dialog?.textContent).toContain('Get Started')
+    expect(trigger.getAttribute('aria-expanded')).toBe('true')
+  })
+
+  it('standalone HTML drawer routes semantic generated labels like runtime navigation', async () => {
+    const html = await renderSource(`
+root = PageSwitch(["Home", "Lookbook"], [home, lookbook])
+home = Stack([nav, homeText])
+nav = SaasNavbar("Atelier", ["Explore Full Lookbook"])
+homeText = Text("Home page")
+lookbook = Stack([lookbookText])
+lookbookText = Text("Lookbook page")
+`)
+    const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1]
+    const dom = new JSDOM(html.replace(/<style>[\s\S]*?<\/style>/g, ''), {
+      pretendToBeVisual: true,
+      url: 'http://localhost/',
+    })
+    if (!script) throw new Error('Expected exported HTML to include runtime')
+    dom.window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+      dom.window.setTimeout(() => callback(Date.now()), 0)
+      return 1
+    }
+    const executeScript = new Function('window', `with (window) { ${script} }`)
+    executeScript(dom.window)
+
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 0))
+
+    const pages = Array.from<unknown>(
+      dom.window.document.querySelectorAll('[data-sf-export-page]'),
+    ).filter((node): node is Element => node instanceof dom.window.Element)
+    const homePage = pages.find(
+      (page) => page.getAttribute('data-sf-export-page') === 'Home',
+    )
+    const lookbookPage = pages.find(
+      (page) => page.getAttribute('data-sf-export-page') === 'Lookbook',
+    )
+    const trigger = dom.window.document.querySelector(
+      '[data-slot="sheet-trigger"]',
+    )
+    if (!(trigger instanceof dom.window.HTMLButtonElement)) {
+      throw new Error('Expected exported navbar to include a Sheet trigger')
+    }
+
+    expect(homePage?.hasAttribute('hidden')).toBe(false)
+    expect(lookbookPage?.hasAttribute('hidden')).toBe(true)
+
+    trigger.click()
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 20))
+
+    const drawerButton = Array.from<unknown>(
+      dom.window.document.querySelectorAll('[role="dialog"] button'),
+    )
+      .filter(
+        (node): node is HTMLButtonElement =>
+          node instanceof dom.window.HTMLButtonElement,
+      )
+      .find((button) => button.textContent === 'Explore Full Lookbook')
+    if (!drawerButton) {
+      throw new Error('Expected static drawer to include semantic nav item')
+    }
+
+    drawerButton.click()
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 20))
+
+    expect(homePage?.hasAttribute('hidden')).toBe(true)
+    expect(lookbookPage?.hasAttribute('hidden')).toBe(false)
   })
 
   it('SiteNav tolerates a non-string phone prop (defensive kit)', async () => {

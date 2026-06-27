@@ -307,8 +307,10 @@ const config = defineConfig({
   server: {
     allowedHosts: ['.ship-fast.io'],
   },
+  // esbuild pulls in fsevents (native macOS binary) which Vite's rolldown
+  // optimizer cannot parse as UTF-8. Exclude both from dep pre-bundling.
   optimizeDeps: {
-    exclude: ['playwright', 'playwright-core', 'fsevents'],
+    exclude: ['playwright', 'playwright-core', 'esbuild', 'fsevents'],
   },
   build: {
     rolldownOptions: {

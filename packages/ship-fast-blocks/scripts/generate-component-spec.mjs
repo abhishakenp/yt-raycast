@@ -4,7 +4,7 @@
  * description}}}` catalogue the GenUI engine reads) from the live capsule library.
  *
  * The signatures/descriptions are derived by `@openuidev/lang-core` from each
- * capsule's `defineComponent({ description, props: z.object({...}) })` at import
+ * capsule's `defineCapsule({ description, props: z.object({...}) })` at import
  * time and exposed via `library.toSpec()` — so authoring a new section capsule +
  * registering it in `src/library.ts` and running this script is all that's needed
  * for the engine to compose it. Run with bun (imports .tsx capsules directly):

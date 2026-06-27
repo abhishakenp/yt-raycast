@@ -38,7 +38,7 @@ const targetLabel = (target: ExportTarget['target']): string =>
 
 const targetSummary = (target: ExportTarget['target']): string =>
   target === 'html'
-    ? 'Static site bundle'
+    ? 'Static preview (no live data)'
     : target === 'react'
       ? 'React client-only app'
       : target === 'next'
@@ -285,8 +285,15 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
                 <Icon className="size-8" />
               </span>
               <span className="grid min-w-0 gap-0.5">
-                <span className="truncate text-sm font-semibold text-white">
-                  {item.label}
+                <span className="flex items-center gap-1.5">
+                  <span className="truncate text-sm font-semibold text-white">
+                    {item.label}
+                  </span>
+                  {item.target === 'html' && (
+                    <span className="shrink-0 rounded bg-white/10 px-1 py-px text-[9px] font-semibold uppercase tracking-wider text-white/52">
+                      Static
+                    </span>
+                  )}
                 </span>
                 <span className="truncate text-xs text-white/46">
                   {targetSummary(item.target)}

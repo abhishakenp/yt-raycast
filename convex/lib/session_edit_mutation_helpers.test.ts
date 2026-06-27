@@ -1,229 +1,124 @@
-import { describe, expect, it, vi } from 'vitest'
+import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
+import { convexTest } from 'convex-test'
+import { describe, expect, it } from 'vitest'
 
-import type { Doc, Id } from '../_generated/dataModel'
-import type { MutationCtx } from '../_generated/server'
-import { hashOwnerSecret } from './session_access_helpers'
-import { createSessionEdit } from './session_edit_mutation_helpers'
+import { api, internal } from '../_generated/api'
+import type { Id } from '../_generated/dataModel'
+import schema from '../schema'
 
-type TableName = 'previews' | 'generatedModules' | 'siteSpecs'
-type Row = Record<string, unknown>
+const modules = import.meta.glob('../**/*.ts')
 
-const sessionId = 'session_edit_wrapper' as Id<'sessions'>
-const previewId = 'preview_edit_wrapper' as Id<'previews'>
-const homeModuleId = 'home_module_edit_wrapper' as Id<'generatedModules'>
+const sessionEditConvexTest = () => {
+  const t = convexTest(schema, modules)
+  registerDebouncer(t)
+  return t
+}
 
-const sessionDoc = async (
-  overrides: Partial<Doc<'sessions'>> = {},
-): Promise<Doc<'sessions'>> =>
-  ({
-    _id: sessionId,
-    _creationTime: 1,
-    prompt: 'Build a site',
-    workspace: 'workspace',
-    status: 'ready',
+const createReadySession = async (
+  t: ReturnType<typeof sessionEditConvexTest>,
+  prompt = 'Original headline',
+) => {
+  const { sessionId } = await t.mutation(api.sessions.create, {
+    prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
     isPrivate: false,
-    previewVersion: 1,
-    createdAt: 1,
-    updatedAt: 1,
-    anonOwnerSecretHash: await hashOwnerSecret('owner-secret'),
-    ...overrides,
-  }) as Doc<'sessions'>
+    workspace: `workspace_${prompt.toLowerCase().replace(/\W+/g, '_')}`,
+    anonymousClientId: `anon_${prompt.toLowerCase().replace(/\W+/g, '_')}`,
+    anonymousOwnerSecret: 'owner-secret',
+  })
 
-const indexHelper = {
-  eq: (_field: string, _value: unknown) => indexHelper,
-}
-
-const chainFor = (rows: Row[]) => ({
-  withIndex: (
-    _indexName: string,
-    _applyIndex: (index: typeof indexHelper) => typeof indexHelper,
-  ) => chainFor(rows),
-  order: (direction: 'asc' | 'desc') =>
-    chainFor(
-      [...rows].sort((left, right) => {
-        const leftVersion = Number(left.version ?? 0)
-        const rightVersion = Number(right.version ?? 0)
-        return direction === 'desc'
-          ? rightVersion - leftVersion
-          : leftVersion - rightVersion
-      }),
-    ),
-  first: async () => rows[0] ?? null,
-})
-
-const mutationCtxFor = async (args: {
-  session?: Doc<'sessions'> | null
-  userId?: string
-}) => {
-  const preview: Row = {
-    _id: previewId,
-    _creationTime: 1,
+  await t.action(internal.sessions.completeGeneration, {
     sessionId,
-    version: 1,
-    html: '<main><h1>Original headline</h1></main>',
-    createdAt: 1,
-  }
-  const homeModule: Row = {
-    _id: homeModuleId,
-    _creationTime: 1,
-    sessionId,
-    moduleKey: 'home',
-    source: '<Hero title="Original headline" />',
-    createdAt: 1,
-    updatedAt: 1,
-  }
-  const rows = {
-    previews: [preview],
-    generatedModules: [homeModule],
-    siteSpecs: [],
-  } satisfies Record<TableName, Row[]>
-  const inserted: Array<{ table: string; value: Row }> = []
-  const patches: Array<{ id: string; value: Row }> = []
-  const session = args.session === undefined ? await sessionDoc() : args.session
+    html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
+    openUiSource: `$page = "Home"\nroot = Text("${prompt}")`,
+    siteSpecJson: JSON.stringify({
+      hero: { headline: prompt },
+    }),
+    tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
+    elapsed: 1000,
+  })
 
-  const ctx = {
-    auth: {
-      getUserIdentity: async () =>
-        args.userId === undefined
-          ? null
-          : { tokenIdentifier: args.userId, subject: args.userId },
-    },
-    db: {
-      get: vi.fn(async (id: string) => (id === sessionId ? session : null)),
-      query: (table: TableName) => chainFor(rows[table]),
-      insert: vi.fn(async (table: string, value: Row) => {
-        inserted.push({ table, value })
-        return `${table}_${inserted.length}`
-      }),
-      patch: vi.fn(async (id: string, value: Row) => {
-        patches.push({ id, value })
-        const row = [session, preview, homeModule].find(
-          (candidate) => candidate?._id === id,
-        )
-        if (row !== undefined && row !== null) Object.assign(row, value)
-      }),
-    },
-  } as unknown as MutationCtx
-
-  return { ctx, inserted, patches }
+  return sessionId
 }
 
 describe('session edit mutation helpers', () => {
-  it('rejects missing sessions before authorization or edit work', async () => {
-    const { ctx } = await mutationCtxFor({ session: null })
+  it('stores inline edits in preview history without mutating canonical artifacts', async () => {
+    const t = sessionEditConvexTest()
+    const sessionId = await createReadySession(t)
 
     await expect(
-      createSessionEdit(
-        ctx,
-        {
-          sessionId,
-          editType: 'text',
-          beforeText: 'Original headline',
-          afterText: 'Updated headline',
-        },
-        10,
-      ),
-    ).rejects.toMatchObject({
-      data: {
-        code: 'NOT_FOUND',
-      },
-    })
-    expect(ctx.auth.getUserIdentity).toBeDefined()
-  })
-
-  it('rejects edits from non-owners', async () => {
-    const { ctx } = await mutationCtxFor({
-      session: await sessionDoc({ userId: 'user_owner' }),
-      userId: 'user_other',
-    })
-
-    await expect(
-      createSessionEdit(
-        ctx,
-        {
-          sessionId,
-          editType: 'text',
-          beforeText: 'Original headline',
-          afterText: 'Updated headline',
-        },
-        10,
-      ),
-    ).rejects.toMatchObject({
-      data: {
-        code: 'FORBIDDEN',
-      },
-    })
-  })
-
-  it('authorizes anonymous owners and delegates to the edit implementation', async () => {
-    const { ctx, inserted, patches } = await mutationCtxFor({})
-
-    const result = await createSessionEdit(
-      ctx,
-      {
+      t.mutation(api.sessions.createEdit, {
         sessionId,
         anonymousOwnerSecret: 'owner-secret',
         editType: 'text',
         targetLabel: 'Hero headline',
         beforeText: 'Original headline',
         afterText: 'Updated headline',
-      },
-      10,
-    )
-
-    expect(result).toEqual({
-      sessionId,
+      }),
+    ).resolves.toMatchObject({
       previewVersion: 2,
       saved: true,
     })
-    expect(inserted).toEqual(
-      expect.arrayContaining([
-        {
-          table: 'previews',
-          value: expect.objectContaining({
-            sessionId,
-            version: 2,
-            html: '<main><h1>Updated headline</h1></main>',
-          }),
-        },
-        {
-          table: 'generationEvents',
-          value: expect.objectContaining({
-            sessionId,
-            eventType: 'preview_reload',
-            previewVersion: 2,
-          }),
-        },
-        {
-          table: 'edits',
-          value: expect.objectContaining({
-            sessionId,
-            previewVersion: 2,
-            editType: 'text',
-            targetLabel: 'Hero headline',
-          }),
-        },
-      ]),
-    )
-    expect(patches).toEqual(
-      expect.arrayContaining([
-        {
-          id: sessionId,
-          value: expect.objectContaining({
-            previewVersion: 2,
-            updatedAt: 10,
-          }),
-        },
-      ]),
-    )
-    expect(patches).not.toEqual(
+
+    const preview = await t.query(api.sessions.getPublicPreview, {
+      lookup: sessionId,
+    })
+    const view = await t.query(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+
+    expect(preview?.html).toContain('Updated headline')
+    expect(view?.homeModule?.source).toContain('Original headline')
+    expect(view?.homeModule?.source).not.toContain('Updated headline')
+    expect(view?.siteSpec?.specJson).toContain('Original headline')
+    expect(view?.siteSpec?.specJson).not.toContain('Updated headline')
+  })
+
+  it('records edit history with target label and occurrence metadata', async () => {
+    const t = sessionEditConvexTest()
+    const sessionId = await createReadySession(t, 'Repeated headline')
+
+    await t.mutation(api.sessions.createEdit, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'text',
+      targetLabel: 'Hero headline',
+      beforeText: 'Repeated headline',
+      afterText: 'Edited repeated headline',
+      occurrenceIndex: 0,
+    })
+
+    await expect(t.query(api.sessions.listEdits, { sessionId })).resolves.toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: homeModuleId,
+          editType: 'text',
+          targetLabel: 'Hero headline',
+          beforeText: 'Repeated headline',
+          afterText: 'Edited repeated headline',
+          occurrenceIndex: 0,
+          previewVersion: 2,
         }),
       ]),
     )
+  })
+
+  it('rejects edits from callers that do not own the session', async () => {
+    const t = sessionEditConvexTest()
+    const sessionId: Id<'sessions'> = await createReadySession(
+      t,
+      'Protected headline',
+    )
+
+    await expect(
+      t.mutation(api.sessions.createEdit, {
+        sessionId,
+        anonymousOwnerSecret: 'wrong-secret',
+        editType: 'text',
+        targetLabel: 'Hero headline',
+        beforeText: 'Protected headline',
+        afterText: 'Tampered headline',
+      }),
+    ).rejects.toThrow(/FORBIDDEN|do not own/)
   })
 })

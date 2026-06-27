@@ -57,4 +57,119 @@ describe('edit-helpers (shared)', () => {
       replaced: true,
     })
   })
+
+  it('matches text containing a ">" stored as &gt; (regression: alternation typo)', () => {
+    // The entity alternation for ">" was previously "(?:&gt;>)" which required a
+    // literal ">" after the entity, so "&gt;" alone never matched.
+    const html = '<p>1 &gt; 2</p>'
+    expect(applyPreviewTextEdit(html, '1 > 2', 'one > two').html).toBe(
+      '<p>one &gt; two</p>',
+    )
+  })
+
+  it('matches text containing an en-dash stored as &ndash; (regression: missing pipe)', () => {
+    // The alternation was "(?:&ndash;&#8211;|\u2013)" with no pipe between the
+    // two entity forms, so "&ndash;" alone never matched.
+    const html = '<p>2020 &ndash; 2024</p>'
+    expect(applyPreviewTextEdit(html, '2020 \u2013 2024', 'always').html).toBe(
+      '<p>always</p>',
+    )
+  })
+
+  it('matches long text blocks (>500 chars) via the token fallback', () => {
+    // Previously selections over 500 chars returned null → no tolerant match →
+    // TEXT_NOT_FOUND. The token-based fallback collapses whitespace and still
+    // matches when the HTML has collapsed/different whitespace than the input.
+    const sentence = 'The quick brown fox jumps over the lazy dog.'
+    const longText = Array.from({ length: 20 }, () => sentence).join(' ') // >500 chars, single spaces
+    // HTML stores the same text with newlines + indentation (e.g. pretty-printed
+    // source), so exact indexOf fails and the tolerant fallback must handle it.
+    const html = `<p>\n  ${longText.replace(/ /g, '\n  ')}\n</p>`
+    const result = applyPreviewTextEdit(html, longText, 'Replaced long text.')
+    expect(result.replaced).toBe(true)
+    // The tolerant pattern's leading/trailing bridge markup consumes the
+    // surrounding whitespace, so the whole inner run is swapped.
+    expect(result.html).toBe('<p>Replaced long text.</p>')
+  })
+
+  it('long-text fallback tolerates inline tags splitting the run', () => {
+    const sentence = 'Word with emphasis '
+    const longText = sentence.repeat(40).trim() // >500 chars
+    const html = `<p>${longText.replace(/emphasis/g, '<em>emphasis</em>')}</p>`
+    const result = applyPreviewTextEdit(html, longText, 'Done')
+    expect(result.replaced).toBe(true)
+    // The matched range includes <em> tags; they are replaced with the new
+    // text (the user is replacing the entire run, not editing within tags).
+    expect(result.html).toBe('<p>Done</p>')
+  })
+
+  // --- Tier 3: character-walk fallback tests ---
+
+  it('matches text with numeric entities (decimal + hex) via character walk', () => {
+    // These entities are NOT in the regex alternation table, so tier 2 fails.
+    // The character walk decodes them and finds the match.
+    const html = '<p>Cost: &#8364;100 (&#x20AC;)</p>'
+    expect(applyPreviewTextEdit(html, 'Cost: \u20AC100 (\u20AC)', 'Free').html).toBe(
+      '<p>Free</p>',
+    )
+  })
+
+  it('matches text with mixed named + numeric entities', () => {
+    const html = '<p>&ldquo;Hello&#8221; &amp; goodbye</p>'
+    expect(applyPreviewTextEdit(html, '\u201CHello\u201D & goodbye', 'Hi').html).toBe(
+      '<p>Hi</p>',
+    )
+  })
+
+  it('matches text split across multiple inline tags', () => {
+    // Text is "Hello world" but split as Hello <span> </span><em>world</em>
+    const html = '<p>Hello <span> </span><em>world</em></p>'
+    const result = applyPreviewTextEdit(html, 'Hello world', 'Goodbye')
+    expect(result.replaced).toBe(true)
+  })
+
+  it('matches text with collapsed whitespace in HTML', () => {
+    // HTML has newlines + tabs, target has single spaces. The match range
+    // starts at "Hello" and ends at "world"; surrounding whitespace is
+    // preserved (it's outside the match).
+    const html = '<p>\n  Hello\n    world\n</p>'
+    const result = applyPreviewTextEdit(html, 'Hello world', 'Hi')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toBe('<p>\n  Hi\n</p>')
+  })
+
+  it('replaces across inline tags (tags are part of the replaced range)', () => {
+    // When matching "Hello world" across <strong>, the entire matched range
+    // (including the tags) is replaced with the new text. This is correct:
+    // the user is replacing the whole text run, not editing within tags.
+    const html = '<p>Hello <strong>world</strong></p>'
+    const result = applyPreviewTextEdit(html, 'Hello world', 'Goodbye')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toBe('<p>Goodbye</p>')
+  })
+
+  it('replaces across <br> tags', () => {
+    const html = '<p>Line one<br>Line two</p>'
+    const result = applyPreviewTextEdit(html, 'Line one Line two', 'Replaced')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toBe('<p>Replaced</p>')
+  })
+
+  it('handles text with &nbsp; entities', () => {
+    const html = '<p>Price:&nbsp;$10</p>'
+    expect(applyPreviewTextEdit(html, 'Price: $10', 'Free').replaced).toBe(true)
+  })
+
+  it('finds multiple occurrences via character walk with occurrenceIndex', () => {
+    // Both occurrences fail tier 1 (entities) and tier 2 (same reason).
+    const html = '<p>&ldquo;Hi&#8221;</p><p>&ldquo;Hi&#8221;</p>'
+    const result = applyPreviewTextEdit(
+      html,
+      '\u201CHi\u201D',
+      'Hello',
+      1,
+    )
+    expect(result.replaced).toBe(true)
+    expect(result.html).toBe('<p>&ldquo;Hi&#8221;</p><p>Hello</p>')
+  })
 })

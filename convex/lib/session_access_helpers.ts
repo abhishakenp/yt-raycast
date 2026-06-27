@@ -1,7 +1,7 @@
 import { ConvexError } from 'convex/values'
 
 import type { Doc, Id } from '../_generated/dataModel'
-import type { MutationCtx, QueryCtx } from '../_generated/server'
+import type { MutationCtx } from '../_generated/server'
 import { areExportPaywallsDisabled } from './session_export_helpers'
 
 const textEncoder = new TextEncoder()
@@ -14,7 +14,17 @@ const toHex = (bytes: ArrayBuffer): string =>
 export const hashOwnerSecret = async (ownerSecret: string): Promise<string> =>
   toHex(await crypto.subtle.digest('SHA-256', textEncoder.encode(ownerSecret)))
 
-type AuthCtx = Pick<MutationCtx, 'auth'> | Pick<QueryCtx, 'auth'>
+type AuthIdentity = {
+  tokenIdentifier?: string
+  subject?: string
+  email?: string
+}
+
+type AuthCtx = {
+  auth: {
+    getUserIdentity: () => Promise<AuthIdentity | null>
+  }
+}
 
 export type DeleteOwnedSessionsInput = {
   anonymousClientId?: string
@@ -93,7 +103,7 @@ export const assertCanReadPrivateSession = async (
 }
 
 export const assertCanMutateSession = async (
-  ctx: MutationCtx,
+  ctx: AuthCtx,
   session: { userId?: string; anonOwnerSecretHash?: string },
   anonymousOwnerSecret?: string,
 ) => {

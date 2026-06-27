@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   InputGroup as UIInputGroup,
   InputGroupAddon,
@@ -11,7 +12,7 @@ import {
 
 // Compound primitive: an input/textarea wrapped with leading/trailing addons
 // (icons, text, or a button). Addon `align` enum + button `size` enum mirrored exactly.
-export const InputGroup = defineComponent({
+export const InputGroup = defineCapsule({
   name: 'InputGroup',
   description:
     'Text input or textarea with optional leading/trailing addon text and an optional addon button. Use for search bars, prefixed inputs, etc.',

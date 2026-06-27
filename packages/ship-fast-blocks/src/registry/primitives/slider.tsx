@@ -1,10 +1,11 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Slider as UISlider } from '#/components/ui/slider.tsx'
 
 // Leaf primitive: range slider. No cva variants; expose min/max/step + a
 // sensible default value so it renders standalone.
-export const Slider = defineComponent({
+export const Slider = defineCapsule({
   name: 'Slider',
   description: 'Range slider. Single-thumb by default. Mirrors shadcn Slider.',
   props: z.object({

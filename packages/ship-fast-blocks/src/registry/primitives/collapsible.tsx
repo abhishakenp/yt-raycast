@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Collapsible as UICollapsible,
   CollapsibleContent,
@@ -8,7 +9,7 @@ import {
 
 // Flatten Collapsible/Trigger/Content into label + children. Open by default
 // so the content is visible in a static preview.
-export const Collapsible = defineComponent({
+export const Collapsible = defineCapsule({
   name: 'Collapsible',
   description:
     'Single show/hide region with a clickable trigger label. Open by default. children is the collapsible body.',

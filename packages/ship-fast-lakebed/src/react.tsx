@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react'
 import type { ReactNode } from 'react'
 import {
@@ -63,27 +64,86 @@ type LakebedSessionContextValue = {
   sessionId: Id<'sessions'>
 }
 
-type QueryResult<TQuery> = TQuery extends (...args: any[]) => infer TResult
+type QueryResult<TQuery> = TQuery extends (
+  ...args: infer _TArgs
+) => infer TResult
   ? TResult
   : never
 
 type MutationArgs<TMutation> = TMutation extends (
-  ctx: any,
+  ctx: infer _TCtx,
   ...args: infer TArgs
 ) => unknown
   ? TArgs
   : never
 
 type MutationResult<TMutation> = TMutation extends (
-  ...args: any[]
+  ...args: infer _TArgs
 ) => infer TResult
   ? Awaited<TResult>
   : never
 
-const lakebedApi = (api as any).lakebed
+type LakebedMutationLifecycle = {
+  onExecutionEnd?: () => void
+  onExecutionStart?: () => void
+}
+
+export type LakebedMutationFunction<TMutation> = ((
+  ...args: MutationArgs<TMutation>
+) => Promise<MutationResult<TMutation>>) & {
+  isPending: boolean
+  lastError: unknown | null
+  pendingCount: number
+  reset(): void
+  runWithLifecycle?(
+    lifecycle: LakebedMutationLifecycle,
+    ...args: MutationArgs<TMutation>
+  ): Promise<MutationResult<TMutation>>
+}
+
+export type LakebedKeyedMutationFunction<TMutation> = {
+  hasPending: boolean
+  isPending(key: string): boolean
+  lastError: unknown | null
+  pendingKey: string | null
+  pendingKeys: readonly string[]
+  reset(): void
+  run(
+    key: string,
+    ...args: MutationArgs<TMutation>
+  ): Promise<MutationResult<TMutation> | undefined>
+}
+
+const lakebedApi = api.lakebed
 const LakebedSessionContext = createContext<LakebedSessionContextValue | null>(
   null,
 )
+
+type LakebedMutationCoordinator = {
+  data: JsonRecord | null
+  queue: Promise<unknown>
+}
+
+const lakebedMutationCoordinators = new Map<string, LakebedMutationCoordinator>()
+
+const mutationCoordinatorKey = ({
+  anonymousOwnerSecret,
+  capsule,
+  sessionId,
+}: LakebedSessionContextValue & { capsule: string }) =>
+  `${sessionId}:${anonymousOwnerSecret ?? ''}:${capsule}`
+
+const mutationCoordinatorFor = (key: string): LakebedMutationCoordinator => {
+  const existing = lakebedMutationCoordinators.get(key)
+  if (existing) return existing
+
+  const coordinator = {
+    data: null,
+    queue: Promise.resolve(),
+  }
+  lakebedMutationCoordinators.set(key, coordinator)
+  return coordinator
+}
 
 const slugForSeedRow = (value: unknown, fallback: string) => {
   const source = (() => {
@@ -183,8 +243,10 @@ export function buildSeedPatchFromProps({
   const patch: JsonRecord = {}
 
   for (const [tableName, table] of Object.entries(definition.schema)) {
+    if (table.seedFromProps === false) continue
+
     const existingValue = data[tableName]
-    if (Array.isArray(existingValue) && existingValue.length > 0) continue
+    if (Array.isArray(existingValue)) continue
     if (!(tableName in propsRecord)) continue
 
     const rows = seedRowsFromProp(tableName, table, propsRecord[tableName])
@@ -353,7 +415,7 @@ function useAutoSeedFromProps<
 
     seededKey.current = seedKey
     void mergeData(seedPatch)
-  }, [data, mergeData, seedKey, seedPatch])
+  }, [data, enabled, mergeData, seedKey, seedPatch])
 }
 
 export type LakebedClientRuntime<
@@ -387,11 +449,93 @@ export type LakebedClientRuntime<
     >,
   >(
     name: TName,
-  ): (
-    ...args: MutationArgs<LakebedMutationsOf<NonNullable<TDefinition>>[TName]>
-  ) => Promise<
-    MutationResult<LakebedMutationsOf<NonNullable<TDefinition>>[TName]>
+  ): LakebedMutationFunction<
+    LakebedMutationsOf<NonNullable<TDefinition>>[TName]
   >
+}
+
+export function useKeyedLakebedMutation<
+  TDefinition extends
+    | ShipFastLakebedDefinition<any, any, any, any, any>
+    | undefined,
+  TName extends Extract<
+    keyof LakebedMutationsOf<NonNullable<TDefinition>>,
+    string
+  >,
+>(
+  lakebed: LakebedClientRuntime<TDefinition>,
+  name: TName,
+): LakebedKeyedMutationFunction<
+  LakebedMutationsOf<NonNullable<TDefinition>>[TName]
+> {
+  const mutation = lakebed.useMutation(name)
+  const [pendingKeys, setPendingKeys] = useState<readonly string[]>([])
+  const pendingKeySetRef = useRef(new Set<string>())
+  const queuedKeySetRef = useRef(new Set<string>())
+
+  const syncPendingKeys = useCallback(() => {
+    setPendingKeys(Array.from(pendingKeySetRef.current))
+  }, [])
+
+  const run = useCallback(
+    async (
+      key: string,
+      ...args: MutationArgs<LakebedMutationsOf<NonNullable<TDefinition>>[TName]>
+    ) => {
+      if (queuedKeySetRef.current.has(key)) return undefined
+
+      queuedKeySetRef.current.add(key)
+      try {
+        if (typeof mutation.runWithLifecycle !== 'function') {
+          pendingKeySetRef.current.add(key)
+          syncPendingKeys()
+          return await mutation(...args)
+        }
+
+        return await mutation.runWithLifecycle(
+          {
+            onExecutionEnd: () => {
+              pendingKeySetRef.current.delete(key)
+              syncPendingKeys()
+            },
+            onExecutionStart: () => {
+              pendingKeySetRef.current.add(key)
+              syncPendingKeys()
+            },
+          },
+          ...args,
+        )
+      } finally {
+        queuedKeySetRef.current.delete(key)
+        pendingKeySetRef.current.delete(key)
+        syncPendingKeys()
+      }
+    },
+    [mutation, syncPendingKeys],
+  )
+
+  const isPending = useCallback(
+    (key: string) => pendingKeys.includes(key),
+    [pendingKeys],
+  )
+
+  const reset = useCallback(() => {
+    queuedKeySetRef.current.clear()
+    pendingKeySetRef.current.clear()
+    syncPendingKeys()
+    mutation.reset()
+  }, [mutation, syncPendingKeys])
+  const pendingKey = pendingKeys[0] ?? null
+
+  return {
+    hasPending: pendingKeys.length > 0,
+    isPending,
+    lastError: mutation.lastError,
+    pendingKey,
+    pendingKeys,
+    reset,
+    run,
+  }
 }
 
 export function createLakebedClient<
@@ -474,6 +618,9 @@ export function createLakebedClient<
       ]) as QueryResult<LakebedQueriesOf<NonNullable<TDefinition>>[typeof name]>
     },
     useMutation(name) {
+      const session = useLakebedSession()
+      const [lastError, setLastError] = useState<unknown | null>(null)
+      const [pendingCount, setPendingCount] = useState(0)
       const localAuth = useLakebedAuth()
       const state = useSessionState(capsule) as {
         auth: LakebedAuthContext | null
@@ -482,6 +629,13 @@ export function createLakebedClient<
       }
       const data = state.data
       const auth = state.auth ?? localAuth
+      const coordinator = useMemo(
+        () =>
+          mutationCoordinatorFor(
+            mutationCoordinatorKey({ ...session, capsule }),
+          ),
+        [capsule, session],
+      )
       useAutoSeedFromProps({
         capsule,
         data,
@@ -489,41 +643,100 @@ export function createLakebedClient<
         enabled: state.canWrite,
         props,
       })
-      const setData = useMergeSessionData(capsule)
-      const replaceData = useReplaceSessionData(capsule)
+      const setData =
+        useMergeSessionData<LakebedDataOf<NonNullable<TDefinition>>>(capsule)
+      const replaceData =
+        useReplaceSessionData<LakebedDataOf<NonNullable<TDefinition>>>(capsule)
       const handler = definition?.mutations?.[name as string]
 
-      return useCallback(
-        async (...args) => {
+      useEffect(() => {
+        if (data !== null) coordinator.data = data as JsonRecord
+      }, [coordinator, data])
+
+      type ActiveMutation =
+        LakebedMutationsOf<NonNullable<TDefinition>>[typeof name]
+
+      const runMutationWithLifecycle = useCallback(
+        async (
+          lifecycle: LakebedMutationLifecycle | undefined,
+          ...args: MutationArgs<ActiveMutation>
+        ): Promise<MutationResult<ActiveMutation>> => {
+          setLastError(null)
+
           if (!handler) {
-            throw new Error(
+            const error = new Error(
               `Lakebed mutation "${name}" is not defined for capsule "${capsule}"`,
             )
+            setLastError(error)
+            throw error
           }
 
-          const { context, getPatch } = createLakebedHandlerContext({
-            auth,
-            data: (data ?? {}) as LakebedDataOf<NonNullable<TDefinition>>,
-            props,
-            replaceData,
-            schema: definition?.schema,
-            setData,
-            writable: true,
-          })
-          const result = await handler(context, ...args)
-          const patch = getPatch() as Partial<
-            LakebedDataOf<NonNullable<TDefinition>>
-          >
+          try {
+            const executeMutation = async () => {
+              lifecycle?.onExecutionStart?.()
+              setPendingCount((count) => count + 1)
+              try {
+                const baseData = (coordinator.data ??
+                  data ??
+                  {}) as LakebedDataOf<NonNullable<TDefinition>>
+                const rememberMergedData = async (
+                  patch: Partial<LakebedDataOf<NonNullable<TDefinition>>>,
+                ) => {
+                  const nextData = await setData(patch)
+                  coordinator.data = nextData as JsonRecord
+                  return nextData
+                }
+                const rememberReplacedData = async (
+                  nextData: LakebedDataOf<NonNullable<TDefinition>>,
+                ) => {
+                  const replacedData = await replaceData(nextData)
+                  coordinator.data = replacedData as JsonRecord
+                  return replacedData
+                }
+                const { context, getPatch } = createLakebedHandlerContext({
+                  auth,
+                  data: baseData,
+                  props,
+                  replaceData: rememberReplacedData,
+                  schema: definition?.schema,
+                  setData: rememberMergedData,
+                  writable: true,
+                })
+                const result = await handler(context, ...args)
+                const patch = getPatch() as Partial<
+                  LakebedDataOf<NonNullable<TDefinition>>
+                >
 
-          if (Object.keys(patch).length > 0) {
-            await setData(patch)
+                if (Object.keys(patch).length > 0) {
+                  await rememberMergedData(patch)
+                }
+
+                return result
+              } finally {
+                setPendingCount((count) => Math.max(0, count - 1))
+                lifecycle?.onExecutionEnd?.()
+              }
+            }
+
+            const queuedMutation = coordinator.queue.then(
+              executeMutation,
+              executeMutation,
+            )
+            coordinator.queue = queuedMutation.then(
+              () => undefined,
+              () => undefined,
+            )
+
+            return await queuedMutation
+          } catch (error) {
+            setLastError(error)
+            throw error
           }
-
-          return result
         },
         [
           auth,
           capsule,
+          coordinator,
           data,
           definition?.schema,
           handler,
@@ -532,15 +745,40 @@ export function createLakebedClient<
           replaceData,
           setData,
         ],
-      ) as (
-        ...args: MutationArgs<
-          LakebedMutationsOf<NonNullable<TDefinition>>[typeof name]
-        >
-      ) => Promise<
-        MutationResult<
-          LakebedMutationsOf<NonNullable<TDefinition>>[typeof name]
-        >
-      >
+      )
+
+      const reset = useCallback(() => {
+        setLastError(null)
+      }, [])
+      const mutation = useMemo(() => {
+        const run = (...args: MutationArgs<ActiveMutation>) =>
+          runMutationWithLifecycle(undefined, ...args)
+        const mutationState: Pick<
+          LakebedMutationFunction<ActiveMutation>,
+          | 'isPending'
+          | 'lastError'
+          | 'pendingCount'
+          | 'reset'
+          | 'runWithLifecycle'
+        > = {
+          isPending: false,
+          lastError: null,
+          pendingCount: 0,
+          reset,
+          runWithLifecycle: (
+            lifecycle: LakebedMutationLifecycle,
+            ...args: MutationArgs<ActiveMutation>
+          ) => runMutationWithLifecycle(lifecycle, ...args),
+        }
+        return Object.assign(run, mutationState)
+      }, [reset, runMutationWithLifecycle])
+
+      mutation.isPending = pendingCount > 0
+      mutation.lastError = lastError
+      mutation.pendingCount = pendingCount
+      mutation.reset = reset
+
+      return mutation
     },
   }
 }

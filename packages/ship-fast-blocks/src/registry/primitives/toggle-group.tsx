@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   ToggleGroup as UIToggleGroup,
   ToggleGroupItem,
@@ -7,7 +8,7 @@ import {
 
 // Compound primitive: a set of toggles where one (single) or many (multiple)
 // can be pressed. Flattened to items:[{value,label}]. variant/size mirror toggle cva.
-export const ToggleGroup = defineComponent({
+export const ToggleGroup = defineCapsule({
   name: 'ToggleGroup',
   description:
     "Set of toggle buttons. items:[{value,label}]. type 'single' (one active) or 'multiple'. variant/size mirror Toggle.",

@@ -1,8 +1,9 @@
 @import url('./styles/index.css');
 @import url('./styles/launch-backdrop.css');
 @import 'tailwindcss';
-@plugin '@tailwindcss/typography';
 @import 'tw-animate-css';
+@plugin '@tailwindcss/typography';
+@source '../packages/ship-fast-blocks/src';
 
 @custom-variant dark (&:is(.dark *));
 

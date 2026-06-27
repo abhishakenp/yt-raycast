@@ -1,9 +1,10 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import { Toggle as UIToggle } from '#/components/ui/toggle.tsx'
 
 // Leaf primitive: a two-state on/off button. Mirrors shadcn toggle cva variant/size.
-export const Toggle = defineComponent({
+export const Toggle = defineCapsule({
   name: 'Toggle',
   description: 'Two-state on/off button. Mirrors shadcn toggle variant/size.',
   props: z.object({

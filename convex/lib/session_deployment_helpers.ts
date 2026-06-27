@@ -348,6 +348,13 @@ export const prepareLakebedSessionDeployment = async (
       message: 'Generated source is not ready to deploy',
     })
   }
+  if (!shouldUseOpenUiSource) {
+    throw new ConvexError({
+      code: 'FULLSTACK_SOURCE_NOT_READY',
+      message:
+        'Lakebed deploys require generated fullstack source. Regenerate this site before publishing to Lakebed.',
+    })
+  }
   const sourceKind: LakebedPreparedSourceKind = shouldUseOpenUiSource
     ? 'openui'
     : 'html'

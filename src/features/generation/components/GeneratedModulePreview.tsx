@@ -3,6 +3,7 @@ import type {
   PreviewSelection,
   PreviewToolMode,
 } from '@/components/GenUI/DirectPreview'
+import type { InspectorSelection } from '@/features/editing/element-path'
 import AgentationSessionBridge from '@/components/GenUI/AgentationSessionBridge'
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
@@ -54,6 +55,8 @@ type GeneratedModulePreviewProps = {
     alt: string
   }) => void
   onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
+  onCommitText?: (commitEdit: () => void) => void
+  onSectionSelect?: (selection: InspectorSelection | null) => void
 }
 
 const LazyOpenUIViewer = lazy(() => import('@/island/openui/OpenUIViewer'))
@@ -178,7 +181,6 @@ export function GeneratedModulePreview({
   prompt,
   imageOverrides,
   styleOverrides,
-  textOverrides,
   cmsBlogPosts,
   isDark = true,
   themeStyles = null,
@@ -190,6 +192,8 @@ export function GeneratedModulePreview({
   onTextChange,
   onImageChange,
   onElementActivate,
+  onCommitText,
+  onSectionSelect,
 }: GeneratedModulePreviewProps) {
   const anonymousOwnerSecret =
     typeof window === 'undefined'
@@ -211,8 +215,9 @@ export function GeneratedModulePreview({
         onTextChange={onTextChange}
         onImageChange={onImageChange}
         onElementActivate={onElementActivate}
+        onCommitText={onCommitText}
+        onSectionSelect={onSectionSelect}
         styleOverrides={styleOverrides}
-        textOverrides={textOverrides}
       >
         {sourceUrl ? (
           <HtmlModuleUrlRenderer sourceUrl={sourceUrl} />

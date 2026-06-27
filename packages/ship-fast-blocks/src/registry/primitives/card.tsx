@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Card as UICard,
   CardContent,
@@ -12,7 +13,7 @@ import {
 // Compound-primitive exemplar: flatten shadcn's Card/CardHeader/CardTitle/... sub-
 // components into a single ergonomic node. `children` holds the body content
 // (other generated components); title/description/footer are optional slots.
-export const Card = defineComponent({
+export const Card = defineCapsule({
   name: 'Card',
   description:
     'Bordered content container with optional title, description, body (children) and footer.',

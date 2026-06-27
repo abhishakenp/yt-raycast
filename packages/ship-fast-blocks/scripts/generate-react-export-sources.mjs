@@ -20,7 +20,9 @@ const blockSourceRoots = [
   join(root, 'src', 'components'),
   join(root, 'src', 'hooks'),
   join(root, 'src', 'lib'),
+  join(root, 'src', 'section-kit'),
 ]
+const helperSourceRoots = [registryRoot, capsulesRoot]
 const outFile = join(root, 'src', 'generated', 'react-export-sources.json')
 const compressedOutFile = join(
   root,
@@ -57,6 +59,12 @@ const runtimeSectionNamesOutFile = join(
   'src',
   'generated',
   'runtime-section-component-names.ts',
+)
+const capsuleCategoriesOutFile = join(
+  root,
+  'src',
+  'generated',
+  'capsule-categories.ts',
 )
 const provenanceOutFile = join(
   root,
@@ -267,14 +275,10 @@ const allowedRuntimeBareImports = new Set([
   'preact/compat',
   'preact/jsx-runtime',
   'preact/jsx-dev-runtime',
-  'lakebed/client',
-  'lakebed/server',
-  '@ship-fast/lakebed/react',
 ])
 const ignoredSourceBareImports = new Set([
   ...allowedRuntimeBareImports,
   '@openuidev/react-lang',
-  '@ship-fast/lakebed/server',
   'zod',
   'zod/v4',
 ])
@@ -459,9 +463,14 @@ const includeVendorNamedExports = (entry, requestedNames, seen = new Set()) => {
 }
 
 const componentRe =
-  /export\s+const\s+([A-Za-z_$][\w$]*)\s*=\s*define(?:Component|Capsule)\s*\(/g
+  /export\s+const\s+([A-Za-z_$][\w$]*)\s*=\s*defineCapsule\s*\(/g
 const manifest = {}
 const loaderEntries = []
+
+const hasExportedComponentFactory = (source) => {
+  componentRe.lastIndex = 0
+  return componentRe.test(source)
+}
 
 for (const sourceRoot of [registryRoot, capsulesRoot]) {
   for (const file of walk(sourceRoot)) {
@@ -488,10 +497,23 @@ const compressedManifest = brotliCompressSync(Buffer.from(manifestJson), {
   params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
 }).toString('base64')
 const sourceFileManifest = {}
+const storeBlockSourceFile = (file) => {
+  sourceFileManifest[relative(root, file).replaceAll('\\', '/')] = readFileSync(
+    file,
+    'utf8',
+  )
+}
+
 for (const sourceRoot of blockSourceRoots) {
   for (const file of walkSourceFiles(sourceRoot)) {
-    sourceFileManifest[relative(root, file).replaceAll('\\', '/')] =
-      readFileSync(file, 'utf8')
+    storeBlockSourceFile(file)
+  }
+}
+for (const sourceRoot of helperSourceRoots) {
+  for (const file of walkSourceFiles(sourceRoot)) {
+    const source = readFileSync(file, 'utf8')
+    if (hasExportedComponentFactory(source)) continue
+    sourceFileManifest[relative(root, file).replaceAll('\\', '/')] = source
   }
 }
 const sourceFileManifestJson = `${JSON.stringify(sourceFileManifest, null, 2)}\n`
@@ -555,6 +577,7 @@ const generatedOutputs = [
   relative(root, runtimeLoadersOutFile),
   relative(root, runtimeNamesOutFile),
   relative(root, runtimeSectionNamesOutFile),
+  relative(root, capsuleCategoriesOutFile),
   relative(root, provenanceOutFile),
 ].map((path) => path.replaceAll('\\', '/'))
 const provenance = {
@@ -610,7 +633,7 @@ const runtimeLoadersSource = [
   'const toCapsule = (module: RuntimeComponentModule, name: string): ShipFastCapsule => {',
   '  const exported = module[name]',
   '  if (isCapsule(exported)) return exported',
-  '  return { client: exported as ShipFastCapsule["client"] }',
+  '  throw new Error(`Runtime component "${name}" must be exported with defineCapsule`)',
   '}',
   '',
   'export const runtimeComponentLoaders = {',
@@ -621,10 +644,95 @@ const runtimeLoadersSource = [
   '} as const',
   '',
 ].join('\n')
+// Extract category (directory under sections/) + functional type (suffix from name)
+// for each capsule. Used by the AI section edit flow to find similar capsules.
+const extractCategory = (file, name) => {
+  const parts = toPosixPath(file).split('/')
+  const sectionsIdx = parts.indexOf('sections')
+  if (sectionsIdx >= 0 && parts[sectionsIdx + 1]) {
+    return parts[sectionsIdx + 1]
+  }
+  // Primitives or capsules root — use 'primitives' or 'core'
+  if (parts.includes('primitives')) return 'primitives'
+  return 'core'
+}
+
+const extractFunctionalType = (name) => {
+  // Try to match known suffixes from the capsule name
+  const knownTypes = [
+    'Navbar', 'Hero', 'Footer', 'Pricing', 'Features', 'Testimonials',
+    'FAQ', 'Contact', 'About', 'Stats', 'CTA', 'Gallery', 'Team',
+    'Blog', 'Shop', 'Cart', 'Checkout', 'Login', 'Signup', 'Subscribe',
+    'Newsletter', 'Steps', 'Process', 'Logos', 'Story', 'Services',
+    'Products', 'Menu', 'Content', 'Section', 'Grid', 'List', 'Card',
+    'Banner', 'Promo', 'Social', 'Links', 'Brand', 'Main', 'Body',
+    'Sidebar', 'Header', 'Nav', 'Page', 'Layout', 'Wrapper', 'Container',
+    'Panel', 'Modal', 'Dialog', 'Sheet', 'Tab', 'Accordion', 'Table',
+    'Form', 'Input', 'Button', 'Badge', 'Avatar', 'Alert', 'Toast',
+    'Tooltip', 'Popover', 'Command', 'Calendar', 'Carousel', 'Chart',
+    'Map', 'Video', 'Audio', 'Image', 'Icon', 'Text', 'Heading',
+    'Spacer', 'Divider', 'Separator', 'Progress', 'Skeleton',
+    'Spinner', 'Loader', 'Toggle', 'Switch', 'Checkbox', 'Radio',
+    'Select', 'Slider', 'DatePicker', 'AspectRatio', 'ScrollArea',
+  ]
+  for (const type of knownTypes) {
+    if (name.endsWith(type)) return type
+  }
+  return 'Generic'
+}
+
+const capsuleCategories = {}
+for (const [name, entry] of Object.entries(manifest)) {
+  capsuleCategories[name] = {
+    category: extractCategory(entry.file, name),
+    functionalType: extractFunctionalType(name),
+  }
+}
+
+const capsuleCategoriesSource = [
+  `// This file is generated by ${generatorPath}.`,
+  '// Maps each capsule to its directory category + functional type.',
+  '// Used by the AI section edit flow to find similar capsules.',
+  'export const capsuleCategories: Record<string, { category: string; functionalType: string }> = {',
+  ...Object.entries(capsuleCategories).map(
+    ([name, info]) =>
+      `  ${JSON.stringify(name)}: { category: ${JSON.stringify(info.category)}, functionalType: ${JSON.stringify(info.functionalType)} },`,
+  ),
+  '}',
+  '',
+  '/** Find similar capsule names by directory category + functional type. */',
+  'export const findSimilarCapsules = (',
+  '  capsuleName: string,',
+  '  limit = 8,',
+  '): string[] => {',
+  '  const info = capsuleCategories[capsuleName]',
+  '  if (!info) return []',
+  '  const sameCategory = Object.entries(capsuleCategories)',
+  '    .filter(([name, cat]) => name !== capsuleName && cat.category === info.category)',
+  '    .map(([name]) => name)',
+  '  const sameType = Object.entries(capsuleCategories)',
+  '    .filter(([name, cat]) => name !== capsuleName && cat.functionalType === info.functionalType)',
+  '    .map(([name]) => name)',
+  '  // Deduplicate: category matches first, then type matches',
+  '  const seen = new Set<string>()',
+  '  const result: string[] = []',
+  '  for (const name of [...sameCategory, ...sameType]) {',
+  '    if (!seen.has(name)) {',
+  '      seen.add(name)',
+  '      result.push(name)',
+  '      if (result.length >= limit) break',
+  '    }',
+  '  }',
+  '  return result',
+  '}',
+  '',
+].join('\n')
+
 queueWrite(provenanceOutFile, `${JSON.stringify(provenance, null, 2)}\n`)
 queueWrite(runtimeNamesOutFile, runtimeNamesSource)
 queueWrite(runtimeSectionNamesOutFile, runtimeSectionNamesSource)
 queueWrite(runtimeLoadersOutFile, runtimeLoadersSource)
+queueWrite(capsuleCategoriesOutFile, capsuleCategoriesSource)
 await flushWrites()
 
 if (!isCheckMode) {

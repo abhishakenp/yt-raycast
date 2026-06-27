@@ -1,5 +1,6 @@
+import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { defineComponent } from '@openuidev/react-lang'
+
 import {
   Sheet as UISheet,
   SheetContent,
@@ -13,7 +14,7 @@ import { Button } from '#/components/ui/button.tsx'
 
 // Overlay: flatten Sheet parts into one node. side mirrors the real prop.
 // Rendered open by default so the panel content is visible.
-export const Sheet = defineComponent({
+export const Sheet = defineCapsule({
   name: 'Sheet',
   description:
     'Side panel that slides in from an edge. side top|right|bottom|left. Has a title, description, body (children) and footer. Open by default in preview.',

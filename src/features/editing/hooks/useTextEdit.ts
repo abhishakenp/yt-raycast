@@ -70,11 +70,13 @@ export function useTextEdit(
     alt: string
   }) => void,
   onElementActivate?: (element: HTMLElement, rect: DOMRect) => void,
-) {
+): { commitEdit: () => void } {
   const activeEditRef = useRef<TextEditState | null>(null)
   const callbackRef = useRef(onTextChange)
   const imageCallbackRef = useRef(onImageChange)
   const elementActivateCallbackRef = useRef(onElementActivate)
+  const blurRafRef = useRef<number | null>(null)
+  const finishEditRef = useRef<() => void>(() => {})
   callbackRef.current = onTextChange
   imageCallbackRef.current = onImageChange
   elementActivateCallbackRef.current = onElementActivate
@@ -135,6 +137,7 @@ export function useTextEdit(
         })
       }
     }
+    finishEditRef.current = finishEdit
 
     const cancelEdit = () => {
       const active = activeEditRef.current
@@ -232,11 +235,33 @@ export function useTextEdit(
     }
 
     const handleBlur = () => {
-      finishEdit()
+      // Defer by one animation frame. React re-renders (e.g. the toolbar
+      // opening via setToolbarState) can cause a transient blur when the DOM
+      // reconciles; focus usually returns within the same frame. By deferring,
+      // we can check if focus actually left the container + toolbar before
+      // killing the edit. Without this, the cursor appears then immediately
+      // disappears because the blur fires before the user types anything.
+      if (blurRafRef.current !== null) {
+        cancelAnimationFrame(blurRafRef.current)
+      }
+      blurRafRef.current = requestAnimationFrame(() => {
+        blurRafRef.current = null
+        const active = activeEditRef.current
+        if (!active) return
+        // If focus is still within the container, the blur was transient.
+        const focused = document.activeElement
+        if (focused && container.contains(focused)) return
+        // If focus moved to the inline edit toolbar (which lives outside the
+        // container as a fixed overlay), keep the edit alive so the user can
+        // apply style changes.
+        if (focused && focused.closest('.inline-edit-toolbar')) return
+        finishEdit()
+      })
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter' && !e.shiftKey) {
+        // Enter commits the text edit (same as clicking Save/Apply).
         e.preventDefault()
         finishEdit()
       }
@@ -253,9 +278,17 @@ export function useTextEdit(
       container.removeEventListener('click', handleClick)
       container.removeEventListener('blur', handleBlur, true)
       container.removeEventListener('keydown', handleKeyDown)
+      if (blurRafRef.current !== null) {
+        cancelAnimationFrame(blurRafRef.current)
+        blurRafRef.current = null
+      }
       finishEdit()
     }
   }, [containerRef, editMode])
+
+  return {
+    commitEdit: () => finishEditRef.current(),
+  }
 }
 
 // Block-level descendants that mark an element as a multi-block container
@@ -263,7 +296,7 @@ export function useTextEdit(
 const BLOCK_CHILD_SELECTOR =
   'div,p,ul,ol,section,article,header,footer,nav,main,aside,table,form,h1,h2,h3,h4,h5,h6,li,blockquote,figure'
 
-function findTextElement(el: HTMLElement): HTMLElement | null {
+export function findTextElement(el: HTMLElement): HTMLElement | null {
   let current: HTMLElement | null = el
   while (current) {
     const tag = current.tagName.toLowerCase()
@@ -325,7 +358,9 @@ function findTextElement(el: HTMLElement): HTMLElement | null {
 }
 
 function cleanupElement(el: HTMLElement) {
-  el.contentEditable = 'inherit'
+  // Remove the attribute (not just reset the property) so it never leaks into
+  // the serialized afterHtml payload that gets persisted as preview.html.
+  el.removeAttribute('contenteditable')
   el.style.outline = ''
   el.style.outlineOffset = ''
   el.style.cursor = ''

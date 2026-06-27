@@ -1,19 +1,12 @@
-import { useState } from 'react'
 import type { ReactNode } from 'react'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '#/components/ui/sheet.tsx'
 
 import type { KitAction } from './types.ts'
 import { kitActionClasses } from './types.ts'
 import { SignInButton } from '#/section-kit/SignInButton.tsx'
+import { MobileNavDrawer } from './MobileNavDrawer.tsx'
 
 /**
  * Matches CTA labels that express an auth intent (sign in / log in / sign up /
@@ -42,7 +35,6 @@ export function SiteNav(props: {
   className?: string
 }) {
   const go = useNavigate()
-  const [open, setOpen] = useState(false)
   const sticky = props.sticky ?? true
   const ctaIsAuth = Boolean(
     props.signIn || (props.cta && AUTH_INTENT.test(props.cta.label)),
@@ -57,7 +49,7 @@ export function SiteNav(props: {
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
         <button
           type="button"
-          onClick={() => go(props.homeTarget ?? props.nav?.[0])}
+          onClick={() => go(props.homeTarget ?? 'Home')}
           className="flex items-center gap-3"
         >
           {props.brandMark}
@@ -113,66 +105,22 @@ export function SiteNav(props: {
             </button>
           ) : null}
 
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <button
-                type="button"
-                aria-label="Open menu"
-                className="p-2 text-muted-foreground hover:text-foreground md:hidden"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </SheetTrigger>
-            <SheetContent side="right">
-              <SheetHeader>
-                <SheetTitle>{props.brand}</SheetTitle>
-              </SheetHeader>
-              <div className="flex flex-col gap-4 px-4">
-                {props.nav?.map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => {
-                      setOpen(false)
-                      go(label)
-                    }}
-                    className="text-left text-base text-foreground hover:text-primary"
-                  >
-                    {label}
-                  </button>
-                ))}
-                {props.cta && ctaIsAuth ? (
-                  <SignInButton
-                    label={props.cta.label}
-                    variant={props.cta.variant}
-                  />
-                ) : props.cta ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOpen(false)
-                      go(props.cta!.target ?? props.cta!.label)
-                    }}
-                    className={kitActionClasses(props.cta.variant)}
-                  >
-                    {props.cta.label}
-                  </button>
-                ) : null}
-              </div>
-            </SheetContent>
-          </Sheet>
+          <MobileNavDrawer
+            brand={props.brand}
+            nav={props.nav ?? []}
+            homeTarget={props.homeTarget}
+            cta={props.cta && !ctaIsAuth ? props.cta : undefined}
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+            footer={
+              props.cta && ctaIsAuth ? (
+                <SignInButton
+                  label={props.cta.label}
+                  variant={props.cta.variant}
+                  className="min-h-11 w-full"
+                />
+              ) : null
+            }
+          />
         </div>
       </nav>
     </header>
