@@ -48,9 +48,7 @@ import { useUndoRedo } from '@/features/editing/hooks/useUndoRedo'
 import { useReorderElement } from '@/features/editing/hooks/useReorderElement'
 import { replaceHrefInSource } from '@/features/editing/lib/link-source'
 import { revertTextPreservingIcons } from '@/features/editing/hooks/useTextEdit'
-import { ImageSwapPopover } from '@/features/editing/components/ImageSwapPopover'
 import { InlineEditToolbar } from '@/features/editing/components/InlineEditToolbar'
-import { SectionPromptToolbar } from '@/features/editing/components/SectionPromptToolbar'
 import {
   Popover,
   PopoverContent,
@@ -406,19 +404,6 @@ export function Dashboard({
     [],
   )
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
-  const [imageSwapState, setImageSwapState] = useState<{
-    isOpen: boolean
-    anchorRect: DOMRect | null
-    currentSrc: string
-    currentAlt: string
-    currentElement: HTMLImageElement | null
-  }>({
-    isOpen: false,
-    anchorRect: null,
-    currentSrc: '',
-    currentAlt: '',
-    currentElement: null,
-  })
   const [toolbarState, setToolbarState] = useState({
     isOpen: false,
     anchorRect: null as DOMRect | null,
@@ -890,6 +875,21 @@ export function Dashboard({
 
   const handleSectionSelect = (selection: InspectorSelection | null) => {
     setInspectorSelection(selection)
+    if (selection) {
+      // Unified: also open the InlineEditToolbar for the selected section element
+      const root = document.querySelector('.genui-preview')
+      const el = root?.querySelector<HTMLElement>(selection.elementPath)
+      if (el) {
+        const rect = el.getBoundingClientRect()
+        setToolbarState({
+          isOpen: true,
+          anchorRect: rect,
+          activeElement: el,
+        })
+      }
+    } else {
+      setToolbarState((s) => ({ ...s, isOpen: false }))
+    }
   }
 
   const closeInspectorToolbar = () => {
@@ -920,50 +920,6 @@ export function Dashboard({
       el.getAttribute('id') || el.closest('[id]')?.getAttribute('id') || ''
     if (sectionId) {
       await reorder.reorder(sectionId, 'down')
-    }
-  }
-
-  const handleSectionDelete = async () => {
-    if (!inspectorSelection) return
-    // Find the selected element in the preview DOM via its element path
-    const root = document.querySelector('.genui-preview')
-    if (!root) return
-    const el = root.querySelector<HTMLElement>(inspectorSelection.elementPath)
-    if (!el) return
-    // Apply display:none via the style override mechanism
-    const sourceAnchor = el.getAttribute('class') ?? ''
-    let occurrenceIndex = 0
-    if (sourceAnchor) {
-      const peers = Array.from(
-        root.querySelectorAll(`[class="${CSS.escape(sourceAnchor)}"]`),
-      )
-      const at = peers.indexOf(el)
-      occurrenceIndex = at < 0 ? 0 : at
-    }
-    // Save scroll position before the edit
-    const previewScrollEl = getPreviewScrollEl()
-    if (previewScrollEl) {
-      savedPreviewScrollRef.current = previewScrollEl.scrollTop
-    }
-    const label = `SECTION: ${inspectorSelection.tag}`
-    const result = await editController.applyEdit(
-      'style',
-      label,
-      sourceAnchor,
-      'display: none',
-      'inline delete',
-      undefined,
-      occurrenceIndex,
-    )
-    closeInspectorToolbar()
-    if (result === 'fork_needed') {
-      toast.info('Forking session to save your changes...')
-      const forkResult = await editController.forkCurrentSession()
-      if (!forkResult) {
-        toast.error(editController.editError || 'Failed to fork session')
-      }
-    } else if (result !== true && 'error' in result) {
-      toast.error(result.error)
     }
   }
 
@@ -1105,25 +1061,26 @@ export function Dashboard({
       src: string
       alt: string
     }>
-    const { element, src, alt } = customEvent.detail
+    const { element } = customEvent.detail
     const rect = element.getBoundingClientRect()
 
-    setImageSwapState({
+    // Unified: open the InlineEditToolbar with the image element.
+    // The toolbar detects <img> and shows the image swap panel.
+    setToolbarState({
       isOpen: true,
       anchorRect: rect,
-      currentSrc: src,
-      currentAlt: alt,
-      currentElement: element,
+      activeElement: element,
     })
   }
 
   const handleImageSelect = (newSrc: string) => {
-    if (imageSwapState.currentElement) {
+    const el = toolbarState.activeElement as HTMLImageElement | null
+    if (el) {
       handleImageChange({
-        oldSrc: imageSwapState.currentSrc,
+        oldSrc: el.src,
         newSrc,
-        element: imageSwapState.currentElement,
-        alt: imageSwapState.currentAlt,
+        element: el,
+        alt: el.alt ?? '',
       })
     }
   }
@@ -2168,24 +2125,12 @@ export function Dashboard({
           </div>
         </div>
       </div>
-      <ImageSwapPopover
-        isOpen={imageSwapState.isOpen}
-        onClose={() => setImageSwapState((s) => ({ ...s, isOpen: false }))}
-        anchorRect={imageSwapState.anchorRect}
-        currentAlt={imageSwapState.currentAlt}
-        onImageSelect={handleImageSelect}
-        context={{
-          prompt: generationView?.session.prompt,
-        }}
-        imageWidth={imageSwapState.currentElement?.naturalWidth}
-        imageHeight={imageSwapState.currentElement?.naturalHeight}
-        sessionId={sessionId}
-      />
       <InlineEditToolbar
         isOpen={toolbarState.isOpen}
         onClose={() => {
           cancelTextEditRef.current?.()
           setToolbarState((s) => ({ ...s, isOpen: false }))
+          if (inspectorSelection) closeInspectorToolbar()
         }}
         anchorRect={toolbarState.anchorRect}
         activeElement={toolbarState.activeElement}
@@ -2198,40 +2143,15 @@ export function Dashboard({
         onUndo={undoRedo.undo}
         onRedo={undoRedo.redo}
         onLinkEdit={handleLinkEdit}
-        onMoveUp={handleMoveUp}
-        onMoveDown={handleMoveDown}
+        onMoveUp={inspectorSelection ? handleSectionMoveUp : handleMoveUp}
+        onMoveDown={inspectorSelection ? handleSectionMoveDown : handleMoveDown}
         canMoveUp={true}
         canMoveDown={true}
-      />
-      <SectionPromptToolbar
-        isOpen={inspectorSelection !== null}
-        onClose={closeInspectorToolbar}
-        anchorRect={
-          inspectorSelection
-            ? ({
-                left: inspectorSelection.boundingBox.x,
-                top: inspectorSelection.boundingBox.y,
-                width: inspectorSelection.boundingBox.width,
-                height: inspectorSelection.boundingBox.height,
-                right: 0,
-                bottom: 0,
-                x: inspectorSelection.boundingBox.x,
-                y: inspectorSelection.boundingBox.y,
-                toJSON: () => '',
-              } as DOMRect)
-            : null
-        }
-        selection={inspectorSelection}
-        onSubmit={handleSectionEditSubmit}
-        onDelete={handleSectionDelete}
-        onMoveUp={handleSectionMoveUp}
-        onMoveDown={handleSectionMoveDown}
-        onUndo={undoRedo.undo}
-        onRedo={undoRedo.redo}
-        canUndo={undoRedo.canUndo}
-        canRedo={undoRedo.canRedo}
-        isSubmitting={isSectionEditing}
-        error={sectionEditError}
+        onImageSelect={handleImageSelect}
+        sessionId={sessionId}
+        onSectionEdit={handleSectionEditSubmit}
+        isSectionSubmitting={isSectionEditing}
+        sectionError={sectionEditError}
       />
     </>
   )

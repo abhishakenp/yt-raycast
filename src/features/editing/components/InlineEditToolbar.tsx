@@ -23,6 +23,7 @@ import {
   ChevronUp,
   ChevronDown,
   Sparkles,
+  Image as ImageIcon,
 } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import {
@@ -51,6 +52,7 @@ import {
 import { StyleControlsPanel } from './StyleControlsPanel'
 import { TypographyControlsPanel } from './TypographyControlsPanel'
 import { LinkEditPopover } from './LinkEditPopover'
+import { ImageSwapPanel } from './ImageSwapPanel'
 
 interface InlineEditToolbarProps {
   isOpen: boolean
@@ -84,6 +86,13 @@ interface InlineEditToolbarProps {
   onMoveDown?: () => void
   canMoveUp?: boolean
   canMoveDown?: boolean
+  /** Image swap */
+  onImageSelect?: (newSrc: string) => void
+  sessionId?: string
+  /** Section AI edit */
+  onSectionEdit?: (prompt: string) => void
+  isSectionSubmitting?: boolean
+  sectionError?: string
 }
 
 export function InlineEditToolbar({
@@ -104,6 +113,11 @@ export function InlineEditToolbar({
   onMoveDown,
   canMoveUp = false,
   canMoveDown = false,
+  onImageSelect,
+  sessionId,
+  onSectionEdit,
+  isSectionSubmitting = false,
+  sectionError,
 }: InlineEditToolbarProps) {
   const [fontSize, setFontSize] = useState('16')
   const [fontSizeUnit, setFontSizeUnit] = useState('px')
@@ -113,14 +127,14 @@ export function InlineEditToolbar({
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>(
     'left',
   )
-  // Which extended panel is open: 'style' | 'typography' | 'link' | 'ai' | null
+  // Which extended panel is open: 'style' | 'typography' | 'link' | 'ai' | 'image' | null
   const [activePanel, setActivePanel] = useState<
-    'style' | 'typography' | 'link' | 'ai' | null
+    'style' | 'typography' | 'link' | 'ai' | 'image' | null
   >(null)
   // Keep the last panel mounted during collapse animation so it can animate
   // out instead of vanishing instantly.
   const [displayPanel, setDisplayPanel] = useState<
-    'style' | 'typography' | 'link' | 'ai' | null
+    'style' | 'typography' | 'link' | 'ai' | 'image' | null
   >(null)
   useEffect(() => {
     if (activePanel) {
@@ -330,6 +344,13 @@ export function InlineEditToolbar({
 
   const handleApply = () => {
     if (activeElement && !isApplying && !isForking) {
+      // If AI panel is open with a prompt, submit via AI edit handler
+      if (activePanel === 'ai' && aiPrompt.trim() && onSectionEdit) {
+        onSectionEdit(aiPrompt.trim())
+        setAiPrompt('')
+        return
+      }
+
       // Always commit text changes first — the user may have typed text
       // and clicked Apply without modifying any style controls.
       onCommitText?.()
@@ -408,6 +429,7 @@ export function InlineEditToolbar({
 
   const tag = activeElement.tagName.toLowerCase()
   const isLinkElement = tag === 'a'
+  const isImageElement = tag === 'img'
   // Text elements: show font size, bold, italic, color, alignment, typography
   const isTextElement = [
     'p',
@@ -673,6 +695,30 @@ export function InlineEditToolbar({
                 <TooltipContent>Edit link URL and text</TooltipContent>
               </Tooltip>
             )}
+            {isImageElement && onImageSelect && sessionId && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActivePanel(activePanel === 'image' ? null : 'image')
+                    }
+                    disabled={isApplying || isForking}
+                    className={cn(
+                      'grid size-7 place-items-center rounded transition-colors',
+                      activePanel === 'image'
+                        ? 'bg-cyan-300/20 text-cyan-100'
+                        : 'text-white/60 hover:bg-white/5 hover:text-white',
+                      'disabled:opacity-50 disabled:cursor-not-allowed',
+                    )}
+                    aria-label="Swap image"
+                  >
+                    <ImageIcon className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Search and swap image</TooltipContent>
+              </Tooltip>
+            )}
             {(onMoveUp || onMoveDown) && (
               <>
                 <Tooltip>
@@ -888,8 +934,7 @@ export function InlineEditToolbar({
               />
             )}
             {displayPanel === 'ai' && (
-              <div className="flex items-start gap-2 p-2 w-full">
-                <Sparkles className="size-4 shrink-0 text-cyan-300 mt-2" />
+              <div className="flex flex-col gap-1 p-2 w-full">
                 <Textarea
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
@@ -902,9 +947,30 @@ export function InlineEditToolbar({
                   placeholder="Describe a change..."
                   className="min-h-9 text-sm"
                   autoFocus
+                  disabled={isSectionSubmitting}
                 />
+                {sectionError && (
+                  <p className="px-1 text-xs text-red-400">{sectionError}</p>
+                )}
+                {isSectionSubmitting && (
+                  <p className="px-1 text-xs text-cyan-300">Generating...</p>
+                )}
               </div>
             )}
+            {displayPanel === 'image' &&
+              isImageElement &&
+              onImageSelect &&
+              sessionId && (
+                <ImageSwapPanel
+                  currentAlt={(activeElement as HTMLImageElement).alt ?? ''}
+                  onImageSelect={onImageSelect}
+                  imageWidth={(activeElement as HTMLImageElement).naturalWidth}
+                  imageHeight={
+                    (activeElement as HTMLImageElement).naturalHeight
+                  }
+                  sessionId={sessionId}
+                />
+              )}
           </div>
         </div>
       </div>
