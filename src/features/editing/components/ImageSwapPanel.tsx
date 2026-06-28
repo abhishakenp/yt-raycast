@@ -302,7 +302,7 @@ export function ImageSwapPanel({
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className="relative flex max-h-[400px] w-full flex-col overflow-hidden"
+      className="relative flex max-h-[400px] w-[32.5rem] max-w-[90vw] flex-col overflow-hidden"
     >
       {/* Search bar with upload button — input group */}
       <div className="flex shrink-0 items-center gap-2 border-b border-white/10 p-3.5">
