@@ -6,6 +6,8 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -516,5 +518,23 @@ describe('Dashboard missing session state', () => {
           '[]',
       ),
     ).toEqual([{ handle: 'truffle-box', price: 79, title: 'Truffle Box' }])
+  })
+})
+
+// ─── source-level invariants ──────────────────────────────────────────────
+
+describe('Dashboard source-level invariants', () => {
+  it('lazy-loads InlineEditToolbar to keep the dashboard route bundle under its size limit', () => {
+    const source = readFileSync(join(__dirname, 'Dashboard.tsx'), 'utf8')
+
+    // InlineEditToolbar must be loaded via lazy(), not a direct import
+    expect(source).toMatch(/const\s+InlineEditToolbar\s*=\s*lazy\(/)
+    expect(source).not.toMatch(
+      /^import\s+\{[^}]*InlineEditToolbar[^}]*\}\s+from\s+['"]@\/features\/editing\/components\/InlineEditToolbar['"]/m,
+    )
+
+    // The toolbar must be wrapped in a Suspense boundary
+    expect(source).toContain('<Suspense')
+    expect(source).toMatch(/<Suspense[^>]*>\s*<InlineEditToolbar/)
   })
 })
