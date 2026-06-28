@@ -31,7 +31,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '#/components/ui/input-group'
-import { Textarea } from '#/components/ui/textarea'
+import { Button } from '#/components/ui/button'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -342,15 +342,13 @@ export function InlineEditToolbar({
     return () => document.removeEventListener('keydown', handleEscape)
   }, [isOpen, onClose, isApplying, isForking])
 
+  const handleGenerate = () => {
+    if (!aiPrompt.trim() || isSectionSubmitting) return
+    onSectionEdit?.(aiPrompt.trim())
+  }
+
   const handleApply = () => {
     if (activeElement && !isApplying && !isForking) {
-      // If AI panel is open with a prompt, submit via AI edit handler
-      if (activePanel === 'ai' && aiPrompt.trim() && onSectionEdit) {
-        onSectionEdit(aiPrompt.trim())
-        setAiPrompt('')
-        return
-      }
-
       // Always commit text changes first — the user may have typed text
       // and clicked Apply without modifying any style controls.
       onCommitText?.()
@@ -884,9 +882,6 @@ export function InlineEditToolbar({
               ) : (
                 'Apply'
               )}
-              {activePanel === 'ai' && !isApplying && !isForking && (
-                <Sparkles className="pointer-events-none absolute left-1/2 top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 text-slate-950/25" />
-              )}
             </button>
 
             <button
@@ -906,13 +901,13 @@ export function InlineEditToolbar({
 
         {/* Extended panels — animated expand/collapse using grid-rows trick */}
         <div
-          className="grid w-full transition-[grid-template-rows,opacity] duration-200 ease-out"
+          className="grid w-full grid-cols-[1fr] transition-[grid-template-rows,opacity] duration-200 ease-out"
           style={{
             gridTemplateRows: activePanel ? '1fr' : '0fr',
             opacity: activePanel ? 1 : 0,
           }}
         >
-          <div className="overflow-hidden">
+          <div className="overflow-hidden w-full">
             {displayPanel === 'style' && (
               <StyleControlsPanel
                 activeElement={activeElement}
@@ -940,27 +935,48 @@ export function InlineEditToolbar({
               />
             )}
             {displayPanel === 'ai' && (
-              <div className="flex flex-col gap-1 w-full">
-                <Textarea
+              <div className="flex w-full flex-col">
+                <textarea
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
-                      handleApply()
+                      handleGenerate()
                     }
                   }}
                   placeholder="Describe a change..."
-                  className="min-h-[72px] text-sm border-0 rounded-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-0 px-3 py-2"
                   autoFocus
                   disabled={isSectionSubmitting}
+                  className="field-sizing-content min-h-[72px] w-full resize-none border-0 bg-transparent px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:ring-0"
                 />
-                {sectionError && (
-                  <p className="px-3 text-xs text-red-400">{sectionError}</p>
-                )}
-                {isSectionSubmitting && (
-                  <p className="px-3 text-xs text-cyan-300">Generating...</p>
-                )}
+                <div className="flex items-center gap-2 px-2 pb-1.5">
+                  {sectionError && (
+                    <span className="text-xs text-red-400">{sectionError}</span>
+                  )}
+                  {isSectionSubmitting && (
+                    <span className="text-xs text-cyan-300">Generating...</span>
+                  )}
+                  <Button
+                    type="button"
+                    size="xs"
+                    onClick={handleGenerate}
+                    disabled={!aiPrompt.trim() || isSectionSubmitting}
+                    className="ml-auto h-6 gap-1.5 rounded-md bg-cyan-300/90 px-2 text-xs font-bold text-slate-950 hover:bg-cyan-300"
+                  >
+                    {isSectionSubmitting ? (
+                      <>
+                        <Loader2 className="size-3 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="size-3" />
+                        Generate
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             )}
             {displayPanel === 'image' &&
