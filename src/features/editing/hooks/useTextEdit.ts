@@ -13,6 +13,10 @@ export interface TextEditState {
    *  is preserved and each change yields a precise, matchable text run instead
    *  of the element's flattened textContent. */
   originalNodes: CapturedTextNode[]
+  /** Element children that were locked (contenteditable=false) during editing
+   *  to prevent the user from accidentally deleting non-text content like SVG
+   *  icons or images. Cleaned up in cleanupElement. */
+  lockedChildren?: HTMLElement[]
 }
 
 /** Collect every Text node under `el` in document order (including those nested
@@ -69,7 +73,12 @@ export function diffEdits(
     for (let i = 0; i < current.length; i += 1) {
       const oldText = active.originalNodes[i].value
       const newText = current[i].nodeValue ?? ''
-      if (oldText !== newText && oldText.trim() && newText.trim()) {
+      if (
+        oldText !== newText &&
+        oldText.trim() &&
+        // Allow empty newText (deletion) but skip whitespace-only changes.
+        (newText.length === 0 || newText.trim())
+      ) {
         changes.push({ oldText, newText })
       }
     }
@@ -80,7 +89,11 @@ export function diffEdits(
   // so we only send the changed portion — not the entire flattened string,
   // which would span multiple OpenUI source arguments and corrupt them.
   const flattened = active.element.textContent ?? ''
-  if (flattened !== active.originalText && flattened.trim()) {
+  if (
+    flattened !== active.originalText &&
+    // Allow empty flattened (full deletion) but skip whitespace-only.
+    (flattened.length === 0 || flattened.trim())
+  ) {
     const oldText = active.originalText
     const newText = flattened
     let prefixLen = 0
@@ -151,7 +164,7 @@ export function useTextEdit(
       activeEditRef.current = null
 
       const changes = diffEdits(active)
-      cleanupElement(active.element)
+      cleanupElement(active.element, active.lockedChildren)
       for (const change of changes) {
         const occurrenceIndex = computeOccurrenceIndex(
           container,
@@ -182,7 +195,7 @@ export function useTextEdit(
       } else {
         active.element.textContent = active.originalText
       }
-      cleanupElement(active.element)
+      cleanupElement(active.element, active.lockedChildren)
     }
 
     const handleClick = (e: MouseEvent) => {
@@ -234,6 +247,9 @@ export function useTextEdit(
       if (!originalText.trim()) return
 
       textEl.contentEditable = 'true'
+      // Lock non-text children (SVG icons, images) so the user can't
+      // accidentally delete them while editing the text.
+      const lockedChildren = lockNonTextChildren(textEl)
       textEl.focus()
 
       // Place the caret where the user clicked instead of selecting the whole
@@ -270,6 +286,7 @@ export function useTextEdit(
           node,
           value: node.nodeValue ?? '',
         })),
+        lockedChildren,
       }
 
       e.stopPropagation()
@@ -353,6 +370,33 @@ export function isClickOnActiveEdit(
   return activeElement === target || activeElement.contains(target)
 }
 
+/** Set contenteditable=false on direct element children that don't contain
+ *  text content (SVG icons, images, icon wrappers). This prevents the user
+ *  from accidentally selecting and deleting non-text content while editing
+ *  the text of a button or link that contains an icon.
+ *  Returns the list of locked elements so they can be unlocked in cleanup. */
+export function lockNonTextChildren(el: HTMLElement): HTMLElement[] {
+  const locked: HTMLElement[] = []
+  for (const child of Array.from(el.childNodes)) {
+    if (child.nodeType !== Node.ELEMENT_NODE) continue
+    const childEl = child as HTMLElement
+    // Only lock children with no text content — don't lock spans/headings
+    // that contain text the user might want to edit.
+    if (!childEl.textContent?.trim()) {
+      childEl.setAttribute('contenteditable', 'false')
+      locked.push(childEl)
+    }
+  }
+  return locked
+}
+
+/** Remove the contenteditable=false attribute set by lockNonTextChildren. */
+export function unlockNonTextChildren(elements: HTMLElement[]) {
+  for (const el of elements) {
+    el.removeAttribute('contenteditable')
+  }
+}
+
 export function findTextElement(el: HTMLElement): HTMLElement | null {
   let current: HTMLElement | null = el
   while (current) {
@@ -415,10 +459,14 @@ export function findTextElement(el: HTMLElement): HTMLElement | null {
   return null
 }
 
-function cleanupElement(el: HTMLElement) {
+function cleanupElement(el: HTMLElement, lockedChildren?: HTMLElement[]) {
   // Remove the attribute (not just reset the property) so it never leaks into
   // the serialized afterHtml payload that gets persisted as preview.html.
   el.removeAttribute('contenteditable')
+  // Unlock non-text children that were locked during editing.
+  if (lockedChildren) {
+    unlockNonTextChildren(lockedChildren)
+  }
   el.style.outline = ''
   el.style.outlineOffset = ''
   el.style.cursor = ''

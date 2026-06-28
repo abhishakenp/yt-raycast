@@ -84,9 +84,9 @@ describe('user image upload helpers', () => {
 
   it('saveUserImage stores metadata and listUserImages returns it with URL', async () => {
     const t = userImageTest()
-    const sessionId = await createReadySession(t)
-
+    // Create storage ID first (actions can't run inside mutation transactions)
     const storageId = await createStorageId(t)
+    const sessionId = await createReadySession(t)
 
     await t.mutation(api.sessions.saveUserImage, {
       sessionId: sessionId as Id<'sessions'>,
@@ -111,9 +111,8 @@ describe('user image upload helpers', () => {
 
   it('saveUserImage rejects non-image MIME types', async () => {
     const t = userImageTest()
-    const sessionId = await createReadySession(t)
-
     const storageId = await createStorageId(t)
+    const sessionId = await createReadySession(t)
 
     await expect(
       t.mutation(api.sessions.saveUserImage, {
@@ -129,9 +128,8 @@ describe('user image upload helpers', () => {
 
   it('saveUserImage rejects wrong owner secret', async () => {
     const t = userImageTest()
-    const sessionId = await createReadySession(t)
-
     const storageId = await createStorageId(t)
+    const sessionId = await createReadySession(t)
 
     await expect(
       t.mutation(api.sessions.saveUserImage, {
@@ -158,14 +156,20 @@ describe('user image upload helpers', () => {
 
   it('listUserImages returns newest first', async () => {
     const t = userImageTest()
+
+    // Create storage IDs first (actions can't run inside mutation transactions)
+    const storageIds = []
+    for (let i = 0; i < 2; i++) {
+      storageIds.push(await createStorageId(t))
+    }
+
     const sessionId = await createReadySession(t)
 
-    for (const name of ['first.png', 'second.png']) {
-      const storageId = await createStorageId(t)
+    for (const [i, name] of ['first.png', 'second.png'].entries()) {
       await t.mutation(api.sessions.saveUserImage, {
         sessionId: sessionId as Id<'sessions'>,
         anonymousOwnerSecret: 'owner-secret',
-        storageId,
+        storageId: storageIds[i],
         filename: name,
         contentType: 'image/png',
         size: 100,
