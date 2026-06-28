@@ -616,6 +616,60 @@ export function findTextElement(el: HTMLElement): HTMLElement | null {
   return null
 }
 
+/** Check if an element is an editable text leaf — same criteria as
+ *  findTextElement but without walking up the parent tree. Used by
+ *  the toolbar to decide whether to show text-specific controls. */
+export function isEditableTextLeaf(el: HTMLElement): boolean {
+  const tag = el.tagName.toLowerCase()
+  if (
+    [
+      'input',
+      'textarea',
+      'select',
+      'svg',
+      'path',
+      'img',
+      'video',
+      'audio',
+      'script',
+      'style',
+    ].includes(tag)
+  ) {
+    return false
+  }
+  const text = (el.textContent || '').trim()
+  if (text.length === 0 || text.length >= 500) return false
+  if (
+    ![
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'p',
+      'span',
+      'div',
+      'li',
+      'td',
+      'th',
+      'label',
+      'figcaption',
+      'strong',
+      'em',
+      'small',
+      'blockquote',
+      'button',
+      'a',
+    ].includes(tag)
+  ) {
+    return false
+  }
+  // Only leaf text blocks — containers with block-level children are not
+  // editable text leaves.
+  return !el.querySelector(BLOCK_CHILD_SELECTOR)
+}
+
 function cleanupElement(el: HTMLElement, lockedChildren?: HTMLElement[]) {
   // Remove the attribute (not just reset the property) so it never leaks into
   // the serialized afterHtml payload that gets persisted as preview.html.

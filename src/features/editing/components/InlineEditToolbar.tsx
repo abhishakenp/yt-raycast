@@ -49,6 +49,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '#/components/ui/tooltip'
+import { isEditableTextLeaf } from '../hooks/useTextEdit'
 import { StyleControlsPanel } from './StyleControlsPanel'
 import { TypographyControlsPanel } from './TypographyControlsPanel'
 import { LinkEditPopover } from './LinkEditPopover'
@@ -428,28 +429,9 @@ export function InlineEditToolbar({
   const tag = activeElement.tagName.toLowerCase()
   const isLinkElement = tag === 'a'
   const isImageElement = tag === 'img'
-  // Text elements: show font size, bold, italic, color, alignment, typography.
-  // Only true text leaf elements — NOT div/section/header (those are containers
-  // selected via the inspector and should only get Style + AI + Apply).
-  const isTextElement = [
-    'p',
-    'h1',
-    'h2',
-    'h3',
-    'h4',
-    'h5',
-    'h6',
-    'span',
-    'a',
-    'button',
-    'label',
-    'li',
-    'strong',
-    'em',
-    'small',
-    'blockquote',
-    'figcaption',
-  ].includes(tag)
+  // Use the same logic as findTextElement — if the element can be
+  // contentEditable text, it gets the full text toolbar.
+  const isTextElement = isEditableTextLeaf(activeElement)
 
   return (
     <TooltipProvider delayDuration={300}>
