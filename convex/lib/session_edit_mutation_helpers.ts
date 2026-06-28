@@ -360,6 +360,13 @@ export const applySessionEdit = async (
       now,
       args.occurrenceIndex,
     )
+    if (!artifactSnapshot.openUiReplaced) {
+      throw new ConvexError({
+        code: 'TEXT_NOT_FOUND',
+        message:
+          'Selected text was not found in the current preview. Select a smaller text block and try again.',
+      })
+    }
     openUiSource = artifactSnapshot.openUiSource
     siteSpecJson = artifactSnapshot.siteSpecJson
   } else {

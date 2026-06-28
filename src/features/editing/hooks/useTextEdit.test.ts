@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { JSDOM } from 'jsdom'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
 
 // Set up jsdom globals BEFORE importing useTextEdit, which uses
 // document.createTreeWalker at module level via collectTextNodes.
@@ -1300,5 +1303,112 @@ describe('full-chain: button with icon text edit', () => {
     expect(result.replaced).toBe(true)
     expect(result.html).toContain('appStore="iOS Download"')
     expect(result.html).toContain('googlePlay="Android Download"')
+  })
+})
+
+// ─── Source-level structural assertions for bug fixes ─────────────────────
+
+const __filename_test = fileURLToPath(import.meta.url)
+const __dirname_test = dirname(__filename_test)
+const SOURCE_FILE = readFileSync(join(__dirname_test, 'useTextEdit.ts'), 'utf8')
+
+describe('bug fix: SVG icon deletion prevention (beforeinput handler)', () => {
+  it('lockNonTextChildren locks SVG elements (behavioral)', () => {
+    const btn = document.createElement('button')
+    btn.textContent = 'App Store'
+    const svg = document.createElement('svg')
+    svg.innerHTML = '<path d="M18.71 19.5c-.83 1.24"/>'
+    btn.insertBefore(svg, btn.firstChild)
+    document.body.appendChild(btn)
+    try {
+      const locked = lockNonTextChildren(btn)
+      expect(locked).toHaveLength(1)
+      expect(locked[0]).toBe(svg)
+      expect(svg.getAttribute('contenteditable')).toBe('false')
+    } finally {
+      btn.remove()
+    }
+  })
+
+  it('source: handleBeforeInput function exists', () => {
+    expect(SOURCE_FILE).toContain('handleBeforeInput')
+  })
+
+  it('source: handleBeforeInput is registered and cleaned up', () => {
+    expect(SOURCE_FILE).toContain(
+      "container.addEventListener('beforeinput', handleBeforeInput)",
+    )
+    expect(SOURCE_FILE).toContain(
+      "container.removeEventListener('beforeinput', handleBeforeInput)",
+    )
+  })
+
+  it('source: handleBeforeInput checks deleteContentBackward', () => {
+    expect(SOURCE_FILE).toContain('deleteContentBackward')
+  })
+
+  it('source: handleBeforeInput checks deleteContentForward', () => {
+    expect(SOURCE_FILE).toContain('deleteContentForward')
+  })
+
+  it('source: handleBeforeInput checks active.lockedChildren', () => {
+    expect(SOURCE_FILE).toContain('active.lockedChildren')
+  })
+
+  it('source: handleBeforeInput calls e.preventDefault() when locked child would be deleted', () => {
+    expect(SOURCE_FILE).toMatch(
+      /lockedChildren\.some\([\s\S]*?e\.preventDefault\(\)/,
+    )
+  })
+
+  it('source: backward delete uses previousSibling for text node at offset 0', () => {
+    expect(SOURCE_FILE).toContain('startContainer.previousSibling')
+  })
+
+  it('source: forward delete uses nextSibling for text node at end', () => {
+    expect(SOURCE_FILE).toContain('startContainer.nextSibling')
+  })
+
+  it('source: backward delete uses childNodes[offset - 1] for element node', () => {
+    expect(SOURCE_FILE).toContain('childNodes[offset - 1]')
+  })
+
+  it('source: forward delete uses childNodes[offset] for element node', () => {
+    expect(SOURCE_FILE).toContain('childNodes[offset]')
+  })
+})
+
+describe('bug fix: space typing in editable buttons (handleKeyDown)', () => {
+  it('source: handleKeyDown has a Space key case', () => {
+    expect(SOURCE_FILE).toMatch(/e\.key === ' '/)
+  })
+
+  it('source: Space case checks activeEditRef.current', () => {
+    expect(SOURCE_FILE).toMatch(/e\.key === ' '[\s\S]*activeEditRef\.current/)
+  })
+
+  it('source: Space case calls e.preventDefault()', () => {
+    // The Space case must call preventDefault before the Enter case
+    const spaceIdx = SOURCE_FILE.indexOf("e.key === ' '")
+    const enterIdx = SOURCE_FILE.indexOf("e.key === 'Enter'")
+    expect(spaceIdx).toBeGreaterThan(-1)
+    expect(enterIdx).toBeGreaterThan(-1)
+    expect(spaceIdx).toBeLessThan(enterIdx)
+    const spaceBlock = SOURCE_FILE.slice(spaceIdx, enterIdx)
+    expect(spaceBlock).toContain('e.preventDefault()')
+  })
+
+  it('source: Space case calls document.execCommand insertText with space', () => {
+    expect(SOURCE_FILE).toContain(
+      "document.execCommand('insertText', false, ' ')",
+    )
+  })
+
+  it('source: Space case is placed before Enter/Escape handlers', () => {
+    const spaceIdx = SOURCE_FILE.indexOf("e.key === ' '")
+    const enterIdx = SOURCE_FILE.indexOf("e.key === 'Enter'")
+    const escapeIdx = SOURCE_FILE.indexOf("e.key === 'Escape'")
+    expect(spaceIdx).toBeLessThan(enterIdx)
+    expect(spaceIdx).toBeLessThan(escapeIdx)
   })
 })
