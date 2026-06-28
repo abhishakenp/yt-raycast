@@ -170,7 +170,7 @@ export function TypographyControlsPanel({
                 value={letterSpacingUnit}
                 onValueChange={setLetterSpacingUnit}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -203,7 +203,7 @@ export function TypographyControlsPanel({
                 value={wordSpacingUnit}
                 onValueChange={setWordSpacingUnit}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
