@@ -76,6 +76,7 @@ describe('InlineEditToolbar — behavioral', () => {
     onClose.mockReset()
 
     activeElement = document.createElement('p')
+    activeElement.textContent = 'Hello world'
     document.body.appendChild(activeElement)
 
     originalGetComputedStyle = window.getComputedStyle
@@ -206,6 +207,7 @@ describe('InlineEditToolbar — font size control', () => {
 
     activeElement = document.createElement('p')
     activeElement.setAttribute('class', 'hero-title')
+    activeElement.textContent = 'Hero title text'
     document.body.appendChild(activeElement)
 
     originalGetComputedStyle = window.getComputedStyle
