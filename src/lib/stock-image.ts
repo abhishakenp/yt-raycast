@@ -56,6 +56,13 @@ interface UnsplashResponse {
   results: UnsplashPhoto[]
 }
 
+const pexelsPhotoUrl = (photo: PexelsPhoto, w: number, h: number): string => {
+  if (w > 1200 || h > 1200) return photo.src.original
+  if (w > 800 || h > 800) return photo.src.large2x
+  if (w > 400 || h > 400) return photo.src.large
+  return photo.src.medium
+}
+
 const searchPexels = async (
   query: string,
   w: number,
@@ -74,10 +81,7 @@ const searchPexels = async (
   const photo = pickBySeed(data.photos ?? [], seed)
   if (!photo) return null
 
-  if (w > 1200 || h > 1200) return photo.src.original
-  if (w > 800 || h > 800) return photo.src.large2x
-  if (w > 400 || h > 400) return photo.src.large
-  return photo.src.medium
+  return pexelsPhotoUrl(photo, w, h)
 }
 
 const unsplashSizeParam = (w: number, h: number): string => {
@@ -106,6 +110,109 @@ const searchUnsplash = async (
 
   const base = photo.urls.regular || photo.urls.small || photo.urls.full
   return `${base}${unsplashSizeParam(w, h)}`
+}
+
+export type StockImageResult = {
+  imageUrl: string
+  source: 'pexels' | 'unsplash' | 'picsum'
+  query: string
+}
+
+/** Search both Pexels and Unsplash for multiple images at once, merged and
+ *  shuffled together. Supports pagination via `page`. Returns up to
+ *  `perPage` results per call (split across both providers). */
+export const searchStockImages = async ({
+  query,
+  w = 400,
+  h = 300,
+  page = 1,
+  perPage = 10,
+}: {
+  query: string
+  w?: number
+  h?: number
+  page?: number
+  perPage?: number
+}): Promise<StockImageResult[]> => {
+  if (!query.trim()) return []
+
+  const orientation = orientationFromSize(w, h)
+  const pexelsKey =
+    process.env.PEXELS_API_KEY ||
+    process.env.VITE_PEXELS_API_KEY ||
+    import.meta.env.VITE_PEXELS_API_KEY
+  const unsplashKey =
+    process.env.UNSPLASH_ACCESS_KEY ||
+    process.env.VITE_UNSPLASH_ACCESS_KEY ||
+    import.meta.env.VITE_UNSPLASH_ACCESS_KEY
+
+  // Split perPage across both providers, requesting a bit more to account
+  // for failures. Each provider gets at least 1 slot.
+  const half = Math.max(1, Math.ceil(perPage / 2))
+  const fetchCount = half + 2 // over-fetch slightly for resilience
+
+  const results: StockImageResult[] = []
+
+  const [pexelsResults, unsplashResults] = await Promise.allSettled([
+    pexelsKey
+      ? (async () => {
+          const res = await fetch(
+            `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${fetchCount}&orientation=${orientation}&page=${page}`,
+            { headers: { Authorization: pexelsKey } },
+          )
+          if (!res.ok) return []
+          const data = (await res.json()) as PexelsResponse
+          return (data.photos ?? []).slice(0, half).map((photo) => ({
+            imageUrl: pexelsPhotoUrl(photo, w, h),
+            source: 'pexels' as const,
+            query,
+          }))
+        })()
+      : Promise.resolve([] as StockImageResult[]),
+    unsplashKey
+      ? (async () => {
+          const res = await fetch(
+            `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${fetchCount}&orientation=${orientation}&page=${page}`,
+            { headers: { Authorization: `Client-ID ${unsplashKey}` } },
+          )
+          if (!res.ok) return []
+          const data = (await res.json()) as UnsplashResponse
+          return (data.results ?? []).slice(0, half).map((photo) => ({
+            imageUrl: `${photo.urls.regular || photo.urls.small || photo.urls.full}${unsplashSizeParam(w, h)}`,
+            source: 'unsplash' as const,
+            query,
+          }))
+        })()
+      : Promise.resolve([] as StockImageResult[]),
+  ])
+
+  if (pexelsResults.status === 'fulfilled') results.push(...pexelsResults.value)
+  if (unsplashResults.status === 'fulfilled')
+    results.push(...unsplashResults.value)
+
+  // Interleave pexels + unsplash results so the grid isn't segregated
+  const interleaved: StockImageResult[] = []
+  const maxLen = Math.max(
+    pexelsResults.status === 'fulfilled' ? pexelsResults.value.length : 0,
+    unsplashResults.status === 'fulfilled' ? unsplashResults.value.length : 0,
+  )
+  for (let i = 0; i < maxLen; i++) {
+    if (pexelsResults.status === 'fulfilled' && pexelsResults.value[i])
+      interleaved.push(pexelsResults.value[i])
+    if (unsplashResults.status === 'fulfilled' && unsplashResults.value[i])
+      interleaved.push(unsplashResults.value[i])
+  }
+
+  // If no API keys, fall back to picsum with deterministic seeds per page
+  if (!pexelsKey && !unsplashKey) {
+    return Array.from({ length: perPage }, (_, i) => ({
+      imageUrl: picsumUrl(`${slugifyAlt(query)}-${page}-${i}`, w, h),
+      source: 'picsum' as const,
+      query,
+    }))
+  }
+
+  return interleaved.slice(0, perPage)
 }
 
 export const resolveStockImage = async ({

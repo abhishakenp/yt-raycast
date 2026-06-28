@@ -164,3 +164,149 @@ describe('resolveStockImage', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('searchStockImages', () => {
+  it('returns multiple results interleaved from both providers', async () => {
+    const fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes('pexels')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            photos: [
+              {
+                src: {
+                  medium: 'p1.jpg',
+                  large: 'p1l.jpg',
+                  large2x: 'p1x.jpg',
+                  original: 'p1o.jpg',
+                },
+              },
+              {
+                src: {
+                  medium: 'p2.jpg',
+                  large: 'p2l.jpg',
+                  large2x: 'p2x.jpg',
+                  original: 'p2o.jpg',
+                },
+              },
+              {
+                src: {
+                  medium: 'p3.jpg',
+                  large: 'p3l.jpg',
+                  large2x: 'p3x.jpg',
+                  original: 'p3o.jpg',
+                },
+              },
+            ],
+          }),
+        })
+      }
+      if (url.includes('unsplash')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            results: [
+              {
+                urls: { regular: 'u1', small: 'u1s', full: 'u1f', raw: 'u1r' },
+              },
+              {
+                urls: { regular: 'u2', small: 'u2s', full: 'u2f', raw: 'u2r' },
+              },
+            ],
+          }),
+        })
+      }
+      return Promise.resolve({ ok: false, json: async () => ({}) })
+    })
+    vi.stubGlobal('fetch', fetch)
+    const { searchStockImages } = await loadStockImage({
+      PEXELS_API_KEY: 'pk',
+      UNSPLASH_ACCESS_KEY: 'uk',
+    })
+
+    const results = await searchStockImages({
+      query: 'coffee shop',
+      perPage: 10,
+    })
+
+    expect(results.length).toBeLessThanOrEqual(10)
+    expect(results.length).toBeGreaterThan(0)
+    // Should have both pexels and unsplash results
+    const sources = new Set(results.map((r) => r.source))
+    expect(sources.has('pexels')).toBe(true)
+    expect(sources.has('unsplash')).toBe(true)
+    // Results should be interleaved (not all pexels then all unsplash)
+    const firstPexels = results.findIndex((r) => r.source === 'pexels')
+    const firstUnsplash = results.findIndex((r) => r.source === 'unsplash')
+    expect(Math.abs(firstPexels - firstUnsplash)).toBeLessThanOrEqual(1)
+  })
+
+  it('passes page parameter to both providers', async () => {
+    const fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ photos: [], results: [] }),
+    })
+    vi.stubGlobal('fetch', fetch)
+    const { searchStockImages } = await loadStockImage({
+      PEXELS_API_KEY: 'pk',
+      UNSPLASH_ACCESS_KEY: 'uk',
+    })
+
+    await searchStockImages({ query: 'test', page: 3, perPage: 10 })
+
+    const pexelsUrl = String(fetch.mock.calls[0][0])
+    const unsplashUrl = String(fetch.mock.calls[1][0])
+    expect(pexelsUrl).toContain('page=3')
+    expect(unsplashUrl).toContain('page=3')
+  })
+
+  it('returns picsum fallback when no API keys configured', async () => {
+    const { searchStockImages } = await loadStockImage()
+
+    const results = await searchStockImages({
+      query: 'test query',
+      perPage: 10,
+    })
+
+    expect(results).toHaveLength(10)
+    expect(results.every((r) => r.source === 'picsum')).toBe(true)
+    // Each result should have a unique seed (page-indexed)
+    expect(results[0].imageUrl).not.toBe(results[1].imageUrl)
+  })
+
+  it('returns empty array for empty query', async () => {
+    const { searchStockImages } = await loadStockImage({
+      PEXELS_API_KEY: 'pk',
+    })
+
+    const results = await searchStockImages({ query: '  ', perPage: 10 })
+    expect(results).toEqual([])
+  })
+
+  it('handles one provider failing gracefully', async () => {
+    const fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes('pexels')) {
+        return Promise.resolve({ ok: false, json: async () => ({}) })
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          results: [
+            { urls: { regular: 'u1', small: 'u1s', full: 'u1f', raw: 'u1r' } },
+            { urls: { regular: 'u2', small: 'u2s', full: 'u2f', raw: 'u2r' } },
+          ],
+        }),
+      })
+    })
+    vi.stubGlobal('fetch', fetch)
+    const { searchStockImages } = await loadStockImage({
+      PEXELS_API_KEY: 'pk',
+      UNSPLASH_ACCESS_KEY: 'uk',
+    })
+
+    const results = await searchStockImages({ query: 'test', perPage: 10 })
+
+    expect(results.length).toBeGreaterThan(0)
+    expect(results.every((r) => r.source === 'unsplash')).toBe(true)
+  })
+})

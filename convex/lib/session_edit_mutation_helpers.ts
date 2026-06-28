@@ -274,7 +274,13 @@ export const applySessionEdit = async (
     // Style edits are reapplied client-side from the edit history (via
     // styleOverrides in DirectPreview), so we just need to save the edit record
     // and create a new preview version. Don't throw TEXT_NOT_FOUND for styles.
-    if (args.editType === 'style') {
+    // Image edits: same pattern — applyImageSwap may fail on preview.html if the
+    // img tag format doesn't match (e.g., OpenUI source stored as preview.html,
+    // or the alt doesn't match). Image swaps are reapplied client-side via
+    // imageOverrides (alt → newSrc), so just save the edit record. Do NOT fall
+    // back to applyPreviewTextEdit — that would replace the alt TEXT in the
+    // OpenUI source with the image URL, corrupting the source.
+    if (args.editType === 'style' || args.editType === 'image') {
       editedPreview = { html: preview.html, replaced: true }
     } else {
       // Text edits: fall back to searching the OpenUI source directly.

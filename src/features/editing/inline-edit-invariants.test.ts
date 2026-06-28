@@ -255,3 +255,47 @@ describe('export helpers — exported functions', () => {
     expect(result.html).toBe('<p>Hi world</p>')
   })
 })
+
+// ─── server-side image edit fallback invariant ────────────────────────────
+
+describe('server-side image edit fallback invariant', () => {
+  // Source-level test: verify that the server-side mutation helper treats
+  // image edits like style edits when applyImageSwap fails — NOT falling back
+  // to applyPreviewTextEdit (which would corrupt the OpenUI source by
+  // replacing alt text with image URLs).
+  it('session_edit_mutation_helpers treats image edits like style edits on fallback', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { resolve } = await import('node:path')
+    const sourcePath = resolve(
+      import.meta.dirname,
+      '../../../convex/lib/session_edit_mutation_helpers.ts',
+    )
+    const source = readFileSync(sourcePath, 'utf8')
+
+    // The fallback condition must include 'image' alongside 'style'
+    expect(source).toMatch(
+      /editType\s*===?\s*['"]style['"]\s*\|\|\s*args\.editType\s*===?\s*['"]image['"]/,
+    )
+  })
+
+  it('session_edit_mutation_helpers does NOT call applyPreviewTextEdit for image fallback', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { resolve } = await import('node:path')
+    const sourcePath = resolve(
+      import.meta.dirname,
+      '../../../convex/lib/session_edit_mutation_helpers.ts',
+    )
+    const source = readFileSync(sourcePath, 'utf8')
+
+    // The fallback if-block must include both 'style' and 'image' in the
+    // same condition, and the else branch (text-edit fallback) must come after.
+    const ifMatch = source.match(
+      /if\s*\(args\.editType\s*===?\s*['"]style['"]\s*\|\|\s*args\.editType\s*===?\s*['"]image['"]\)/,
+    )
+    expect(ifMatch).not.toBeNull()
+
+    // The else branch with applyPreviewTextEdit must exist AFTER this if-block
+    const elseIdx = source.indexOf('else', ifMatch!.index!)
+    expect(elseIdx).toBeGreaterThan(ifMatch!.index!)
+  })
+})
