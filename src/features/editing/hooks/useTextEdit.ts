@@ -589,3 +589,27 @@ function cleanupElement(el: HTMLElement, lockedChildren?: HTMLElement[]) {
   el.style.outlineOffset = ''
   el.style.cursor = ''
 }
+
+/** Revert an element's text to oldText without destroying non-text
+ *  children (SVG icons, images). Setting textContent replaces ALL
+ *  children with a single text node, deleting icons. Instead, find the
+ *  first text node and restore its value; if no text node exists (e.g.
+ *  the user deleted all text), insert a new one before the first
+ *  non-text child. Exported for testing and reuse by Dashboard. */
+export function revertTextPreservingIcons(
+  element: HTMLElement,
+  oldText: string,
+) {
+  const textNode = Array.from(element.childNodes).find(
+    (n) => n.nodeType === Node.TEXT_NODE,
+  ) as Text | undefined
+  if (textNode) {
+    textNode.nodeValue = oldText
+  } else if (oldText) {
+    // No text node — insert one before the first element child
+    const firstEl = Array.from(element.childNodes).find(
+      (n) => n.nodeType === Node.ELEMENT_NODE,
+    )
+    element.insertBefore(document.createTextNode(oldText), firstEl ?? null)
+  }
+}

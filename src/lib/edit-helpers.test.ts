@@ -210,4 +210,76 @@ describe('edit-helpers (shared)', () => {
       '<nav><h1>Brand</h1></nav><section><img alt="Brand" src="x.png"><h2>NewCo</h2></section>',
     )
   })
+
+  // ─── OpenUI source: quoted-string matching (Tier 0) ───────────────────
+  // In OpenUI source, string args are quoted: FoodDeliveryCta("...", "go").
+  // Short text like "go" must match the quoted "go" argument, NOT substrings
+  // of JSON keys like "category" or other words in the source.
+
+  it('OpenUI: matches quoted "go" argument, not "go" inside "category"', () => {
+    const source =
+      'home_restaurants = FoodDeliveryRestaurants("Title", "Desc", "View All", [{"name":"Pizza","cuisine":"American","category":"Thin Crust"}])\n' +
+      'home_cta = FoodDeliveryCta("Ready?", "Download!", "a", "go")'
+
+    const result = applyPreviewTextEdit(source, 'go', 'g', 0)
+
+    expect(result.replaced).toBe(true)
+    // CTA line should be changed
+    expect(result.html).toContain('"g")')
+    // Restaurants line should NOT be changed
+    expect(result.html).toContain('"category":"Thin Crust"')
+  })
+
+  it('OpenUI: matches quoted "a" argument, not "a" inside other words', () => {
+    const source =
+      'home_navbar = FoodDeliveryNavbar("Pizza Place", ["Home"], "/", "Sign In", "Order")\n' +
+      'home_cta = FoodDeliveryCta("Ready?", "Download!", "a", "go")'
+
+    const result = applyPreviewTextEdit(source, 'a', 'App Store', 0)
+
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('"App Store", "go"')
+    // Navbar should NOT be changed
+    expect(result.html).toContain('"Pizza Place"')
+    expect(result.html).toContain('"Sign In"')
+  })
+
+  it('OpenUI: deletion (go -> "") replaces quoted "go" with empty string', () => {
+    const source =
+      'home_cta = FoodDeliveryCta("Ready?", "Download!", "a", "go")'
+
+    const result = applyPreviewTextEdit(source, 'go', '', 0)
+
+    expect(result.replaced).toBe(true)
+    expect(result.html).toBe(
+      'home_cta = FoodDeliveryCta("Ready?", "Download!", "a", "")',
+    )
+  })
+
+  it('OpenUI: does NOT match quoted string inside HTML attribute values', () => {
+    // HTML source: alt="Brand" should NOT be matched as a quoted "Brand" argument
+    const html = '<img alt="Brand" src="x.png"><h1>Brand</h1>'
+
+    const result = applyPreviewTextEdit(html, 'Brand', 'NewCo', 0)
+
+    expect(result.replaced).toBe(true)
+    // Should match the visible <h1>Brand</h1>, not the alt="Brand"
+    expect(result.html).toBe('<img alt="Brand" src="x.png"><h1>NewCo</h1>')
+  })
+
+  it('OpenUI: occurrenceIndex counts only quoted-string matches', () => {
+    const source =
+      'home_restaurants = FoodDeliveryRestaurants("Title", "go", "View All", [])\n' +
+      'home_cta = FoodDeliveryCta("Ready?", "Download!", "a", "go")'
+
+    // occurrenceIndex=0 should match the first "go" (restaurants line)
+    const r0 = applyPreviewTextEdit(source, 'go', 'GO1', 0)
+    expect(r0.html).toContain('"GO1"')
+    expect(r0.html).toContain('"a", "go")')
+
+    // occurrenceIndex=1 should match the second "go" (CTA line)
+    const r1 = applyPreviewTextEdit(source, 'go', 'GO2', 1)
+    expect(r1.html).toContain('"go"')
+    expect(r1.html).toContain('"a", "GO2")')
+  })
 })

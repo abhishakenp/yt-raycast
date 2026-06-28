@@ -10,8 +10,6 @@ import {
   useState,
 } from 'react'
 import {
-  Activity,
-  Bot,
   Box,
   Building2,
   CreditCard,
@@ -22,7 +20,6 @@ import {
   Globe2,
   Languages,
   Lock,
-  MessageSquare,
   Package,
   Palette,
   Shield,
@@ -47,6 +44,7 @@ import {
   type ReadySessionPreviewCacheEntry,
 } from '@/features/session/services/ready-session-cache'
 import { useEditController } from '@/features/editing/hooks/useEditController'
+import { revertTextPreservingIcons } from '@/features/editing/hooks/useTextEdit'
 import { ImageSwapPopover } from '@/features/editing/components/ImageSwapPopover'
 import { InlineEditToolbar } from '@/features/editing/components/InlineEditToolbar'
 import { SectionPromptToolbar } from '@/features/editing/components/SectionPromptToolbar'
@@ -85,11 +83,6 @@ const GitHubPanel = lazy(() =>
 const CommercePanel = lazy(() =>
   import('@/features/commerce/components/CommercePanel').then((module) => ({
     default: module.CommercePanel,
-  })),
-)
-const CmsPanel = lazy(() =>
-  import('@/features/cms/components/CmsPanel').then((module) => ({
-    default: module.CmsPanel,
   })),
 )
 interface DashboardProps {
@@ -392,7 +385,6 @@ export function Dashboard({
     },
     [],
   )
-  const [agentationEnabled] = useState(false)
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
   const [imageSwapState, setImageSwapState] = useState<{
     isOpen: boolean
@@ -469,12 +461,6 @@ export function Dashboard({
   const deploymentStatus = useQuery(
     api.sessions.getDeploymentStatus,
     sidePanelQueryArgs,
-  )
-  const cmsBlogPosts = useQuery(
-    api.sessions.listCmsCollectionItems,
-    resolvedSessionId === undefined || !isPreviewReady
-      ? 'skip'
-      : { sessionId: resolvedSessionId, collectionKey: 'blogPosts' },
   )
   const publishPreview = useMutation(api.sessions.publishPreview)
   const setThemeOverrideMutation = useMutation(api.sessions.setThemeOverride)
@@ -917,12 +903,12 @@ export function Dashboard({
       const forkResult = await editController.forkCurrentSession()
       if (!forkResult) {
         // Fork failed, revert the change
-        change.element.textContent = change.oldText
+        revertTextPreservingIcons(change.element, change.oldText)
         toast.error(editController.editError || 'Failed to fork session')
       }
     } else if (result !== true && 'error' in result) {
       // Revert the DOM change on other errors
-      change.element.textContent = change.oldText
+      revertTextPreservingIcons(change.element, change.oldText)
       console.error('[Inline Edit] Failed to save:', result.error)
       toast.error(result.error)
     }
@@ -1471,11 +1457,9 @@ export function Dashboard({
                             imageOverrides={imageOverrides}
                             styleOverrides={styleOverrides}
                             textOverrides={textOverrides}
-                            cmsBlogPosts={cmsBlogPosts ?? []}
                             isDark={isDark}
                             themeStyles={themeStyles}
                             deviceMode={currentDevice}
-                            agentationEnabled={agentationEnabled}
                             onPreviewSelect={handlePreviewSelect}
                             editMode={editMode}
                             onTextChange={handleTextChange}
@@ -1503,149 +1487,6 @@ export function Dashboard({
                     <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">
                       Manage content
                     </div>
-                    <SignInGate
-                      locked={
-                        <RailLockedButton
-                          label="Edit content"
-                          icon={
-                            <Edit3 className="size-3.5" strokeWidth={1.9} />
-                          }
-                          badges={<span className={newBadgeClass}>NEW</span>}
-                        />
-                      }
-                    >
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <button
-                            type="button"
-                            className={cn(
-                              railRowClass,
-                              'border-white/20 bg-[linear-gradient(135deg,#ff7a68_0%,#ef3e2d_55%,#b9251a_100%)] text-white shadow-[0_8px_20px_-10px_rgba(239,62,45,0.55)] hover:border-white/30 hover:bg-[linear-gradient(135deg,#ff8876_0%,#f04d3c_55%,#c62b20_100%)]',
-                            )}
-                            data-rail-action="cms-studio"
-                            aria-haspopup="dialog"
-                          >
-                            <span
-                              className="grid size-7 shrink-0 place-items-center text-white transition-transform duration-150 group-hover:-translate-y-px"
-                              aria-hidden="true"
-                            >
-                              <svg
-                                viewBox="0 -10 28 32"
-                                width="30"
-                                height="32"
-                                xmlns="http://www.w3.org/2000/svg"
-                                style={{ overflow: 'visible' }}
-                              >
-                                <path
-                                  d="M21.5 6.5c0-1.9-1.55-2.95-3.65-2.95h-4.2c-2.55 0-4.25 1.45-4.25 3.65 0 1.9 1.35 2.95 3.65 3.4l4.2 0.9c2.3 0.45 3.6 1.5 3.6 3.4 0 2.15-1.7 3.5-4.25 3.5H11.9"
-                                  fill="none"
-                                  stroke="#ffffff"
-                                  strokeWidth="2.2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                                <path
-                                  d="M20.4 5.2 C 20.9 -0.6 21.6 -3 23.3 -6 C 23.7 -2 23.2 1 22.3 5.2 Z"
-                                  fill="#ffffff"
-                                />
-                              </svg>
-                            </span>
-                            <span className="min-w-0 flex-1 truncate">
-                              Edit content
-                            </span>
-                            <span className={newBadgeClass}>NEW</span>
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          align="start"
-                          side="left"
-                          sideOffset={12}
-                          className="z-[140] max-h-[min(720px,calc(100vh-32px))] w-[min(420px,calc(100vw-24px))] overflow-y-auto border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
-                        >
-                          <Suspense fallback={<ToolPopoverFallback />}>
-                            <CmsPanel
-                              sessionId={activeSessionId}
-                              prompt={generationView?.session.prompt ?? ''}
-                            />
-                          </Suspense>
-                        </PopoverContent>
-                      </Popover>
-                    </SignInGate>
-                    <SignInGate
-                      locked={
-                        <RailLockedButton
-                          label="Chat refine"
-                          icon={
-                            <MessageSquare
-                              className="size-3.5"
-                              strokeWidth={1.9}
-                            />
-                          }
-                          badges={<span className={newBadgeClass}>AI</span>}
-                        />
-                      }
-                    >
-                      <button
-                        type="button"
-                        className={railRowClass}
-                        data-rail-action="chat"
-                      >
-                        <span className={railIconClass} aria-hidden="true">
-                          <MessageSquare
-                            className="size-3.5"
-                            strokeWidth={1.9}
-                          />
-                        </span>
-                        <span className="min-w-0 flex-1 truncate">
-                          Chat refine
-                        </span>
-                        <span className={newBadgeClass}>AI</span>
-                      </button>
-                    </SignInGate>
-                    <SignInGate
-                      locked={
-                        <RailLockedButton
-                          label="Annotations"
-                          icon={<Bot className="size-3.5" strokeWidth={1.9} />}
-                        />
-                      }
-                    >
-                      <button
-                        type="button"
-                        className={railRowClass}
-                        data-rail-action="annotations"
-                      >
-                        <span className={railIconClass} aria-hidden="true">
-                          <Bot className="size-3.5" strokeWidth={1.9} />
-                        </span>
-                        <span className="min-w-0 flex-1 truncate">
-                          Annotations
-                        </span>
-                      </button>
-                    </SignInGate>
-                    <SignInGate
-                      locked={
-                        <RailLockedButton
-                          label="Activity"
-                          icon={
-                            <Activity className="size-3.5" strokeWidth={1.9} />
-                          }
-                        />
-                      }
-                    >
-                      <button
-                        type="button"
-                        className={railRowClass}
-                        data-rail-action="activity"
-                      >
-                        <span className={railIconClass} aria-hidden="true">
-                          <Activity className="size-3.5" strokeWidth={1.9} />
-                        </span>
-                        <span className="min-w-0 flex-1 truncate">
-                          Activity
-                        </span>
-                      </button>
-                    </SignInGate>
                     <SignInGate
                       locked={
                         <RailLockedButton

@@ -53,6 +53,7 @@ import {
   lockNonTextChildren,
   unlockNonTextChildren,
   shouldPreventLockedDeletion,
+  revertTextPreservingIcons,
   type TextEditState,
 } from './useTextEdit'
 import { applyPreviewTextEdit } from '@/lib/edit-helpers'
@@ -1680,5 +1681,67 @@ describe('space typing in editable buttons (behavioral)', () => {
     // preventDefault call doesn't break anything and no click fires.
     expect(activated).toBe(false)
     btn.remove()
+  })
+})
+
+// ─── revertTextPreservingIcons ───────────────────────────────────────────
+
+describe('revertTextPreservingIcons', () => {
+  it('restores text node value without destroying SVG sibling', () => {
+    const btn = document.createElement('button')
+    const svg = document.createElement('svg')
+    svg.setAttribute('class', 'icon')
+    btn.appendChild(svg)
+    btn.appendChild(document.createTextNode('g'))
+
+    revertTextPreservingIcons(btn, 'go')
+
+    // SVG should still be there
+    expect(btn.querySelector('svg')).not.toBeNull()
+    expect(btn.querySelector('svg')?.getAttribute('class')).toBe('icon')
+    // Text should be restored
+    expect(btn.textContent).toBe('go')
+    // Should have 2 children: svg + text node
+    expect(btn.childNodes.length).toBe(2)
+  })
+
+  it('inserts a new text node when all text was deleted', () => {
+    const btn = document.createElement('button')
+    const svg = document.createElement('svg')
+    btn.appendChild(svg)
+    // No text node — user deleted all text
+
+    revertTextPreservingIcons(btn, 'go')
+
+    // SVG should still be there
+    expect(btn.querySelector('svg')).not.toBeNull()
+    // Text should be restored
+    expect(btn.textContent).toBe('go')
+    // Should have 2 children: svg + text node
+    expect(btn.childNodes.length).toBe(2)
+  })
+
+  it('does NOT replace element with only a text node (preserves icons)', () => {
+    const btn = document.createElement('button')
+    const svg = document.createElement('svg')
+    svg.innerHTML = '<path d="M1 1"></path>'
+    btn.appendChild(svg)
+    btn.appendChild(document.createTextNode('x'))
+
+    revertTextPreservingIcons(btn, 'original text')
+
+    // The SVG path should still exist (not destroyed by textContent reset)
+    expect(btn.querySelector('path')).not.toBeNull()
+    expect(btn.textContent).toBe('original text')
+  })
+
+  it('handles element with only text (no icons)', () => {
+    const p = document.createElement('p')
+    p.appendChild(document.createTextNode('edited'))
+
+    revertTextPreservingIcons(p, 'original')
+
+    expect(p.textContent).toBe('original')
+    expect(p.childNodes.length).toBe(1)
   })
 })
