@@ -139,13 +139,13 @@ export function useElementInspector(
       }
     }
 
-    // Click outside the preview container AND outside the prompt toolbar →
+    // Click outside the preview container AND outside the inline edit toolbar →
     // clear the selection (mirrors devtools' click-away-to-deselect).
     const onDocumentMouseDown = (e: MouseEvent) => {
       const target = e.target
       if (!(target instanceof HTMLElement)) return
       if (container.contains(target)) return
-      if (target.closest('.section-prompt-toolbar')) return
+      if (target.closest('.inline-edit-toolbar')) return
       if (selectedElementRef.current) clearSelection()
     }
 

@@ -268,7 +268,7 @@ describe('useElementInspector — behavioral', () => {
     })
     // Simulate a toolbar element outside the container
     const toolbar = document.createElement('div')
-    toolbar.className = 'section-prompt-toolbar'
+    toolbar.className = 'inline-edit-toolbar'
     document.body.appendChild(toolbar)
     act(() => {
       toolbar.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
