@@ -1069,7 +1069,7 @@ export function InlineEditToolbar({
         >
           <div className="overflow-hidden w-full">
             <div
-              className="max-h-[min(60vh,420px)] w-full overflow-y-auto overscroll-contain [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/15 [&::-webkit-scrollbar-track]:bg-transparent"
+              className="max-h-[min(60vh,420px)] w-[32.5rem] max-w-full overflow-y-auto overscroll-contain [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/15 [&::-webkit-scrollbar-track]:bg-transparent"
               data-inline-edit-wrapper="true"
             >
               {displayPanel === 'style' && (
