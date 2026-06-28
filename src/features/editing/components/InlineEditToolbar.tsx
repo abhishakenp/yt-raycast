@@ -3,7 +3,6 @@ import {
   useFloating,
   autoUpdate,
   offset,
-  flip,
   shift,
   type VirtualElement,
 } from '@floating-ui/react'
@@ -120,14 +119,30 @@ export function InlineEditToolbar({
   const wrapperRef = useRef<HTMLDivElement>(null)
   const originalStyleRef = useRef<string | null>(null)
 
-  // Use floating-ui for positioning so the toolbar (and any open panel) flips
-  // below the element when there isn't room above — preventing it from covering
-  // the content being edited. The anchor is a virtual element built from
-  // anchorRect, same pattern as SectionPromptToolbar.
+  // Calculate placement: 'top' (above element) or 'bottom' (below element).
+  // We calculate this ONCE when the toolbar opens and when a panel toggles,
+  // rather than using flip() middleware which causes a jarring shift when
+  // the panel expands and the wrapper grows taller.
+  const [placement, setPlacement] = useState<'top' | 'bottom'>('top')
+
+  useEffect(() => {
+    if (!isOpen || !anchorRect) return
+    // Estimate wrapper height: toolbar (~50px) + panel (~300px if open)
+    const estimatedHeight = activePanel ? 380 : 60
+    const spaceAbove = anchorRect.top
+    const spaceBelow = window.innerHeight - anchorRect.bottom
+    // Prefer 'top' (above) unless there's not enough room and bottom has more
+    if (spaceAbove < estimatedHeight + 16 && spaceBelow > spaceAbove) {
+      setPlacement('bottom')
+    } else {
+      setPlacement('top')
+    }
+  }, [isOpen, anchorRect, activePanel])
+
   const { refs, floatingStyles } = useFloating({
     open: isOpen,
-    placement: 'top',
-    middleware: [offset(8), flip({ padding: 8 }), shift({ padding: 8 })],
+    placement,
+    middleware: [offset(8), shift({ padding: 8 })],
     whileElementsMounted: autoUpdate,
   })
 
@@ -246,15 +261,17 @@ export function InlineEditToolbar({
     e.preventDefault()
   }
 
-  // Close on click outside — use wrapperRef so clicks on panels don't close
+  // Close on click outside — use wrapperRef so clicks on panels don't close.
+  // Also check for closest [data-inline-edit-wrapper] as a fallback in case
+  // the callback ref is temporarily null during React re-renders.
   useEffect(() => {
     if (!isOpen || isApplying || isForking) return
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(e.target as Node) &&
-        !activeElement?.contains(e.target as Node)
-      ) {
+      const target = e.target as HTMLElement
+      const isInWrapper =
+        (wrapperRef.current && wrapperRef.current.contains(target)) ||
+        target.closest?.('[data-inline-edit-wrapper]')
+      if (!isInWrapper && !activeElement?.contains(target)) {
         onClose()
       }
     }
@@ -360,12 +377,13 @@ export function InlineEditToolbar({
           refs.setFloating(node)
         }}
         style={{ ...floatingStyles, zIndex: 2147483647 }}
-        className="flex flex-col gap-1"
+        className="inline-edit-toolbar flex flex-col rounded-lg border border-white/10 bg-[#0b0d14]/95 shadow-2xl backdrop-blur-xl overflow-hidden"
+        data-inline-edit-wrapper="true"
+        onMouseDown={preventFocusSteal}
       >
         <div
           ref={toolbarRef}
-          className="inline-edit-toolbar rounded-lg border border-white/10 bg-[#0b0d14]/95 shadow-2xl backdrop-blur-xl p-2 flex items-center gap-2"
-          onMouseDown={preventFocusSteal}
+          className="p-2 flex items-center gap-2 border-b border-white/10"
         >
           <InputGroup className="h-7 max-w-32">
             <InputGroupAddon>
