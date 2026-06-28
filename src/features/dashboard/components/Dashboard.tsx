@@ -48,7 +48,11 @@ import { useUndoRedo } from '@/features/editing/hooks/useUndoRedo'
 import { useReorderElement } from '@/features/editing/hooks/useReorderElement'
 import { replaceHrefInSource } from '@/features/editing/lib/link-source'
 import { revertTextPreservingIcons } from '@/features/editing/hooks/useTextEdit'
-import { InlineEditToolbar } from '@/features/editing/components/InlineEditToolbar'
+const InlineEditToolbar = lazy(() =>
+  import('@/features/editing/components/InlineEditToolbar').then((module) => ({
+    default: module.InlineEditToolbar,
+  })),
+)
 import {
   Popover,
   PopoverContent,
@@ -415,8 +419,8 @@ export function Dashboard({
   const [isAdminActive, setIsAdminActive] = useState(initialAdminView)
   const [isPublishing, setIsPublishing] = useState(false)
   const [publishError, setPublishError] = useState<string>()
-  // Element selected by the devtools-style inspector (pencil mode). Drives the
-  // SectionPromptToolbar (AI section-edit prompt). null = no selection.
+  // Element selected by the devtools-style inspector (pencil mode). Drives
+  // the InlineEditToolbar's section-level AI edit. null = no selection.
   const [inspectorSelection, setInspectorSelection] =
     useState<InspectorSelection | null>(null)
   const [isSectionEditing, setIsSectionEditing] = useState(false)
@@ -2125,34 +2129,38 @@ export function Dashboard({
           </div>
         </div>
       </div>
-      <InlineEditToolbar
-        isOpen={toolbarState.isOpen}
-        onClose={() => {
-          cancelTextEditRef.current?.()
-          setToolbarState((s) => ({ ...s, isOpen: false }))
-          if (inspectorSelection) closeInspectorToolbar()
-        }}
-        anchorRect={toolbarState.anchorRect}
-        activeElement={toolbarState.activeElement}
-        onStyleApply={handleStyleApply}
-        onCommitText={() => commitTextEditRef.current?.()}
-        isApplying={isApplyingStyle}
-        isForking={isForkingSession}
-        canUndo={undoRedo.canUndo}
-        canRedo={undoRedo.canRedo}
-        onUndo={undoRedo.undo}
-        onRedo={undoRedo.redo}
-        onLinkEdit={handleLinkEdit}
-        onMoveUp={inspectorSelection ? handleSectionMoveUp : handleMoveUp}
-        onMoveDown={inspectorSelection ? handleSectionMoveDown : handleMoveDown}
-        canMoveUp={true}
-        canMoveDown={true}
-        onImageSelect={handleImageSelect}
-        sessionId={sessionId}
-        onSectionEdit={handleSectionEditSubmit}
-        isSectionSubmitting={isSectionEditing}
-        sectionError={sectionEditError}
-      />
+      <Suspense fallback={null}>
+        <InlineEditToolbar
+          isOpen={toolbarState.isOpen}
+          onClose={() => {
+            cancelTextEditRef.current?.()
+            setToolbarState((s) => ({ ...s, isOpen: false }))
+            if (inspectorSelection) closeInspectorToolbar()
+          }}
+          anchorRect={toolbarState.anchorRect}
+          activeElement={toolbarState.activeElement}
+          onStyleApply={handleStyleApply}
+          onCommitText={() => commitTextEditRef.current?.()}
+          isApplying={isApplyingStyle}
+          isForking={isForkingSession}
+          canUndo={undoRedo.canUndo}
+          canRedo={undoRedo.canRedo}
+          onUndo={undoRedo.undo}
+          onRedo={undoRedo.redo}
+          onLinkEdit={handleLinkEdit}
+          onMoveUp={inspectorSelection ? handleSectionMoveUp : handleMoveUp}
+          onMoveDown={
+            inspectorSelection ? handleSectionMoveDown : handleMoveDown
+          }
+          canMoveUp={true}
+          canMoveDown={true}
+          onImageSelect={handleImageSelect}
+          sessionId={sessionId}
+          onSectionEdit={handleSectionEditSubmit}
+          isSectionSubmitting={isSectionEditing}
+          sectionError={sectionEditError}
+        />
+      </Suspense>
     </>
   )
 }
