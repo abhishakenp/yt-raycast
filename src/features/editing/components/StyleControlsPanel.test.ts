@@ -5,18 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { StyleControlsPanel } from './StyleControlsPanel'
 
-const onApply =
-  vi.fn<
-    (p: {
-      sourceAnchor: string
-      style: string
-      occurrenceIndex: number
-    }) => void
-  >()
-const onClose = vi.fn()
+const onModified = vi.fn<() => void>()
 
 const renderPanel = (activeElement: HTMLElement) =>
-  render(createElement(StyleControlsPanel, { activeElement, onApply, onClose }))
+  render(createElement(StyleControlsPanel, { activeElement, onModified }))
 
 const makeComputed = (
   overrides: Partial<Record<string, string>> = {},
@@ -46,8 +38,7 @@ describe('StyleControlsPanel', () => {
   let originalGetComputedStyle: typeof window.getComputedStyle
 
   beforeEach(() => {
-    onApply.mockReset()
-    onClose.mockReset()
+    onModified.mockReset()
     activeElement = document.createElement('div')
     activeElement.setAttribute('class', 'test-element')
     document.body.appendChild(activeElement)
@@ -92,49 +83,15 @@ describe('StyleControlsPanel', () => {
     expect(inputs.length).toBeGreaterThanOrEqual(2)
   })
 
-  it('apply calls onApply when style was modified via UI', () => {
+  it('modifying border width calls onModified and applies live style', () => {
     const { getByLabelText } = renderPanel(activeElement)
-    // Switch to border tab
     fireEvent.click(getByLabelText('Border'))
-    // Change border width via number input (triggers applyLiveStyle → markModified)
     const widthInput = Array.from(
       document.querySelectorAll<HTMLInputElement>('input[type="number"]'),
     ).find((i) => i.value === '1')!
     fireEvent.change(widthInput, { target: { value: '3' } })
     expect(activeElement.style.borderWidth).toBe('3px')
-    // Click apply
-    const applyBtn = Array.from(document.querySelectorAll('button')).find((b) =>
-      b.textContent?.includes('Apply'),
-    )!
-    fireEvent.click(applyBtn)
-    expect(onApply).toHaveBeenCalledTimes(1)
-    const payload = onApply.mock.calls[0][0]
-    expect(payload.sourceAnchor).toBe('test-element')
-    expect(payload.occurrenceIndex).toBe(0)
-  })
-
-  it('close reverts styles and calls onClose', () => {
-    const originalStyle = 'color: red'
-    activeElement.setAttribute('style', originalStyle)
-    renderPanel(activeElement)
-    // Modify style
-    activeElement.style.setProperty('padding', '20px')
-    // Click close
-    const closeBtn = document.querySelector('button[aria-label="Close"]')!
-    fireEvent.click(closeBtn)
-    expect(onClose).toHaveBeenCalledTimes(1)
-    // Style should be reverted
-    expect(activeElement.getAttribute('style')).toBe(originalStyle)
-  })
-
-  it('apply without modifications just closes', () => {
-    renderPanel(activeElement)
-    const applyBtn = Array.from(document.querySelectorAll('button')).find((b) =>
-      b.textContent?.includes('Apply'),
-    )!
-    fireEvent.click(applyBtn)
-    expect(onApply).not.toHaveBeenCalled()
-    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(onModified).toHaveBeenCalled()
   })
 
   it('shadow presets apply box-shadow', () => {

@@ -1,14 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import {
-  X,
-  Check,
-  Square,
-  Palette,
-  Maximize2,
-  Layers,
-  Link2,
-  Unlink,
-} from 'lucide-react'
+import { Square, Palette, Maximize2, Layers, Link2, Unlink } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import {
   Tooltip,
@@ -32,12 +23,7 @@ import {
 
 interface StyleControlsPanelProps {
   activeElement: HTMLElement | null
-  onApply: (payload: {
-    sourceAnchor: string
-    style: string
-    occurrenceIndex: number
-  }) => void
-  onClose: () => void
+  onModified?: () => void
 }
 
 type Tab = 'spacing' | 'border' | 'background' | 'size'
@@ -52,8 +38,7 @@ const SHADOW_PRESETS: Record<string, string> = {
 
 export function StyleControlsPanel({
   activeElement,
-  onApply,
-  onClose,
+  onModified,
 }: StyleControlsPanelProps) {
   const [tab, setTab] = useState<Tab>('spacing')
   const [padding, setPadding] = useState({
@@ -85,7 +70,6 @@ export function StyleControlsPanel({
   const [height, setHeight] = useState('')
   const [sizeUnit, setSizeUnit] = useState('px')
 
-  const originalStyleRef = useRef<string | null>(null)
   const userModifiedRef = useRef(false)
   const prevElementRef = useRef<HTMLElement | null>(null)
 
@@ -94,7 +78,6 @@ export function StyleControlsPanel({
     // Only reset modification state when the element actually changes
     if (prevElementRef.current !== activeElement) {
       prevElementRef.current = activeElement
-      originalStyleRef.current = activeElement.getAttribute('style')
       userModifiedRef.current = false
     }
     const computed = window.getComputedStyle(activeElement)
@@ -126,6 +109,7 @@ export function StyleControlsPanel({
 
   const markModified = () => {
     userModifiedRef.current = true
+    onModified?.()
   }
 
   const applyLiveStyle = (prop: string, value: string) => {
@@ -157,40 +141,6 @@ export function StyleControlsPanel({
     )
   }
 
-  const handleApply = () => {
-    if (!activeElement || !userModifiedRef.current) {
-      onClose()
-      return
-    }
-    const sourceAnchor = activeElement.getAttribute('class') ?? ''
-    const style = activeElement.getAttribute('style') ?? ''
-    let occurrenceIndex = 0
-    if (sourceAnchor) {
-      const doc = activeElement.ownerDocument
-      const escapeFn =
-        doc.defaultView?.CSS?.escape ??
-        ((s: string) => s.replace(/["\\]/g, '\\$&'))
-      const peers = Array.from(
-        doc.querySelectorAll(`[class="${escapeFn(sourceAnchor)}"]`),
-      )
-      const at = peers.indexOf(activeElement)
-      occurrenceIndex = at < 0 ? 0 : at
-    }
-    onApply({ sourceAnchor, style, occurrenceIndex })
-  }
-
-  const handleClose = () => {
-    if (activeElement) {
-      const saved = originalStyleRef.current
-      if (saved === null) {
-        activeElement.removeAttribute('style')
-      } else {
-        activeElement.setAttribute('style', saved)
-      }
-    }
-    onClose()
-  }
-
   const tabs: Array<{ id: Tab; label: string; icon: typeof Layers }> = [
     { id: 'spacing', label: 'Spacing', icon: Maximize2 },
     { id: 'border', label: 'Border', icon: Square },
@@ -200,11 +150,6 @@ export function StyleControlsPanel({
 
   const labelCls =
     'text-[10px] uppercase tracking-wider text-white/40 font-medium'
-  const groupCls =
-    'h-7 flex-1 rounded border border-white/10 bg-white/5 focus-within:border-cyan-300/50'
-  const addonTextCls = 'text-[9px] text-white/30 px-1 py-0'
-  const addonSelectCls =
-    'h-auto w-auto border-0 bg-transparent px-0 text-xs text-white/60'
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -261,11 +206,9 @@ export function StyleControlsPanel({
                 </div>
                 <div className="grid grid-cols-2 gap-1">
                   {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
-                    <InputGroup key={side} className={cn(groupCls, 'w-full')}>
+                    <InputGroup key={side}>
                       <InputGroupAddon align="inline-start">
-                        <InputGroupText className={addonTextCls}>
-                          {side[0].toUpperCase()}
-                        </InputGroupText>
+                        <InputGroupText>{side[0].toUpperCase()}</InputGroupText>
                       </InputGroupAddon>
                       <InputGroupInput
                         type="number"
@@ -301,11 +244,9 @@ export function StyleControlsPanel({
                 </div>
                 <div className="grid grid-cols-2 gap-1">
                   {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
-                    <InputGroup key={side} className={cn(groupCls, 'w-full')}>
+                    <InputGroup key={side}>
                       <InputGroupAddon align="inline-start">
-                        <InputGroupText className={addonTextCls}>
-                          {side[0].toUpperCase()}
-                        </InputGroupText>
+                        <InputGroupText>{side[0].toUpperCase()}</InputGroupText>
                       </InputGroupAddon>
                       <InputGroupInput
                         type="number"
@@ -338,7 +279,7 @@ export function StyleControlsPanel({
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-12')}>W</span>
-              <InputGroup className={groupCls}>
+              <InputGroup>
                 <InputGroupInput
                   type="number"
                   value={borderWidth}
@@ -353,7 +294,7 @@ export function StyleControlsPanel({
                 />
                 <InputGroupAddon align="inline-end">
                   <Select value={borderUnit} onValueChange={setBorderUnit}>
-                    <SelectTrigger className={addonSelectCls}>
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -366,7 +307,7 @@ export function StyleControlsPanel({
             </div>
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-12')}>Style</span>
-              <InputGroup className={cn(groupCls, 'flex-1')}>
+              <InputGroup>
                 <Select
                   value={borderStyle}
                   onValueChange={(v) => {
@@ -388,7 +329,7 @@ export function StyleControlsPanel({
             </div>
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-12')}>Color</span>
-              <InputGroup className={cn(groupCls, 'flex-1')}>
+              <InputGroup>
                 <InputGroupInput
                   type="color"
                   value={borderColor}
@@ -402,7 +343,7 @@ export function StyleControlsPanel({
             </div>
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-12')}>R</span>
-              <InputGroup className={groupCls}>
+              <InputGroup>
                 <InputGroupInput
                   type="number"
                   value={borderRadius}
@@ -417,7 +358,7 @@ export function StyleControlsPanel({
                 />
                 <InputGroupAddon align="inline-end">
                   <Select value={borderUnit} onValueChange={setBorderUnit}>
-                    <SelectTrigger className={addonSelectCls}>
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -435,7 +376,7 @@ export function StyleControlsPanel({
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-10')}>Color</span>
-              <InputGroup className={cn(groupCls, 'w-20')}>
+              <InputGroup>
                 <InputGroupInput
                   type="color"
                   value={bgColor}
@@ -477,7 +418,7 @@ export function StyleControlsPanel({
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-10')}>W</span>
-              <InputGroup className={groupCls}>
+              <InputGroup>
                 <InputGroupInput
                   type="text"
                   value={width}
@@ -490,7 +431,7 @@ export function StyleControlsPanel({
                 />
                 <InputGroupAddon align="inline-end">
                   <Select value={sizeUnit} onValueChange={setSizeUnit}>
-                    <SelectTrigger className={addonSelectCls}>
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -507,7 +448,7 @@ export function StyleControlsPanel({
             </div>
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-10')}>H</span>
-              <InputGroup className={groupCls}>
+              <InputGroup>
                 <InputGroupInput
                   type="text"
                   value={height}
@@ -520,7 +461,7 @@ export function StyleControlsPanel({
                 />
                 <InputGroupAddon align="inline-end">
                   <Select value={sizeUnit} onValueChange={setSizeUnit}>
-                    <SelectTrigger className={addonSelectCls}>
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -537,25 +478,6 @@ export function StyleControlsPanel({
             </div>
           </div>
         )}
-
-        <div className="flex items-center gap-1.5 pt-1">
-          <button
-            type="button"
-            onClick={handleApply}
-            className="flex h-7 items-center gap-1 rounded bg-cyan-300 px-3 text-xs font-bold text-slate-950 transition-colors hover:bg-cyan-200"
-          >
-            <Check className="size-3" />
-            Apply
-          </button>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="grid size-7 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white"
-            aria-label="Close"
-          >
-            <X className="size-3.5" />
-          </button>
-        </div>
       </div>
     </TooltipProvider>
   )

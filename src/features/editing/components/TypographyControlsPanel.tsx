@@ -1,5 +1,4 @@
 import { useState, useLayoutEffect, useRef } from 'react'
-import { X, Check } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import {
   Select,
@@ -13,20 +12,11 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '#/components/ui/input-group'
-
-const safeEscape = (str: string): string => {
-  if (typeof CSS !== 'undefined' && CSS.escape) return CSS.escape(str)
-  return str.replace(/[^\w-]/g, '\\$&')
-}
+import { ToggleGroup, ToggleGroupItem } from '#/components/ui/toggle-group'
 
 interface TypographyControlsPanelProps {
   activeElement: HTMLElement | null
-  onApply: (payload: {
-    sourceAnchor: string
-    style: string
-    occurrenceIndex: number
-  }) => void
-  onClose: () => void
+  onModified?: () => void
 }
 
 const FONT_FAMILIES: Array<{ label: string; value: string }> = [
@@ -49,8 +39,7 @@ const TEXT_TRANSFORMS = [
 
 export function TypographyControlsPanel({
   activeElement,
-  onApply,
-  onClose,
+  onModified,
 }: TypographyControlsPanelProps) {
   const [fontFamily, setFontFamily] = useState('')
   const [lineHeight, setLineHeight] = useState('')
@@ -61,17 +50,7 @@ export function TypographyControlsPanel({
   const [wordSpacingUnit, setWordSpacingUnit] = useState('em')
   const [textTransform, setTextTransform] = useState<string>('none')
 
-  const originalStyleRef = useRef<string | null>(null)
   const userModifiedRef = useRef(false)
-  const prevElementRef = useRef<HTMLElement | null>(null)
-
-  // Capture original style synchronously during render (not in effect)
-  // so it's available before any fireEvent interactions in tests
-  if (activeElement && prevElementRef.current !== activeElement) {
-    prevElementRef.current = activeElement
-    originalStyleRef.current = activeElement.getAttribute('style')
-    userModifiedRef.current = false
-  }
 
   useLayoutEffect(() => {
     if (!activeElement) return
@@ -87,6 +66,7 @@ export function TypographyControlsPanel({
 
   const markModified = () => {
     userModifiedRef.current = true
+    onModified?.()
   }
 
   const applyLiveStyle = (prop: string, value: string) => {
@@ -96,56 +76,15 @@ export function TypographyControlsPanel({
     }
   }
 
-  const handleApply = () => {
-    if (!activeElement) {
-      onClose()
-      return
-    }
-    const currentStyle = activeElement.getAttribute('style') ?? ''
-    const originalStyle = originalStyleRef.current ?? ''
-    if (currentStyle === originalStyle) {
-      onClose()
-      return
-    }
-    const sourceAnchor = activeElement.getAttribute('class') ?? ''
-    const style = currentStyle
-    let occurrenceIndex = 0
-    if (sourceAnchor) {
-      const doc = activeElement.ownerDocument
-      const peers = Array.from(
-        doc.querySelectorAll(`[class="${safeEscape(sourceAnchor)}"]`),
-      )
-      const at = peers.indexOf(activeElement)
-      occurrenceIndex = at < 0 ? 0 : at
-    }
-    onApply({ sourceAnchor, style, occurrenceIndex })
-  }
-
-  const handleClose = () => {
-    if (activeElement) {
-      const saved = originalStyleRef.current
-      if (saved === null) {
-        activeElement.removeAttribute('style')
-      } else {
-        activeElement.setAttribute('style', saved)
-      }
-    }
-    onClose()
-  }
-
   const labelCls =
     'text-[10px] uppercase tracking-wider text-white/40 font-medium'
-  const groupCls =
-    'h-7 flex-1 rounded border border-white/10 bg-white/5 focus-within:border-cyan-300/50'
-  const addonSelectCls =
-    'h-auto w-auto border-0 bg-transparent px-0 text-xs text-white/60'
 
   return (
     <div className="flex w-full min-w-[380px] flex-col gap-1.5 p-2">
       {/* Font Family */}
       <div className="flex items-center gap-2">
         <span className={labelCls + ' w-12 shrink-0'}>Font</span>
-        <InputGroup className={cn(groupCls, 'w-full')}>
+        <InputGroup>
           <Select
             value={fontFamily}
             onValueChange={(v) => {
@@ -170,7 +109,7 @@ export function TypographyControlsPanel({
       {/* Line Height */}
       <div className="flex items-center gap-2">
         <span className={labelCls + ' w-12 shrink-0'}>Line</span>
-        <InputGroup className={cn(groupCls, 'flex-1')}>
+        <InputGroup>
           <InputGroupInput
             type="number"
             step="0.1"
@@ -212,7 +151,7 @@ export function TypographyControlsPanel({
       <div className="grid grid-cols-2 gap-2">
         <div className="flex items-center gap-1.5">
           <span className={labelCls + ' w-10 shrink-0'}>Letter</span>
-          <InputGroup className={cn(groupCls, 'w-full')}>
+          <InputGroup>
             <InputGroupInput
               type="number"
               step="0.01"
@@ -231,7 +170,7 @@ export function TypographyControlsPanel({
                 value={letterSpacingUnit}
                 onValueChange={setLetterSpacingUnit}
               >
-                <SelectTrigger className={addonSelectCls}>
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -245,7 +184,7 @@ export function TypographyControlsPanel({
         </div>
         <div className="flex items-center gap-1.5">
           <span className={labelCls + ' w-10 shrink-0'}>Word</span>
-          <InputGroup className={cn(groupCls, 'w-full')}>
+          <InputGroup>
             <InputGroupInput
               type="number"
               step="0.01"
@@ -264,7 +203,7 @@ export function TypographyControlsPanel({
                 value={wordSpacingUnit}
                 onValueChange={setWordSpacingUnit}
               >
-                <SelectTrigger className={addonSelectCls}>
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -281,46 +220,28 @@ export function TypographyControlsPanel({
       {/* Text Transform */}
       <div className="flex items-center gap-2">
         <span className={labelCls + ' w-12 shrink-0'}>Case</span>
-        <div className="flex flex-1 gap-1">
+        <ToggleGroup
+          type="single"
+          value={textTransform}
+          onValueChange={(v) => {
+            if (v) {
+              setTextTransform(v)
+              applyLiveStyle('text-transform', v)
+            }
+          }}
+          variant="outline"
+          size="sm"
+        >
           {TEXT_TRANSFORMS.map((tt) => (
-            <button
+            <ToggleGroupItem
               key={tt.value}
-              type="button"
-              onClick={() => {
-                setTextTransform(tt.value)
-                applyLiveStyle('text-transform', tt.value)
-              }}
-              className={cn(
-                'rounded-full px-2.5 py-0.5 text-[10px] transition-colors',
-                textTransform === tt.value
-                  ? 'bg-cyan-300/15 text-cyan-200'
-                  : 'text-white/40 hover:bg-white/5',
-              )}
+              value={tt.value}
+              className="text-xs"
             >
               {tt.label}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center gap-1.5 pt-1">
-        <button
-          type="button"
-          onClick={handleApply}
-          className="flex h-7 items-center gap-1 rounded bg-cyan-300 px-3 text-xs font-bold text-slate-950 transition-colors hover:bg-cyan-200"
-        >
-          <Check className="size-3" />
-          Apply
-        </button>
-        <button
-          type="button"
-          onClick={handleClose}
-          className="grid size-7 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white"
-          aria-label="Close"
-        >
-          <X className="size-3.5" />
-        </button>
+        </ToggleGroup>
       </div>
     </div>
   )

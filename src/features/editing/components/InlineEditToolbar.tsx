@@ -805,21 +805,17 @@ export function InlineEditToolbar({
             {displayPanel === 'style' && (
               <StyleControlsPanel
                 activeElement={activeElement}
-                onApply={(payload) => {
-                  onStyleApply(payload)
-                  setActivePanel(null)
+                onModified={() => {
+                  userModifiedRef.current = true
                 }}
-                onClose={() => setActivePanel(null)}
               />
             )}
             {displayPanel === 'typography' && (
               <TypographyControlsPanel
                 activeElement={activeElement}
-                onApply={(payload) => {
-                  onStyleApply(payload)
-                  setActivePanel(null)
+                onModified={() => {
+                  userModifiedRef.current = true
                 }}
-                onClose={() => setActivePanel(null)}
               />
             )}
             {displayPanel === 'link' && isLinkElement && onLinkEdit && (
