@@ -5,7 +5,7 @@ interface CapturedTextNode {
   value: string
 }
 
-interface TextEditState {
+export interface TextEditState {
   element: HTMLElement
   originalText: string
   /** Snapshot of the element's text nodes at activation, in document order.
@@ -17,7 +17,7 @@ interface TextEditState {
 
 /** Collect every Text node under `el` in document order (including those nested
  *  in inline wrappers like <span>/<strong>). */
-function collectTextNodes(el: HTMLElement): Text[] {
+export function collectTextNodes(el: HTMLElement): Text[] {
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
   const nodes: Text[] = []
   let current = walker.nextNode()
@@ -54,6 +54,62 @@ function computeOccurrenceIndex(
   }
 }
 
+/** Diff the element's current text nodes against the snapshot taken at
+ *  activation and return one change per modified node. Preserves structure:
+ *  a node's value changes, the surrounding <br>/<span>/etc. do not. Falls back
+ *  to a minimal diff of the flattened textContent when node structure changed
+ *  (e.g. user deleted across a <br>, merging nodes).
+ *  Exported for testing. */
+export function diffEdits(
+  active: TextEditState,
+): Array<{ oldText: string; newText: string }> {
+  const current = collectTextNodes(active.element)
+  if (current.length === active.originalNodes.length) {
+    const changes: Array<{ oldText: string; newText: string }> = []
+    for (let i = 0; i < current.length; i += 1) {
+      const oldText = active.originalNodes[i].value
+      const newText = current[i].nodeValue ?? ''
+      if (oldText !== newText && oldText.trim() && newText.trim()) {
+        changes.push({ oldText, newText })
+      }
+    }
+    return changes
+  }
+  // Node structure changed (e.g. user selected across a <br>, merging
+  // text nodes). Fall back to a minimal diff of the flattened textContent
+  // so we only send the changed portion — not the entire flattened string,
+  // which would span multiple OpenUI source arguments and corrupt them.
+  const flattened = active.element.textContent ?? ''
+  if (flattened !== active.originalText && flattened.trim()) {
+    const oldText = active.originalText
+    const newText = flattened
+    let prefixLen = 0
+    const maxPrefix = Math.min(oldText.length, newText.length)
+    while (prefixLen < maxPrefix && oldText[prefixLen] === newText[prefixLen]) {
+      prefixLen += 1
+    }
+    let suffixLen = 0
+    const maxSuffix = Math.min(
+      oldText.length - prefixLen,
+      newText.length - prefixLen,
+    )
+    while (
+      suffixLen < maxSuffix &&
+      oldText[oldText.length - 1 - suffixLen] ===
+        newText[newText.length - 1 - suffixLen]
+    ) {
+      suffixLen += 1
+    }
+    const oldMid = oldText.slice(prefixLen, oldText.length - suffixLen)
+    const newMid = newText.slice(prefixLen, newText.length - suffixLen)
+    if (oldMid.trim() && oldMid.length < oldText.length) {
+      return [{ oldText: oldMid, newText: newMid }]
+    }
+    return [{ oldText, newText }]
+  }
+  return []
+}
+
 export function useTextEdit(
   containerRef: React.RefObject<HTMLElement | null>,
   editMode: boolean,
@@ -84,33 +140,6 @@ export function useTextEdit(
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
-
-    // Diff the element's current text nodes against the snapshot taken at
-    // activation and return one change per modified node. Preserves structure:
-    // a node's value changes, the surrounding <br>/<span>/etc. do not. Falls back
-    // to a single whole-element change only if the node structure itself changed
-    // (e.g. the user deleted across a <br>, merging nodes).
-    const diffEdits = (
-      active: TextEditState,
-    ): Array<{ oldText: string; newText: string }> => {
-      const current = collectTextNodes(active.element)
-      if (current.length === active.originalNodes.length) {
-        const changes: Array<{ oldText: string; newText: string }> = []
-        for (let i = 0; i < current.length; i += 1) {
-          const oldText = active.originalNodes[i].value
-          const newText = current[i].nodeValue ?? ''
-          if (oldText !== newText && oldText.trim() && newText.trim()) {
-            changes.push({ oldText, newText })
-          }
-        }
-        return changes
-      }
-      const flattened = active.element.textContent ?? ''
-      if (flattened !== active.originalText && flattened.trim()) {
-        return [{ oldText: active.originalText, newText: flattened }]
-      }
-      return []
-    }
 
     const finishEdit = () => {
       const active = activeEditRef.current

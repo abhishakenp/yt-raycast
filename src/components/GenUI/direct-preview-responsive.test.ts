@@ -1,4 +1,3 @@
-// @ts-expect-error jsdom is already used by repo tests without installed types.
 import { JSDOM } from 'jsdom'
 import { describe, expect, it } from 'vitest'
 import { enhanceGeneratedMobileNavs } from './generated-mobile-nav'

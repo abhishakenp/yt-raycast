@@ -29,6 +29,20 @@ const createWhitespaceTolerantTextPattern = (value: string): RegExp | null => {
   return new RegExp(tokens.map(escapeRegExp).join('\\s+'))
 }
 
+/** Split oldText into word-only tokens and join with a pattern that matches
+ *  any sequence of non-word characters (HTML tags, <br/>, quotes, commas,
+ *  etc.) between them. This handles the case where the client's diffEdits
+ *  fallback produces oldText from element.textContent, which strips <br>
+ *  tags and other inline markup, creating a string that doesn't exist
+ *  verbatim in the stored HTML or OpenUI source (where text fragments are
+ *  separated by <br/> tags or ", " string-argument delimiters). */
+const createAggressiveSeparatorPattern = (value: string): RegExp | null => {
+  const tokens = value.trim().split(/\W+/).filter(Boolean)
+  if (tokens.length === 0) return null
+
+  return new RegExp(tokens.map(escapeRegExp).join('(?:<[^>]+>|\\W)+'))
+}
+
 export const applyPreviewTextEdit = (
   html: string,
   oldText: string | undefined,
@@ -43,37 +57,80 @@ export const applyPreviewTextEdit = (
     blocks.push({ token, value })
     return token
   })
+  const restoreBlocks = (edited: string): string =>
+    blocks.reduce(
+      (current, block) => current.replace(block.token, block.value),
+      edited,
+    )
   const index = protectedHtml.indexOf(from)
   if (index >= 0) {
     const edited = `${protectedHtml.slice(0, index)}${to}${protectedHtml.slice(index + from.length)}`
-    return {
-      html: blocks.reduce(
-        (current, block) => current.replace(block.token, block.value),
-        edited,
-      ),
-      replaced: true,
-    }
+    return { html: restoreBlocks(edited), replaced: true }
   }
 
   const tolerantPattern = createWhitespaceTolerantTextPattern(from)
   const tolerantMatch =
     tolerantPattern === null ? null : protectedHtml.match(tolerantPattern)
   if (
-    tolerantMatch === null ||
-    tolerantMatch.index === undefined ||
-    tolerantMatch[0].length === 0
+    tolerantMatch !== null &&
+    tolerantMatch.index !== undefined &&
+    tolerantMatch[0].length > 0
   ) {
-    return { html, replaced: false }
+    const edited = `${protectedHtml.slice(0, tolerantMatch.index)}${to}${protectedHtml.slice(tolerantMatch.index + tolerantMatch[0].length)}`
+    return { html: restoreBlocks(edited), replaced: true }
   }
 
-  const edited = `${protectedHtml.slice(0, tolerantMatch.index)}${to}${protectedHtml.slice(tolerantMatch.index + tolerantMatch[0].length)}`
-  return {
-    html: blocks.reduce(
-      (current, block) => current.replace(block.token, block.value),
-      edited,
-    ),
-    replaced: true,
+  // Fallback 1: <br> separated text. The client's diffEdits fallback produces
+  // oldText from element.textContent which strips <br> tags, creating a
+  // string that doesn't exist verbatim in the stored HTML. Strip <br> tags
+  // from the HTML, search for oldText, then map the match back to replace
+  // in the original HTML (including any <br> tags within the match range).
+  const brTagPattern = /<br\s*\/?>/gi
+  const brTags: Array<{ index: number; length: number }> = []
+  let brMatch: RegExpExecArray | null
+  brTagPattern.lastIndex = 0
+  while ((brMatch = brTagPattern.exec(protectedHtml)) !== null) {
+    brTags.push({ index: brMatch.index, length: brMatch[0].length })
   }
+  if (brTags.length > 0) {
+    const strippedHtml = protectedHtml.replace(brTagPattern, '')
+    const strippedIndex = strippedHtml.indexOf(from)
+    if (strippedIndex >= 0) {
+      const strippedEnd = strippedIndex + from.length
+      const mapStrippedToOriginal = (s: number): number => {
+        let o = s
+        for (const tag of brTags) {
+          if (o >= tag.index) o += tag.length
+          else break
+        }
+        return o
+      }
+      const origStart = mapStrippedToOriginal(strippedIndex)
+      const origEnd = mapStrippedToOriginal(strippedEnd)
+      const edited = `${protectedHtml.slice(0, origStart)}${to}${protectedHtml.slice(origEnd)}`
+      return { html: restoreBlocks(edited), replaced: true }
+    }
+  }
+
+  // Fallback 2: Aggressive separator-tolerant pattern. When oldText is
+  // flattened textContent spanning <br> tags or OpenUI string arguments
+  // (separated by ", " delimiters), split into word tokens and match with
+  // any non-word separator sequence between them. This catches both the
+  // space-separated variant (user typed a space where <br> is) and the
+  // source-level case where text fragments live in separate quoted args.
+  const aggressivePattern = createAggressiveSeparatorPattern(from)
+  const aggressiveMatch =
+    aggressivePattern === null ? null : protectedHtml.match(aggressivePattern)
+  if (
+    aggressiveMatch !== null &&
+    aggressiveMatch.index !== undefined &&
+    aggressiveMatch[0].length > 0
+  ) {
+    const edited = `${protectedHtml.slice(0, aggressiveMatch.index)}${to}${protectedHtml.slice(aggressiveMatch.index + aggressiveMatch[0].length)}`
+    return { html: restoreBlocks(edited), replaced: true }
+  }
+
+  return { html, replaced: false }
 }
 
 export type CmsBindingType = 'text' | 'richtext' | 'image' | 'link'
