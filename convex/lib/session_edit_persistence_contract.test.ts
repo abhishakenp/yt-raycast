@@ -519,80 +519,10 @@ describe('inline edit persistence contract (real engine fixtures)', () => {
 
 describe('text edit silent-persistence-failure guard', () => {
   // ─────────────────────────────────────────────────────────────────────
-  // Source-level structural assertion: the isTextPatchEdit branch in
-  // applySessionEdit MUST check artifactSnapshot.openUiReplaced and throw
-  // ConvexError with code TEXT_NOT_FOUND when the source patch failed.
-  // This guards against the silent-persistence regression where an edit
-  // appears to succeed (a new preview is created) but the source is left
-  // unpatched, so the edit vanishes on reload.
-  // ─────────────────────────────────────────────────────────────────────
-
-  it('isTextPatchEdit branch checks openUiReplaced and throws TEXT_NOT_FOUND', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'convex/lib/session_edit_mutation_helpers.ts'),
-      'utf-8',
-    )
-
-    // Locate the isTextPatchEdit branch.
-    const branchStart = source.indexOf('} else if (isTextPatchEdit) {')
-    expect(branchStart).toBeGreaterThan(-1)
-
-    // The branch ends at the next "} else {".
-    const branchEnd = source.indexOf('} else {', branchStart)
-    expect(branchEnd).toBeGreaterThan(branchStart)
-    const branch = source.slice(branchStart, branchEnd)
-
-    // Must check openUiReplaced.
-    expect(branch).toContain('if (!artifactSnapshot.openUiReplaced)')
-
-    // Must throw ConvexError with TEXT_NOT_FOUND code.
-    expect(branch).toContain('throw new ConvexError')
-    expect(branch).toContain("code: 'TEXT_NOT_FOUND'")
-  })
-
-  it('isAiRewriteTextPatchEdit branch is NOT changed (no openUiReplaced check)', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'convex/lib/session_edit_mutation_helpers.ts'),
-      'utf-8',
-    )
-
-    const branchStart = source.indexOf('} else if (isAiRewriteTextPatchEdit) {')
-    expect(branchStart).toBeGreaterThan(-1)
-    const branchEnd = source.indexOf(
-      '} else if (isTextPatchEdit) {',
-      branchStart,
-    )
-    expect(branchEnd).toBeGreaterThan(branchStart)
-    const branch = source.slice(branchStart, branchEnd)
-
-    // The AI rewrite branch must NOT have the openUiReplaced guard —
-    // it's a separate flow.
-    expect(branch).not.toContain('openUiReplaced')
-  })
-
-  it('sourceAlreadyPatched branch is NOT changed (no openUiReplaced check)', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'convex/lib/session_edit_mutation_helpers.ts'),
-      'utf-8',
-    )
-
-    const branchStart = source.indexOf('if (sourceAlreadyPatched) {')
-    expect(branchStart).toBeGreaterThan(-1)
-    const branchEnd = source.indexOf(
-      '} else if (isAiRewriteTextPatchEdit) {',
-      branchStart,
-    )
-    expect(branchEnd).toBeGreaterThan(branchStart)
-    const branch = source.slice(branchStart, branchEnd)
-
-    // The sourceAlreadyPatched branch correctly skips the check.
-    expect(branch).not.toContain('openUiReplaced')
-  })
-
-  // ─────────────────────────────────────────────────────────────────────
-  // Behavioral test: a text edit whose beforeText is NOT present in the
-  // OpenUI source must throw (rather than silently creating an unpatched
-  // preview). This is the user-facing contract of the fix.
+  // Behavioral tests: verify that applySessionEdit correctly throws
+  // TEXT_NOT_FOUND when the source patch fails, and that valid edits
+  // still persist correctly. These test the actual mutation behavior,
+  // not source code structure.
   // ─────────────────────────────────────────────────────────────────────
 
   it('text edit with beforeText not in source throws TEXT_NOT_FOUND instead of silently persisting', async () => {
@@ -625,5 +555,95 @@ describe('text edit silent-persistence-failure guard', () => {
       'Replacement That Should Never Be Saved',
     )
     expect(reloadedSource).toBe(source)
+  })
+
+  it('text edit with beforeText IN source succeeds and patches source', async () => {
+    const t = sessionEditContractTest()
+    const { sessionId, source } = await createReadySessionWithFixture(
+      t,
+      'food-blog',
+      'food blog site',
+    )
+
+    // Find a real text string in the source to edit
+    // The food-blog fixture has heading text we can target
+    const headingMatch = source.match(/"([^"]{5,30})"/)
+    expect(headingMatch).not.toBeNull()
+    const originalText = headingMatch![1]
+    const newText = 'EDITED_' + originalText.toUpperCase()
+
+    await t.mutation(api.sessions.createEdit, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'text',
+      targetLabel: 'Heading',
+      beforeText: originalText,
+      afterText: newText,
+    })
+
+    // Source must be patched with the new text
+    const { source: reloadedSource } = await reloadAndRender(t, sessionId)
+    expect(reloadedSource).toContain(newText)
+  })
+
+  it('text edit that fails source patch does NOT create a new preview version', async () => {
+    const t = sessionEditContractTest()
+    const { sessionId } = await createReadySessionWithFixture(
+      t,
+      'food-blog',
+      'food blog site',
+    )
+
+    // Get the current preview version
+    const before = await reloadAndRender(t, sessionId)
+    const versionBefore = before.reloaded?.session?.previewVersion ?? 0
+
+    // Attempt an edit with text not in source — should throw
+    await expect(
+      t.mutation(api.sessions.createEdit, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'text',
+        targetLabel: 'Heading',
+        beforeText: 'NONEXISTENT_TEXT_12345',
+        afterText: 'Should Not Persist',
+      }),
+    ).rejects.toThrow(/TEXT_NOT_FOUND/)
+
+    // Preview version must NOT have incremented (no new preview created)
+    const after = await reloadAndRender(t, sessionId)
+    expect(after.reloaded?.session?.previewVersion ?? 0).toBe(versionBefore)
+  })
+
+  it('ai_rewrite edit with afterHtml does NOT throw TEXT_NOT_FOUND (separate flow)', async () => {
+    const t = sessionEditContractTest()
+    const { sessionId } = await createReadySessionWithFixture(
+      t,
+      'food-blog',
+      'food blog site',
+    )
+
+    // Get version before
+    const before = await reloadAndRender(t, sessionId)
+    const versionBefore = before.reloaded?.session?.previewVersion ?? 0
+
+    // An ai_rewrite edit with afterHtml should go through the
+    // isAiRewriteTextPatchEdit or snapshot path, NOT the isTextPatchEdit
+    // path, so it should NOT throw TEXT_NOT_FOUND even if beforeText
+    // is not in the source.
+    await t.mutation(api.sessions.createEdit, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'ai_rewrite',
+      targetLabel: 'Hero',
+      beforeText: 'some text',
+      afterText: 'some new text',
+      afterHtml: '<div>New HTML</div>',
+    })
+
+    // Should succeed and create a new preview version
+    const after = await reloadAndRender(t, sessionId)
+    const versionAfter = after.reloaded?.session?.previewVersion ?? 0
+    expect(versionAfter).toBeGreaterThan(versionBefore)
   })
 })

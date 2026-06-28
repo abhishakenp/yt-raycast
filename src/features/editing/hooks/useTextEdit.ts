@@ -344,33 +344,13 @@ export function useTextEdit(
       const sel = window.getSelection()
       if (!sel || !sel.isCollapsed) return
       const range = sel.getRangeAt(0)
-      const startContainer = range.startContainer
-      const offset = range.startOffset
-
-      let nodeToDelete: Node | null = null
-      if (e.inputType === 'deleteContentBackward') {
-        if (startContainer.nodeType === Node.TEXT_NODE) {
-          if (offset === 0) {
-            nodeToDelete = startContainer.previousSibling
-          }
-        } else if (startContainer.nodeType === Node.ELEMENT_NODE) {
-          nodeToDelete =
-            (startContainer as HTMLElement).childNodes[offset - 1] ?? null
-        }
-      } else if (e.inputType === 'deleteContentForward') {
-        if (startContainer.nodeType === Node.TEXT_NODE) {
-          if (offset === (startContainer.textContent ?? '').length) {
-            nodeToDelete = startContainer.nextSibling
-          }
-        } else if (startContainer.nodeType === Node.ELEMENT_NODE) {
-          nodeToDelete =
-            (startContainer as HTMLElement).childNodes[offset] ?? null
-        }
-      }
-
       if (
-        nodeToDelete &&
-        active.lockedChildren.some((locked) => locked === nodeToDelete)
+        shouldPreventLockedDeletion(
+          e.inputType,
+          range.startContainer,
+          range.startOffset,
+          active.lockedChildren,
+        )
       ) {
         e.preventDefault()
       }
@@ -418,6 +398,41 @@ export function isClickOnActiveEdit(
 ): boolean {
   if (!activeElement) return false
   return activeElement === target || activeElement.contains(target)
+}
+
+/** Determine whether a `beforeinput` delete event should be prevented
+ *  because the node that would be deleted is a locked child (SVG icon, image).
+ *  Exported for behavioral testing. */
+export function shouldPreventLockedDeletion(
+  inputType: string,
+  startContainer: Node,
+  offset: number,
+  lockedChildren: HTMLElement[],
+): boolean {
+  if (lockedChildren.length === 0) return false
+  let nodeToDelete: Node | null = null
+  if (inputType === 'deleteContentBackward') {
+    if (startContainer.nodeType === Node.TEXT_NODE) {
+      if (offset === 0) {
+        nodeToDelete = startContainer.previousSibling
+      }
+    } else if (startContainer.nodeType === Node.ELEMENT_NODE) {
+      nodeToDelete =
+        (startContainer as HTMLElement).childNodes[offset - 1] ?? null
+    }
+  } else if (inputType === 'deleteContentForward') {
+    if (startContainer.nodeType === Node.TEXT_NODE) {
+      if (offset === (startContainer.textContent ?? '').length) {
+        nodeToDelete = startContainer.nextSibling
+      }
+    } else if (startContainer.nodeType === Node.ELEMENT_NODE) {
+      nodeToDelete = (startContainer as HTMLElement).childNodes[offset] ?? null
+    }
+  }
+  return (
+    nodeToDelete !== null &&
+    lockedChildren.some((locked) => locked === nodeToDelete)
+  )
 }
 
 /** Set contenteditable=false on direct element children that don't contain
