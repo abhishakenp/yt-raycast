@@ -429,8 +429,8 @@ export function InlineEditToolbar({
   const isLinkElement = tag === 'a'
   const isImageElement = tag === 'img'
   // Text elements: show font size, bold, italic, color, alignment, typography.
-  // Mirrors findTextElement in useTextEdit.ts — any tag that can be a
-  // contentEditable text leaf gets the full text toolbar.
+  // Only true text leaf elements — NOT div/section/header (those are containers
+  // selected via the inspector and should only get Style + AI + Apply).
   const isTextElement = [
     'p',
     'h1',
@@ -440,13 +440,10 @@ export function InlineEditToolbar({
     'h5',
     'h6',
     'span',
-    'div',
     'a',
     'button',
     'label',
     'li',
-    'td',
-    'th',
     'strong',
     'em',
     'small',
