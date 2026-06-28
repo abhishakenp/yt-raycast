@@ -115,6 +115,20 @@ export function InlineEditToolbar({
   const [activePanel, setActivePanel] = useState<
     'style' | 'typography' | 'link' | null
   >(null)
+  // Keep the last panel mounted during collapse animation so it can animate
+  // out instead of vanishing instantly.
+  const [displayPanel, setDisplayPanel] = useState<
+    'style' | 'typography' | 'link' | null
+  >(null)
+  useEffect(() => {
+    if (activePanel) {
+      setDisplayPanel(activePanel)
+    } else {
+      // Delay unmount so the collapse animation can play
+      const t = setTimeout(() => setDisplayPanel(null), 200)
+      return () => clearTimeout(t)
+    }
+  }, [activePanel])
   const toolbarRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const originalStyleRef = useRef<string | null>(null)
@@ -779,43 +793,47 @@ export function InlineEditToolbar({
           </div>
         </div>
 
-        {/* Extended panels rendered below the toolbar — width matches toolbar */}
-        {activePanel === 'style' && (
-          <div className="w-full">
-            <StyleControlsPanel
-              activeElement={activeElement}
-              onApply={(payload) => {
-                onStyleApply(payload)
-                setActivePanel(null)
-              }}
-              onClose={() => setActivePanel(null)}
-            />
+        {/* Extended panels — animated expand/collapse using grid-rows trick */}
+        <div
+          className="grid w-full transition-[grid-template-rows,opacity] duration-200 ease-out"
+          style={{
+            gridTemplateRows: activePanel ? '1fr' : '0fr',
+            opacity: activePanel ? 1 : 0,
+          }}
+        >
+          <div className="overflow-hidden">
+            {displayPanel === 'style' && (
+              <StyleControlsPanel
+                activeElement={activeElement}
+                onApply={(payload) => {
+                  onStyleApply(payload)
+                  setActivePanel(null)
+                }}
+                onClose={() => setActivePanel(null)}
+              />
+            )}
+            {displayPanel === 'typography' && (
+              <TypographyControlsPanel
+                activeElement={activeElement}
+                onApply={(payload) => {
+                  onStyleApply(payload)
+                  setActivePanel(null)
+                }}
+                onClose={() => setActivePanel(null)}
+              />
+            )}
+            {displayPanel === 'link' && isLinkElement && onLinkEdit && (
+              <LinkEditPopover
+                activeElement={activeElement as HTMLAnchorElement}
+                onApply={(payload) => {
+                  onLinkEdit(payload)
+                  setActivePanel(null)
+                }}
+                onClose={() => setActivePanel(null)}
+              />
+            )}
           </div>
-        )}
-        {activePanel === 'typography' && (
-          <div className="w-full">
-            <TypographyControlsPanel
-              activeElement={activeElement}
-              onApply={(payload) => {
-                onStyleApply(payload)
-                setActivePanel(null)
-              }}
-              onClose={() => setActivePanel(null)}
-            />
-          </div>
-        )}
-        {activePanel === 'link' && isLinkElement && onLinkEdit && (
-          <div className="w-full">
-            <LinkEditPopover
-              activeElement={activeElement as HTMLAnchorElement}
-              onApply={(payload) => {
-                onLinkEdit(payload)
-                setActivePanel(null)
-              }}
-              onClose={() => setActivePanel(null)}
-            />
-          </div>
-        )}
+        </div>
       </div>
     </TooltipProvider>
   )
