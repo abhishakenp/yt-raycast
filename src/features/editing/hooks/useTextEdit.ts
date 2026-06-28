@@ -190,6 +190,19 @@ export function useTextEdit(
 
       const target = e.target as HTMLElement
 
+      // If the click lands on the element currently being edited, ignore it.
+      // This happens when a <button> or <a> being edited receives a synthetic
+      // click from keyboard activation (Space fires click on keyup, Enter on
+      // keydown). Without this guard, the synthetic click calls finishEdit(),
+      // interrupting the edit session — the user can't type spaces because
+      // every space commits the edit and re-activates the element.
+      const active = activeEditRef.current
+      if (active && isClickOnActiveEdit(target, active.element)) {
+        e.stopPropagation()
+        e.preventDefault()
+        return
+      }
+
       // Check if target is an image or contains an image
       const imgEl =
         target.tagName.toLowerCase() === 'img'
@@ -324,6 +337,21 @@ export function useTextEdit(
 // rather than an editable leaf text block.
 const BLOCK_CHILD_SELECTOR =
   'div,p,ul,ol,section,article,header,footer,nav,main,aside,table,form,h1,h2,h3,h4,h5,h6,li,blockquote,figure'
+
+/** Check if a click event should be ignored because it targets the element
+ *  currently being edited. When a `<button>` or `<a>` is contentEditable and
+ *  focused, pressing Space triggers the browser's default activation → a
+ *  synthetic `click` event lands on the element. Without this guard, that
+ *  click calls `finishEdit()`, interrupting the edit session so the user
+ *  can't type spaces (every space commits and re-activates the element).
+ *  Returns true when `target` is `activeElement` or nested inside it. */
+export function isClickOnActiveEdit(
+  target: HTMLElement,
+  activeElement: HTMLElement | null,
+): boolean {
+  if (!activeElement) return false
+  return activeElement === target || activeElement.contains(target)
+}
 
 export function findTextElement(el: HTMLElement): HTMLElement | null {
   let current: HTMLElement | null = el
