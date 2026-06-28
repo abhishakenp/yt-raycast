@@ -27,6 +27,7 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
+  InputGroupText,
 } from '#/components/ui/input-group'
 
 interface StyleControlsPanelProps {
@@ -199,10 +200,9 @@ export function StyleControlsPanel({
 
   const labelCls =
     'text-[10px] uppercase tracking-wider text-white/40 font-medium'
-  const inputCls =
-    'h-7 w-full rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20'
   const groupCls =
     'h-7 flex-1 rounded border border-white/10 bg-white/5 focus-within:border-cyan-300/50'
+  const addonTextCls = 'text-[9px] text-white/30 px-1 py-0'
   const addonSelectCls =
     'h-auto w-auto border-0 bg-transparent px-0 text-xs text-white/60'
 
@@ -261,17 +261,19 @@ export function StyleControlsPanel({
                 </div>
                 <div className="grid grid-cols-2 gap-1">
                   {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
-                    <div key={side} className="relative">
-                      <span className="absolute left-1 top-0.5 text-[9px] text-white/30">
-                        {side[0].toUpperCase()}
-                      </span>
-                      <input
+                    <InputGroup key={side} className={cn(groupCls, 'w-full')}>
+                      <InputGroupAddon align="inline-start">
+                        <InputGroupText className={addonTextCls}>
+                          {side[0].toUpperCase()}
+                        </InputGroupText>
+                      </InputGroupAddon>
+                      <InputGroupInput
                         type="number"
                         value={padding[side]}
                         onChange={(e) => setPaddingValue(side, e.target.value)}
-                        className="h-7 w-full rounded border border-white/10 bg-white/5 pl-5 pr-1 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
+                        className="text-xs text-white"
                       />
-                    </div>
+                    </InputGroup>
                   ))}
                 </div>
               </div>
@@ -299,17 +301,19 @@ export function StyleControlsPanel({
                 </div>
                 <div className="grid grid-cols-2 gap-1">
                   {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
-                    <div key={side} className="relative">
-                      <span className="absolute left-1 top-0.5 text-[9px] text-white/30">
-                        {side[0].toUpperCase()}
-                      </span>
-                      <input
+                    <InputGroup key={side} className={cn(groupCls, 'w-full')}>
+                      <InputGroupAddon align="inline-start">
+                        <InputGroupText className={addonTextCls}>
+                          {side[0].toUpperCase()}
+                        </InputGroupText>
+                      </InputGroupAddon>
+                      <InputGroupInput
                         type="number"
                         value={margin[side]}
                         onChange={(e) => setMarginValue(side, e.target.value)}
-                        className="h-7 w-full rounded border border-white/10 bg-white/5 pl-5 pr-1 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
+                        className="text-xs text-white"
                       />
-                    </div>
+                    </InputGroup>
                   ))}
                 </div>
               </div>
@@ -362,35 +366,39 @@ export function StyleControlsPanel({
             </div>
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-12')}>Style</span>
-              <Select
-                value={borderStyle}
-                onValueChange={(v) => {
-                  setBorderStyle(v)
-                  applyLiveStyle('border-style', v)
-                }}
-              >
-                <SelectTrigger className={cn(inputCls, 'flex-1')}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">none</SelectItem>
-                  <SelectItem value="solid">solid</SelectItem>
-                  <SelectItem value="dashed">dashed</SelectItem>
-                  <SelectItem value="dotted">dotted</SelectItem>
-                </SelectContent>
-              </Select>
+              <InputGroup className={cn(groupCls, 'flex-1')}>
+                <Select
+                  value={borderStyle}
+                  onValueChange={(v) => {
+                    setBorderStyle(v)
+                    applyLiveStyle('border-style', v)
+                  }}
+                >
+                  <SelectTrigger className="h-auto w-full border-0 bg-transparent text-xs text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">none</SelectItem>
+                    <SelectItem value="solid">solid</SelectItem>
+                    <SelectItem value="dashed">dashed</SelectItem>
+                    <SelectItem value="dotted">dotted</SelectItem>
+                  </SelectContent>
+                </Select>
+              </InputGroup>
             </div>
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-12')}>Color</span>
-              <input
-                type="color"
-                value={borderColor}
-                onChange={(e) => {
-                  setBorderColor(e.target.value)
-                  applyLiveStyle('border-color', e.target.value)
-                }}
-                className="h-7 w-8 rounded border border-white/10 bg-transparent cursor-pointer"
-              />
+              <InputGroup className={cn(groupCls, 'flex-1')}>
+                <InputGroupInput
+                  type="color"
+                  value={borderColor}
+                  onChange={(e) => {
+                    setBorderColor(e.target.value)
+                    applyLiveStyle('border-color', e.target.value)
+                  }}
+                  className="h-auto w-full cursor-pointer border-0 bg-transparent p-0"
+                />
+              </InputGroup>
             </div>
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-12')}>R</span>
@@ -427,15 +435,17 @@ export function StyleControlsPanel({
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-10')}>Color</span>
-              <input
-                type="color"
-                value={bgColor}
-                onChange={(e) => {
-                  setBgColor(e.target.value)
-                  applyLiveStyle('background-color', e.target.value)
-                }}
-                className="h-7 w-8 rounded border border-white/10 bg-transparent cursor-pointer"
-              />
+              <InputGroup className={cn(groupCls, 'w-20')}>
+                <InputGroupInput
+                  type="color"
+                  value={bgColor}
+                  onChange={(e) => {
+                    setBgColor(e.target.value)
+                    applyLiveStyle('background-color', e.target.value)
+                  }}
+                  className="h-auto w-full cursor-pointer border-0 bg-transparent p-0"
+                />
+              </InputGroup>
             </div>
             <div className="flex items-center gap-1.5 flex-1">
               <span className={labelCls}>Shadow</span>
