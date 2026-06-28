@@ -183,13 +183,15 @@ describe('user image upload helpers', () => {
 
   it('listUserImages only returns images for the specified session', async () => {
     const t = userImageTest()
+
+    // Create storage ID first (actions can't run inside mutation transactions)
+    const storageId = await createStorageId(t)
+
     const sessionA = await createReadySession(
       t,
       'A photography portfolio website',
     )
     const sessionB = await createReadySession(t, 'A coffee shop landing page')
-
-    const storageId = await createStorageId(t)
 
     await t.mutation(api.sessions.saveUserImage, {
       sessionId: sessionA as Id<'sessions'>,

@@ -329,10 +329,9 @@ export function findTextElement(el: HTMLElement): HTMLElement | null {
   let current: HTMLElement | null = el
   while (current) {
     const tag = current.tagName.toLowerCase()
+    // Non-text elements that should never be contentEditable
     if (
       [
-        'button',
-        'a',
         'input',
         'textarea',
         'select',
@@ -370,6 +369,8 @@ export function findTextElement(el: HTMLElement): HTMLElement | null {
           'em',
           'small',
           'blockquote',
+          'button',
+          'a',
         ].includes(tag) &&
         // Only edit leaf text blocks. Containers whose text spans multiple
         // block-level children (e.g. a card wrapping <h3>+<p>) flatten to a

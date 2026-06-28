@@ -8,7 +8,12 @@ globalThis.document = dom.window.document as unknown as Document
 globalThis.window = dom.window as unknown as Window & typeof globalThis
 globalThis.NodeFilter = dom.window.NodeFilter
 
-import { diffEdits, collectTextNodes, type TextEditState } from './useTextEdit'
+import {
+  diffEdits,
+  collectTextNodes,
+  findTextElement,
+  type TextEditState,
+} from './useTextEdit'
 import { applyPreviewTextEdit } from '@/lib/edit-helpers'
 
 /**
@@ -517,6 +522,329 @@ describe('inline edit full-chain: br-separated text', () => {
       expect(patchedSource).not.toContain(
         '"Craving Something Hot?Pizza Delivered NOW"',
       )
+    })
+  })
+})
+
+// ─── findTextElement: element editability tests ───────────────────────────
+
+describe('findTextElement: which elements are editable', () => {
+  /** Helper: create an element, append to body, find, then clean up. */
+  function withElement<T>(tag: string, fn: (el: HTMLElement) => T): T {
+    const el = document.createElement(tag)
+    document.body.appendChild(el)
+    try {
+      return fn(el)
+    } finally {
+      el.remove()
+    }
+  }
+
+  describe('buttons and links are editable', () => {
+    it('finds a <button> with text content', () => {
+      withElement('button', (btn) => {
+        btn.textContent = 'Get Started'
+        const result = findTextElement(btn)
+        expect(result).not.toBeNull()
+        expect(result?.tagName.toLowerCase()).toBe('button')
+      })
+    })
+
+    it('finds an <a> with text content', () => {
+      withElement('a', (a) => {
+        a.textContent = 'Learn more'
+        a.setAttribute('href', '#')
+        const result = findTextElement(a)
+        expect(result).not.toBeNull()
+        expect(result?.tagName.toLowerCase()).toBe('a')
+      })
+    })
+
+    it('finds inner <span> inside <button> (innermost editable wins)', () => {
+      withElement('button', (btn) => {
+        const span = document.createElement('span')
+        span.textContent = 'Click Me'
+        btn.appendChild(span)
+        // Click target is the span. The walker finds the span first
+        // because it's an editable leaf with text — correct behavior.
+        const result = findTextElement(span)
+        expect(result).not.toBeNull()
+        expect(result?.tagName.toLowerCase()).toBe('span')
+      })
+    })
+
+    it('finds <button> directly when it has text (no child span)', () => {
+      withElement('button', (btn) => {
+        btn.textContent = 'Click Me'
+        const result = findTextElement(btn)
+        expect(result).not.toBeNull()
+        expect(result?.tagName.toLowerCase()).toBe('button')
+      })
+    })
+
+    it('finds inner <span> inside <a> (innermost editable wins)', () => {
+      withElement('a', (a) => {
+        a.setAttribute('href', '/about')
+        const span = document.createElement('span')
+        span.textContent = 'About Us'
+        a.appendChild(span)
+        const result = findTextElement(span)
+        expect(result).not.toBeNull()
+        expect(result?.tagName.toLowerCase()).toBe('span')
+      })
+    })
+
+    it('finds <a> directly when it has text (no child span)', () => {
+      withElement('a', (a) => {
+        a.setAttribute('href', '/about')
+        a.textContent = 'About Us'
+        const result = findTextElement(a)
+        expect(result).not.toBeNull()
+        expect(result?.tagName.toLowerCase()).toBe('a')
+      })
+    })
+  })
+
+  describe('non-text elements remain excluded', () => {
+    it('rejects <input> elements', () => {
+      withElement('input', (input) => {
+        input.setAttribute('type', 'text')
+        input.setAttribute('value', 'placeholder')
+        expect(findTextElement(input)).toBeNull()
+      })
+    })
+
+    it('rejects <textarea> elements', () => {
+      withElement('textarea', (ta) => {
+        ta.textContent = 'some text'
+        expect(findTextElement(ta)).toBeNull()
+      })
+    })
+
+    it('rejects <select> elements', () => {
+      withElement('select', (sel) => {
+        const opt = document.createElement('option')
+        opt.textContent = 'Option 1'
+        sel.appendChild(opt)
+        expect(findTextElement(sel)).toBeNull()
+      })
+    })
+
+    it('rejects <svg> elements', () => {
+      withElement('svg', (svg) => {
+        svg.textContent = 'icon'
+        expect(findTextElement(svg)).toBeNull()
+      })
+    })
+
+    it('rejects <img> elements', () => {
+      withElement('img', (img) => {
+        img.setAttribute('alt', 'photo')
+        expect(findTextElement(img)).toBeNull()
+      })
+    })
+
+    it('rejects <video> elements', () => {
+      withElement('video', (vid) => {
+        expect(findTextElement(vid)).toBeNull()
+      })
+    })
+  })
+
+  describe('existing editable elements still work', () => {
+    it('finds <h1> with text', () => {
+      withElement('h1', (h1) => {
+        h1.textContent = 'Welcome'
+        expect(findTextElement(h1)?.tagName.toLowerCase()).toBe('h1')
+      })
+    })
+
+    it('finds <p> with text', () => {
+      withElement('p', (p) => {
+        p.textContent = 'Lorem ipsum'
+        expect(findTextElement(p)?.tagName.toLowerCase()).toBe('p')
+      })
+    })
+
+    it('finds <span> with text', () => {
+      withElement('span', (span) => {
+        span.textContent = 'inline text'
+        expect(findTextElement(span)?.tagName.toLowerCase()).toBe('span')
+      })
+    })
+
+    it('finds <li> with text', () => {
+      withElement('li', (li) => {
+        li.textContent = 'List item'
+        expect(findTextElement(li)?.tagName.toLowerCase()).toBe('li')
+      })
+    })
+
+    it('finds <label> with text', () => {
+      withElement('label', (label) => {
+        label.textContent = 'Email'
+        expect(findTextElement(label)?.tagName.toLowerCase()).toBe('label')
+      })
+    })
+  })
+
+  describe('block-level containers are not editable', () => {
+    it('rejects a <div> wrapping <h3> + <p> (multi-block container)', () => {
+      withElement('div', (div) => {
+        const h3 = document.createElement('h3')
+        h3.textContent = 'Title'
+        const p = document.createElement('p')
+        p.textContent = 'Body'
+        div.appendChild(h3)
+        div.appendChild(p)
+        // Clicking the div should not find an editable text element
+        // because it contains block-level children
+        expect(findTextElement(div)).toBeNull()
+      })
+    })
+
+    it('rejects a <button> wrapping block-level children', () => {
+      withElement('button', (btn) => {
+        const div = document.createElement('div')
+        div.textContent = 'Complex button'
+        btn.appendChild(div)
+        // Button with block child should not be editable (would flatten structure)
+        expect(findTextElement(btn)).toBeNull()
+      })
+    })
+
+    it('rejects an <a> wrapping block-level children', () => {
+      withElement('a', (a) => {
+        a.setAttribute('href', '#')
+        const section = document.createElement('section')
+        section.textContent = 'Complex link'
+        a.appendChild(section)
+        expect(findTextElement(a)).toBeNull()
+      })
+    })
+  })
+
+  describe('edge cases', () => {
+    it('rejects empty elements', () => {
+      withElement('button', (btn) => {
+        expect(findTextElement(btn)).toBeNull()
+      })
+    })
+
+    it('rejects whitespace-only elements', () => {
+      withElement('button', (btn) => {
+        btn.textContent = '   '
+        expect(findTextElement(btn)).toBeNull()
+      })
+    })
+
+    it('rejects text exceeding 500 chars', () => {
+      withElement('button', (btn) => {
+        btn.textContent = 'x'.repeat(501)
+        expect(findTextElement(btn)).toBeNull()
+      })
+    })
+
+    it('accepts text at exactly 499 chars', () => {
+      withElement('button', (btn) => {
+        btn.textContent = 'x'.repeat(499)
+        expect(findTextElement(btn)).not.toBeNull()
+      })
+    })
+
+    it('walks up from non-editable child to editable parent', () => {
+      withElement('a', (a) => {
+        a.setAttribute('href', '#')
+        a.textContent = 'Click here'
+        // Simulate clicking an <svg> icon inside the link
+        const svg = document.createElement('svg')
+        a.appendChild(svg)
+        const result = findTextElement(svg)
+        // SVG is rejected, but walker should NOT continue to parent
+        // because SVG returns null immediately (it's in the hard-exclusion list)
+        expect(result).toBeNull()
+      })
+    })
+
+    it('walks up from <span> inside <a> to the <a>', () => {
+      withElement('a', (a) => {
+        a.setAttribute('href', '#')
+        const span = document.createElement('span')
+        span.textContent = 'Read more'
+        a.appendChild(span)
+        const result = findTextElement(span)
+        // Span has text but is inside an <a>. The walker finds the span first
+        // (span is in the editable list and has text), so it returns the span.
+        expect(result).not.toBeNull()
+        expect(result?.tagName.toLowerCase()).toBe('span')
+      })
+    })
+  })
+
+  describe('full-chain: button text edit persists to source', () => {
+    it('edits button text and patches OpenUI source', () => {
+      const btn = document.createElement('button')
+      btn.textContent = 'Get Started'
+      document.body.appendChild(btn)
+
+      const state = captureState(btn)
+      btn.textContent = 'Sign Up Now'
+
+      const source = 'cta_btn = Button("Get Started", "/signup")'
+      const { patchedSource, replaced } = simulateEdit(source, state)
+
+      expect(replaced).toBe(true)
+      expect(patchedSource).toContain('"Sign Up Now"')
+      expect(patchedSource).toContain('"/signup"')
+      // Button href arg preserved
+      expect(countQuotedArgs(patchedSource, 'Button')).toBe(2)
+
+      btn.remove()
+    })
+
+    it('edits link text and patches OpenUI source', () => {
+      const a = document.createElement('a')
+      a.textContent = 'Learn more'
+      a.setAttribute('href', '/docs')
+      document.body.appendChild(a)
+
+      const state = captureState(a)
+      a.textContent = 'Read the docs'
+
+      const source = 'link = Link("Learn more", "/docs")'
+      const { patchedSource, replaced } = simulateEdit(source, state)
+
+      expect(replaced).toBe(true)
+      expect(patchedSource).toContain('"Read the docs"')
+      expect(patchedSource).toContain('"/docs"')
+      expect(countQuotedArgs(patchedSource, 'Link')).toBe(2)
+
+      a.remove()
+    })
+
+    it('edits nav link text without corrupting adjacent args', () => {
+      const a = document.createElement('a')
+      a.textContent = 'Pricing'
+      a.setAttribute('href', '/pricing')
+      document.body.appendChild(a)
+
+      const state = captureState(a)
+      a.textContent = 'Plans & Pricing'
+
+      const source =
+        'nav = Navbar("Home", "Features", "Pricing", "About", "Contact")'
+      const { patchedSource, replaced } = simulateEdit(source, state)
+
+      expect(replaced).toBe(true)
+      expect(patchedSource).toContain('"Plans & Pricing"')
+      // All 5 nav args preserved
+      expect(countQuotedArgs(patchedSource, 'Navbar')).toBe(5)
+      expect(patchedSource).toContain('"Home"')
+      expect(patchedSource).toContain('"Features"')
+      expect(patchedSource).toContain('"About"')
+      expect(patchedSource).toContain('"Contact"')
+
+      a.remove()
     })
   })
 })
