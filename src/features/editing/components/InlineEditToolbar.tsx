@@ -10,6 +10,8 @@ import {
   X,
   Bold,
   Italic,
+  Underline,
+  Strikethrough,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -124,6 +126,9 @@ export function InlineEditToolbar({
   const [fontSizeUnit, setFontSizeUnit] = useState('px')
   const [isBold, setIsBold] = useState(false)
   const [isItalic, setIsItalic] = useState(false)
+  const [isUnderline, setIsUnderline] = useState(false)
+  const [isStrikethrough, setIsStrikethrough] = useState(false)
+  const [fontWeight, setFontWeight] = useState('400')
   const [color, setColor] = useState('#ffffff')
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>(
     'left',
@@ -239,6 +244,21 @@ export function InlineEditToolbar({
     }
     setIsBold(computed.fontWeight === '700' || computed.fontWeight === 'bold')
     setIsItalic(computed.fontStyle === 'italic')
+    setIsUnderline(
+      computed.textDecorationLine === 'underline' ||
+        computed.textDecoration === 'underline',
+    )
+    setIsStrikethrough(
+      computed.textDecorationLine === 'line-through' ||
+        computed.textDecoration === 'line-through',
+    )
+    // Parse font weight: could be numeric (100-900) or keyword
+    const fw = computed.fontWeight
+    if (fw === 'bold') setFontWeight('700')
+    else if (fw === 'normal') setFontWeight('400')
+    else if (fw === 'lighter') setFontWeight('300')
+    else if (fw === 'bolder') setFontWeight('600')
+    else setFontWeight(fw || '400')
     const rgbColor = computed.color || '#ffffff'
     if (rgbColor.startsWith('rgb')) {
       const rgbMatch = rgbColor.match(/\d+/g)
@@ -282,8 +302,14 @@ export function InlineEditToolbar({
       return
 
     activeElement.style.fontSize = `${fontSize}${fontSizeUnit}`
-    activeElement.style.fontWeight = isBold ? '700' : '400'
+    activeElement.style.fontWeight = isBold ? '700' : fontWeight
     activeElement.style.fontStyle = isItalic ? 'italic' : 'normal'
+    // Combine underline + strikethrough into text-decoration-line
+    const decorations: string[] = []
+    if (isUnderline) decorations.push('underline')
+    if (isStrikethrough) decorations.push('line-through')
+    activeElement.style.textDecorationLine =
+      decorations.length > 0 ? decorations.join(' ') : 'none'
     activeElement.style.color = color
     activeElement.style.textAlign = alignment
   }, [
@@ -291,6 +317,9 @@ export function InlineEditToolbar({
     fontSizeUnit,
     isBold,
     isItalic,
+    isUnderline,
+    isStrikethrough,
+    fontWeight,
     color,
     alignment,
     activeElement,
@@ -566,6 +595,42 @@ export function InlineEditToolbar({
                 aria-label="Italic"
               >
                 <Italic className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  markUserModified()
+                  setIsUnderline(!isUnderline)
+                }}
+                disabled={isApplying || isForking}
+                className={cn(
+                  'grid size-7 place-items-center rounded transition-colors',
+                  isUnderline
+                    ? 'bg-cyan-300/20 text-cyan-100'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                )}
+                aria-label="Underline"
+              >
+                <Underline className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  markUserModified()
+                  setIsStrikethrough(!isStrikethrough)
+                }}
+                disabled={isApplying || isForking}
+                className={cn(
+                  'grid size-7 place-items-center rounded transition-colors',
+                  isStrikethrough
+                    ? 'bg-cyan-300/20 text-cyan-100'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                )}
+                aria-label="Strikethrough"
+              >
+                <Strikethrough className="size-3.5" />
               </button>
             </div>
           )}

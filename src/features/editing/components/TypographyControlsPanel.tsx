@@ -37,11 +37,24 @@ const TEXT_TRANSFORMS = [
   { label: 'Cap', value: 'capitalize' },
 ] as const
 
+const FONT_WEIGHTS: Array<{ label: string; value: string }> = [
+  { label: 'Thin', value: '100' },
+  { label: 'Extra Light', value: '200' },
+  { label: 'Light', value: '300' },
+  { label: 'Regular', value: '400' },
+  { label: 'Medium', value: '500' },
+  { label: 'Semi Bold', value: '600' },
+  { label: 'Bold', value: '700' },
+  { label: 'Extra Bold', value: '800' },
+  { label: 'Black', value: '900' },
+]
+
 export function TypographyControlsPanel({
   activeElement,
   onModified,
 }: TypographyControlsPanelProps) {
   const [fontFamily, setFontFamily] = useState('')
+  const [fontWeight, setFontWeight] = useState('400')
   const [lineHeight, setLineHeight] = useState('')
   const [lineHeightNormal, setLineHeightNormal] = useState(true)
   const [letterSpacing, setLetterSpacing] = useState('')
@@ -56,6 +69,12 @@ export function TypographyControlsPanel({
     if (!activeElement) return
     const computed = window.getComputedStyle(activeElement)
     setFontFamily(computed.fontFamily || '')
+    const fw = computed.fontWeight
+    if (fw === 'bold') setFontWeight('700')
+    else if (fw === 'normal') setFontWeight('400')
+    else if (fw === 'lighter') setFontWeight('300')
+    else if (fw === 'bolder') setFontWeight('600')
+    else setFontWeight(fw || '400')
     const lh = computed.lineHeight
     setLineHeight(lh)
     setLineHeightNormal(lh === 'normal')
@@ -99,6 +118,31 @@ export function TypographyControlsPanel({
               {FONT_FAMILIES.map((f) => (
                 <SelectItem key={f.label} value={f.value}>
                   {f.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </InputGroup>
+      </div>
+
+      {/* Font Weight */}
+      <div className="flex items-center gap-2">
+        <span className={labelCls + ' w-12 shrink-0'}>Weight</span>
+        <InputGroup>
+          <Select
+            value={fontWeight}
+            onValueChange={(v) => {
+              setFontWeight(v)
+              applyLiveStyle('font-weight', v)
+            }}
+          >
+            <SelectTrigger className="h-auto w-full border-0 bg-transparent text-xs text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {FONT_WEIGHTS.map((w) => (
+                <SelectItem key={w.value} value={w.value}>
+                  {w.label}
                 </SelectItem>
               ))}
             </SelectContent>
