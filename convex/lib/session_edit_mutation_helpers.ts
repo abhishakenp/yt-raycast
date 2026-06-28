@@ -113,6 +113,66 @@ export const applyTextEditToCurrentArtifacts = async (
   return { openUiSource, siteSpecJson, openUiReplaced, siteSpecReplaced }
 }
 
+/**
+ * Patch homeModule.source + siteSpec for an ai_rewrite edit that carries
+ * beforeText/afterText. Unlike a targeted text edit, an AI rewrite replaces
+ * the rewritten text everywhere it appears (the AI regenerates the full
+ * HTML with every occurrence swapped), so we replace ALL occurrences in the
+ * source — not just one — otherwise stale copies survive in
+ * homeModule.source and re-emerge on reload.
+ */
+const applyAiRewriteToCurrentArtifacts = async (
+  ctx: MutationCtx,
+  sessionId: Id<'sessions'>,
+  beforeText: string,
+  afterText: string,
+  now: number,
+): Promise<{ openUiSource?: string; siteSpecJson?: string }> => {
+  const [homeModule, siteSpec] = await getCurrentHomeModuleAndSiteSpec(
+    ctx,
+    sessionId,
+  )
+  let openUiSource = homeModule?.source
+  let siteSpecJson = siteSpec?.specJson ?? siteSpec?.spec
+
+  if (homeModule !== null && openUiSource !== undefined) {
+    if (openUiSource.includes(beforeText)) {
+      openUiSource = openUiSource.split(beforeText).join(afterText)
+      await ctx.db.patch(homeModule._id, {
+        source: openUiSource,
+        status: 'succeeded',
+        errorMessage: undefined,
+        updatedAt: now,
+      })
+    }
+  }
+
+  if (siteSpec !== null && siteSpecJson !== undefined) {
+    try {
+      const parsed: unknown = JSON.parse(siteSpecJson)
+      const stringified = JSON.stringify(parsed)
+      if (stringified.includes(beforeText)) {
+        const patched = stringified.split(beforeText).join(afterText)
+        siteSpecJson = patched
+        await ctx.db.patch(siteSpec._id, {
+          specJson: siteSpecJson,
+          updatedAt: now,
+        })
+      }
+    } catch {
+      if (siteSpecJson.includes(beforeText)) {
+        siteSpecJson = siteSpecJson.split(beforeText).join(afterText)
+        await ctx.db.patch(siteSpec._id, {
+          specJson: siteSpecJson,
+          updatedAt: now,
+        })
+      }
+    }
+  }
+
+  return { openUiSource, siteSpecJson }
+}
+
 const snapshotCurrentArtifacts = async (
   ctx: MutationCtx,
   sessionId: Id<'sessions'>,
@@ -180,7 +240,10 @@ export const applySessionEdit = async (
       })
     })()
 
-  const editedPreview =
+  let openUiSource: string | undefined
+  let siteSpecJson: string | undefined
+
+  let editedPreview =
     args.afterHtml !== undefined
       ? { html: args.afterHtml, replaced: true }
       : args.editType === 'image'
@@ -204,6 +267,43 @@ export const applySessionEdit = async (
               args.occurrenceIndex,
             )
 
+  let sourceAlreadyPatched = false
+  if (!editedPreview.replaced) {
+    // Style edits: the stored preview.html is OpenUI source code, not rendered
+    // HTML — it has no `class="..."` attributes for applyStyleEdit to anchor on.
+    // Style edits are reapplied client-side from the edit history (via
+    // styleOverrides in DirectPreview), so we just need to save the edit record
+    // and create a new preview version. Don't throw TEXT_NOT_FOUND for styles.
+    if (args.editType === 'style') {
+      editedPreview = { html: preview.html, replaced: true }
+    } else {
+      // Text edits: fall back to searching the OpenUI source directly.
+      const [homeModuleForFallback] = await getCurrentHomeModuleAndSiteSpec(
+        ctx,
+        sessionId,
+      )
+      if (homeModuleForFallback !== null) {
+        const sourceEdit = applyPreviewTextEdit(
+          homeModuleForFallback.source,
+          args.beforeText,
+          args.afterText,
+          args.occurrenceIndex,
+        )
+        if (sourceEdit.replaced) {
+          await ctx.db.patch(homeModuleForFallback._id, {
+            source: sourceEdit.html,
+            status: 'succeeded',
+            errorMessage: undefined,
+            updatedAt: now,
+          })
+          editedPreview = { html: sourceEdit.html, replaced: true }
+          sourceAlreadyPatched = true
+          openUiSource = sourceEdit.html
+        }
+      }
+    }
+  }
+
   if (!editedPreview.replaced) {
     throw new ConvexError({
       code: 'TEXT_NOT_FOUND',
@@ -219,15 +319,33 @@ export const applySessionEdit = async (
   // Text edits must patch the canonical generated artifacts (homeModule.source
   // + siteSpec) in addition to the preview, because the Dashboard renders from
   // homeModule.source — patching only preview.html makes edits vanish on
-  // reload. Image/style/ai_rewrite edits keep the snapshot pattern: their
-  // overrides are reapplied client-side from the recorded edit history.
-  let openUiSource: string | undefined
-  let siteSpecJson: string | undefined
-  if (
+  // reload. ai_rewrite edits that carry beforeText/afterText also patch the
+  // source for the same reason; ai_rewrite edits that only provide afterHtml
+  // (and image/style edits) keep the snapshot pattern: their overrides are
+  // reapplied client-side from the recorded edit history.
+  // If sourceAlreadyPatched is true (source fallback matched), skip this step.
+  const isTextPatchEdit =
     args.afterHtml === undefined &&
     args.editType !== 'style' &&
     args.editType !== 'image'
-  ) {
+  const isAiRewriteTextPatchEdit =
+    args.editType === 'ai_rewrite' &&
+    args.afterHtml !== undefined &&
+    args.beforeText !== undefined &&
+    args.afterText !== undefined
+  if (sourceAlreadyPatched) {
+    // Source was already patched in the fallback above — nothing more to do.
+  } else if (isAiRewriteTextPatchEdit) {
+    const artifactSnapshot = await applyAiRewriteToCurrentArtifacts(
+      ctx,
+      sessionId,
+      args.beforeText as string,
+      args.afterText as string,
+      now,
+    )
+    openUiSource = artifactSnapshot.openUiSource
+    siteSpecJson = artifactSnapshot.siteSpecJson
+  } else if (isTextPatchEdit) {
     const artifactSnapshot = await applyTextEditToCurrentArtifacts(
       ctx,
       sessionId,

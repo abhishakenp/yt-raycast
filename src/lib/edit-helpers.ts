@@ -24,6 +24,23 @@ const escapeHtml = (str: string): string =>
 const escapeRegExp = (str: string): string =>
   str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
+/** Split oldText into word-only tokens and join with a pattern that matches
+ *  any sequence of non-word characters or HTML tags between them. This
+ *  handles the case where the client's diffEdits fallback produces oldText
+ *  from element.textContent, which strips <br> tags and other inline markup,
+ *  creating a string that doesn't exist verbatim in the stored HTML or OpenUI
+ *  source (where text fragments are separated by <br/> tags or ", " string-
+ *  argument delimiters). */
+const createAggressiveSeparatorPattern = (value: string): RegExp | null => {
+  const tokens = value.trim().split(/\W+/).filter(Boolean)
+  if (tokens.length === 0) return null
+  // Separator: HTML tags, HTML entities (&quot; &amp; etc.), or non-word chars.
+  // Entities contain word chars (e.g. "quot" in &quot;) so they must be listed
+  // explicitly — \W alone won't match them.
+  const sep = '(?:<[^>]+>|&[a-zA-Z]+;|&#\\d+;|\\W)+'
+  return new RegExp(tokens.map(escapeRegExp).join(sep))
+}
+
 const createMarkupTolerantTextPattern = (value: string): RegExp | null => {
   const trimmed = value.trim()
   if (!trimmed) return null
@@ -382,5 +399,31 @@ const collectTextMatches = (
   // normalization. Handles every encoding case tiers 1 and 2 miss. This is the
   // guarantee that TEXT_NOT_FOUND never fires as long as the text exists.
   const ranges = findTextRangesInHtml(text, from)
-  return ranges.map((r) => ({ index: r.start, length: r.end - r.start }))
+  if (ranges.length > 0) {
+    return ranges.map((r) => ({ index: r.start, length: r.end - r.start }))
+  }
+
+  // Tier 4: aggressive separator-tolerant pattern. When oldText is flattened
+  // textContent spanning <br> tags or OpenUI string arguments (separated by
+  // ", " delimiters), split into word tokens and match with any non-word
+  // separator or HTML tag sequence between them. This catches the case where
+  // the client's diffEdits fallback produces oldText from element.textContent
+  // which strips <br> tags, creating a string that doesn't exist verbatim.
+  const aggressivePattern = createAggressiveSeparatorPattern(from)
+  if (aggressivePattern !== null) {
+    const globalAggressive = new RegExp(aggressivePattern.source, 'g')
+    const aggressive: Array<{ index: number; length: number }> = []
+    let amatch: RegExpExecArray | null
+    while ((amatch = globalAggressive.exec(text)) !== null) {
+      if (amatch[0].length === 0) {
+        globalAggressive.lastIndex += 1
+        continue
+      }
+      aggressive.push({ index: amatch.index, length: amatch[0].length })
+      globalAggressive.lastIndex = amatch.index + amatch[0].length
+    }
+    if (aggressive.length > 0) return aggressive
+  }
+
+  return []
 }

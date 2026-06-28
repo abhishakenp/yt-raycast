@@ -1,0 +1,407 @@
+import { describe, it, expect } from 'vitest'
+import { JSDOM } from 'jsdom'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { createElement } from 'react'
+
+import { applyImageSwap } from '@/lib/edit-helpers'
+import { Image } from '../../../packages/ship-fast-blocks/src/lib/img'
+
+/**
+ * Image swap edit persistence contract tests.
+ *
+ * Full chain: applyImageSwap (server patches preview.html) → edit record
+ * stored → client rebuilds imageOverrides from edit history → Image component
+ * reads override from context → swap persists on reload.
+ *
+ * Key architectural decisions verified:
+ * - Anchoring on `alt` (stable) not `src` (varies between stored/live DOM)
+ * - Occurrence index disambiguates images sharing the same alt
+ * - Image edits do NOT patch homeModule.source (unlike text edits) — they
+ *   are reapplied client-side via imageOverrides → ImageContextProvider
+ * - Override priority: explicit src prop > override > Pexels lookup
+ */
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+
+const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>')
+globalThis.document = dom.window.document as unknown as Document
+globalThis.window = dom.window as unknown as Window & typeof globalThis
+
+/**
+ * Build imageOverrides from edit history — mirrors Dashboard.tsx logic.
+ * Maps alt → newSrc for all image edits.
+ */
+function buildImageOverrides(
+  edits: Array<{
+    editType: string
+    beforeText: string | undefined
+    afterText: string | undefined
+  }>,
+): Record<string, string> {
+  const map: Record<string, string> = {}
+  for (const edit of edits) {
+    if (
+      edit.editType === 'image' &&
+      typeof edit.beforeText === 'string' &&
+      typeof edit.afterText === 'string' &&
+      !(edit.beforeText in map)
+    ) {
+      // edits are newest-first, so the first seen alt wins (latest swap).
+      map[edit.beforeText] = edit.afterText
+    }
+  }
+  return map
+}
+
+// ─── Tests: applyImageSwap (server-side patching) ─────────────────────────
+
+describe('image edit persistence: applyImageSwap on rendered HTML', () => {
+  it('replaces src on img matching alt anchor', () => {
+    const html = '<img alt="Hero" src="/old.jpg" />'
+    const result = applyImageSwap(html, 'Hero', '/new.jpg')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="/new.jpg"')
+    expect(result.html).toContain('alt="Hero"')
+    expect(result.html).not.toContain('/old.jpg')
+  })
+
+  it('preserves other attributes when swapping src', () => {
+    const html =
+      '<img alt="Product" src="/old.png" class="w-full rounded" loading="lazy" width="400" height="300" />'
+    const result = applyImageSwap(html, 'Product', '/new.png')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="/new.png"')
+    expect(result.html).toContain('class="w-full rounded"')
+    expect(result.html).toContain('loading="lazy"')
+    expect(result.html).toContain('width="400"')
+    expect(result.html).toContain('height="300"')
+  })
+
+  it('targets correct occurrence when multiple images share alt', () => {
+    const html =
+      '<img alt="product" src="/a.png"><img alt="product" src="/b.png"><img alt="product" src="/c.png">'
+    const result = applyImageSwap(html, 'product', '/new.png', 1)
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="/a.png"')
+    expect(result.html).toContain('src="/new.png"')
+    expect(result.html).toContain('src="/c.png"')
+    expect(result.html).not.toContain('src="/b.png"')
+  })
+
+  it('defaults to first occurrence when no index specified', () => {
+    const html =
+      '<img alt="photo" src="/first.jpg"><img alt="photo" src="/second.jpg">'
+    const result = applyImageSwap(html, 'photo', '/replacement.jpg')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="/replacement.jpg"')
+    expect(result.html).toContain('src="/second.jpg"')
+  })
+
+  it('clamps occurrenceIndex to last available image', () => {
+    const html = '<img alt="single" src="/only.jpg">'
+    const result = applyImageSwap(html, 'single', '/new.jpg', 5)
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="/new.jpg"')
+  })
+
+  it('returns replaced:false when alt not found', () => {
+    const html = '<img alt="Hero" src="/old.jpg" />'
+    const result = applyImageSwap(html, 'Nonexistent', '/new.jpg')
+    expect(result.replaced).toBe(false)
+    expect(result.html).toBe(html)
+  })
+
+  it('returns replaced:false when no images in HTML', () => {
+    const html = '<div>No images here</div>'
+    const result = applyImageSwap(html, 'Hero', '/new.jpg')
+    expect(result.replaced).toBe(false)
+  })
+
+  it('returns replaced:false for empty alt', () => {
+    const html = '<img alt="" src="/old.jpg" />'
+    const result = applyImageSwap(html, '', '/new.jpg')
+    expect(result.replaced).toBe(false)
+  })
+
+  it('handles single-quoted alt attributes', () => {
+    const html = "<img alt='Hero' src='/old.jpg' />"
+    const result = applyImageSwap(html, 'Hero', '/new.jpg')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="/new.jpg"')
+  })
+
+  it('escapes double quotes in new src URL', () => {
+    const html = '<img alt="Hero" src="/old.jpg" />'
+    const result = applyImageSwap(html, 'Hero', '/path?query="test"')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('&quot;test&quot;')
+  })
+
+  it('handles URLs with query parameters and fragments', () => {
+    const html = '<img alt="Hero" src="/old.jpg" />'
+    const newSrc = 'https://cdn.example.com/img.jpg?w=400&h=300#fragment'
+    const result = applyImageSwap(html, 'Hero', newSrc)
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain(`src="${newSrc}"`)
+  })
+
+  it('appends src attribute when img tag has none', () => {
+    const html = '<img alt="Hero">'
+    const result = applyImageSwap(html, 'Hero', '/new.jpg')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="/new.jpg"')
+    expect(result.html).toContain('alt="Hero"')
+  })
+
+  it('only swaps images matching alt, leaves others untouched', () => {
+    const html =
+      '<img alt="Hero" src="/hero-old.jpg"><img alt="Logo" src="/logo.png"><img alt="Banner" src="/banner.gif">'
+    const result = applyImageSwap(html, 'Logo', '/new-logo.png')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="/hero-old.jpg"')
+    expect(result.html).toContain('src="/new-logo.png"')
+    expect(result.html).toContain('src="/banner.gif"')
+  })
+})
+
+// ─── Tests: imageOverrides construction from edit history ─────────────────
+
+describe('image edit persistence: imageOverrides from edit history', () => {
+  it('builds alt→src map from image edits only', () => {
+    const edits = [
+      { editType: 'image', beforeText: 'Hero', afterText: '/new-hero.jpg' },
+      { editType: 'text', beforeText: 'Hello', afterText: 'Hi' },
+      { editType: 'image', beforeText: 'Logo', afterText: '/new-logo.png' },
+      { editType: 'style', beforeText: 'hero-title', afterText: 'color: red;' },
+    ]
+    const overrides = buildImageOverrides(edits)
+    expect(Object.keys(overrides)).toHaveLength(2)
+    expect(overrides['Hero']).toBe('/new-hero.jpg')
+    expect(overrides['Logo']).toBe('/new-logo.png')
+  })
+
+  it('latest image edit wins (edits are newest-first)', () => {
+    const edits = [
+      { editType: 'image', beforeText: 'Hero', afterText: '/latest.jpg' },
+      { editType: 'image', beforeText: 'Hero', afterText: '/older.jpg' },
+    ]
+    const overrides = buildImageOverrides(edits)
+    expect(overrides['Hero']).toBe('/latest.jpg')
+  })
+
+  it('ignores edits with missing beforeText or afterText', () => {
+    const edits = [
+      { editType: 'image', beforeText: undefined, afterText: '/new.jpg' },
+      { editType: 'image', beforeText: 'Hero', afterText: undefined },
+      { editType: 'image', beforeText: 'Logo', afterText: '/logo.png' },
+    ]
+    const overrides = buildImageOverrides(edits)
+    expect(Object.keys(overrides)).toHaveLength(1)
+    expect(overrides['Logo']).toBe('/logo.png')
+  })
+
+  it('handles empty edit history', () => {
+    const overrides = buildImageOverrides([])
+    expect(Object.keys(overrides)).toHaveLength(0)
+  })
+})
+
+// ─── Tests: Image component override reapply (client-side) ────────────────
+
+describe('image edit persistence: Image component override reapply', () => {
+  it('uses override src from context overrides', () => {
+    const markup = renderToStaticMarkup(
+      createElement(Image, {
+        alt: 'Hero image',
+        context: {
+          overrides: { 'Hero image': 'https://cdn.example.com/override.jpg' },
+        },
+      }),
+    )
+    expect(markup).toContain('src="https://cdn.example.com/override.jpg"')
+    expect(markup).not.toContain('/api/pexels')
+  })
+
+  it('override takes precedence over Pexels lookup', () => {
+    const markup = renderToStaticMarkup(
+      createElement(Image, {
+        alt: 'Product photo',
+        context: {
+          overrides: { 'Product photo': 'https://cdn.example.com/product.jpg' },
+        },
+      }),
+    )
+    expect(markup).toContain('https://cdn.example.com/product.jpg')
+    expect(markup).not.toContain('/api/pexels')
+  })
+
+  it('falls back to Pexels when no override exists for alt', () => {
+    const markup = renderToStaticMarkup(
+      createElement(Image, {
+        alt: 'Unknown image',
+        context: {
+          overrides: { 'Other image': '/other.jpg' },
+        },
+      }),
+    )
+    // No override for "Unknown image" → should use Pexels proxy
+    expect(markup).toContain('/api/pexels')
+  })
+
+  it('falls back to Pexels when no context provided', () => {
+    const markup = renderToStaticMarkup(
+      createElement(Image, {
+        alt: 'Some image',
+      }),
+    )
+    expect(markup).toContain('/api/pexels')
+  })
+
+  it('handles multiple overrides in same context', () => {
+    const overrides = {
+      Hero: '/hero.jpg',
+      Logo: '/logo.png',
+      Banner: '/banner.gif',
+    }
+    const heroMarkup = renderToStaticMarkup(
+      createElement(Image, { alt: 'Hero', context: { overrides } }),
+    )
+    const logoMarkup = renderToStaticMarkup(
+      createElement(Image, { alt: 'Logo', context: { overrides } }),
+    )
+    expect(heroMarkup).toContain('src="/hero.jpg"')
+    expect(logoMarkup).toContain('src="/logo.png"')
+  })
+})
+
+// ─── Tests: full chain (edit history → overrides → Image reapply) ─────────
+
+describe('image edit persistence: full chain', () => {
+  it('full chain: edit history → imageOverrides → Image renders override', () => {
+    // Simulate reload flow:
+    // 1. Edit history loaded from server
+    // 2. Dashboard builds imageOverrides from edits
+    // 3. Image component receives overrides via context
+
+    const editHistory = [
+      {
+        editType: 'image',
+        beforeText: 'Hero banner',
+        afterText: 'https://cdn.example.com/new-hero.jpg',
+      },
+    ]
+
+    // Step 2: Build overrides
+    const overrides = buildImageOverrides(editHistory)
+    expect(overrides['Hero banner']).toBe(
+      'https://cdn.example.com/new-hero.jpg',
+    )
+
+    // Step 3: Image component renders with override
+    const markup = renderToStaticMarkup(
+      createElement(Image, {
+        alt: 'Hero banner',
+        context: { overrides },
+      }),
+    )
+    expect(markup).toContain('https://cdn.example.com/new-hero.jpg')
+    expect(markup).not.toContain('/api/pexels')
+  })
+
+  it('full chain: multiple image swaps persist independently', () => {
+    const editHistory = [
+      { editType: 'image', beforeText: 'Hero', afterText: '/hero-new.jpg' },
+      {
+        editType: 'image',
+        beforeText: 'Product',
+        afterText: '/product-new.jpg',
+      },
+      { editType: 'image', beforeText: 'Footer', afterText: '/footer-new.jpg' },
+    ]
+
+    const overrides = buildImageOverrides(editHistory)
+
+    for (const [alt, expectedSrc] of Object.entries(overrides)) {
+      const markup = renderToStaticMarkup(
+        createElement(Image, { alt, context: { overrides } }),
+      )
+      expect(markup).toContain(`src="${expectedSrc}"`)
+    }
+  })
+
+  it('full chain: latest swap wins for same alt', () => {
+    const editHistory = [
+      { editType: 'image', beforeText: 'Hero', afterText: '/latest.jpg' },
+      { editType: 'image', beforeText: 'Hero', afterText: '/older.jpg' },
+    ]
+
+    const overrides = buildImageOverrides(editHistory)
+    expect(overrides['Hero']).toBe('/latest.jpg')
+
+    const markup = renderToStaticMarkup(
+      createElement(Image, { alt: 'Hero', context: { overrides } }),
+    )
+    expect(markup).toContain('src="/latest.jpg"')
+    expect(markup).not.toContain('/older.jpg')
+  })
+
+  it('full chain: server patches preview.html, client reapply agrees', () => {
+    // Server side: applyImageSwap patches the stored preview.html
+    const storedHtml =
+      '<img alt="Hero" src="https://api.pexels.com/v1/search?query=food" />'
+    const serverResult = applyImageSwap(storedHtml, 'Hero', '/cdn/new-hero.jpg')
+    expect(serverResult.replaced).toBe(true)
+
+    // Client side: same edit recorded, override built, Image renders
+    const editHistory = [
+      { editType: 'image', beforeText: 'Hero', afterText: '/cdn/new-hero.jpg' },
+    ]
+    const overrides = buildImageOverrides(editHistory)
+    const markup = renderToStaticMarkup(
+      createElement(Image, { alt: 'Hero', context: { overrides } }),
+    )
+
+    // Both server-patched HTML and client-rendered Image show the same src
+    expect(serverResult.html).toContain('src="/cdn/new-hero.jpg"')
+    expect(markup).toContain('src="/cdn/new-hero.jpg"')
+  })
+})
+
+// ─── Tests: occurrence index disambiguation ───────────────────────────────
+
+describe('image edit persistence: occurrence index disambiguation', () => {
+  it('swaps 2nd of 3 images with same alt', () => {
+    const html = `
+      <div class="gallery">
+        <img alt="photo" src="/photo-1.jpg">
+        <img alt="photo" src="/photo-2.jpg">
+        <img alt="photo" src="/photo-3.jpg">
+      </div>
+    `
+    const result = applyImageSwap(html, 'photo', '/replacement.jpg', 1)
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="/photo-1.jpg"')
+    expect(result.html).toContain('src="/replacement.jpg"')
+    expect(result.html).toContain('src="/photo-3.jpg"')
+    expect(result.html).not.toContain('src="/photo-2.jpg"')
+  })
+
+  it('swaps last occurrence', () => {
+    const html =
+      '<img alt="icon" src="/a.svg"><img alt="icon" src="/b.svg"><img alt="icon" src="/c.svg">'
+    const result = applyImageSwap(html, 'icon', '/new.svg', 2)
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="/a.svg"')
+    expect(result.html).toContain('src="/b.svg"')
+    expect(result.html).toContain('src="/new.svg"')
+  })
+
+  it('swaps first occurrence (index 0)', () => {
+    const html = '<img alt="icon" src="/a.svg"><img alt="icon" src="/b.svg">'
+    const result = applyImageSwap(html, 'icon', '/new.svg', 0)
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('src="/new.svg"')
+    expect(result.html).toContain('src="/b.svg"')
+    expect(result.html).not.toContain('src="/a.svg"')
+  })
+})
