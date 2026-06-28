@@ -430,7 +430,9 @@ export function InlineEditToolbar({
   const tag = activeElement.tagName.toLowerCase()
   const isLinkElement = tag === 'a'
   const isImageElement = tag === 'img'
-  // Text elements: show font size, bold, italic, color, alignment, typography
+  // Text elements: show font size, bold, italic, color, alignment, typography.
+  // Mirrors findTextElement in useTextEdit.ts — any tag that can be a
+  // contentEditable text leaf gets the full text toolbar.
   const isTextElement = [
     'p',
     'h1',
@@ -440,12 +442,17 @@ export function InlineEditToolbar({
     'h5',
     'h6',
     'span',
+    'div',
     'a',
     'button',
     'label',
     'li',
+    'td',
+    'th',
+    'strong',
+    'em',
+    'small',
     'blockquote',
-    'caption',
     'figcaption',
   ].includes(tag)
 
@@ -876,13 +883,14 @@ export function InlineEditToolbar({
                 </span>
               ) : activePanel === 'ai' ? (
                 <>
-                  <Sparkles className="size-3" />
                   Apply
+                  <Sparkles className="size-3" />
                 </>
               ) : (
                 'Apply'
               )}
             </button>
+
             <button
               type="button"
               onClick={handleClose}
@@ -934,7 +942,7 @@ export function InlineEditToolbar({
               />
             )}
             {displayPanel === 'ai' && (
-              <div className="flex flex-col gap-1 p-2 w-full">
+              <div className="flex flex-col gap-1 w-full">
                 <Textarea
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
@@ -945,15 +953,15 @@ export function InlineEditToolbar({
                     }
                   }}
                   placeholder="Describe a change..."
-                  className="min-h-9 text-sm"
+                  className="min-h-[72px] text-sm border-0 rounded-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-0 px-3 py-2"
                   autoFocus
                   disabled={isSectionSubmitting}
                 />
                 {sectionError && (
-                  <p className="px-1 text-xs text-red-400">{sectionError}</p>
+                  <p className="px-3 text-xs text-red-400">{sectionError}</p>
                 )}
                 {isSectionSubmitting && (
-                  <p className="px-1 text-xs text-cyan-300">Generating...</p>
+                  <p className="px-3 text-xs text-cyan-300">Generating...</p>
                 )}
               </div>
             )}
