@@ -119,25 +119,28 @@ export function InlineEditToolbar({
   const wrapperRef = useRef<HTMLDivElement>(null)
   const originalStyleRef = useRef<string | null>(null)
 
-  // Calculate placement: 'top' (above element) or 'bottom' (below element).
-  // We calculate this ONCE when the toolbar opens and when a panel toggles,
-  // rather than using flip() middleware which causes a jarring shift when
-  // the panel expands and the wrapper grows taller.
+  // Calculate placement ONCE when the toolbar opens (or when a new element
+  // is selected). We use the MAX possible height (toolbar + tallest panel)
+  // so the position never shifts when a panel opens/closes — eliminating
+  // the jarring jump from top to bottom.
   const [placement, setPlacement] = useState<'top' | 'bottom'>('top')
 
   useEffect(() => {
     if (!isOpen || !anchorRect) return
-    // Estimate wrapper height: toolbar (~50px) + panel (~300px if open)
-    const estimatedHeight = activePanel ? 380 : 60
+    // Max height = toolbar (~52px) + tallest panel (~340px) + gap
+    const maxPossibleHeight = 400
     const spaceAbove = anchorRect.top
     const spaceBelow = window.innerHeight - anchorRect.bottom
-    // Prefer 'top' (above) unless there's not enough room and bottom has more
-    if (spaceAbove < estimatedHeight + 16 && spaceBelow > spaceAbove) {
+    // Prefer 'top' (above) unless there's not enough room for the full
+    // toolbar+panel and bottom has more space
+    if (spaceAbove < maxPossibleHeight + 16 && spaceBelow > spaceAbove) {
       setPlacement('bottom')
     } else {
       setPlacement('top')
     }
-  }, [isOpen, anchorRect, activePanel])
+    // Intentionally NOT depending on activePanel — we want placement
+    // locked in for the entire editing session of this element.
+  }, [isOpen, anchorRect])
 
   const { refs, floatingStyles } = useFloating({
     open: isOpen,

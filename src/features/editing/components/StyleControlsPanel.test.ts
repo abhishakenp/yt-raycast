@@ -96,12 +96,12 @@ describe('StyleControlsPanel', () => {
     const { getByLabelText } = renderPanel(activeElement)
     // Switch to border tab
     fireEvent.click(getByLabelText('Border'))
-    // Change border style select (triggers applyLiveStyle → markModified)
-    const styleSelect = Array.from(document.querySelectorAll('select')).find(
-      (s) => s.value === 'solid',
-    )!
-    fireEvent.change(styleSelect, { target: { value: 'dashed' } })
-    expect(activeElement.style.borderStyle).toBe('dashed')
+    // Change border width via number input (triggers applyLiveStyle → markModified)
+    const widthInput = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[type="number"]'),
+    ).find((i) => i.value === '1')!
+    fireEvent.change(widthInput, { target: { value: '3' } })
+    expect(activeElement.style.borderWidth).toBe('3px')
     // Click apply
     const applyBtn = Array.from(document.querySelectorAll('button')).find((b) =>
       b.textContent?.includes('Apply'),
