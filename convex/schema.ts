@@ -43,13 +43,6 @@ const integrationStatus = v.union(
   v.literal('failed'),
 )
 
-const cmsCollectionKey = v.union(v.literal('blogPosts'))
-
-const cmsCollectionItemStatus = v.union(
-  v.literal('draft'),
-  v.literal('published'),
-)
-
 export default defineSchema({
   sessions: defineTable({
     userId: v.optional(v.string()),
@@ -67,10 +60,6 @@ export default defineSchema({
     openuiReady: v.optional(v.boolean()),
     elapsed: v.optional(v.number()),
     cost: v.optional(v.number()),
-    agentationEnabled: v.optional(v.boolean()),
-    agentationEnabledAt: v.optional(v.number()),
-    agentationSessionId: v.optional(v.string()),
-    sanityConfig: v.optional(v.any()),
     medusaConfig: v.optional(v.any()),
     alternativeDesign: v.optional(v.any()),
     themeOverride: v.optional(v.any()),
@@ -99,6 +88,9 @@ export default defineSchema({
     updatedAt: v.optional(v.number()),
     errorCode: v.optional(v.string()),
     errorMessage: v.optional(v.string()),
+    agentationEnabled: v.optional(v.boolean()),
+    agentationEnabledAt: v.optional(v.number()),
+    agentationSessionId: v.optional(v.string()),
   })
     .index('by_userId', ['userId'])
     .index('by_anonymousClientIdHash', ['anonymousClientIdHash'])
@@ -202,8 +194,8 @@ export default defineSchema({
       v.literal('generation'),
       v.literal('edit'),
       v.literal('rewrite'),
-      v.literal('cms'),
       v.literal('history_restore'),
+      v.literal('cms'),
     ),
   }).index('by_sessionId_version', ['sessionId', 'version']),
 
@@ -213,7 +205,6 @@ export default defineSchema({
     editType: v.union(
       v.literal('text'),
       v.literal('ai_rewrite'),
-      v.literal('chat'),
       v.literal('style'),
       v.literal('image'),
     ),
@@ -226,24 +217,6 @@ export default defineSchema({
     createdAt: v.number(),
     userId: v.optional(v.string()),
   }).index('by_sessionId_createdAt', ['sessionId', 'createdAt']),
-
-  agentationAnnotations: defineTable({
-    sessionId: v.id('sessions'),
-    annotationId: v.string(),
-    agentationSessionKey: v.optional(v.string()),
-    agentationSessionId: v.optional(v.string()),
-    comment: v.string(),
-    element: v.optional(v.string()),
-    elementLabel: v.optional(v.string()),
-    elementPath: v.optional(v.string()),
-    url: v.optional(v.string()),
-    payload: v.optional(v.any()),
-    payloadJson: v.optional(v.string()),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  })
-    .index('by_sessionId_annotationId', ['sessionId', 'annotationId'])
-    .index('by_annotationId', ['annotationId']),
 
   exports: defineTable({
     sessionId: v.id('sessions'),
@@ -336,19 +309,6 @@ export default defineSchema({
     .index('by_sessionId', ['sessionId'])
     .index('by_slug', ['slug']),
 
-  cmsConfigs: defineTable({
-    sessionId: v.id('sessions'),
-    status: v.optional(integrationStatus),
-    cmsType: v.optional(v.string()),
-    config: v.optional(v.any()),
-    projectId: v.optional(v.string()),
-    dataset: v.optional(v.string()),
-    configJson: v.optional(v.string()),
-    errorMessage: v.optional(v.string()),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  }).index('by_sessionId', ['sessionId']),
-
   // Cache of the AI-authored composition content (family + per-page section
   // props) keyed by the normalized prompt. Sessions reuse this content and a
   // per-session seed re-randomizes the COMPOSITION (which sections/order/theme/
@@ -359,83 +319,6 @@ export default defineSchema({
     contentJson: v.string(),
     createdAt: v.number(),
   }).index('by_promptCacheKey', ['promptCacheKey']),
-
-  cmsBindings: defineTable({
-    sessionId: v.id('sessions'),
-    selector: v.string(),
-    type: v.union(
-      v.literal('text'),
-      v.literal('richtext'),
-      v.literal('image'),
-      v.literal('link'),
-    ),
-    field: v.optional(v.string()),
-    createdAt: v.number(),
-  })
-    .index('by_sessionId', ['sessionId'])
-    .index('by_sessionId_selector', ['sessionId', 'selector']),
-
-  cmsEntries: defineTable({
-    sessionId: v.id('sessions'),
-    bindingId: v.id('cmsBindings'),
-    content: v.string(),
-    contentType: v.optional(v.string()),
-    updatedAt: v.number(),
-    updatedBy: v.optional(v.string()),
-  })
-    .index('by_sessionId', ['sessionId'])
-    .index('by_bindingId', ['bindingId']),
-
-  cmsRevisions: defineTable({
-    entryId: v.id('cmsEntries'),
-    content: v.string(),
-    contentType: v.optional(v.string()),
-    updatedBy: v.optional(v.string()),
-    createdAt: v.number(),
-  })
-    .index('by_entryId', ['entryId'])
-    .index('by_entryId_createdAt', ['entryId', 'createdAt']),
-
-  cmsCollections: defineTable({
-    sessionId: v.id('sessions'),
-    key: cmsCollectionKey,
-    label: v.string(),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  })
-    .index('by_sessionId', ['sessionId'])
-    .index('by_sessionId_key', ['sessionId', 'key']),
-
-  cmsCollectionItems: defineTable({
-    sessionId: v.id('sessions'),
-    collectionId: v.id('cmsCollections'),
-    collectionKey: cmsCollectionKey,
-    slug: v.string(),
-    title: v.string(),
-    excerpt: v.string(),
-    author: v.string(),
-    category: v.string(),
-    coverImageUrl: v.optional(v.string()),
-    body: v.string(),
-    status: cmsCollectionItemStatus,
-    publishedAt: v.optional(v.number()),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-    updatedBy: v.optional(v.string()),
-  })
-    .index('by_sessionId', ['sessionId'])
-    .index('by_collectionId', ['collectionId'])
-    .index('by_sessionId_collectionKey', ['sessionId', 'collectionKey'])
-    .index('by_sessionId_collectionKey_slug', [
-      'sessionId',
-      'collectionKey',
-      'slug',
-    ])
-    .index('by_sessionId_collectionKey_status', [
-      'sessionId',
-      'collectionKey',
-      'status',
-    ]),
 
   commerceConfigs: defineTable({
     sessionId: v.id('sessions'),
@@ -449,13 +332,6 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index('by_sessionId', ['sessionId']),
-
-  chatMessages: defineTable({
-    sessionId: v.id('sessions'),
-    role: v.string(),
-    content: v.string(),
-    createdAt: v.number(),
-  }).index('by_sessionId_createdAt', ['sessionId', 'createdAt']),
 
   genuiModules: defineTable({
     sessionId: v.id('sessions'),
@@ -498,12 +374,6 @@ export default defineSchema({
     sessionId: v.id('sessions'),
     themeName: v.string(),
     styles: v.any(),
-    createdAt: v.number(),
-  }).index('by_sessionId', ['sessionId']),
-
-  chatSummaries: defineTable({
-    sessionId: v.id('sessions'),
-    summary: v.string(),
     createdAt: v.number(),
   }).index('by_sessionId', ['sessionId']),
 

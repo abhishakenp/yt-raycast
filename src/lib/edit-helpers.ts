@@ -383,6 +383,34 @@ const collectTextMatches = (
   text: string,
   from: string,
 ): Array<{ index: number; length: number }> => {
+  // Tier 0: exact quoted-string match for OpenUI source.
+  // In OpenUI source, string arguments are wrapped in double quotes: "go".
+  // When from is short (e.g. "go"), substring matching finds it inside
+  // unrelated JSON keys like "category". Matching the quoted form "\"go\""
+  // ensures we only match complete string arguments, not substrings of
+  // other tokens. This tier returns matches of the text WITHOUT the
+  // surrounding quotes (index/length point to the inner text) so the
+  // replacement logic in applyPreviewTextEdit works unchanged.
+  // Skip matches inside HTML tags (attribute values like alt="Brand") —
+  // only match quoted strings in OpenUI source (outside HTML tags).
+  if (from.length > 0 && !from.includes('"')) {
+    const quoted = `"${from}"`
+    const quotedMatches: Array<{ index: number; length: number }> = []
+    let qCursor = text.indexOf(quoted)
+    while (qCursor >= 0) {
+      // Skip matches inside HTML tags (e.g. alt="Brand")
+      if (!isInsideTag(text, qCursor)) {
+        // Point to the inner text (skip the opening quote)
+        quotedMatches.push({
+          index: qCursor + 1,
+          length: from.length,
+        })
+      }
+      qCursor = text.indexOf(quoted, qCursor + quoted.length)
+    }
+    if (quotedMatches.length > 0) return quotedMatches
+  }
+
   // Tier 1: exact substring match (fast path for clean HTML).
   // Skip matches inside HTML tags (attribute values, tag names) — only
   // visible text between tags should match.
