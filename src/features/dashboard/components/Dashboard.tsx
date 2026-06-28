@@ -2149,6 +2149,8 @@ export function Dashboard({
         context={{
           prompt: generationView?.session.prompt,
         }}
+        imageWidth={imageSwapState.currentElement?.naturalWidth}
+        imageHeight={imageSwapState.currentElement?.naturalHeight}
       />
       <InlineEditToolbar
         isOpen={toolbarState.isOpen}

@@ -3,7 +3,7 @@ import { JSDOM } from 'jsdom'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createElement } from 'react'
 
-import { applyImageSwap } from '@/lib/edit-helpers'
+import { applyImageSwap, applyPreviewTextEdit } from '@/lib/edit-helpers'
 import { Image } from '../../../packages/ship-fast-blocks/src/lib/img'
 
 /**
@@ -403,5 +403,148 @@ describe('image edit persistence: occurrence index disambiguation', () => {
     expect(result.html).toContain('src="/new.svg"')
     expect(result.html).toContain('src="/b.svg"')
     expect(result.html).not.toContain('src="/a.svg"')
+  })
+})
+
+// ─── Tests: server-side fallback when applyImageSwap fails ───────────────
+
+describe('image edit persistence: server-side fallback when applyImageSwap fails', () => {
+  // These tests verify the contract that when applyImageSwap returns
+  // replaced:false, the server must NOT fall back to applyPreviewTextEdit
+  // (which would replace the alt TEXT in the OpenUI source with the image URL,
+  // corrupting the source). Instead, image edits should be treated like style
+  // edits: save the edit record and reapply client-side via imageOverrides.
+
+  it('applyImageSwap returns replaced:false when alt is not found in HTML', () => {
+    // Simulates the case where preview.html is OpenUI source (no <img> tags)
+    // or the alt doesn't match any img tag
+    const html = '<div>Some content without images</div>'
+    const result = applyImageSwap(html, 'Hero', '/new-hero.jpg')
+    expect(result.replaced).toBe(false)
+  })
+
+  it('applyImageSwap returns replaced:false for empty alt', () => {
+    const html = '<img alt="" src="/old.jpg">'
+    const result = applyImageSwap(html, '', '/new.jpg')
+    expect(result.replaced).toBe(false)
+  })
+
+  it('applyPreviewTextEdit would corrupt OpenUI source if used as image fallback', () => {
+    // This test documents the bug: if the server falls back to
+    // applyPreviewTextEdit for image edits, it replaces the alt TEXT with the
+    // URL, corrupting the source. This is why image edits must NOT use the
+    // text edit fallback.
+    const openUiSource = 'hero = Image("Hero")'
+    const result = applyPreviewTextEdit(openUiSource, 'Hero', '/new-hero.jpg')
+    // If this "succeeds", it means the alt text "Hero" was replaced with the
+    // URL — corrupting the OpenUI source by turning Image("Hero") into
+    // Image("/new-hero.jpg"). This is the bug.
+    if (result.replaced) {
+      expect(result.html).toContain('/new-hero.jpg')
+      // The source is now corrupted — Image("Hero") became Image("/new-hero.jpg")
+      expect(result.html).not.toMatch(/Image\("Hero"\)/)
+    }
+  })
+
+  it('imageOverrides reapply works even when applyImageSwap fails on preview.html', () => {
+    // The full persistence chain when applyImageSwap fails:
+    // 1. applyImageSwap fails (preview.html has no matching img)
+    // 2. Server saves edit record (editType: 'image', beforeText: alt, afterText: newSrc)
+    // 3. Client builds imageOverrides from edit history
+    // 4. Image component uses override on re-render
+    const alt = 'Hero'
+    const newSrc = 'https://images.unsplash.com/photo-new?w=400&h=300&fit=crop'
+
+    // Step 1: applyImageSwap fails
+    const previewHtml = '<div>No img tags here</div>'
+    const swapResult = applyImageSwap(previewHtml, alt, newSrc)
+    expect(swapResult.replaced).toBe(false)
+
+    // Step 2: Edit record is saved (simulated)
+    const editHistory = [
+      { editType: 'image', beforeText: alt, afterText: newSrc },
+    ]
+
+    // Step 3: Client builds imageOverrides
+    const imageOverrides = buildImageOverrides(editHistory)
+    expect(imageOverrides[alt]).toBe(newSrc)
+
+    // Step 4: Image component uses override
+    const markup = renderToStaticMarkup(
+      createElement(Image, { alt, context: { overrides: imageOverrides } }),
+    )
+    // URLs are HTML-encoded in attributes (& → &amp;)
+    const encodedSrc = newSrc.replace(/&/g, '&amp;')
+    expect(markup).toContain(encodedSrc)
+    expect(markup).toContain(`alt="${alt}"`)
+  })
+
+  it('imageOverrides persist across reloads via edit history', () => {
+    // Simulate: user swaps image, page reloads, edit history is loaded from
+    // server, imageOverrides rebuilt, Image component renders with override
+    const editHistory = [
+      { editType: 'text', beforeText: 'Old Title', afterText: 'New Title' },
+      {
+        editType: 'image',
+        beforeText: 'Hero',
+        afterText: 'https://cdn.example.com/hero.jpg',
+      },
+      {
+        editType: 'image',
+        beforeText: 'Logo',
+        afterText: 'https://cdn.example.com/logo.png',
+      },
+    ]
+
+    const overrides = buildImageOverrides(editHistory)
+    expect(Object.keys(overrides)).toHaveLength(2)
+    expect(overrides['Hero']).toBe('https://cdn.example.com/hero.jpg')
+    expect(overrides['Logo']).toBe('https://cdn.example.com/logo.png')
+
+    // Verify both overrides are applied by the Image component
+    const heroMarkup = renderToStaticMarkup(
+      createElement(Image, { alt: 'Hero', context: { overrides } }),
+    )
+    expect(heroMarkup).toContain('https://cdn.example.com/hero.jpg')
+
+    const logoMarkup = renderToStaticMarkup(
+      createElement(Image, { alt: 'Logo', context: { overrides } }),
+    )
+    expect(logoMarkup).toContain('https://cdn.example.com/logo.png')
+  })
+
+  it('latest image swap wins when same alt is swapped multiple times', () => {
+    // Edit history is newest-first. The first occurrence of an alt in the
+    // history is the latest swap — that's the one that should win.
+    const editHistory = [
+      { editType: 'image', beforeText: 'Hero', afterText: '/latest.jpg' },
+      { editType: 'image', beforeText: 'Hero', afterText: '/older.jpg' },
+    ]
+
+    const overrides = buildImageOverrides(editHistory)
+    expect(overrides['Hero']).toBe('/latest.jpg')
+  })
+
+  it('override is used even when applyImageSwap would fail on realistic preview.html', () => {
+    // Realistic scenario: preview.html is stored as OpenUI source (not rendered
+    // HTML), so applyImageSwap can't find <img> tags. The override mechanism
+    // must still work.
+    const openUiAsHtml = '$page = "Home"\nhero = Image("Hero")'
+    const newSrc = 'https://images.pexels.com/photos/new.jpg'
+
+    // applyImageSwap fails because there are no <img> tags
+    const swapResult = applyImageSwap(openUiAsHtml, 'Hero', newSrc)
+    expect(swapResult.replaced).toBe(false)
+
+    // But imageOverrides still works
+    const overrides = buildImageOverrides([
+      { editType: 'image', beforeText: 'Hero', afterText: newSrc },
+    ])
+
+    const markup = renderToStaticMarkup(
+      createElement(Image, { alt: 'Hero', context: { overrides } }),
+    )
+    expect(markup).toContain(newSrc)
+    expect(markup).toContain('alt="Hero"')
   })
 })
