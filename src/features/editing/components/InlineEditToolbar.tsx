@@ -948,7 +948,7 @@ export function InlineEditToolbar({
                   placeholder="Describe a change..."
                   autoFocus
                   disabled={isSectionSubmitting}
-                  className="field-sizing-content min-h-[72px] w-full resize-none border-0 bg-transparent px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:ring-0"
+                  className="min-h-[72px] w-full resize-none border-0 bg-transparent px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:ring-0"
                 />
                 <div className="flex items-center gap-2 px-2 pb-1.5">
                   {sectionError && (
