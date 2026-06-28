@@ -55,7 +55,8 @@ export function StyleControlsPanel({
   })
   const [paddingLinked, setPaddingLinked] = useState(true)
   const [marginLinked, setMarginLinked] = useState(true)
-  const [spacingUnit, setSpacingUnit] = useState('px')
+  const [paddingUnit, setPaddingUnit] = useState('px')
+  const [marginUnit, setMarginUnit] = useState('px')
 
   const [borderWidth, setBorderWidth] = useState('')
   const [borderStyle, setBorderStyle] = useState('none')
@@ -95,6 +96,16 @@ export function StyleControlsPanel({
       left: parseFloat(computed.marginLeft) || 0,
     } as Record<string, string | number> as typeof margin)
 
+    // Detect units from computed values (default to px)
+    const padTop = computed.paddingTop || '0px'
+    setPaddingUnit(
+      padTop.endsWith('rem') ? 'rem' : padTop.endsWith('em') ? 'em' : 'px',
+    )
+    const marTop = computed.marginTop || '0px'
+    setMarginUnit(
+      marTop.endsWith('rem') ? 'rem' : marTop.endsWith('em') ? 'em' : 'px',
+    )
+
     setBorderWidth(String(parseFloat(computed.borderTopWidth) || 0))
     setBorderStyle(computed.borderStyle || 'none')
     setBorderColor(computed.borderColor || '#000000')
@@ -126,7 +137,7 @@ export function StyleControlsPanel({
     setPadding(next)
     applyLiveStyle(
       'padding',
-      `${next.top}${spacingUnit} ${next.right}${spacingUnit} ${next.bottom}${spacingUnit} ${next.left}${spacingUnit}`,
+      `${next.top}${paddingUnit} ${next.right}${paddingUnit} ${next.bottom}${paddingUnit} ${next.left}${paddingUnit}`,
     )
   }
 
@@ -137,7 +148,7 @@ export function StyleControlsPanel({
     setMargin(next)
     applyLiveStyle(
       'margin',
-      `${next.top}${spacingUnit} ${next.right}${spacingUnit} ${next.bottom}${spacingUnit} ${next.left}${spacingUnit}`,
+      `${next.top}${marginUnit} ${next.right}${marginUnit} ${next.bottom}${marginUnit} ${next.left}${marginUnit}`,
     )
   }
 
@@ -216,6 +227,21 @@ export function StyleControlsPanel({
                         onChange={(e) => setPaddingValue(side, e.target.value)}
                         className="text-xs text-white"
                       />
+                      <InputGroupAddon align="inline-end">
+                        <Select
+                          value={paddingUnit}
+                          onValueChange={setPaddingUnit}
+                        >
+                          <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="px">px</SelectItem>
+                            <SelectItem value="rem">rem</SelectItem>
+                            <SelectItem value="em">em</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </InputGroupAddon>
                     </InputGroup>
                   ))}
                 </div>
@@ -254,23 +280,25 @@ export function StyleControlsPanel({
                         onChange={(e) => setMarginValue(side, e.target.value)}
                         className="text-xs text-white"
                       />
+                      <InputGroupAddon align="inline-end">
+                        <Select
+                          value={marginUnit}
+                          onValueChange={setMarginUnit}
+                        >
+                          <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="px">px</SelectItem>
+                            <SelectItem value="rem">rem</SelectItem>
+                            <SelectItem value="em">em</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </InputGroupAddon>
                     </InputGroup>
                   ))}
                 </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className={labelCls}>Unit</span>
-              <Select value={spacingUnit} onValueChange={setSpacingUnit}>
-                <SelectTrigger className="w-16">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="px">px</SelectItem>
-                  <SelectItem value="rem">rem</SelectItem>
-                  <SelectItem value="em">em</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
         )}
@@ -294,7 +322,7 @@ export function StyleControlsPanel({
                 />
                 <InputGroupAddon align="inline-end">
                   <Select value={borderUnit} onValueChange={setBorderUnit}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -315,7 +343,7 @@ export function StyleControlsPanel({
                     applyLiveStyle('border-style', v)
                   }}
                 >
-                  <SelectTrigger className="h-auto w-full border-0 bg-transparent text-xs text-white">
+                  <SelectTrigger className="h-auto w-full border-0 bg-transparent px-1 text-xs text-white/60">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -329,17 +357,26 @@ export function StyleControlsPanel({
             </div>
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-12')}>Color</span>
-              <InputGroup>
-                <InputGroupInput
-                  type="color"
-                  value={borderColor}
-                  onChange={(e) => {
-                    setBorderColor(e.target.value)
-                    applyLiveStyle('border-color', e.target.value)
-                  }}
-                  className="h-auto w-full cursor-pointer border-0 bg-transparent p-0"
-                />
-              </InputGroup>
+              <div className="flex items-center gap-1.5 flex-1">
+                <label className="relative cursor-pointer">
+                  <input
+                    type="color"
+                    value={borderColor}
+                    onChange={(e) => {
+                      setBorderColor(e.target.value)
+                      applyLiveStyle('border-color', e.target.value)
+                    }}
+                    className="absolute inset-0 size-full cursor-pointer opacity-0"
+                  />
+                  <div
+                    className="size-7 rounded-md border border-input shadow-xs"
+                    style={{ backgroundColor: borderColor }}
+                  />
+                </label>
+                <span className="text-xs text-muted-foreground font-mono">
+                  {borderColor}
+                </span>
+              </div>
             </div>
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-12')}>R</span>
@@ -358,7 +395,7 @@ export function StyleControlsPanel({
                 />
                 <InputGroupAddon align="inline-end">
                   <Select value={borderUnit} onValueChange={setBorderUnit}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -376,17 +413,21 @@ export function StyleControlsPanel({
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className={cn(labelCls, 'w-10')}>Color</span>
-              <InputGroup>
-                <InputGroupInput
+              <label className="relative cursor-pointer">
+                <input
                   type="color"
                   value={bgColor}
                   onChange={(e) => {
                     setBgColor(e.target.value)
                     applyLiveStyle('background-color', e.target.value)
                   }}
-                  className="h-auto w-full cursor-pointer border-0 bg-transparent p-0"
+                  className="absolute inset-0 size-full cursor-pointer opacity-0"
                 />
-              </InputGroup>
+                <div
+                  className="size-7 rounded-md border border-input shadow-xs"
+                  style={{ backgroundColor: bgColor }}
+                />
+              </label>
             </div>
             <div className="flex items-center gap-1.5 flex-1">
               <span className={labelCls}>Shadow</span>
@@ -431,7 +472,7 @@ export function StyleControlsPanel({
                 />
                 <InputGroupAddon align="inline-end">
                   <Select value={sizeUnit} onValueChange={setSizeUnit}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -461,7 +502,7 @@ export function StyleControlsPanel({
                 />
                 <InputGroupAddon align="inline-end">
                   <Select value={sizeUnit} onValueChange={setSizeUnit}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
