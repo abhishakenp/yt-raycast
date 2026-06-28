@@ -29,7 +29,11 @@ const makeRect = (): DOMRect =>
  * sufficient and keeps the test independent of jsdom's style resolver.
  */
 const makeComputed = (
-  overrides: Partial<{ textAlign: string }> = {},
+  overrides: Partial<{
+    textAlign: string
+    textDecorationLine: string
+    textDecoration: string
+  }> = {},
 ): CSSStyleDeclaration =>
   ({
     fontSize: '16px',
@@ -37,6 +41,8 @@ const makeComputed = (
     fontStyle: 'normal',
     color: 'rgb(0,0,0)',
     textAlign: 'start',
+    textDecorationLine: 'none',
+    textDecoration: 'none',
     ...overrides,
   }) as CSSStyleDeclaration
 
@@ -367,5 +373,81 @@ describe('InlineEditToolbar — font size control', () => {
 
     // Clean up
     activeElement.remove()
+  })
+
+  it('renders underline and strikethrough buttons for text elements', () => {
+    renderToolbar(activeElement)
+
+    const underlineBtn = document.querySelector(
+      'button[aria-label="Underline"]',
+    )
+    const strikeBtn = document.querySelector(
+      'button[aria-label="Strikethrough"]',
+    )
+    expect(underlineBtn).toBeTruthy()
+    expect(strikeBtn).toBeTruthy()
+  })
+
+  it('applies text-decoration-line when underline is toggled', () => {
+    renderToolbar(activeElement)
+
+    const underlineBtn = document.querySelector(
+      'button[aria-label="Underline"]',
+    ) as HTMLButtonElement
+
+    fireEvent.click(underlineBtn)
+
+    // The live-preview effect should set text-decoration-line to underline
+    expect(activeElement.style.textDecorationLine).toBe('underline')
+  })
+
+  it('combines underline and strikethrough into text-decoration-line', () => {
+    renderToolbar(activeElement)
+
+    const underlineBtn = document.querySelector(
+      'button[aria-label="Underline"]',
+    ) as HTMLButtonElement
+    const strikeBtn = document.querySelector(
+      'button[aria-label="Strikethrough"]',
+    ) as HTMLButtonElement
+
+    fireEvent.click(underlineBtn)
+    fireEvent.click(strikeBtn)
+
+    expect(activeElement.style.textDecorationLine).toBe(
+      'underline line-through',
+    )
+  })
+
+  it('toolbar wrapper has touch-action: manipulation for mobile', () => {
+    renderToolbar(activeElement)
+
+    const wrapper = document.querySelector(
+      '[data-inline-edit-wrapper]',
+    ) as HTMLElement
+    expect(wrapper).toBeTruthy()
+    expect(wrapper.style.touchAction).toBe('manipulation')
+  })
+
+  it('toolbar has max-width constraint for mobile viewport', () => {
+    renderToolbar(activeElement)
+
+    const wrapper = document.querySelector(
+      '[data-inline-edit-wrapper]',
+    ) as HTMLElement
+    expect(wrapper).toBeTruthy()
+    expect(wrapper.className).toContain('max-w-[calc(100vw-16px)]')
+  })
+
+  it('closes on touchstart outside the toolbar', () => {
+    renderToolbar(activeElement)
+
+    // Simulate a touch outside the toolbar
+    const outsideEl = document.createElement('div')
+    document.body.appendChild(outsideEl)
+    fireEvent.touchStart(outsideEl)
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    outsideEl.remove()
   })
 })

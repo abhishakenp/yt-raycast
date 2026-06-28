@@ -840,3 +840,12 @@ button.pill:hover:not(:disabled),
   :where([class*='lg:flex-row'], [class*='xl:flex-row']) {
   flex-wrap: wrap;
 }
+
+/* Touch-friendly sizing for inline edit toolbar buttons.
+   On coarse pointers (touch devices), enlarge hit targets to 40px. */
+@media (pointer: coarse) {
+  .inline-edit-toolbar .size-7 {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
