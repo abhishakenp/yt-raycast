@@ -87,8 +87,8 @@ interface InlineEditToolbarProps {
   onMoveDown?: () => void
   canMoveUp?: boolean
   canMoveDown?: boolean
-  /** Image swap */
-  onImageSelect?: (newSrc: string) => void
+  /** Image swap — called with original and new src when Apply is pressed */
+  onImageSelect?: (newSrc: string, originalSrc: string) => void
   sessionId?: string
   /** Section AI edit */
   onSectionEdit?: (prompt: string) => void
@@ -151,6 +151,10 @@ export function InlineEditToolbar({
   const toolbarRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const originalStyleRef = useRef<string | null>(null)
+  // Pending image swap: the new src chosen in the image panel but not yet
+  // committed via Apply. On close, the original src is restored.
+  const originalImageSrcRef = useRef<string | null>(null)
+  const [pendingImageSrc, setPendingImageSrc] = useState<string | null>(null)
 
   // Calculate placement ONCE when the toolbar opens (or when a new element
   // is selected). We use the MAX possible height (toolbar + tallest panel)
@@ -204,6 +208,13 @@ export function InlineEditToolbar({
     styleReadCompleteRef.current = false
     userModifiedRef.current = false
     originalStyleRef.current = activeElement.getAttribute('style')
+    // Reset pending image swap state for the new element
+    if (activeElement.tagName.toLowerCase() === 'img') {
+      originalImageSrcRef.current = (activeElement as HTMLImageElement).src
+    } else {
+      originalImageSrcRef.current = null
+    }
+    setPendingImageSrc(null)
     setActivePanel(null)
 
     const computed = window.getComputedStyle(activeElement)
@@ -348,8 +359,27 @@ export function InlineEditToolbar({
     onSectionEdit?.(aiPrompt.trim())
   }
 
+  // Live-preview an image swap without persisting. The actual save happens
+  // in handleApply; handleClose reverts the src.
+  const handleImagePreview = (newSrc: string) => {
+    if (!activeElement || !isImageElement) return
+    if (originalImageSrcRef.current === null) {
+      originalImageSrcRef.current = (activeElement as HTMLImageElement).src
+    }
+    ;(activeElement as HTMLImageElement).src = newSrc
+    setPendingImageSrc(newSrc)
+  }
+
   const handleApply = () => {
     if (activeElement && !isApplying && !isForking) {
+      // If an image swap is pending, commit it now.
+      if (pendingImageSrc && isImageElement && onImageSelect) {
+        onImageSelect(pendingImageSrc, originalImageSrcRef.current ?? '')
+        setPendingImageSrc(null)
+        originalImageSrcRef.current = null
+        return
+      }
+
       // Always commit text changes first — the user may have typed text
       // and clicked Apply without modifying any style controls.
       onCommitText?.()
@@ -406,6 +436,14 @@ export function InlineEditToolbar({
   const handleClose = () => {
     if (!isApplying && !isForking) {
       if (activeElement) {
+        // Revert image src if a swap was previewed but not applied
+        if (
+          isImageElement &&
+          originalImageSrcRef.current !== null &&
+          pendingImageSrc
+        ) {
+          ;(activeElement as HTMLImageElement).src = originalImageSrcRef.current
+        }
         const saved = originalStyleRef.current
         if (saved === null) {
           activeElement.removeAttribute('style')
@@ -413,6 +451,8 @@ export function InlineEditToolbar({
           activeElement.setAttribute('style', saved)
         }
       }
+      setPendingImageSrc(null)
+      originalImageSrcRef.current = null
       onClose()
     }
   }
@@ -964,7 +1004,7 @@ export function InlineEditToolbar({
               sessionId && (
                 <ImageSwapPanel
                   currentAlt={(activeElement as HTMLImageElement).alt ?? ''}
-                  onImageSelect={onImageSelect}
+                  onImageSelect={handleImagePreview}
                   imageWidth={(activeElement as HTMLImageElement).naturalWidth}
                   imageHeight={
                     (activeElement as HTMLImageElement).naturalHeight
