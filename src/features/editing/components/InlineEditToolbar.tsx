@@ -309,6 +309,8 @@ export function InlineEditToolbar({
     // the mousedown default to function (open dropdown, focus input).
     if (tag === 'SELECT' || tag === 'INPUT') return
     if (target.closest('[role="combobox"]')) return
+    // <label> wrapping a color input needs mousedown to trigger the input
+    if (tag === 'LABEL' && target.querySelector('input[type="color"]')) return
     e.preventDefault()
   }
 

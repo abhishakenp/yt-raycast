@@ -20,6 +20,7 @@ import {
   InputGroupInput,
   InputGroupText,
 } from '#/components/ui/input-group'
+import { ToggleGroup, ToggleGroupItem } from '#/components/ui/toggle-group'
 
 interface StyleControlsPanelProps {
   activeElement: HTMLElement | null
@@ -65,7 +66,7 @@ export function StyleControlsPanel({
   const [borderUnit, setBorderUnit] = useState('px')
 
   const [bgColor, setBgColor] = useState('#000000')
-  const [shadow, setShadow] = useState('none')
+  const [shadowPreset, setShadowPreset] = useState('none')
 
   const [width, setWidth] = useState('')
   const [height, setHeight] = useState('')
@@ -112,7 +113,13 @@ export function StyleControlsPanel({
     setBorderRadius(String(parseFloat(computed.borderRadius) || 0))
 
     setBgColor(computed.backgroundColor || '#000000')
-    setShadow(computed.boxShadow || 'none')
+    // Detect which shadow preset matches the computed box-shadow
+    const computedShadow = computed.boxShadow || 'none'
+    const matchedPreset =
+      Object.entries(SHADOW_PRESETS).find(
+        ([, val]) => val === computedShadow,
+      )?.[0] ?? 'none'
+    setShadowPreset(matchedPreset)
 
     setWidth(computed.width)
     setHeight(computed.height)
@@ -431,26 +438,28 @@ export function StyleControlsPanel({
             </div>
             <div className="flex items-center gap-1.5 flex-1">
               <span className={labelCls}>Shadow</span>
-              <div className="flex gap-1">
+              <ToggleGroup
+                type="single"
+                value={shadowPreset}
+                onValueChange={(v) => {
+                  if (!v) return
+                  setShadowPreset(v)
+                  applyLiveStyle('box-shadow', SHADOW_PRESETS[v])
+                }}
+                variant="outline"
+                size="sm"
+                className="rounded-md border border-white/10"
+              >
                 {Object.keys(SHADOW_PRESETS).map((preset) => (
-                  <button
+                  <ToggleGroupItem
                     key={preset}
-                    type="button"
-                    onClick={() => {
-                      setShadow(preset)
-                      applyLiveStyle('box-shadow', SHADOW_PRESETS[preset])
-                    }}
-                    className={cn(
-                      'rounded-full px-2 py-0.5 text-[10px] transition-colors',
-                      shadow === preset
-                        ? 'bg-cyan-300/15 text-cyan-200'
-                        : 'text-white/40 hover:bg-white/5 hover:text-white/80',
-                    )}
+                    value={preset}
+                    className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
                   >
                     {preset}
-                  </button>
+                  </ToggleGroupItem>
                 ))}
-              </div>
+              </ToggleGroup>
             </div>
           </div>
         )}
