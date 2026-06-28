@@ -6,7 +6,6 @@ import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { upsertHomeGeneratedModule } from './session_artifact_helpers'
 import { assertCanMutateSession } from './session_access_helpers'
 import { scheduleOperationalNotification } from './session_operational_notifications'
-import { seedCmsBindingsForGeneratedArtifacts } from './session_cms_binding_helpers'
 
 type OperationalNotificationReference = Parameters<
   MutationCtx['scheduler']['runAfter']
@@ -183,8 +182,6 @@ export const finalizeSessionClonePreview = async (
     source: 'generation',
     createdAt: now,
   })
-
-  await seedCmsBindingsForGeneratedArtifacts(ctx, args.sessionId, { html }, now)
 
   await ctx.db.insert('generationEvents', {
     sessionId: args.sessionId,

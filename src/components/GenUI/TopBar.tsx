@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
-import { ArrowLeftIcon, MessageSquarePlus, Type, Wand2 } from 'lucide-react'
+import { ArrowLeftIcon, Type, Wand2 } from 'lucide-react'
 import ThemePicker from '../../genui/components/ThemePicker'
 
 interface TopBarProps {
@@ -16,9 +16,6 @@ interface TopBarProps {
   onToggleEditMode?: () => void
   aiEditMode?: boolean
   onToggleAIEditMode?: () => void
-  agentationEnabled?: boolean
-  agentationAnnotationCount?: number
-  onToggleAgentation?: () => void
   rightActions?: ReactNode
 }
 
@@ -35,9 +32,6 @@ function TopBar({
   onToggleEditMode,
   aiEditMode,
   onToggleAIEditMode,
-  agentationEnabled,
-  agentationAnnotationCount,
-  onToggleAgentation,
   rightActions,
 }: TopBarProps) {
   return (
@@ -96,30 +90,6 @@ function TopBar({
             title={aiEditMode ? 'Exit AI edit mode' : 'AI rewrite text'}
           >
             <Wand2 className="size-4" />
-          </button>
-        )}
-
-        {onToggleAgentation && (
-          <button
-            type="button"
-            onClick={onToggleAgentation}
-            className={`relative inline-flex size-7 items-center justify-center rounded-md transition-colors ${
-              agentationEnabled
-                ? 'bg-emerald-600 text-white'
-                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-            }`}
-            title={
-              agentationEnabled
-                ? 'Disable Agentation annotations'
-                : 'Enable Agentation annotations'
-            }
-          >
-            <MessageSquarePlus className="size-4" />
-            {agentationAnnotationCount ? (
-              <span className="-right-1 -top-1 absolute inline-flex min-w-3.5 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-medium leading-3 text-primary-foreground">
-                {agentationAnnotationCount}
-              </span>
-            ) : null}
           </button>
         )}
 

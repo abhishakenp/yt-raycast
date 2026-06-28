@@ -212,7 +212,6 @@ describe('session API response helpers', () => {
         genuiStatus: 'done',
         updatedAt: undefined,
         themeOverride: 'noir',
-        sanityConfig: { projectId: 'sanity-project' },
         medusaConfig: { baseUrl: 'https://medusa.example.test' },
         homepageReady: true,
         siteSpecReady: false,
@@ -275,7 +274,6 @@ describe('session API response helpers', () => {
         status: 'failed',
       },
       integrations: {
-        sanity: { enabled: true, config: { projectId: 'sanity-project' } },
         medusa: {
           enabled: true,
           config: { baseUrl: 'https://medusa.example.test' },

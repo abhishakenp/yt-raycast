@@ -9,10 +9,6 @@ vi.mock('@/components/GenUI/DirectPreview', () => ({
   ),
 }))
 
-vi.mock('@/components/GenUI/AgentationSessionBridge', () => ({
-  default: () => null,
-}))
-
 vi.mock('@/island/openui/OpenUIViewer', () => ({
   default: ({ response }: { response: string }) => (
     <div data-testid="openui-viewer">{response}</div>

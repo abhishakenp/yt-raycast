@@ -20,13 +20,10 @@ export {
   IntegrationProvider,
   OpenUIIntegrationProviders,
   withMedusa,
-  withSanity,
   type OpenUIIntegrationConfig,
   type OpenUIIntegrationPayload,
   type OpenUILibraryComponent,
-  type OpenUISanityContextValue,
   type OpenUIMedusaContextValue,
-  OpenUISanityContext,
   OpenUIMedusaContext,
 } from './integrations.tsx'
 

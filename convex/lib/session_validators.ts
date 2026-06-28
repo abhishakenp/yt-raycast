@@ -32,35 +32,9 @@ export const engineTask = v.object({
 export const editType = v.union(
   v.literal('text'),
   v.literal('ai_rewrite'),
-  v.literal('chat'),
   v.literal('style'),
   v.literal('image'),
 )
-
-export const cmsContentType = v.union(
-  v.literal('text'),
-  v.literal('richtext'),
-  v.literal('image'),
-  v.literal('link'),
-)
-
-export const cmsCollectionKey = v.union(v.literal('blogPosts'))
-
-export const cmsCollectionItemStatus = v.union(
-  v.literal('draft'),
-  v.literal('published'),
-)
-
-export const cmsBlogPostFields = v.object({
-  title: v.string(),
-  slug: v.string(),
-  excerpt: v.string(),
-  author: v.string(),
-  category: v.string(),
-  coverImageUrl: v.string(),
-  body: v.string(),
-  status: cmsCollectionItemStatus,
-})
 
 export const medusaProduct = v.object({
   id: v.string(),
@@ -241,12 +215,6 @@ export const restorePreviewVersionArgs = {
   version: v.number(),
 }
 
-export const sendChatMessageArgs = {
-  ...ownedSessionArgs,
-  content: v.string(),
-  refinementPlanJson: v.optional(v.string()),
-}
-
 export const setThemeOverrideArgs = {
   ...ownedSessionArgs,
   themeOverride: v.optional(v.union(v.string(), v.null())),
@@ -314,60 +282,6 @@ export const failGenerationArgs = {
   elapsed: v.optional(v.number()),
 }
 
-export const annotationFields = {
-  annotationId: v.string(),
-  agentationSessionKey: v.string(),
-  comment: v.string(),
-  elementLabel: v.string(),
-  elementPath: v.string(),
-  url: v.optional(v.string()),
-  payloadJson: v.optional(v.string()),
-}
-
-export const ownedAnnotationArgs = {
-  ...ownedSessionArgs,
-  ...annotationFields,
-}
-
-export const saveAgentationSessionArgs = {
-  ...ownedSessionArgs,
-  agentationSessionId: v.string(),
-}
-
-export const agentationSyncAnnotationArgs = {
-  ...annotationFields,
-}
-
-export const updateAgentationSyncAnnotationArgs = {
-  annotationId: v.string(),
-  comment: v.string(),
-  elementLabel: v.string(),
-  elementPath: v.string(),
-  url: v.optional(v.string()),
-  payloadJson: v.optional(v.string()),
-}
-
-export const annotationIdArgs = {
-  annotationId: v.string(),
-}
-
-export const deleteOwnedAnnotationArgs = {
-  ...ownedSessionArgs,
-  annotationId: v.id('agentationAnnotations'),
-}
-
-export const deleteOwnedAnnotationByAgentationIdArgs = {
-  ...ownedSessionArgs,
-  annotationId: v.string(),
-}
-
-export const upsertCmsConfigArgs = {
-  ...ownedSessionArgs,
-  projectId: v.optional(v.string()),
-  dataset: v.optional(v.string()),
-  configJson: v.optional(v.string()),
-}
-
 export const upsertCommerceConfigArgs = {
   ...ownedSessionArgs,
   backendUrl: v.optional(v.string()),
@@ -391,24 +305,6 @@ export const publicGallerySessionArgs = {
 
 export const deploymentSlugArgs = {
   slug: v.string(),
-}
-
-export const extractCmsBindingsArgs = {
-  sessionId: v.id('sessions'),
-  html: v.string(),
-}
-
-export const updateCmsEntryArgs = {
-  sessionId: v.id('sessions'),
-  bindingId: v.id('cmsBindings'),
-  content: v.string(),
-  contentType: v.optional(v.string()),
-  updatedBy: v.optional(v.string()),
-}
-
-export const restoreCmsRevisionArgs = {
-  sessionId: v.id('sessions'),
-  revisionId: v.id('cmsRevisions'),
 }
 
 export const provisionMedusaTenantArgs = {
@@ -436,55 +332,6 @@ export const recordUsageMetricArgs = {
 export const userUsageMetricsArgs = {
   userId: v.string(),
   since: v.optional(v.number()),
-}
-
-export const cmsEntryRevisionsArgs = {
-  sessionId: v.id('sessions'),
-  entryId: v.id('cmsEntries'),
-}
-
-export const upsertCmsContentEntryArgs = {
-  ...ownedSessionArgs,
-  bindingId: v.optional(v.id('cmsBindings')),
-  selector: v.optional(v.string()),
-  type: v.optional(cmsContentType),
-  field: v.optional(v.string()),
-  content: v.string(),
-  contentType: v.optional(v.string()),
-  beforeContent: v.optional(v.string()),
-}
-
-export const restoreCmsContentRevisionArgs = {
-  ...ownedSessionArgs,
-  revisionId: v.id('cmsRevisions'),
-}
-
-export const cmsCollectionItemsArgs = {
-  sessionId: v.id('sessions'),
-  collectionKey: cmsCollectionKey,
-}
-
-export const upsertCmsCollectionItemArgs = {
-  ...ownedSessionArgs,
-  collectionKey: cmsCollectionKey,
-  itemId: v.optional(v.id('cmsCollectionItems')),
-  fields: cmsBlogPostFields,
-}
-
-export const deleteCmsCollectionItemArgs = {
-  ...ownedSessionArgs,
-  itemId: v.id('cmsCollectionItems'),
-}
-
-export const insertCmsBindingArgs = {
-  sessionId: v.id('sessions'),
-  selector: v.string(),
-  type: cmsContentType,
-  field: v.optional(v.string()),
-}
-
-export const listCmsRevisionsArgs = {
-  entryId: v.id('cmsEntries'),
 }
 
 export const operationalNotificationArgs = {

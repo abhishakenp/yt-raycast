@@ -71,11 +71,6 @@ describe('session decomposition boundary', () => {
       t.query(api.sessions.getEventStream, { sessionId }),
     ).resolves.toMatchObject({ events: expect.any(Array) })
 
-    // listChatMessages delegates to session_chat_helpers.
-    await expect(
-      t.query(api.sessions.listChatMessages, { sessionId }),
-    ).resolves.toEqual(expect.any(Array))
-
     // getSessionApiResponse delegates to session_api_response_helpers.
     await expect(
       t.query(api.sessions.getSessionApiResponse, { lookup: sessionId }),

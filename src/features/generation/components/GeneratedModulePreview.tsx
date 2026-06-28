@@ -4,12 +4,10 @@ import type {
   PreviewToolMode,
 } from '@/components/GenUI/DirectPreview'
 import type { InspectorSelection } from '@/features/editing/element-path'
-import AgentationSessionBridge from '@/components/GenUI/AgentationSessionBridge'
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { lazy, Suspense } from 'react'
-import type { CmsPreviewBlogPost } from '@/island/openui/cms-preview-sync'
 
 type GeneratedModulePreviewProps = {
   source: string
@@ -33,13 +31,10 @@ type GeneratedModulePreviewProps = {
     afterText: string
     occurrenceIndex?: number
   }>
-  /** CMS-authored blog posts to overlay into OpenUI publication previews. */
-  cmsBlogPosts?: Array<CmsPreviewBlogPost>
   isDark?: boolean
   themeStyles?: ThemeStyles | null
   deviceMode?: 'desktop' | 'tablet' | 'mobile'
   previewToolMode?: PreviewToolMode
-  agentationEnabled?: boolean
   onPreviewSelect?: (selection: PreviewSelection) => void
   editMode?: boolean
   onTextChange?: (change: {
@@ -146,7 +141,6 @@ export function OpenUIModuleRenderer({
   locale,
   prompt,
   imageOverrides,
-  cmsBlogPosts,
 }: GeneratedModulePreviewProps) {
   const brandContext = parseSiteSpecBrand(siteSpecJson)
   const hasOverrides =
@@ -166,7 +160,6 @@ export function OpenUIModuleRenderer({
         embed
         sessionId={sessionId}
         imageContext={imageContext}
-        cmsBlogPosts={cmsBlogPosts}
       />
     </Suspense>
   )
@@ -181,12 +174,10 @@ export function GeneratedModulePreview({
   prompt,
   imageOverrides,
   styleOverrides,
-  cmsBlogPosts,
   isDark = true,
   themeStyles = null,
   deviceMode = 'desktop',
   previewToolMode = null,
-  agentationEnabled = false,
   onPreviewSelect,
   editMode = false,
   onTextChange,
@@ -231,13 +222,8 @@ export function GeneratedModulePreview({
             locale={locale}
             prompt={prompt}
             imageOverrides={imageOverrides}
-            cmsBlogPosts={cmsBlogPosts}
           />
         )}
-        <AgentationSessionBridge
-          enabled={agentationEnabled}
-          sessionId={sessionId}
-        />
       </DirectPreview>
     </LakebedSessionProvider>
   )

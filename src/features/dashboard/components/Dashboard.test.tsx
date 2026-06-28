@@ -15,7 +15,6 @@ import { Dashboard } from './Dashboard'
 type DashboardConvexTestState = {
   generationView: unknown
   queryArgs: unknown[]
-  cmsBlogPosts: unknown[]
 }
 
 const getConvexState = (): DashboardConvexTestState => {
@@ -25,7 +24,6 @@ const getConvexState = (): DashboardConvexTestState => {
   testGlobal.__shipFastDashboardConvexState ??= {
     generationView: null,
     queryArgs: [],
-    cmsBlogPosts: [],
   }
   return testGlobal.__shipFastDashboardConvexState
 }
@@ -88,9 +86,6 @@ vi.mock('convex/react', () => ({
       }
     ).__shipFastDashboardConvexState
     state?.queryArgs.push(args)
-    if (args && typeof args === 'object' && 'collectionKey' in args) {
-      return state?.cmsBlogPosts ?? []
-    }
     return args && typeof args === 'object' && 'lookup' in args
       ? (state?.generationView ?? null)
       : null
@@ -106,22 +101,11 @@ vi.mock('@ship-fast/lakebed/react', () => ({
 vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
   LakebedAdminPanel: () => null,
 }))
-vi.mock('@/features/agentation/components/AgentationPanel', () => ({
-  AgentationPanel: () => null,
-}))
 vi.mock('@/features/billing/components/BillingPanel', () => ({
   BillingPanel: () => null,
 }))
 vi.mock('@/features/brand/components/BrandMediaPanel', () => ({
   BrandMediaPanel: () => null,
-}))
-vi.mock('@/features/chat/components/ChatPanel', () => ({
-  ChatPanel: () => null,
-}))
-vi.mock('@/features/cms/components/CmsPanel', () => ({
-  CmsPanel: ({ sessionId }: { sessionId: string }) => (
-    <div>CMS content panel {sessionId}</div>
-  ),
 }))
 vi.mock('@/features/commerce/components/CommercePanel', () => ({
   CommercePanel: ({
@@ -147,9 +131,6 @@ vi.mock('@/features/commerce/components/CommercePanel', () => ({
 vi.mock('@/features/commerce/components/EcommercifyTransformOverlay', () => ({
   EcommercifyTransformOverlay: () => null,
 }))
-vi.mock('@/features/dashboard/components/ActivityPanel', () => ({
-  ActivityPanel: () => null,
-}))
 vi.mock('@/features/deployments/components/DeploymentPanel', () => ({
   DeploymentPanel: () => null,
 }))
@@ -160,20 +141,11 @@ vi.mock('@/features/exports/components/ExportPanel', () => ({
   ExportPanel: () => null,
 }))
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: ({
-    source,
-    cmsBlogPosts,
-  }: {
-    source: string
-    cmsBlogPosts?: unknown[]
-  }) => {
+  GeneratedModulePreview: ({ source }: { source: string }) => {
     const [initialSource] = useState(source)
     return (
       <div data-testid="generated-module-preview">
         <span data-testid="generated-module-source">{initialSource}</span>
-        <span data-testid="generated-module-cms-posts">
-          {JSON.stringify(cmsBlogPosts ?? [])}
-        </span>
       </div>
     )
   },
@@ -199,7 +171,6 @@ describe('Dashboard missing session state', () => {
     ensureWindowStorage()
     getConvexState().generationView = null
     getConvexState().queryArgs = []
-    getConvexState().cmsBlogPosts = []
     window.localStorage.clear()
     window.sessionStorage.clear()
     window.matchMedia = vi.fn().mockReturnValue({
@@ -215,7 +186,6 @@ describe('Dashboard missing session state', () => {
     window.sessionStorage.clear()
     getConvexState().generationView = null
     getConvexState().queryArgs = []
-    getConvexState().cmsBlogPosts = []
     vi.clearAllMocks()
   })
 
@@ -341,89 +311,6 @@ describe('Dashboard missing session state', () => {
     })
   })
 
-  it('keeps OpenUI source for CMS-promoted OpenUI handoff HTML and passes blog posts into preview', async () => {
-    const state = getConvexState()
-    state.cmsBlogPosts = [
-      {
-        itemId: 'post-1',
-        title: 'CMS Blog Post',
-        slug: 'cms-blog-post',
-        excerpt: 'Published from the CMS panel.',
-        author: 'Surya',
-        category: 'AI',
-        body: 'Full article body.',
-        status: 'published',
-        updatedAt: 200,
-      },
-    ]
-    state.generationView = {
-      session: {
-        sessionId: 'cms-preview-session',
-        status: 'preview_ready',
-        prompt: 'A CMS-ready blog',
-        preferredLanguage: 'en',
-        previewVersion: 2,
-      },
-      tasks: [{ status: 'succeeded' }],
-      events: [],
-      homeModule: {
-        source: 'root = RealOpenUI({ title: "Designed publication" })',
-        updatedAt: 100,
-      },
-      latestPreview: {
-        html: '<!doctype html><html><body><main><h1>Generated OpenUI source is ready.</h1><script id="ship-fast-openui-source" type="application/json">"root = RealOpenUI()"</script><!-- ship-fast-cms:blogPosts:start --><section data-cms-collection="blogPosts"><h2>CMS Blog Post</h2></section><!-- ship-fast-cms:blogPosts:end --></main></body></html>',
-      },
-      siteSpec: null,
-    }
-
-    render(<Dashboard sessionId="cms-preview-session" />)
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId('generated-module-source').textContent,
-      ).toContain('root = RealOpenUI')
-    })
-    expect(
-      screen.getByTestId('generated-module-source').textContent,
-    ).not.toContain('Generated OpenUI source is ready')
-    expect(
-      screen.getByTestId('generated-module-cms-posts').textContent,
-    ).toContain('CMS Blog Post')
-  })
-
-  it('still promotes CMS preview HTML for non-OpenUI HTML previews', async () => {
-    getConvexState().generationView = {
-      session: {
-        sessionId: 'cms-html-preview-session',
-        status: 'preview_ready',
-        prompt: 'A CMS-ready HTML blog',
-        preferredLanguage: 'en',
-        previewVersion: 2,
-      },
-      tasks: [{ status: 'succeeded' }],
-      events: [],
-      homeModule: {
-        source: '<!doctype html><html><body><h1>Stale HTML</h1></body></html>',
-        updatedAt: 100,
-      },
-      latestPreview: {
-        html: '<!doctype html><html><body><main><!-- ship-fast-cms:blogPosts:start --><section data-cms-collection="blogPosts"><h2>CMS Blog Post</h2></section><!-- ship-fast-cms:blogPosts:end --></main></body></html>',
-      },
-      siteSpec: null,
-    }
-
-    render(<Dashboard sessionId="cms-html-preview-session" />)
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId('generated-module-source').textContent,
-      ).toContain('CMS Blog Post')
-    })
-    expect(
-      screen.getByTestId('generated-module-source').textContent,
-    ).not.toContain('Stale HTML')
-  })
-
   it('remembers ready public default sessions for fast repeated prompt opens', async () => {
     getConvexState().generationView = {
       session: {
@@ -510,7 +397,7 @@ describe('Dashboard missing session state', () => {
     render(<Dashboard sessionId="streaming-session" />)
 
     const skipCount = state.queryArgs.filter((args) => args === 'skip').length
-    expect(skipCount).toBe(3)
+    expect(skipCount).toBe(2)
   })
 
   it('loads commerce and deployment side queries after the preview is ready', () => {
@@ -571,32 +458,6 @@ describe('Dashboard missing session state', () => {
 
     expect(
       await screen.findByText('Medusa commerce panel ready-commerce-session'),
-    ).toBeTruthy()
-  })
-
-  it('opens the CMS content panel from the edit content rail action', async () => {
-    getConvexState().generationView = {
-      session: {
-        sessionId: 'ready-cms-session',
-        status: 'preview_ready',
-        prompt: 'A ready CMS website',
-        preferredLanguage: 'en',
-        isPrivate: false,
-      },
-      tasks: [{ status: 'succeeded' }],
-      events: [],
-      homeModule: {
-        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
-      },
-      siteSpec: null,
-    }
-
-    render(<Dashboard sessionId="ready-cms-session" />)
-
-    fireEvent.click(screen.getByRole('button', { name: /Edit content/i }))
-
-    expect(
-      await screen.findByText('CMS content panel ready-cms-session'),
     ).toBeTruthy()
   })
 

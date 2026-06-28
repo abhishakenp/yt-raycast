@@ -122,12 +122,11 @@ describe('renderer shared utilities', () => {
     expect(urdu).toContain('html { direction: rtl; }')
   })
 
-  it('documents target-specific run commands and implicit ecommerce/CMS routes', () => {
+  it('documents target-specific run commands and implicit ecommerce routes', () => {
     const readme = renderProjectReadme(
       {
         projectName: 'Retail Journal',
         siteType: 'ecommerce',
-        exportOptions: { cms: 'sanity' },
         pages: [{ route: '/' }, { route: '/about' }],
       },
       'nextjs',
@@ -135,10 +134,7 @@ describe('renderer shared utilities', () => {
 
     expect(readme).toContain('# Retail Journal')
     expect(readme).toContain('bun run build')
-    expect(readme).toContain('Sanity:')
     expect(readme).toContain('Medusa:')
-    expect(readme).toContain('- `/blog`')
-    expect(readme).toContain('- `/studio`')
     expect(readme).toContain('- `/shop`')
     expect(readme).toContain('- `/checkout`')
   })

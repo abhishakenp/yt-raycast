@@ -6,7 +6,7 @@ Group: Quality Consolidation Audit group 6
 
 ## Scope
 
-This checkpoint covers payment, Medusa commerce, CMS-adjacent commerce helpers,
+This checkpoint covers payment, Medusa commerce,
 and stock image provider boundaries:
 
 - `src/routes/api/medusa-store.cart.ts`
@@ -20,12 +20,11 @@ and stock image provider boundaries:
 - `src/lib/stock-image.ts`
 - `packages/ship-fast-blocks/src/lib/image-search-query.test.ts`
 - `convex/lib/session_commerce_helpers.ts`
-- `convex/lib/session_cms_binding_helpers.ts`
 
 ## Boundary Contract
 
 Commerce and external integrations should be locally testable without real
-payment, Medusa, stock image, or CMS services. The product contract is:
+payment, Medusa, or stock image services. The product contract is:
 
 - billing access decisions are deterministic under mocked Convex and payment
   configuration;
@@ -106,15 +105,14 @@ bun vitest run --config vitest.config.ts \
   src/lib/stock-image.test.ts \
   packages/ship-fast-blocks/src/lib/image-search-query.test.ts \
   convex/medusa.test.ts \
-  convex/lib/session_commerce_helpers.test.ts \
-  convex/lib/session_cms_binding_helpers.test.ts
+  convex/lib/session_commerce_helpers.test.ts
 ```
 
 Result:
 
 ```text
-Test Files  10 passed (10)
-Tests       71 passed (71)
+Test Files  9 passed (9)
+Tests       65 passed (65)
 ```
 
 Whitespace check:
@@ -140,7 +138,7 @@ for the Medusa route-contract test, and the homepage returned `HTTP/1.1 200`.
 
 This group now has route-level Medusa JSON contract coverage in addition to the
 existing service-layer, billing, stock image, OpenUI Medusa provider, and Convex
-commerce/CMS helper tests. The route-contract test is prefixed with `-` so it is
+commerce helper tests. The route-contract test is prefixed with `-` so it is
 kept out of TanStack route discovery. It remains part of the broad dirty
 worktree and should be reviewed as one coherent commerce/external integration
 changeset.

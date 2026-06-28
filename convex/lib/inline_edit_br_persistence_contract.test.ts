@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 
 import { api, internal } from '../_generated/api'
 import schema from '../schema'
-import { applyPreviewTextEdit } from './cms_helpers'
+import { applyPreviewTextEdit } from './session_edit_helpers'
 
 const modules = import.meta.glob('../**/*.ts')
 

@@ -11,7 +11,7 @@ This verification covers the largest review group identified in
 
 - `convex/sessions.ts`
 - `convex/lib/session_*`
-- related Convex session, entitlement, CMS, deployment, generation, gallery,
+- related Convex session, entitlement, deployment, generation, gallery,
   preview-history, event-stream, and usage tests
 
 Current inventory:
@@ -86,7 +86,7 @@ surface for the critical session flows, including:
   `listChatMessages`
 - deployment/gallery: `publishPreview`, `getDeploymentBySlug`,
   `getDeploymentStatus`, `listPublicSessions`, `getPublicGallerySession`
-- commerce/CMS/Agentation/usage/operational notification helpers
+- commerce/usage/operational notification helpers
 
 The point of the decomposition is that these registrations delegate behavior to
 focused helpers under `convex/lib/session_*` instead of keeping all logic inside

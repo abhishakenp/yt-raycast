@@ -7,8 +7,6 @@ import {
   failGeneratedSession,
 } from './session_generation_state_helpers'
 
-type CmsBindingRecord = Doc<'cmsBindings'>
-type CmsEntryRecord = Doc<'cmsEntries'>
 type ExportArtifactRecord = Doc<'exportArtifacts'>
 type GeneratedModuleRecord = Doc<'generatedModules'>
 type GenerationEventRecord = Doc<'generationEvents'>
@@ -53,8 +51,6 @@ const ctxFor = (input: {
   tasks?: TaskRecord[]
   siteSpecs?: SiteSpecRecord[]
   generatedModules?: GeneratedModuleRecord[]
-  cmsBindings?: CmsBindingRecord[]
-  cmsEntries?: CmsEntryRecord[]
 }) => {
   const sessions = [...input.sessions]
   const tasks = [...(input.tasks ?? [])]
@@ -64,8 +60,6 @@ const ctxFor = (input: {
   const previews: PreviewRecord[] = []
   const generationEvents: GenerationEventRecord[] = []
   const usageMetrics: UsageMetricRecord[] = []
-  const cmsBindings = [...(input.cmsBindings ?? [])]
-  const cmsEntries = [...(input.cmsEntries ?? [])]
   const schedulerCalls: Array<{
     delayMs: number
     event: Record<string, unknown>
@@ -90,10 +84,6 @@ const ctxFor = (input: {
         return generationEvents
       case 'usageMetrics':
         return usageMetrics
-      case 'cmsBindings':
-        return cmsBindings
-      case 'cmsEntries':
-        return cmsEntries
       default:
         return []
     }
@@ -149,8 +139,6 @@ const ctxFor = (input: {
         previews,
         generationEvents,
         usageMetrics,
-        cmsBindings,
-        cmsEntries,
       ]) {
         const rowIndex = rows.findIndex((row) => row._id === id)
         if (rowIndex >= 0) {
@@ -182,8 +170,6 @@ const ctxFor = (input: {
     previews,
     generationEvents,
     usageMetrics,
-    cmsBindings,
-    cmsEntries,
     schedulerCalls,
   }
 }

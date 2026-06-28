@@ -103,10 +103,6 @@ export const serializeSessionApiResponse = (
     ecommerce: session.medusaConfig !== undefined,
     openuiReady: session.openuiReady === true,
     integrations: {
-      sanity:
-        session.sanityConfig === undefined
-          ? null
-          : { enabled: true, config: session.sanityConfig },
       medusa:
         session.medusaConfig === undefined
           ? null

@@ -2,7 +2,6 @@ import { ConvexError } from 'convex/values'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
-import { replaceFirstJsonText } from './chat_refinement_helpers'
 import { assertCanMutateSession } from './session_access_helpers'
 import {
   applyImageSwap,
@@ -10,8 +9,57 @@ import {
   applyStyleEdit,
 } from './session_edit_helpers'
 
+type JsonObject = Record<string, unknown>
+
+const isJsonObject = (value: unknown): value is JsonObject =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+/**
+ * Recursively walk a parsed JSON value and replace the first occurrence of
+ * oldText with newText inside a string leaf. Mirrors applyPreviewTextEdit but
+ * operates on structured JSON (site specs) instead of raw HTML/source.
+ */
+const replaceFirstJsonText = (
+  value: unknown,
+  oldText: string,
+  newText: string,
+): { value: unknown; replaced: boolean } => {
+  if (typeof value === 'string') {
+    const result = applyPreviewTextEdit(value, oldText, newText)
+    return { value: result.html, replaced: result.replaced }
+  }
+
+  if (Array.isArray(value)) {
+    let replaced = false
+    const next = value.map((item) => {
+      if (replaced) return item
+      const result = replaceFirstJsonText(item, oldText, newText)
+      replaced = result.replaced
+      return result.value
+    })
+    return { value: next, replaced }
+  }
+
+  if (!isJsonObject(value)) return { value, replaced: false }
+
+  let replaced = false
+  const next: JsonObject = {}
+  for (const [key, item] of Object.entries(value)) {
+    if (replaced) {
+      next[key] = item
+      continue
+    }
+
+    const result = replaceFirstJsonText(item, oldText, newText)
+    next[key] = result.value
+    replaced = result.replaced
+  }
+
+  return { value: next, replaced }
+}
+
 export type SessionEditInput = {
-  editType: 'text' | 'ai_rewrite' | 'chat' | 'style' | 'image'
+  editType: 'text' | 'ai_rewrite' | 'style' | 'image'
   targetLabel?: string
   beforeText?: string
   afterText?: string

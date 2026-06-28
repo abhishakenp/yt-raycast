@@ -1,6 +1,5 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
-import { seedCmsBindingsForGeneratedArtifacts } from './session_cms_binding_helpers'
 import { recordOperationalGenerationEvent } from './session_operational_notifications'
 
 type OperationalNotificationReference = Parameters<
@@ -187,13 +186,6 @@ export const cloneCachedGeneratedArtifacts = async (
     source: 'generation',
     createdAt: args.now,
   })
-
-  await seedCmsBindingsForGeneratedArtifacts(
-    ctx,
-    args.targetSessionId,
-    { html: latestPreview.html, siteSpecJson },
-    args.now,
-  )
 
   await ctx.db.insert('generationEvents', {
     sessionId: args.targetSessionId,
