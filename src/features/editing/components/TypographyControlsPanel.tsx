@@ -122,22 +122,22 @@ export function TypographyControlsPanel({
   }
 
   return (
-    <div className="rounded-lg border border-white/10 bg-[#0b0d14]/95 shadow-2xl backdrop-blur-xl p-2 flex flex-col gap-2 w-full min-w-[280px]">
-      <div className="flex items-center gap-1.5 border-b border-white/10 pb-2">
+    <div className="flex flex-col gap-2 border-t border-white/10 p-2">
+      <div className="flex items-center gap-1.5">
         <Type className="size-3.5 text-cyan-300" />
         <span className="text-xs font-medium text-white/60">Typography</span>
       </div>
 
       {/* Font Family */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-white/60 w-20">Font</span>
+        <Type className="size-3 shrink-0 text-white/40" />
         <select
           value={fontFamily}
           onChange={(e) => {
             setFontFamily(e.target.value)
             applyLiveStyle('font-family', e.target.value)
           }}
-          className="flex-1 rounded bg-white/5 px-2 py-1 text-xs text-white outline-none"
+          className="h-7 flex-1 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50"
         >
           {FONT_FAMILIES.map((f) => (
             <option key={f.label} value={f.value}>
@@ -149,7 +149,9 @@ export function TypographyControlsPanel({
 
       {/* Line Height */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-white/60 w-20">Line Height</span>
+        <span className="w-16 text-[10px] font-medium uppercase tracking-wider text-white/40">
+          Line
+        </span>
         <input
           type="number"
           step="0.1"
@@ -162,7 +164,7 @@ export function TypographyControlsPanel({
             applyLiveStyle('line-height', e.target.value)
           }}
           placeholder="normal"
-          className="flex-1 rounded bg-white/5 px-2 py-1 text-xs text-white outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/50 disabled:opacity-40"
+          className="h-7 flex-1 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 disabled:opacity-40"
         />
         <button
           type="button"
@@ -174,7 +176,7 @@ export function TypographyControlsPanel({
             }
           }}
           className={cn(
-            'rounded px-1.5 py-0.5 text-xs',
+            'h-7 rounded px-2 text-xs transition-colors',
             lineHeightNormal
               ? 'bg-cyan-300/20 text-cyan-100'
               : 'text-white/40 hover:bg-white/5',
@@ -186,7 +188,9 @@ export function TypographyControlsPanel({
 
       {/* Letter Spacing */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-white/60 w-20">Letter</span>
+        <span className="w-16 text-[10px] font-medium uppercase tracking-wider text-white/40">
+          Letter
+        </span>
         <input
           type="number"
           step="0.01"
@@ -198,12 +202,12 @@ export function TypographyControlsPanel({
               `${e.target.value}${letterSpacingUnit}`,
             )
           }}
-          className="flex-1 rounded bg-white/5 px-2 py-1 text-xs text-white outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/50"
+          className="h-7 flex-1 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
         />
         <select
           value={letterSpacingUnit}
           onChange={(e) => setLetterSpacingUnit(e.target.value)}
-          className="rounded bg-white/5 px-1 py-1 text-xs text-white outline-none"
+          className="h-7 w-14 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50"
         >
           <option value="em">em</option>
           <option value="px">px</option>
@@ -213,7 +217,9 @@ export function TypographyControlsPanel({
 
       {/* Word Spacing */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-white/60 w-20">Word</span>
+        <span className="w-16 text-[10px] font-medium uppercase tracking-wider text-white/40">
+          Word
+        </span>
         <input
           type="number"
           step="0.01"
@@ -225,12 +231,12 @@ export function TypographyControlsPanel({
               `${e.target.value}${wordSpacingUnit}`,
             )
           }}
-          className="flex-1 rounded bg-white/5 px-2 py-1 text-xs text-white outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/50"
+          className="h-7 flex-1 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
         />
         <select
           value={wordSpacingUnit}
           onChange={(e) => setWordSpacingUnit(e.target.value)}
-          className="rounded bg-white/5 px-1 py-1 text-xs text-white outline-none"
+          className="h-7 w-14 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50"
         >
           <option value="em">em</option>
           <option value="px">px</option>
@@ -240,8 +246,10 @@ export function TypographyControlsPanel({
 
       {/* Text Transform */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-white/60 w-20">Transform</span>
-        <div className="flex flex-1 gap-1">
+        <span className="w-16 text-[10px] font-medium uppercase tracking-wider text-white/40">
+          Case
+        </span>
+        <div className="flex flex-1 flex-wrap gap-1">
           {TEXT_TRANSFORMS.map((tt) => (
             <button
               key={tt.value}
@@ -251,9 +259,9 @@ export function TypographyControlsPanel({
                 applyLiveStyle('text-transform', tt.value)
               }}
               className={cn(
-                'flex-1 rounded px-1.5 py-0.5 text-xs transition-colors',
+                'rounded-full px-2.5 py-0.5 text-[10px] transition-colors',
                 textTransform === tt.value
-                  ? 'bg-cyan-300/20 text-cyan-100'
+                  ? 'bg-cyan-300/15 text-cyan-200'
                   : 'text-white/40 hover:bg-white/5',
               )}
             >
@@ -268,7 +276,7 @@ export function TypographyControlsPanel({
         <button
           type="button"
           onClick={handleApply}
-          className="flex items-center gap-1 rounded bg-cyan-300 px-3 py-1 text-xs font-bold text-slate-950 transition-transform hover:-translate-y-px"
+          className="flex items-center gap-1 rounded bg-cyan-300 px-3 py-1 text-xs font-bold text-slate-950 transition-colors hover:bg-cyan-200"
         >
           <Check className="size-3" />
           Apply

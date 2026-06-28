@@ -60,31 +60,35 @@ export function LinkEditPopover({
   if (!activeElement) return null
 
   return (
-    <div className="rounded-lg border border-white/10 bg-[#0b0d14]/95 shadow-2xl backdrop-blur-xl p-2 flex flex-col gap-2 w-full min-w-[280px]">
-      <div className="flex items-center gap-1.5 border-b border-white/10 pb-2">
+    <div className="flex w-full min-w-[280px] flex-col gap-2 border-t border-white/10 p-2">
+      <div className="flex items-center gap-1.5">
         <LinkIcon className="size-3.5 text-cyan-300" />
         <span className="text-xs font-medium text-white/60">Edit Link</span>
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-white/40">URL</label>
+        <label className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+          URL
+        </label>
         <input
           type="text"
           value={href}
           onChange={(e) => setHref(e.target.value)}
           placeholder="https://..."
-          className="rounded bg-white/5 px-2 py-1.5 text-xs text-white outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/50"
+          className="h-7 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-white/40">Text</label>
+        <label className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+          Link Text
+        </label>
         <input
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Link text"
-          className="rounded bg-white/5 px-2 py-1.5 text-xs text-white outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/50"
+          className="h-7 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
         />
       </div>
 
@@ -92,7 +96,7 @@ export function LinkEditPopover({
         <button
           type="button"
           onClick={handleApply}
-          className="flex items-center gap-1 rounded bg-cyan-300 px-3 py-1 text-xs font-bold text-slate-950 transition-transform hover:-translate-y-px"
+          className="flex h-7 items-center gap-1 rounded bg-cyan-300 px-3 text-xs font-bold text-slate-950 transition-colors hover:bg-cyan-200"
         >
           <Check className="size-3" />
           Apply

@@ -1,5 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import {
+  useFloating,
+  autoUpdate,
+  offset,
+  flip,
+  shift,
+  type VirtualElement,
+} from '@floating-ui/react'
+import {
   X,
   Bold,
   Italic,
@@ -111,6 +119,25 @@ export function InlineEditToolbar({
   const toolbarRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const originalStyleRef = useRef<string | null>(null)
+
+  // Use floating-ui for positioning so the toolbar (and any open panel) flips
+  // below the element when there isn't room above — preventing it from covering
+  // the content being edited. The anchor is a virtual element built from
+  // anchorRect, same pattern as SectionPromptToolbar.
+  const { refs, floatingStyles } = useFloating({
+    open: isOpen,
+    placement: 'top',
+    middleware: [offset(8), flip({ padding: 8 }), shift({ padding: 8 })],
+    whileElementsMounted: autoUpdate,
+  })
+
+  // Update the virtual reference whenever the anchor rect changes.
+  useEffect(() => {
+    if (!anchorRect) return
+    refs.setPositionReference({
+      getBoundingClientRect: () => anchorRect,
+    } as VirtualElement)
+  }, [anchorRect, refs])
   // Track whether the initial computed-style read is complete. The style-
   // applying useEffect must NOT run on mount with default values (fontSize='16',
   // color='#ffffff', fontWeight='400') — that causes a visual flash and layout
@@ -323,20 +350,16 @@ export function InlineEditToolbar({
 
   if (!isOpen || !anchorRect || !activeElement) return null
 
-  const toolbarStyle: React.CSSProperties = {
-    position: 'fixed',
-    left: `${anchorRect.left}px`,
-    top: `${anchorRect.top - 60}px`,
-    zIndex: 9999,
-  }
-
   const isLinkElement = activeElement?.tagName.toLowerCase() === 'a'
 
   return (
     <TooltipProvider delayDuration={300}>
       <div
-        ref={wrapperRef}
-        style={toolbarStyle}
+        ref={(node: HTMLDivElement | null) => {
+          wrapperRef.current = node
+          refs.setFloating(node)
+        }}
+        style={{ ...floatingStyles, zIndex: 2147483647 }}
         className="flex flex-col gap-1"
       >
         <div

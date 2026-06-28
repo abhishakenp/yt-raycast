@@ -1,6 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
-import { X, Check, Square, Palette, Maximize2, Layers } from 'lucide-react'
+import {
+  X,
+  Check,
+  Square,
+  Palette,
+  Maximize2,
+  Layers,
+  Link2,
+  Unlink,
+} from 'lucide-react'
 import { cn } from '#/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '#/components/ui/tooltip'
 
 interface StyleControlsPanelProps {
   activeElement: HTMLElement | null
@@ -171,263 +186,297 @@ export function StyleControlsPanel({
   ]
 
   return (
-    <div className="rounded-lg border border-white/10 bg-[#0b0d14]/95 shadow-2xl backdrop-blur-xl p-2 flex flex-col gap-2 w-full min-w-[280px]">
-      <div className="flex items-center gap-1 border-b border-white/10 pb-2">
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className={cn(
-              'flex items-center gap-1 rounded px-2 py-1 text-xs font-medium transition-colors',
-              tab === t.id
-                ? 'bg-cyan-300/20 text-cyan-100'
-                : 'text-white/60 hover:bg-white/5 hover:text-white',
-            )}
-          >
-            <t.icon className="size-3" />
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {tab === 'spacing' && (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-white/60">Padding</span>
-            <button
-              type="button"
-              onClick={() => setPaddingLinked(!paddingLinked)}
-              className={cn(
-                'text-xs rounded px-1.5 py-0.5',
-                paddingLinked
-                  ? 'bg-cyan-300/20 text-cyan-100'
-                  : 'text-white/40',
-              )}
-            >
-              {paddingLinked ? 'Linked' : 'Unlinked'}
-            </button>
-          </div>
-          <div className="grid grid-cols-4 gap-1">
-            {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
-              <input
-                key={side}
-                type="number"
-                value={padding[side]}
-                onChange={(e) => setPaddingValue(side, e.target.value)}
-                placeholder={side[0].toUpperCase()}
-                className="w-full rounded bg-white/5 px-1.5 py-1 text-xs text-white outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/50"
-              />
-            ))}
-          </div>
-          <select
-            value={spacingUnit}
-            onChange={(e) => setSpacingUnit(e.target.value)}
-            className="rounded bg-white/5 px-2 py-1 text-xs text-white outline-none"
-          >
-            <option value="px">px</option>
-            <option value="rem">rem</option>
-            <option value="em">em</option>
-          </select>
-
-          <div className="flex items-center justify-between pt-1">
-            <span className="text-xs text-white/60">Margin</span>
-            <button
-              type="button"
-              onClick={() => setMarginLinked(!marginLinked)}
-              className={cn(
-                'text-xs rounded px-1.5 py-0.5',
-                marginLinked ? 'bg-cyan-300/20 text-cyan-100' : 'text-white/40',
-              )}
-            >
-              {marginLinked ? 'Linked' : 'Unlinked'}
-            </button>
-          </div>
-          <div className="grid grid-cols-4 gap-1">
-            {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
-              <input
-                key={side}
-                type="number"
-                value={margin[side]}
-                onChange={(e) => setMarginValue(side, e.target.value)}
-                placeholder={side[0].toUpperCase()}
-                className="w-full rounded bg-white/5 px-1.5 py-1 text-xs text-white outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/50"
-              />
-            ))}
-          </div>
+    <TooltipProvider delayDuration={300}>
+      <div className="flex flex-col gap-2 border-t border-white/10 p-2 w-full min-w-[260px]">
+        <div className="flex items-center gap-1">
+          {tabs.map((t) => (
+            <Tooltip key={t.id}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => setTab(t.id)}
+                  aria-label={t.label}
+                  className={cn(
+                    'size-7 grid place-items-center rounded transition-colors',
+                    tab === t.id
+                      ? 'bg-cyan-300/15 text-cyan-200'
+                      : 'text-white/50 hover:bg-white/5 hover:text-white/80',
+                  )}
+                >
+                  <t.icon className="size-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{t.label}</TooltipContent>
+            </Tooltip>
+          ))}
         </div>
-      )}
 
-      {tab === 'border' && (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/60 w-16">Width</span>
-            <input
-              type="number"
-              value={borderWidth}
-              onChange={(e) => {
-                setBorderWidth(e.target.value)
-                applyLiveStyle('border-width', `${e.target.value}${borderUnit}`)
-              }}
-              className="flex-1 rounded bg-white/5 px-2 py-1 text-xs text-white outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/50"
-            />
+        {tab === 'spacing' && (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase tracking-wider text-white/40 font-medium">
+                Padding
+              </span>
+              <button
+                type="button"
+                onClick={() => setPaddingLinked(!paddingLinked)}
+                className={cn(
+                  'size-7 grid place-items-center rounded transition-colors',
+                  paddingLinked
+                    ? 'bg-cyan-300/15 text-cyan-200'
+                    : 'text-white/40 hover:bg-white/5 hover:text-white/80',
+                )}
+                aria-label={paddingLinked ? 'Unlink padding' : 'Link padding'}
+              >
+                {paddingLinked ? (
+                  <Link2 className="size-3.5" />
+                ) : (
+                  <Unlink className="size-3.5" />
+                )}
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
+                <div key={side} className="flex items-center gap-1.5">
+                  <span className="text-xs text-white/50 w-3">
+                    {side[0].toUpperCase()}
+                  </span>
+                  <input
+                    type="number"
+                    value={padding[side]}
+                    onChange={(e) => setPaddingValue(side, e.target.value)}
+                    className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 transition-colors"
+                  />
+                </div>
+              ))}
+            </div>
             <select
-              value={borderUnit}
-              onChange={(e) => setBorderUnit(e.target.value)}
-              className="rounded bg-white/5 px-1 py-1 text-xs text-white outline-none"
+              value={spacingUnit}
+              onChange={(e) => setSpacingUnit(e.target.value)}
+              className="h-7 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50"
             >
               <option value="px">px</option>
               <option value="rem">rem</option>
+              <option value="em">em</option>
             </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/60 w-16">Style</span>
-            <select
-              value={borderStyle}
-              onChange={(e) => {
-                setBorderStyle(e.target.value)
-                applyLiveStyle('border-style', e.target.value)
-              }}
-              className="flex-1 rounded bg-white/5 px-2 py-1 text-xs text-white outline-none"
-            >
-              <option value="none">none</option>
-              <option value="solid">solid</option>
-              <option value="dashed">dashed</option>
-              <option value="dotted">dotted</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/60 w-16">Color</span>
-            <input
-              type="color"
-              value={borderColor}
-              onChange={(e) => {
-                setBorderColor(e.target.value)
-                applyLiveStyle('border-color', e.target.value)
-              }}
-              className="h-7 w-10 rounded bg-transparent"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/60 w-16">Radius</span>
-            <input
-              type="number"
-              value={borderRadius}
-              onChange={(e) => {
-                setBorderRadius(e.target.value)
-                applyLiveStyle(
-                  'border-radius',
-                  `${e.target.value}${borderUnit}`,
-                )
-              }}
-              className="flex-1 rounded bg-white/5 px-2 py-1 text-xs text-white outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/50"
-            />
-          </div>
-        </div>
-      )}
 
-      {tab === 'background' && (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/60 w-16">Color</span>
-            <input
-              type="color"
-              value={bgColor}
-              onChange={(e) => {
-                setBgColor(e.target.value)
-                applyLiveStyle('background-color', e.target.value)
-              }}
-              className="h-7 w-10 rounded bg-transparent"
-            />
-            <span className="text-xs text-white/40">{bgColor}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/60 w-16">Shadow</span>
-            <div className="flex flex-1 gap-1">
-              {Object.keys(SHADOW_PRESETS).map((preset) => (
-                <button
-                  key={preset}
-                  type="button"
-                  onClick={() => {
-                    setShadow(preset)
-                    applyLiveStyle('box-shadow', SHADOW_PRESETS[preset])
-                  }}
-                  className={cn(
-                    'rounded px-1.5 py-0.5 text-xs transition-colors',
-                    shadow === preset
-                      ? 'bg-cyan-300/20 text-cyan-100'
-                      : 'text-white/40 hover:bg-white/5',
-                  )}
-                >
-                  {preset}
-                </button>
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[10px] uppercase tracking-wider text-white/40 font-medium">
+                Margin
+              </span>
+              <button
+                type="button"
+                onClick={() => setMarginLinked(!marginLinked)}
+                className={cn(
+                  'size-7 grid place-items-center rounded transition-colors',
+                  marginLinked
+                    ? 'bg-cyan-300/15 text-cyan-200'
+                    : 'text-white/40 hover:bg-white/5 hover:text-white/80',
+                )}
+                aria-label={marginLinked ? 'Unlink margin' : 'Link margin'}
+              >
+                {marginLinked ? (
+                  <Link2 className="size-3.5" />
+                ) : (
+                  <Unlink className="size-3.5" />
+                )}
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
+                <div key={side} className="flex items-center gap-1.5">
+                  <span className="text-xs text-white/50 w-3">
+                    {side[0].toUpperCase()}
+                  </span>
+                  <input
+                    type="number"
+                    value={margin[side]}
+                    onChange={(e) => setMarginValue(side, e.target.value)}
+                    className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 transition-colors"
+                  />
+                </div>
               ))}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {tab === 'size' && (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/60 w-16">Width</span>
-            <input
-              type="text"
-              value={width}
-              onChange={(e) => {
-                setWidth(e.target.value)
-                applyLiveStyle('width', e.target.value)
-              }}
-              placeholder="auto"
-              className="flex-1 rounded bg-white/5 px-2 py-1 text-xs text-white outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/50"
-            />
+        {tab === 'border' && (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/50 w-14">Width</span>
+              <input
+                type="number"
+                value={borderWidth}
+                onChange={(e) => {
+                  setBorderWidth(e.target.value)
+                  applyLiveStyle(
+                    'border-width',
+                    `${e.target.value}${borderUnit}`,
+                  )
+                }}
+                className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 transition-colors"
+              />
+              <select
+                value={borderUnit}
+                onChange={(e) => setBorderUnit(e.target.value)}
+                className="h-7 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50"
+              >
+                <option value="px">px</option>
+                <option value="rem">rem</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/50 w-14">Style</span>
+              <select
+                value={borderStyle}
+                onChange={(e) => {
+                  setBorderStyle(e.target.value)
+                  applyLiveStyle('border-style', e.target.value)
+                }}
+                className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50"
+              >
+                <option value="none">none</option>
+                <option value="solid">solid</option>
+                <option value="dashed">dashed</option>
+                <option value="dotted">dotted</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/50 w-14">Color</span>
+              <input
+                type="color"
+                value={borderColor}
+                onChange={(e) => {
+                  setBorderColor(e.target.value)
+                  applyLiveStyle('border-color', e.target.value)
+                }}
+                className="h-7 w-9 rounded border border-white/10 bg-transparent cursor-pointer"
+              />
+              <span className="text-xs text-white/40">{borderColor}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/50 w-14">Radius</span>
+              <input
+                type="number"
+                value={borderRadius}
+                onChange={(e) => {
+                  setBorderRadius(e.target.value)
+                  applyLiveStyle(
+                    'border-radius',
+                    `${e.target.value}${borderUnit}`,
+                  )
+                }}
+                className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 transition-colors"
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/60 w-16">Height</span>
-            <input
-              type="text"
-              value={height}
-              onChange={(e) => {
-                setHeight(e.target.value)
-                applyLiveStyle('height', e.target.value)
-              }}
-              placeholder="auto"
-              className="flex-1 rounded bg-white/5 px-2 py-1 text-xs text-white outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/50"
-            />
+        )}
+
+        {tab === 'background' && (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/50 w-14">Color</span>
+              <input
+                type="color"
+                value={bgColor}
+                onChange={(e) => {
+                  setBgColor(e.target.value)
+                  applyLiveStyle('background-color', e.target.value)
+                }}
+                className="h-7 w-9 rounded border border-white/10 bg-transparent cursor-pointer"
+              />
+              <span className="text-xs text-white/40">{bgColor}</span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[10px] uppercase tracking-wider text-white/40 font-medium">
+                Shadow
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {Object.keys(SHADOW_PRESETS).map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => {
+                      setShadow(preset)
+                      applyLiveStyle('box-shadow', SHADOW_PRESETS[preset])
+                    }}
+                    className={cn(
+                      'rounded-full px-2 py-0.5 text-[10px] transition-colors',
+                      shadow === preset
+                        ? 'bg-cyan-300/15 text-cyan-200'
+                        : 'text-white/40 hover:bg-white/5 hover:text-white/80',
+                    )}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <select
-            value={sizeUnit}
-            onChange={(e) => setSizeUnit(e.target.value)}
-            className="rounded bg-white/5 px-2 py-1 text-xs text-white outline-none"
+        )}
+
+        {tab === 'size' && (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/50 w-14">Width</span>
+              <input
+                type="text"
+                value={width}
+                onChange={(e) => {
+                  setWidth(e.target.value)
+                  applyLiveStyle('width', e.target.value)
+                }}
+                placeholder="auto"
+                className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 transition-colors"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/50 w-14">Height</span>
+              <input
+                type="text"
+                value={height}
+                onChange={(e) => {
+                  setHeight(e.target.value)
+                  applyLiveStyle('height', e.target.value)
+                }}
+                placeholder="auto"
+                className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 transition-colors"
+              />
+            </div>
+            <select
+              value={sizeUnit}
+              onChange={(e) => setSizeUnit(e.target.value)}
+              className="h-7 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50"
+            >
+              <option value="px">px</option>
+              <option value="%">%</option>
+              <option value="rem">rem</option>
+              <option value="vw">vw</option>
+              <option value="vh">vh</option>
+              <option value="auto">auto</option>
+            </select>
+          </div>
+        )}
+
+        <div className="flex items-center gap-1.5 border-t border-white/10 pt-2">
+          <button
+            type="button"
+            onClick={handleApply}
+            className="flex items-center gap-1 rounded bg-cyan-300 px-3 h-7 text-xs font-bold text-slate-950 hover:bg-cyan-200 transition-colors"
           >
-            <option value="px">px</option>
-            <option value="%">%</option>
-            <option value="rem">rem</option>
-            <option value="vw">vw</option>
-            <option value="vh">vh</option>
-            <option value="auto">auto</option>
-          </select>
+            <Check className="size-3" />
+            Apply
+          </button>
+          <button
+            type="button"
+            onClick={handleClose}
+            className="grid size-7 place-items-center rounded text-white/40 hover:bg-white/10 hover:text-white transition-colors"
+            aria-label="Close"
+          >
+            <X className="size-3.5" />
+          </button>
         </div>
-      )}
-
-      <div className="flex items-center gap-1 border-t border-white/10 pt-2">
-        <button
-          type="button"
-          onClick={handleApply}
-          className="flex items-center gap-1 rounded bg-cyan-300 px-3 py-1 text-xs font-bold text-slate-950 transition-transform hover:-translate-y-px"
-        >
-          <Check className="size-3" />
-          Apply
-        </button>
-        <button
-          type="button"
-          onClick={handleClose}
-          className="grid size-7 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white"
-          aria-label="Close"
-        >
-          <X className="size-3.5" />
-        </button>
       </div>
-    </div>
+    </TooltipProvider>
   )
 }
