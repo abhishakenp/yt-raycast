@@ -1073,11 +1073,11 @@ export function Dashboard({
     })
   }
 
-  const handleImageSelect = (newSrc: string) => {
+  const handleImageSelect = (newSrc: string, originalSrc: string) => {
     const el = toolbarState.activeElement as HTMLImageElement | null
     if (el) {
       handleImageChange({
-        oldSrc: el.src,
+        oldSrc: originalSrc,
         newSrc,
         element: el,
         alt: el.alt ?? '',
