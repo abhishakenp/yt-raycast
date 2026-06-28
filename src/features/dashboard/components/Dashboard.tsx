@@ -378,6 +378,23 @@ export function Dashboard({
   const { requireSignIn: requireSignInForEdit } = useSignInGate()
   const commitTextEditRef = useRef<(() => void) | null>(null)
   const cancelTextEditRef = useRef<(() => void) | null>(null)
+  // Save scroll position of the preview container before a remount (caused
+  // by an inline edit bumping the preview version) and restore it after the
+  // new preview mounts. Without this, every successful edit resets scroll
+  // to top because the key change forces a full remount of the scroll container.
+  const savedPreviewScrollRef = useRef<number | null>(null)
+  // Find the actual scrollable element inside the preview. The scroll
+  // container may be .genui-preview itself or a descendant div depending
+  // on the rendered layout.
+  const getPreviewScrollEl = (): Element | null => {
+    const root = document.querySelector('.genui-preview')
+    if (!root) return null
+    if (root.scrollHeight > root.clientHeight + 10) return root
+    const scrollChild = Array.from(root.querySelectorAll('*')).find(
+      (el) => el.scrollHeight > el.clientHeight + 10,
+    )
+    return scrollChild ?? null
+  }
   const handleCommitTextReady = useCallback(
     (commitFn: () => void, cancelFn: () => void) => {
       commitTextEditRef.current = commitFn
@@ -806,6 +823,33 @@ export function Dashboard({
     ? `cms:${generationView?.latestPreview?.version ?? generationView?.session.previewVersion ?? homeModule?.updatedAt ?? 'latest'}`
     : `${homeModule?.updatedAt ?? generationView?.session.previewVersion}`
 
+  // Restore the preview scroll position after a remount caused by an inline
+  // edit. The preview remounts when renderedPreviewKey changes (because a
+  // successful edit bumps homeModule.updatedAt). The new OpenUI source needs
+  // to be compiled and rendered before the scroll container has its full
+  // scrollHeight, so we retry over a few animation frames until the content
+  // is tall enough to accept the saved scroll position.
+  useEffect(() => {
+    if (savedPreviewScrollRef.current === null) return
+    const saved = savedPreviewScrollRef.current
+    savedPreviewScrollRef.current = null
+    let raf = 0
+    let attempts = 0
+    const tryRestore = () => {
+      const scrollEl = getPreviewScrollEl()
+      if (scrollEl && scrollEl.scrollHeight > saved) {
+        scrollEl.scrollTop = saved
+        return
+      }
+      // Content not ready yet — retry for up to ~500ms (30 frames)
+      if (attempts++ < 30) {
+        raf = requestAnimationFrame(tryRestore)
+      }
+    }
+    raf = requestAnimationFrame(tryRestore)
+    return () => cancelAnimationFrame(raf)
+  }, [renderedPreviewKey])
+
   const handlePublish = async () => {
     if (resolvedSessionId === undefined) return
 
@@ -887,6 +931,13 @@ export function Dashboard({
     const tag = change.element.tagName.toLowerCase()
     const text = change.element.textContent?.slice(0, 20) || ''
     const label = `${tag.toUpperCase()}: ${text}…`
+    // Save the preview scroll position before the edit. A successful edit
+    // bumps the preview version, which changes renderedPreviewKey and
+    // remounts the scroll container, resetting scrollTop to 0.
+    const previewScrollEl = getPreviewScrollEl()
+    if (previewScrollEl) {
+      savedPreviewScrollRef.current = previewScrollEl.scrollTop
+    }
     const result = await editController.applyEdit(
       'text',
       label,
@@ -931,6 +982,11 @@ export function Dashboard({
       change.element.ownerDocument.querySelectorAll('img'),
     ).filter((img) => (img as HTMLImageElement).alt === change.alt)
     const occurrenceIndex = Math.max(0, sameAlt.indexOf(change.element))
+    // Save scroll position before the edit (see handleTextChange for rationale)
+    const previewScrollEl = getPreviewScrollEl()
+    if (previewScrollEl) {
+      savedPreviewScrollRef.current = previewScrollEl.scrollTop
+    }
     // Fire and forget - the page will reload after successful edit
     editController
       .applyEdit(
@@ -1020,6 +1076,11 @@ export function Dashboard({
     const tag = toolbarState.activeElement?.tagName.toLowerCase() || 'DIV'
     const text = toolbarState.activeElement?.textContent?.slice(0, 20) || ''
     const label = `${tag.toUpperCase()}: ${text}…`
+    // Save scroll position before the edit (see handleTextChange for rationale)
+    const previewScrollEl = getPreviewScrollEl()
+    if (previewScrollEl) {
+      savedPreviewScrollRef.current = previewScrollEl.scrollTop
+    }
     const result = await editController.applyEdit(
       'style',
       label,
