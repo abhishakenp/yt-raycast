@@ -127,8 +127,8 @@ export function InlineEditToolbar({
 
   useEffect(() => {
     if (!isOpen || !anchorRect) return
-    // Max height = toolbar (~52px) + tallest panel (~340px) + gap
-    const maxPossibleHeight = 400
+    // Max height = toolbar (~52px) + tallest panel (~280px) + gap
+    const maxPossibleHeight = 340
     const spaceAbove = anchorRect.top
     const spaceBelow = window.innerHeight - anchorRect.bottom
     // Prefer 'top' (above) unless there's not enough room for the full
@@ -259,14 +259,21 @@ export function InlineEditToolbar({
   // (open dropdown, open color picker). Skip preventDefault for those so the
   // font-size dropdown and color picker actually work.
   const preventFocusSteal = (e: React.MouseEvent) => {
-    const tag = (e.target as HTMLElement).tagName
+    const target = e.target as HTMLElement
+    const tag = target.tagName
+    // <select>, <input>, and Radix Select triggers (role="combobox") need
+    // the mousedown default to function (open dropdown, focus input).
     if (tag === 'SELECT' || tag === 'INPUT') return
+    if (target.closest('[role="combobox"]')) return
     e.preventDefault()
   }
 
   // Close on click outside — use wrapperRef so clicks on panels don't close.
   // Also check for closest [data-inline-edit-wrapper] as a fallback in case
   // the callback ref is temporarily null during React re-renders.
+  // Radix Select/Tooltip portal their content to document.body, so also
+  // check for Radix portal elements (options, popper content) — clicking
+  // those should NOT close the toolbar.
   useEffect(() => {
     if (!isOpen || isApplying || isForking) return
     const handleClickOutside = (e: MouseEvent) => {
@@ -274,7 +281,18 @@ export function InlineEditToolbar({
       const isInWrapper =
         (wrapperRef.current && wrapperRef.current.contains(target)) ||
         target.closest?.('[data-inline-edit-wrapper]')
-      if (!isInWrapper && !activeElement?.contains(target)) {
+      // Radix portals content outside the wrapper — treat clicks on
+      // Select options, listbox content, and popper wrappers as "inside"
+      const isInRadixPortal =
+        target.closest?.('[role="option"]') ||
+        target.closest?.('[role="listbox"]') ||
+        target.closest?.('[data-radix-popper-content-wrapper]') ||
+        target.closest?.('[data-radix-select-content]')
+      if (
+        !isInWrapper &&
+        !isInRadixPortal &&
+        !activeElement?.contains(target)
+      ) {
         onClose()
       }
     }

@@ -208,7 +208,7 @@ export function StyleControlsPanel({
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex flex-col gap-2 p-2 w-full min-w-[280px]">
+      <div className="flex flex-col gap-2 p-2 w-full min-w-[420px]">
         <div className="flex items-center gap-1">
           {tabs.map((t) => (
             <Tooltip key={t.id}>
@@ -234,94 +234,106 @@ export function StyleControlsPanel({
 
         {tab === 'spacing' && (
           <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className={labelCls}>Padding</span>
-              <button
-                type="button"
-                onClick={() => setPaddingLinked(!paddingLinked)}
-                className={cn(
-                  'size-6 grid place-items-center rounded transition-colors',
-                  paddingLinked
-                    ? 'bg-cyan-300/15 text-cyan-200'
-                    : 'text-white/40 hover:bg-white/5 hover:text-white/80',
-                )}
-                aria-label={paddingLinked ? 'Unlink padding' : 'Link padding'}
-              >
-                {paddingLinked ? (
-                  <Link2 className="size-3.5" />
-                ) : (
-                  <Unlink className="size-3.5" />
-                )}
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
-                <div key={side} className="relative">
-                  <span className="absolute left-1 top-0.5 text-[9px] text-white/30">
-                    {side[0].toUpperCase()}
-                  </span>
-                  <input
-                    type="number"
-                    value={padding[side]}
-                    onChange={(e) => setPaddingValue(side, e.target.value)}
-                    className="h-7 w-full rounded border border-white/10 bg-white/5 pl-5 pr-1 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
-                  />
+            <div className="grid grid-cols-2 gap-3">
+              {/* Padding column */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className={labelCls}>Padding</span>
+                  <button
+                    type="button"
+                    onClick={() => setPaddingLinked(!paddingLinked)}
+                    className={cn(
+                      'size-6 grid place-items-center rounded transition-colors',
+                      paddingLinked
+                        ? 'bg-cyan-300/15 text-cyan-200'
+                        : 'text-white/40 hover:bg-white/5 hover:text-white/80',
+                    )}
+                    aria-label={
+                      paddingLinked ? 'Unlink padding' : 'Link padding'
+                    }
+                  >
+                    {paddingLinked ? (
+                      <Link2 className="size-3.5" />
+                    ) : (
+                      <Unlink className="size-3.5" />
+                    )}
+                  </button>
                 </div>
-              ))}
-            </div>
-            <Select value={spacingUnit} onValueChange={setSpacingUnit}>
-              <SelectTrigger className="w-16">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="px">px</SelectItem>
-                <SelectItem value="rem">rem</SelectItem>
-                <SelectItem value="em">em</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <div className="flex items-center justify-between pt-1">
-              <span className={labelCls}>Margin</span>
-              <button
-                type="button"
-                onClick={() => setMarginLinked(!marginLinked)}
-                className={cn(
-                  'size-6 grid place-items-center rounded transition-colors',
-                  marginLinked
-                    ? 'bg-cyan-300/15 text-cyan-200'
-                    : 'text-white/40 hover:bg-white/5 hover:text-white/80',
-                )}
-                aria-label={marginLinked ? 'Unlink margin' : 'Link margin'}
-              >
-                {marginLinked ? (
-                  <Link2 className="size-3.5" />
-                ) : (
-                  <Unlink className="size-3.5" />
-                )}
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
-                <div key={side} className="relative">
-                  <span className="absolute left-1 top-0.5 text-[9px] text-white/30">
-                    {side[0].toUpperCase()}
-                  </span>
-                  <input
-                    type="number"
-                    value={margin[side]}
-                    onChange={(e) => setMarginValue(side, e.target.value)}
-                    className="h-7 w-full rounded border border-white/10 bg-white/5 pl-5 pr-1 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
-                  />
+                <div className="grid grid-cols-2 gap-1">
+                  {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
+                    <div key={side} className="relative">
+                      <span className="absolute left-1 top-0.5 text-[9px] text-white/30">
+                        {side[0].toUpperCase()}
+                      </span>
+                      <input
+                        type="number"
+                        value={padding[side]}
+                        onChange={(e) => setPaddingValue(side, e.target.value)}
+                        className="h-7 w-full rounded border border-white/10 bg-white/5 pl-5 pr-1 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+              {/* Margin column */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className={labelCls}>Margin</span>
+                  <button
+                    type="button"
+                    onClick={() => setMarginLinked(!marginLinked)}
+                    className={cn(
+                      'size-6 grid place-items-center rounded transition-colors',
+                      marginLinked
+                        ? 'bg-cyan-300/15 text-cyan-200'
+                        : 'text-white/40 hover:bg-white/5 hover:text-white/80',
+                    )}
+                    aria-label={marginLinked ? 'Unlink margin' : 'Link margin'}
+                  >
+                    {marginLinked ? (
+                      <Link2 className="size-3.5" />
+                    ) : (
+                      <Unlink className="size-3.5" />
+                    )}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-1">
+                  {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
+                    <div key={side} className="relative">
+                      <span className="absolute left-1 top-0.5 text-[9px] text-white/30">
+                        {side[0].toUpperCase()}
+                      </span>
+                      <input
+                        type="number"
+                        value={margin[side]}
+                        onChange={(e) => setMarginValue(side, e.target.value)}
+                        className="h-7 w-full rounded border border-white/10 bg-white/5 pl-5 pr-1 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={labelCls}>Unit</span>
+              <Select value={spacingUnit} onValueChange={setSpacingUnit}>
+                <SelectTrigger className="w-16">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="px">px</SelectItem>
+                  <SelectItem value="rem">rem</SelectItem>
+                  <SelectItem value="em">em</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         )}
 
         {tab === 'border' && (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <span className={cn(labelCls, 'w-14 shrink-0')}>Width</span>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className={cn(labelCls, 'w-12')}>W</span>
               <InputGroup className={groupCls}>
                 <InputGroupInput
                   type="number"
@@ -348,8 +360,8 @@ export function StyleControlsPanel({
                 </InputGroupAddon>
               </InputGroup>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={cn(labelCls, 'w-14 shrink-0')}>Style</span>
+            <div className="flex items-center gap-1.5">
+              <span className={cn(labelCls, 'w-12')}>Style</span>
               <Select
                 value={borderStyle}
                 onValueChange={(v) => {
@@ -368,8 +380,8 @@ export function StyleControlsPanel({
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={cn(labelCls, 'w-14 shrink-0')}>Color</span>
+            <div className="flex items-center gap-1.5">
+              <span className={cn(labelCls, 'w-12')}>Color</span>
               <input
                 type="color"
                 value={borderColor}
@@ -377,12 +389,11 @@ export function StyleControlsPanel({
                   setBorderColor(e.target.value)
                   applyLiveStyle('border-color', e.target.value)
                 }}
-                className="h-7 w-9 rounded border border-white/10 bg-transparent cursor-pointer"
+                className="h-7 w-8 rounded border border-white/10 bg-transparent cursor-pointer"
               />
-              <span className="text-[10px] text-white/40">{borderColor}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={cn(labelCls, 'w-14 shrink-0')}>Radius</span>
+            <div className="flex items-center gap-1.5">
+              <span className={cn(labelCls, 'w-12')}>R</span>
               <InputGroup className={groupCls}>
                 <InputGroupInput
                   type="number"
@@ -413,9 +424,9 @@ export function StyleControlsPanel({
         )}
 
         {tab === 'background' && (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <span className={cn(labelCls, 'w-14 shrink-0')}>Color</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <span className={cn(labelCls, 'w-10')}>Color</span>
               <input
                 type="color"
                 value={bgColor}
@@ -423,13 +434,12 @@ export function StyleControlsPanel({
                   setBgColor(e.target.value)
                   applyLiveStyle('background-color', e.target.value)
                 }}
-                className="h-7 w-9 rounded border border-white/10 bg-transparent cursor-pointer"
+                className="h-7 w-8 rounded border border-white/10 bg-transparent cursor-pointer"
               />
-              <span className="text-[10px] text-white/40">{bgColor}</span>
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5 flex-1">
               <span className={labelCls}>Shadow</span>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex gap-1">
                 {Object.keys(SHADOW_PRESETS).map((preset) => (
                   <button
                     key={preset}
@@ -454,9 +464,9 @@ export function StyleControlsPanel({
         )}
 
         {tab === 'size' && (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <span className={cn(labelCls, 'w-14 shrink-0')}>Width</span>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className={cn(labelCls, 'w-10')}>W</span>
               <InputGroup className={groupCls}>
                 <InputGroupInput
                   type="text"
@@ -485,8 +495,8 @@ export function StyleControlsPanel({
                 </InputGroupAddon>
               </InputGroup>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={cn(labelCls, 'w-14 shrink-0')}>Height</span>
+            <div className="flex items-center gap-1.5">
+              <span className={cn(labelCls, 'w-10')}>H</span>
               <InputGroup className={groupCls}>
                 <InputGroupInput
                   type="text"
