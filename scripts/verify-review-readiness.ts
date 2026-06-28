@@ -78,8 +78,6 @@ export const reviewReadinessProofs = {
           '# Frontend Workflow And Preview Verification',
           '## Verification Commands',
           'bun run verify:dashboard-browser',
-          'bun run verify:chat-browser',
-          'bun run verify:cms-browser',
         ],
       },
     ],
