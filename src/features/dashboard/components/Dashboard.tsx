@@ -44,6 +44,9 @@ import {
   type ReadySessionPreviewCacheEntry,
 } from '@/features/session/services/ready-session-cache'
 import { useEditController } from '@/features/editing/hooks/useEditController'
+import { useUndoRedo } from '@/features/editing/hooks/useUndoRedo'
+import { useReorderElement } from '@/features/editing/hooks/useReorderElement'
+import { replaceHrefInSource } from '@/features/editing/lib/link-source'
 import { revertTextPreservingIcons } from '@/features/editing/hooks/useTextEdit'
 import { ImageSwapPopover } from '@/features/editing/components/ImageSwapPopover'
 import { InlineEditToolbar } from '@/features/editing/components/InlineEditToolbar'
@@ -482,6 +485,14 @@ export function Dashboard({
   const publishPreview = useMutation(api.sessions.publishPreview)
   const setThemeOverrideMutation = useMutation(api.sessions.setThemeOverride)
   const editController = useEditController(resolvedSessionId || sessionId)
+  const undoRedo = useUndoRedo(editController)
+  const reorder = useReorderElement({
+    sessionId: resolvedSessionId,
+    getSource: async () => {
+      // Fetch the current OpenUI source from the generation view
+      return generationView?.homeModule?.source
+    },
+  })
 
   useEffect(() => {
     if (liveGenerationView !== undefined) return
@@ -886,6 +897,32 @@ export function Dashboard({
     document.dispatchEvent(new CustomEvent('ship-fast-inspector-clear'))
   }
 
+  const handleSectionMoveUp = async () => {
+    if (!inspectorSelection) return
+    const root = document.querySelector('.genui-preview')
+    if (!root) return
+    const el = root.querySelector<HTMLElement>(inspectorSelection.elementPath)
+    if (!el) return
+    const sectionId =
+      el.getAttribute('id') || el.closest('[id]')?.getAttribute('id') || ''
+    if (sectionId) {
+      await reorder.reorder(sectionId, 'up')
+    }
+  }
+
+  const handleSectionMoveDown = async () => {
+    if (!inspectorSelection) return
+    const root = document.querySelector('.genui-preview')
+    if (!root) return
+    const el = root.querySelector<HTMLElement>(inspectorSelection.elementPath)
+    if (!el) return
+    const sectionId =
+      el.getAttribute('id') || el.closest('[id]')?.getAttribute('id') || ''
+    if (sectionId) {
+      await reorder.reorder(sectionId, 'down')
+    }
+  }
+
   const handleSectionDelete = async () => {
     if (!inspectorSelection) return
     // Find the selected element in the preview DOM via its element path
@@ -1097,6 +1134,52 @@ export function Dashboard({
       anchorRect: rect,
       activeElement: element,
     })
+  }
+
+  const handleLinkEdit = async (payload: {
+    oldHref: string
+    newHref: string
+    occurrenceIndex: number
+  }) => {
+    if (!resolvedSessionId) return
+    const source = generationView?.homeModule?.source
+    if (!source) return
+    const result = replaceHrefInSource(
+      source,
+      payload.oldHref,
+      payload.newHref,
+      payload.occurrenceIndex,
+    )
+    if (!result.replaced) return
+    await editController.applyEdit(
+      'ai_rewrite',
+      `link: ${payload.oldHref} → ${payload.newHref}`,
+      undefined,
+      undefined,
+      'replace link href',
+      result.source,
+    )
+  }
+
+  const handleMoveUp = async () => {
+    if (!toolbarState.activeElement) return
+    // Find the section variable name from the element's id or class
+    const el = toolbarState.activeElement
+    const sectionId =
+      el.getAttribute('id') || el.closest('[id]')?.getAttribute('id') || ''
+    if (sectionId) {
+      await reorder.reorder(sectionId, 'up')
+    }
+  }
+
+  const handleMoveDown = async () => {
+    if (!toolbarState.activeElement) return
+    const el = toolbarState.activeElement
+    const sectionId =
+      el.getAttribute('id') || el.closest('[id]')?.getAttribute('id') || ''
+    if (sectionId) {
+      await reorder.reorder(sectionId, 'down')
+    }
   }
 
   const handleStyleApply = async (payload: {
@@ -2110,6 +2193,15 @@ export function Dashboard({
         onCommitText={() => commitTextEditRef.current?.()}
         isApplying={isApplyingStyle}
         isForking={isForkingSession}
+        canUndo={undoRedo.canUndo}
+        canRedo={undoRedo.canRedo}
+        onUndo={undoRedo.undo}
+        onRedo={undoRedo.redo}
+        onLinkEdit={handleLinkEdit}
+        onMoveUp={handleMoveUp}
+        onMoveDown={handleMoveDown}
+        canMoveUp={true}
+        canMoveDown={true}
       />
       <SectionPromptToolbar
         isOpen={inspectorSelection !== null}
@@ -2132,6 +2224,8 @@ export function Dashboard({
         selection={inspectorSelection}
         onSubmit={handleSectionEditSubmit}
         onDelete={handleSectionDelete}
+        onMoveUp={handleSectionMoveUp}
+        onMoveDown={handleSectionMoveDown}
         isSubmitting={isSectionEditing}
         error={sectionEditError}
       />

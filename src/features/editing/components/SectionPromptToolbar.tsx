@@ -7,7 +7,7 @@ import {
   shift,
   type VirtualElement,
 } from '@floating-ui/react'
-import { X, Sparkles, Trash2 } from 'lucide-react'
+import { X, Sparkles, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import { Textarea } from '#/components/ui/textarea'
 import type { InspectorSelection } from '../element-path'
@@ -30,6 +30,8 @@ interface SectionPromptToolbarProps {
   onClose: () => void
   onSubmit?: (prompt: string) => void
   onDelete?: () => void
+  onMoveUp?: () => void
+  onMoveDown?: () => void
   isSubmitting?: boolean
   error?: string
 }
@@ -41,6 +43,8 @@ export function SectionPromptToolbar({
   onClose,
   onSubmit,
   onDelete,
+  onMoveUp,
+  onMoveDown,
   isSubmitting = false,
   error,
 }: SectionPromptToolbarProps) {
@@ -113,6 +117,30 @@ export function SectionPromptToolbar({
           AI edit
         </span>
         <div className="flex items-center gap-1">
+          {onMoveUp && (
+            <button
+              type="button"
+              onClick={onMoveUp}
+              disabled={isSubmitting}
+              className="grid size-6 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Move section up"
+              title="Move section up"
+            >
+              <ChevronUp className="size-3.5" />
+            </button>
+          )}
+          {onMoveDown && (
+            <button
+              type="button"
+              onClick={onMoveDown}
+              disabled={isSubmitting}
+              className="grid size-6 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Move section down"
+              title="Move section down"
+            >
+              <ChevronDown className="size-3.5" />
+            </button>
+          )}
           {onDelete && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
