@@ -193,3 +193,113 @@ describe('InlineEditToolbar — behavioral', () => {
       'button[aria-label="Align center"]',
     ) as HTMLButtonElement
 })
+
+describe('InlineEditToolbar — font size dropdown', () => {
+  let activeElement: HTMLElement
+  let originalGetComputedStyle: typeof window.getComputedStyle
+  let originalRequestAnimationFrame: typeof globalThis.requestAnimationFrame
+
+  beforeEach(() => {
+    onStyleApply.mockReset()
+    onCommitText.mockReset()
+    onClose.mockReset()
+
+    activeElement = document.createElement('div')
+    activeElement.setAttribute('class', 'hero-title')
+    document.body.appendChild(activeElement)
+
+    originalGetComputedStyle = window.getComputedStyle
+    vi.spyOn(window, 'getComputedStyle').mockImplementation(() =>
+      makeComputed(),
+    )
+
+    originalRequestAnimationFrame = globalThis.requestAnimationFrame
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0)
+      return 0
+    })
+  })
+
+  afterEach(() => {
+    cleanup()
+    activeElement.remove()
+    vi.mocked(window.getComputedStyle).mockRestore()
+    window.getComputedStyle = originalGetComputedStyle
+    vi.stubGlobal('requestAnimationFrame', originalRequestAnimationFrame)
+  })
+
+  it('applies font size to the element when the dropdown value changes', () => {
+    renderToolbar(activeElement)
+
+    // The dropdown should reflect the computed 16px initially
+    const select = document.querySelector('select') as HTMLSelectElement
+    expect(select.value).toBe('16')
+
+    // Simulate user selecting 24px
+    fireEvent.change(select, { target: { value: '24' } })
+
+    // The live-preview effect should have applied 24px to the element
+    expect(activeElement.style.fontSize).toBe('24px')
+  })
+
+  it('does NOT preventDefault on mousedown for the font-size select (dropdown must open)', () => {
+    // The toolbar parent has onMouseDown={preventFocusSteal} which calls
+    // e.preventDefault() to keep focus on the contentEditable. But native
+    // <select> dropdowns REQUIRE the mousedown default to open. If
+    // preventDefault fires on the select, the dropdown never opens and the
+    // user can't change font size.
+    renderToolbar(activeElement)
+
+    const select = document.querySelector('select') as HTMLSelectElement
+    const event = new MouseEvent('mousedown', {
+      bubbles: true,
+      cancelable: true,
+    })
+    select.dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(false)
+  })
+
+  it('does NOT preventDefault on mousedown for the color input', () => {
+    // Same issue: <input type="color"> needs mousedown default to open
+    renderToolbar(activeElement)
+
+    const input = document.querySelector(
+      'input[type="color"]',
+    ) as HTMLInputElement
+    const event = new MouseEvent('mousedown', {
+      bubbles: true,
+      cancelable: true,
+    })
+    input.dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(false)
+  })
+
+  it('sends the updated font size in onStyleApply when Apply is clicked', () => {
+    // CSS / CSS.escape is not available in jsdom — polyfill it so handleApply
+    // can compute occurrenceIndex via querySelectorAll.
+    const globalCss = globalThis as unknown as {
+      CSS?: { escape?: (s: string) => string }
+    }
+    if (!globalCss.CSS) globalCss.CSS = {} as { escape: (s: string) => string }
+    if (!globalCss.CSS!.escape) {
+      globalCss.CSS!.escape = (str: string) => str.replace(/[^\w-]/g, '\\$&')
+    }
+
+    renderToolbar(activeElement)
+
+    const select = document.querySelector('select') as HTMLSelectElement
+    fireEvent.change(select, { target: { value: '32' } })
+
+    const buttons = Array.from(
+      document.querySelectorAll('button'),
+    ) as HTMLButtonElement[]
+    const apply = buttons.find((b) => b.textContent?.includes('Apply'))!
+    fireEvent.click(apply)
+
+    expect(onStyleApply).toHaveBeenCalledTimes(1)
+    const { style } = onStyleApply.mock.calls[0][0]
+    expect(style).toContain('font-size: 32px')
+  })
+})

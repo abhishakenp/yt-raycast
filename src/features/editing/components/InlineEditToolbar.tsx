@@ -120,7 +120,12 @@ export function InlineEditToolbar({
   // Prevent mousedown on the toolbar from stealing focus from the contentEditable
   // element. Without this, clicking any toolbar button blurs the contentEditable,
   // which fires finishEdit() and kills the edit before the style can be applied.
+  // BUT: <select> and <input> elements need the mousedown default to function
+  // (open dropdown, open color picker). Skip preventDefault for those so the
+  // font-size dropdown and color picker actually work.
   const preventFocusSteal = (e: React.MouseEvent) => {
+    const tag = (e.target as HTMLElement).tagName
+    if (tag === 'SELECT' || tag === 'INPUT') return
     e.preventDefault()
   }
 
