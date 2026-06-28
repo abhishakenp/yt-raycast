@@ -9,10 +9,36 @@ import { searchStockImages, type StockImageResult } from '@/lib/stock-image'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
-import {
-  validateImageFile as validateImageFileFromPopover,
-  extractImageFiles as extractImageFilesFromPopover,
-} from './ImageSwapPopover'
+
+const MAX_FILE_SIZE = 8 * 1024 * 1024 // 8 MB
+const ACCEPTED_TYPES = [
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
+]
+
+/** Pure validation for user-uploaded image files. Returns null if valid,
+ *  or an error message string explaining why the file is rejected. */
+function validateImageFile(file: {
+  type: string
+  size: number
+  name: string
+}): string | null {
+  if (!ACCEPTED_TYPES.includes(file.type)) {
+    return `Unsupported file type: ${file.type}`
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    return `File too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)`
+  }
+  return null
+}
+
+/** Extract image files from a FileList / drag-drop payload. */
+function extractImageFiles(files: File[]): File[] {
+  return files.filter((f) => f.type.startsWith('image/'))
+}
 
 interface ImageSwapPanelProps {
   currentAlt: string
@@ -29,28 +55,6 @@ interface ImageSwapPanelProps {
 const PER_PAGE = 10
 const DEFAULT_W = 1200
 const DEFAULT_H = 800
-const ACCEPTED_TYPES = [
-  'image/png',
-  'image/jpeg',
-  'image/gif',
-  'image/webp',
-  'image/svg+xml',
-]
-
-/** Pure validation for user-uploaded image files. Returns null if valid,
- *  or an error message string explaining why the file is rejected. */
-export function validateImageFile(file: {
-  type: string
-  size: number
-  name: string
-}): string | null {
-  return validateImageFileFromPopover(file)
-}
-
-/** Extract image files from a FileList / drag-drop payload. */
-export function extractImageFiles(files: File[]): File[] {
-  return extractImageFilesFromPopover(files)
-}
 
 type DisplayImage = {
   imageUrl: string
@@ -186,7 +190,7 @@ export function ImageSwapPanel({
 
   const uploadFile = useCallback(
     async (file: File) => {
-      const validationError = validateImageFileFromPopover(file)
+      const validationError = validateImageFile(file)
       if (validationError) {
         setUploadError(validationError)
         return
@@ -266,9 +270,7 @@ export function ImageSwapPanel({
       dragCounterRef.current = 0
       setIsDragging(false)
 
-      const files = extractImageFilesFromPopover(
-        Array.from(e.dataTransfer.files),
-      )
+      const files = extractImageFiles(Array.from(e.dataTransfer.files))
       for (const file of files) {
         uploadFile(file)
       }
