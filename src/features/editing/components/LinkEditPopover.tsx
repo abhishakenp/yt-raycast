@@ -60,7 +60,7 @@ export function LinkEditPopover({
   if (!activeElement) return null
 
   return (
-    <div className="flex w-full min-w-[280px] flex-col gap-2 border-t border-white/10 p-2">
+    <div className="flex w-full min-w-[280px] flex-col gap-2 p-2">
       <div className="flex items-center gap-1.5">
         <LinkIcon className="size-3.5 text-cyan-300" />
         <span className="text-xs font-medium text-white/60">Edit Link</span>

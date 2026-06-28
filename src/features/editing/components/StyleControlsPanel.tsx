@@ -187,7 +187,7 @@ export function StyleControlsPanel({
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex flex-col gap-2 border-t border-white/10 p-2 w-full min-w-[260px]">
+      <div className="flex flex-col gap-2 p-2 w-full min-w-[260px]">
         <div className="flex items-center gap-1">
           {tabs.map((t) => (
             <Tooltip key={t.id}>
