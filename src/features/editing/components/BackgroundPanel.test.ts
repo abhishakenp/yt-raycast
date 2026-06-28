@@ -19,8 +19,21 @@ if (typeof ResizeObserver === 'undefined') {
 vi.mock('@/lib/stock-image', () => ({
   searchStockImages: vi.fn(async () => []),
 }))
-vi.mock('@/lib/image-context', () => ({
-  generateContextAwareQuery: vi.fn(() => 'nature background'),
+vi.mock('convex/react', () => ({
+  useMutation: vi.fn(() => vi.fn(async () => {})),
+  useQuery: vi.fn(() => undefined),
+}))
+vi.mock('../../../../convex/_generated/api', () => ({
+  api: {
+    sessions: {
+      generateImageUploadUrl: 'generateImageUploadUrl',
+      saveUserImage: 'saveUserImage',
+      listUserImages: 'listUserImages',
+    },
+  },
+}))
+vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
+  readAnonymousOwnerSecret: vi.fn(() => undefined),
 }))
 
 const { searchStockImages } = await import('@/lib/stock-image')

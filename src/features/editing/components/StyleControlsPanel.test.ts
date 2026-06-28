@@ -16,6 +16,27 @@ if (typeof ResizeObserver === 'undefined') {
   })
 }
 
+// BackgroundPanel uses convex hooks — mock them
+vi.mock('convex/react', () => ({
+  useMutation: vi.fn(() => vi.fn(async () => {})),
+  useQuery: vi.fn(() => undefined),
+}))
+vi.mock('../../../../convex/_generated/api', () => ({
+  api: {
+    sessions: {
+      generateImageUploadUrl: 'generateImageUploadUrl',
+      saveUserImage: 'saveUserImage',
+      listUserImages: 'listUserImages',
+    },
+  },
+}))
+vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
+  readAnonymousOwnerSecret: vi.fn(() => undefined),
+}))
+vi.mock('@/lib/stock-image', () => ({
+  searchStockImages: vi.fn(async () => []),
+}))
+
 import { StyleControlsPanel } from './StyleControlsPanel'
 
 const onModified = vi.fn<() => void>()

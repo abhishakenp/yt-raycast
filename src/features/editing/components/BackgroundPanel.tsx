@@ -1,18 +1,45 @@
-import { useState, useEffect, useRef } from 'react'
-import { Search, Image as ImageIcon, Loader2, X } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { useMutation, useQuery } from 'convex/react'
+import { Search, Loader2, X, Upload } from 'lucide-react'
 import { cn } from '#/lib/utils'
-import { InputGroup, InputGroupInput } from '#/components/ui/input-group'
 import { ToggleGroup, ToggleGroupItem } from '#/components/ui/toggle-group'
 import { Slider } from '#/components/ui/slider'
 import { searchStockImages, type StockImageResult } from '@/lib/stock-image'
-import {
-  generateContextAwareQuery,
-  type ImageContext,
-} from '@/lib/image-context'
+import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
+import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+
+const MAX_FILE_SIZE = 8 * 1024 * 1024
+const ACCEPTED_TYPES = [
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
+]
+
+function validateImageFile(file: {
+  type: string
+  size: number
+  name: string
+}): string | null {
+  if (!ACCEPTED_TYPES.includes(file.type)) {
+    return `Unsupported file type: ${file.type}`
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    return `File too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)`
+  }
+  return null
+}
+
+function extractImageFiles(files: File[]): File[] {
+  return files.filter((f) => f.type.startsWith('image/'))
+}
 
 interface BackgroundPanelProps {
   activeElement: HTMLElement | null
   onModified?: () => void
+  sessionId?: string
 }
 
 type BgMode = 'solid' | 'gradient'
@@ -86,6 +113,7 @@ const DEFAULT_GRADIENT: GradientState = {
 export function BackgroundPanel({
   activeElement,
   onModified,
+  sessionId,
 }: BackgroundPanelProps) {
   const [bgMode, setBgMode] = useState<BgMode>('solid')
   const [bgColor, setBgColor] = useState('#000000')
@@ -95,9 +123,21 @@ export function BackgroundPanel({
   const [searchResults, setSearchResults] = useState<StockImageResult[]>([])
   const [searching, setSearching] = useState(false)
   const [hasBgImage, setHasBgImage] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string>()
 
   const userModifiedRef = useRef(false)
   const prevElementRef = useRef<HTMLElement | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const dragCounterRef = useRef(0)
+
+  const generateUploadUrl = useMutation(api.sessions.generateImageUploadUrl)
+  const saveUserImage = useMutation(api.sessions.saveUserImage)
+  const userImages = useQuery(
+    api.sessions.listUserImages,
+    sessionId ? { sessionId: sessionId as Id<'sessions'> } : 'skip',
+  )
 
   useEffect(() => {
     if (!activeElement) return
@@ -184,30 +224,6 @@ export function BackgroundPanel({
     }
   }
 
-  const handleInitialSearch = async () => {
-    if (!activeElement) return
-    const context: ImageContext = {
-      section: activeElement.getAttribute('data-section') || undefined,
-    }
-    const query = generateContextAwareQuery(
-      activeElement.getAttribute('data-alt') || 'background',
-      context,
-    )
-    setSearchQuery(query)
-    setSearching(true)
-    try {
-      const results = await searchStockImages({
-        query,
-        w: 400,
-        h: 300,
-        perPage: 12,
-      })
-      setSearchResults(results)
-    } finally {
-      setSearching(false)
-    }
-  }
-
   const applyBgImage = (url: string) => {
     if (!activeElement) return
     setHasBgImage(true)
@@ -227,6 +243,103 @@ export function BackgroundPanel({
     activeElement.style.setProperty('background-position', '')
     markModified()
   }
+
+  // ── File upload ──────────────────────────────────────────────────────
+  const uploadFile = useCallback(
+    async (file: File) => {
+      const validationError = validateImageFile(file)
+      if (validationError) {
+        setUploadError(validationError)
+        return
+      }
+      if (!sessionId) {
+        setUploadError('Session ID required for uploads')
+        return
+      }
+      setIsUploading(true)
+      setUploadError(undefined)
+      try {
+        const anonymousOwnerSecret =
+          typeof window === 'undefined'
+            ? undefined
+            : readAnonymousOwnerSecret(window.localStorage, sessionId)
+        const uploadUrl = await generateUploadUrl({
+          sessionId: sessionId as Id<'sessions'>,
+          anonymousOwnerSecret,
+        })
+        const res = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': file.type },
+          body: file,
+        })
+        if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
+        const { storageId } = (await res.json()) as {
+          storageId: Id<'_storage'>
+        }
+        await saveUserImage({
+          sessionId: sessionId as Id<'sessions'>,
+          anonymousOwnerSecret,
+          storageId,
+          filename: file.name,
+          contentType: file.type,
+          size: file.size,
+        })
+      } catch (err) {
+        setUploadError(err instanceof Error ? err.message : 'Upload failed')
+      } finally {
+        setIsUploading(false)
+      }
+    },
+    [generateUploadUrl, saveUserImage, sessionId],
+  )
+
+  // ── Drag-and-drop ────────────────────────────────────────────────────
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounterRef.current++
+    if (e.dataTransfer.types.includes('Files')) {
+      setIsDragging(true)
+    }
+  }, [])
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounterRef.current--
+    if (dragCounterRef.current === 0) {
+      setIsDragging(false)
+    }
+  }, [])
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }, [])
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      dragCounterRef.current = 0
+      setIsDragging(false)
+      const files = extractImageFiles(Array.from(e.dataTransfer.files))
+      for (const file of files) {
+        uploadFile(file)
+      }
+    },
+    [uploadFile],
+  )
+
+  // ── Build display list: uploaded images first, then stock results ────
+  type UserImage = { url: string | null; filename: string | null }
+  const uploadedImages: { imageUrl: string; alt: string }[] =
+    (userImages as UserImage[] | undefined)
+      ?.filter((img): img is UserImage & { url: string } => img.url !== null)
+      .map((img) => ({
+        imageUrl: img.url,
+        alt: img.filename ?? 'Uploaded image',
+      })) ?? []
 
   const applyBackdropBlur = (value: number) => {
     setBackdropBlur(value)
@@ -438,12 +551,19 @@ export function BackgroundPanel({
         </div>
       </div>
 
-      {/* Background image search */}
-      <div className="flex flex-col gap-1.5">
+      {/* Background image search + upload */}
+      <div
+        className="flex flex-col gap-1.5"
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
         <span className={labelCls}>Image</span>
-        <div className="flex items-center gap-1">
-          <InputGroup className="flex-1">
-            <InputGroupInput
+        <div className="relative flex items-center gap-1">
+          <div className="relative flex flex-1 items-center">
+            <Search className="pointer-events-none absolute left-2.5 size-3.5 text-white/40" />
+            <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -451,9 +571,38 @@ export function BackgroundPanel({
                 if (e.key === 'Enter') handleSearch()
               }}
               placeholder="Search stock images..."
-              className="text-xs text-foreground"
+              className="h-8 w-full rounded-lg border border-white/10 bg-white/5 pl-8 pr-9 text-xs text-white placeholder:text-white/40 outline-none transition-colors focus:border-cyan-300/40 focus:ring-2 focus:ring-cyan-300/20"
             />
-          </InputGroup>
+            {sessionId && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                aria-label="Upload image"
+                className="absolute right-1.5 grid size-5 place-items-center rounded-md text-white/40 transition-colors hover:bg-white/10 hover:text-cyan-300 disabled:opacity-50"
+              >
+                {isUploading ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  <Upload className="size-3" />
+                )}
+              </button>
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ACCEPTED_TYPES.join(',')}
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              const files = Array.from(e.target.files ?? [])
+              for (const file of files) {
+                uploadFile(file)
+              }
+              e.target.value = ''
+            }}
+          />
           <button
             type="button"
             onClick={handleSearch}
@@ -461,7 +610,7 @@ export function BackgroundPanel({
             aria-label="Search images"
             className={cn(
               'size-7 grid place-items-center rounded transition-colors',
-              'bg-primary/15 text-primary hover:bg-primary/25',
+              'bg-cyan-300/15 text-cyan-200 hover:bg-cyan-300/25',
               searching && 'opacity-50',
             )}
           >
@@ -471,49 +620,92 @@ export function BackgroundPanel({
               <Search className="size-3.5" />
             )}
           </button>
-          <button
-            type="button"
-            onClick={handleInitialSearch}
-            disabled={searching}
-            aria-label="Context search"
-            title="Context-aware search"
-            className={cn(
-              'size-7 grid place-items-center rounded transition-colors',
-              'text-muted-foreground hover:bg-muted hover:text-foreground',
-              searching && 'opacity-50',
-            )}
-          >
-            <ImageIcon className="size-3.5" />
-          </button>
           {hasBgImage && (
             <button
               type="button"
               onClick={removeBgImage}
               aria-label="Remove image"
               title="Remove image"
-              className="size-7 grid place-items-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="size-7 grid place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white"
             >
               <X className="size-3.5" />
             </button>
           )}
         </div>
 
-        {searchResults.length > 0 && (
-          <div className="grid grid-cols-3 gap-1 max-h-40 overflow-y-auto">
-            {searchResults.map((result, i) => (
-              <button
-                key={`${result.imageUrl}-${i}`}
-                type="button"
-                onClick={() => applyBgImage(result.imageUrl)}
-                className="aspect-square rounded border border-border overflow-hidden transition-transform hover:scale-105"
-              >
-                <img
-                  src={result.imageUrl}
-                  alt={result.query}
-                  className="size-full object-cover"
-                />
-              </button>
-            ))}
+        {uploadError && (
+          <div className="rounded border border-red-500/20 bg-red-500/10 px-2 py-1 text-[10px] text-red-300">
+            {uploadError}
+          </div>
+        )}
+
+        {isDragging && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center border-2 border-dashed border-cyan-300/50 bg-[#0b0d14]/80 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-1">
+              <Upload className="size-6 text-cyan-300" />
+              <p className="text-xs text-cyan-300">Drop images to upload</p>
+            </div>
+          </div>
+        )}
+
+        {/* Image grid — uploaded images first, then stock results */}
+        {(uploadedImages.length > 0 || searchResults.length > 0) && (
+          <div className="max-h-48 overflow-y-auto p-0.5">
+            {uploadedImages.length > 0 && (
+              <div className="mb-2">
+                <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-white/40">
+                  Your uploads
+                </p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {uploadedImages.map((result, index) => (
+                    <button
+                      key={`upload-${result.imageUrl}-${index}`}
+                      type="button"
+                      onClick={() => applyBgImage(result.imageUrl)}
+                      className="group relative aspect-square overflow-hidden rounded-lg border border-cyan-300/30 bg-white/5 transition-all hover:border-cyan-300/60 hover:ring-2 hover:ring-cyan-300/30"
+                      aria-label={`Select uploaded image ${index + 1}`}
+                    >
+                      <img
+                        src={result.imageUrl}
+                        alt={result.alt}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {searchResults.length > 0 && (
+              <div>
+                {uploadedImages.length > 0 && (
+                  <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-white/40">
+                    Stock photos
+                  </p>
+                )}
+                <div className="grid grid-cols-3 gap-1.5">
+                  {searchResults.map((result, index) => (
+                    <button
+                      key={`stock-${result.imageUrl}-${index}`}
+                      type="button"
+                      onClick={() => applyBgImage(result.imageUrl)}
+                      className="group relative aspect-square overflow-hidden rounded-lg border border-white/10 bg-white/5 transition-all hover:border-cyan-300/50 hover:ring-2 hover:ring-cyan-300/30"
+                      aria-label={`Select image ${index + 1}`}
+                    >
+                      <img
+                        src={result.imageUrl}
+                        alt={result.query}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
