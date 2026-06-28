@@ -94,7 +94,7 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
   }
 
   const labelCls =
-    'text-[10px] uppercase tracking-wider text-white/40 font-medium'
+    'text-[10px] uppercase tracking-wider text-muted-foreground font-medium'
   const isFlex = display === 'flex'
 
   return (
@@ -112,17 +112,17 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
           }}
           variant="outline"
           size="sm"
-          className="rounded-md border border-white/10"
+          className="rounded-md border border-border"
         >
           <ToggleGroupItem
             value="block"
-            className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
+            className="px-2 py-0.5 text-[10px] text-muted-foreground data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
           >
             Block
           </ToggleGroupItem>
           <ToggleGroupItem
             value="flex"
-            className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
+            className="px-2 py-0.5 text-[10px] text-muted-foreground data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
           >
             Flex
           </ToggleGroupItem>
@@ -144,14 +144,14 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
               }}
               variant="outline"
               size="sm"
-              className="rounded-md border border-white/10"
+              className="rounded-md border border-border"
             >
               {FLEX_DIRECTION_OPTIONS.map((opt) => (
                 <ToggleGroupItem
                   key={opt.value}
                   value={opt.value}
                   aria-label={opt.label}
-                  className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
+                  className="px-2 py-0.5 text-[10px] text-muted-foreground data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
                 >
                   <opt.icon className="size-3" />
                 </ToggleGroupItem>
@@ -172,13 +172,13 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
               }}
               variant="outline"
               size="sm"
-              className="rounded-md border border-white/10"
+              className="rounded-md border border-border"
             >
               {JUSTIFY_CONTENT_OPTIONS.map((opt) => (
                 <ToggleGroupItem
                   key={opt.value}
                   value={opt.value}
-                  className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
+                  className="px-2 py-0.5 text-[10px] text-muted-foreground data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
                 >
                   {opt.label}
                 </ToggleGroupItem>
@@ -199,13 +199,13 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
               }}
               variant="outline"
               size="sm"
-              className="rounded-md border border-white/10"
+              className="rounded-md border border-border"
             >
               {ALIGN_ITEMS_OPTIONS.map((opt) => (
                 <ToggleGroupItem
                   key={opt.value}
                   value={opt.value}
-                  className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
+                  className="px-2 py-0.5 text-[10px] text-muted-foreground data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
                 >
                   {opt.label}
                 </ToggleGroupItem>
@@ -224,11 +224,11 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
                   setGap(e.target.value)
                   applyLiveStyle('gap', `${e.target.value}${gapUnit}`)
                 }}
-                className="text-xs text-white"
+                className="text-xs text-foreground"
               />
               <InputGroupAddon align="inline-end">
                 <Select value={gapUnit} onValueChange={setGapUnit}>
-                  <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
+                  <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -253,17 +253,17 @@ export function LayoutPanel({ activeElement, onModified }: LayoutPanelProps) {
               }}
               variant="outline"
               size="sm"
-              className="rounded-md border border-white/10"
+              className="rounded-md border border-border"
             >
               <ToggleGroupItem
                 value="nowrap"
-                className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
+                className="px-2 py-0.5 text-[10px] text-muted-foreground data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
               >
                 No Wrap
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="wrap"
-                className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
+                className="px-2 py-0.5 text-[10px] text-muted-foreground data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
               >
                 Wrap
               </ToggleGroupItem>

@@ -1,5 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
-import { Square, Palette, Maximize2, Layers, Link2, Unlink } from 'lucide-react'
+import {
+  Square,
+  Palette,
+  Maximize2,
+  Layers,
+  Link2,
+  Unlink,
+  Sparkles,
+  Columns3,
+} from 'lucide-react'
 import { cn } from '#/lib/utils'
 import {
   Tooltip,
@@ -20,22 +29,16 @@ import {
   InputGroupInput,
   InputGroupText,
 } from '#/components/ui/input-group'
-import { ToggleGroup, ToggleGroupItem } from '#/components/ui/toggle-group'
+import { BackgroundPanel } from './BackgroundPanel'
+import { EffectsPanel } from './EffectsPanel'
+import { LayoutPanel } from './LayoutPanel'
 
 interface StyleControlsPanelProps {
   activeElement: HTMLElement | null
   onModified?: () => void
 }
 
-type Tab = 'spacing' | 'border' | 'background' | 'size'
-
-const SHADOW_PRESETS: Record<string, string> = {
-  none: 'none',
-  sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-  md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-  lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-  xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
-}
+type Tab = 'spacing' | 'border' | 'background' | 'size' | 'effects' | 'layout'
 
 export function StyleControlsPanel({
   activeElement,
@@ -64,9 +67,6 @@ export function StyleControlsPanel({
   const [borderColor, setBorderColor] = useState('#000000')
   const [borderRadius, setBorderRadius] = useState('')
   const [borderUnit, setBorderUnit] = useState('px')
-
-  const [bgColor, setBgColor] = useState('#000000')
-  const [shadowPreset, setShadowPreset] = useState('none')
 
   const [width, setWidth] = useState('')
   const [height, setHeight] = useState('')
@@ -112,15 +112,6 @@ export function StyleControlsPanel({
     setBorderColor(computed.borderColor || '#000000')
     setBorderRadius(String(parseFloat(computed.borderRadius) || 0))
 
-    setBgColor(computed.backgroundColor || '#000000')
-    // Detect which shadow preset matches the computed box-shadow
-    const computedShadow = computed.boxShadow || 'none'
-    const matchedPreset =
-      Object.entries(SHADOW_PRESETS).find(
-        ([, val]) => val === computedShadow,
-      )?.[0] ?? 'none'
-    setShadowPreset(matchedPreset)
-
     setWidth(computed.width)
     setHeight(computed.height)
   }, [activeElement])
@@ -164,10 +155,12 @@ export function StyleControlsPanel({
     { id: 'border', label: 'Border', icon: Square },
     { id: 'background', label: 'BG', icon: Palette },
     { id: 'size', label: 'Size', icon: Layers },
+    { id: 'effects', label: 'Effects', icon: Sparkles },
+    { id: 'layout', label: 'Layout', icon: Columns3 },
   ]
 
   const labelCls =
-    'text-[10px] uppercase tracking-wider text-white/40 font-medium'
+    'text-[10px] uppercase tracking-wider text-muted-foreground font-medium'
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -183,8 +176,8 @@ export function StyleControlsPanel({
                   className={cn(
                     'size-7 grid place-items-center rounded transition-colors',
                     tab === t.id
-                      ? 'bg-cyan-300/15 text-cyan-200'
-                      : 'text-white/50 hover:bg-white/5 hover:text-white/80',
+                      ? 'bg-primary/15 text-primary'
+                      : 'text-muted-foreground/70 hover:bg-muted hover:text-foreground',
                   )}
                 >
                   <t.icon className="size-3.5" />
@@ -208,8 +201,8 @@ export function StyleControlsPanel({
                     className={cn(
                       'size-6 grid place-items-center rounded transition-colors',
                       paddingLinked
-                        ? 'bg-cyan-300/15 text-cyan-200'
-                        : 'text-white/40 hover:bg-white/5 hover:text-white/80',
+                        ? 'bg-primary/15 text-primary'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                     )}
                     aria-label={
                       paddingLinked ? 'Unlink padding' : 'Link padding'
@@ -232,14 +225,14 @@ export function StyleControlsPanel({
                         type="number"
                         value={padding[side]}
                         onChange={(e) => setPaddingValue(side, e.target.value)}
-                        className="text-xs text-white"
+                        className="text-xs text-foreground"
                       />
                       <InputGroupAddon align="inline-end">
                         <Select
                           value={paddingUnit}
                           onValueChange={setPaddingUnit}
                         >
-                          <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
+                          <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -263,8 +256,8 @@ export function StyleControlsPanel({
                     className={cn(
                       'size-6 grid place-items-center rounded transition-colors',
                       marginLinked
-                        ? 'bg-cyan-300/15 text-cyan-200'
-                        : 'text-white/40 hover:bg-white/5 hover:text-white/80',
+                        ? 'bg-primary/15 text-primary'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                     )}
                     aria-label={marginLinked ? 'Unlink margin' : 'Link margin'}
                   >
@@ -285,14 +278,14 @@ export function StyleControlsPanel({
                         type="number"
                         value={margin[side]}
                         onChange={(e) => setMarginValue(side, e.target.value)}
-                        className="text-xs text-white"
+                        className="text-xs text-foreground"
                       />
                       <InputGroupAddon align="inline-end">
                         <Select
                           value={marginUnit}
                           onValueChange={setMarginUnit}
                         >
-                          <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
+                          <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -325,11 +318,11 @@ export function StyleControlsPanel({
                       `${e.target.value}${borderUnit}`,
                     )
                   }}
-                  className="text-xs text-white"
+                  className="text-xs text-foreground"
                 />
                 <InputGroupAddon align="inline-end">
                   <Select value={borderUnit} onValueChange={setBorderUnit}>
-                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
+                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -350,7 +343,7 @@ export function StyleControlsPanel({
                     applyLiveStyle('border-style', v)
                   }}
                 >
-                  <SelectTrigger className="h-auto w-full border-0 bg-transparent px-1 text-xs text-white/60">
+                  <SelectTrigger className="h-auto w-full border-0 bg-transparent px-1 text-xs text-muted-foreground">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -398,11 +391,11 @@ export function StyleControlsPanel({
                       `${e.target.value}${borderUnit}`,
                     )
                   }}
-                  className="text-xs text-white"
+                  className="text-xs text-foreground"
                 />
                 <InputGroupAddon align="inline-end">
                   <Select value={borderUnit} onValueChange={setBorderUnit}>
-                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
+                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -417,51 +410,18 @@ export function StyleControlsPanel({
         )}
 
         {tab === 'background' && (
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <span className={cn(labelCls, 'w-10')}>Color</span>
-              <label className="relative cursor-pointer">
-                <input
-                  type="color"
-                  value={bgColor}
-                  onChange={(e) => {
-                    setBgColor(e.target.value)
-                    applyLiveStyle('background-color', e.target.value)
-                  }}
-                  className="absolute inset-0 size-full cursor-pointer opacity-0"
-                />
-                <div
-                  className="size-7 rounded-md border border-input shadow-xs"
-                  style={{ backgroundColor: bgColor }}
-                />
-              </label>
-            </div>
-            <div className="flex items-center gap-1.5 flex-1">
-              <span className={labelCls}>Shadow</span>
-              <ToggleGroup
-                type="single"
-                value={shadowPreset}
-                onValueChange={(v) => {
-                  if (!v) return
-                  setShadowPreset(v)
-                  applyLiveStyle('box-shadow', SHADOW_PRESETS[v])
-                }}
-                variant="outline"
-                size="sm"
-                className="rounded-md border border-white/10"
-              >
-                {Object.keys(SHADOW_PRESETS).map((preset) => (
-                  <ToggleGroupItem
-                    key={preset}
-                    value={preset}
-                    className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
-                  >
-                    {preset}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            </div>
-          </div>
+          <BackgroundPanel
+            activeElement={activeElement}
+            onModified={onModified}
+          />
+        )}
+
+        {tab === 'effects' && (
+          <EffectsPanel activeElement={activeElement} onModified={onModified} />
+        )}
+
+        {tab === 'layout' && (
+          <LayoutPanel activeElement={activeElement} onModified={onModified} />
         )}
 
         {tab === 'size' && (
@@ -477,11 +437,11 @@ export function StyleControlsPanel({
                     applyLiveStyle('width', e.target.value)
                   }}
                   placeholder="auto"
-                  className="text-xs text-white"
+                  className="text-xs text-foreground"
                 />
                 <InputGroupAddon align="inline-end">
                   <Select value={sizeUnit} onValueChange={setSizeUnit}>
-                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
+                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -507,11 +467,11 @@ export function StyleControlsPanel({
                     applyLiveStyle('height', e.target.value)
                   }}
                   placeholder="auto"
-                  className="text-xs text-white"
+                  className="text-xs text-foreground"
                 />
                 <InputGroupAddon align="inline-end">
                   <Select value={sizeUnit} onValueChange={setSizeUnit}>
-                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-white/60">
+                    <SelectTrigger className="h-auto w-auto border-0 bg-transparent px-1 text-xs text-muted-foreground">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

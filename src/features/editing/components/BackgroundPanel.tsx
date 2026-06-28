@@ -1,13 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { Search, Image as ImageIcon, Loader2, X } from 'lucide-react'
 import { cn } from '#/lib/utils'
-import {
-  InputGroup,
-  InputGroupInput,
-  InputGroupAddon,
-  InputGroupText,
-} from '#/components/ui/input-group'
+import { InputGroup, InputGroupInput } from '#/components/ui/input-group'
 import { ToggleGroup, ToggleGroupItem } from '#/components/ui/toggle-group'
+import { Slider } from '#/components/ui/slider'
 import { searchStockImages, type StockImageResult } from '@/lib/stock-image'
 import {
   generateContextAwareQuery,
@@ -129,7 +125,9 @@ export function BackgroundPanel({
     }
 
     const backdrop =
-      computed.backdropFilter || computed.webkitBackdropFilter || ''
+      computed.backdropFilter ||
+      (computed as unknown as Record<string, string>).webkitBackdropFilter ||
+      ''
     const blurMatch = backdrop.match(/blur\((\d+(?:\.\d+)?)px\)/)
     setBackdropBlur(blurMatch ? Math.round(parseFloat(blurMatch[1])) : 0)
   }, [activeElement])
@@ -248,10 +246,10 @@ export function BackgroundPanel({
   }
 
   const labelCls =
-    'text-[10px] uppercase tracking-wider text-white/40 font-medium'
+    'text-[10px] uppercase tracking-wider text-muted-foreground font-medium'
 
   return (
-    <div className="flex flex-col gap-2 p-2 w-full min-w-[420px] bg-[#0b0d14]/95">
+    <div className="flex flex-col gap-2 p-2 w-full min-w-[420px] bg-background/95">
       {/* Mode toggle: Solid / Gradient */}
       <div className="flex items-center gap-2">
         <span className={labelCls}>Mode</span>
@@ -266,17 +264,17 @@ export function BackgroundPanel({
           }}
           variant="outline"
           size="sm"
-          className="rounded-md border border-white/10"
+          className="rounded-md border border-border"
         >
           <ToggleGroupItem
             value="solid"
-            className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
+            className="px-2 py-0.5 text-[10px] text-muted-foreground data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
           >
             Solid
           </ToggleGroupItem>
           <ToggleGroupItem
             value="gradient"
-            className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
+            className="px-2 py-0.5 text-[10px] text-muted-foreground data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
           >
             Gradient
           </ToggleGroupItem>
@@ -318,17 +316,17 @@ export function BackgroundPanel({
               }}
               variant="outline"
               size="sm"
-              className="rounded-md border border-white/10"
+              className="rounded-md border border-border"
             >
               <ToggleGroupItem
                 value="linear"
-                className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
+                className="px-2 py-0.5 text-[10px] text-muted-foreground data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
               >
                 Linear
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="radial"
-                className="px-2 py-0.5 text-[10px] text-white/60 data-[state=on]:bg-cyan-300/15 data-[state=on]:text-cyan-200"
+                className="px-2 py-0.5 text-[10px] text-muted-foreground data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
               >
                 Radial
               </ToggleGroupItem>
@@ -337,7 +335,7 @@ export function BackgroundPanel({
 
           {/* Live preview swatch */}
           <div
-            className="h-8 w-full rounded-md border border-white/10"
+            className="h-8 w-full rounded-md border border-border"
             style={{ backgroundImage: buildGradient(gradient) }}
           />
 
@@ -356,17 +354,15 @@ export function BackgroundPanel({
                   style={{ backgroundColor: gradient.color1 }}
                 />
               </label>
-              <input
-                type="range"
+              <Slider
+                aria-label="Gradient stop 1 position"
                 min={0}
                 max={100}
-                value={gradient.pos1}
-                onChange={(e) =>
-                  updateGradient({ pos1: Number(e.target.value) })
-                }
-                className="flex-1 accent-cyan-300"
+                value={[gradient.pos1]}
+                onValueChange={(v) => updateGradient({ pos1: v[0] })}
+                className="flex-1"
               />
-              <span className="text-[10px] text-white/50 w-8 text-right">
+              <span className="text-[10px] text-muted-foreground/70 w-8 text-right">
                 {gradient.pos1}%
               </span>
             </div>
@@ -383,17 +379,15 @@ export function BackgroundPanel({
                   style={{ backgroundColor: gradient.color2 }}
                 />
               </label>
-              <input
-                type="range"
+              <Slider
+                aria-label="Gradient stop 2 position"
                 min={0}
                 max={100}
-                value={gradient.pos2}
-                onChange={(e) =>
-                  updateGradient({ pos2: Number(e.target.value) })
-                }
-                className="flex-1 accent-cyan-300"
+                value={[gradient.pos2]}
+                onValueChange={(v) => updateGradient({ pos2: v[0] })}
+                className="flex-1"
               />
-              <span className="text-[10px] text-white/50 w-8 text-right">
+              <span className="text-[10px] text-muted-foreground/70 w-8 text-right">
                 {gradient.pos2}%
               </span>
             </div>
@@ -403,17 +397,15 @@ export function BackgroundPanel({
           {gradient.type === 'linear' && (
             <div className="flex items-center gap-2">
               <span className={cn(labelCls, 'w-10')}>Angle</span>
-              <input
-                type="range"
+              <Slider
+                aria-label="Gradient angle"
                 min={0}
                 max={360}
-                value={gradient.angle}
-                onChange={(e) =>
-                  updateGradient({ angle: Number(e.target.value) })
-                }
-                className="flex-1 accent-cyan-300"
+                value={[gradient.angle]}
+                onValueChange={(v) => updateGradient({ angle: v[0] })}
+                className="flex-1"
               />
-              <span className="text-[10px] text-white/50 w-12 text-right">
+              <span className="text-[10px] text-muted-foreground/70 w-12 text-right">
                 {gradient.angle}deg
               </span>
             </div>
@@ -439,7 +431,7 @@ export function BackgroundPanel({
                   applyLiveStyle('background-image', preset.gradient)
                 }
               }}
-              className="h-6 rounded border border-white/10 transition-transform hover:scale-105"
+              className="h-6 rounded border border-border transition-transform hover:scale-105"
               style={{ backgroundImage: preset.gradient }}
             />
           ))}
@@ -459,7 +451,7 @@ export function BackgroundPanel({
                 if (e.key === 'Enter') handleSearch()
               }}
               placeholder="Search stock images..."
-              className="text-xs text-white"
+              className="text-xs text-foreground"
             />
           </InputGroup>
           <button
@@ -469,7 +461,7 @@ export function BackgroundPanel({
             aria-label="Search images"
             className={cn(
               'size-7 grid place-items-center rounded transition-colors',
-              'bg-cyan-300/15 text-cyan-200 hover:bg-cyan-300/25',
+              'bg-primary/15 text-primary hover:bg-primary/25',
               searching && 'opacity-50',
             )}
           >
@@ -487,7 +479,7 @@ export function BackgroundPanel({
             title="Context-aware search"
             className={cn(
               'size-7 grid place-items-center rounded transition-colors',
-              'text-white/60 hover:bg-white/5 hover:text-white',
+              'text-muted-foreground hover:bg-muted hover:text-foreground',
               searching && 'opacity-50',
             )}
           >
@@ -499,7 +491,7 @@ export function BackgroundPanel({
               onClick={removeBgImage}
               aria-label="Remove image"
               title="Remove image"
-              className="size-7 grid place-items-center rounded text-white/60 hover:bg-white/5 hover:text-white"
+              className="size-7 grid place-items-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               <X className="size-3.5" />
             </button>
@@ -513,9 +505,8 @@ export function BackgroundPanel({
                 key={`${result.imageUrl}-${i}`}
                 type="button"
                 onClick={() => applyBgImage(result.imageUrl)}
-                className="aspect-square rounded border border-white/10 overflow-hidden transition-transform hover:scale-105"
+                className="aspect-square rounded border border-border overflow-hidden transition-transform hover:scale-105"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={result.imageUrl}
                   alt={result.query}
@@ -530,15 +521,15 @@ export function BackgroundPanel({
       {/* Backdrop blur */}
       <div className="flex items-center gap-2">
         <span className={cn(labelCls, 'w-10')}>Blur</span>
-        <input
-          type="range"
+        <Slider
+          aria-label="Backdrop blur"
           min={0}
           max={20}
-          value={backdropBlur}
-          onChange={(e) => applyBackdropBlur(Number(e.target.value))}
-          className="flex-1 accent-cyan-300"
+          value={[backdropBlur]}
+          onValueChange={(v) => applyBackdropBlur(v[0])}
+          className="flex-1"
         />
-        <span className="text-[10px] text-white/50 w-12 text-right">
+        <span className="text-[10px] text-muted-foreground/70 w-12 text-right">
           {backdropBlur}px
         </span>
       </div>
