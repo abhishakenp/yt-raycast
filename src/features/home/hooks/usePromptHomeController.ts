@@ -93,6 +93,33 @@ const createSessionWithRetry = async <Payload, Result>(
 const createSessionFromHttp = async (
   payload: CreateSessionPayload,
 ): Promise<CreateSessionResult> => {
+  const response = await fetch('/api/sessions/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  }).catch(() => null)
+
+  if (response !== null) {
+    const data = (await response.json().catch(() => ({}))) as
+      | CreateSessionResult
+      | { error?: string }
+    const disabled =
+      response.status === 404 &&
+      'error' in data &&
+      data.error === 'Public preview session creation is disabled.'
+
+    if (response.ok) return data as CreateSessionResult
+    if (!disabled) {
+      throw new Error(
+        'error' in data && data.error
+          ? data.error
+          : 'Generation could not start.',
+      )
+    }
+  }
+
   const [{ api }, { createRuntimeConvexHttpClient }] = await Promise.all([
     import('../../../../convex/_generated/api'),
     import('@/shared/convex/http-client'),

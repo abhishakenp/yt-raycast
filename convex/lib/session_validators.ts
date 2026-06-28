@@ -84,6 +84,7 @@ export const createGenerationSessionArgs = {
   workspace: v.string(),
   anonymousOwnerSecret: v.optional(v.string()),
   anonymousClientId: v.optional(v.string()),
+  clientIpHash: v.optional(v.string()),
   designReferenceUrls: v.optional(v.array(v.string())),
   designReferenceNotes: v.optional(v.string()),
   cloneUrl: v.optional(v.string()),

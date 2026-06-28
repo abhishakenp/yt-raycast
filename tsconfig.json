@@ -7,7 +7,6 @@
     "vite.config.ts"
   ],
   "exclude": [
-    ".macp/**",
     ".output/**",
     ".tanstack/**",
     "agentation-reference/**",

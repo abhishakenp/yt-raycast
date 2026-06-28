@@ -51,6 +51,7 @@ export default defineSchema({
     anonOwnerSecret: v.optional(v.string()),
     anonOwnerSecretHash: v.optional(v.string()),
     anonymousClientIdHash: v.optional(v.string()),
+    clientIpHash: v.optional(v.string()),
     workspace: v.optional(v.string()),
     prompt: v.string(),
     status: v.optional(generationStatus),
@@ -94,6 +95,7 @@ export default defineSchema({
   })
     .index('by_userId', ['userId'])
     .index('by_anonymousClientIdHash', ['anonymousClientIdHash'])
+    .index('by_clientIpHash', ['clientIpHash'])
     .index('by_workspace', ['workspace'])
     .index('by_promptCacheKey', ['promptCacheKey'])
     .index('by_public_createdAt', ['isPrivate', 'createdAt'])
