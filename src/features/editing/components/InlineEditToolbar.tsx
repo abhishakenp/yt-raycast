@@ -40,6 +40,7 @@ export function InlineEditToolbar({
   isForking = false,
 }: InlineEditToolbarProps) {
   const [fontSize, setFontSize] = useState('16')
+  const [fontSizeUnit, setFontSizeUnit] = useState('px')
   const [isBold, setIsBold] = useState(false)
   const [isItalic, setIsItalic] = useState(false)
   const [color, setColor] = useState('#ffffff')
@@ -65,7 +66,25 @@ export function InlineEditToolbar({
     originalStyleRef.current = activeElement.getAttribute('style')
 
     const computed = window.getComputedStyle(activeElement)
-    setFontSize(computed.fontSize.replace('px', ''))
+    // Parse the computed font-size into numeric value + unit. The browser
+    // always returns px from getComputedStyle (even if the element uses em/rem
+    // in its CSS), so we also check the element's inline style for the original
+    // unit. If no inline style, default to px.
+    const inlineStyle = activeElement.style.fontSize || ''
+    const inlineMatch = inlineStyle.match(/^([\d.]+)(px|em|rem|pt|%)$/)
+    if (inlineMatch) {
+      setFontSize(inlineMatch[1])
+      setFontSizeUnit(inlineMatch[2])
+    } else {
+      const computedMatch = computed.fontSize.match(/^([\d.]+)(px|em|rem|pt|%)/)
+      if (computedMatch) {
+        setFontSize(computedMatch[1])
+        setFontSizeUnit(computedMatch[2])
+      } else {
+        setFontSize(computed.fontSize.replace(/[^\d.]/g, '') || '16')
+        setFontSizeUnit('px')
+      }
+    }
     setIsBold(computed.fontWeight === '700' || computed.fontWeight === 'bold')
     setIsItalic(computed.fontStyle === 'italic')
     const rgbColor = computed.color || '#ffffff'
@@ -110,12 +129,20 @@ export function InlineEditToolbar({
     )
       return
 
-    activeElement.style.fontSize = `${fontSize}px`
+    activeElement.style.fontSize = `${fontSize}${fontSizeUnit}`
     activeElement.style.fontWeight = isBold ? '700' : '400'
     activeElement.style.fontStyle = isItalic ? 'italic' : 'normal'
     activeElement.style.color = color
     activeElement.style.textAlign = alignment
-  }, [fontSize, isBold, isItalic, color, alignment, activeElement])
+  }, [
+    fontSize,
+    fontSizeUnit,
+    isBold,
+    isItalic,
+    color,
+    alignment,
+    activeElement,
+  ])
 
   // Prevent mousedown on the toolbar from stealing focus from the contentEditable
   // element. Without this, clicking any toolbar button blurs the contentEditable,
@@ -224,23 +251,32 @@ export function InlineEditToolbar({
     >
       <div className="flex items-center gap-1 border-r border-white/10 pr-2">
         <Type className="size-4 text-white/40" />
-        <select
+        <input
+          type="number"
           value={fontSize}
           onChange={(e) => {
             markUserModified()
             setFontSize(e.target.value)
           }}
           disabled={isApplying || isForking}
-          className="bg-white/5 text-white text-xs rounded px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-300/50 disabled:opacity-50 disabled:cursor-not-allowed"
+          min="1"
+          step="1"
+          className="w-14 bg-white/5 text-white text-xs rounded px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-300/50 disabled:opacity-50 disabled:cursor-not-allowed [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        />
+        <select
+          value={fontSizeUnit}
+          onChange={(e) => {
+            markUserModified()
+            setFontSizeUnit(e.target.value)
+          }}
+          disabled={isApplying || isForking}
+          className="bg-white/5 text-white text-xs rounded px-1 py-1 outline-none focus:ring-2 focus:ring-cyan-300/50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <option value="12">12px</option>
-          <option value="14">14px</option>
-          <option value="16">16px</option>
-          <option value="18">18px</option>
-          <option value="20">20px</option>
-          <option value="24">24px</option>
-          <option value="28">28px</option>
-          <option value="32">32px</option>
+          <option value="px">px</option>
+          <option value="em">em</option>
+          <option value="rem">rem</option>
+          <option value="pt">pt</option>
+          <option value="%">%</option>
         </select>
       </div>
 
