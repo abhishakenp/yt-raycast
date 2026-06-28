@@ -885,7 +885,7 @@ export function InlineEditToolbar({
                 'Apply'
               )}
               {activePanel === 'ai' && !isApplying && !isForking && (
-                <Sparkles className="pointer-events-none absolute right-1 top-1/2 size-3 -translate-y-1/2 text-slate-950/40" />
+                <Sparkles className="pointer-events-none absolute left-1/2 top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 text-slate-950/25" />
               )}
             </button>
 
