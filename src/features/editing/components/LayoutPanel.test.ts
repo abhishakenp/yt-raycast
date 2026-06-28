@@ -3,6 +3,19 @@ import { cleanup, fireEvent, render } from '@testing-library/react'
 import { createElement } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+// Radix ToggleGroup requires ResizeObserver
+if (typeof ResizeObserver === 'undefined') {
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    configurable: true,
+    value: class ResizeObserver {
+      disconnect() {}
+      observe() {}
+      unobserve() {}
+    },
+    writable: true,
+  })
+}
+
 import { LayoutPanel } from './LayoutPanel'
 
 const onModified = vi.fn<() => void>()

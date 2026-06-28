@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
+import { Slider } from '#/components/ui/slider'
 
 interface EffectsPanelProps {
   activeElement: HTMLElement | null
@@ -216,11 +217,11 @@ export function EffectsPanel({ activeElement, onModified }: EffectsPanelProps) {
   }
 
   const labelCls =
-    'text-[10px] uppercase tracking-wider text-white/40 font-medium'
-  const valueCls = 'text-[10px] text-white/60 w-12 text-right tabular-nums'
-  const sliderCls = 'accent-cyan-400 h-1 w-full'
+    'text-[10px] uppercase tracking-wider text-muted-foreground font-medium'
+  const valueCls =
+    'text-[10px] text-muted-foreground w-12 text-right tabular-nums'
   const resetBtnCls =
-    'flex items-center gap-1 text-white/40 hover:text-white/80 text-[10px] transition-colors'
+    'flex items-center gap-1 text-muted-foreground hover:text-foreground text-[10px] transition-colors'
 
   return (
     <div className="flex flex-col gap-2 p-2 w-full min-w-[420px]">
@@ -228,15 +229,14 @@ export function EffectsPanel({ activeElement, onModified }: EffectsPanelProps) {
       <section className="flex flex-col gap-1.5">
         <span className={labelCls}>Opacity</span>
         <div className="flex items-center gap-2">
-          <input
-            type="range"
+          <Slider
             aria-label="Opacity"
             min={0}
             max={100}
             step={1}
-            value={opacity}
-            onChange={(e) => updateOpacity(Number(e.target.value))}
-            className={sliderCls}
+            value={[opacity]}
+            onValueChange={(v) => updateOpacity(v[0])}
+            className="flex-1"
           />
           <span className={valueCls}>{opacity}%</span>
         </div>
@@ -258,71 +258,66 @@ export function EffectsPanel({ activeElement, onModified }: EffectsPanelProps) {
         </div>
         <div className="flex items-center gap-2">
           <span className={cn(labelCls, 'w-20')}>Blur</span>
-          <input
-            type="range"
+          <Slider
             aria-label="Blur"
             min={0}
             max={10}
             step={0.1}
-            value={filters.blur}
-            onChange={(e) => updateFilter('blur', Number(e.target.value))}
-            className={sliderCls}
+            value={[filters.blur]}
+            onValueChange={(v) => updateFilter('blur', v[0])}
+            className="flex-1"
           />
           <span className={valueCls}>{filters.blur}px</span>
         </div>
         <div className="flex items-center gap-2">
           <span className={cn(labelCls, 'w-20')}>Brightness</span>
-          <input
-            type="range"
+          <Slider
             aria-label="Brightness"
             min={0}
             max={200}
             step={1}
-            value={filters.brightness}
-            onChange={(e) => updateFilter('brightness', Number(e.target.value))}
-            className={sliderCls}
+            value={[filters.brightness]}
+            onValueChange={(v) => updateFilter('brightness', v[0])}
+            className="flex-1"
           />
           <span className={valueCls}>{filters.brightness}%</span>
         </div>
         <div className="flex items-center gap-2">
           <span className={cn(labelCls, 'w-20')}>Contrast</span>
-          <input
-            type="range"
+          <Slider
             aria-label="Contrast"
             min={0}
             max={200}
             step={1}
-            value={filters.contrast}
-            onChange={(e) => updateFilter('contrast', Number(e.target.value))}
-            className={sliderCls}
+            value={[filters.contrast]}
+            onValueChange={(v) => updateFilter('contrast', v[0])}
+            className="flex-1"
           />
           <span className={valueCls}>{filters.contrast}%</span>
         </div>
         <div className="flex items-center gap-2">
           <span className={cn(labelCls, 'w-20')}>Saturate</span>
-          <input
-            type="range"
+          <Slider
             aria-label="Saturate"
             min={0}
             max={200}
             step={1}
-            value={filters.saturate}
-            onChange={(e) => updateFilter('saturate', Number(e.target.value))}
-            className={sliderCls}
+            value={[filters.saturate]}
+            onValueChange={(v) => updateFilter('saturate', v[0])}
+            className="flex-1"
           />
           <span className={valueCls}>{filters.saturate}%</span>
         </div>
         <div className="flex items-center gap-2">
           <span className={cn(labelCls, 'w-20')}>Grayscale</span>
-          <input
-            type="range"
+          <Slider
             aria-label="Grayscale"
             min={0}
             max={100}
             step={1}
-            value={filters.grayscale}
-            onChange={(e) => updateFilter('grayscale', Number(e.target.value))}
-            className={sliderCls}
+            value={[filters.grayscale]}
+            onValueChange={(v) => updateFilter('grayscale', v[0])}
+            className="flex-1"
           />
           <span className={valueCls}>{filters.grayscale}%</span>
         </div>
@@ -344,57 +339,53 @@ export function EffectsPanel({ activeElement, onModified }: EffectsPanelProps) {
         </div>
         <div className="flex items-center gap-2">
           <span className={cn(labelCls, 'w-20')}>Rotate</span>
-          <input
-            type="range"
+          <Slider
             aria-label="Rotate"
             min={-180}
             max={180}
             step={1}
-            value={transform.rotate}
-            onChange={(e) => updateTransform('rotate', Number(e.target.value))}
-            className={sliderCls}
+            value={[transform.rotate]}
+            onValueChange={(v) => updateTransform('rotate', v[0])}
+            className="flex-1"
           />
           <span className={valueCls}>{transform.rotate}deg</span>
         </div>
         <div className="flex items-center gap-2">
           <span className={cn(labelCls, 'w-20')}>Scale</span>
-          <input
-            type="range"
+          <Slider
             aria-label="Scale"
             min={0.5}
             max={2}
             step={0.1}
-            value={transform.scale}
-            onChange={(e) => updateTransform('scale', Number(e.target.value))}
-            className={sliderCls}
+            value={[transform.scale]}
+            onValueChange={(v) => updateTransform('scale', v[0])}
+            className="flex-1"
           />
           <span className={valueCls}>{transform.scale}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className={cn(labelCls, 'w-20')}>Skew X</span>
-          <input
-            type="range"
+          <Slider
             aria-label="Skew X"
             min={-45}
             max={45}
             step={1}
-            value={transform.skewX}
-            onChange={(e) => updateTransform('skewX', Number(e.target.value))}
-            className={sliderCls}
+            value={[transform.skewX]}
+            onValueChange={(v) => updateTransform('skewX', v[0])}
+            className="flex-1"
           />
           <span className={valueCls}>{transform.skewX}deg</span>
         </div>
         <div className="flex items-center gap-2">
           <span className={cn(labelCls, 'w-20')}>Skew Y</span>
-          <input
-            type="range"
+          <Slider
             aria-label="Skew Y"
             min={-45}
             max={45}
             step={1}
-            value={transform.skewY}
-            onChange={(e) => updateTransform('skewY', Number(e.target.value))}
-            className={sliderCls}
+            value={[transform.skewY]}
+            onValueChange={(v) => updateTransform('skewY', v[0])}
+            className="flex-1"
           />
           <span className={valueCls}>{transform.skewY}deg</span>
         </div>
@@ -409,7 +400,7 @@ export function EffectsPanel({ activeElement, onModified }: EffectsPanelProps) {
             onChange={(e) =>
               updateTransform('translateX', Number(e.target.value))
             }
-            className="h-6 w-full rounded border border-white/10 bg-white/5 px-1.5 text-xs text-white outline-none focus-visible:border-cyan-300/50"
+            className="h-6 w-full rounded border border-border bg-muted px-1.5 text-xs text-foreground outline-none focus-visible:border-primary/50"
           />
           <span className={valueCls}>px</span>
         </div>
@@ -424,7 +415,7 @@ export function EffectsPanel({ activeElement, onModified }: EffectsPanelProps) {
             onChange={(e) =>
               updateTransform('translateY', Number(e.target.value))
             }
-            className="h-6 w-full rounded border border-white/10 bg-white/5 px-1.5 text-xs text-white outline-none focus-visible:border-cyan-300/50"
+            className="h-6 w-full rounded border border-border bg-muted px-1.5 text-xs text-foreground outline-none focus-visible:border-primary/50"
           />
           <span className={valueCls}>px</span>
         </div>
@@ -446,15 +437,14 @@ export function EffectsPanel({ activeElement, onModified }: EffectsPanelProps) {
         </div>
         <div className="flex items-center gap-2">
           <span className={cn(labelCls, 'w-20')}>Duration</span>
-          <input
-            type="range"
+          <Slider
             aria-label="Duration"
             min={0}
             max={2000}
             step={50}
-            value={transition.duration}
-            onChange={(e) => updateTransition('duration', e.target.value)}
-            className={sliderCls}
+            value={[transition.duration]}
+            onValueChange={(v) => updateTransition('duration', String(v[0]))}
+            className="flex-1"
           />
           <span className={valueCls}>{transition.duration}ms</span>
         </div>

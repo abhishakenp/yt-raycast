@@ -3,6 +3,19 @@ import { cleanup, fireEvent, render } from '@testing-library/react'
 import { createElement } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+// Radix ToggleGroup requires ResizeObserver
+if (typeof ResizeObserver === 'undefined') {
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    configurable: true,
+    value: class ResizeObserver {
+      disconnect() {}
+      observe() {}
+      unobserve() {}
+    },
+    writable: true,
+  })
+}
+
 import { StyleControlsPanel } from './StyleControlsPanel'
 
 const onModified = vi.fn<() => void>()
@@ -72,7 +85,9 @@ describe('StyleControlsPanel', () => {
   it('switches to background tab', () => {
     const { getByLabelText, getByText } = renderPanel(activeElement)
     fireEvent.click(getByLabelText('BG'))
-    expect(getByText('Shadow')).toBeTruthy()
+    // BackgroundPanel renders Solid/Gradient mode toggle
+    expect(getByText('Solid')).toBeTruthy()
+    expect(getByText('Gradient')).toBeTruthy()
   })
 
   it('switches to size tab', () => {
@@ -94,11 +109,10 @@ describe('StyleControlsPanel', () => {
     expect(onModified).toHaveBeenCalled()
   })
 
-  it('shadow presets apply box-shadow', () => {
+  it('BG tab renders BackgroundPanel with gradient mode', () => {
     const { getByLabelText, getByText } = renderPanel(activeElement)
     fireEvent.click(getByLabelText('BG'))
-    const smBtn = getByText('sm')
-    fireEvent.click(smBtn)
-    expect(activeElement.style.boxShadow).toContain('0 1px 2px')
+    // BackgroundPanel renders Solid/Gradient mode toggle
+    expect(getByText('Gradient')).toBeTruthy()
   })
 })
