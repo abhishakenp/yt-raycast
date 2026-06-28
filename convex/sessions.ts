@@ -2,6 +2,7 @@ import {
   Debouncer,
   type DebouncerComponentApi,
 } from '@ikhrustalev/convex-debouncer'
+import { v } from 'convex/values'
 import { components, internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 import {
@@ -75,6 +76,11 @@ import {
   createGenerationSession,
   type CreateGenerationSessionResult,
 } from './lib/session_creation_helpers'
+import {
+  generateUserImageUploadUrl,
+  listUserImages as listUserImagesHelper,
+  saveUserImage as saveUserImageHelper,
+} from './lib/session_user_image_helpers'
 import { createSessionEdit } from './lib/session_edit_mutation_helpers'
 import { forkSessionForOwner } from './lib/session_fork_helpers'
 import {
@@ -651,6 +657,32 @@ export const writeClonePageDoc = mutation({
 export const generateCloneUploadUrl = mutation({
   args: ownedSessionArgs,
   handler: (ctx, args) => generateCloneUploadUrlHelper(ctx, args),
+})
+
+// ── User image uploads (inline image swap picker) ─────────────────────────
+// Same ownership check as clone uploads. The client POSTs the file to the
+// signed URL, gets a storageId back, then calls saveUserImage to record
+// metadata. listUserImages resolves storage URLs for display in the picker.
+export const generateImageUploadUrl = mutation({
+  args: ownedSessionArgs,
+  handler: (ctx, args) => generateUserImageUploadUrl(ctx, args),
+})
+
+export const saveUserImage = mutation({
+  args: {
+    sessionId: v.id('sessions'),
+    anonymousOwnerSecret: v.optional(v.string()),
+    storageId: v.id('_storage'),
+    filename: v.optional(v.string()),
+    contentType: v.string(),
+    size: v.number(),
+  },
+  handler: (ctx, args) => saveUserImageHelper(ctx, args),
+})
+
+export const listUserImages = query({
+  args: { sessionId: v.id('sessions') },
+  handler: (ctx, args) => listUserImagesHelper(ctx, args),
 })
 
 // Renderable home clone content: `url` (file-storage iframe src) when the doc is

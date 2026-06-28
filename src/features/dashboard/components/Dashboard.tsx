@@ -2151,6 +2151,7 @@ export function Dashboard({
         }}
         imageWidth={imageSwapState.currentElement?.naturalWidth}
         imageHeight={imageSwapState.currentElement?.naturalHeight}
+        sessionId={sessionId}
       />
       <InlineEditToolbar
         isOpen={toolbarState.isOpen}

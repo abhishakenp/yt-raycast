@@ -1,0 +1,94 @@
+import { ConvexError } from 'convex/values'
+
+import type { Id } from '../_generated/dataModel'
+import type { MutationCtx, QueryCtx } from '../_generated/server'
+import { assertCanMutateSession } from './session_access_helpers'
+
+const assertSessionExists = async (
+  ctx: Pick<MutationCtx, 'db'>,
+  sessionId: Id<'sessions'>,
+) => {
+  const session = await ctx.db.get(sessionId)
+  if (!session) {
+    throw new ConvexError({
+      code: 'NOT_FOUND',
+      message: 'Session not found',
+    })
+  }
+  return session
+}
+
+/** Generate a signed upload URL for user-uploaded images. The client POSTs
+ *  the file to this URL, receives a storageId, then calls saveUserImage to
+ *  record the metadata. Same ownership check as clone uploads. */
+export const generateUserImageUploadUrl = async (
+  ctx: MutationCtx,
+  args: { sessionId: Id<'sessions'>; anonymousOwnerSecret?: string },
+) => {
+  const session = await assertSessionExists(ctx, args.sessionId)
+  await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
+  return await ctx.storage.generateUploadUrl()
+}
+
+/** After the client uploads the file to the signed URL, save the metadata
+ *  so we can list and display uploaded images in the image picker. */
+export const saveUserImage = async (
+  ctx: MutationCtx,
+  args: {
+    sessionId: Id<'sessions'>
+    anonymousOwnerSecret?: string
+    storageId: Id<'_storage'>
+    filename?: string
+    contentType: string
+    size: number
+  },
+) => {
+  const session = await assertSessionExists(ctx, args.sessionId)
+  await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
+
+  // Only allow image MIME types
+  if (!args.contentType.startsWith('image/')) {
+    throw new ConvexError({
+      code: 'INVALID_FILE_TYPE',
+      message: 'Only image files are allowed',
+    })
+  }
+
+  return await ctx.db.insert('userImages', {
+    sessionId: args.sessionId,
+    storageId: args.storageId,
+    filename: args.filename,
+    contentType: args.contentType,
+    size: args.size,
+    createdAt: Date.now(),
+  })
+}
+
+/** List all user-uploaded images for a session, newest first, with their
+ *  resolved storage URLs. */
+export const listUserImages = async (
+  ctx: QueryCtx,
+  args: { sessionId: Id<'sessions'> },
+) => {
+  const images = await ctx.db
+    .query('userImages')
+    .withIndex('by_sessionId', (q) => q.eq('sessionId', args.sessionId))
+    .order('desc')
+    .collect()
+
+  // Resolve storage URLs in parallel
+  const withUrls = await Promise.all(
+    images.map(async (img) => ({
+      _id: img._id,
+      storageId: img.storageId,
+      filename: img.filename,
+      contentType: img.contentType,
+      size: img.size,
+      createdAt: img.createdAt,
+      url: await ctx.storage.getUrl(img.storageId),
+    })),
+  )
+
+  // Filter out any images whose URL couldn't be resolved (e.g. deleted)
+  return withUrls.filter((img) => img.url !== null)
+}
