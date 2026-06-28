@@ -1068,92 +1068,103 @@ export function InlineEditToolbar({
           }}
         >
           <div className="overflow-hidden w-full">
-            {displayPanel === 'style' && (
-              <StyleControlsPanel
-                activeElement={activeElement}
-                onModified={() => {
-                  userModifiedRef.current = true
-                }}
-                sessionId={sessionId}
-              />
-            )}
-            {displayPanel === 'typography' && (
-              <TypographyControlsPanel
-                activeElement={activeElement}
-                onModified={() => {
-                  userModifiedRef.current = true
-                }}
-              />
-            )}
-            {displayPanel === 'link' && isLinkElement && onLinkEdit && (
-              <LinkEditPopover
-                activeElement={activeElement as HTMLAnchorElement}
-                onApply={(payload) => {
-                  onLinkEdit(payload)
-                  setActivePanel(null)
-                }}
-                onClose={() => setActivePanel(null)}
-              />
-            )}
-            {displayPanel === 'ai' && (
-              <div className="flex w-full flex-col">
-                <textarea
-                  value={aiPrompt}
-                  onChange={(e) => setAiPrompt(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      handleGenerate()
-                    }
+            <div
+              className="max-h-[min(60vh,420px)] w-full overflow-y-auto overscroll-contain [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/15 [&::-webkit-scrollbar-track]:bg-transparent"
+              data-inline-edit-wrapper="true"
+            >
+              {displayPanel === 'style' && (
+                <StyleControlsPanel
+                  activeElement={activeElement}
+                  onModified={() => {
+                    userModifiedRef.current = true
                   }}
-                  placeholder="Describe a change..."
-                  autoFocus
-                  disabled={isSectionSubmitting}
-                  className="min-h-[72px] w-full resize-none border-0 bg-transparent px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:ring-0"
-                />
-                <div className="flex items-center gap-2 px-2 pb-1.5">
-                  {sectionError && (
-                    <span className="text-xs text-red-400">{sectionError}</span>
-                  )}
-                  {isSectionSubmitting && (
-                    <span className="text-xs text-cyan-300">Generating...</span>
-                  )}
-                  <Button
-                    type="button"
-                    size="xs"
-                    onClick={handleGenerate}
-                    disabled={!aiPrompt.trim() || isSectionSubmitting}
-                    className="ml-auto h-6 gap-1.5 rounded-md bg-cyan-300/90 px-2 text-xs font-bold text-slate-950 hover:bg-cyan-300"
-                  >
-                    {isSectionSubmitting ? (
-                      <>
-                        <Loader2 className="size-3 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="size-3" />
-                        Generate
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            )}
-            {displayPanel === 'image' &&
-              isImageElement &&
-              onImageSelect &&
-              sessionId && (
-                <ImageSwapPanel
-                  currentAlt={(activeElement as HTMLImageElement).alt ?? ''}
-                  onImageSelect={handleImagePreview}
-                  imageWidth={(activeElement as HTMLImageElement).naturalWidth}
-                  imageHeight={
-                    (activeElement as HTMLImageElement).naturalHeight
-                  }
                   sessionId={sessionId}
                 />
               )}
+              {displayPanel === 'typography' && (
+                <TypographyControlsPanel
+                  activeElement={activeElement}
+                  onModified={() => {
+                    userModifiedRef.current = true
+                  }}
+                />
+              )}
+              {displayPanel === 'link' && isLinkElement && onLinkEdit && (
+                <LinkEditPopover
+                  activeElement={activeElement as HTMLAnchorElement}
+                  onApply={(payload) => {
+                    onLinkEdit(payload)
+                    setActivePanel(null)
+                  }}
+                  onClose={() => setActivePanel(null)}
+                />
+              )}
+              {displayPanel === 'ai' && (
+                <div className="flex w-full flex-col">
+                  <textarea
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        handleGenerate()
+                      }
+                    }}
+                    placeholder="Describe a change..."
+                    autoFocus
+                    disabled={isSectionSubmitting}
+                    className="min-h-[72px] w-full resize-none border-0 bg-transparent px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:ring-0"
+                  />
+                  <div className="flex items-center gap-2 px-2 pb-1.5">
+                    {sectionError && (
+                      <span className="text-xs text-red-400">
+                        {sectionError}
+                      </span>
+                    )}
+                    {isSectionSubmitting && (
+                      <span className="text-xs text-cyan-300">
+                        Generating...
+                      </span>
+                    )}
+                    <Button
+                      type="button"
+                      size="xs"
+                      onClick={handleGenerate}
+                      disabled={!aiPrompt.trim() || isSectionSubmitting}
+                      className="ml-auto h-6 gap-1.5 rounded-md bg-cyan-300/90 px-2 text-xs font-bold text-slate-950 hover:bg-cyan-300"
+                    >
+                      {isSectionSubmitting ? (
+                        <>
+                          <Loader2 className="size-3 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="size-3" />
+                          Generate
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {displayPanel === 'image' &&
+                isImageElement &&
+                onImageSelect &&
+                sessionId && (
+                  <ImageSwapPanel
+                    currentAlt={(activeElement as HTMLImageElement).alt ?? ''}
+                    onImageSelect={handleImagePreview}
+                    imageWidth={
+                      (activeElement as HTMLImageElement).naturalWidth
+                    }
+                    imageHeight={
+                      (activeElement as HTMLImageElement).naturalHeight
+                    }
+                    sessionId={sessionId}
+                  />
+                )}
+            </div>
           </div>
         </div>
       </div>

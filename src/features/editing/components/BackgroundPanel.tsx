@@ -10,6 +10,7 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024
+const PER_PAGE = 10
 const ACCEPTED_TYPES = [
   'image/png',
   'image/jpeg',
@@ -122,6 +123,9 @@ export function BackgroundPanel({
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<StockImageResult[]>([])
   const [searching, setSearching] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
   const [hasBgImage, setHasBgImage] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
@@ -131,6 +135,8 @@ export function BackgroundPanel({
   const prevElementRef = useRef<HTMLElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dragCounterRef = useRef(0)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   const generateUploadUrl = useMutation(api.sessions.generateImageUploadUrl)
   const saveUserImage = useMutation(api.sessions.saveUserImage)
@@ -211,18 +217,56 @@ export function BackgroundPanel({
     const query = searchQuery.trim()
     if (!query) return
     setSearching(true)
+    setPage(1)
+    setHasMore(true)
     try {
       const results = await searchStockImages({
         query,
         w: 400,
         h: 300,
-        perPage: 12,
+        page: 1,
+        perPage: PER_PAGE,
       })
       setSearchResults(results)
+      setHasMore(results.length === PER_PAGE)
     } finally {
       setSearching(false)
     }
   }
+
+  const loadMore = useCallback(async () => {
+    if (isLoadingMore || searching || !hasMore || !searchQuery.trim()) return
+    const nextPage = page + 1
+    setIsLoadingMore(true)
+    try {
+      const results = await searchStockImages({
+        query: searchQuery.trim(),
+        w: 400,
+        h: 300,
+        page: nextPage,
+        perPage: PER_PAGE,
+      })
+      setSearchResults((prev) => [...prev, ...results])
+      setPage(nextPage)
+      setHasMore(results.length === PER_PAGE)
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }, [isLoadingMore, searching, hasMore, page, searchQuery])
+
+  // Infinite scroll via IntersectionObserver
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore()
+      },
+      { root: scrollRef.current, rootMargin: '100px' },
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [loadMore])
 
   const applyBgImage = (url: string) => {
     if (!activeElement) return
@@ -650,7 +694,7 @@ export function BackgroundPanel({
 
         {/* Image grid — uploaded images first, then stock results */}
         {(uploadedImages.length > 0 || searchResults.length > 0) && (
-          <div className="max-h-48 overflow-y-auto p-0.5">
+          <div ref={scrollRef} className="max-h-48 overflow-y-auto p-0.5">
             {uploadedImages.length > 0 && (
               <div className="mb-2">
                 <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-white/40">
@@ -705,6 +749,22 @@ export function BackgroundPanel({
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* Sentinel for infinite scroll */}
+            <div ref={sentinelRef} className="h-1" />
+            {isLoadingMore && (
+              <div className="flex items-center justify-center gap-1.5 py-2">
+                <Loader2 className="size-3 animate-spin text-white/40" />
+                <span className="text-[10px] text-white/40">
+                  Loading more...
+                </span>
+              </div>
+            )}
+            {!hasMore && searchResults.length > 0 && (
+              <p className="py-2 text-center text-[10px] text-white/30">
+                No more images
+              </p>
             )}
           </div>
         )}
