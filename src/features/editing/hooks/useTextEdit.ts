@@ -328,6 +328,47 @@ export function useTextEdit(
         e.preventDefault()
         document.execCommand('insertText', false, ' ')
       }
+      // Intercept Backspace/Delete at keydown level to prevent deletion of
+      // locked children (SVG icons). beforeinput may not fire reliably in all
+      // browsers, and the selection may already be extended by the time it
+      // fires. keydown fires before any selection changes.
+      if (
+        (e.key === 'Backspace' || e.key === 'Delete') &&
+        activeEditRef.current
+      ) {
+        const active = activeEditRef.current
+        if (active.lockedChildren && active.lockedChildren.length > 0) {
+          const sel = window.getSelection()
+          if (sel) {
+            const range = sel.getRangeAt(0)
+            if (sel.isCollapsed) {
+              // Collapsed selection: check if the node that would be deleted
+              // is a locked child
+              if (
+                shouldPreventLockedDeletion(
+                  e.key === 'Backspace'
+                    ? 'deleteContentBackward'
+                    : 'deleteContentForward',
+                  range.startContainer,
+                  range.startOffset,
+                  active.lockedChildren,
+                )
+              ) {
+                e.preventDefault()
+              }
+            } else {
+              // Non-collapsed selection: check if the selection range
+              // includes any locked child, and if so, prevent deletion
+              for (const locked of active.lockedChildren) {
+                if (range.intersectsNode(locked)) {
+                  e.preventDefault()
+                  break
+                }
+              }
+            }
+          }
+        }
+      }
       if (e.key === 'Enter' && !e.shiftKey) {
         // Enter commits the text edit (same as clicking Save/Apply).
         e.preventDefault()
@@ -342,17 +383,29 @@ export function useTextEdit(
       const active = activeEditRef.current
       if (!active || !active.lockedChildren) return
       const sel = window.getSelection()
-      if (!sel || !sel.isCollapsed) return
+      if (!sel) return
+      // Handle both collapsed and non-collapsed selections
       const range = sel.getRangeAt(0)
-      if (
-        shouldPreventLockedDeletion(
-          e.inputType,
-          range.startContainer,
-          range.startOffset,
-          active.lockedChildren,
-        )
-      ) {
-        e.preventDefault()
+      if (sel.isCollapsed) {
+        if (
+          shouldPreventLockedDeletion(
+            e.inputType,
+            range.startContainer,
+            range.startOffset,
+            active.lockedChildren,
+          )
+        ) {
+          e.preventDefault()
+        }
+      } else {
+        // Non-collapsed selection: prevent deletion if range includes any
+        // locked child
+        for (const locked of active.lockedChildren) {
+          if (range.intersectsNode(locked)) {
+            e.preventDefault()
+            break
+          }
+        }
       }
     }
 

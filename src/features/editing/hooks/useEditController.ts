@@ -39,7 +39,7 @@ export const useEditController = (sessionId: string) => {
     instruction: string | undefined,
     afterHtml?: string,
     occurrenceIndex?: number,
-  ) => {
+  ): Promise<true | 'fork_needed' | { ok: false; error: string }> => {
     setEditError(undefined)
     setIsEditing(true)
 
@@ -93,8 +93,9 @@ export const useEditController = (sessionId: string) => {
         return 'fork_needed' as const
       }
 
-      // Return false for all other errors
-      return false
+      // Return the error directly so callers can read it synchronously
+      // (setEditError uses React state which is stale until next render)
+      return { ok: false, error: errorMessage }
     } finally {
       setIsEditing(false)
     }

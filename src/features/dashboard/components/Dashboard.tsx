@@ -920,11 +920,11 @@ export function Dashboard({
         change.element.textContent = change.oldText
         toast.error(editController.editError || 'Failed to fork session')
       }
-    } else if (!result && editController.editError) {
+    } else if (result !== true && 'error' in result) {
       // Revert the DOM change on other errors
       change.element.textContent = change.oldText
-      console.error('[Inline Edit] Failed to save:', editController.editError)
-      toast.error(editController.editError)
+      console.error('[Inline Edit] Failed to save:', result.error)
+      toast.error(result.error)
     }
   }
 
@@ -967,14 +967,11 @@ export function Dashboard({
               toast.error(editController.editError || 'Failed to fork session')
             }
           })
-        } else if (!result && editController.editError) {
+        } else if (result !== true && 'error' in result) {
           // Revert the DOM change on other errors
           change.element.src = change.oldSrc
-          console.error(
-            '[Inline Edit] Failed to save image:',
-            editController.editError,
-          )
-          toast.error(editController.editError)
+          console.error('[Inline Edit] Failed to save image:', result.error)
+          toast.error(result.error)
         }
       })
   }
@@ -1064,10 +1061,10 @@ export function Dashboard({
         }
         toast.error(editController.editError || 'Failed to fork session')
       }
-    } else if (result) {
+    } else if (result === true) {
       // Close toolbar and reload for style edits
       setToolbarState((s) => ({ ...s, isOpen: false }))
-    } else if (editController.editError) {
+    } else {
       // Revert the style changes on other errors
       if (activeElement) {
         activeElement.style.fontSize = originalStyles.fontSize
@@ -1076,11 +1073,8 @@ export function Dashboard({
         activeElement.style.color = originalStyles.color
         activeElement.style.textAlign = originalStyles.textAlign
       }
-      console.error(
-        '[Inline Edit] Failed to save style:',
-        editController.editError,
-      )
-      toast.error(editController.editError)
+      console.error('[Inline Edit] Failed to save style:', result.error)
+      toast.error(result.error)
     }
   }
 
