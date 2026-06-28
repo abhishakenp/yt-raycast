@@ -5,20 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { TypographyControlsPanel } from './TypographyControlsPanel'
 
-const onApply =
-  vi.fn<
-    (p: {
-      sourceAnchor: string
-      style: string
-      occurrenceIndex: number
-    }) => void
-  >()
-const onClose = vi.fn()
+const onModified = vi.fn<() => void>()
 
 const renderPanel = (activeElement: HTMLElement) =>
-  render(
-    createElement(TypographyControlsPanel, { activeElement, onApply, onClose }),
-  )
+  render(createElement(TypographyControlsPanel, { activeElement, onModified }))
 
 const makeComputed = (
   overrides: Partial<Record<string, string>> = {},
@@ -37,8 +27,7 @@ describe('TypographyControlsPanel', () => {
   let originalGetComputedStyle: typeof window.getComputedStyle
 
   beforeEach(() => {
-    onApply.mockReset()
-    onClose.mockReset()
+    onModified.mockReset()
     activeElement = document.createElement('p')
     activeElement.setAttribute('class', 'body-text')
     document.body.appendChild(activeElement)
@@ -61,13 +50,14 @@ describe('TypographyControlsPanel', () => {
     expect(trigger).toBeTruthy()
   })
 
-  it('renders text transform buttons', () => {
+  it('renders text transform toggle group items', () => {
     renderPanel(activeElement)
-    const buttons = Array.from(document.querySelectorAll('button')).filter(
-      (b) =>
-        ['None', 'Upper', 'Lower', 'Cap'].includes(b.textContent?.trim() ?? ''),
+    const items = Array.from(
+      document.querySelectorAll('[role="radio"]'),
+    ).filter((b) =>
+      ['None', 'Upper', 'Lower', 'Cap'].includes(b.textContent?.trim() ?? ''),
     )
-    expect(buttons.length).toBe(4)
+    expect(items.length).toBe(4)
   })
 
   it('letter spacing change applies to element style', () => {
@@ -82,57 +72,21 @@ describe('TypographyControlsPanel', () => {
 
   it('text transform uppercase applies to element style', () => {
     renderPanel(activeElement)
-    const upperBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent?.trim() === 'Upper',
-    )!
+    const upperBtn = Array.from(
+      document.querySelectorAll('[role="radio"]'),
+    ).find((b) => b.textContent?.trim() === 'Upper')!
     fireEvent.click(upperBtn)
     expect(activeElement.style.textTransform).toBe('uppercase')
   })
 
-  it('apply calls onApply with sourceAnchor and occurrenceIndex', () => {
+  it('modifying text transform calls onModified', () => {
     renderPanel(activeElement)
-    // Modify via text transform button (click triggers applyLiveStyle → markModified)
-    const upperBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent?.trim() === 'Upper',
-    )!
+    const upperBtn = Array.from(
+      document.querySelectorAll('[role="radio"]'),
+    ).find((b) => b.textContent?.trim() === 'Upper')!
     fireEvent.click(upperBtn)
     expect(activeElement.style.textTransform).toBe('uppercase')
-    // Click apply
-    const applyBtn = Array.from(document.querySelectorAll('button')).find((b) =>
-      b.textContent?.includes('Apply'),
-    )!
-    fireEvent.click(applyBtn)
-    expect(onApply).toHaveBeenCalledTimes(1)
-    const payload = onApply.mock.calls[0][0]
-    expect(payload.sourceAnchor).toBe('body-text')
-    expect(payload.occurrenceIndex).toBe(0)
-  })
-
-  it('close reverts styles and calls onClose', () => {
-    const originalStyle = 'color: blue'
-    activeElement.setAttribute('style', originalStyle)
-    renderPanel(activeElement)
-    // Modify via native number input (letter spacing)
-    const letterInput = Array.from(
-      document.querySelectorAll<HTMLInputElement>('input[type="number"]'),
-    ).find((i) => i.step === '0.01')!
-    fireEvent.change(letterInput, { target: { value: '0.1' } })
-    expect(activeElement.style.letterSpacing).toBe('0.1em')
-    // Close
-    const closeBtn = document.querySelector('button[aria-label="Close"]')!
-    fireEvent.click(closeBtn)
-    expect(onClose).toHaveBeenCalledTimes(1)
-    expect(activeElement.getAttribute('style')).toBe(originalStyle)
-  })
-
-  it('apply without modifications just closes', () => {
-    renderPanel(activeElement)
-    const applyBtn = Array.from(document.querySelectorAll('button')).find((b) =>
-      b.textContent?.includes('Apply'),
-    )!
-    fireEvent.click(applyBtn)
-    expect(onApply).not.toHaveBeenCalled()
-    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(onModified).toHaveBeenCalled()
   })
 
   it('line height auto toggle applies normal', () => {
@@ -140,7 +94,6 @@ describe('TypographyControlsPanel', () => {
     const autoBtn = Array.from(document.querySelectorAll('button')).find(
       (b) => b.textContent?.trim() === 'Auto',
     )!
-    // Auto should be active by default (lineHeight is 'normal')
     expect(autoBtn).toBeTruthy()
     // Click it to toggle off, then back on
     fireEvent.click(autoBtn)
