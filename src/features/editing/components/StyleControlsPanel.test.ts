@@ -64,41 +64,38 @@ describe('StyleControlsPanel', () => {
   })
 
   it('renders all 4 tabs', () => {
-    const { getByText } = renderPanel(activeElement)
-    expect(getByText('Spacing')).toBeTruthy()
-    expect(getByText('Border')).toBeTruthy()
-    expect(getByText('BG')).toBeTruthy()
-    expect(getByText('Size')).toBeTruthy()
+    const { getByLabelText } = renderPanel(activeElement)
+    expect(getByLabelText('Spacing')).toBeTruthy()
+    expect(getByLabelText('Border')).toBeTruthy()
+    expect(getByLabelText('BG')).toBeTruthy()
+    expect(getByLabelText('Size')).toBeTruthy()
   })
 
   it('switches to border tab', () => {
-    const { getByText } = renderPanel(activeElement)
-    fireEvent.click(getByText('Border'))
+    const { getByLabelText, getByText } = renderPanel(activeElement)
+    fireEvent.click(getByLabelText('Border'))
     expect(getByText('Width')).toBeTruthy()
     expect(getByText('Style')).toBeTruthy()
     expect(getByText('Color')).toBeTruthy()
   })
 
   it('switches to background tab', () => {
-    const { getByText } = renderPanel(activeElement)
-    fireEvent.click(getByText('BG'))
+    const { getByLabelText, getByText } = renderPanel(activeElement)
+    fireEvent.click(getByLabelText('BG'))
     expect(getByText('Shadow')).toBeTruthy()
   })
 
   it('switches to size tab', () => {
-    const { getByText } = renderPanel(activeElement)
-    fireEvent.click(getByText('Size'))
+    const { getByLabelText, getByText } = renderPanel(activeElement)
+    fireEvent.click(getByLabelText('Size'))
     expect(getByText('Width')).toBeTruthy()
     expect(getByText('Height')).toBeTruthy()
   })
 
   it('apply calls onApply when style was modified via UI', () => {
-    renderPanel(activeElement)
+    const { getByLabelText } = renderPanel(activeElement)
     // Switch to border tab
-    const borderTab = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Border',
-    )!
-    fireEvent.click(borderTab)
+    fireEvent.click(getByLabelText('Border'))
     // Change border style select (triggers applyLiveStyle → markModified)
     const styleSelect = Array.from(document.querySelectorAll('select')).find(
       (s) => s.value === 'solid',
@@ -141,8 +138,8 @@ describe('StyleControlsPanel', () => {
   })
 
   it('shadow presets apply box-shadow', () => {
-    const { getByText } = renderPanel(activeElement)
-    fireEvent.click(getByText('BG'))
+    const { getByLabelText, getByText } = renderPanel(activeElement)
+    fireEvent.click(getByLabelText('BG'))
     const smBtn = getByText('sm')
     fireEvent.click(smBtn)
     expect(activeElement.style.boxShadow).toContain('0 1px 2px')
