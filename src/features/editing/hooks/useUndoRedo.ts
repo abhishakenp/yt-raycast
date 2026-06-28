@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 /** Minimal interface for the fields useUndoRedo actually uses. */
 interface UndoRedoController {
@@ -8,15 +8,23 @@ interface UndoRedoController {
 }
 
 /**
- * Undo/redo for inline edits. The edit controller already exposes
- * `edits` (newest-first array from Convex), `history` (all preview versions),
- * and `restoreVersion(version)`.
+ * Undo/redo for inline edits.
  *
- * - `currentVersion` = max version in history (the active preview version)
- * - `canUndo` = there exists a version < currentVersion in history
- * - `canRedo` = there exists an edit with previewVersion > currentVersion
- * - `undo()` = restore to the highest version < currentVersion
- * - `redo()` = restore to the lowest edit version > currentVersion
+ * The backend `restorePreviewHistoryVersion` creates a NEW version
+ * (current+1) with the old content rather than moving a pointer.
+ * So after undo from v3 to v2, a new v4 is created with v2's content.
+ * currentVersion becomes 4, and the history grows. This means we can't
+ * use version numbers to navigate — we need client-side stacks.
+ *
+ * Approach:
+ * - `undoStackRef`: versions to undo TO (most recent first)
+ * - `redoStackRef`: versions to redo TO (most recent first)
+ * - When a new edit appears (edits list grows), push the edit's
+ *   previewVersion onto undoStack and clear redoStack.
+ * - undo: pop from undoStack, push currentVersion onto redoStack,
+ *   restore to popped version.
+ * - redo: pop from redoStack, push currentVersion onto undoStack,
+ *   restore to popped version.
  */
 export function useUndoRedo(controller: UndoRedoController) {
   const edits = controller.edits ?? []
@@ -32,30 +40,70 @@ export function useUndoRedo(controller: UndoRedoController) {
     return 0
   }, [history, edits])
 
-  const allVersions = useMemo(
-    () => history.map((h) => h.version).sort((a, b) => a - b),
-    [history],
-  )
+  // Client-side stacks
+  const undoStackRef = useRef<number[]>([])
+  const redoStackRef = useRef<number[]>([])
+  const [undoStackSize, setUndoStackSize] = useState(0)
+  const [redoStackSize, setRedoStackSize] = useState(0)
 
-  const canUndo = allVersions.some((v) => v < currentVersion)
-  const canRedo = edits.some((e) => e.previewVersion > currentVersion)
+  // Track edits length to detect new edits and initialize the undo stack
+  const prevEditsLengthRef = useRef(edits.length)
+  const initializedRef = useRef(false)
+
+  // Initialize undo stack from edits on first run
+  if (!initializedRef.current && edits.length > 0) {
+    // Edits are newest-first. Push all edit versions onto undo stack
+    // in order (oldest first = bottom of stack, newest = top).
+    // The undo stack should contain versions we can go back to.
+    // We push them so the most recent edit is at the top.
+    const editVersions = edits
+      .map((e) => e.previewVersion)
+      .sort((a, b) => a - b)
+    undoStackRef.current = editVersions
+    setUndoStackSize(editVersions.length)
+    initializedRef.current = true
+  }
+
+  // Detect new edits (edits list grew)
+  if (edits.length > prevEditsLengthRef.current) {
+    // New edit(s) appeared — push the newest edit version onto undo stack
+    const newestVersion = edits[0]?.previewVersion
+    if (newestVersion !== undefined) {
+      undoStackRef.current = [...undoStackRef.current, newestVersion]
+    }
+    // Clear redo stack
+    redoStackRef.current = []
+    setRedoStackSize(0)
+    setUndoStackSize(undoStackRef.current.length)
+  }
+  prevEditsLengthRef.current = edits.length
+
+  const canUndo = undoStackSize > 0
+  const canRedo = redoStackSize > 0
 
   const undo = useCallback(async () => {
-    if (!canUndo) return
-    const targetVersion = Math.max(
-      ...allVersions.filter((v) => v < currentVersion),
-    )
+    if (undoStackRef.current.length === 0) return
+    // Pop the top of the undo stack — that's the version to restore to
+    const targetVersion = undoStackRef.current[undoStackRef.current.length - 1]
+    undoStackRef.current = undoStackRef.current.slice(0, -1)
+    // Push currentVersion onto redo stack
+    redoStackRef.current = [...redoStackRef.current, currentVersion]
+    setUndoStackSize(undoStackRef.current.length)
+    setRedoStackSize(redoStackRef.current.length)
     await controller.restoreVersion(targetVersion)
-  }, [canUndo, allVersions, currentVersion, controller])
+  }, [currentVersion, controller])
 
   const redo = useCallback(async () => {
-    if (!canRedo) return
-    const futureVersions = edits
-      .map((e) => e.previewVersion)
-      .filter((v) => v > currentVersion)
-      .sort((a, b) => a - b)
-    await controller.restoreVersion(futureVersions[0])
-  }, [canRedo, edits, currentVersion, controller])
+    if (redoStackRef.current.length === 0) return
+    // Pop the top of the redo stack — that's the version to restore to
+    const targetVersion = redoStackRef.current[redoStackRef.current.length - 1]
+    redoStackRef.current = redoStackRef.current.slice(0, -1)
+    // Push currentVersion onto undo stack
+    undoStackRef.current = [...undoStackRef.current, currentVersion]
+    setRedoStackSize(redoStackRef.current.length)
+    setUndoStackSize(undoStackRef.current.length)
+    await controller.restoreVersion(targetVersion)
+  }, [currentVersion, controller])
 
   return {
     canUndo,
@@ -63,6 +111,6 @@ export function useUndoRedo(controller: UndoRedoController) {
     undo,
     redo,
     currentVersion,
-    historyDepth: allVersions.length,
+    historyDepth: history.length,
   }
 }

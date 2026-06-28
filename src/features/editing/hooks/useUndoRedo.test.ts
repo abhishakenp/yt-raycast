@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { renderHook } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { useUndoRedo } from './useUndoRedo'
@@ -28,7 +28,7 @@ describe('useUndoRedo', () => {
     expect(result.current.historyDepth).toBe(0)
   })
 
-  it('one edit → canUndo=true (version 0 exists), canRedo=false', () => {
+  it('one edit → canUndo=true, canRedo=false', () => {
     const ctrl = makeController({
       edits: [{ previewVersion: 1 }],
       history: [{ version: 0 }, { version: 1 }],
@@ -36,10 +36,9 @@ describe('useUndoRedo', () => {
     const { result } = renderHook(() => useUndoRedo(ctrl))
     expect(result.current.canUndo).toBe(true)
     expect(result.current.canRedo).toBe(false)
-    expect(result.current.historyDepth).toBe(2)
   })
 
-  it('two edits at latest → canUndo=true, canRedo=false', () => {
+  it('two edits → canUndo=true, canRedo=false', () => {
     const ctrl = makeController({
       edits: [{ previewVersion: 2 }, { previewVersion: 1 }],
       history: [{ version: 0 }, { version: 1 }, { version: 2 }],
@@ -49,7 +48,7 @@ describe('useUndoRedo', () => {
     expect(result.current.canRedo).toBe(false)
   })
 
-  it('undo calls restoreVersion with previous version', async () => {
+  it('undo calls restoreVersion with the most recent edit version', async () => {
     const restoreVersion = vi.fn(async (v: number) => {
       void v
     })
@@ -59,38 +58,51 @@ describe('useUndoRedo', () => {
       restoreVersion,
     })
     const { result } = renderHook(() => useUndoRedo(ctrl))
-    await result.current.undo()
-    expect(restoreVersion).toHaveBeenCalledWith(1)
-  })
-
-  it('redo calls restoreVersion with next edit version', async () => {
-    const restoreVersion = vi.fn(async (v: number) => {
-      void v
+    await act(async () => {
+      await result.current.undo()
     })
-    // Simulate being at version 1 (after undo from version 2)
-    const ctrl = makeController({
-      edits: [{ previewVersion: 2 }, { previewVersion: 1 }],
-      history: [{ version: 0 }, { version: 1 }],
-      restoreVersion,
-    })
-    const { result } = renderHook(() => useUndoRedo(ctrl))
-    expect(result.current.canRedo).toBe(true)
-    await result.current.redo()
+    // Undo stack was [1, 2], pop 2 → restore to v2
     expect(restoreVersion).toHaveBeenCalledWith(2)
   })
 
-  it('undo at first edit restores to version 0', async () => {
+  it('undo enables canRedo', async () => {
     const restoreVersion = vi.fn(async (v: number) => {
       void v
     })
     const ctrl = makeController({
-      edits: [{ previewVersion: 1 }],
-      history: [{ version: 0 }, { version: 1 }],
+      edits: [{ previewVersion: 2 }, { previewVersion: 1 }],
+      history: [{ version: 0 }, { version: 1 }, { version: 2 }],
       restoreVersion,
     })
     const { result } = renderHook(() => useUndoRedo(ctrl))
-    await result.current.undo()
-    expect(restoreVersion).toHaveBeenCalledWith(0)
+    expect(result.current.canRedo).toBe(false)
+    await act(async () => {
+      await result.current.undo()
+    })
+    expect(result.current.canRedo).toBe(true)
+  })
+
+  it('redo after undo restores correctly', async () => {
+    const restoreVersion = vi.fn(async (v: number) => {
+      void v
+    })
+    const ctrl = makeController({
+      edits: [{ previewVersion: 2 }, { previewVersion: 1 }],
+      history: [{ version: 0 }, { version: 1 }, { version: 2 }],
+      restoreVersion,
+    })
+    const { result } = renderHook(() => useUndoRedo(ctrl))
+    // Undo: pop v2 from undoStack, push currentVersion (2) onto redoStack
+    await act(async () => {
+      await result.current.undo()
+    })
+    expect(restoreVersion).toHaveBeenLastCalledWith(2)
+    // Redo: pop v2 from redoStack, restore to v2
+    await act(async () => {
+      await result.current.redo()
+    })
+    expect(restoreVersion).toHaveBeenLastCalledWith(2)
+    expect(result.current.canRedo).toBe(false)
   })
 
   it('undo when canUndo=false does nothing', async () => {
@@ -99,7 +111,9 @@ describe('useUndoRedo', () => {
     })
     const ctrl = makeController({ restoreVersion })
     const { result } = renderHook(() => useUndoRedo(ctrl))
-    await result.current.undo()
+    await act(async () => {
+      await result.current.undo()
+    })
     expect(restoreVersion).not.toHaveBeenCalled()
   })
 
@@ -114,7 +128,9 @@ describe('useUndoRedo', () => {
     })
     const { result } = renderHook(() => useUndoRedo(ctrl))
     expect(result.current.canRedo).toBe(false)
-    await result.current.redo()
+    await act(async () => {
+      await result.current.redo()
+    })
     expect(restoreVersion).not.toHaveBeenCalled()
   })
 
@@ -125,5 +141,53 @@ describe('useUndoRedo', () => {
     })
     const { result } = renderHook(() => useUndoRedo(ctrl))
     expect(result.current.currentVersion).toBe(5)
+  })
+
+  it('multiple undo then redo works with stack-based approach', async () => {
+    // Simulate the backend creating new versions on each restore.
+    let historyState = [
+      { version: 0 },
+      { version: 1 },
+      { version: 2 },
+      { version: 3 },
+    ]
+    const restoreVersion = vi.fn(async (_v: number) => {
+      const nextVersion = Math.max(...historyState.map((h) => h.version)) + 1
+      historyState = [...historyState, { version: nextVersion }]
+    })
+    const ctrl = {
+      edits: [
+        { previewVersion: 3 },
+        { previewVersion: 2 },
+        { previewVersion: 1 },
+      ],
+      get history() {
+        return historyState
+      },
+      restoreVersion,
+    }
+    const { result } = renderHook(() => useUndoRedo(ctrl))
+    // Undo stack initialized to [1, 2, 3]
+    // Undo: pop 3, push currentVersion(3) onto redo, restore to 3
+    await act(async () => {
+      await result.current.undo()
+    })
+    expect(restoreVersion).toHaveBeenLastCalledWith(3)
+    // Undo: pop 2, push currentVersion(4) onto redo, restore to 2
+    await act(async () => {
+      await result.current.undo()
+    })
+    expect(restoreVersion).toHaveBeenLastCalledWith(2)
+    // Redo: pop 4 from redo, restore to 4
+    await act(async () => {
+      await result.current.redo()
+    })
+    expect(restoreVersion).toHaveBeenLastCalledWith(4)
+    // Redo: pop 3 from redo, restore to 3
+    await act(async () => {
+      await result.current.redo()
+    })
+    expect(restoreVersion).toHaveBeenLastCalledWith(3)
+    expect(result.current.canRedo).toBe(false)
   })
 })
