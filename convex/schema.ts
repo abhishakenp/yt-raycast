@@ -618,4 +618,19 @@ export default defineSchema({
   })
     .index('by_sessionId', ['sessionId'])
     .index('by_sessionId_capsuleName', ['sessionId', 'capsuleName']),
+
+  // User-uploaded images for inline image swaps. Stored in Convex file
+  // storage (storageId → getUrl) and surfaced alongside stock search results
+  // in the ImageSwapPopover.
+  userImages: defineTable({
+    sessionId: v.id('sessions'),
+    storageId: v.id('_storage'),
+    // Original filename for display (optional — browsers may not provide one)
+    filename: v.optional(v.string()),
+    // MIME type of the uploaded file (image/png, image/jpeg, …)
+    contentType: v.string(),
+    // File size in bytes (for quota / display)
+    size: v.number(),
+    createdAt: v.number(),
+  }).index('by_sessionId', ['sessionId']),
 })
