@@ -451,3 +451,90 @@ describe('InlineEditToolbar — font size control', () => {
     outsideEl.remove()
   })
 })
+
+describe('InlineEditToolbar — copy/paste style', () => {
+  let activeElement: HTMLElement
+  let originalGetComputedStyle: typeof window.getComputedStyle
+  let originalRequestAnimationFrame: typeof globalThis.requestAnimationFrame
+
+  beforeEach(() => {
+    onStyleApply.mockReset()
+    onCommitText.mockReset()
+    onClose.mockReset()
+
+    activeElement = document.createElement('p')
+    activeElement.setAttribute('class', 'style-target')
+    activeElement.textContent = 'Style me'
+    document.body.appendChild(activeElement)
+
+    originalGetComputedStyle = window.getComputedStyle
+    vi.spyOn(window, 'getComputedStyle').mockImplementation(() =>
+      makeComputed(),
+    )
+
+    originalRequestAnimationFrame = globalThis.requestAnimationFrame
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0)
+      return 0
+    })
+  })
+
+  afterEach(() => {
+    cleanup()
+    activeElement.remove()
+    vi.mocked(window.getComputedStyle).mockRestore()
+    window.getComputedStyle = originalGetComputedStyle
+    vi.stubGlobal('requestAnimationFrame', originalRequestAnimationFrame)
+  })
+
+  const copyStyleButton = () =>
+    document.querySelector(
+      'button[aria-label="Copy style"]',
+    ) as HTMLButtonElement
+  const pasteStyleButton = () =>
+    document.querySelector(
+      'button[aria-label="Paste style"]',
+    ) as HTMLButtonElement
+
+  it('paste style is disabled when no style has been copied', () => {
+    // This test runs first in the describe block so the module-level
+    // copiedStyle is still null (no prior test in this file copies a style).
+    renderToolbar(activeElement)
+    const pasteBtn = pasteStyleButton()
+    expect(pasteBtn).toBeTruthy()
+    expect(pasteBtn.disabled).toBe(true)
+  })
+
+  it('copy style button exists and stores the element style', () => {
+    activeElement.setAttribute('style', 'color: red; font-size: 20px')
+    renderToolbar(activeElement)
+
+    const copyBtn = copyStyleButton()
+    expect(copyBtn).toBeTruthy()
+    fireEvent.click(copyBtn)
+
+    // Paste should now be enabled (not disabled) since a style was copied.
+    expect(pasteStyleButton().disabled).toBe(false)
+  })
+
+  it('paste style button exists and applies the stored style', () => {
+    // First, copy a style from one element.
+    const source = document.createElement('p')
+    source.setAttribute('class', 'style-source')
+    source.setAttribute('style', 'color: blue; font-weight: 700')
+    document.body.appendChild(source)
+
+    renderToolbar(source)
+    fireEvent.click(copyStyleButton())
+    cleanup()
+    source.remove()
+
+    // Now render the toolbar on a different element and paste.
+    renderToolbar(activeElement)
+    expect(activeElement.getAttribute('style')).toBeNull()
+    fireEvent.click(pasteStyleButton())
+    expect(activeElement.getAttribute('style')).toBe(
+      'color: blue; font-weight: 700',
+    )
+  })
+})
