@@ -12,6 +12,7 @@ import {
   diffEdits,
   collectTextNodes,
   findTextElement,
+  isClickOnActiveEdit,
   type TextEditState,
 } from './useTextEdit'
 import { applyPreviewTextEdit } from '@/lib/edit-helpers'
@@ -845,6 +846,139 @@ describe('findTextElement: which elements are editable', () => {
       expect(patchedSource).toContain('"Contact"')
 
       a.remove()
+    })
+  })
+})
+
+// ─── isClickOnActiveEdit: synthetic click suppression ─────────────────────
+
+describe('isClickOnActiveEdit: synthetic click suppression', () => {
+  /** Helper: create an element, append to body, test, then clean up. */
+  function withElement<T>(tag: string, fn: (el: HTMLElement) => T): T {
+    const el = document.createElement(tag)
+    document.body.appendChild(el)
+    try {
+      return fn(el)
+    } finally {
+      el.remove()
+    }
+  }
+
+  it('returns true when target IS the active edit element', () => {
+    withElement('button', (btn) => {
+      btn.textContent = 'Click Me'
+      expect(isClickOnActiveEdit(btn, btn)).toBe(true)
+    })
+  })
+
+  it('returns true when target is a child of the active edit element', () => {
+    withElement('button', (btn) => {
+      const span = document.createElement('span')
+      span.textContent = 'Click Me'
+      btn.appendChild(span)
+      // Synthetic click from Space lands on the button, but might also
+      // land on a child span if that's where focus was
+      expect(isClickOnActiveEdit(span, btn)).toBe(true)
+    })
+  })
+
+  it('returns true for deeply nested child of active element', () => {
+    withElement('a', (a) => {
+      a.setAttribute('href', '#')
+      const span = document.createElement('span')
+      const strong = document.createElement('strong')
+      strong.textContent = 'Read'
+      span.appendChild(strong)
+      a.appendChild(span)
+      expect(isClickOnActiveEdit(strong, a)).toBe(true)
+    })
+  })
+
+  it('returns false when target is a different element', () => {
+    withElement('button', (btn) => {
+      const other = document.createElement('p')
+      other.textContent = 'Other'
+      document.body.appendChild(other)
+      try {
+        expect(isClickOnActiveEdit(other, btn)).toBe(false)
+      } finally {
+        other.remove()
+      }
+    })
+  })
+
+  it('returns false when there is no active edit element', () => {
+    withElement('button', (btn) => {
+      expect(isClickOnActiveEdit(btn, null)).toBe(false)
+    })
+  })
+
+  it('returns false when target is a sibling, not a child', () => {
+    const parent = document.createElement('div')
+    const btn = document.createElement('button')
+    btn.textContent = 'Button'
+    const p = document.createElement('p')
+    p.textContent = 'Paragraph'
+    parent.appendChild(btn)
+    parent.appendChild(p)
+    document.body.appendChild(parent)
+    try {
+      // p is a sibling of btn, not inside it
+      expect(isClickOnActiveEdit(p, btn)).toBe(false)
+    } finally {
+      parent.remove()
+    }
+  })
+
+  it('returns false when target is the parent of the active element', () => {
+    withElement('div', (div) => {
+      const btn = document.createElement('button')
+      btn.textContent = 'Click'
+      div.appendChild(btn)
+      // Click on the parent div should NOT be suppressed — it's a different
+      // element, the user is clicking outside the button
+      expect(isClickOnActiveEdit(div, btn)).toBe(false)
+    })
+  })
+
+  describe('regression: button space key activation', () => {
+    // These tests document the bug: pressing Space on a contentEditable
+    // button fires a synthetic click. isClickOnActiveEdit must return true
+    // so the click handler suppresses it instead of calling finishEdit().
+
+    it('suppresses synthetic click on button being edited', () => {
+      withElement('button', (btn) => {
+        btn.textContent = 'Get Started'
+        btn.contentEditable = 'true'
+        // Simulate: Space → synthetic click lands on btn
+        expect(isClickOnActiveEdit(btn, btn)).toBe(true)
+      })
+    })
+
+    it('suppresses synthetic click on link being edited', () => {
+      withElement('a', (a) => {
+        a.textContent = 'Learn more'
+        a.setAttribute('href', '#')
+        a.contentEditable = 'true'
+        // Simulate: Enter → synthetic click lands on a
+        expect(isClickOnActiveEdit(a, a)).toBe(true)
+      })
+    })
+
+    it('does NOT suppress click on a different button after edit starts', () => {
+      withElement('button', (btn1) => {
+        btn1.textContent = 'First'
+        btn1.contentEditable = 'true'
+        const btn2 = document.createElement('button')
+        btn2.textContent = 'Second'
+        document.body.appendChild(btn2)
+        try {
+          // Clicking a different button should NOT be suppressed
+          expect(isClickOnActiveEdit(btn2, btn1)).toBe(false)
+        } finally {
+          btn2.remove()
+        }
+      })
     })
   })
 })
