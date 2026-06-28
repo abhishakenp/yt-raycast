@@ -16,6 +16,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '#/components/ui/tooltip'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '#/components/ui/select'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '#/components/ui/input-group'
 
 interface StyleControlsPanelProps {
   activeElement: HTMLElement | null
@@ -185,9 +197,18 @@ export function StyleControlsPanel({
     { id: 'size', label: 'Size', icon: Layers },
   ]
 
+  const labelCls =
+    'text-[10px] uppercase tracking-wider text-white/40 font-medium'
+  const inputCls =
+    'h-7 w-full rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20'
+  const groupCls =
+    'h-7 flex-1 rounded border border-white/10 bg-white/5 focus-within:border-cyan-300/50'
+  const addonSelectCls =
+    'h-auto w-auto border-0 bg-transparent px-0 text-xs text-white/60'
+
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex flex-col gap-2 p-2 w-full min-w-[260px]">
+      <div className="flex flex-col gap-2 p-2 w-full min-w-[280px]">
         <div className="flex items-center gap-1">
           {tabs.map((t) => (
             <Tooltip key={t.id}>
@@ -214,14 +235,12 @@ export function StyleControlsPanel({
         {tab === 'spacing' && (
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-wider text-white/40 font-medium">
-                Padding
-              </span>
+              <span className={labelCls}>Padding</span>
               <button
                 type="button"
                 onClick={() => setPaddingLinked(!paddingLinked)}
                 className={cn(
-                  'size-7 grid place-items-center rounded transition-colors',
+                  'size-6 grid place-items-center rounded transition-colors',
                   paddingLinked
                     ? 'bg-cyan-300/15 text-cyan-200'
                     : 'text-white/40 hover:bg-white/5 hover:text-white/80',
@@ -237,38 +256,37 @@ export function StyleControlsPanel({
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
-                <div key={side} className="flex items-center gap-1.5">
-                  <span className="text-xs text-white/50 w-3">
+                <div key={side} className="relative">
+                  <span className="absolute left-1 top-0.5 text-[9px] text-white/30">
                     {side[0].toUpperCase()}
                   </span>
                   <input
                     type="number"
                     value={padding[side]}
                     onChange={(e) => setPaddingValue(side, e.target.value)}
-                    className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 transition-colors"
+                    className="h-7 w-full rounded border border-white/10 bg-white/5 pl-5 pr-1 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
                   />
                 </div>
               ))}
             </div>
-            <select
-              value={spacingUnit}
-              onChange={(e) => setSpacingUnit(e.target.value)}
-              className="h-7 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50"
-            >
-              <option value="px">px</option>
-              <option value="rem">rem</option>
-              <option value="em">em</option>
-            </select>
+            <Select value={spacingUnit} onValueChange={setSpacingUnit}>
+              <SelectTrigger className="w-16">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="px">px</SelectItem>
+                <SelectItem value="rem">rem</SelectItem>
+                <SelectItem value="em">em</SelectItem>
+              </SelectContent>
+            </Select>
 
             <div className="flex items-center justify-between pt-1">
-              <span className="text-[10px] uppercase tracking-wider text-white/40 font-medium">
-                Margin
-              </span>
+              <span className={labelCls}>Margin</span>
               <button
                 type="button"
                 onClick={() => setMarginLinked(!marginLinked)}
                 className={cn(
-                  'size-7 grid place-items-center rounded transition-colors',
+                  'size-6 grid place-items-center rounded transition-colors',
                   marginLinked
                     ? 'bg-cyan-300/15 text-cyan-200'
                     : 'text-white/40 hover:bg-white/5 hover:text-white/80',
@@ -284,15 +302,15 @@ export function StyleControlsPanel({
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
-                <div key={side} className="flex items-center gap-1.5">
-                  <span className="text-xs text-white/50 w-3">
+                <div key={side} className="relative">
+                  <span className="absolute left-1 top-0.5 text-[9px] text-white/30">
                     {side[0].toUpperCase()}
                   </span>
                   <input
                     type="number"
                     value={margin[side]}
                     onChange={(e) => setMarginValue(side, e.target.value)}
-                    className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 transition-colors"
+                    className="h-7 w-full rounded border border-white/10 bg-white/5 pl-5 pr-1 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
                   />
                 </div>
               ))}
@@ -303,46 +321,55 @@ export function StyleControlsPanel({
         {tab === 'border' && (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-white/50 w-14">Width</span>
-              <input
-                type="number"
-                value={borderWidth}
-                onChange={(e) => {
-                  setBorderWidth(e.target.value)
-                  applyLiveStyle(
-                    'border-width',
-                    `${e.target.value}${borderUnit}`,
-                  )
-                }}
-                className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 transition-colors"
-              />
-              <select
-                value={borderUnit}
-                onChange={(e) => setBorderUnit(e.target.value)}
-                className="h-7 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50"
-              >
-                <option value="px">px</option>
-                <option value="rem">rem</option>
-              </select>
+              <span className={cn(labelCls, 'w-14 shrink-0')}>Width</span>
+              <InputGroup className={groupCls}>
+                <InputGroupInput
+                  type="number"
+                  value={borderWidth}
+                  onChange={(e) => {
+                    setBorderWidth(e.target.value)
+                    applyLiveStyle(
+                      'border-width',
+                      `${e.target.value}${borderUnit}`,
+                    )
+                  }}
+                  className="text-xs text-white"
+                />
+                <InputGroupAddon align="inline-end">
+                  <Select value={borderUnit} onValueChange={setBorderUnit}>
+                    <SelectTrigger className={addonSelectCls}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="px">px</SelectItem>
+                      <SelectItem value="rem">rem</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </InputGroupAddon>
+              </InputGroup>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-white/50 w-14">Style</span>
-              <select
+              <span className={cn(labelCls, 'w-14 shrink-0')}>Style</span>
+              <Select
                 value={borderStyle}
-                onChange={(e) => {
-                  setBorderStyle(e.target.value)
-                  applyLiveStyle('border-style', e.target.value)
+                onValueChange={(v) => {
+                  setBorderStyle(v)
+                  applyLiveStyle('border-style', v)
                 }}
-                className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50"
               >
-                <option value="none">none</option>
-                <option value="solid">solid</option>
-                <option value="dashed">dashed</option>
-                <option value="dotted">dotted</option>
-              </select>
+                <SelectTrigger className={cn(inputCls, 'flex-1')}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">none</SelectItem>
+                  <SelectItem value="solid">solid</SelectItem>
+                  <SelectItem value="dashed">dashed</SelectItem>
+                  <SelectItem value="dotted">dotted</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-white/50 w-14">Color</span>
+              <span className={cn(labelCls, 'w-14 shrink-0')}>Color</span>
               <input
                 type="color"
                 value={borderColor}
@@ -352,22 +379,35 @@ export function StyleControlsPanel({
                 }}
                 className="h-7 w-9 rounded border border-white/10 bg-transparent cursor-pointer"
               />
-              <span className="text-xs text-white/40">{borderColor}</span>
+              <span className="text-[10px] text-white/40">{borderColor}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-white/50 w-14">Radius</span>
-              <input
-                type="number"
-                value={borderRadius}
-                onChange={(e) => {
-                  setBorderRadius(e.target.value)
-                  applyLiveStyle(
-                    'border-radius',
-                    `${e.target.value}${borderUnit}`,
-                  )
-                }}
-                className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 transition-colors"
-              />
+              <span className={cn(labelCls, 'w-14 shrink-0')}>Radius</span>
+              <InputGroup className={groupCls}>
+                <InputGroupInput
+                  type="number"
+                  value={borderRadius}
+                  onChange={(e) => {
+                    setBorderRadius(e.target.value)
+                    applyLiveStyle(
+                      'border-radius',
+                      `${e.target.value}${borderUnit}`,
+                    )
+                  }}
+                  className="text-xs text-white"
+                />
+                <InputGroupAddon align="inline-end">
+                  <Select value={borderUnit} onValueChange={setBorderUnit}>
+                    <SelectTrigger className={addonSelectCls}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="px">px</SelectItem>
+                      <SelectItem value="rem">rem</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </InputGroupAddon>
+              </InputGroup>
             </div>
           </div>
         )}
@@ -375,7 +415,7 @@ export function StyleControlsPanel({
         {tab === 'background' && (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-white/50 w-14">Color</span>
+              <span className={cn(labelCls, 'w-14 shrink-0')}>Color</span>
               <input
                 type="color"
                 value={bgColor}
@@ -385,12 +425,10 @@ export function StyleControlsPanel({
                 }}
                 className="h-7 w-9 rounded border border-white/10 bg-transparent cursor-pointer"
               />
-              <span className="text-xs text-white/40">{bgColor}</span>
+              <span className="text-[10px] text-white/40">{bgColor}</span>
             </div>
             <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] uppercase tracking-wider text-white/40 font-medium">
-                Shadow
-              </span>
+              <span className={labelCls}>Shadow</span>
               <div className="flex flex-wrap gap-1">
                 {Object.keys(SHADOW_PRESETS).map((preset) => (
                   <button
@@ -418,51 +456,73 @@ export function StyleControlsPanel({
         {tab === 'size' && (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-white/50 w-14">Width</span>
-              <input
-                type="text"
-                value={width}
-                onChange={(e) => {
-                  setWidth(e.target.value)
-                  applyLiveStyle('width', e.target.value)
-                }}
-                placeholder="auto"
-                className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 transition-colors"
-              />
+              <span className={cn(labelCls, 'w-14 shrink-0')}>Width</span>
+              <InputGroup className={groupCls}>
+                <InputGroupInput
+                  type="text"
+                  value={width}
+                  onChange={(e) => {
+                    setWidth(e.target.value)
+                    applyLiveStyle('width', e.target.value)
+                  }}
+                  placeholder="auto"
+                  className="text-xs text-white"
+                />
+                <InputGroupAddon align="inline-end">
+                  <Select value={sizeUnit} onValueChange={setSizeUnit}>
+                    <SelectTrigger className={addonSelectCls}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="px">px</SelectItem>
+                      <SelectItem value="%">%</SelectItem>
+                      <SelectItem value="rem">rem</SelectItem>
+                      <SelectItem value="vw">vw</SelectItem>
+                      <SelectItem value="vh">vh</SelectItem>
+                      <SelectItem value="auto">auto</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </InputGroupAddon>
+              </InputGroup>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-white/50 w-14">Height</span>
-              <input
-                type="text"
-                value={height}
-                onChange={(e) => {
-                  setHeight(e.target.value)
-                  applyLiveStyle('height', e.target.value)
-                }}
-                placeholder="auto"
-                className="h-7 flex-1 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 transition-colors"
-              />
+              <span className={cn(labelCls, 'w-14 shrink-0')}>Height</span>
+              <InputGroup className={groupCls}>
+                <InputGroupInput
+                  type="text"
+                  value={height}
+                  onChange={(e) => {
+                    setHeight(e.target.value)
+                    applyLiveStyle('height', e.target.value)
+                  }}
+                  placeholder="auto"
+                  className="text-xs text-white"
+                />
+                <InputGroupAddon align="inline-end">
+                  <Select value={sizeUnit} onValueChange={setSizeUnit}>
+                    <SelectTrigger className={addonSelectCls}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="px">px</SelectItem>
+                      <SelectItem value="%">%</SelectItem>
+                      <SelectItem value="rem">rem</SelectItem>
+                      <SelectItem value="vw">vw</SelectItem>
+                      <SelectItem value="vh">vh</SelectItem>
+                      <SelectItem value="auto">auto</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </InputGroupAddon>
+              </InputGroup>
             </div>
-            <select
-              value={sizeUnit}
-              onChange={(e) => setSizeUnit(e.target.value)}
-              className="h-7 rounded bg-white/5 border border-white/10 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50"
-            >
-              <option value="px">px</option>
-              <option value="%">%</option>
-              <option value="rem">rem</option>
-              <option value="vw">vw</option>
-              <option value="vh">vh</option>
-              <option value="auto">auto</option>
-            </select>
           </div>
         )}
 
-        <div className="flex items-center gap-1.5 border-t border-white/10 pt-2">
+        <div className="flex items-center gap-1.5 pt-1">
           <button
             type="button"
             onClick={handleApply}
-            className="flex items-center gap-1 rounded bg-cyan-300 px-3 h-7 text-xs font-bold text-slate-950 hover:bg-cyan-200 transition-colors"
+            className="flex h-7 items-center gap-1 rounded bg-cyan-300 px-3 text-xs font-bold text-slate-950 transition-colors hover:bg-cyan-200"
           >
             <Check className="size-3" />
             Apply
@@ -470,7 +530,7 @@ export function StyleControlsPanel({
           <button
             type="button"
             onClick={handleClose}
-            className="grid size-7 place-items-center rounded text-white/40 hover:bg-white/10 hover:text-white transition-colors"
+            className="grid size-7 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white"
             aria-label="Close"
           >
             <X className="size-3.5" />

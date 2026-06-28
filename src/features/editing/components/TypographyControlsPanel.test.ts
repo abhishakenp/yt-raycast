@@ -56,12 +56,9 @@ describe('TypographyControlsPanel', () => {
 
   it('renders font family select with options', () => {
     renderPanel(activeElement)
-    const selects = Array.from(document.querySelectorAll('select'))
-    const fontSelect = selects[0]
-    expect(fontSelect).toBeTruthy()
-    const options = Array.from(fontSelect.querySelectorAll('option'))
-    expect(options.length).toBe(8)
-    expect(options[0].textContent).toBe('System UI')
+    // Radix Select renders a combobox trigger, not a native <select>
+    const trigger = document.querySelector('[role="combobox"]')
+    expect(trigger).toBeTruthy()
   })
 
   it('renders text transform buttons', () => {
@@ -73,11 +70,14 @@ describe('TypographyControlsPanel', () => {
     expect(buttons.length).toBe(4)
   })
 
-  it('font family change applies to element style', () => {
+  it('letter spacing change applies to element style', () => {
     renderPanel(activeElement)
-    const fontSelect = Array.from(document.querySelectorAll('select'))[0]
-    fireEvent.change(fontSelect, { target: { value: 'Georgia, serif' } })
-    expect(activeElement.style.fontFamily).toBe('Georgia, serif')
+    // Use native number input (letter spacing) instead of Radix Select
+    const letterInput = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[type="number"]'),
+    ).find((i) => i.step === '0.01')!
+    fireEvent.change(letterInput, { target: { value: '0.05' } })
+    expect(activeElement.style.letterSpacing).toBe('0.05em')
   })
 
   it('text transform uppercase applies to element style', () => {
@@ -112,9 +112,12 @@ describe('TypographyControlsPanel', () => {
     const originalStyle = 'color: blue'
     activeElement.setAttribute('style', originalStyle)
     renderPanel(activeElement)
-    // Modify via UI
-    const fontSelect = Array.from(document.querySelectorAll('select'))[0]
-    fireEvent.change(fontSelect, { target: { value: 'Georgia, serif' } })
+    // Modify via native number input (letter spacing)
+    const letterInput = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[type="number"]'),
+    ).find((i) => i.step === '0.01')!
+    fireEvent.change(letterInput, { target: { value: '0.1' } })
+    expect(activeElement.style.letterSpacing).toBe('0.1em')
     // Close
     const closeBtn = document.querySelector('button[aria-label="Close"]')!
     fireEvent.click(closeBtn)

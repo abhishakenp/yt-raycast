@@ -1,6 +1,13 @@
 import { useState, useLayoutEffect, useRef } from 'react'
 import { X, Check, Type } from 'lucide-react'
 import { cn } from '#/lib/utils'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '#/components/ui/select'
 
 const safeEscape = (str: string): string => {
   if (typeof CSS !== 'undefined' && CSS.escape) return CSS.escape(str)
@@ -122,34 +129,42 @@ export function TypographyControlsPanel({
   }
 
   return (
-    <div className="flex flex-col gap-2 p-2">
+    <div className="flex w-full min-w-[280px] flex-col gap-2 p-2">
       <div className="flex items-center gap-1.5">
         <Type className="size-3.5 text-cyan-300" />
-        <span className="text-xs font-medium text-white/60">Typography</span>
+        <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+          Typography
+        </span>
       </div>
 
       {/* Font Family */}
       <div className="flex items-center gap-2">
-        <Type className="size-3 shrink-0 text-white/40" />
-        <select
+        <span className="w-16 shrink-0 text-[10px] font-medium uppercase tracking-wider text-white/40">
+          Font
+        </span>
+        <Select
           value={fontFamily}
-          onChange={(e) => {
-            setFontFamily(e.target.value)
-            applyLiveStyle('font-family', e.target.value)
+          onValueChange={(v) => {
+            setFontFamily(v)
+            applyLiveStyle('font-family', v)
           }}
-          className="h-7 flex-1 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50"
         >
-          {FONT_FAMILIES.map((f) => (
-            <option key={f.label} value={f.value}>
-              {f.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="h-7 w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {FONT_FAMILIES.map((f) => (
+              <SelectItem key={f.label} value={f.value}>
+                {f.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Line Height */}
       <div className="flex items-center gap-2">
-        <span className="w-16 text-[10px] font-medium uppercase tracking-wider text-white/40">
+        <span className="w-16 shrink-0 text-[10px] font-medium uppercase tracking-wider text-white/40">
           Line
         </span>
         <input
@@ -164,7 +179,7 @@ export function TypographyControlsPanel({
             applyLiveStyle('line-height', e.target.value)
           }}
           placeholder="normal"
-          className="h-7 flex-1 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20 disabled:opacity-40"
+          className="h-7 flex-1 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 disabled:opacity-40"
         />
         <button
           type="button"
@@ -178,7 +193,7 @@ export function TypographyControlsPanel({
           className={cn(
             'h-7 rounded px-2 text-xs transition-colors',
             lineHeightNormal
-              ? 'bg-cyan-300/20 text-cyan-100'
+              ? 'bg-cyan-300/15 text-cyan-200'
               : 'text-white/40 hover:bg-white/5',
           )}
         >
@@ -188,7 +203,7 @@ export function TypographyControlsPanel({
 
       {/* Letter Spacing */}
       <div className="flex items-center gap-2">
-        <span className="w-16 text-[10px] font-medium uppercase tracking-wider text-white/40">
+        <span className="w-16 shrink-0 text-[10px] font-medium uppercase tracking-wider text-white/40">
           Letter
         </span>
         <input
@@ -202,22 +217,23 @@ export function TypographyControlsPanel({
               `${e.target.value}${letterSpacingUnit}`,
             )
           }}
-          className="h-7 flex-1 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
+          className="h-7 w-20 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50"
         />
-        <select
-          value={letterSpacingUnit}
-          onChange={(e) => setLetterSpacingUnit(e.target.value)}
-          className="h-7 w-14 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50"
-        >
-          <option value="em">em</option>
-          <option value="px">px</option>
-          <option value="rem">rem</option>
-        </select>
+        <Select value={letterSpacingUnit} onValueChange={setLetterSpacingUnit}>
+          <SelectTrigger className="h-7 w-14">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="em">em</SelectItem>
+            <SelectItem value="px">px</SelectItem>
+            <SelectItem value="rem">rem</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Word Spacing */}
       <div className="flex items-center gap-2">
-        <span className="w-16 text-[10px] font-medium uppercase tracking-wider text-white/40">
+        <span className="w-16 shrink-0 text-[10px] font-medium uppercase tracking-wider text-white/40">
           Word
         </span>
         <input
@@ -231,22 +247,23 @@ export function TypographyControlsPanel({
               `${e.target.value}${wordSpacingUnit}`,
             )
           }}
-          className="h-7 flex-1 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50 focus-visible:ring-1 focus-visible:ring-cyan-300/20"
+          className="h-7 w-20 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50"
         />
-        <select
-          value={wordSpacingUnit}
-          onChange={(e) => setWordSpacingUnit(e.target.value)}
-          className="h-7 w-14 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none focus-visible:border-cyan-300/50"
-        >
-          <option value="em">em</option>
-          <option value="px">px</option>
-          <option value="rem">rem</option>
-        </select>
+        <Select value={wordSpacingUnit} onValueChange={setWordSpacingUnit}>
+          <SelectTrigger className="h-7 w-14">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="em">em</SelectItem>
+            <SelectItem value="px">px</SelectItem>
+            <SelectItem value="rem">rem</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Text Transform */}
       <div className="flex items-center gap-2">
-        <span className="w-16 text-[10px] font-medium uppercase tracking-wider text-white/40">
+        <span className="w-16 shrink-0 text-[10px] font-medium uppercase tracking-wider text-white/40">
           Case
         </span>
         <div className="flex flex-1 flex-wrap gap-1">
@@ -272,11 +289,11 @@ export function TypographyControlsPanel({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1 border-t border-white/10 pt-2">
+      <div className="flex items-center gap-1.5 pt-1">
         <button
           type="button"
           onClick={handleApply}
-          className="flex items-center gap-1 rounded bg-cyan-300 px-3 py-1 text-xs font-bold text-slate-950 transition-colors hover:bg-cyan-200"
+          className="flex h-7 items-center gap-1 rounded bg-cyan-300 px-3 text-xs font-bold text-slate-950 transition-colors hover:bg-cyan-200"
         >
           <Check className="size-3" />
           Apply
