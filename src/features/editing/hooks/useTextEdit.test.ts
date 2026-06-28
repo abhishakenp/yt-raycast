@@ -7,12 +7,15 @@ const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>')
 globalThis.document = dom.window.document as unknown as Document
 globalThis.window = dom.window as unknown as Window & typeof globalThis
 globalThis.NodeFilter = dom.window.NodeFilter
+globalThis.Node = dom.window.Node as unknown as typeof Node
 
 import {
   diffEdits,
   collectTextNodes,
   findTextElement,
   isClickOnActiveEdit,
+  lockNonTextChildren,
+  unlockNonTextChildren,
   type TextEditState,
 } from './useTextEdit'
 import { applyPreviewTextEdit } from '@/lib/edit-helpers'
@@ -980,5 +983,322 @@ describe('isClickOnActiveEdit: synthetic click suppression', () => {
         }
       })
     })
+  })
+})
+
+// ─── lockNonTextChildren: icon preservation during editing ────────────────
+
+describe('lockNonTextChildren: icon preservation', () => {
+  function withElement<T>(tag: string, fn: (el: HTMLElement) => T): T {
+    const el = document.createElement(tag)
+    document.body.appendChild(el)
+    try {
+      return fn(el)
+    } finally {
+      el.remove()
+    }
+  }
+
+  it('locks SVG children (sets contenteditable=false)', () => {
+    withElement('button', (btn) => {
+      btn.textContent = 'App Store'
+      const svg = document.createElement('svg')
+      svg.innerHTML = '<path d="M18.71 19.5c-.83 1.24"/>'
+      btn.insertBefore(svg, btn.firstChild)
+
+      const locked = lockNonTextChildren(btn)
+      expect(locked).toHaveLength(1)
+      expect(locked[0]).toBe(svg)
+      expect(svg.getAttribute('contenteditable')).toBe('false')
+    })
+  })
+
+  it('does NOT lock children that contain text', () => {
+    withElement('button', (btn) => {
+      const span = document.createElement('span')
+      span.textContent = 'App Store'
+      btn.appendChild(span)
+
+      const locked = lockNonTextChildren(btn)
+      expect(locked).toHaveLength(0)
+      expect(span.getAttribute('contenteditable')).toBeNull()
+    })
+  })
+
+  it('locks img children (no text content)', () => {
+    withElement('a', (a) => {
+      a.textContent = 'Learn more'
+      const img = document.createElement('img')
+      img.setAttribute('alt', 'icon')
+      a.insertBefore(img, a.firstChild)
+
+      const locked = lockNonTextChildren(a)
+      expect(locked).toHaveLength(1)
+      expect(locked[0]).toBe(img)
+      expect(img.getAttribute('contenteditable')).toBe('false')
+    })
+  })
+
+  it('locks multiple non-text children', () => {
+    withElement('button', (btn) => {
+      btn.textContent = 'Download'
+      const svg1 = document.createElement('svg')
+      const svg2 = document.createElement('svg')
+      btn.insertBefore(svg2, btn.firstChild)
+      btn.insertBefore(svg1, btn.firstChild)
+
+      const locked = lockNonTextChildren(btn)
+      expect(locked).toHaveLength(2)
+      expect(svg1.getAttribute('contenteditable')).toBe('false')
+      expect(svg2.getAttribute('contenteditable')).toBe('false')
+    })
+  })
+
+  it('returns empty array for text-only elements (no element children)', () => {
+    withElement('p', (p) => {
+      p.textContent = 'Just text'
+      const locked = lockNonTextChildren(p)
+      expect(locked).toHaveLength(0)
+    })
+  })
+
+  it('handles nested non-text elements (locks direct children only)', () => {
+    withElement('button', (btn) => {
+      btn.textContent = 'Click'
+      const span = document.createElement('span')
+      const svg = document.createElement('svg')
+      span.appendChild(svg)
+      btn.insertBefore(span, btn.firstChild)
+      // span has no text content (only SVG) → should be locked
+      const locked = lockNonTextChildren(btn)
+      expect(locked).toHaveLength(1)
+      expect(locked[0]).toBe(span)
+      expect(span.getAttribute('contenteditable')).toBe('false')
+    })
+  })
+})
+
+describe('unlockNonTextChildren: cleanup', () => {
+  it('removes contenteditable=false from locked elements', () => {
+    const btn = document.createElement('button')
+    const svg = document.createElement('svg')
+    btn.appendChild(svg)
+    document.body.appendChild(btn)
+
+    const locked = lockNonTextChildren(btn)
+    expect(svg.getAttribute('contenteditable')).toBe('false')
+
+    unlockNonTextChildren(locked)
+    expect(svg.getAttribute('contenteditable')).toBeNull()
+
+    btn.remove()
+  })
+
+  it('handles empty array', () => {
+    expect(() => unlockNonTextChildren([])).not.toThrow()
+  })
+})
+
+// ─── diffEdits: button with SVG icon ──────────────────────────────────────
+
+describe('diffEdits: button with SVG icon', () => {
+  /** Create a button matching the FoodDeliveryCta app store button pattern. */
+  function createButtonWithIcon(text: string): HTMLElement {
+    const btn = document.createElement('button')
+    const svg = document.createElement('svg')
+    svg.setAttribute('viewBox', '0 0 24 24')
+    svg.setAttribute('fill', 'currentColor')
+    const path = document.createElement('path')
+    path.setAttribute('d', 'M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47')
+    svg.appendChild(path)
+    btn.appendChild(svg)
+    btn.appendChild(document.createTextNode(text))
+    document.body.appendChild(btn)
+    return btn
+  }
+
+  it('captures text edit when SVG child is present', () => {
+    const btn = createButtonWithIcon('App Store')
+    const state = captureState(btn)
+
+    // Edit text: "App Store" → "Download"
+    const nodes = collectTextNodes(btn)
+    nodes[0].nodeValue = 'Download'
+
+    const changes = diffEdits(state)
+    expect(changes).toHaveLength(1)
+    expect(changes[0].oldText).toBe('App Store')
+    expect(changes[0].newText).toBe('Download')
+
+    btn.remove()
+  })
+
+  it('captures text deletion to empty (regression: previously skipped)', () => {
+    const btn = createButtonWithIcon('App Store')
+    const state = captureState(btn)
+
+    // User deletes all text but SVG remains
+    const nodes = collectTextNodes(btn)
+    nodes[0].nodeValue = ''
+
+    const changes = diffEdits(state)
+    // This should capture the deletion: oldText="App Store", newText=""
+    // BUG: currently diffEdits skips changes where newText.trim() is false
+    expect(changes).toHaveLength(1)
+    expect(changes[0].oldText).toBe('App Store')
+    expect(changes[0].newText).toBe('')
+
+    btn.remove()
+  })
+
+  it('captures text replacement when SVG is deleted too (node structure change)', () => {
+    const btn = createButtonWithIcon('App Store')
+    const state = captureState(btn)
+
+    // User selects all (including SVG) and types new text
+    btn.textContent = 'Download'
+
+    const changes = diffEdits(state)
+    expect(changes).toHaveLength(1)
+    expect(changes[0].oldText).toContain('App Store')
+    expect(changes[0].newText).toBe('Download')
+
+    btn.remove()
+  })
+})
+
+// ─── Full-chain: button with icon → diffEdits → applyPreviewTextEdit ───────
+
+describe('full-chain: button with icon text edit', () => {
+  /** HTML matching the FoodDeliveryCta app store button render output. */
+  const BUTTON_WITH_ICON_HTML =
+    '<button class="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-background px-6 py-3 font-medium text-foreground">' +
+    '<svg class="size-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+    '<path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.84-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>' +
+    '</svg>App Store</button>'
+
+  function createButtonFromHtml(): HTMLElement {
+    const container = document.createElement('div')
+    container.innerHTML = BUTTON_WITH_ICON_HTML
+    const btn = container.querySelector('button')!
+    document.body.appendChild(btn)
+    return btn
+  }
+
+  it('edits button text and preserves SVG in patched HTML', () => {
+    const btn = createButtonFromHtml()
+    const state = captureState(btn)
+
+    // Edit "App Store" → "Download on App Store"
+    const nodes = collectTextNodes(btn)
+    nodes[0].nodeValue = 'Download on App Store'
+
+    const { patchedSource, replaced } = simulateEdit(
+      BUTTON_WITH_ICON_HTML,
+      state,
+    )
+
+    expect(replaced).toBe(true)
+    expect(patchedSource).toContain('Download on App Store')
+    // SVG must be preserved
+    expect(patchedSource).toContain('<svg')
+    expect(patchedSource).toContain('<path d="M18.71')
+    expect(patchedSource).toContain('</svg>')
+    // Button tag preserved
+    expect(patchedSource).toContain('<button')
+    expect(patchedSource).toContain('</button>')
+
+    btn.remove()
+  })
+
+  it('deletes button text and preserves SVG in patched HTML', () => {
+    const btn = createButtonFromHtml()
+    const state = captureState(btn)
+
+    // Delete all text
+    const nodes = collectTextNodes(btn)
+    nodes[0].nodeValue = ''
+
+    const { patchedSource, replaced } = simulateEdit(
+      BUTTON_WITH_ICON_HTML,
+      state,
+    )
+
+    // This should work: text deleted, SVG preserved
+    expect(replaced).toBe(true)
+    expect(patchedSource).not.toContain('App Store')
+    // SVG must still be there
+    expect(patchedSource).toContain('<svg')
+    expect(patchedSource).toContain('<path d="M18.71')
+    expect(patchedSource).toContain('</svg>')
+
+    btn.remove()
+  })
+
+  it('edits button text in OpenUI source (FoodDeliveryCta pattern)', () => {
+    const btn = createButtonFromHtml()
+    const state = captureState(btn)
+
+    // Edit "App Store" → "Get it on iOS"
+    const nodes = collectTextNodes(btn)
+    nodes[0].nodeValue = 'Get it on iOS'
+
+    const openuiSource =
+      'cta = FoodDeliveryCta(heading="Ready to order?", description="Download the app", appStore="App Store", googlePlay="Google Play")'
+    const { patchedSource, replaced } = simulateEdit(openuiSource, state)
+
+    expect(replaced).toBe(true)
+    expect(patchedSource).toContain('Get it on iOS')
+    expect(patchedSource).toContain('googlePlay="Google Play"')
+    // Other args preserved
+    expect(patchedSource).toContain('heading="Ready to order?"')
+    expect(patchedSource).toContain('description="Download the app"')
+
+    btn.remove()
+  })
+
+  it('edits Google Play button text in OpenUI source', () => {
+    const btn = createButtonFromHtml()
+    // Change the text to "Google Play" for this test
+    const nodes = collectTextNodes(btn)
+    nodes[0].nodeValue = 'Google Play'
+    const state = captureState(btn)
+
+    // Edit "Google Play" → "Get it on Android"
+    nodes[0].nodeValue = 'Get it on Android'
+
+    const openuiSource =
+      'cta = FoodDeliveryCta(heading="Ready to order?", description="Download the app", appStore="App Store", googlePlay="Google Play")'
+    const { patchedSource, replaced } = simulateEdit(openuiSource, state)
+
+    expect(replaced).toBe(true)
+    expect(patchedSource).toContain('Get it on Android')
+    expect(patchedSource).toContain('appStore="App Store"')
+    // Other args preserved
+    expect(patchedSource).toContain('heading="Ready to order?"')
+
+    btn.remove()
+  })
+
+  it('edits both app store buttons sequentially (occurrence index)', () => {
+    // Simulate editing App Store first, then Google Play
+    const openuiSource =
+      'cta = FoodDeliveryCta(heading="Ready to order?", description="Download the app", appStore="App Store", googlePlay="Google Play")'
+
+    // First edit: "App Store" → "iOS Download"
+    let result = applyPreviewTextEdit(openuiSource, 'App Store', 'iOS Download')
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('appStore="iOS Download"')
+    expect(result.html).toContain('googlePlay="Google Play"')
+
+    // Second edit: "Google Play" → "Android Download"
+    result = applyPreviewTextEdit(
+      result.html,
+      'Google Play',
+      'Android Download',
+    )
+    expect(result.replaced).toBe(true)
+    expect(result.html).toContain('appStore="iOS Download"')
+    expect(result.html).toContain('googlePlay="Android Download"')
   })
 })
