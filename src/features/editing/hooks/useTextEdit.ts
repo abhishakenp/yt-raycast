@@ -139,13 +139,14 @@ export function useTextEdit(
     alt: string
   }) => void,
   onElementActivate?: (element: HTMLElement, rect: DOMRect) => void,
-): { commitEdit: () => void } {
+): { commitEdit: () => void; cancelEdit: () => void } {
   const activeEditRef = useRef<TextEditState | null>(null)
   const callbackRef = useRef(onTextChange)
   const imageCallbackRef = useRef(onImageChange)
   const elementActivateCallbackRef = useRef(onElementActivate)
   const blurRafRef = useRef<number | null>(null)
   const finishEditRef = useRef<() => void>(() => {})
+  const cancelEditRef = useRef<() => void>(() => {})
   callbackRef.current = onTextChange
   imageCallbackRef.current = onImageChange
   elementActivateCallbackRef.current = onElementActivate
@@ -197,6 +198,7 @@ export function useTextEdit(
       }
       cleanupElement(active.element, active.lockedChildren)
     }
+    cancelEditRef.current = cancelEdit
 
     const handleClick = (e: MouseEvent) => {
       if (!editMode) return
@@ -347,6 +349,7 @@ export function useTextEdit(
 
   return {
     commitEdit: () => finishEditRef.current(),
+    cancelEdit: () => cancelEditRef.current(),
   }
 }
 

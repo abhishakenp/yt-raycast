@@ -384,9 +384,14 @@ export function Dashboard({
   const [editMode, setEditMode] = useState(false)
   const { requireSignIn: requireSignInForEdit } = useSignInGate()
   const commitTextEditRef = useRef<(() => void) | null>(null)
-  const handleCommitTextReady = useCallback((fn: () => void) => {
-    commitTextEditRef.current = fn
-  }, [])
+  const cancelTextEditRef = useRef<(() => void) | null>(null)
+  const handleCommitTextReady = useCallback(
+    (commitFn: () => void, cancelFn: () => void) => {
+      commitTextEditRef.current = commitFn
+      cancelTextEditRef.current = cancelFn
+    },
+    [],
+  )
   const [agentationEnabled] = useState(false)
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
   const [imageSwapState, setImageSwapState] = useState<{
@@ -2155,7 +2160,10 @@ export function Dashboard({
       />
       <InlineEditToolbar
         isOpen={toolbarState.isOpen}
-        onClose={() => setToolbarState((s) => ({ ...s, isOpen: false }))}
+        onClose={() => {
+          cancelTextEditRef.current?.()
+          setToolbarState((s) => ({ ...s, isOpen: false }))
+        }}
         anchorRect={toolbarState.anchorRect}
         activeElement={toolbarState.activeElement}
         onStyleApply={handleStyleApply}

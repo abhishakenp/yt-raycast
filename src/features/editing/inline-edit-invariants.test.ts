@@ -37,7 +37,9 @@ type TextChangeHandler = (change: {
 /** Render a harness that wires useTextEdit to a container div. Returns the
  *  container element and the hook's commitEdit function. */
 function renderEditor(onTextChange: TextChangeHandler, editMode = true) {
-  const hookReturn = { current: { commitEdit: () => {} } }
+  const hookReturn = {
+    current: { commitEdit: () => {}, cancelEdit: () => {} },
+  }
 
   function Harness() {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -58,6 +60,7 @@ function renderEditor(onTextChange: TextChangeHandler, editMode = true) {
   return {
     container: editorDiv,
     commitEdit: () => hookReturn.current.commitEdit(),
+    cancelEdit: () => hookReturn.current.cancelEdit(),
   }
 }
 
@@ -162,6 +165,167 @@ describe('useTextEdit — behavioral', () => {
 
     expect(onTextChange).toHaveBeenCalledTimes(1)
     expect(onTextChange.mock.calls[0][0].newText).toBe('Modified text')
+  })
+})
+
+// ─── useTextEdit — cancel/revert ───────────────────────────────────────────
+
+describe('useTextEdit — cancel reverts text changes', () => {
+  beforeEach(() => {
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0)
+      return 0
+    })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    cleanup()
+  })
+
+  it('cancelEdit reverts text to original and does NOT fire onTextChange', () => {
+    const onTextChange = vi.fn<TextChangeHandler>()
+    const { container, cancelEdit } = renderEditor(onTextChange)
+
+    container.innerHTML = '<p>Hello World</p>'
+    const p = container.querySelector('p')!
+
+    fireEvent.click(p, { clientX: 5, clientY: 5 })
+    p.firstChild!.nodeValue = 'Changed Text'
+
+    cancelEdit()
+
+    // Text should be reverted
+    expect(p.textContent).toBe('Hello World')
+    // onTextChange should NOT have been called
+    expect(onTextChange).not.toHaveBeenCalled()
+  })
+
+  it('cancelEdit reverts <br>-separated text preserving structure', () => {
+    const onTextChange = vi.fn<TextChangeHandler>()
+    const { container, cancelEdit } = renderEditor(onTextChange)
+
+    container.innerHTML = '<h1>Line one<br>Line two</h1>'
+    const h1 = container.querySelector('h1')!
+
+    fireEvent.click(h1, { clientX: 5, clientY: 5 })
+    const nodes = textNodesOf(h1)
+    nodes[0].nodeValue = 'Changed one'
+    nodes[1].nodeValue = 'Changed two'
+
+    cancelEdit()
+
+    // Both text nodes should be reverted, <br> preserved
+    expect(h1.textContent).toBe('Line oneLine two')
+    expect(h1.innerHTML).toContain('<br>')
+    expect(onTextChange).not.toHaveBeenCalled()
+  })
+
+  it('cancelEdit reverts button text with SVG icon preserved', () => {
+    const onTextChange = vi.fn<TextChangeHandler>()
+    const { container, cancelEdit } = renderEditor(onTextChange)
+
+    container.innerHTML =
+      '<button><svg viewBox="0 0 24 24"><path d="M18.71"/></svg>App Store</button>'
+    const btn = container.querySelector('button')!
+
+    fireEvent.click(btn, { clientX: 50, clientY: 5 })
+    const nodes = textNodesOf(btn)
+    nodes[0].nodeValue = 'Changed'
+
+    cancelEdit()
+
+    // Text reverted, SVG preserved
+    expect(btn.textContent).toContain('App Store')
+    expect(btn.querySelector('svg')).not.toBeNull()
+    expect(btn.querySelector('path')).not.toBeNull()
+    expect(onTextChange).not.toHaveBeenCalled()
+  })
+
+  it('cancelEdit is a no-op when no edit is active', () => {
+    const onTextChange = vi.fn<TextChangeHandler>()
+    const { container, cancelEdit } = renderEditor(onTextChange)
+
+    container.innerHTML = '<p>Hello</p>'
+
+    // Cancel without any active edit — should not throw
+    expect(() => cancelEdit()).not.toThrow()
+    expect(onTextChange).not.toHaveBeenCalled()
+  })
+
+  it('cancelEdit removes contenteditable attribute', () => {
+    const onTextChange = vi.fn<TextChangeHandler>()
+    const { container, cancelEdit } = renderEditor(onTextChange)
+
+    container.innerHTML = '<p>Hello</p>'
+    const p = container.querySelector('p')!
+
+    fireEvent.click(p, { clientX: 5, clientY: 5 })
+    // contentEditable property is set by the hook
+    expect(p.contentEditable).toBe('true')
+
+    cancelEdit()
+
+    // After cancel, the contenteditable attribute should be removed
+    // (cleanupElement uses removeAttribute, not setting to false)
+    expect(p.getAttribute('contenteditable')).toBeNull()
+  })
+
+  it('cancelEdit unlocks non-text children (SVG icons)', () => {
+    const onTextChange = vi.fn<TextChangeHandler>()
+    const { container, cancelEdit } = renderEditor(onTextChange)
+
+    container.innerHTML =
+      '<button><svg viewBox="0 0 24 24"><path d="M1"/></svg>Click Me</button>'
+    const btn = container.querySelector('button')!
+    const svg = btn.querySelector('svg')!
+
+    fireEvent.click(btn, { clientX: 50, clientY: 5 })
+    // SVG should be locked during editing
+    expect(svg.getAttribute('contenteditable')).toBe('false')
+
+    cancelEdit()
+
+    // SVG should be unlocked after cancel
+    expect(svg.getAttribute('contenteditable')).toBeNull()
+  })
+
+  it('cancelEdit then commitEdit does not fire onTextChange', () => {
+    const onTextChange = vi.fn<TextChangeHandler>()
+    const { container, cancelEdit, commitEdit } = renderEditor(onTextChange)
+
+    container.innerHTML = '<p>Hello</p>'
+    const p = container.querySelector('p')!
+
+    fireEvent.click(p, { clientX: 5, clientY: 5 })
+    p.firstChild!.nodeValue = 'Changed'
+
+    cancelEdit()
+
+    // After cancel, commit should be a no-op (no active edit)
+    commitEdit()
+    expect(onTextChange).not.toHaveBeenCalled()
+  })
+
+  it('commitEdit fires onTextChange; cancelEdit after commit is no-op', () => {
+    const onTextChange = vi.fn<TextChangeHandler>()
+    const { container, cancelEdit, commitEdit } = renderEditor(onTextChange)
+
+    container.innerHTML = '<p>Hello</p>'
+    const p = container.querySelector('p')!
+
+    fireEvent.click(p, { clientX: 5, clientY: 5 })
+    p.firstChild!.nodeValue = 'World'
+
+    commitEdit()
+    expect(onTextChange).toHaveBeenCalledTimes(1)
+    expect(onTextChange.mock.calls[0][0].newText).toBe('World')
+
+    // Cancel after commit — should be a no-op
+    cancelEdit()
+    // Text should still be the edited value (cancel can't undo a commit)
+    expect(p.textContent).toBe('World')
+    expect(onTextChange).toHaveBeenCalledTimes(1)
   })
 })
 

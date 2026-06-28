@@ -101,8 +101,9 @@ const DirectPreview = forwardRef<
     onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
     /** Called when the user clicks Save/Apply in the toolbar. Commits any
      *  active text edit (diffs the element against its original snapshot and
-     *  fires onTextChange for each modified text node). */
-    onCommitText?: (commitEdit: () => void) => void
+     *  fires onTextChange for each modified text node). Also receives
+     *  cancelEdit so the parent can revert text on toolbar close/dismiss. */
+    onCommitText?: (commitEdit: () => void, cancelEdit: () => void) => void
     /** Fired when the element inspector (editMode) commits a section/container
      *  selection. Carries a serializable description of the selected element,
      *  ready to feed an AI section-patcher in a later phase. */
@@ -155,7 +156,7 @@ const DirectPreview = forwardRef<
       [ref],
     )
 
-    const { commitEdit } = useTextEdit(
+    const { commitEdit, cancelEdit } = useTextEdit(
       internalRef,
       editMode,
       onTextChange || (() => {}),
@@ -163,11 +164,12 @@ const DirectPreview = forwardRef<
       onElementActivate,
     )
 
-    // Expose commitEdit to the parent so the toolbar's Save/Apply button
-    // can commit text changes (not just style changes).
+    // Expose commitEdit and cancelEdit to the parent so the toolbar's
+    // Save/Apply button can commit text changes, and the Close/X button
+    // can revert them.
     useEffect(() => {
-      if (onCommitText) onCommitText(commitEdit)
-    }, [onCommitText, commitEdit])
+      if (onCommitText) onCommitText(commitEdit, cancelEdit)
+    }, [onCommitText, commitEdit, cancelEdit])
 
     // Devtools-style element inspector: hover highlights, click selects a
     // section/container (text-leaf & image clicks still go to useTextEdit).

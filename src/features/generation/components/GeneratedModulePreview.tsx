@@ -55,7 +55,7 @@ type GeneratedModulePreviewProps = {
     alt: string
   }) => void
   onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
-  onCommitText?: (commitEdit: () => void) => void
+  onCommitText?: (commitEdit: () => void, cancelEdit: () => void) => void
   onSectionSelect?: (selection: InspectorSelection | null) => void
 }
 
