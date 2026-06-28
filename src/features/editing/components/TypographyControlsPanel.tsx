@@ -1,5 +1,5 @@
 import { useState, useLayoutEffect, useRef } from 'react'
-import { X, Check, Type } from 'lucide-react'
+import { X, Check } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import {
   Select,
@@ -128,20 +128,14 @@ export function TypographyControlsPanel({
     onClose()
   }
 
-  return (
-    <div className="flex w-full min-w-[280px] flex-col gap-2 p-2">
-      <div className="flex items-center gap-1.5">
-        <Type className="size-3.5 text-cyan-300" />
-        <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">
-          Typography
-        </span>
-      </div>
+  const labelCls =
+    'text-[10px] uppercase tracking-wider text-white/40 font-medium'
 
+  return (
+    <div className="flex w-full min-w-[380px] flex-col gap-1.5 p-2">
       {/* Font Family */}
       <div className="flex items-center gap-2">
-        <span className="w-16 shrink-0 text-[10px] font-medium uppercase tracking-wider text-white/40">
-          Font
-        </span>
+        <span className={labelCls + ' w-12 shrink-0'}>Font</span>
         <Select
           value={fontFamily}
           onValueChange={(v) => {
@@ -164,9 +158,7 @@ export function TypographyControlsPanel({
 
       {/* Line Height */}
       <div className="flex items-center gap-2">
-        <span className="w-16 shrink-0 text-[10px] font-medium uppercase tracking-wider text-white/40">
-          Line
-        </span>
+        <span className={labelCls + ' w-12 shrink-0'}>Line</span>
         <input
           type="number"
           step="0.1"
@@ -201,72 +193,69 @@ export function TypographyControlsPanel({
         </button>
       </div>
 
-      {/* Letter Spacing */}
-      <div className="flex items-center gap-2">
-        <span className="w-16 shrink-0 text-[10px] font-medium uppercase tracking-wider text-white/40">
-          Letter
-        </span>
-        <input
-          type="number"
-          step="0.01"
-          value={letterSpacing}
-          onChange={(e) => {
-            setLetterSpacing(e.target.value)
-            applyLiveStyle(
-              'letter-spacing',
-              `${e.target.value}${letterSpacingUnit}`,
-            )
-          }}
-          className="h-7 w-20 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50"
-        />
-        <Select value={letterSpacingUnit} onValueChange={setLetterSpacingUnit}>
-          <SelectTrigger className="h-7 w-14">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="em">em</SelectItem>
-            <SelectItem value="px">px</SelectItem>
-            <SelectItem value="rem">rem</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Word Spacing */}
-      <div className="flex items-center gap-2">
-        <span className="w-16 shrink-0 text-[10px] font-medium uppercase tracking-wider text-white/40">
-          Word
-        </span>
-        <input
-          type="number"
-          step="0.01"
-          value={wordSpacing}
-          onChange={(e) => {
-            setWordSpacing(e.target.value)
-            applyLiveStyle(
-              'word-spacing',
-              `${e.target.value}${wordSpacingUnit}`,
-            )
-          }}
-          className="h-7 w-20 rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50"
-        />
-        <Select value={wordSpacingUnit} onValueChange={setWordSpacingUnit}>
-          <SelectTrigger className="h-7 w-14">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="em">em</SelectItem>
-            <SelectItem value="px">px</SelectItem>
-            <SelectItem value="rem">rem</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Letter + Word Spacing */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center gap-1.5">
+          <span className={labelCls + ' w-10 shrink-0'}>Letter</span>
+          <input
+            type="number"
+            step="0.01"
+            value={letterSpacing}
+            onChange={(e) => {
+              setLetterSpacing(e.target.value)
+              applyLiveStyle(
+                'letter-spacing',
+                `${e.target.value}${letterSpacingUnit}`,
+              )
+            }}
+            className="h-7 w-full rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50"
+          />
+          <Select
+            value={letterSpacingUnit}
+            onValueChange={setLetterSpacingUnit}
+          >
+            <SelectTrigger className="h-7 w-12">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="em">em</SelectItem>
+              <SelectItem value="px">px</SelectItem>
+              <SelectItem value="rem">rem</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className={labelCls + ' w-10 shrink-0'}>Word</span>
+          <input
+            type="number"
+            step="0.01"
+            value={wordSpacing}
+            onChange={(e) => {
+              setWordSpacing(e.target.value)
+              applyLiveStyle(
+                'word-spacing',
+                `${e.target.value}${wordSpacingUnit}`,
+              )
+            }}
+            className="h-7 w-full rounded border border-white/10 bg-white/5 px-2 text-xs text-white outline-none transition-colors focus-visible:border-cyan-300/50"
+          />
+          <Select value={wordSpacingUnit} onValueChange={setWordSpacingUnit}>
+            <SelectTrigger className="h-7 w-12">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="em">em</SelectItem>
+              <SelectItem value="px">px</SelectItem>
+              <SelectItem value="rem">rem</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Text Transform */}
       <div className="flex items-center gap-2">
-        <span className="w-16 shrink-0 text-[10px] font-medium uppercase tracking-wider text-white/40">
-          Case
-        </span>
-        <div className="flex flex-1 flex-wrap gap-1">
+        <span className={labelCls + ' w-12 shrink-0'}>Case</span>
+        <div className="flex flex-1 gap-1">
           {TEXT_TRANSFORMS.map((tt) => (
             <button
               key={tt.value}
