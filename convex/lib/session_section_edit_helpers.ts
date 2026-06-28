@@ -24,10 +24,9 @@ export type ApplySectionEditInput = {
 }
 
 /**
- * Apply an AI section edit to the session's artifacts. This mirrors the
- * chat-refinement flow: patch preview.html + homeModule.source, bump
- * previewVersion + updatedAt, record the edit, and (for OpenUI) store the
- * AI capsule.
+ * Apply an AI section edit to the session's artifacts: patch preview.html +
+ * homeModule.source, bump previewVersion + updatedAt, record the edit, and
+ * (for OpenUI) store the AI capsule.
  */
 export const applySectionEditToArtifacts = async (
   ctx: MutationCtx,

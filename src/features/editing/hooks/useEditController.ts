@@ -22,7 +22,7 @@ export const useEditController = (sessionId: string) => {
   // same tick (applyEdit returns 'fork_needed' → caller immediately calls
   // forkCurrentSession), so a state update would not be visible in time.
   const pendingEditRef = useRef<{
-    editType: 'text' | 'ai_rewrite' | 'chat' | 'style' | 'image'
+    editType: 'text' | 'ai_rewrite' | 'style' | 'image'
     targetLabel: string | undefined
     beforeText: string | undefined
     afterText: string | undefined
@@ -32,7 +32,7 @@ export const useEditController = (sessionId: string) => {
   } | null>(null)
 
   const applyEdit = async (
-    editType: 'text' | 'ai_rewrite' | 'chat' | 'style' | 'image',
+    editType: 'text' | 'ai_rewrite' | 'style' | 'image',
     targetLabel: string | undefined,
     beforeText: string | undefined,
     afterText: string | undefined,

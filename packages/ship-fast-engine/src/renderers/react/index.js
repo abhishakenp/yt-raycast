@@ -1141,17 +1141,6 @@ export default function PageTemplate({ siteSpec, page }) {
     const prefilled = Boolean(
       String(session?.medusaConfig?.backendUrl || '').trim() || publishableKey,
     )
-    const isSanityCms = siteSpec?.exportOptions?.cms === 'sanity'
-    const sanityProjectId = String(
-      session?.sanityConfig?.projectId || '',
-    ).trim()
-    const sanityDataset = String(session?.sanityConfig?.dataset || '').trim()
-    const sanityApiVersion = String(
-      session?.sanityConfig?.apiVersion || '',
-    ).trim()
-    const sanityPrefilled = Boolean(
-      sanityProjectId || sanityDataset || sanityApiVersion,
-    )
 
     files['src/lib/medusa.js'] =
       `const backendUrl = import.meta.env.VITE_MEDUSA_BACKEND_URL || 'http://localhost:9000'
@@ -1256,20 +1245,6 @@ VITE_MEDUSA_PUBLISHABLE_KEY=${publishableKey}
     files['.env.local'] = `VITE_MEDUSA_BACKEND_URL=${backendUrl}
 VITE_MEDUSA_PUBLISHABLE_KEY=${publishableKey}
 `
-
-    if (isSanityCms) {
-      files['.env.example.sanity'] =
-        `${sanityPrefilled ? '# Pre-filled for this session when available.\n' : ''}# Sanity CMS — optional
-VITE_SANITY_PROJECT_ID=${sanityProjectId || 'your-project-id'}
-VITE_SANITY_DATASET=${sanityDataset || 'production'}
-VITE_SANITY_API_VERSION=${sanityApiVersion || '2024-01-01'}
-`
-      files['.env.local'] =
-        `${files['.env.local'] || ''}VITE_SANITY_PROJECT_ID=${sanityProjectId || 'your-project-id'}
-VITE_SANITY_DATASET=${sanityDataset || 'production'}
-VITE_SANITY_API_VERSION=${sanityApiVersion || '2024-01-01'}
-`
-    }
   }
 
   return { files }

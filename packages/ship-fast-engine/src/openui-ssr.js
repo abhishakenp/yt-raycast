@@ -96,7 +96,7 @@ const openUiRenderDiagnostics = (source, preprocessed) => {
  * @param {string} source - OpenUI source code
  * @param {object} theme - Theme tokens (primary, accent, background, etc.)
  * @param {string} locale - Locale code for translations
- * @param {object} integrations - Integration configs (sanity, medusa)
+ * @param {object} integrations - Integration configs (medusa)
  * @param {object} imageContext - Page-level prompt/brand context for relevant stock images
  * @returns {string} Rendered HTML
  */

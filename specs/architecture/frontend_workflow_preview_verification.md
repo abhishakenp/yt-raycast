@@ -6,8 +6,8 @@ Group: Quality Consolidation Audit group 5
 
 ## Scope
 
-This checkpoint covers the dashboard, preview, anonymous auth, chat refinement,
-CMS edit, and browser verifier paths:
+This checkpoint covers the dashboard, preview, anonymous auth,
+and browser verifier paths:
 
 - `src/features/dashboard/components/Dashboard.tsx`
 - `src/features/session/services/generation-launch-handoff.ts`
@@ -16,8 +16,6 @@ CMS edit, and browser verifier paths:
 - `src/features/generation/components/GeneratedModulePreview.tsx`
 - `src/features/session/server/*`
 - `scripts/verify-dashboard-browser.mjs`
-- `scripts/verify-chat-browser.mjs`
-- `scripts/verify-cms-browser.mjs`
 
 ## Bugs Found By Real Browser Verification
 
@@ -128,29 +126,9 @@ bun run verify:dashboard-browser -- --base-url=http://localhost:3000 --timeout-m
 Result: passed. It created a ready session, displayed the generated preview,
 published it, reloaded the dashboard, and confirmed Convex deployment status.
 
-Chat browser verifier:
-
-```bash
-SHIP_FAST_CONVEX_ENV_FILE=<sanitized local Convex env> \
-bun run verify:chat-browser -- --base-url=http://localhost:3000 --timeout-ms=180000
-```
-
-Result: passed. It refined the preview headline, reloaded, and confirmed
-preview/source/spec/chat-message persistence.
-
-CMS browser verifier:
-
-```bash
-SHIP_FAST_CONVEX_ENV_FILE=<sanitized local Convex env> \
-bun run verify:cms-browser -- --base-url=http://localhost:3000 --timeout-ms=180000
-```
-
-Result: passed. It edited `hero.headline`, reloaded, and confirmed preview,
-site-spec, preview history, and CMS content persistence.
-
 ## Status
 
 Frontend workflow group now has focused unit coverage and real headed-browser
-coverage across dashboard publish/reload, chat refinement, and CMS editing.
+coverage across dashboard publish/reload.
 The remaining repo-level risk is consolidation of the broad local branch review
 scope, not an unverified frontend preview path.

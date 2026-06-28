@@ -28,7 +28,7 @@ const persistGeneratedPreview = (
 ) =>
   t.action(internal.sessions.completeGeneration, {
     sessionId,
-    html: `<html><body><main><h1 data-cms="field:hero.headline type:text">${prompt}</h1></main></body></html>`,
+    html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
     openUiSource: `$page = "Home"\nroot = Text("${prompt}")`,
     siteSpecJson: JSON.stringify({
       projectName: prompt,

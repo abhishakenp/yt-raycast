@@ -6,7 +6,6 @@ import {
   upsertHomeGeneratedModule,
   upsertSiteSpec,
 } from './session_artifact_helpers'
-import { seedCmsBindingsForGeneratedArtifacts } from './session_cms_binding_helpers'
 import { queueSessionExportArtifactBuilds } from './session_export_helpers'
 import { scheduleOperationalNotification } from './session_operational_notifications'
 import { type EngineTaskInput, upsertTask } from './session_task_helpers'
@@ -77,13 +76,6 @@ export const completeGeneratedSession = async (
     source: 'generation',
     createdAt: args.now,
   })
-
-  await seedCmsBindingsForGeneratedArtifacts(
-    ctx,
-    args.sessionId,
-    { html: args.html, siteSpecJson: args.siteSpecJson },
-    args.now,
-  )
 
   await ctx.db.insert('generationEvents', {
     sessionId: args.sessionId,

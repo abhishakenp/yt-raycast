@@ -36,7 +36,7 @@ interface GenerateTextRuntime {
 }
 
 // Dynamic import keeps the heavy engine (and its provider SDKs) out of the route's
-// static graph — same pattern as chat-refinement-response / translate-response.
+// static graph — same pattern as translate-response.
 const loadGenerateTextRuntime = async (): Promise<GenerateTextRuntime> => {
   const [{ generateText }, { DEFAULT_MODEL }] = await Promise.all([
     import('@ship-fast/engine'),

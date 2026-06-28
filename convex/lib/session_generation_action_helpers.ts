@@ -43,12 +43,9 @@ export type CompleteGenerationActionResult = {
 }
 
 const shouldRenderOpenUISource = (
-  html: string,
   openUiSource: string | undefined,
 ): openUiSource is string =>
-  !/\sdata-cms\s*=/.test(html) &&
-  openUiSource !== undefined &&
-  openUiSource.trim().length > 0
+  openUiSource !== undefined && openUiSource.trim().length > 0
 
 export const completeGenerationAction = async (
   ctx: Pick<ActionCtx, 'runMutation' | 'runQuery'>,
@@ -76,7 +73,7 @@ export const completeGenerationAction = async (
   }
 
   let renderedHtml = args.html
-  if (shouldRenderOpenUISource(args.html, args.openUiSource)) {
+  if (shouldRenderOpenUISource(args.openUiSource)) {
     try {
       const { renderOpenUIToHTMLWithTheme } = await references.loadOpenUISSR()
       const { html } = (await renderOpenUIToHTMLWithTheme(

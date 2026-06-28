@@ -71,7 +71,7 @@ Why it matters:
 - This is the highest-value structural improvement because it turns a very
   large coordination file into helper modules with focused tests.
 - It is also the highest review risk because it touches session creation,
-  ownership, generation state, export entitlement, CMS, gallery, preview
+  ownership, generation state, export entitlement, gallery, preview
   history, and event-stream behavior.
 
 Required proof before treating this group as complete:
@@ -211,7 +211,7 @@ Current checkpoint:
 
 - `specs/architecture/frontend_workflow_preview_verification.md` records the
   focused unit, Convex/OpenUI completion, and headed browser verification for
-  dashboard publish/reload, chat refinement, and CMS edit workflows.
+  dashboard publish/reload workflows.
 
 ### 6. Commerce And External Integration Hardening
 
@@ -221,11 +221,11 @@ Scope:
 - `src/billing/*`
 - `src/lib/stock-image.ts`
 - `src/lib/image-context.ts`
-- related Convex commerce/CMS helpers
+- related Convex commerce helpers
 
 Why it matters:
 
-- These paths touch payment, checkout, stock media, Medusa, CMS, and generated
+- These paths touch payment, checkout, stock media, Medusa, and generated
   storefront behavior.
 - They require mocked external boundaries in tests and real-path validation
   when integration behavior changes.
@@ -240,7 +240,7 @@ Current checkpoint:
 
 - `specs/architecture/commerce_external_integration_verification.md`
   records the focused route-contract, billing, stock-image, Medusa service,
-  OpenUI Medusa provider, and Convex commerce/CMS verification for this group.
+  OpenUI Medusa provider, and Convex commerce verification for this group.
 
 ### 7. Quality Documentation And Assessment
 

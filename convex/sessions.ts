@@ -13,52 +13,18 @@ import {
   query,
   type MutationCtx,
 } from './_generated/server'
-import { listSessionChatMessages } from './lib/chat_refinement_helpers'
 import {
   claimAnonymousSession,
   deleteOwnedSessions,
   setSessionThemeOverride,
 } from './lib/session_access_helpers'
-import {
-  clearSessionAnnotations,
-  createSessionAnnotation,
-  deleteAgentationSyncSessionAnnotation,
-  deleteSessionAnnotation,
-  deleteSessionAnnotationByAgentationId,
-  listSessionAnnotations,
-  saveSessionAgentationSession,
-  updateAgentationSyncSessionAnnotation,
-  upsertAgentationSyncSessionAnnotation,
-  upsertSessionAnnotation,
-} from './lib/session_agentation_helpers'
 import { loadSessionApiResponse } from './lib/session_api_response_helpers'
-import {
-  insertSessionCmsBinding,
-  listCmsRevisionsForEntry,
-  loadSessionCmsConfig,
-  listSessionCmsContent,
-  listSessionCmsEntries,
-  listSessionCmsEntryRevisions,
-  restoreSessionCmsRevision,
-  restoreSessionCmsContentRevision,
-  seedCmsBindingsForGeneratedArtifacts,
-  updateSessionCmsEntry,
-  upsertSessionCmsConfig,
-  upsertSessionCmsContentEntry,
-} from './lib/session_cms_binding_helpers'
-import {
-  deleteSessionCmsCollectionItem,
-  listSessionCmsCollectionItems,
-  listSessionCmsCollections,
-  upsertSessionCmsCollectionItem,
-} from './lib/session_cms_collection_helpers'
 import {
   loadSessionCommerceConfig,
   provisionSessionMedusaTenant,
   syncSessionMedusaProducts,
   upsertSessionCommerceConfig,
 } from './lib/session_commerce_helpers'
-import { sendSessionChatMessage } from './lib/session_chat_helpers'
 import {
   listSessionAiCapsules,
   upsertSessionAiCapsule,
@@ -145,24 +111,16 @@ import {
   recordSessionUsageMetric,
 } from './lib/session_usage_metrics_helpers'
 import {
-  agentationSyncAnnotationArgs,
-  annotationIdArgs,
   applyCloneBriefArgs,
   addGenerationEventArgs,
   claimAnonymousArgs,
   completeGenerationArgs,
   createGenerationSessionArgs,
   createEditArgs,
-  deleteCmsCollectionItemArgs,
-  deleteOwnedAnnotationArgs,
-  deleteOwnedAnnotationByAgentationIdArgs,
   deleteMineArgs,
-  cmsCollectionItemsArgs,
-  cmsEntryRevisionsArgs,
   deploymentSlugArgs,
   editedSessionExportRebuildArgs,
   eventStreamArgs,
-  extractCmsBindingsArgs,
   exportRecordArgs,
   exportArtifactBuildArgs,
   exportArtifactFailureArgs,
@@ -172,14 +130,11 @@ import {
   forkSessionArgs,
   generationViewArgs,
   githubExportRepositoryLookupArgs,
-  insertCmsBindingArgs,
-  listCmsRevisionsArgs,
   lakebedDeploymentFailureArgs,
   lakebedDeploymentSuccessArgs,
   clonePageLookupArgs,
   lookupArgs,
   operationalNotificationArgs,
-  ownedAnnotationArgs,
   ownedExportArgs,
   ownedExportLookupArgs,
   ownedSessionArgs,
@@ -190,11 +145,7 @@ import {
   publishPreviewLookupArgs,
   recordOperationalEventArgs,
   recordUsageMetricArgs,
-  restoreCmsContentRevisionArgs,
-  restoreCmsRevisionArgs,
   restorePreviewVersionArgs,
-  saveAgentationSessionArgs,
-  sendChatMessageArgs,
   sessionIdArgs,
   setThemeOverrideArgs,
   slackNotificationArgs,
@@ -202,13 +153,8 @@ import {
   telegramNotificationArgs,
   upsertAiCapsuleArgs,
   applySectionEditArgs,
-  updateCmsEntryArgs,
-  updateAgentationSyncAnnotationArgs,
-  upsertCmsCollectionItemArgs,
   upsertGeneratedModuleArgs,
   upsertGenerationTaskArgs,
-  upsertCmsConfigArgs,
-  upsertCmsContentEntryArgs,
   upsertCommerceConfigArgs,
   userUsageMetricsArgs,
   writeClonePageArgs,
@@ -712,79 +658,9 @@ export const listClonePages = query({
   handler: (ctx, args) => listSessionClonePages(ctx, args.sessionId),
 })
 
-export const sendChatMessage = mutation({
-  args: sendChatMessageArgs,
-  handler: (ctx, args) => sendSessionChatMessage(ctx, args),
-})
-
-export const listChatMessages = query({
-  args: sessionIdArgs,
-  handler: async (ctx, args) => listSessionChatMessages(ctx, args.sessionId),
-})
-
 export const setThemeOverride = mutation({
   args: setThemeOverrideArgs,
   handler: (ctx, args) => setSessionThemeOverride(ctx, args),
-})
-
-export const createAnnotation = mutation({
-  args: ownedAnnotationArgs,
-  handler: (ctx, args) => createSessionAnnotation(ctx, args),
-})
-
-export const upsertAnnotation = mutation({
-  args: ownedAnnotationArgs,
-  handler: (ctx, args) => upsertSessionAnnotation(ctx, args),
-})
-
-export const listAnnotations = query({
-  args: sessionIdArgs,
-  handler: async (ctx, args) => listSessionAnnotations(ctx, args.sessionId),
-})
-
-export const saveAgentationSession = mutation({
-  args: saveAgentationSessionArgs,
-  handler: (ctx, args) => saveSessionAgentationSession(ctx, args),
-})
-
-export const upsertAgentationSyncAnnotation = mutation({
-  args: agentationSyncAnnotationArgs,
-  handler: (ctx, args) => upsertAgentationSyncSessionAnnotation(ctx, args),
-})
-
-export const updateAgentationSyncAnnotation = mutation({
-  args: updateAgentationSyncAnnotationArgs,
-  handler: (ctx, args) => updateAgentationSyncSessionAnnotation(ctx, args),
-})
-
-export const deleteAgentationSyncAnnotation = mutation({
-  args: annotationIdArgs,
-  handler: (ctx, args) => deleteAgentationSyncSessionAnnotation(ctx, args),
-})
-
-export const deleteAnnotation = mutation({
-  args: deleteOwnedAnnotationArgs,
-  handler: (ctx, args) => deleteSessionAnnotation(ctx, args),
-})
-
-export const deleteAnnotationByAgentationId = mutation({
-  args: deleteOwnedAnnotationByAgentationIdArgs,
-  handler: (ctx, args) => deleteSessionAnnotationByAgentationId(ctx, args),
-})
-
-export const clearAnnotations = mutation({
-  args: ownedSessionArgs,
-  handler: (ctx, args) => clearSessionAnnotations(ctx, args),
-})
-
-export const upsertCmsConfig = mutation({
-  args: upsertCmsConfigArgs,
-  handler: (ctx, args) => upsertSessionCmsConfig(ctx, args),
-})
-
-export const getCmsConfig = query({
-  args: sessionIdArgs,
-  handler: (ctx, args) => loadSessionCmsConfig(ctx, args.sessionId),
 })
 
 export const upsertCommerceConfig = mutation({
@@ -837,30 +713,6 @@ export const getOwnedLakebedDeploymentArtifactByLookup = query({
   },
 })
 
-export const extractCmsBindings = internalMutation({
-  args: extractCmsBindingsArgs,
-  handler: async (ctx, args) => {
-    const extracted = await seedCmsBindingsForGeneratedArtifacts(
-      ctx,
-      args.sessionId,
-      { html: args.html },
-      Date.now(),
-    )
-
-    return { extracted }
-  },
-})
-
-export const updateCmsEntry = internalMutation({
-  args: updateCmsEntryArgs,
-  handler: (ctx, args) => updateSessionCmsEntry(ctx, args),
-})
-
-export const restoreCmsRevision = internalMutation({
-  args: restoreCmsRevisionArgs,
-  handler: (ctx, args) => restoreSessionCmsRevision(ctx, args),
-})
-
 export const provisionMedusaTenant = internalMutation({
   args: provisionMedusaTenantArgs,
   handler: (ctx, args) => provisionSessionMedusaTenant(ctx, args),
@@ -895,61 +747,6 @@ export const getUsageMetrics = query({
 export const getUserUsageMetrics = query({
   args: userUsageMetricsArgs,
   handler: (ctx, args) => loadUserUsageMetrics(ctx, args),
-})
-
-export const listCmsEntries = query({
-  args: sessionIdArgs,
-  handler: (ctx, args) => listSessionCmsEntries(ctx, args.sessionId),
-})
-
-export const listCmsContent = query({
-  args: sessionIdArgs,
-  handler: (ctx, args) => listSessionCmsContent(ctx, args.sessionId),
-})
-
-export const listCmsEntryRevisions = query({
-  args: cmsEntryRevisionsArgs,
-  handler: (ctx, args) => listSessionCmsEntryRevisions(ctx, args),
-})
-
-export const upsertCmsContentEntry = mutation({
-  args: upsertCmsContentEntryArgs,
-  handler: (ctx, args) => upsertSessionCmsContentEntry(ctx, args),
-})
-
-export const restoreCmsContentRevision = mutation({
-  args: restoreCmsContentRevisionArgs,
-  handler: (ctx, args) => restoreSessionCmsContentRevision(ctx, args),
-})
-
-export const listCmsCollections = query({
-  args: sessionIdArgs,
-  handler: (ctx, args) => listSessionCmsCollections(ctx, args.sessionId),
-})
-
-export const listCmsCollectionItems = query({
-  args: cmsCollectionItemsArgs,
-  handler: (ctx, args) => listSessionCmsCollectionItems(ctx, args),
-})
-
-export const upsertCmsCollectionItem = mutation({
-  args: upsertCmsCollectionItemArgs,
-  handler: (ctx, args) => upsertSessionCmsCollectionItem(ctx, args),
-})
-
-export const deleteCmsCollectionItem = mutation({
-  args: deleteCmsCollectionItemArgs,
-  handler: (ctx, args) => deleteSessionCmsCollectionItem(ctx, args),
-})
-
-export const insertCmsBinding = internalMutation({
-  args: insertCmsBindingArgs,
-  handler: (ctx, args) => insertSessionCmsBinding(ctx, args),
-})
-
-export const listCmsRevisions = internalQuery({
-  args: listCmsRevisionsArgs,
-  handler: (ctx, args) => listCmsRevisionsForEntry(ctx, args.entryId),
 })
 
 export const sendOperationalNotification = internalAction({

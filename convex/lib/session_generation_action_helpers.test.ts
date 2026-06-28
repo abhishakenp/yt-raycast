@@ -132,25 +132,6 @@ describe('completeGenerationAction', () => {
     ])
   })
 
-  it('does not render OpenUI when the handoff HTML has CMS annotations', async () => {
-    const loadOpenUISSR = vi.fn()
-    const { ctx, mutationCalls } = ctxFor(sessionDoc())
-
-    await completeGenerationAction(
-      ctx,
-      actionInput({
-        html: '<main data-cms="hero.title">handoff</main>',
-        openUiSource: '$page = "Home"',
-      }),
-      referencesFor({ loadOpenUISSR }),
-    )
-
-    expect(loadOpenUISSR).not.toHaveBeenCalled()
-    expect(mutationCalls[0].args).toMatchObject({
-      html: '<main data-cms="hero.title">handoff</main>',
-    })
-  })
-
   it('falls back to handoff HTML when OpenUI rendering fails', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const { ctx, mutationCalls } = ctxFor(sessionDoc())

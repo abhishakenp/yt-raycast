@@ -61,7 +61,7 @@ export const AiProductGallery = defineCapsule({
           },
           {
             title: 'Export anywhere',
-            description: 'Publish to Word, PDF, Markdown, or your CMS.',
+            description: 'Publish to Word, PDF, or Markdown.',
           },
         ]
 

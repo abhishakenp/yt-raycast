@@ -16,8 +16,6 @@ type TableName =
   | 'previews'
   | 'generatedModules'
   | 'generationEvents'
-  | 'cmsBindings'
-  | 'cmsEntries'
 type Row = Record<string, unknown>
 
 const sessionId = 'session_clone_helpers' as Id<'sessions'>
@@ -66,8 +64,6 @@ const mutationCtxFor = async (args: {
     previews: [],
     generatedModules: [],
     generationEvents: [],
-    cmsBindings: [],
-    cmsEntries: [],
   }
   const inserted: Array<{ table: string; value: Row }> = []
   const patches: Array<{ id: string; value: Row }> = []

@@ -10,7 +10,7 @@ type ForkSessionArgs = {
   sourceSessionId: Id<'sessions'>
   anonymousOwnerSecret?: string
   edit?: {
-    editType: 'text' | 'ai_rewrite' | 'chat' | 'style' | 'image'
+    editType: 'text' | 'ai_rewrite' | 'style' | 'image'
     targetLabel?: string
     beforeText?: string
     afterText?: string
@@ -70,6 +70,32 @@ const previewDoc = (overrides: Partial<PreviewRecord> = {}): PreviewRecord =>
     ...overrides,
   }) as PreviewRecord
 
+const generatedModuleDoc = (
+  overrides: Partial<GeneratedModuleRecord> = {},
+): GeneratedModuleRecord =>
+  ({
+    _id: 'source_module_1' as Id<'generatedModules'>,
+    _creationTime: 3,
+    sessionId: sourceSessionId,
+    moduleKey: 'home',
+    source: '<main><h1>Old headline</h1></main>',
+    status: 'succeeded',
+    createdAt: 3,
+    updatedAt: 3,
+    ...overrides,
+  }) as GeneratedModuleRecord
+
+const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
+  ({
+    _id: 'source_spec_1' as Id<'siteSpecs'>,
+    _creationTime: 4,
+    sessionId: sourceSessionId,
+    specJson: '{"headline":"Old headline"}',
+    createdAt: 4,
+    updatedAt: 4,
+    ...overrides,
+  }) as SiteSpecRecord
+
 const ctxFor = (input: {
   userId?: string
   sessions?: SessionRecord[]
@@ -84,6 +110,7 @@ const ctxFor = (input: {
   const tasks: TaskRecord[] = []
   const generationEvents: GenerationEventRecord[] = []
   const edits: EditRecord[] = []
+  const usageMetrics: Array<Record<string, unknown>> = []
   const schedulerCalls: Array<{ delayMs: number; functionRef: unknown }> = []
 
   const rowsFor = (table: string): Array<Record<string, unknown>> => {
@@ -102,6 +129,8 @@ const ctxFor = (input: {
         return generationEvents as unknown as Array<Record<string, unknown>>
       case 'edits':
         return edits as unknown as Array<Record<string, unknown>>
+      case 'usageMetrics':
+        return usageMetrics
       default:
         throw new Error(`Unhandled table ${table}`)
     }
@@ -267,6 +296,8 @@ describe('forkSessionForOwner', () => {
       userId: 'target-user',
       sessions: [sessionDoc()],
       previews: [previewDoc()],
+      generatedModules: [generatedModuleDoc()],
+      siteSpecs: [siteSpecDoc()],
     })
 
     const result = await forkSessionForOwner(
@@ -298,13 +329,15 @@ describe('forkSessionForOwner', () => {
       html: '<main><h1>New headline</h1></main>',
       source: 'edit',
     })
-    expect(store.generationEvents).toEqual([
-      expect.objectContaining({
-        sessionId: targetSessionId,
-        eventType: 'preview_reload',
-        previewVersion: 2,
-      }),
-    ])
+    expect(store.generationEvents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sessionId: targetSessionId,
+          eventType: 'preview_reload',
+          previewVersion: 2,
+        }),
+      ]),
+    )
     expect(store.edits).toEqual([
       expect.objectContaining({
         sessionId: targetSessionId,

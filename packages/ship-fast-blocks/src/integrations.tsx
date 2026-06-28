@@ -17,14 +17,6 @@ export type OpenUIIntegrationPayload = {
 
 export type OpenUILibraryComponent = ReturnType<typeof defineComponent>
 
-export type OpenUISanityContextValue = {
-  enabled: boolean
-  ready: boolean
-  status: 'disabled' | 'checking' | 'ready' | 'error'
-  config: OpenUIIntegrationConfig
-  error: string | null
-}
-
 export type OpenUIMedusaContextValue = {
   enabled: boolean
   ready: boolean
@@ -34,14 +26,6 @@ export type OpenUIMedusaContextValue = {
   storefrontUrl: string | null
   error: string | null
 }
-
-export const OpenUISanityContext = createContext<OpenUISanityContextValue>({
-  enabled: false,
-  ready: false,
-  status: 'disabled',
-  config: {},
-  error: null,
-})
 
 export const OpenUIMedusaContext = createContext<OpenUIMedusaContextValue>({
   enabled: false,
@@ -121,11 +105,6 @@ function pickMedusaBackendUrl(
   return typeof backend === 'string' && backend.trim() ? backend.trim() : null
 }
 
-function hasSanityConfig(config?: OpenUIIntegrationConfig | null): boolean {
-  if (!config) return false
-  return Boolean(config.projectId || config.dataset)
-}
-
 function hasMedusaConfig(config?: OpenUIIntegrationConfig | null): boolean {
   if (!config) return false
   return Boolean(pickMedusaBackendUrl(config) || config.storefrontUrl)
@@ -138,35 +117,6 @@ function OpenUIMedusaBoundary({ children }: { children: ReactNode }) {
       {children}
     </OpenUIMedusaContext.Provider>
   )
-}
-
-function OpenUISanityBoundary({ children }: { children: ReactNode }) {
-  const context = useContext(OpenUISanityContext)
-  return (
-    <OpenUISanityContext.Provider value={context}>
-      {children}
-    </OpenUISanityContext.Provider>
-  )
-}
-
-export function withSanity(
-  component: OpenUILibraryComponent,
-): OpenUILibraryComponent {
-  const Comp = component.component
-  return {
-    ...component,
-    component: (renderProps: any) => {
-      const sanity = useContext(OpenUISanityContext)
-      if (!sanity.enabled) {
-        return <Comp {...renderProps} />
-      }
-      return (
-        <OpenUISanityBoundary>
-          <Comp {...renderProps} />
-        </OpenUISanityBoundary>
-      )
-    },
-  }
 }
 
 export function withMedusa(
@@ -191,32 +141,14 @@ export function withMedusa(
 
 export function IntegrationProvider({
   children,
-  sanity,
   medusa,
   sessionId,
 }: {
   children: ReactNode
-  sanity?: OpenUIIntegrationPayload | null
   medusa?: OpenUIIntegrationPayload | null
   sessionId?: string | null
 }) {
-  const normalizedSanity = normalizeOpenUIIntegrationPayload(sanity)
   const normalizedMedusa = normalizeOpenUIIntegrationPayload(medusa)
-
-  const [sanityConfig, setSanityConfig] = useState<OpenUIIntegrationConfig>(
-    normalizedSanity.config || {},
-  )
-  const [sanityReady, setSanityReady] = useState<boolean>(
-    hasSanityConfig(normalizedSanity.config),
-  )
-  const [sanityStatus, setSanityStatus] = useState<
-    OpenUISanityContextValue['status']
-  >(
-    normalizedSanity.enabled && hasSanityConfig(normalizedSanity.config)
-      ? 'ready'
-      : 'disabled',
-  )
-  const [sanityError, setSanityError] = useState<string | null>(null)
 
   const [medusaConfig, setMedusaConfig] = useState<OpenUIIntegrationConfig>(
     normalizedMedusa.config || {},
@@ -240,14 +172,6 @@ export function IntegrationProvider({
   const [medusaError, setMedusaError] = useState<string | null>(null)
 
   useEffect(() => {
-    setSanityConfig(normalizedSanity.config || {})
-  }, [
-    normalizedSanity.config?.apiVersion,
-    normalizedSanity.config?.dataset,
-    normalizedSanity.config?.projectId,
-  ])
-
-  useEffect(() => {
     setMedusaConfig(normalizedMedusa.config || {})
     setMedusaBackendUrl(pickMedusaBackendUrl(normalizedMedusa.config))
     setMedusaStorefrontUrl(normalizedMedusa.config?.storefrontUrl || null)
@@ -255,78 +179,6 @@ export function IntegrationProvider({
     normalizedMedusa.config?.backendUrl,
     normalizedMedusa.config?.adminBaseUrl,
     normalizedMedusa.config?.storefrontUrl,
-  ])
-
-  useEffect(() => {
-    let active = true
-    const configured = hasSanityConfig(normalizedSanity.config)
-
-    if (!normalizedSanity.enabled || !sessionId) {
-      setSanityReady(configured)
-      setSanityStatus(configured ? 'ready' : 'disabled')
-      setSanityError(null)
-      return
-    }
-
-    setSanityReady(false)
-    setSanityStatus('checking')
-    setSanityError(null)
-
-    const provisionSanity = async () => {
-      try {
-        const r = await fetch('/api/provision/sanity', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId }),
-        })
-        if (!active) return
-        if (!r.ok) {
-          const body = await r.json().catch(() => null)
-          setSanityReady(false)
-          setSanityStatus('error')
-          setSanityError(
-            normalizeProvisionError(
-              body,
-              `Sanity provision failed: ${r.status}`,
-            ),
-          )
-          return
-        }
-
-        const payload = (await r.json()) as OpenUIProvisionPayload
-        const nextConfig = sanitizeOpenUIIntegrationConfig(payload.config)
-        const merged = { ...normalizedSanity.config, ...nextConfig }
-        const nextReady = hasSanityConfig(merged)
-        setSanityConfig(merged)
-        setSanityReady(nextReady)
-        setSanityStatus(nextReady ? 'ready' : 'error')
-        setSanityError(
-          nextReady
-            ? null
-            : payload?.error
-              ? String(payload.error)
-              : 'Sanity provisioned but returned without required fields.',
-        )
-      } catch (error) {
-        if (!active) return
-        setSanityReady(false)
-        setSanityStatus('error')
-        setSanityError(
-          error instanceof Error ? error.message : 'Sanity config check failed',
-        )
-      }
-    }
-    void provisionSanity()
-
-    return () => {
-      active = false
-    }
-  }, [
-    normalizedSanity.enabled,
-    sessionId,
-    normalizedSanity.config?.apiVersion,
-    normalizedSanity.config?.dataset,
-    normalizedSanity.config?.projectId,
   ])
 
   useEffect(() => {
@@ -411,23 +263,6 @@ export function IntegrationProvider({
     normalizedMedusa.config?.storefrontUrl,
   ])
 
-  const sanityValue: OpenUISanityContextValue = useMemo(
-    () => ({
-      enabled: normalizedSanity.enabled,
-      ready: sanityReady,
-      status: sanityStatus,
-      config: sanityConfig || {},
-      error: sanityError,
-    }),
-    [
-      normalizedSanity.enabled,
-      sanityReady,
-      sanityStatus,
-      sanityConfig,
-      sanityError,
-    ],
-  )
-
   const medusaValue: OpenUIMedusaContextValue = useMemo(
     () => ({
       enabled: normalizedMedusa.enabled,
@@ -450,11 +285,9 @@ export function IntegrationProvider({
   )
 
   return (
-    <OpenUISanityContext.Provider value={sanityValue}>
-      <OpenUIMedusaContext.Provider value={medusaValue}>
-        {children}
-      </OpenUIMedusaContext.Provider>
-    </OpenUISanityContext.Provider>
+    <OpenUIMedusaContext.Provider value={medusaValue}>
+      {children}
+    </OpenUIMedusaContext.Provider>
   )
 }
 

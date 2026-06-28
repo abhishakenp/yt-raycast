@@ -109,18 +109,6 @@ function readmeRoutes(siteSpec) {
     ),
   )
 
-  if (siteSpec?.exportOptions?.cms === 'sanity' && !routes.includes('/blog')) {
-    routes.push('/blog')
-  }
-
-  if (
-    siteSpec?.exportOptions?.cms === 'sanity' &&
-    siteSpec?.exportOptions?.embedSanityStudio !== false &&
-    !routes.includes('/studio')
-  ) {
-    routes.push('/studio')
-  }
-
   if (siteSpec?.siteType === 'ecommerce') {
     if (!routes.includes('/shop')) routes.push('/shop')
     if (!routes.includes('/checkout')) routes.push('/checkout')
@@ -166,11 +154,6 @@ function readmeTargetDetails(target, siteSpec = {}) {
         'Shared components: `components/`',
         'Generated site data: `lib/site-spec.js`',
       ]
-      if (siteSpec.exportOptions?.cms === 'sanity') {
-        notes.push(
-          'Sanity: copy `.env.example` to `.env.local`; when a session has Sanity credentials, the generated env files are pre-filled for that session, otherwise use `NEXT_PUBLIC_SANITY_*`, optional `SANITY_READ_TOKEN`, and for Studio also `SANITY_STUDIO_PROJECT_ID` / `SANITY_STUDIO_DATASET` (or reuse the same project id). Blog routes: `app/blog/`.',
-        )
-      }
       if (siteSpec.siteType === 'ecommerce') {
         notes.push(
           'Medusa: run the bundled backend with `bun run medusa:dev` (see `medusa-backend/README.md`) or any Medusa v2 server; copy `.env.example.medusa` into `.env.local` and use the session-prefilled Medusa values when present, otherwise set `MEDUSA_BACKEND_URL`, `NEXT_PUBLIC_MEDUSA_BACKEND_URL`, and `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`. Allow your Next origin in `STORE_CORS` (`infra/medusa/README.md`). Catalog sync: `bun run sync:medusa-catalog` with a site-spec JSON file.',

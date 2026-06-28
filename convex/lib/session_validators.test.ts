@@ -8,30 +8,23 @@ import schema from '../schema'
 
 import {
   addGenerationEventArgs,
-  agentationSyncAnnotationArgs,
-  annotationFields,
   claimAnonymousArgs,
   completeGenerationArgs,
   createEditArgs,
   createGenerationSessionArgs,
   deleteMineArgs,
-  deleteOwnedAnnotationArgs,
   deploymentSlugArgs,
   editType,
   engineTask,
   eventStreamArgs,
   exportRecordArgs,
   exportTarget,
-  extractCmsBindingsArgs,
   failGenerationArgs,
   forkSessionArgs,
   generationViewArgs,
-  insertCmsBindingArgs,
-  listCmsRevisionsArgs,
   lookupArgs,
   medusaProduct,
   operationalNotificationArgs,
-  ownedAnnotationArgs,
   ownedExportArgs,
   ownedSessionArgs,
   provisionMedusaTenantArgs,
@@ -40,20 +33,13 @@ import {
   publishPreviewArgs,
   recordOperationalEventArgs,
   recordUsageMetricArgs,
-  restoreCmsRevisionArgs,
   restorePreviewVersionArgs,
-  saveAgentationSessionArgs,
-  sendChatMessageArgs,
   sessionIdArgs,
   sessionEditFields,
   setThemeOverrideArgs,
   slackNotificationArgs,
   syncMedusaProductsArgs,
   telegramNotificationArgs,
-  updateAgentationSyncAnnotationArgs,
-  updateCmsEntryArgs,
-  upsertCmsCollectionItemArgs,
-  upsertCmsConfigArgs,
   upsertCommerceConfigArgs,
   upsertGeneratedModuleArgs,
   upsertGenerationTaskArgs,
@@ -160,39 +146,9 @@ describe('session validators boundary', () => {
       sessionId: expect.any(Object),
       version: expect.any(Object),
     })
-    expect(sendChatMessageArgs).toMatchObject({
-      sessionId: expect.any(Object),
-      content: expect.any(Object),
-    })
     expect(setThemeOverrideArgs).toMatchObject({
       sessionId: expect.any(Object),
       themeOverride: expect.any(Object),
-    })
-    expect(annotationFields).toMatchObject({
-      annotationId: expect.any(Object),
-      agentationSessionKey: expect.any(Object),
-      comment: expect.any(Object),
-    })
-    expect(ownedAnnotationArgs).toMatchObject({
-      sessionId: expect.any(Object),
-      annotationId: expect.any(Object),
-    })
-    expect(saveAgentationSessionArgs).toMatchObject({
-      sessionId: expect.any(Object),
-      agentationSessionId: expect.any(Object),
-    })
-    expect(agentationSyncAnnotationArgs).toMatchObject({
-      annotationId: expect.any(Object),
-    })
-    expect(updateAgentationSyncAnnotationArgs).toMatchObject({
-      annotationId: expect.any(Object),
-    })
-    expect(deleteOwnedAnnotationArgs).toMatchObject({
-      sessionId: expect.any(Object),
-      annotationId: expect.any(Object),
-    })
-    expect(upsertCmsConfigArgs).toMatchObject({
-      sessionId: expect.any(Object),
     })
     expect(upsertCommerceConfigArgs).toMatchObject({
       sessionId: expect.any(Object),
@@ -206,19 +162,6 @@ describe('session validators boundary', () => {
     })
     expect(deploymentSlugArgs).toMatchObject({
       slug: expect.any(Object),
-    })
-    expect(extractCmsBindingsArgs).toMatchObject({
-      sessionId: expect.any(Object),
-      html: expect.any(Object),
-    })
-    expect(updateCmsEntryArgs).toMatchObject({
-      sessionId: expect.any(Object),
-      bindingId: expect.any(Object),
-      content: expect.any(Object),
-    })
-    expect(restoreCmsRevisionArgs).toMatchObject({
-      sessionId: expect.any(Object),
-      revisionId: expect.any(Object),
     })
     expect(provisionMedusaTenantArgs).toMatchObject({
       sessionId: expect.any(Object),
@@ -237,19 +180,6 @@ describe('session validators boundary', () => {
     })
     expect(userUsageMetricsArgs).toMatchObject({
       userId: expect.any(Object),
-    })
-    expect(upsertCmsCollectionItemArgs).toMatchObject({
-      sessionId: expect.any(Object),
-      collectionKey: expect.any(Object),
-      fields: expect.any(Object),
-    })
-    expect(insertCmsBindingArgs).toMatchObject({
-      sessionId: expect.any(Object),
-      selector: expect.any(Object),
-      type: expect.any(Object),
-    })
-    expect(listCmsRevisionsArgs).toMatchObject({
-      entryId: expect.any(Object),
     })
     expect(operationalNotificationArgs).toMatchObject({
       sessionId: expect.any(Object),
