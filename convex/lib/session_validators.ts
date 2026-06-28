@@ -34,6 +34,7 @@ export const editType = v.union(
   v.literal('ai_rewrite'),
   v.literal('style'),
   v.literal('image'),
+  v.literal('delete'),
 )
 
 export const medusaProduct = v.object({

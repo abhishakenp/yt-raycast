@@ -8,6 +8,7 @@ import {
   AlignRight,
   Type,
   Loader2,
+  Trash2,
 } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import {
@@ -15,6 +16,17 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '#/components/ui/input-group'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '#/components/ui/alert-dialog'
 
 interface InlineEditToolbarProps {
   isOpen: boolean
@@ -217,6 +229,31 @@ export function InlineEditToolbar({
     }
   }
 
+  const handleDelete = () => {
+    if (!activeElement || isApplying || isForking) return
+    // Commit any pending text edit first
+    onCommitText?.()
+    // Apply display:none via the same style-override mechanism used by
+    // handleApply. The element is hidden (not removed from the DOM) so
+    // the override persists across re-renders via styleOverrides.
+    const sourceAnchor = activeElement.getAttribute('class') ?? ''
+    let occurrenceIndex = 0
+    if (sourceAnchor) {
+      const doc = activeElement.ownerDocument
+      const peers = Array.from(
+        doc.querySelectorAll(`[class="${CSS.escape(sourceAnchor)}"]`),
+      )
+      const at = peers.indexOf(activeElement)
+      occurrenceIndex = at < 0 ? 0 : at
+    }
+    onStyleApply({
+      sourceAnchor,
+      style: 'display: none',
+      occurrenceIndex,
+    })
+    onClose()
+  }
+
   const handleClose = () => {
     if (!isApplying && !isForking) {
       if (activeElement) {
@@ -401,6 +438,38 @@ export function InlineEditToolbar({
       </div>
 
       <div className="flex items-center gap-1">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button
+              type="button"
+              disabled={isApplying || isForking}
+              className={cn(
+                'grid size-7 place-items-center rounded text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+              )}
+              aria-label="Delete element"
+              title="Delete element"
+            >
+              <Trash2 className="size-3.5" />
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this element?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will hide the selected element from the page. You can undo
+                this by reverting the edit.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <button
           type="button"
           onClick={handleApply}
