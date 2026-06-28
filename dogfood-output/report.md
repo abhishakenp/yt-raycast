@@ -13,9 +13,9 @@
 | --------- | ------ |
 | Critical  | 0      |
 | High      | 7      |
-| Medium    | 47     |
+| Medium    | 48     |
 | Low       | 0      |
-| **Total** | **54** |
+| **Total** | **55** |
 
 ## Issues
 
@@ -1675,5 +1675,29 @@ During the mobile navigation test, the HAR captured two separate network request
 3. Click Home from the pricing footer.
 4. Click **View all** and wait for the gallery.
 5. **Observe:** in the network log, `/assets/rocket-transparent.png` appears twice and `/api/sessions/recent` appears three times.
+
+---
+
+#### ISSUE-055: Generate launch loader exposed a cropped/blank dark transition state on mobile
+
+| Field           | Value                                            |
+| --------------- | ------------------------------------------------ |
+| **Severity**    | medium                                           |
+| **Category**    | visual / ux / performance                        |
+| **URL**         | `http://localhost:3000/` → Generate              |
+| **Repro Video** | `dogfood-output/videos/generate-transition.webm` |
+
+**Description:**
+
+The optimistic Generate transition could briefly show an unpolished dark launch state on a 390px mobile viewport. The committed artifact `dogfood-output/screenshots/04-post-click.png` showed the dashboard cockpit with a blank black preview panel before the intro animation appeared, and a later live reproduction showed the `SHIP FAST` launch wordmark cropped far outside the viewport. The top Pricing / Sign in controls were also layered above the launch screen because they used a higher z-index than the overlay.
+
+**Status:** Fixed in this pass. The intro wordmark now uses viewport-bounded responsive sizing, and both the main intro overlay and dashboard/home launch fallbacks sit above the fixed top actions. The dashboard launch `Suspense` boundary also uses a branded full-screen fallback instead of `null`, so the route handoff cannot expose a blank black cockpit while the intro chunk loads. Verification screenshots: `dogfood-output/screenshots/black-loader-fixed-held-700ms.png` and `dogfood-output/screenshots/black-loader-fixed-held-2200ms.png`.
+
+**Repro Steps:**
+
+1. Navigate to `http://localhost:3000/` on a 390px mobile viewport.
+2. Enter a realistic prompt and click Generate.
+3. **Observe before fix:** the transition can briefly show a blank dark dashboard panel or a cropped oversized `SHIP FAST` launch mark.
+4. **Observe after fix:** the held optimistic launch state renders as a bounded branded launch screen with no top-action chrome above it.
 
 ---

@@ -72,8 +72,11 @@ describe('usePromptHomeController submit guard', () => {
     state.navigate.mockResolvedValue(undefined)
     originalFetch = globalThis.fetch
     globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ claimed: false }),
+      ok: false,
+      status: 404,
+      json: async () => ({
+        error: 'Public preview session creation is disabled.',
+      }),
     }) as unknown as typeof globalThis.fetch
     window.localStorage.clear()
     window.sessionStorage.clear()
@@ -111,7 +114,7 @@ describe('usePromptHomeController submit guard', () => {
         'ship-fast:generation-launch:session_double_submit_guard',
       ),
     ).toBe('1')
-  })
+  }, 15_000)
 
   it('does not request public cache replay for private or v2 submissions', async () => {
     const state = getTestState()
@@ -171,6 +174,40 @@ describe('usePromptHomeController submit guard', () => {
     expect(state.navigate).toHaveBeenCalledWith({
       to: '/generate/$sessionId',
       params: { sessionId: 'session_retry_success' },
+    })
+  })
+
+  it('uses the server create route when public preview creation is enabled', async () => {
+    const state = getTestState()
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        sessionId: 'session_server_preview',
+        cached: false,
+      }),
+    } as Response)
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a free public preview website')
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/sessions/create',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+    expect(state.createSession).not.toHaveBeenCalled()
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId',
+      params: { sessionId: 'session_server_preview' },
     })
   })
 

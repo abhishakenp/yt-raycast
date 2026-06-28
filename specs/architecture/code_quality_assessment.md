@@ -6,7 +6,7 @@ Mode: Full Assessment
 
 ## Repository Metrics Dashboard
 
-- **Production Code**: 551,185 lines of TypeScript/JavaScript across app, Convex, packages, and scripts, excluding tests, generated `src/generated` files, local MACP vendor state, and old agent worktrees.
+- **Production Code**: 551,185 lines of TypeScript/JavaScript across app, Convex, packages, and scripts, excluding tests, generated `src/generated` files, and old agent worktrees.
 - **Test Code**: 192 test/spec files by raw repository scan; latest full coverage gate executed 176 configured Vitest test files.
 - **Test Functions**: 1,204 static test declarations; the latest coverage gate executed 1,161 tests in the configured projects.
 - **Documentation**: 2,461 lines across 59 Markdown files.
