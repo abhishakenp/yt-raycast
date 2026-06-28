@@ -22,6 +22,7 @@ import {
   Link as LinkIcon,
   ChevronUp,
   ChevronDown,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import {
@@ -111,14 +112,14 @@ export function InlineEditToolbar({
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>(
     'left',
   )
-  // Which extended panel is open: 'style' | 'typography' | 'link' | null
+  // Which extended panel is open: 'style' | 'typography' | 'link' | 'ai' | null
   const [activePanel, setActivePanel] = useState<
-    'style' | 'typography' | 'link' | null
+    'style' | 'typography' | 'link' | 'ai' | null
   >(null)
   // Keep the last panel mounted during collapse animation so it can animate
   // out instead of vanishing instantly.
   const [displayPanel, setDisplayPanel] = useState<
-    'style' | 'typography' | 'link' | null
+    'style' | 'typography' | 'link' | 'ai' | null
   >(null)
   useEffect(() => {
     if (activePanel) {
@@ -129,6 +130,8 @@ export function InlineEditToolbar({
       return () => clearTimeout(t)
     }
   }, [activePanel])
+  // AI edit prompt text
+  const [aiPrompt, setAiPrompt] = useState('')
   const toolbarRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const originalStyleRef = useRef<string | null>(null)
@@ -755,12 +758,33 @@ export function InlineEditToolbar({
               </AlertDialogContent>
             </AlertDialog>
 
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActivePanel(activePanel === 'ai' ? null : 'ai')
+                  }
+                  className={cn(
+                    'grid size-7 place-items-center rounded transition-colors',
+                    activePanel === 'ai'
+                      ? 'bg-cyan-300/15 text-cyan-200'
+                      : 'text-white/60 hover:bg-white/5 hover:text-white',
+                  )}
+                  aria-label="AI edit"
+                >
+                  <Sparkles className="size-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>AI edit</TooltipContent>
+            </Tooltip>
+
             <button
               type="button"
               onClick={handleApply}
               disabled={isApplying || isForking}
               className={cn(
-                'rounded bg-cyan-300 px-3 py-1 text-xs font-bold text-slate-950 transition-transform hover:-translate-y-px',
+                'flex items-center gap-1.5 rounded bg-cyan-300 px-3 py-1 text-xs font-bold text-slate-950 transition-transform hover:-translate-y-px',
                 'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0',
               )}
             >
@@ -774,6 +798,11 @@ export function InlineEditToolbar({
                   <Loader2 className="size-3 animate-spin" />
                   Saving...
                 </span>
+              ) : activePanel === 'ai' ? (
+                <>
+                  <Sparkles className="size-3" />
+                  Apply
+                </>
               ) : (
                 'Apply'
               )}
@@ -827,6 +856,25 @@ export function InlineEditToolbar({
                 }}
                 onClose={() => setActivePanel(null)}
               />
+            )}
+            {displayPanel === 'ai' && (
+              <div className="flex items-center gap-2 p-2 w-full">
+                <Sparkles className="size-4 shrink-0 text-cyan-300" />
+                <input
+                  type="text"
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleApply()
+                    }
+                  }}
+                  placeholder="Describe a change..."
+                  className="flex-1 rounded-md border border-input bg-transparent px-3 py-1.5 text-sm text-white placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none"
+                  autoFocus
+                />
+              </div>
             )}
           </div>
         </div>
