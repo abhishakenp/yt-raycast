@@ -9,6 +9,12 @@ import {
   Type,
   Loader2,
   Trash2,
+  Undo2,
+  Redo2,
+  SlidersHorizontal,
+  Link as LinkIcon,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import {
@@ -27,6 +33,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '#/components/ui/alert-dialog'
+import { StyleControlsPanel } from './StyleControlsPanel'
+import { TypographyControlsPanel } from './TypographyControlsPanel'
+import { LinkEditPopover } from './LinkEditPopover'
 
 interface InlineEditToolbarProps {
   isOpen: boolean
@@ -44,6 +53,22 @@ interface InlineEditToolbarProps {
   onClose: () => void
   isApplying?: boolean
   isForking?: boolean
+  /** Undo/redo */
+  canUndo?: boolean
+  canRedo?: boolean
+  onUndo?: () => void
+  onRedo?: () => void
+  /** Link editing */
+  onLinkEdit?: (payload: {
+    oldHref: string
+    newHref: string
+    occurrenceIndex: number
+  }) => void
+  /** Move/reorder element in Stack */
+  onMoveUp?: () => void
+  onMoveDown?: () => void
+  canMoveUp?: boolean
+  canMoveDown?: boolean
 }
 
 export function InlineEditToolbar({
@@ -55,6 +80,15 @@ export function InlineEditToolbar({
   onClose,
   isApplying = false,
   isForking = false,
+  canUndo = false,
+  canRedo = false,
+  onUndo,
+  onRedo,
+  onLinkEdit,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp = false,
+  canMoveDown = false,
 }: InlineEditToolbarProps) {
   const [fontSize, setFontSize] = useState('16')
   const [fontSizeUnit, setFontSizeUnit] = useState('px')
@@ -64,6 +98,10 @@ export function InlineEditToolbar({
   const [alignment, setAlignment] = useState<'left' | 'center' | 'right'>(
     'left',
   )
+  // Which extended panel is open: 'style' | 'typography' | 'link' | null
+  const [activePanel, setActivePanel] = useState<
+    'style' | 'typography' | 'link' | null
+  >(null)
   const toolbarRef = useRef<HTMLDivElement>(null)
   const originalStyleRef = useRef<string | null>(null)
   // Track whether the initial computed-style read is complete. The style-
@@ -81,6 +119,7 @@ export function InlineEditToolbar({
     styleReadCompleteRef.current = false
     userModifiedRef.current = false
     originalStyleRef.current = activeElement.getAttribute('style')
+    setActivePanel(null)
 
     const computed = window.getComputedStyle(activeElement)
     // Parse the computed font-size into numeric value + unit. The browser
@@ -284,228 +323,387 @@ export function InlineEditToolbar({
     zIndex: 9999,
   }
 
+  const isLinkElement = activeElement?.tagName.toLowerCase() === 'a'
+
   return (
-    <div
-      ref={toolbarRef}
-      className="inline-edit-toolbar rounded-lg border border-white/10 bg-[#0b0d14]/95 shadow-2xl backdrop-blur-xl p-2 flex items-center gap-2"
-      style={toolbarStyle}
-      onMouseDown={preventFocusSteal}
-    >
-      <InputGroup className="h-7 max-w-32">
-        <InputGroupAddon>
-          <Type className="size-3.5" />
-        </InputGroupAddon>
-        <InputGroupInput
-          type="number"
-          value={fontSize}
-          onChange={(e) => {
-            markUserModified()
-            setFontSize(e.target.value)
-          }}
-          disabled={isApplying || isForking}
-          min="1"
-          step="1"
-          className="text-xs text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-        />
-        <InputGroupAddon align="inline-end">
-          <select
-            value={fontSizeUnit}
+    <div style={toolbarStyle} className="flex flex-col gap-1">
+      <div
+        ref={toolbarRef}
+        className="inline-edit-toolbar rounded-lg border border-white/10 bg-[#0b0d14]/95 shadow-2xl backdrop-blur-xl p-2 flex items-center gap-2"
+        onMouseDown={preventFocusSteal}
+      >
+        <InputGroup className="h-7 max-w-32">
+          <InputGroupAddon>
+            <Type className="size-3.5" />
+          </InputGroupAddon>
+          <InputGroupInput
+            type="number"
+            value={fontSize}
             onChange={(e) => {
               markUserModified()
-              setFontSizeUnit(e.target.value)
+              setFontSize(e.target.value)
             }}
-            onClick={(e) => e.stopPropagation()}
             disabled={isApplying || isForking}
-            className="bg-transparent text-xs outline-none cursor-pointer"
+            min="1"
+            step="1"
+            className="text-xs text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+          <InputGroupAddon align="inline-end">
+            <select
+              value={fontSizeUnit}
+              onChange={(e) => {
+                markUserModified()
+                setFontSizeUnit(e.target.value)
+              }}
+              onClick={(e) => e.stopPropagation()}
+              disabled={isApplying || isForking}
+              className="bg-transparent text-xs outline-none cursor-pointer"
+            >
+              <option value="px">px</option>
+              <option value="em">em</option>
+              <option value="rem">rem</option>
+              <option value="pt">pt</option>
+              <option value="%">%</option>
+            </select>
+          </InputGroupAddon>
+        </InputGroup>
+
+        <div className="flex items-center gap-1 border-r border-white/10 pr-2">
+          <button
+            type="button"
+            onClick={() => {
+              markUserModified()
+              setIsBold(!isBold)
+            }}
+            disabled={isApplying || isForking}
+            className={cn(
+              'grid size-7 place-items-center rounded transition-colors',
+              isBold
+                ? 'bg-cyan-300/20 text-cyan-100'
+                : 'text-white/60 hover:bg-white/5 hover:text-white',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+            aria-label="Bold"
           >
-            <option value="px">px</option>
-            <option value="em">em</option>
-            <option value="rem">rem</option>
-            <option value="pt">pt</option>
-            <option value="%">%</option>
-          </select>
-        </InputGroupAddon>
-      </InputGroup>
+            <Bold className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              markUserModified()
+              setIsItalic(!isItalic)
+            }}
+            disabled={isApplying || isForking}
+            className={cn(
+              'grid size-7 place-items-center rounded transition-colors',
+              isItalic
+                ? 'bg-cyan-300/20 text-cyan-100'
+                : 'text-white/60 hover:bg-white/5 hover:text-white',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+            aria-label="Italic"
+          >
+            <Italic className="size-3.5" />
+          </button>
+        </div>
 
-      <div className="flex items-center gap-1 border-r border-white/10 pr-2">
-        <button
-          type="button"
-          onClick={() => {
-            markUserModified()
-            setIsBold(!isBold)
-          }}
-          disabled={isApplying || isForking}
-          className={cn(
-            'grid size-7 place-items-center rounded transition-colors',
-            isBold
-              ? 'bg-cyan-300/20 text-cyan-100'
-              : 'text-white/60 hover:bg-white/5 hover:text-white',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-          )}
-          aria-label="Bold"
-        >
-          <Bold className="size-3.5" />
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            markUserModified()
-            setIsItalic(!isItalic)
-          }}
-          disabled={isApplying || isForking}
-          className={cn(
-            'grid size-7 place-items-center rounded transition-colors',
-            isItalic
-              ? 'bg-cyan-300/20 text-cyan-100'
-              : 'text-white/60 hover:bg-white/5 hover:text-white',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-          )}
-          aria-label="Italic"
-        >
-          <Italic className="size-3.5" />
-        </button>
-      </div>
+        <div className="flex items-center gap-1 border-r border-white/10 pr-2">
+          <input
+            type="color"
+            value={color}
+            onChange={(e) => {
+              markUserModified()
+              setColor(e.target.value)
+            }}
+            disabled={isApplying || isForking}
+            className="size-7 rounded cursor-pointer bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Text color"
+          />
+        </div>
 
-      <div className="flex items-center gap-1 border-r border-white/10 pr-2">
-        <input
-          type="color"
-          value={color}
-          onChange={(e) => {
-            markUserModified()
-            setColor(e.target.value)
-          }}
-          disabled={isApplying || isForking}
-          className="size-7 rounded cursor-pointer bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Text color"
-        />
-      </div>
+        <div className="flex items-center gap-1 border-r border-white/10 pr-2">
+          <button
+            type="button"
+            onClick={() => {
+              markUserModified()
+              setAlignment('left')
+            }}
+            disabled={isApplying || isForking}
+            className={cn(
+              'grid size-7 place-items-center rounded transition-colors',
+              alignment === 'left'
+                ? 'bg-cyan-300/20 text-cyan-100'
+                : 'text-white/60 hover:bg-white/5 hover:text-white',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+            aria-label="Align left"
+          >
+            <AlignLeft className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              markUserModified()
+              setAlignment('center')
+            }}
+            disabled={isApplying || isForking}
+            className={cn(
+              'grid size-7 place-items-center rounded transition-colors',
+              alignment === 'center'
+                ? 'bg-cyan-300/20 text-cyan-100'
+                : 'text-white/60 hover:bg-white/5 hover:text-white',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+            aria-label="Align center"
+          >
+            <AlignCenter className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              markUserModified()
+              setAlignment('right')
+            }}
+            disabled={isApplying || isForking}
+            className={cn(
+              'grid size-7 place-items-center rounded transition-colors',
+              alignment === 'right'
+                ? 'bg-cyan-300/20 text-cyan-100'
+                : 'text-white/60 hover:bg-white/5 hover:text-white',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+            aria-label="Align right"
+          >
+            <AlignRight className="size-3.5" />
+          </button>
+        </div>
 
-      <div className="flex items-center gap-1 border-r border-white/10 pr-2">
-        <button
-          type="button"
-          onClick={() => {
-            markUserModified()
-            setAlignment('left')
-          }}
-          disabled={isApplying || isForking}
-          className={cn(
-            'grid size-7 place-items-center rounded transition-colors',
-            alignment === 'left'
-              ? 'bg-cyan-300/20 text-cyan-100'
-              : 'text-white/60 hover:bg-white/5 hover:text-white',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-          )}
-          aria-label="Align left"
-        >
-          <AlignLeft className="size-3.5" />
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            markUserModified()
-            setAlignment('center')
-          }}
-          disabled={isApplying || isForking}
-          className={cn(
-            'grid size-7 place-items-center rounded transition-colors',
-            alignment === 'center'
-              ? 'bg-cyan-300/20 text-cyan-100'
-              : 'text-white/60 hover:bg-white/5 hover:text-white',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-          )}
-          aria-label="Align center"
-        >
-          <AlignCenter className="size-3.5" />
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            markUserModified()
-            setAlignment('right')
-          }}
-          disabled={isApplying || isForking}
-          className={cn(
-            'grid size-7 place-items-center rounded transition-colors',
-            alignment === 'right'
-              ? 'bg-cyan-300/20 text-cyan-100'
-              : 'text-white/60 hover:bg-white/5 hover:text-white',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-          )}
-          aria-label="Align right"
-        >
-          <AlignRight className="size-3.5" />
-        </button>
-      </div>
-
-      <div className="flex items-center gap-1">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
+        {/* Extended controls: Style, Typography, Link, Move, Undo/Redo */}
+        <div className="flex items-center gap-1 border-r border-white/10 pr-2">
+          <button
+            type="button"
+            onClick={() =>
+              setActivePanel(activePanel === 'style' ? null : 'style')
+            }
+            disabled={isApplying || isForking}
+            className={cn(
+              'grid size-7 place-items-center rounded transition-colors',
+              activePanel === 'style'
+                ? 'bg-cyan-300/20 text-cyan-100'
+                : 'text-white/60 hover:bg-white/5 hover:text-white',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+            aria-label="Style controls"
+            title="Spacing, border, background, size"
+          >
+            <SlidersHorizontal className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setActivePanel(activePanel === 'typography' ? null : 'typography')
+            }
+            disabled={isApplying || isForking}
+            className={cn(
+              'grid size-7 place-items-center rounded transition-colors',
+              activePanel === 'typography'
+                ? 'bg-cyan-300/20 text-cyan-100'
+                : 'text-white/60 hover:bg-white/5 hover:text-white',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+            aria-label="Typography controls"
+            title="Font family, line height, spacing, transform"
+          >
+            <Type className="size-3.5" />
+          </button>
+          {isLinkElement && onLinkEdit && (
             <button
               type="button"
+              onClick={() =>
+                setActivePanel(activePanel === 'link' ? null : 'link')
+              }
               disabled={isApplying || isForking}
               className={cn(
-                'grid size-7 place-items-center rounded text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300',
+                'grid size-7 place-items-center rounded transition-colors',
+                activePanel === 'link'
+                  ? 'bg-cyan-300/20 text-cyan-100'
+                  : 'text-white/60 hover:bg-white/5 hover:text-white',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
               )}
-              aria-label="Delete element"
-              title="Delete element"
+              aria-label="Edit link"
+              title="Edit link URL and text"
             >
-              <Trash2 className="size-3.5" />
+              <LinkIcon className="size-3.5" />
             </button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete this element?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will hide the selected element from the page. You can undo
-                this by reverting the edit.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          )}
+          {(onMoveUp || onMoveDown) && (
+            <>
+              <button
+                type="button"
+                onClick={onMoveUp}
+                disabled={isApplying || isForking || !canMoveUp}
+                className={cn(
+                  'grid size-7 place-items-center rounded transition-colors',
+                  'text-white/60 hover:bg-white/5 hover:text-white',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                )}
+                aria-label="Move up"
+                title="Move element up"
+              >
+                <ChevronUp className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={onMoveDown}
+                disabled={isApplying || isForking || !canMoveDown}
+                className={cn(
+                  'grid size-7 place-items-center rounded transition-colors',
+                  'text-white/60 hover:bg-white/5 hover:text-white',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                )}
+                aria-label="Move down"
+                title="Move element down"
+              >
+                <ChevronDown className="size-3.5" />
+              </button>
+            </>
+          )}
+          {onUndo && (
+            <button
+              type="button"
+              onClick={onUndo}
+              disabled={isApplying || isForking || !canUndo}
+              className={cn(
+                'grid size-7 place-items-center rounded transition-colors',
+                'text-white/60 hover:bg-white/5 hover:text-white',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+              )}
+              aria-label="Undo"
+              title="Undo last edit"
+            >
+              <Undo2 className="size-3.5" />
+            </button>
+          )}
+          {onRedo && (
+            <button
+              type="button"
+              onClick={onRedo}
+              disabled={isApplying || isForking || !canRedo}
+              className={cn(
+                'grid size-7 place-items-center rounded transition-colors',
+                'text-white/60 hover:bg-white/5 hover:text-white',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+              )}
+              aria-label="Redo"
+              title="Redo last undone edit"
+            >
+              <Redo2 className="size-3.5" />
+            </button>
+          )}
+        </div>
 
-        <button
-          type="button"
-          onClick={handleApply}
-          disabled={isApplying || isForking}
-          className={cn(
-            'rounded bg-cyan-300 px-3 py-1 text-xs font-bold text-slate-950 transition-transform hover:-translate-y-px',
-            'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0',
-          )}
-        >
-          {isForking ? (
-            <span className="flex items-center gap-1">
-              <Loader2 className="size-3 animate-spin" />
-              Forking...
-            </span>
-          ) : isApplying ? (
-            <span className="flex items-center gap-1">
-              <Loader2 className="size-3 animate-spin" />
-              Saving...
-            </span>
-          ) : (
-            'Apply'
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={handleClose}
-          disabled={isApplying || isForking}
-          className={cn(
-            'grid size-7 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-          )}
-          aria-label="Close"
-        >
-          <X className="size-3.5" />
-        </button>
+        <div className="flex items-center gap-1">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                type="button"
+                disabled={isApplying || isForking}
+                className={cn(
+                  'grid size-7 place-items-center rounded text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                )}
+                aria-label="Delete element"
+                title="Delete element"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this element?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will hide the selected element from the page. You can
+                  undo this by reverting the edit.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <button
+            type="button"
+            onClick={handleApply}
+            disabled={isApplying || isForking}
+            className={cn(
+              'rounded bg-cyan-300 px-3 py-1 text-xs font-bold text-slate-950 transition-transform hover:-translate-y-px',
+              'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0',
+            )}
+          >
+            {isForking ? (
+              <span className="flex items-center gap-1">
+                <Loader2 className="size-3 animate-spin" />
+                Forking...
+              </span>
+            ) : isApplying ? (
+              <span className="flex items-center gap-1">
+                <Loader2 className="size-3 animate-spin" />
+                Saving...
+              </span>
+            ) : (
+              'Apply'
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isApplying || isForking}
+            className={cn(
+              'grid size-7 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+            aria-label="Close"
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
       </div>
+
+      {/* Extended panels rendered below the toolbar */}
+      {activePanel === 'style' && (
+        <StyleControlsPanel
+          activeElement={activeElement}
+          onApply={(payload) => {
+            onStyleApply(payload)
+            setActivePanel(null)
+          }}
+          onClose={() => setActivePanel(null)}
+        />
+      )}
+      {activePanel === 'typography' && (
+        <TypographyControlsPanel
+          activeElement={activeElement}
+          onApply={(payload) => {
+            onStyleApply(payload)
+            setActivePanel(null)
+          }}
+          onClose={() => setActivePanel(null)}
+        />
+      )}
+      {activePanel === 'link' && isLinkElement && onLinkEdit && (
+        <LinkEditPopover
+          activeElement={activeElement as HTMLAnchorElement}
+          onApply={(payload) => {
+            onLinkEdit(payload)
+            setActivePanel(null)
+          }}
+          onClose={() => setActivePanel(null)}
+        />
+      )}
     </div>
   )
 }
