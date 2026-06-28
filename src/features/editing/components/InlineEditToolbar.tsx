@@ -351,7 +351,7 @@ export function InlineEditToolbar({
   // those should NOT close the toolbar.
   useEffect(() => {
     if (!isOpen || isApplying || isForking) return
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       const target = e.target as HTMLElement
       const isInWrapper =
         (wrapperRef.current && wrapperRef.current.contains(target)) ||
@@ -372,7 +372,11 @@ export function InlineEditToolbar({
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
   }, [isOpen, onClose, activeElement, isApplying, isForking])
 
   // Close on escape
@@ -511,14 +515,18 @@ export function InlineEditToolbar({
           wrapperRef.current = node
           refs.setFloating(node)
         }}
-        style={{ ...floatingStyles, zIndex: 2147483647 }}
-        className="inline-edit-toolbar flex flex-col rounded-lg border border-white/10 bg-[#0b0d14]/95 shadow-2xl backdrop-blur-xl overflow-hidden"
+        style={{
+          ...floatingStyles,
+          zIndex: 2147483647,
+          touchAction: 'manipulation',
+        }}
+        className="inline-edit-toolbar flex max-w-[calc(100vw-16px)] flex-col rounded-lg border border-white/10 bg-[#0b0d14]/95 shadow-2xl backdrop-blur-xl overflow-hidden"
         data-inline-edit-wrapper="true"
         onMouseDown={preventFocusSteal}
       >
         <div
           ref={toolbarRef}
-          className="p-2 flex items-center gap-2 border-b border-white/10"
+          className="p-2 flex items-center gap-2 overflow-x-auto border-b border-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {isTextElement && (
             <InputGroup className="h-7 max-w-32">
