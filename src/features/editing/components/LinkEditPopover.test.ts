@@ -80,6 +80,44 @@ describe('LinkEditPopover', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
+  it('open-in-new-tab toggle adds target=_blank and rel attributes', () => {
+    renderPopover(activeElement)
+    const toggle = document.querySelector(
+      'button[aria-label="Open in new tab"]',
+    ) as HTMLButtonElement
+    expect(toggle).toBeTruthy()
+    fireEvent.click(toggle)
+    expect(activeElement.getAttribute('target')).toBe('_blank')
+    const rel = activeElement.getAttribute('rel') ?? ''
+    expect(rel.split(/\s+/)).toContain('noopener')
+    expect(rel.split(/\s+/)).toContain('noreferrer')
+  })
+
+  it('toggle off removes target and rel attributes', () => {
+    activeElement.setAttribute('target', '_blank')
+    activeElement.setAttribute('rel', 'noopener noreferrer')
+    renderPopover(activeElement)
+    const toggle = document.querySelector(
+      'button[aria-label="Open in new tab"]',
+    ) as HTMLButtonElement
+    // First click turns it off
+    fireEvent.click(toggle)
+    expect(activeElement.getAttribute('target')).toBeNull()
+    expect(activeElement.getAttribute('rel')).toBeNull()
+  })
+
+  it('noindex toggle appends nofollow to existing rel', () => {
+    activeElement.setAttribute('rel', 'noopener noreferrer')
+    renderPopover(activeElement)
+    const toggle = document.querySelector(
+      'button[aria-label="Noindex"]',
+    ) as HTMLButtonElement
+    fireEvent.click(toggle)
+    const rel = activeElement.getAttribute('rel') ?? ''
+    expect(rel.split(/\s+/)).toContain('nofollow')
+    expect(rel.split(/\s+/)).toContain('noopener')
+  })
+
   it('occurrenceIndex is correct for multiple same-href links', () => {
     const link2 = document.createElement('a')
     link2.setAttribute('href', '/old-path')

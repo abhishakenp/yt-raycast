@@ -26,6 +26,8 @@ import {
   ChevronDown,
   Sparkles,
   Image as ImageIcon,
+  Copy,
+  ClipboardPaste,
 } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import {
@@ -98,6 +100,10 @@ interface InlineEditToolbarProps {
   sectionError?: string
 }
 
+// Module-level clipboard for style copy/paste. Persists across element
+// selections so a style copied from one element can be pasted onto another.
+let copiedStyle: string | null = null
+
 export function InlineEditToolbar({
   isOpen,
   anchorRect,
@@ -153,6 +159,13 @@ export function InlineEditToolbar({
   }, [activePanel])
   // AI edit prompt text
   const [aiPrompt, setAiPrompt] = useState('')
+  // Whether a style has been copied into the module-level clipboard. Drives
+  // the disabled state of the Paste style button. Initialized from the
+  // module-level clipboard so a style copied in a previous toolbar session
+  // (or before this mount) can still be pasted.
+  const [hasCopiedStyle, setHasCopiedStyle] = useState(
+    () => copiedStyle !== null,
+  )
   const toolbarRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const originalStyleRef = useRef<string | null>(null)
@@ -497,6 +510,21 @@ export function InlineEditToolbar({
   // applying default values before the computed styles are read.
   const markUserModified = () => {
     userModifiedRef.current = true
+  }
+
+  // Copy the current element's inline style into the module-level clipboard.
+  const handleCopyStyle = () => {
+    if (!activeElement) return
+    copiedStyle = activeElement.getAttribute('style')
+    setHasCopiedStyle(true)
+  }
+
+  // Paste the stored style string onto the current element and mark it as
+  // user-modified so the change is committed on Apply.
+  const handlePasteStyle = () => {
+    if (!activeElement || copiedStyle === null) return
+    activeElement.setAttribute('style', copiedStyle)
+    markUserModified()
   }
 
   if (!isOpen || !anchorRect || !activeElement) return null
@@ -858,6 +886,44 @@ export function InlineEditToolbar({
                 </Tooltip>
               </>
             )}
+            <div className="flex items-center gap-1 border-r border-white/10 pr-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={handleCopyStyle}
+                    disabled={isApplying || isForking}
+                    className={cn(
+                      'grid size-7 place-items-center rounded transition-colors',
+                      'text-white/60 hover:bg-white/5 hover:text-white',
+                      'disabled:opacity-50 disabled:cursor-not-allowed',
+                    )}
+                    aria-label="Copy style"
+                  >
+                    <Copy className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Copy style</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={handlePasteStyle}
+                    disabled={isApplying || isForking || !hasCopiedStyle}
+                    className={cn(
+                      'grid size-7 place-items-center rounded transition-colors',
+                      'text-white/60 hover:bg-white/5 hover:text-white',
+                      'disabled:opacity-50 disabled:cursor-not-allowed',
+                    )}
+                    aria-label="Paste style"
+                  >
+                    <ClipboardPaste className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Paste style</TooltipContent>
+              </Tooltip>
+            </div>
             {onUndo && (
               <Tooltip>
                 <TooltipTrigger asChild>
