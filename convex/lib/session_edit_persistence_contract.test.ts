@@ -516,3 +516,114 @@ describe('inline edit persistence contract (real engine fixtures)', () => {
     expect(remainingOldCount).toBe(beforeCount - 1)
   })
 })
+
+describe('text edit silent-persistence-failure guard', () => {
+  // ─────────────────────────────────────────────────────────────────────
+  // Source-level structural assertion: the isTextPatchEdit branch in
+  // applySessionEdit MUST check artifactSnapshot.openUiReplaced and throw
+  // ConvexError with code TEXT_NOT_FOUND when the source patch failed.
+  // This guards against the silent-persistence regression where an edit
+  // appears to succeed (a new preview is created) but the source is left
+  // unpatched, so the edit vanishes on reload.
+  // ─────────────────────────────────────────────────────────────────────
+
+  it('isTextPatchEdit branch checks openUiReplaced and throws TEXT_NOT_FOUND', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'convex/lib/session_edit_mutation_helpers.ts'),
+      'utf-8',
+    )
+
+    // Locate the isTextPatchEdit branch.
+    const branchStart = source.indexOf('} else if (isTextPatchEdit) {')
+    expect(branchStart).toBeGreaterThan(-1)
+
+    // The branch ends at the next "} else {".
+    const branchEnd = source.indexOf('} else {', branchStart)
+    expect(branchEnd).toBeGreaterThan(branchStart)
+    const branch = source.slice(branchStart, branchEnd)
+
+    // Must check openUiReplaced.
+    expect(branch).toContain('if (!artifactSnapshot.openUiReplaced)')
+
+    // Must throw ConvexError with TEXT_NOT_FOUND code.
+    expect(branch).toContain('throw new ConvexError')
+    expect(branch).toContain("code: 'TEXT_NOT_FOUND'")
+  })
+
+  it('isAiRewriteTextPatchEdit branch is NOT changed (no openUiReplaced check)', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'convex/lib/session_edit_mutation_helpers.ts'),
+      'utf-8',
+    )
+
+    const branchStart = source.indexOf('} else if (isAiRewriteTextPatchEdit) {')
+    expect(branchStart).toBeGreaterThan(-1)
+    const branchEnd = source.indexOf(
+      '} else if (isTextPatchEdit) {',
+      branchStart,
+    )
+    expect(branchEnd).toBeGreaterThan(branchStart)
+    const branch = source.slice(branchStart, branchEnd)
+
+    // The AI rewrite branch must NOT have the openUiReplaced guard —
+    // it's a separate flow.
+    expect(branch).not.toContain('openUiReplaced')
+  })
+
+  it('sourceAlreadyPatched branch is NOT changed (no openUiReplaced check)', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'convex/lib/session_edit_mutation_helpers.ts'),
+      'utf-8',
+    )
+
+    const branchStart = source.indexOf('if (sourceAlreadyPatched) {')
+    expect(branchStart).toBeGreaterThan(-1)
+    const branchEnd = source.indexOf(
+      '} else if (isAiRewriteTextPatchEdit) {',
+      branchStart,
+    )
+    expect(branchEnd).toBeGreaterThan(branchStart)
+    const branch = source.slice(branchStart, branchEnd)
+
+    // The sourceAlreadyPatched branch correctly skips the check.
+    expect(branch).not.toContain('openUiReplaced')
+  })
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Behavioral test: a text edit whose beforeText is NOT present in the
+  // OpenUI source must throw (rather than silently creating an unpatched
+  // preview). This is the user-facing contract of the fix.
+  // ─────────────────────────────────────────────────────────────────────
+
+  it('text edit with beforeText not in source throws TEXT_NOT_FOUND instead of silently persisting', async () => {
+    const t = sessionEditContractTest()
+    const { sessionId, source } = await createReadySessionWithFixture(
+      t,
+      'food-blog',
+      'food blog site',
+    )
+
+    // A string that definitely does NOT appear in the real source.
+    const absentText = 'ZZZ_THIS_TEXT_DOES_NOT_EXIST_IN_SOURCE_ZZZ'
+    expect(source).not.toContain(absentText)
+
+    await expect(
+      t.mutation(api.sessions.createEdit, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'text',
+        targetLabel: 'Hero headline',
+        beforeText: absentText,
+        afterText: 'Replacement That Should Never Be Saved',
+      }),
+    ).rejects.toThrow(/TEXT_NOT_FOUND/)
+
+    // No new preview should have been created with the unpatched source —
+    // the source must be unchanged.
+    const { source: reloadedSource } = await reloadAndRender(t, sessionId)
+    expect(reloadedSource).not.toContain(
+      'Replacement That Should Never Be Saved',
+    )
+    expect(reloadedSource).toBe(source)
+  })
+})

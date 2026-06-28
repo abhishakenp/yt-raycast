@@ -321,6 +321,13 @@ export function useTextEdit(
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === ' ' && activeEditRef.current) {
+        // Prevent the button's native Space activation (which fires a click on
+        // keyup and doesn't insert a space character). Manually insert the space
+        // so the user can type spaces in button/link text.
+        e.preventDefault()
+        document.execCommand('insertText', false, ' ')
+      }
       if (e.key === 'Enter' && !e.shiftKey) {
         // Enter commits the text edit (same as clicking Save/Apply).
         e.preventDefault()
@@ -331,14 +338,54 @@ export function useTextEdit(
       }
     }
 
+    const handleBeforeInput = (e: InputEvent) => {
+      const active = activeEditRef.current
+      if (!active || !active.lockedChildren) return
+      const sel = window.getSelection()
+      if (!sel || !sel.isCollapsed) return
+      const range = sel.getRangeAt(0)
+      const startContainer = range.startContainer
+      const offset = range.startOffset
+
+      let nodeToDelete: Node | null = null
+      if (e.inputType === 'deleteContentBackward') {
+        if (startContainer.nodeType === Node.TEXT_NODE) {
+          if (offset === 0) {
+            nodeToDelete = startContainer.previousSibling
+          }
+        } else if (startContainer.nodeType === Node.ELEMENT_NODE) {
+          nodeToDelete =
+            (startContainer as HTMLElement).childNodes[offset - 1] ?? null
+        }
+      } else if (e.inputType === 'deleteContentForward') {
+        if (startContainer.nodeType === Node.TEXT_NODE) {
+          if (offset === (startContainer.textContent ?? '').length) {
+            nodeToDelete = startContainer.nextSibling
+          }
+        } else if (startContainer.nodeType === Node.ELEMENT_NODE) {
+          nodeToDelete =
+            (startContainer as HTMLElement).childNodes[offset] ?? null
+        }
+      }
+
+      if (
+        nodeToDelete &&
+        active.lockedChildren.some((locked) => locked === nodeToDelete)
+      ) {
+        e.preventDefault()
+      }
+    }
+
     container.addEventListener('click', handleClick)
     container.addEventListener('blur', handleBlur, true)
     container.addEventListener('keydown', handleKeyDown)
+    container.addEventListener('beforeinput', handleBeforeInput)
 
     return () => {
       container.removeEventListener('click', handleClick)
       container.removeEventListener('blur', handleBlur, true)
       container.removeEventListener('keydown', handleKeyDown)
+      container.removeEventListener('beforeinput', handleBeforeInput)
       if (blurRafRef.current !== null) {
         cancelAnimationFrame(blurRafRef.current)
         blurRafRef.current = null
