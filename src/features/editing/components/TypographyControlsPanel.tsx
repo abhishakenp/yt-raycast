@@ -122,7 +122,7 @@ export function TypographyControlsPanel({
   }
 
   return (
-    <div className="rounded-lg border border-white/10 bg-[#0b0d14]/95 shadow-2xl backdrop-blur-xl p-2 flex flex-col gap-2 w-[300px]">
+    <div className="rounded-lg border border-white/10 bg-[#0b0d14]/95 shadow-2xl backdrop-blur-xl p-2 flex flex-col gap-2 w-full min-w-[280px]">
       <div className="flex items-center gap-1.5 border-b border-white/10 pb-2">
         <Type className="size-3.5 text-cyan-300" />
         <span className="text-xs font-medium text-white/60">Typography</span>

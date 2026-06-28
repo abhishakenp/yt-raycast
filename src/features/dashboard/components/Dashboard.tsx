@@ -2226,6 +2226,10 @@ export function Dashboard({
         onDelete={handleSectionDelete}
         onMoveUp={handleSectionMoveUp}
         onMoveDown={handleSectionMoveDown}
+        onUndo={undoRedo.undo}
+        onRedo={undoRedo.redo}
+        canUndo={undoRedo.canUndo}
+        canRedo={undoRedo.canRedo}
         isSubmitting={isSectionEditing}
         error={sectionEditError}
       />
