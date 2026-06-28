@@ -355,6 +355,45 @@ export function useTextEdit(
                 )
               ) {
                 e.preventDefault()
+              } else if (
+                // Chrome quirk: when a text node adjacent to a
+                // contenteditable=false element is emptied via Backspace,
+                // Chrome may also delete the contenteditable=false element.
+                // Prevent this by intercepting the deletion when the text
+                // node has exactly 1 character left and the adjacent node
+                // is a locked child. Manually clear the text node instead.
+                range.startContainer.nodeType === Node.TEXT_NODE &&
+                active.lockedChildren.length > 0
+              ) {
+                const textNode = range.startContainer as Text
+                const textLen = textNode.textContent?.length ?? 0
+                if (
+                  e.key === 'Backspace' &&
+                  textLen === 1 &&
+                  range.startOffset === 1
+                ) {
+                  const prev = textNode.previousSibling
+                  if (prev && active.lockedChildren.some((l) => l === prev)) {
+                    e.preventDefault()
+                    textNode.nodeValue = ''
+                    // Collapse selection to start of the now-empty text node
+                    const newRange = document.createRange()
+                    newRange.setStart(textNode, 0)
+                    newRange.collapse(true)
+                    sel.removeAllRanges()
+                    sel.addRange(newRange)
+                  }
+                } else if (
+                  e.key === 'Delete' &&
+                  textLen === 1 &&
+                  range.startOffset === 0
+                ) {
+                  const next = textNode.nextSibling
+                  if (next && active.lockedChildren.some((l) => l === next)) {
+                    e.preventDefault()
+                    textNode.nodeValue = ''
+                  }
+                }
               }
             } else {
               // Non-collapsed selection: check if the selection range

@@ -1745,3 +1745,67 @@ describe('revertTextPreservingIcons', () => {
     expect(p.childNodes.length).toBe(1)
   })
 })
+
+// ─── Last-character deletion: Chrome SVG quirk ──────────────────────────
+// When a text node adjacent to a contenteditable=false SVG has exactly 1
+// character left and the user presses Backspace, Chrome may delete both the
+// character AND the SVG. The keydown handler must intercept this and manually
+// clear the text node instead.
+
+describe('last-character deletion preserves SVG', () => {
+  it('shouldPreventLockedDeletion does NOT catch offset=1 in 1-char text node', () => {
+    // This documents WHY we need the extra Chrome quirk guard:
+    // shouldPreventLockedDeletion only checks offset===0 for text nodes,
+    // so offset=1 (deleting the last char) is NOT caught.
+    const btn = document.createElement('button')
+    const svg = document.createElement('svg')
+    btn.appendChild(svg)
+    const text = document.createTextNode('g')
+    btn.appendChild(text)
+
+    const result = shouldPreventLockedDeletion(
+      'deleteContentBackward',
+      text,
+      1, // offset is 1 (caret after "g"), not 0
+      [svg],
+    )
+    expect(result).toBe(false)
+  })
+
+  it('manual text node clearing preserves SVG', () => {
+    // Simulate what the keydown handler does: manually clear the text node
+    // instead of letting Chrome's Backspace delete both text and SVG.
+    const btn = document.createElement('button')
+    const svg = document.createElement('svg')
+    svg.setAttribute('contenteditable', 'false')
+    btn.appendChild(svg)
+    const text = document.createTextNode('g')
+    btn.appendChild(text)
+
+    // Simulate the fix: manually clear the text node
+    text.nodeValue = ''
+
+    expect(btn.querySelector('svg')).not.toBeNull()
+    expect(btn.childNodes.length).toBe(2) // svg + empty text node
+    expect(text.nodeValue).toBe('')
+  })
+
+  it('shouldPreventLockedDeletion catches offset=0 in empty text node (second Backspace)', () => {
+    // After the text node is emptied, if the user presses Backspace again,
+    // shouldPreventLockedDeletion should catch it because offset=0 and
+    // previousSibling is the locked SVG.
+    const btn = document.createElement('button')
+    const svg = document.createElement('svg')
+    btn.appendChild(svg)
+    const text = document.createTextNode('')
+    btn.appendChild(text)
+
+    const result = shouldPreventLockedDeletion(
+      'deleteContentBackward',
+      text,
+      0,
+      [svg],
+    )
+    expect(result).toBe(true)
+  })
+})
