@@ -167,4 +167,47 @@ describe('edit-helpers (shared)', () => {
     expect(result.replaced).toBe(true)
     expect(result.html).toBe('<p>&ldquo;Hi&#8221;</p><p>Hello</p>')
   })
+
+  it('does NOT match text inside HTML attributes (alt, title, etc.)', () => {
+    // The topbar title "Brand" also appears as an alt attribute on the hero
+    // image. The edit must replace the visible text, not the attribute.
+    const html =
+      '<nav><h1>Brand</h1></nav><section><img alt="Brand" src="hero.png"></section>'
+
+    const result = applyPreviewTextEdit(html, 'Brand', 'NewCo', 0)
+
+    expect(result.replaced).toBe(true)
+    // The visible <h1> text should change, the alt attribute should NOT.
+    expect(result.html).toBe(
+      '<nav><h1>NewCo</h1></nav><section><img alt="Brand" src="hero.png"></section>',
+    )
+  })
+
+  it('does NOT match text inside HTML attributes even when attribute comes first', () => {
+    // If the img alt appears before the visible text in the HTML string,
+    // the edit should still target the visible text, not the attribute.
+    const html =
+      '<section><img alt="Brand" src="hero.png"></section><nav><h1>Brand</h1></nav>'
+
+    const result = applyPreviewTextEdit(html, 'Brand', 'NewCo', 0)
+
+    expect(result.replaced).toBe(true)
+    expect(result.html).toBe(
+      '<section><img alt="Brand" src="hero.png"></section><nav><h1>NewCo</h1></nav>',
+    )
+  })
+
+  it('matches only visible text occurrences for occurrenceIndex counting', () => {
+    // Two visible occurrences + one attribute occurrence. occurrenceIndex=1
+    // should target the second VISIBLE text, skipping the attribute.
+    const html =
+      '<nav><h1>Brand</h1></nav><section><img alt="Brand" src="x.png"><h2>Brand</h2></section>'
+
+    const result = applyPreviewTextEdit(html, 'Brand', 'NewCo', 1)
+
+    expect(result.replaced).toBe(true)
+    expect(result.html).toBe(
+      '<nav><h1>Brand</h1></nav><section><img alt="Brand" src="x.png"><h2>NewCo</h2></section>',
+    )
+  })
 })

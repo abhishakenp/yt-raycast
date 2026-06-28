@@ -194,7 +194,7 @@ describe('InlineEditToolbar — behavioral', () => {
     ) as HTMLButtonElement
 })
 
-describe('InlineEditToolbar — font size dropdown', () => {
+describe('InlineEditToolbar — font size control', () => {
   let activeElement: HTMLElement
   let originalGetComputedStyle: typeof window.getComputedStyle
   let originalRequestAnimationFrame: typeof globalThis.requestAnimationFrame
@@ -228,40 +228,66 @@ describe('InlineEditToolbar — font size dropdown', () => {
     vi.stubGlobal('requestAnimationFrame', originalRequestAnimationFrame)
   })
 
-  it('applies font size to the element when the dropdown value changes', () => {
+  const fontSizeInput = () =>
+    document.querySelector('input[type="number"]') as HTMLInputElement
+  const unitSelect = () => document.querySelector('select') as HTMLSelectElement
+
+  it('reads the computed font size and unit on mount', () => {
     renderToolbar(activeElement)
 
-    // The dropdown should reflect the computed 16px initially
-    const select = document.querySelector('select') as HTMLSelectElement
-    expect(select.value).toBe('16')
+    expect(fontSizeInput().value).toBe('16')
+    expect(unitSelect().value).toBe('px')
+  })
 
-    // Simulate user selecting 24px
-    fireEvent.change(select, { target: { value: '24' } })
+  it('reads inline em font size when present', () => {
+    activeElement.style.fontSize = '2em'
+    renderToolbar(activeElement)
 
-    // The live-preview effect should have applied 24px to the element
+    expect(fontSizeInput().value).toBe('2')
+    expect(unitSelect().value).toBe('em')
+  })
+
+  it('applies font size to the element when the number input changes', () => {
+    renderToolbar(activeElement)
+
+    fireEvent.change(fontSizeInput(), { target: { value: '24' } })
+
     expect(activeElement.style.fontSize).toBe('24px')
   })
 
-  it('does NOT preventDefault on mousedown for the font-size select (dropdown must open)', () => {
-    // The toolbar parent has onMouseDown={preventFocusSteal} which calls
-    // e.preventDefault() to keep focus on the contentEditable. But native
-    // <select> dropdowns REQUIRE the mousedown default to open. If
-    // preventDefault fires on the select, the dropdown never opens and the
-    // user can't change font size.
+  it('applies the selected unit when the unit dropdown changes', () => {
     renderToolbar(activeElement)
 
-    const select = document.querySelector('select') as HTMLSelectElement
+    fireEvent.change(unitSelect(), { target: { value: 'em' } })
+
+    expect(activeElement.style.fontSize).toBe('16em')
+  })
+
+  it('does NOT preventDefault on mousedown for the font-size input', () => {
+    renderToolbar(activeElement)
+
     const event = new MouseEvent('mousedown', {
       bubbles: true,
       cancelable: true,
     })
-    select.dispatchEvent(event)
+    fontSizeInput().dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(false)
+  })
+
+  it('does NOT preventDefault on mousedown for the unit select', () => {
+    renderToolbar(activeElement)
+
+    const event = new MouseEvent('mousedown', {
+      bubbles: true,
+      cancelable: true,
+    })
+    unitSelect().dispatchEvent(event)
 
     expect(event.defaultPrevented).toBe(false)
   })
 
   it('does NOT preventDefault on mousedown for the color input', () => {
-    // Same issue: <input type="color"> needs mousedown default to open
     renderToolbar(activeElement)
 
     const input = document.querySelector(
@@ -276,9 +302,7 @@ describe('InlineEditToolbar — font size dropdown', () => {
     expect(event.defaultPrevented).toBe(false)
   })
 
-  it('sends the updated font size in onStyleApply when Apply is clicked', () => {
-    // CSS / CSS.escape is not available in jsdom — polyfill it so handleApply
-    // can compute occurrenceIndex via querySelectorAll.
+  it('sends the updated font size with unit in onStyleApply when Apply is clicked', () => {
     const globalCss = globalThis as unknown as {
       CSS?: { escape?: (s: string) => string }
     }
@@ -289,8 +313,8 @@ describe('InlineEditToolbar — font size dropdown', () => {
 
     renderToolbar(activeElement)
 
-    const select = document.querySelector('select') as HTMLSelectElement
-    fireEvent.change(select, { target: { value: '32' } })
+    fireEvent.change(fontSizeInput(), { target: { value: '32' } })
+    fireEvent.change(unitSelect(), { target: { value: 'rem' } })
 
     const buttons = Array.from(
       document.querySelectorAll('button'),
@@ -300,6 +324,6 @@ describe('InlineEditToolbar — font size dropdown', () => {
 
     expect(onStyleApply).toHaveBeenCalledTimes(1)
     const { style } = onStyleApply.mock.calls[0][0]
-    expect(style).toContain('font-size: 32px')
+    expect(style).toContain('font-size: 32rem')
   })
 })

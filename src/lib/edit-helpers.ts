@@ -365,15 +365,33 @@ const findTextRangesInHtml = (
   return results
 }
 
+/** Check if a position in the HTML string is inside a tag (between `<` and
+ *  `>`). Matches inside tags — e.g. text within an attribute value like
+ *  `<img alt="Hello">` — must NOT count as visible text matches, otherwise
+ *  editing visible text that also appears in an alt attribute replaces the
+ *  attribute instead of the visible content. */
+const isInsideTag = (html: string, pos: number): boolean => {
+  // Scan backwards from pos looking for the most recent `<` or `>`.
+  for (let i = pos - 1; i >= 0; i--) {
+    if (html[i] === '>') return false // we're between tags (visible text)
+    if (html[i] === '<') return true // we're inside a tag
+  }
+  return false
+}
+
 const collectTextMatches = (
   text: string,
   from: string,
 ): Array<{ index: number; length: number }> => {
   // Tier 1: exact substring match (fast path for clean HTML).
+  // Skip matches inside HTML tags (attribute values, tag names) — only
+  // visible text between tags should match.
   const exact: Array<{ index: number; length: number }> = []
   let cursor = text.indexOf(from)
   while (cursor >= 0) {
-    exact.push({ index: cursor, length: from.length })
+    if (!isInsideTag(text, cursor)) {
+      exact.push({ index: cursor, length: from.length })
+    }
     cursor = text.indexOf(from, cursor + Math.max(1, from.length))
   }
   if (exact.length > 0) return exact
@@ -389,7 +407,9 @@ const collectTextMatches = (
         globalPattern.lastIndex += 1
         continue
       }
-      tolerant.push({ index: match.index, length: match[0].length })
+      if (!isInsideTag(text, match.index)) {
+        tolerant.push({ index: match.index, length: match[0].length })
+      }
       globalPattern.lastIndex = match.index + match[0].length
     }
     if (tolerant.length > 0) return tolerant
@@ -398,6 +418,7 @@ const collectTextMatches = (
   // Tier 3: character-by-character walk with full entity decoding + whitespace
   // normalization. Handles every encoding case tiers 1 and 2 miss. This is the
   // guarantee that TEXT_NOT_FOUND never fires as long as the text exists.
+  // This tier inherently skips tag content (it walks only visible text).
   const ranges = findTextRangesInHtml(text, from)
   if (ranges.length > 0) {
     return ranges.map((r) => ({ index: r.start, length: r.end - r.start }))
@@ -419,7 +440,9 @@ const collectTextMatches = (
         globalAggressive.lastIndex += 1
         continue
       }
-      aggressive.push({ index: amatch.index, length: amatch[0].length })
+      if (!isInsideTag(text, amatch.index)) {
+        aggressive.push({ index: amatch.index, length: amatch[0].length })
+      }
       globalAggressive.lastIndex = amatch.index + amatch[0].length
     }
     if (aggressive.length > 0) return aggressive
