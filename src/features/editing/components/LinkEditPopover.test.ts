@@ -33,7 +33,9 @@ describe('LinkEditPopover', () => {
 
   it('renders with URL and text inputs', () => {
     renderPopover(activeElement)
-    const inputs = Array.from(document.querySelectorAll('input[type="text"]'))
+    const inputs = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[type="text"]'),
+    )
     expect(inputs.length).toBe(2)
     expect(inputs[0].value).toBe('/old-path')
     expect(inputs[1].value).toBe('Click Here')
