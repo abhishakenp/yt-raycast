@@ -1074,6 +1074,7 @@ export function InlineEditToolbar({
                 onModified={() => {
                   userModifiedRef.current = true
                 }}
+                sessionId={sessionId}
               />
             )}
             {displayPanel === 'typography' && (

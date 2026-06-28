@@ -36,6 +36,7 @@ import { LayoutPanel } from './LayoutPanel'
 interface StyleControlsPanelProps {
   activeElement: HTMLElement | null
   onModified?: () => void
+  sessionId?: string
 }
 
 type Tab = 'spacing' | 'border' | 'background' | 'size' | 'effects' | 'layout'
@@ -43,6 +44,7 @@ type Tab = 'spacing' | 'border' | 'background' | 'size' | 'effects' | 'layout'
 export function StyleControlsPanel({
   activeElement,
   onModified,
+  sessionId,
 }: StyleControlsPanelProps) {
   const [tab, setTab] = useState<Tab>('spacing')
   const [padding, setPadding] = useState({
@@ -413,6 +415,7 @@ export function StyleControlsPanel({
           <BackgroundPanel
             activeElement={activeElement}
             onModified={onModified}
+            sessionId={sessionId}
           />
         )}
 
