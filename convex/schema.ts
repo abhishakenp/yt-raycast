@@ -207,6 +207,7 @@ export default defineSchema({
       v.literal('ai_rewrite'),
       v.literal('style'),
       v.literal('image'),
+      v.literal('delete'),
     ),
     targetLabel: v.optional(v.string()),
     beforeText: v.optional(v.string()),

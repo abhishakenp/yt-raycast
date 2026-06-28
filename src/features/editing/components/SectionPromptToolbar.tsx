@@ -7,10 +7,21 @@ import {
   shift,
   type VirtualElement,
 } from '@floating-ui/react'
-import { X, Sparkles } from 'lucide-react'
+import { X, Sparkles, Trash2 } from 'lucide-react'
 import { cn } from '#/lib/utils'
 import { Textarea } from '#/components/ui/textarea'
 import type { InspectorSelection } from '../element-path'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '#/components/ui/alert-dialog'
 
 interface SectionPromptToolbarProps {
   isOpen: boolean
@@ -18,6 +29,7 @@ interface SectionPromptToolbarProps {
   selection: InspectorSelection | null
   onClose: () => void
   onSubmit?: (prompt: string) => void
+  onDelete?: () => void
   isSubmitting?: boolean
   error?: string
 }
@@ -28,6 +40,7 @@ export function SectionPromptToolbar({
   selection,
   onClose,
   onSubmit,
+  onDelete,
   isSubmitting = false,
   error,
 }: SectionPromptToolbarProps) {
@@ -99,14 +112,46 @@ export function SectionPromptToolbar({
           <Sparkles className="size-3.5 text-cyan-300" />
           AI edit
         </span>
-        <button
-          type="button"
-          onClick={onClose}
-          className="grid size-6 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white"
-          aria-label="Close"
-        >
-          <X className="size-3.5" />
-        </button>
+        <div className="flex items-center gap-1">
+          {onDelete && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  className="grid size-6 place-items-center rounded text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Delete section"
+                  title="Delete section"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete this section?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will hide the selected section from the page. You can
+                    undo this by reverting the edit.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={onDelete}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="grid size-6 place-items-center rounded text-white/40 transition-colors hover:bg-white/10 hover:text-white"
+            aria-label="Close"
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
       </div>
 
       <Textarea

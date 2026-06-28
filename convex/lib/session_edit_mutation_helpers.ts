@@ -59,7 +59,7 @@ const replaceFirstJsonText = (
 }
 
 export type SessionEditInput = {
-  editType: 'text' | 'ai_rewrite' | 'style' | 'image'
+  editType: 'text' | 'ai_rewrite' | 'style' | 'image' | 'delete'
   targetLabel?: string
   beforeText?: string
   afterText?: string

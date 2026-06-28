@@ -886,6 +886,50 @@ export function Dashboard({
     document.dispatchEvent(new CustomEvent('ship-fast-inspector-clear'))
   }
 
+  const handleSectionDelete = async () => {
+    if (!inspectorSelection) return
+    // Find the selected element in the preview DOM via its element path
+    const root = document.querySelector('.genui-preview')
+    if (!root) return
+    const el = root.querySelector<HTMLElement>(inspectorSelection.elementPath)
+    if (!el) return
+    // Apply display:none via the style override mechanism
+    const sourceAnchor = el.getAttribute('class') ?? ''
+    let occurrenceIndex = 0
+    if (sourceAnchor) {
+      const peers = Array.from(
+        root.querySelectorAll(`[class="${CSS.escape(sourceAnchor)}"]`),
+      )
+      const at = peers.indexOf(el)
+      occurrenceIndex = at < 0 ? 0 : at
+    }
+    // Save scroll position before the edit
+    const previewScrollEl = getPreviewScrollEl()
+    if (previewScrollEl) {
+      savedPreviewScrollRef.current = previewScrollEl.scrollTop
+    }
+    const label = `SECTION: ${inspectorSelection.tag}`
+    const result = await editController.applyEdit(
+      'style',
+      label,
+      sourceAnchor,
+      'display: none',
+      'inline delete',
+      undefined,
+      occurrenceIndex,
+    )
+    closeInspectorToolbar()
+    if (result === 'fork_needed') {
+      toast.info('Forking session to save your changes...')
+      const forkResult = await editController.forkCurrentSession()
+      if (!forkResult) {
+        toast.error(editController.editError || 'Failed to fork session')
+      }
+    } else if (result !== true && 'error' in result) {
+      toast.error(result.error)
+    }
+  }
+
   const handleSectionEditSubmit = async (prompt: string) => {
     if (!inspectorSelection || !resolvedSessionId) return
     setIsSectionEditing(true)
@@ -2087,6 +2131,7 @@ export function Dashboard({
         }
         selection={inspectorSelection}
         onSubmit={handleSectionEditSubmit}
+        onDelete={handleSectionDelete}
         isSubmitting={isSectionEditing}
         error={sectionEditError}
       />

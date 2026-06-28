@@ -326,4 +326,44 @@ describe('InlineEditToolbar — font size control', () => {
     const { style } = onStyleApply.mock.calls[0][0]
     expect(style).toContain('font-size: 32rem')
   })
+
+  it('delete button calls onStyleApply with display:none and closes toolbar', () => {
+    activeElement.setAttribute('class', 'cta-button')
+    document.body.appendChild(activeElement)
+
+    renderToolbar(activeElement)
+
+    // Find the delete button by aria-label
+    const deleteBtn = document.querySelector(
+      'button[aria-label="Delete element"]',
+    ) as HTMLButtonElement
+    expect(deleteBtn).toBeTruthy()
+
+    // Click the delete button to open the alert dialog
+    fireEvent.click(deleteBtn)
+
+    // Find the confirm button in the dialog
+    const dialogButtons = Array.from(
+      document.querySelectorAll('button'),
+    ) as HTMLButtonElement[]
+    const confirmBtn = dialogButtons.find((b) => b.textContent === 'Delete')
+    expect(confirmBtn).toBeTruthy()
+
+    fireEvent.click(confirmBtn!)
+
+    // Should call onStyleApply with display: none
+    expect(onStyleApply).toHaveBeenCalledTimes(1)
+    const payload = onStyleApply.mock.calls[0][0]
+    expect(payload.style).toBe('display: none')
+    expect(payload.sourceAnchor).toBe('cta-button')
+
+    // Should call onCommitText first
+    expect(onCommitText).toHaveBeenCalledTimes(1)
+
+    // Should close the toolbar
+    expect(onClose).toHaveBeenCalledTimes(1)
+
+    // Clean up
+    activeElement.remove()
+  })
 })
