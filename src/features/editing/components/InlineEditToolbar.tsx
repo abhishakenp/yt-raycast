@@ -867,7 +867,7 @@ export function InlineEditToolbar({
               onClick={handleApply}
               disabled={isApplying || isForking}
               className={cn(
-                'flex items-center gap-1.5 rounded bg-cyan-300 px-3 py-1 text-xs font-bold text-slate-950 transition-transform hover:-translate-y-px',
+                'relative flex items-center gap-1.5 rounded bg-cyan-300 px-3 py-1 text-xs font-bold text-slate-950 transition-transform hover:-translate-y-px',
                 'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0',
               )}
             >
@@ -881,13 +881,11 @@ export function InlineEditToolbar({
                   <Loader2 className="size-3 animate-spin" />
                   Saving...
                 </span>
-              ) : activePanel === 'ai' ? (
-                <>
-                  Apply
-                  <Sparkles className="size-3" />
-                </>
               ) : (
                 'Apply'
+              )}
+              {activePanel === 'ai' && !isApplying && !isForking && (
+                <Sparkles className="pointer-events-none absolute right-1 top-1/2 size-3 -translate-y-1/2 text-slate-950/40" />
               )}
             </button>
 
