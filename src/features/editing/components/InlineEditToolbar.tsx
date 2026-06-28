@@ -30,6 +30,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '#/components/ui/input-group'
+import { Textarea } from '#/components/ui/textarea'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -405,7 +406,26 @@ export function InlineEditToolbar({
 
   if (!isOpen || !anchorRect || !activeElement) return null
 
-  const isLinkElement = activeElement?.tagName.toLowerCase() === 'a'
+  const tag = activeElement.tagName.toLowerCase()
+  const isLinkElement = tag === 'a'
+  // Text elements: show font size, bold, italic, color, alignment, typography
+  const isTextElement = [
+    'p',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'span',
+    'a',
+    'button',
+    'label',
+    'li',
+    'blockquote',
+    'caption',
+    'figcaption',
+  ].includes(tag)
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -423,151 +443,159 @@ export function InlineEditToolbar({
           ref={toolbarRef}
           className="p-2 flex items-center gap-2 border-b border-white/10"
         >
-          <InputGroup className="h-7 max-w-32">
-            <InputGroupAddon>
-              <Type className="size-3.5" />
-            </InputGroupAddon>
-            <InputGroupInput
-              type="number"
-              value={fontSize}
-              onChange={(e) => {
-                markUserModified()
-                setFontSize(e.target.value)
-              }}
-              disabled={isApplying || isForking}
-              min="1"
-              step="1"
-              className="text-xs text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            />
-            <InputGroupAddon align="inline-end">
-              <select
-                value={fontSizeUnit}
+          {isTextElement && (
+            <InputGroup className="h-7 max-w-32">
+              <InputGroupAddon>
+                <Type className="size-3.5" />
+              </InputGroupAddon>
+              <InputGroupInput
+                type="number"
+                value={fontSize}
                 onChange={(e) => {
                   markUserModified()
-                  setFontSizeUnit(e.target.value)
+                  setFontSize(e.target.value)
                 }}
-                onClick={(e) => e.stopPropagation()}
                 disabled={isApplying || isForking}
-                className="bg-transparent text-xs outline-none cursor-pointer"
+                min="1"
+                step="1"
+                className="text-xs text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+              <InputGroupAddon align="inline-end">
+                <select
+                  value={fontSizeUnit}
+                  onChange={(e) => {
+                    markUserModified()
+                    setFontSizeUnit(e.target.value)
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  disabled={isApplying || isForking}
+                  className="bg-transparent text-xs outline-none cursor-pointer"
+                >
+                  <option value="px">px</option>
+                  <option value="em">em</option>
+                  <option value="rem">rem</option>
+                  <option value="pt">pt</option>
+                  <option value="%">%</option>
+                </select>
+              </InputGroupAddon>
+            </InputGroup>
+          )}
+
+          {isTextElement && (
+            <div className="flex items-center gap-1 border-r border-white/10 pr-2">
+              <button
+                type="button"
+                onClick={() => {
+                  markUserModified()
+                  setIsBold(!isBold)
+                }}
+                disabled={isApplying || isForking}
+                className={cn(
+                  'grid size-7 place-items-center rounded transition-colors',
+                  isBold
+                    ? 'bg-cyan-300/20 text-cyan-100'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                )}
+                aria-label="Bold"
               >
-                <option value="px">px</option>
-                <option value="em">em</option>
-                <option value="rem">rem</option>
-                <option value="pt">pt</option>
-                <option value="%">%</option>
-              </select>
-            </InputGroupAddon>
-          </InputGroup>
+                <Bold className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  markUserModified()
+                  setIsItalic(!isItalic)
+                }}
+                disabled={isApplying || isForking}
+                className={cn(
+                  'grid size-7 place-items-center rounded transition-colors',
+                  isItalic
+                    ? 'bg-cyan-300/20 text-cyan-100'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                )}
+                aria-label="Italic"
+              >
+                <Italic className="size-3.5" />
+              </button>
+            </div>
+          )}
 
-          <div className="flex items-center gap-1 border-r border-white/10 pr-2">
-            <button
-              type="button"
-              onClick={() => {
-                markUserModified()
-                setIsBold(!isBold)
-              }}
-              disabled={isApplying || isForking}
-              className={cn(
-                'grid size-7 place-items-center rounded transition-colors',
-                isBold
-                  ? 'bg-cyan-300/20 text-cyan-100'
-                  : 'text-white/60 hover:bg-white/5 hover:text-white',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-              )}
-              aria-label="Bold"
-            >
-              <Bold className="size-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                markUserModified()
-                setIsItalic(!isItalic)
-              }}
-              disabled={isApplying || isForking}
-              className={cn(
-                'grid size-7 place-items-center rounded transition-colors',
-                isItalic
-                  ? 'bg-cyan-300/20 text-cyan-100'
-                  : 'text-white/60 hover:bg-white/5 hover:text-white',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-              )}
-              aria-label="Italic"
-            >
-              <Italic className="size-3.5" />
-            </button>
-          </div>
+          {isTextElement && (
+            <div className="flex items-center gap-1 border-r border-white/10 pr-2">
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => {
+                  markUserModified()
+                  setColor(e.target.value)
+                }}
+                disabled={isApplying || isForking}
+                className="size-7 rounded cursor-pointer bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Text color"
+              />
+            </div>
+          )}
 
-          <div className="flex items-center gap-1 border-r border-white/10 pr-2">
-            <input
-              type="color"
-              value={color}
-              onChange={(e) => {
-                markUserModified()
-                setColor(e.target.value)
-              }}
-              disabled={isApplying || isForking}
-              className="size-7 rounded cursor-pointer bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label="Text color"
-            />
-          </div>
-
-          <div className="flex items-center gap-1 border-r border-white/10 pr-2">
-            <button
-              type="button"
-              onClick={() => {
-                markUserModified()
-                setAlignment('left')
-              }}
-              disabled={isApplying || isForking}
-              className={cn(
-                'grid size-7 place-items-center rounded transition-colors',
-                alignment === 'left'
-                  ? 'bg-cyan-300/20 text-cyan-100'
-                  : 'text-white/60 hover:bg-white/5 hover:text-white',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-              )}
-              aria-label="Align left"
-            >
-              <AlignLeft className="size-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                markUserModified()
-                setAlignment('center')
-              }}
-              disabled={isApplying || isForking}
-              className={cn(
-                'grid size-7 place-items-center rounded transition-colors',
-                alignment === 'center'
-                  ? 'bg-cyan-300/20 text-cyan-100'
-                  : 'text-white/60 hover:bg-white/5 hover:text-white',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-              )}
-              aria-label="Align center"
-            >
-              <AlignCenter className="size-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                markUserModified()
-                setAlignment('right')
-              }}
-              disabled={isApplying || isForking}
-              className={cn(
-                'grid size-7 place-items-center rounded transition-colors',
-                alignment === 'right'
-                  ? 'bg-cyan-300/20 text-cyan-100'
-                  : 'text-white/60 hover:bg-white/5 hover:text-white',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-              )}
-              aria-label="Align right"
-            >
-              <AlignRight className="size-3.5" />
-            </button>
-          </div>
+          {isTextElement && (
+            <div className="flex items-center gap-1 border-r border-white/10 pr-2">
+              <button
+                type="button"
+                onClick={() => {
+                  markUserModified()
+                  setAlignment('left')
+                }}
+                disabled={isApplying || isForking}
+                className={cn(
+                  'grid size-7 place-items-center rounded transition-colors',
+                  alignment === 'left'
+                    ? 'bg-cyan-300/20 text-cyan-100'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                )}
+                aria-label="Align left"
+              >
+                <AlignLeft className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  markUserModified()
+                  setAlignment('center')
+                }}
+                disabled={isApplying || isForking}
+                className={cn(
+                  'grid size-7 place-items-center rounded transition-colors',
+                  alignment === 'center'
+                    ? 'bg-cyan-300/20 text-cyan-100'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                )}
+                aria-label="Align center"
+              >
+                <AlignCenter className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  markUserModified()
+                  setAlignment('right')
+                }}
+                disabled={isApplying || isForking}
+                className={cn(
+                  'grid size-7 place-items-center rounded transition-colors',
+                  alignment === 'right'
+                    ? 'bg-cyan-300/20 text-cyan-100'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white',
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
+                )}
+                aria-label="Align right"
+              >
+                <AlignRight className="size-3.5" />
+              </button>
+            </div>
+          )}
 
           {/* Extended controls: Style, Typography, Link, Move, Undo/Redo */}
           <div className="flex items-center gap-1 border-r border-white/10 pr-2">
@@ -593,32 +621,34 @@ export function InlineEditToolbar({
               </TooltipTrigger>
               <TooltipContent>Spacing, border, background, size</TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setActivePanel(
-                      activePanel === 'typography' ? null : 'typography',
-                    )
-                  }
-                  disabled={isApplying || isForking}
-                  className={cn(
-                    'grid size-7 place-items-center rounded transition-colors',
-                    activePanel === 'typography'
-                      ? 'bg-cyan-300/20 text-cyan-100'
-                      : 'text-white/60 hover:bg-white/5 hover:text-white',
-                    'disabled:opacity-50 disabled:cursor-not-allowed',
-                  )}
-                  aria-label="Typography controls"
-                >
-                  <Type className="size-3.5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                Font family, line height, spacing, transform
-              </TooltipContent>
-            </Tooltip>
+            {isTextElement && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActivePanel(
+                        activePanel === 'typography' ? null : 'typography',
+                      )
+                    }
+                    disabled={isApplying || isForking}
+                    className={cn(
+                      'grid size-7 place-items-center rounded transition-colors',
+                      activePanel === 'typography'
+                        ? 'bg-cyan-300/20 text-cyan-100'
+                        : 'text-white/60 hover:bg-white/5 hover:text-white',
+                      'disabled:opacity-50 disabled:cursor-not-allowed',
+                    )}
+                    aria-label="Typography controls"
+                  >
+                    <Type className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Font family, line height, spacing, transform
+                </TooltipContent>
+              </Tooltip>
+            )}
             {isLinkElement && onLinkEdit && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -858,10 +888,9 @@ export function InlineEditToolbar({
               />
             )}
             {displayPanel === 'ai' && (
-              <div className="flex items-center gap-2 p-2 w-full">
-                <Sparkles className="size-4 shrink-0 text-cyan-300" />
-                <input
-                  type="text"
+              <div className="flex items-start gap-2 p-2 w-full">
+                <Sparkles className="size-4 shrink-0 text-cyan-300 mt-2" />
+                <Textarea
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
                   onKeyDown={(e) => {
@@ -871,7 +900,7 @@ export function InlineEditToolbar({
                     }
                   }}
                   placeholder="Describe a change..."
-                  className="flex-1 rounded-md border border-input bg-transparent px-3 py-1.5 text-sm text-white placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none"
+                  className="min-h-9 text-sm"
                   autoFocus
                 />
               </div>
