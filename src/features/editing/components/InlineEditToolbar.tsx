@@ -10,6 +10,11 @@ import {
   Loader2,
 } from 'lucide-react'
 import { cn } from '#/lib/utils'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '#/components/ui/input-group'
 
 interface InlineEditToolbarProps {
   isOpen: boolean
@@ -249,9 +254,11 @@ export function InlineEditToolbar({
       style={toolbarStyle}
       onMouseDown={preventFocusSteal}
     >
-      <div className="flex items-center gap-1 border-r border-white/10 pr-2">
-        <Type className="size-4 text-white/40" />
-        <input
+      <InputGroup className="h-7 max-w-32">
+        <InputGroupAddon>
+          <Type className="size-3.5" />
+        </InputGroupAddon>
+        <InputGroupInput
           type="number"
           value={fontSize}
           onChange={(e) => {
@@ -261,24 +268,27 @@ export function InlineEditToolbar({
           disabled={isApplying || isForking}
           min="1"
           step="1"
-          className="w-14 bg-white/5 text-white text-xs rounded px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-300/50 disabled:opacity-50 disabled:cursor-not-allowed [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          className="text-xs text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         />
-        <select
-          value={fontSizeUnit}
-          onChange={(e) => {
-            markUserModified()
-            setFontSizeUnit(e.target.value)
-          }}
-          disabled={isApplying || isForking}
-          className="bg-white/5 text-white text-xs rounded px-1 py-1 outline-none focus:ring-2 focus:ring-cyan-300/50 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <option value="px">px</option>
-          <option value="em">em</option>
-          <option value="rem">rem</option>
-          <option value="pt">pt</option>
-          <option value="%">%</option>
-        </select>
-      </div>
+        <InputGroupAddon align="inline-end">
+          <select
+            value={fontSizeUnit}
+            onChange={(e) => {
+              markUserModified()
+              setFontSizeUnit(e.target.value)
+            }}
+            onClick={(e) => e.stopPropagation()}
+            disabled={isApplying || isForking}
+            className="bg-transparent text-xs outline-none cursor-pointer"
+          >
+            <option value="px">px</option>
+            <option value="em">em</option>
+            <option value="rem">rem</option>
+            <option value="pt">pt</option>
+            <option value="%">%</option>
+          </select>
+        </InputGroupAddon>
+      </InputGroup>
 
       <div className="flex items-center gap-1 border-r border-white/10 pr-2">
         <button
