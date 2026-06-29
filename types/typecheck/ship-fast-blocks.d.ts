@@ -86,6 +86,7 @@ declare module '@ship-fast/blocks/generated' {
 
 declare module '@ship-fast/blocks/theme' {
   export const THEME_CATALOG: any[]
+  export const THEME_VAR_KEYS: readonly string[]
   export function resolveThemeStyles(theme: any): any
 }
 
@@ -96,4 +97,5 @@ declare module '@ship-fast/blocks/component-names' {
 
 declare module '@ship-fast/blocks/portal' {
   export const PortalContainerProvider: ComponentType<any>
+  export function usePortalContainer(): HTMLElement | null
 }

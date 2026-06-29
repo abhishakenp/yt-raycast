@@ -1,4 +1,4 @@
-function stripNullsFromArrays(code: string): string {
+export function stripNullsFromArrays(code: string): string {
   return code
     .replace(/,\s*null\s*(?=[,\]])/g, '')
     .replace(/(?<=[,\[])\s*null\s*,/g, ',')
@@ -12,12 +12,12 @@ function stripNullsFromArrays(code: string): string {
     .replace(/,\s*$/gm, '')
 }
 
-function sanitizePartialImages(code: string): string {
+export function sanitizePartialImages(code: string): string {
   const replaced = code.replace(/Image\("https:\/\/[^"]*$/, 'null')
   return replaced === code ? code : stripNullsFromArrays(replaced)
 }
 
-function repairMalformedQuotedObjectKeys(code: string) {
+export function repairMalformedQuotedObjectKeys(code: string) {
   let result = ''
   const stack: string[] = []
   let inString = false
@@ -65,7 +65,7 @@ function repairMalformedQuotedObjectKeys(code: string) {
   return result
 }
 
-function repairObjectNullArgumentBoundaries(code: string) {
+export function repairObjectNullArgumentBoundaries(code: string) {
   let result = ''
   const stack: string[] = []
   let inString = false
@@ -113,7 +113,7 @@ function repairObjectNullArgumentBoundaries(code: string) {
   return result
 }
 
-function balanceSegment(segment: string): string {
+export function balanceSegment(segment: string): string {
   const trailingWhitespace = segment.match(/\s*$/)?.[0] || ''
   let source = segment.slice(0, segment.length - trailingWhitespace.length)
   let previous = ''
@@ -160,7 +160,7 @@ function balanceSegment(segment: string): string {
   return source + (trailingWhitespace.includes('\n') ? '\n' : '')
 }
 
-function balanceStatements(code: string): string {
+export function balanceStatements(code: string): string {
   const pattern = /^[$A-Za-z_][\w]*\s*=/gm
   const starts: number[] = []
   let match: RegExpExecArray | null
@@ -179,7 +179,7 @@ function balanceStatements(code: string): string {
   return segments.join('')
 }
 
-function balancePartial(code: string): string {
+export function balancePartial(code: string): string {
   let inString = false
   let stringChar = ''
   let escaped = false
