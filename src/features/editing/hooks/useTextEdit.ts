@@ -316,6 +316,9 @@ export function useTextEdit(
         // container as a fixed overlay), keep the edit alive so the user can
         // apply style changes.
         if (focused && focused.closest('.inline-edit-toolbar')) return
+        // Radix AlertDialog (Delete confirmation) portals to document.body.
+        // Keep the edit alive so the delete action can proceed.
+        if (focused && focused.closest('[role="alertdialog"]')) return
         finishEdit()
       })
     }
