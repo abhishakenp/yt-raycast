@@ -204,24 +204,21 @@ describe('HomePage — language dropdown + prompt suggestions', () => {
     render(<HomePage />)
     const input = getPromptInput()
 
-    // Typing a short partial (< MIN_CHARS) keeps the row hidden initially.
+    // Typing a short partial shows the row (any content makes it visible).
     fireEvent.focus(input)
     fireEvent.change(input, { target: { value: SHORT_PROMPT } })
-    expect(getLanguageRow().classList.contains('is-hidden')).toBe(true)
+    expect(getLanguageRow().classList.contains('is-hidden')).toBe(false)
 
     // Suggestions appear from the local builder (synchronous in effect).
     const items = getSuggestionItems()
     expect(items.length).toBeGreaterThan(0)
 
     // Accepting a suggestion sets the full (long) suggestion text as the
-    // prompt, which must flip languageRowVisible to true via the real
-    // derived boolean — this is the bug the user reported.
+    // prompt, which must keep languageRowVisible true.
     fireEvent.mouseDown(items[0])
 
     const acceptedPrompt = (input.value ?? '').trim()
-    expect(acceptedPrompt.length).toBeGreaterThanOrEqual(
-      PROMPT_LANG_DETECT_MIN_CHARS,
-    )
+    expect(acceptedPrompt.length).toBeGreaterThan(0)
     expect(getLanguageRow().classList.contains('is-hidden')).toBe(false)
   })
 

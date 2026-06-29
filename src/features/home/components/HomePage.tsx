@@ -19,7 +19,6 @@ import {
 } from '@/features/home/services/prompt-suggestions'
 import {
   PROMPT_LANG_DETECT_DEBOUNCE_MS,
-  PROMPT_LANG_DETECT_MIN_CHARS,
   PROMPT_LANG_DETECT_SNIPPET_MAX,
   PROMPT_SUGGEST_DEBOUNCE_MS,
   PROMPT_SUGGEST_MAX_SHOW,
@@ -344,7 +343,7 @@ export const HomePage = () => {
     [placeholderLength, placeholderText],
   )
   const trimmedPromptLength = prompt.trim().length
-  const languageRowVisible = trimmedPromptLength >= PROMPT_LANG_DETECT_MIN_CHARS
+  const languageRowVisible = trimmedPromptLength > 0
   const submitCtaLabel = languageRowVisible
     ? getGenerateCtaLabel(preferredLanguage)
     : SUBMIT_BTN_DEFAULT_LABEL
@@ -416,7 +415,7 @@ export const HomePage = () => {
     const timeout = window.setTimeout(() => {
       void (async () => {
         const currentPrompt = prompt.trim()
-        if (currentPrompt.length < PROMPT_LANG_DETECT_MIN_CHARS) return
+        if (!currentPrompt) return
         const { detectSnippetLanguageBcp47 } =
           await import('@/lib/home/prompt-language-core')
         const detectedLanguage = await detectSnippetLanguageBcp47(
@@ -424,7 +423,7 @@ export const HomePage = () => {
         )
         if (!detectedLanguage) return
         if (runToken !== promptLanguageDetectTokenRef.current) return
-        if (prompt.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return
+        if (!prompt.trim()) return
 
         setLanguageOptions(buildFocusedLanguageOptions(detectedLanguage))
         setPreferredLanguage(detectedLanguage)
