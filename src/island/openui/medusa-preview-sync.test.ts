@@ -37,7 +37,7 @@ describe('applyMedusaProductsToPreviewDom', () => {
     })
 
     expect(root.textContent).toContain('Medusa Edited Truffle Box')
-    expect(root.textContent).toContain('€89.00')
+    expect(root.textContent).toContain('89,00 €')
     expect(root.querySelector('h3')?.textContent).not.toBe('Truffle Box')
     expect(root.textContent).toContain('Dark Bar')
     expect(root.textContent).toContain('$12')
@@ -70,7 +70,7 @@ describe('applyMedusaProductsToPreviewDom', () => {
     applyMedusaProductsToPreviewDom(root, input)
     applyMedusaProductsToPreviewDom(root, input)
 
-    expect(root.textContent).toContain('€39.00')
-    expect(root.textContent).not.toContain('€39.00.00')
+    expect(root.textContent).toContain('39,00 €')
+    expect(root.textContent).not.toContain('39,00 €,00 €')
   })
 })

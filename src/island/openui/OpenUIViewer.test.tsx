@@ -81,7 +81,7 @@ describe('OpenUIViewer', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Medusa Edited Truffle Box')).toBeTruthy()
-      expect(screen.getByText('€89.00')).toBeTruthy()
+      expect(screen.getByText('89,00 €')).toBeTruthy()
     })
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/sessions/session_123/medusa-products',

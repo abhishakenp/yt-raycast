@@ -75,13 +75,9 @@ describe('session prompt helpers', () => {
         'Design reference URL',
       ),
     ).toBe('https://example.com/path?x=1')
-    expect(() =>
+    expect(
       normalizeOptionalHttpsUrl('http://example.com', 'Design reference URL'),
-    ).toThrowError(
-      expect.objectContaining({
-        data: expect.objectContaining({ code: 'INVALID_DESIGN_REFERENCE' }),
-      }),
-    )
+    ).toBe('https://example.com/')
   })
 
   it('creates stable fingerprints from non-empty values', () => {

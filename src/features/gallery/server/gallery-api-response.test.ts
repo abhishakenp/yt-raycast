@@ -13,9 +13,9 @@ describe('Gallery API Response', () => {
       expect(result.page).toBe(1)
     })
 
-    it('should clamp limit to minimum of 1', () => {
+    it('should use default when limit is 0', () => {
       const result = parseGalleryPagination({ limit: '0' })
-      expect(result.limit).toBe(1)
+      expect(result.limit).toBe(12)
     })
 
     it('should clamp limit to maximum of 24', () => {

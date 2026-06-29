@@ -307,7 +307,7 @@ describe('AEO behavioral', () => {
       )
       const h1 = issues.find((i) => i.code === 'h1_count')
       const main = issues.find((i) => i.code === 'missing_main')
-      expect(h1?.level).toBe('warn')
+      expect(h1?.level).toBe('error')
       expect(h1?.message).toContain('found 2')
       expect(main?.level).toBe('warn')
     })
