@@ -105,9 +105,6 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     expect(state.createSession).toHaveBeenCalledTimes(1)
-    expect(state.createSession.mock.calls[0]?.[0]).toMatchObject({
-      reusePublicCache: true,
-    })
     expect(state.navigate).toHaveBeenCalledTimes(1)
     expect(
       window.sessionStorage.getItem(

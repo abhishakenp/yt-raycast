@@ -3,16 +3,18 @@ import { Link } from '@tanstack/react-router'
 import { MarketingShell } from '../pricing/-MarketingShell'
 
 const SITE_NAME = 'Ship Fast'
-const SITE_URL = 'https://ship-fast.ai'
-const LEGAL_CONTROLLER_NAME = 'Surya Remanan and Abhishek Pandey'
-const PRIVACY_CONTACT_EMAIL = 'hello@ship-fast.io'
-const TERMS_EFFECTIVE_DATE = '2026-06-27'
+const SITE_URL = 'https://ship-fast.devliv.io'
+const LEGAL_CONTROLLER_NAME = 'Livio Gama'
+const PRIVACY_CONTACT_EMAIL = 'privacy@ship-fast.devliv.io'
+const TERMS_EFFECTIVE_DATE = '2026-06-04'
 const LEGAL_INCORPORATION_JURISDICTION = ''
 const LEGAL_COMPANY_REGISTRATION_NUMBER = ''
 const LEGAL_CONTROLLER_ADDRESS = ''
 const LEGAL_REFUND_POLICY = ''
 
 const mailtoHref = `mailto:${encodeURIComponent(PRIVACY_CONTACT_EMAIL)}`
+const legalAddressLines =
+  LEGAL_CONTROLLER_ADDRESS.split(/\r?\n/).filter(Boolean)
 
 export const TermsPage = () => {
   return (
@@ -35,47 +37,28 @@ export const TermsPage = () => {
             These terms are between you and{' '}
             <strong>{LEGAL_CONTROLLER_NAME}</strong>, operating {SITE_NAME}.
           </p>
-          <p>
-            Incorporation jurisdiction:{' '}
-            <span>
-              {LEGAL_INCORPORATION_JURISDICTION || (
-                <span className="text-[#fbbf24]">
-                  Pending incorporation data: jurisdiction
+          {LEGAL_INCORPORATION_JURISDICTION ? (
+            <p>
+              Incorporation jurisdiction:{' '}
+              <span>{LEGAL_INCORPORATION_JURISDICTION}</span>
+            </p>
+          ) : null}
+          {LEGAL_COMPANY_REGISTRATION_NUMBER ? (
+            <p>
+              Company registration number:{' '}
+              <span>{LEGAL_COMPANY_REGISTRATION_NUMBER}</span>
+            </p>
+          ) : null}
+          {legalAddressLines.length > 0 ? (
+            <p className="legal-callout my-3 rounded-[10px] border border-white/10 px-4 py-3.5 text-[#f0f0f5]">
+              {legalAddressLines.map((line, idx) => (
+                <span key={idx}>
+                  {line}
+                  {idx < legalAddressLines.length - 1 && <br />}
                 </span>
-              )}
-            </span>
-          </p>
-          <p>
-            Company registration number:{' '}
-            <span>
-              {LEGAL_COMPANY_REGISTRATION_NUMBER || (
-                <span className="text-[#fbbf24]">
-                  Pending incorporation data: company registration number
-                </span>
-              )}
-            </span>
-          </p>
-          <p className="legal-callout my-3 rounded-[10px] border border-white/10 px-4 py-3.5 text-[#f0f0f5]">
-            {LEGAL_CONTROLLER_ADDRESS ? (
-              (LEGAL_CONTROLLER_ADDRESS as string)
-                .split(/\r?\n/)
-                .filter(Boolean)
-                .map((line, idx) => (
-                  <span key={idx}>
-                    {line}
-                    {idx <
-                      (LEGAL_CONTROLLER_ADDRESS as string)
-                        .split(/\r?\n/)
-                        .filter(Boolean).length -
-                        1 && <br />}
-                  </span>
-                ))
-            ) : (
-              <span className="text-[#fbbf24]">
-                Pending incorporation data: registered address
-              </span>
-            )}
-          </p>
+              ))}
+            </p>
+          ) : null}
           <p>
             Contact: <a href={mailtoHref}>{PRIVACY_CONTACT_EMAIL}</a>
           </p>
@@ -161,9 +144,9 @@ export const TermsPage = () => {
         <section aria-labelledby="h-law">
           <h2 id="h-law">9. Governing law</h2>
           <p>
-            Governing law and venue are pending final incorporation data.
-            Nothing in these terms removes mandatory consumer protections that
-            apply in your country of residence.
+            These terms are interpreted under applicable law. Nothing in these
+            terms removes mandatory consumer protections that apply in your
+            country of residence.
           </p>
         </section>
       </main>
