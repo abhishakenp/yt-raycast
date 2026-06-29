@@ -303,6 +303,54 @@ export const defineCapsule = <
   )
 }
 
+/**
+ * Wrap a capsule component renderer so its renderer receives a Lakebed client
+ * runtime built from the supplied Lakebed definition. This is the same wiring
+ * `defineCapsule` applies internally; extracted here so it can be reused to
+ * add Lakebed client wiring to an arbitrary component renderer.
+ */
+export const withLakebed = <
+  TProps extends JsonRecord = JsonRecord,
+  TLakebed extends
+    | CapsuleLakebedConfig<TProps, any, any, any, any, any>
+    | undefined =
+    | CapsuleLakebedConfig<TProps, any, any, any, any, any>
+    | undefined,
+>(
+  renderer: CapsuleComponentRenderer<TProps, TLakebed>,
+  lakebed: TLakebed,
+  capsuleName: string,
+): CapsuleComponentRenderer<TProps, TLakebed> => {
+  const defaultLakebed = createDefaultCapsuleLakebed<TProps>()
+  const effectiveLakebed = (
+    lakebed
+      ? {
+          ...lakebed,
+          mutations: {
+            ...defaultLakebed.mutations,
+            ...lakebed.mutations,
+          },
+          queries: {
+            ...defaultLakebed.queries,
+            ...lakebed.queries,
+          },
+        }
+      : defaultLakebed
+  ) as CapsuleLakebedConfig<TProps, any, any, any, any, any>
+
+  return (input) =>
+    renderer({
+      ...input,
+      lakebed: createLakebedClient({
+        capsule:
+          effectiveLakebed.dataKey ??
+          defaultCapsuleDataKey(capsuleName, input.statementId),
+        definition: effectiveLakebed,
+        props: input.props,
+      }) as LakebedClientRuntime<TLakebed>,
+    }) as ReturnType<CapsuleComponentRenderer<TProps, TLakebed>>
+}
+
 export const isCapsule = (value: unknown): value is ShipFastCapsule =>
   !!value &&
   typeof value === 'object' &&

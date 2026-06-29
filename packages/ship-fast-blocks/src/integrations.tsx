@@ -105,6 +105,93 @@ function pickMedusaBackendUrl(
   return typeof backend === 'string' && backend.trim() ? backend.trim() : null
 }
 
+/**
+ * Pick the Medusa storefront URL from an integration config, trimming
+ * whitespace and returning null when no usable URL is present.
+ */
+export function pickMedusaStorefrontUrl(
+  config?: OpenUIIntegrationConfig | null,
+): string | null {
+  if (!config) return null
+  const storefront = config.storefrontUrl
+  return typeof storefront === 'string' && storefront.trim().length > 0
+    ? storefront.trim()
+    : null
+}
+
+export type MedusaProvisionResult = {
+  config: OpenUIIntegrationConfig
+  backendUrl: string | null
+  storefrontUrl: string | null
+  ready: boolean
+  status: 'ready' | 'disabled' | 'error'
+  error: string | null
+}
+
+/**
+ * Provision a Medusa integration for a session: fetch the session's Medusa
+ * config from the server, merge it with the supplied base config, and return a
+ * normalized result describing the resolved URLs / readiness / status. Network
+ * failures are caught and surfaced as an `error` status.
+ */
+export async function provisionMedusaIntegration(
+  sessionId: string,
+  baseConfig: OpenUIIntegrationConfig,
+): Promise<MedusaProvisionResult> {
+  try {
+    const r = await fetch(
+      `/api/sessions/${encodeURIComponent(sessionId)}/medusa-config`,
+      {
+        headers: { Accept: 'application/json' },
+      },
+    )
+    if (!r.ok) {
+      const body = await r.json().catch(() => null)
+      return {
+        config: baseConfig,
+        backendUrl: pickMedusaBackendUrl(baseConfig),
+        storefrontUrl: pickMedusaStorefrontUrl(baseConfig),
+        ready: false,
+        status: 'error',
+        error: normalizeProvisionError(
+          body,
+          `Medusa provision failed: ${r.status}`,
+        ),
+      }
+    }
+
+    const payload = (await r.json()) as OpenUIProvisionPayload & {
+      config?: OpenUIIntegrationConfig | null
+    }
+    const nextConfig = sanitizeOpenUIIntegrationConfig(payload.config)
+    const merged = { ...baseConfig, ...nextConfig }
+    const backendUrl = pickMedusaBackendUrl(merged)
+    const storefrontUrl = pickMedusaStorefrontUrl(merged)
+    const nextReady = Boolean(payload?.enabled || backendUrl || storefrontUrl)
+    const warning = readMedusaWarning(merged)
+    return {
+      config: merged,
+      backendUrl,
+      storefrontUrl,
+      ready: nextReady,
+      status: nextReady ? 'ready' : 'disabled',
+      error: nextReady
+        ? warning
+        : 'Medusa config returned without usable URLs.',
+    }
+  } catch (error) {
+    return {
+      config: baseConfig,
+      backendUrl: pickMedusaBackendUrl(baseConfig),
+      storefrontUrl: pickMedusaStorefrontUrl(baseConfig),
+      ready: false,
+      status: 'error',
+      error:
+        error instanceof Error ? error.message : 'Medusa config check failed',
+    }
+  }
+}
+
 function hasMedusaConfig(config?: OpenUIIntegrationConfig | null): boolean {
   if (!config) return false
   return Boolean(pickMedusaBackendUrl(config) || config.storefrontUrl)
@@ -174,7 +261,7 @@ export function IntegrationProvider({
   useEffect(() => {
     setMedusaConfig(normalizedMedusa.config || {})
     setMedusaBackendUrl(pickMedusaBackendUrl(normalizedMedusa.config))
-    setMedusaStorefrontUrl(normalizedMedusa.config?.storefrontUrl || null)
+    setMedusaStorefrontUrl(pickMedusaStorefrontUrl(normalizedMedusa.config))
   }, [
     normalizedMedusa.config?.backendUrl,
     normalizedMedusa.config?.adminBaseUrl,
@@ -196,61 +283,19 @@ export function IntegrationProvider({
     setMedusaStatus('checking')
     setMedusaError(null)
 
-    const provisionMedusa = async () => {
-      try {
-        const r = await fetch(
-          `/api/sessions/${encodeURIComponent(sessionId)}/medusa-config`,
-          {
-            headers: { Accept: 'application/json' },
-          },
-        )
-        if (!active) return
-        if (!r.ok) {
-          const body = await r.json().catch(() => null)
-          setMedusaReady(false)
-          setMedusaStatus('error')
-          setMedusaError(
-            normalizeProvisionError(
-              body,
-              `Medusa provision failed: ${r.status}`,
-            ),
-          )
-          return
-        }
-
-        const payload = (await r.json()) as OpenUIProvisionPayload & {
-          config?: OpenUIIntegrationConfig | null
-        }
-        const nextConfig = sanitizeOpenUIIntegrationConfig(payload.config)
-        const merged = { ...normalizedMedusa.config, ...nextConfig }
-        const backendUrl = pickMedusaBackendUrl(merged)
-        const storefrontUrl =
-          typeof merged.storefrontUrl === 'string' &&
-          merged.storefrontUrl.trim().length > 0
-            ? merged.storefrontUrl.trim()
-            : null
-        const nextReady = Boolean(
-          payload?.enabled || backendUrl || storefrontUrl,
-        )
-        const warning = readMedusaWarning(merged)
-        setMedusaConfig(merged)
-        setMedusaBackendUrl(backendUrl)
-        setMedusaStorefrontUrl(storefrontUrl)
-        setMedusaReady(nextReady)
-        setMedusaStatus(nextReady ? 'ready' : 'disabled')
-        setMedusaError(
-          nextReady ? warning : 'Medusa config returned without usable URLs.',
-        )
-      } catch (error) {
-        if (!active) return
-        setMedusaReady(false)
-        setMedusaError(
-          error instanceof Error ? error.message : 'Medusa config check failed',
-        )
-        setMedusaStatus('error')
-      }
-    }
-    void provisionMedusa()
+    void (async () => {
+      const result = await provisionMedusaIntegration(
+        sessionId,
+        normalizedMedusa.config || {},
+      )
+      if (!active) return
+      setMedusaConfig(result.config)
+      setMedusaBackendUrl(result.backendUrl)
+      setMedusaStorefrontUrl(result.storefrontUrl)
+      setMedusaReady(result.ready)
+      setMedusaStatus(result.status)
+      setMedusaError(result.error)
+    })()
 
     return () => {
       active = false
