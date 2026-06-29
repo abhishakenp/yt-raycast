@@ -18,6 +18,11 @@ export const useEditController = (sessionId: string) => {
   const [editError, setEditError] = useState<string>()
   const [isEditing, setIsEditing] = useState(false)
   const [isForking, setIsForking] = useState(false)
+  // Refcount of in-flight edits so isEditing stays true while ANY edit is
+  // pending, even when multiple concurrent edits overlap. A single boolean
+  // would flip false after the first edit resolves while others are still
+  // in flight.
+  const activeEditsRef = useRef(0)
   // Ref, not state: the edit that triggers a fork is set and read within the
   // same tick (applyEdit returns 'fork_needed' → caller immediately calls
   // forkCurrentSession), so a state update would not be visible in time.
@@ -40,7 +45,20 @@ export const useEditController = (sessionId: string) => {
     afterHtml?: string,
     occurrenceIndex?: number,
   ): Promise<true | 'fork_needed' | { ok: false; error: string }> => {
+    // Guard: reject empty/undefined content without touching the mutation.
+    // An edit must carry some content (afterText, afterHtml, or instruction);
+    // a completely empty edit is a no-op and must never reach createEdit.
+    const hasContent =
+      (afterText !== undefined && afterText !== null && afterText !== '') ||
+      (afterHtml !== undefined && afterHtml !== null && afterHtml !== '') ||
+      (instruction !== undefined && instruction !== null && instruction !== '')
+    if (!hasContent) {
+      setEditError('Edit content is empty')
+      return { ok: false, error: 'Edit content is empty' }
+    }
+
     setEditError(undefined)
+    activeEditsRef.current += 1
     setIsEditing(true)
 
     try {
@@ -97,7 +115,8 @@ export const useEditController = (sessionId: string) => {
       // (setEditError uses React state which is stale until next render)
       return { ok: false, error: errorMessage }
     } finally {
-      setIsEditing(false)
+      activeEditsRef.current = Math.max(0, activeEditsRef.current - 1)
+      setIsEditing(activeEditsRef.current > 0)
     }
   }
 
