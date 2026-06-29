@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { JSDOM } from 'jsdom'
 
 // Set up jsdom globals BEFORE importing useTextEdit, which uses
@@ -1807,5 +1808,20 @@ describe('last-character deletion preserves SVG', () => {
       [svg],
     )
     expect(result).toBe(true)
+  })
+
+  // Source-level invariant: the blur handler must recognize AlertDialog
+  // portals (role="alertdialog") as "inside" so the delete confirmation
+  // dialog doesn't cause finishEdit() to fire and close the toolbar.
+  // Regression guard for the delete-button-broken bug.
+  it('source invariant: handleBlur checks [role=alertdialog] focus target', () => {
+    const source = readFileSync(require.resolve('./useTextEdit.ts'), 'utf-8')
+    expect(source).toContain('[role="alertdialog"]')
+    // Must be in the blur handler section, not just anywhere
+    const blurSection = source.slice(
+      source.indexOf('const handleBlur'),
+      source.indexOf('const handleKeyDown'),
+    )
+    expect(blurSection).toContain('[role="alertdialog"]')
   })
 })
