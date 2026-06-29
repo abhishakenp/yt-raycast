@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
@@ -70,10 +70,11 @@ describe('BillingPanel: behavioral', () => {
       }),
     )
 
-    render(<BillingPanel sessionId="sess-1" />)
+    const { container } = render(<BillingPanel sessionId="sess-1" />)
+    const scope = within(container)
 
-    await waitFor(() => expect(screen.getByText('Free')).not.toBeNull())
-    expect(screen.getByText('No subscription')).not.toBeNull()
+    await waitFor(() => expect(scope.getByText('Free')).not.toBeNull())
+    expect(scope.getByText('No subscription')).not.toBeNull()
   })
 
   it('shows active subscription status with plan id', async () => {
@@ -90,10 +91,11 @@ describe('BillingPanel: behavioral', () => {
       }),
     )
 
-    render(<BillingPanel sessionId="sess-1" />)
+    const { container } = render(<BillingPanel sessionId="sess-1" />)
+    const scope = within(container)
 
-    await waitFor(() => expect(screen.getByText('pro_monthly')).not.toBeNull())
-    expect(screen.getByText('razorpay')).not.toBeNull()
+    await waitFor(() => expect(scope.getByText('pro_monthly')).not.toBeNull())
+    expect(scope.getByText('razorpay')).not.toBeNull()
   })
 
   it('shows credit balance number', async () => {
@@ -105,10 +107,11 @@ describe('BillingPanel: behavioral', () => {
       }),
     )
 
-    render(<BillingPanel sessionId="sess-1" />)
+    const { container } = render(<BillingPanel sessionId="sess-1" />)
+    const scope = within(container)
 
-    await waitFor(() => expect(screen.getByText('17')).not.toBeNull())
-    expect(screen.getByText('Remaining')).not.toBeNull()
+    await waitFor(() => expect(scope.getByText('17')).not.toBeNull())
+    expect(scope.getByText('Remaining')).not.toBeNull()
   })
 
   it('shows export access granted (Unlocked) and denied (Locked)', async () => {
@@ -119,9 +122,12 @@ describe('BillingPanel: behavioral', () => {
         credits: { remaining: 0 },
       }),
     )
-    const { unmount } = render(<BillingPanel sessionId="sess-1" />)
-    await waitFor(() => expect(screen.getByText('Locked')).not.toBeNull())
-    expect(screen.getByText('Subscribe to unlock')).not.toBeNull()
+    const { unmount, container: deniedContainer } = render(
+      <BillingPanel sessionId="sess-1" />,
+    )
+    const deniedScope = within(deniedContainer)
+    await waitFor(() => expect(deniedScope.getByText('Locked')).not.toBeNull())
+    expect(deniedScope.getByText('Subscribe to unlock')).not.toBeNull()
     unmount()
 
     // granted
@@ -131,8 +137,13 @@ describe('BillingPanel: behavioral', () => {
         credits: { remaining: 5 },
       }),
     )
-    render(<BillingPanel sessionId="sess-1" />)
-    await waitFor(() => expect(screen.getByText('Unlocked')).not.toBeNull())
+    const { container: grantedContainer } = render(
+      <BillingPanel sessionId="sess-1" />,
+    )
+    const grantedScope = within(grantedContainer)
+    await waitFor(() =>
+      expect(grantedScope.getByText('Unlocked')).not.toBeNull(),
+    )
   })
 
   it('Upgrade to Pro button is present and triggers subscription checkout', async () => {
@@ -144,8 +155,9 @@ describe('BillingPanel: behavioral', () => {
       }),
     )
 
-    render(<BillingPanel sessionId="sess-42" />)
-    const upgrade = await screen.findByRole('button', {
+    const { container } = render(<BillingPanel sessionId="sess-42" />)
+    const scope = within(container)
+    const upgrade = await scope.findByRole('button', {
       name: /upgrade to pro/i,
     })
     expect(upgrade).not.toBeNull()
@@ -184,8 +196,9 @@ describe('BillingPanel: behavioral', () => {
       }),
     )
 
-    render(<BillingPanel sessionId="sess-9" />)
-    const threeCreditBtn = await screen.findByRole('button', {
+    const { container } = render(<BillingPanel sessionId="sess-9" />)
+    const scope = within(container)
+    const threeCreditBtn = await scope.findByRole('button', {
       name: /3 credits/i,
     })
     expect(threeCreditBtn).not.toBeNull()
@@ -227,8 +240,9 @@ describe('BillingPanel: behavioral', () => {
       }),
     )
 
-    render(<BillingPanel sessionId="sess-10" />)
-    const tenCreditBtn = await screen.findByRole('button', {
+    const { container } = render(<BillingPanel sessionId="sess-10" />)
+    const scope = within(container)
+    const tenCreditBtn = await scope.findByRole('button', {
       name: /10 credits/i,
     })
     expect(tenCreditBtn).not.toBeNull()
@@ -267,8 +281,9 @@ describe('BillingPanel: behavioral', () => {
       }),
     )
 
-    render(<BillingPanel sessionId="sess-r" />)
-    await waitFor(() => expect(screen.getByText('1')).not.toBeNull())
+    const { container } = render(<BillingPanel sessionId="sess-r" />)
+    const scope = within(container)
+    await waitFor(() => expect(scope.getByText('1')).not.toBeNull())
 
     // second load returns different credits
     fetchMock.mockResolvedValueOnce(
@@ -279,12 +294,12 @@ describe('BillingPanel: behavioral', () => {
       }),
     )
 
-    const refresh = screen.getByRole('button', { name: /refresh billing/i })
+    const refresh = scope.getByRole('button', { name: /refresh billing/i })
     fireEvent.click(refresh)
 
-    await waitFor(() => expect(screen.getByText('99')).not.toBeNull())
-    expect(screen.getByText('pro_monthly')).not.toBeNull()
-    expect(screen.getByText('Unlocked')).not.toBeNull()
+    await waitFor(() => expect(scope.getByText('99')).not.toBeNull())
+    expect(scope.getByText('pro_monthly')).not.toBeNull()
+    expect(scope.getByText('Unlocked')).not.toBeNull()
   })
 
   it('error state shows error message', async () => {
@@ -295,19 +310,21 @@ describe('BillingPanel: behavioral', () => {
       ),
     )
 
-    render(<BillingPanel sessionId="sess-err" />)
+    const { container } = render(<BillingPanel sessionId="sess-err" />)
+    const scope = within(container)
 
     await waitFor(() =>
-      expect(screen.getByText('Unable to load billing')).not.toBeNull(),
+      expect(scope.getByText('Unable to load billing')).not.toBeNull(),
     )
   })
 
   it('error state shows error message on fetch rejection', async () => {
     fetchMock.mockRejectedValue(new Error('Network down'))
 
-    render(<BillingPanel sessionId="sess-net" />)
+    const { container } = render(<BillingPanel sessionId="sess-net" />)
+    const scope = within(container)
 
-    await waitFor(() => expect(screen.getByText('Network down')).not.toBeNull())
+    await waitFor(() => expect(scope.getByText('Network down')).not.toBeNull())
   })
 
   it('loading state disables action buttons while overview is fetching', async () => {
@@ -318,14 +335,15 @@ describe('BillingPanel: behavioral', () => {
       }),
     )
 
-    render(<BillingPanel sessionId="sess-load" />)
+    const { container } = render(<BillingPanel sessionId="sess-load" />)
+    const scope = within(container)
 
-    const upgrade = await screen.findByRole('button', {
+    const upgrade = await scope.findByRole('button', {
       name: /upgrade to pro/i,
     })
-    const refresh = screen.getByRole('button', { name: /refresh billing/i })
-    const threeCredit = screen.getByRole('button', { name: /3 credits/i })
-    const tenCredit = screen.getByRole('button', { name: /10 credits/i })
+    const refresh = scope.getByRole('button', { name: /refresh billing/i })
+    const threeCredit = scope.getByRole('button', { name: /3 credits/i })
+    const tenCredit = scope.getByRole('button', { name: /10 credits/i })
 
     // while pending, all action buttons are disabled
     expect((upgrade as HTMLButtonElement).disabled).toBeTruthy()
@@ -365,12 +383,13 @@ describe('BillingPanel: behavioral', () => {
       }),
     )
 
-    render(<BillingPanel sessionId="sess-active" />)
+    const { container } = render(<BillingPanel sessionId="sess-active" />)
+    const scope = within(container)
 
-    await waitFor(() => expect(screen.getByText('pro_yearly')).not.toBeNull())
-    expect(screen.getByText('razorpay')).not.toBeNull()
-    expect(screen.getByText('250')).not.toBeNull()
-    expect(screen.getByText('Unlocked')).not.toBeNull()
+    await waitFor(() => expect(scope.getByText('pro_yearly')).not.toBeNull())
+    expect(scope.getByText('razorpay')).not.toBeNull()
+    expect(scope.getByText('250')).not.toBeNull()
+    expect(scope.getByText('Unlocked')).not.toBeNull()
   })
 
   it('checkout POST is sent to /api/checkout/start with Bearer token', async () => {
@@ -382,8 +401,9 @@ describe('BillingPanel: behavioral', () => {
       }),
     )
 
-    render(<BillingPanel sessionId="sess-auth" />)
-    const upgrade = await screen.findByRole('button', {
+    const { container } = render(<BillingPanel sessionId="sess-auth" />)
+    const scope = within(container)
+    const upgrade = await scope.findByRole('button', {
       name: /upgrade to pro/i,
     })
 
@@ -425,8 +445,9 @@ describe('BillingPanel: behavioral', () => {
       }),
     )
 
-    render(<BillingPanel sessionId="sess-redir" />)
-    const upgrade = await screen.findByRole('button', {
+    const { container } = render(<BillingPanel sessionId="sess-redir" />)
+    const scope = within(container)
+    const upgrade = await scope.findByRole('button', {
       name: /upgrade to pro/i,
     })
 
