@@ -217,7 +217,7 @@ function OpenUIRenderFallback({
 export default function OpenUIViewer({
   response,
   isStreaming,
-  theme: _theme,
+  theme,
   locale,
   embed,
   sessionId,
@@ -251,6 +251,20 @@ export default function OpenUIViewer({
   const firedRef = useRef(false)
   const rafRef = useRef<number | null>(null)
   const rafRef2 = useRef<number | null>(null)
+  // Map the merged site-spec + session theme colors (server keys: primary,
+  // accent, background, …) to CSS custom properties on the viewer's root
+  // element so generated components can consume them as design tokens.
+  const themeVars = useMemo(() => {
+    const vars: CSSProperties = {}
+    if (theme) {
+      for (const [key, value] of Object.entries(theme)) {
+        if (value != null) {
+          ;(vars as Record<string, string>)[`--${key}`] = String(value)
+        }
+      }
+    }
+    return vars
+  }, [theme])
   const preparedResponse = useMemo(
     () => preprocessOpenUIRuntimeResponse(response),
     [response],
@@ -429,7 +443,7 @@ export default function OpenUIViewer({
           : '0 0 0 1px rgba(255,255,255,0.08) inset',
       }
   return (
-    <div style={{ height: '100%', width: '100%', ...rootStyle }}>
+    <div style={{ height: '100%', width: '100%', ...rootStyle, ...themeVars }}>
       {isStreaming && !inEmbed ? (
         <div className="streaming-indicator" aria-hidden="true" />
       ) : null}
