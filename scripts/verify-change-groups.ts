@@ -105,6 +105,7 @@ export const changeGroups: ChangeGroup[] = [
     patterns: [
       /^__fixtures__\//,
       /^packages\/ship-fast-engine\//,
+      /^packages\/ship-fast-aeo\//,
       /^scripts\/bench-render-crashes\.mjs$/,
     ],
   },
@@ -140,6 +141,7 @@ export const changeGroups: ChangeGroup[] = [
     title: 'Commerce and external integration hardening',
     patterns: [
       /^src\/billing\//,
+      /^src\/features\/commerce\//,
       /^src\/features\/exports\/server\//,
       /^src\/features\/github\//,
       /^src\/lib\/(?:image-context|stock-image)\.ts$/,
