@@ -147,3 +147,73 @@ describe('resolveVarName — data-openui-var DOM lookup', () => {
     expect(resolveVarName(el)).toBeUndefined()
   })
 })
+
+// ---------------------------------------------------------------------------
+// PART C — edge-case regression guards
+// ---------------------------------------------------------------------------
+
+describe('reorderInStack — edge cases', () => {
+  it('multi-line Stack array returns reordered=false (regex is single-line only)', () => {
+    // The Stack array is split across multiple lines; the per-line regex
+    // cannot match the full Stack([...]) pattern, so reorder is a graceful
+    // no-op (reordered=false), not a crash.
+    const multiLineSource = `a_anchor = SectionAnchor("a", a)
+b_anchor = SectionAnchor("b", b)
+home = Stack([
+  a_anchor,
+  b_anchor,
+])
+root = PageSwitch(["Home"], [home], "", {})`
+    const result = reorderInStack(multiLineSource, 'a', 'down')
+    expect(result.reordered).toBe(false)
+    expect(result.source).toBe(multiLineSource)
+  })
+
+  it('Stack with 2 items: move first down works', () => {
+    const source = `a_anchor = SectionAnchor("a", a)
+b_anchor = SectionAnchor("b", b)
+home = Stack([a_anchor, b_anchor])`
+    const result = reorderInStack(source, 'a', 'down')
+    expect(result.reordered).toBe(true)
+    const line = stackLine(result.source)
+    // b_anchor should now come before a_anchor
+    expect(line.indexOf('b_anchor')).toBeLessThan(line.indexOf('a_anchor'))
+  })
+
+  it('Stack with 2 items: move second up works', () => {
+    const source = `a_anchor = SectionAnchor("a", a)
+b_anchor = SectionAnchor("b", b)
+home = Stack([a_anchor, b_anchor])`
+    const result = reorderInStack(source, 'b', 'up')
+    expect(result.reordered).toBe(true)
+    const line = stackLine(result.source)
+    // b_anchor should now come before a_anchor
+    expect(line.indexOf('b_anchor')).toBeLessThan(line.indexOf('a_anchor'))
+  })
+
+  it('PageSwitch reorder works: move second page up', () => {
+    // Two pages in the PageSwitch second array; move the second one ("about")
+    // up so it swaps with "home".
+    const source = `home = Stack([home_hero_anchor])
+about = Stack([about_hero_anchor])
+root = PageSwitch(["Home", "About"], [home, about], "", {})`
+    const result = reorderInStack(source, 'about', 'up')
+    expect(result.reordered).toBe(true)
+    const pageLine = result.source
+      .split('\n')
+      .find((l) => l.includes('PageSwitch('))!
+    // about should now come before home in the second array
+    const secondArrayStart = pageLine.indexOf(']', pageLine.indexOf('[')) + 1
+    const secondArray = pageLine.slice(secondArrayStart)
+    expect(secondArray.indexOf('about')).toBeLessThan(
+      secondArray.indexOf('home'),
+    )
+  })
+
+  it('PageSwitch with single page: move up returns reordered=false', () => {
+    const source = `home = Stack([home_hero_anchor])
+root = PageSwitch(["Home"], [home], "", {})`
+    const result = reorderInStack(source, 'home', 'up')
+    expect(result.reordered).toBe(false)
+  })
+})

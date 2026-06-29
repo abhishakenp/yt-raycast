@@ -254,4 +254,49 @@ describe('HomePage — language detection for short explicit-keyword prompts', (
     // Correct current behavior — this test should PASS.
     expect(row.classList.contains('is-hidden')).toBe(true)
   })
+
+  it('language dropdown hides when prompt is cleared back to empty', () => {
+    render(<HomePage />)
+    const input = getPromptInput()
+    fireEvent.focus(input)
+    fireEvent.change(input, { target: { value: 'build a site' } })
+
+    const row = getLanguageRow()
+    expect(row.classList.contains('is-hidden')).toBe(false)
+
+    // Clear the input back to empty — dropdown should hide again.
+    fireEvent.change(input, { target: { value: '' } })
+    expect(row.classList.contains('is-hidden')).toBe(true)
+  })
+
+  it('whitespace-only prompt keeps dropdown hidden', () => {
+    render(<HomePage />)
+    const input = getPromptInput()
+    fireEvent.focus(input)
+    // Whitespace-only prompt: trimmedPromptLength is 0, so dropdown stays hidden.
+    fireEvent.change(input, { target: { value: '   ' } })
+
+    const row = getLanguageRow()
+    expect(row).toBeTruthy()
+    expect(row.classList.contains('is-hidden')).toBe(true)
+  })
+
+  it('detection result is applied to the select element', async () => {
+    render(<HomePage />)
+    const input = getPromptInput()
+    fireEvent.focus(input)
+    fireEvent.change(input, { target: { value: 'build site in hindi' } })
+
+    // Advance past the debounce window so the detection effect fires.
+    await act(async () => {
+      vi.advanceTimersByTime(PROMPT_LANG_DETECT_DEBOUNCE_MS + 50)
+      await Promise.resolve()
+    })
+
+    const select = getLanguageSelect()
+    expect(select).toBeTruthy()
+    // Mock detector returns 'hi' for inputs containing "hindi"; the preferred
+    // language should be applied to the select element's value.
+    expect(select.value).toBe('hi')
+  })
 })
