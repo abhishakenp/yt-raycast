@@ -81,7 +81,8 @@ export function enrichPageAeo(
     siteSpec.projectName || siteSpec.seo?.siteName || 'This site',
   ).trim()
   const siteType = String(siteSpec.siteType || 'landing')
-  const category = inferCategory(siteType, prompt)
+  const category =
+    page.aeo?.entitySignals?.category || inferCategory(siteType, prompt)
   const audience =
     page.aeo?.entitySignals?.audience ||
     (/\bfor\b/i.test(prompt)

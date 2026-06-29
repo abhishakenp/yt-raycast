@@ -56,7 +56,7 @@ export function auditSiteSpecAeo(
       const h1Count = (html.match(/<h1\b/gi) || []).length
       if (h1Count !== 1) {
         issues.push({
-          level: h1Count === 0 ? 'error' : 'warn',
+          level: 'error',
           code: 'h1_count',
           message: `Expected exactly one <h1>, found ${h1Count}`,
           pageRoute: route,

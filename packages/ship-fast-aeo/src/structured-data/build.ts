@@ -11,6 +11,20 @@ const SOFTWARE_SITE_TYPES = new Set([
   'app',
 ])
 
+const BLOG_SITE_TYPES = new Set(['blog', 'publication'])
+
+function isArticlePage(
+  page: SitePageLike | null | undefined,
+  _siteSpec: SiteSpecLike | null | undefined,
+): boolean {
+  const route = normalizePath(page?.route || '/')
+  const hasArticleSection = (page?.sections || []).some(
+    (section) => section.type === 'article' || section.type === 'post',
+  )
+  if (hasArticleSection) return true
+  return /^\/(posts?|blog|article|news)\//i.test(route)
+}
+
 function entitySignals(
   siteSpec: SiteSpecLike | null | undefined,
   page: SitePageLike | null | undefined,
@@ -67,6 +81,8 @@ export function buildStructuredData(
   const signals = entitySignals(siteSpec, page)
   const entries: Record<string, unknown>[] = []
   const siteType = String(siteSpec?.siteType || 'landing').toLowerCase()
+  const siteUrl = seo.siteUrl || seo.canonicalUrl
+  const logo = String(siteSpec?.seo?.logo || '').trim()
 
   if (page?.route === '/') {
     entries.push(
@@ -74,8 +90,18 @@ export function buildStructuredData(
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: seo.siteName,
-        url: seo.siteUrl || seo.canonicalUrl,
+        url: siteUrl,
         description: seo.description,
+        potentialAction: siteUrl
+          ? {
+              '@type': 'SearchAction',
+              target: {
+                '@type': 'EntryPoint',
+                urlTemplate: `${siteUrl}/?s={search_term_string}`,
+              },
+              'query-input': 'required name=search_term_string',
+            }
+          : undefined,
       }) as Record<string, unknown>,
     )
   }
@@ -89,6 +115,7 @@ export function buildStructuredData(
         name: orgName,
         url: seo.siteUrl || seo.canonicalUrl,
         description: seo.description,
+        logo: logo || undefined,
         email: signals.contact?.email,
         telephone: signals.contact?.phone,
         address: signals.contact?.address || signals.contact?.location,
@@ -152,6 +179,27 @@ export function buildStructuredData(
         : undefined,
     }) as Record<string, unknown>,
   )
+
+  if (BLOG_SITE_TYPES.has(siteType) && isArticlePage(page, siteSpec)) {
+    const pageSeo = page?.seo && typeof page.seo === 'object' ? page.seo : {}
+    const datePublished = String(
+      pageSeo.datePublished || pageSeo.date || pageSeo.publishedAt || '',
+    ).trim()
+    entries.push(
+      cleanObject({
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: seo.title,
+        description: seo.description,
+        url: seo.canonicalUrl,
+        author: {
+          '@type': 'Organization',
+          name: orgName || seo.siteName,
+        },
+        datePublished: datePublished || new Date().toISOString(),
+      }) as Record<string, unknown>,
+    )
+  }
 
   const breadcrumbs = inferBreadcrumbs(siteSpec, page)
   if (breadcrumbs.length > 1 && seo.siteUrl) {
