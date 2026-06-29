@@ -903,27 +903,45 @@ export function Dashboard({
 
   const handleSectionMoveUp = async () => {
     if (!inspectorSelection) return
+    const varName = inspectorSelection.openuiVar
+    if (varName) {
+      await reorder.reorder(varName, 'up')
+      return
+    }
     const root = document.querySelector('.genui-preview')
     if (!root) return
     const el = root.querySelector<HTMLElement>(inspectorSelection.elementPath)
     if (!el) return
-    const sectionId =
-      el.getAttribute('id') || el.closest('[id]')?.getAttribute('id') || ''
-    if (sectionId) {
-      await reorder.reorder(sectionId, 'up')
+    const resolved =
+      el.getAttribute('data-openui-var') ??
+      el.closest('[data-openui-var]')?.getAttribute('data-openui-var') ??
+      el.getAttribute('id') ??
+      el.closest('[id]')?.getAttribute('id') ??
+      undefined
+    if (resolved) {
+      await reorder.reorder(resolved, 'up')
     }
   }
 
   const handleSectionMoveDown = async () => {
     if (!inspectorSelection) return
+    const varName = inspectorSelection.openuiVar
+    if (varName) {
+      await reorder.reorder(varName, 'down')
+      return
+    }
     const root = document.querySelector('.genui-preview')
     if (!root) return
     const el = root.querySelector<HTMLElement>(inspectorSelection.elementPath)
     if (!el) return
-    const sectionId =
-      el.getAttribute('id') || el.closest('[id]')?.getAttribute('id') || ''
-    if (sectionId) {
-      await reorder.reorder(sectionId, 'down')
+    const resolved =
+      el.getAttribute('data-openui-var') ??
+      el.closest('[data-openui-var]')?.getAttribute('data-openui-var') ??
+      el.getAttribute('id') ??
+      el.closest('[id]')?.getAttribute('id') ??
+      undefined
+    if (resolved) {
+      await reorder.reorder(resolved, 'down')
     }
   }
 
@@ -1124,22 +1142,29 @@ export function Dashboard({
 
   const handleMoveUp = async () => {
     if (!toolbarState.activeElement) return
-    // Find the section variable name from the element's id or class
     const el = toolbarState.activeElement
-    const sectionId =
-      el.getAttribute('id') || el.closest('[id]')?.getAttribute('id') || ''
-    if (sectionId) {
-      await reorder.reorder(sectionId, 'up')
+    const varName =
+      el.getAttribute('data-openui-var') ??
+      el.closest('[data-openui-var]')?.getAttribute('data-openui-var') ??
+      el.getAttribute('id') ??
+      el.closest('[id]')?.getAttribute('id') ??
+      undefined
+    if (varName) {
+      await reorder.reorder(varName, 'up')
     }
   }
 
   const handleMoveDown = async () => {
     if (!toolbarState.activeElement) return
     const el = toolbarState.activeElement
-    const sectionId =
-      el.getAttribute('id') || el.closest('[id]')?.getAttribute('id') || ''
-    if (sectionId) {
-      await reorder.reorder(sectionId, 'down')
+    const varName =
+      el.getAttribute('data-openui-var') ??
+      el.closest('[data-openui-var]')?.getAttribute('data-openui-var') ??
+      el.getAttribute('id') ??
+      el.closest('[id]')?.getAttribute('id') ??
+      undefined
+    if (varName) {
+      await reorder.reorder(varName, 'down')
     }
   }
 
