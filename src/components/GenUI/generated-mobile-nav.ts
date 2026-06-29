@@ -10,7 +10,7 @@ type HeaderEnhancement = {
 const enhancements = new WeakMap<HTMLElement, HeaderEnhancement>()
 
 const desktopNavClassPattern =
-  /(?:^|\s)hidden(?:\s|$).*?(?:^|\s)(?:md|lg|xl):flex(?:\s|$)|(?:^|\s)(?:md|lg|xl):flex(?:\s|$).*?(?:^|\s)hidden(?:\s|$)/
+  /(?:^|\s)hidden(?:\s+(?:[\w-]+(?::[\w-]+)?\s+)*)?(?:md|lg|xl):flex(?:\s|$)|(?:^|\s)(?:md|lg|xl):flex(?:\s+(?:[\w-]+(?::[\w-]+)?\s+)*)?hidden(?:\s|$)/
 const mobileHiddenClassPattern = /(?:^|\s)(?:md|lg|xl):hidden(?:\s|$)/
 
 const navCandidateTags = new Set(['DIV', 'NAV', 'UL'])
