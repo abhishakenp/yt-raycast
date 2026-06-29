@@ -523,6 +523,8 @@ const isReservedEndpointPath = (path: string): boolean =>
   path === '/client.js' ||
   path === '/auth/callback' ||
   path.startsWith('/auth/') ||
+  path === '/admin' ||
+  path.startsWith('/admin/') ||
   path === '/__lakebed' ||
   path.startsWith('/__lakebed/') ||
   path === '/__span' ||
@@ -750,7 +752,7 @@ export const buildLakebedAnonymousDeployRequest = async (
   })
   options.log?.('anonymous-request:diagnostics:start')
   const diagnostics = forbiddenSourceDiagnostics(sourceFiles, {
-    allowAsync: true,
+    allowAsync: false,
   })
   const { diagnostics: schemaDiagnostics, schema } = serializeSchema(app.schema)
   const { diagnostics: endpointDiagnostics, endpoints } = serializeEndpoints(

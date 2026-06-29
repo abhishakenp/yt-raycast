@@ -130,6 +130,10 @@ const stripShipFastOpenUIMetadata = (html: string): string =>
       /\bGenerated OpenUI source is ready\./g,
       'Generated site is ready.',
     )
+    .replace(
+      /\sdata-openui-[a-z0-9-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?/gi,
+      '',
+    )
 
 const renderReadme = (projectName: string): string => `# ${projectName}
 
