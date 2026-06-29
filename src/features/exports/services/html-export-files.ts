@@ -54,6 +54,9 @@ export const normalizeSiteUrl = (
   if (!value) return undefined
   try {
     const url = new URL(value)
+    if (url.protocol === 'http:') {
+      url.protocol = 'https:'
+    }
     url.hash = ''
     url.search = ''
     return url.toString().replace(/\/+$/, '')
@@ -103,6 +106,10 @@ const createPackageJson = (
         dependencies: {
           react: '^18.2.0',
           'react-dom': '^18.2.0',
+        },
+        devDependencies: {
+          vite: '^5.0.0',
+          '@vitejs/plugin-react': '^4.2.0',
         },
         scripts: {
           dev: 'vite',
