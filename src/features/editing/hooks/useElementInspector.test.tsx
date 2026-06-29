@@ -276,4 +276,28 @@ describe('useElementInspector — behavioral', () => {
     expect(onSectionSelect).toHaveBeenCalledTimes(1) // not cleared
     toolbar.remove()
   })
+
+  it('does NOT clear when mousedown lands on an alert dialog portal', () => {
+    const onSectionSelect =
+      vi.fn<(selection: InspectorSelection | null) => void>()
+    const { getByTestId } = render(
+      <Harness active={true} onSectionSelect={onSectionSelect} />,
+    )
+    const card = getByTestId('card')
+    vi.spyOn(card, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(1, 2, 3, 4),
+    )
+    act(() => {
+      fireClick(card)
+    })
+    // Simulate an AlertDialog portal element outside the container
+    const dialog = document.createElement('div')
+    dialog.setAttribute('role', 'alertdialog')
+    document.body.appendChild(dialog)
+    act(() => {
+      dialog.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+    })
+    expect(onSectionSelect).toHaveBeenCalledTimes(1) // not cleared
+    dialog.remove()
+  })
 })
