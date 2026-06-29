@@ -26,7 +26,7 @@ describe('preprocessOpenUIRuntimeResponse', () => {
     const result = preprocessOpenUIRuntimeResponse(source)
 
     expect(result).toContain('{"name":"Darius K."')
-    expect(result).toContain('{name:"Maya S."')
+    expect(result).toContain('{"name":"Maya S."')
     expect(result).not.toContain('{"name:"Maya S."')
   })
 
@@ -36,7 +36,7 @@ describe('preprocessOpenUIRuntimeResponse', () => {
 
     const result = preprocessOpenUIRuntimeResponse(source)
 
-    expect(result).toContain('{footer:{note:"Done"}}, null)')
-    expect(result).not.toContain('{footer:{note:"Done"}, null)')
+    expect(result).toContain('{"footer":{"note":"Done"}}, null)')
+    expect(result).not.toContain('{"footer":{"note":"Done"}, null)')
   })
 })
