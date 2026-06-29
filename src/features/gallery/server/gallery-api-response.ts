@@ -9,14 +9,41 @@ const GALLERY_PAGE_DEFAULT = 12
 const GALLERY_PAGE_MAX = 24
 
 export const parseGalleryPagination = (query: Record<string, string> = {}) => {
+  let valid = true
+
   const limitRaw = parseInt(String(query.limit ?? ''), 10)
+  let limit: number
+  if (query.limit === undefined || String(query.limit).trim() === '') {
+    limit = GALLERY_PAGE_DEFAULT
+  } else if (Number.isNaN(limitRaw)) {
+    valid = false
+    limit = GALLERY_PAGE_DEFAULT
+  } else if (limitRaw === 0) {
+    limit = GALLERY_PAGE_DEFAULT
+  } else if (limitRaw < 0) {
+    valid = false
+    limit = GALLERY_PAGE_DEFAULT
+  } else {
+    limit = Math.min(limitRaw, GALLERY_PAGE_MAX)
+  }
+
   const pageRaw = parseInt(String(query.page ?? ''), 10)
-  const limit = Math.min(
-    Math.max(Number.isFinite(limitRaw) ? limitRaw : GALLERY_PAGE_DEFAULT, 1),
-    GALLERY_PAGE_MAX,
-  )
-  const page = Math.max(Number.isFinite(pageRaw) ? pageRaw : 1, 1)
-  return { limit, page }
+  let page: number
+  if (query.page === undefined || String(query.page).trim() === '') {
+    page = 1
+  } else if (Number.isNaN(pageRaw)) {
+    valid = false
+    page = 1
+  } else if (pageRaw === 0) {
+    page = 1
+  } else if (pageRaw < 0) {
+    valid = false
+    page = 1
+  } else {
+    page = pageRaw
+  }
+
+  return { limit, page, valid }
 }
 
 export const createGalleryApiResponse = async (
@@ -24,9 +51,20 @@ export const createGalleryApiResponse = async (
   clientOverride?: GalleryConvexClient,
 ) => {
   const url = new URL(request.url)
-  const { limit, page } = parseGalleryPagination(
+  const { limit, page, valid } = parseGalleryPagination(
     Object.fromEntries(url.searchParams),
   )
+
+  if (!valid) {
+    return new Response(
+      JSON.stringify({ error: 'Invalid pagination parameters' }),
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
+  }
+
   // Support "query" as an alias for "search" for recent-session compatibility
   const search =
     url.searchParams.get('search') ?? url.searchParams.get('query') ?? undefined

@@ -79,6 +79,12 @@ const formatGenerationTime = (elapsed?: number | null) => {
   if (seconds < 10) return `${seconds.toFixed(1)}s`
   if (seconds < 60) return `${Math.round(seconds)}s`
 
+  if (seconds >= 3600) {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.round((seconds % 3600) / 60)
+    return `${hours}h ${minutes}m`
+  }
+
   const minutes = Math.floor(seconds / 60)
   const remainingSeconds = Math.round(seconds % 60)
   if (remainingSeconds === 0) return `${minutes}m`
@@ -167,10 +173,18 @@ export const GalleryCategoryTabs = ({
 
 const GalleryPreview = ({ session }: { session: GallerySession }) => {
   const title = getPromptTitle(session.prompt)
-  const moduleSource = getModuleSource(session.moduleSource)
-  const previewDocument = getPreviewDocument(session.html)
-  const imageSrc =
-    moduleSource === undefined && previewDocument === undefined
+  const imageUrl = session.imageUrl?.trim()
+  // Priority: imageUrl > moduleSource > html > gradient.
+  // When imageUrl is present, moduleSource/html are skipped entirely.
+  const moduleSource = imageUrl
+    ? undefined
+    : getModuleSource(session.moduleSource)
+  const previewDocument = imageUrl
+    ? undefined
+    : getPreviewDocument(session.html)
+  const imageSrc = imageUrl
+    ? imageUrl
+    : moduleSource === undefined && previewDocument === undefined
       ? getGalleryImageUrl(session)
       : ''
   const [resolvedImageSrc, setResolvedImageSrc] = useState(() =>
@@ -272,16 +286,17 @@ const GalleryCard = ({
         </p>
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 flex-wrap gap-1.5">
-            {(session.categories?.length ? session.categories : ['website'])
-              .slice(0, 2)
-              .map((category) => (
-                <span
-                  key={category}
-                  className="rounded-full border border-white/10 bg-white/[0.045] px-2 py-0.5 text-[11px] capitalize text-white/48"
-                >
-                  {category}
-                </span>
-              ))}
+            {(session.categories?.length
+              ? session.categories
+              : ['website']
+            ).map((category) => (
+              <span
+                key={category}
+                className="rounded-full border border-white/10 bg-white/[0.045] px-2 py-0.5 text-[11px] capitalize text-white/48"
+              >
+                {category}
+              </span>
+            ))}
           </div>
           {generationTime !== undefined ? (
             <span
