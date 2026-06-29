@@ -79,6 +79,12 @@ const setBrandError = (error: string, status = 404) => {
 }
 
 const lookupBrand = (view: ReturnType<typeof render>) => {
+  const input = view.getByLabelText(/brand or domain/i) as HTMLInputElement
+  // The lookup button is disabled when the query is empty, so seed a default
+  // domain when the test hasn't already typed one.
+  if (!input.value.trim()) {
+    fireEvent.change(input, { target: { value: 'linear.app' } })
+  }
   const button = view.getByRole('button', { name: /lookup brand/i })
   fireEvent.click(button)
 }
@@ -119,7 +125,6 @@ describe('BrandMediaPanel', () => {
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(
         expect.stringContaining('/api/brand-profile?query=stripe.com'),
-        undefined,
       ),
     )
   })
@@ -307,8 +312,9 @@ describe('BrandMediaPanel', () => {
     expect(titles).toContain('#5e6ad2')
     expect(titles).toContain('#171717')
     expect(titles).toContain('#ffffff')
-    // The swatch background style should match its hex value.
-    expect(swatches[0].style.background).toBe('#5e6ad2')
+    // The swatch background style should match its hex value. jsdom
+    // normalizes hex colors to rgb(), so compare the backgroundColor.
+    expect(swatches[0].style.backgroundColor).toBe('rgb(94, 106, 210)')
   })
 
   it('10. brand profile cache: a second lookup of the same domain reuses cached data without refetching', async () => {
