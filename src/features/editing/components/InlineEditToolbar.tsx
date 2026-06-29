@@ -375,7 +375,10 @@ export function InlineEditToolbar({
         target.closest?.('[role="option"]') ||
         target.closest?.('[role="listbox"]') ||
         target.closest?.('[data-radix-popper-content-wrapper]') ||
-        target.closest?.('[data-radix-select-content]')
+        target.closest?.('[data-radix-select-content]') ||
+        target.closest?.('[role="alertdialog"]') ||
+        target.closest?.('[data-radix-dialog-content]') ||
+        target.closest?.('[data-radix-dialog-overlay]')
       if (
         !isInWrapper &&
         !isInRadixPortal &&

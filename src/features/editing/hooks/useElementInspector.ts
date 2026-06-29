@@ -146,6 +146,8 @@ export function useElementInspector(
       if (!(target instanceof HTMLElement)) return
       if (container.contains(target)) return
       if (target.closest('.inline-edit-toolbar')) return
+      // Radix AlertDialog (Delete confirmation) portals to document.body.
+      if (target.closest('[role="alertdialog"]')) return
       if (selectedElementRef.current) clearSelection()
     }
 

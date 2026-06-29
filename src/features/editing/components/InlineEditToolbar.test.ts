@@ -375,6 +375,36 @@ describe('InlineEditToolbar — font size control', () => {
     activeElement.remove()
   })
 
+  it('mousedown on alert dialog portal does not close toolbar before confirm', () => {
+    activeElement.setAttribute('class', 'hero-card')
+    document.body.appendChild(activeElement)
+
+    renderToolbar(activeElement)
+
+    const deleteBtn = document.querySelector(
+      'button[aria-label="Delete element"]',
+    ) as HTMLButtonElement
+    fireEvent.click(deleteBtn)
+
+    // Dialog should be open
+    const dialog = document.querySelector('[role="alertdialog"]')
+    expect(dialog).toBeTruthy()
+
+    // Simulate mousedown on the dialog content (portals to document.body)
+    fireEvent.mouseDown(dialog!)
+
+    // Toolbar should NOT have been closed — onClose should not have been
+    // called from the click-outside handler treating the dialog as "outside".
+    expect(onClose).not.toHaveBeenCalled()
+
+    // Cleanup
+    const cancelBtn = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Cancel',
+    )
+    fireEvent.click(cancelBtn!)
+    activeElement.remove()
+  })
+
   it('renders underline and strikethrough buttons for text elements', () => {
     renderToolbar(activeElement)
 
