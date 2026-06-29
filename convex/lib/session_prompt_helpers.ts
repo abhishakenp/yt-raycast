@@ -17,6 +17,44 @@ const genericPromptWords = new Set([
   'cool',
 ])
 
+const keyboardMashPatterns = new Set([
+  'asdf',
+  'jkl',
+  'jkl;',
+  'asdfgh',
+  'asdfghjkl',
+  'asdfjkl',
+  'qwerty',
+  'qwertz',
+  'azerty',
+  'zxcv',
+  'zxcvbn',
+  'zxcvbnm',
+  'qwertyuiop',
+  'poiuytrewq',
+  'lkjhgfdsa',
+  'mnbvcxz',
+  'hjkl',
+  'ghjkl',
+  'fghjkl',
+  'dfghjkl',
+  '123456',
+  '12345678',
+  '123456789',
+  '111111',
+  '000000',
+])
+
+const keyboardMashSequences = [
+  'asdf',
+  'jkl',
+  'qwerty',
+  'zxcv',
+  'asdfgh',
+  'hjkl',
+  'ghjkl',
+]
+
 const blockedPolicyPatterns = [
   /\b(phishing|spoof|fake)\b[\s\S]{0,40}\b(login|checkout|bank|paypal|stripe|coinbase|wallet|oauth|2fa|password)\b/i,
   /\b(child|kid|minor|underage)\w*\b[\s\S]{0,48}\b(porn|xxx|nude|naked|sexual|erotic)\b/i,
@@ -52,7 +90,25 @@ export const isLikelyGibberishPrompt = (prompt: string): boolean => {
     tokens.every((token) => genericPromptWords.has(token))
   )
     return true
-  const collapsed = text.toLowerCase().replace(/[^a-z]/g, '')
+
+  // Detect keyboard-mashing patterns (e.g. "asdf jkl", "qwerty zxcv")
+  if (
+    tokens.length > 0 &&
+    tokens.every((token) => keyboardMashPatterns.has(token))
+  )
+    return true
+
+  const lower = text.toLowerCase()
+  if (keyboardMashSequences.some((seq) => lower.includes(seq))) {
+    if (text.length <= 24) return true
+    if (
+      tokens.length > 0 &&
+      tokens.every((token) => keyboardMashPatterns.has(token))
+    )
+      return true
+  }
+
+  const collapsed = lower.replace(/[^a-z]/g, '')
   return collapsed.length >= 8 && /(.)\1{5,}/.test(collapsed)
 }
 
@@ -73,12 +129,9 @@ export const normalizeOptionalHttpsUrl = (
   const raw = value?.trim()
   if (!raw) return undefined
   try {
-    const parsed = new URL(raw)
+    const upgraded = raw.replace(/^http:\/\//i, 'https://')
+    const parsed = new URL(upgraded)
     parsed.hash = ''
-    parsed.protocol === 'https:' ||
-      (() => {
-        throw new Error('HTTPS required')
-      })()
     return parsed.toString()
   } catch {
     throw new ConvexError({

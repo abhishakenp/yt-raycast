@@ -85,6 +85,44 @@ const genericPromptWords = new Set([
   'cool',
 ])
 
+const keyboardMashPatterns = new Set([
+  'asdf',
+  'jkl',
+  'jkl;',
+  'asdfgh',
+  'asdfghjkl',
+  'asdfjkl',
+  'qwerty',
+  'qwertz',
+  'azerty',
+  'zxcv',
+  'zxcvbn',
+  'zxcvbnm',
+  'qwertyuiop',
+  'poiuytrewq',
+  'lkjhgfdsa',
+  'mnbvcxz',
+  'hjkl',
+  'ghjkl',
+  'fghjkl',
+  'dfghjkl',
+  '123456',
+  '12345678',
+  '123456789',
+  '111111',
+  '000000',
+])
+
+const keyboardMashSequences = [
+  'asdf',
+  'jkl',
+  'qwerty',
+  'zxcv',
+  'asdfgh',
+  'hjkl',
+  'ghjkl',
+]
+
 const normalizeSpaces = (value: string): string =>
   value.replace(/\s+/g, ' ').trim()
 
@@ -131,7 +169,26 @@ export const isLikelyGibberishPrompt = (prompt: string): boolean => {
   )
     return true
 
-  const collapsed = text.toLowerCase().replace(/[^a-z]/g, '')
+  // Detect keyboard-mashing patterns (e.g. "asdf jkl", "qwerty zxcv")
+  if (
+    tokens.length > 0 &&
+    tokens.every((token) => keyboardMashPatterns.has(token))
+  )
+    return true
+
+  const lower = text.toLowerCase()
+  if (keyboardMashSequences.some((seq) => lower.includes(seq))) {
+    // If the prompt is short and contains a keyboard-mash sequence, treat as gibberish
+    if (text.length <= 24) return true
+    // For longer prompts, if all alphanumeric tokens are mash patterns, reject
+    if (
+      tokens.length > 0 &&
+      tokens.every((token) => keyboardMashPatterns.has(token))
+    )
+      return true
+  }
+
+  const collapsed = lower.replace(/[^a-z]/g, '')
   if (collapsed.length >= 8 && /(.)\1{5,}/.test(collapsed)) return true
 
   return false
@@ -280,6 +337,19 @@ export const parseSessionAdmission = (
         ? 'Your monthly generation quota is exhausted.'
         : 'Your anonymous daily generation quota is exhausted. Share on social media for +1 free generation, or sign in to continue.',
       status: 429,
+    }
+  }
+
+  if (
+    typeof input.preferredExportTarget === 'string' &&
+    input.preferredExportTarget.trim().length > 0 &&
+    !exportTargets.has(input.preferredExportTarget)
+  ) {
+    return {
+      ok: false,
+      code: 'INVALID_PROMPT',
+      message: `Invalid export target "${input.preferredExportTarget}". Valid targets: html, react, next.`,
+      status: 400,
     }
   }
 

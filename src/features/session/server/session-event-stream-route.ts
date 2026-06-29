@@ -124,7 +124,8 @@ export const createSessionEventStreamResponse = async (
     const events = data.events
     const replay = events.map(serializeSseEvent).join('')
     const cursor = data.cursor ?? parseSince(request) ?? Date.now()
-    const heartbeat = [
+    const heartbeatKeepAlive = `: heartbeat keep-alive ${Date.now()}\n`
+    const replayComplete = [
       sseLine('id', String(cursor)),
       sseLine('event', 'replay_complete'),
       sseLine(
@@ -138,7 +139,7 @@ export const createSessionEventStreamResponse = async (
       '\n',
     ].join('')
 
-    return createSseResponse(`${replay}${heartbeat}`)
+    return createSseResponse(`${heartbeatKeepAlive}${replay}${replayComplete}`)
   } catch (error) {
     return createSseResponse(
       [
