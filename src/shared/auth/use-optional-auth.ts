@@ -45,6 +45,10 @@ type ClerkWindow = Window & {
 type OptionalAuth = {
   getToken: (options?: ClerkTokenOptions) => Promise<string | null>
   isSignedIn: boolean
+  // Synchronous snapshot model has no async load phase: the auth state is always
+  // resolved (absent Clerk global => anonymous). Kept for parity with consumers
+  // (WaitlistGate/SignInGate) that branch on Clerk's `isLoaded`.
+  isLoaded: boolean
 }
 
 type OptionalClerk = {
@@ -57,6 +61,7 @@ type OptionalClerk = {
 const anonymousAuth: OptionalAuth = {
   getToken: async () => null,
   isSignedIn: false,
+  isLoaded: true,
 }
 const anonymousClerk: OptionalClerk = {
   openSignIn: () => undefined,
@@ -176,6 +181,7 @@ export const useOptionalAuth = (): OptionalAuth => {
         ? {
             getToken: getOptionalToken,
             isSignedIn: snapshot.isSignedIn,
+            isLoaded: true,
           }
         : anonymousAuth,
     [snapshot.isSignedIn],

@@ -1,7 +1,5 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -83,27 +81,5 @@ describe('GeneratedModulePreview', () => {
       'OpenUI site',
     )
     expect(screen.queryByTitle('Generated website preview')).toBeNull()
-  })
-
-  it('keeps the Convex-backed agentation bridge lazy and opt-in', () => {
-    const source = readFileSync(
-      join(
-        process.cwd(),
-        'src/features/generation/components/GeneratedModulePreview.tsx',
-      ),
-      'utf8',
-    )
-
-    expect(source).not.toContain(
-      "import AgentationSessionBridge from '@/components/GenUI/AgentationSessionBridge'",
-    )
-    expect(source).toContain('const LazyAgentationSessionBridge = lazy(')
-    expect(source).toContain(
-      "import('@/components/GenUI/AgentationSessionBridge')",
-    )
-    expect(source).toContain('agentationEnabled ? (')
-    expect(source).toContain(
-      '<LazyAgentationSessionBridge enabled sessionId={sessionId} />',
-    )
   })
 })

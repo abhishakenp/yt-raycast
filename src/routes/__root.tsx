@@ -51,9 +51,8 @@ const RootComponent = () => (
 )
 
 // Rendered inside RootComponent's Outlet, which is already wrapped by
-// RootDocument > RootClerkProvider > AppProviders. Re-wrapping here would
-// mount a second <html> and a second <ClerkProvider> (Clerk throws on
-// "multiple <ClerkProvider>"), so this renders only the 404 content.
+// RootDocument > AppProviders. Re-wrapping here would mount a second <html>,
+// so this renders only the 404 content.
 const NotFoundComponent = () => (
   <main className="grid min-h-screen place-items-center bg-background px-6 text-center text-foreground">
     <div className="max-w-md space-y-3">

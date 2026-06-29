@@ -252,7 +252,6 @@ export const usePromptHomeController = () => {
           designReferenceNotes: opts?.designReferenceNotes,
           cloneUrl: opts?.cloneUrl,
           engineVersion: opts?.engineVersion,
-          reusePublicCache: canUseVerifiedReadyCache,
         }),
       )
       const sessionId = result.sessionId
