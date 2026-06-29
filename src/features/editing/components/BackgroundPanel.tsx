@@ -776,7 +776,7 @@ export function BackgroundPanel({
         <Slider
           aria-label="Backdrop blur"
           min={0}
-          max={20}
+          max={100}
           value={[backdropBlur]}
           onValueChange={(v) => applyBackdropBlur(v[0])}
           className="flex-1"
