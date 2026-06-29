@@ -1,7 +1,7 @@
 export function stripNullsFromArrays(code: string): string {
   return code
     .replace(/,\s*null\s*(?=[,\]])/g, '')
-    .replace(/(?<=[,\[])\s*null\s*,/g, ',')
+    .replace(/(?<=\[)\s*null\s*,\s*/g, '')
     .replace(/^\s*null\s*$/gm, '')
     .replace(/,\s*\{\s*\}\s*(?=[,\]])/g, '')
     .replace(/(?<=[,\[])\s*\{\s*\}\s*,/g, ',')
@@ -23,6 +23,7 @@ export function repairMalformedQuotedObjectKeys(code: string) {
   let inString = false
   let stringChar = ''
   let escaped = false
+  let expectKey = false
 
   for (let index = 0; index < code.length; index++) {
     const char = code[index]
@@ -40,14 +41,34 @@ export function repairMalformedQuotedObjectKeys(code: string) {
       continue
     }
 
-    if (char === '"' && stack[stack.length - 1] === '{') {
-      const rest = code.slice(index + 1)
-      const malformedKey = rest.match(/^([A-Za-z_$][\w$]*):/)
-      if (malformedKey) {
-        result += `${malformedKey[1]}:`
-        index += malformedKey[0].length
+    if (expectKey) {
+      if (char === ' ' || char === '\t' || char === '\n' || char === '\r') {
+        result += char
         continue
       }
+      // Quoted key (well-formed or stray-opening-quote): either a proper
+      // "key": or a malformed "key: (no closing quote). Detect the identifier
+      // that follows and (re)quote it properly.
+      if (char === '"' || /[A-Za-z_$]/.test(char)) {
+        const offset = char === '"' ? 1 : 0
+        const rest = code.slice(index + offset)
+        const keyMatch = rest.match(/^([A-Za-z_$][\w$]*)\s*:/)
+        if (keyMatch) {
+          result += `"${keyMatch[1]}":`
+          index += offset + keyMatch[0].length - 1
+          expectKey = false
+          continue
+        }
+        // Already-quoted, well-formed key — hand off to normal string handling.
+        if (char === '"') {
+          expectKey = false
+          inString = true
+          stringChar = '"'
+          result += char
+          continue
+        }
+      }
+      expectKey = false
     }
 
     result += char
@@ -55,10 +76,19 @@ export function repairMalformedQuotedObjectKeys(code: string) {
     if (char === '"' || char === "'") {
       inString = true
       stringChar = char
-    } else if (char === '(' || char === '[' || char === '{') {
+    } else if (char === '{') {
       stack.push(char)
+      expectKey = true
+    } else if (char === '(' || char === '[') {
+      stack.push(char)
+      expectKey = false
     } else if ((char === ')' || char === ']' || char === '}') && stack.length) {
       stack.pop()
+      expectKey = false
+    } else if (char === ',' && stack[stack.length - 1] === '{') {
+      expectKey = true
+    } else if (char === ':') {
+      expectKey = false
     }
   }
 
@@ -88,13 +118,26 @@ export function repairObjectNullArgumentBoundaries(code: string) {
       continue
     }
 
-    if (char === ',' && stack[stack.length - 1] === '{') {
-      const nullArgument = code.slice(index).match(/^,\s*null(?=\s*\))/)
-      if (nullArgument) {
-        result += '}, null'
-        stack.pop()
-        index += nullArgument[0].length - 1
-        continue
+    if (char === ',') {
+      if (stack[stack.length - 1] === '{') {
+        const nullArgument = code.slice(index).match(/^,\s*null(?=\s*\))/)
+        if (nullArgument) {
+          result += '}, null'
+          stack.pop()
+          index += nullArgument[0].length - 1
+          continue
+        }
+      } else if (stack[stack.length - 1] === '(') {
+        // Remove redundant trailing null arguments — keep only one null,
+        // drop extras (e.g. Foo(null, null) → Foo(null)).
+        const nullArg = code.slice(index).match(/^,\s*null\s*(?=[,)])/)
+        if (nullArg) {
+          const trimmed = result.trimEnd()
+          if (/(^|[(,\s])null$/.test(trimmed)) {
+            index += nullArg[0].length - 1
+            continue
+          }
+        }
       }
     }
 
@@ -122,7 +165,6 @@ export function balanceSegment(segment: string): string {
     previous = source
     source = source.replace(/,\s*$/, '')
     source = source.replace(/,?\s*\{\s*[A-Za-z_$][\w]*\s*$/, '')
-    source = source.replace(/[,(]\s*[A-Za-z_$][\w]*\s*$/, (match) => match[0])
   }
 
   const stack: string[] = []
@@ -180,10 +222,10 @@ export function balanceStatements(code: string): string {
 }
 
 export function balancePartial(code: string): string {
+  const stack: string[] = []
   let inString = false
   let stringChar = ''
   let escaped = false
-  let parens = 0
 
   for (const char of code) {
     if (escaped) {
@@ -203,22 +245,19 @@ export function balancePartial(code: string): string {
       stringChar = char
       continue
     }
-    if (char === '(') parens++
-    else if (char === ')') parens--
+    if (char === '(' || char === '[' || char === '{') stack.push(char)
+    else if ((char === ')' || char === ']' || char === '}') && stack.length) {
+      stack.pop()
+    }
   }
 
   let result = code
   if (inString) result += stringChar
-  if (parens > 0) {
-    if (result.slice(result.length - 1).match(/[A-Za-z0-9_]/)) {
-      result = result.replace(
-        /[,(]\s*[A-Za-z_][A-Za-z0-9_]*\s*$/,
-        (value) => value[0],
-      )
-    }
-    result = result.replace(/,\s*$/, '')
+  result = result.replace(/,\s*$/, '')
+  const closers: Record<string, string> = { '(': ')', '[': ']', '{': '}' }
+  for (let index = stack.length - 1; index >= 0; index--) {
+    result += closers[stack[index]]
   }
-  for (let index = 0; index < parens; index++) result += ')'
   return result
 }
 
