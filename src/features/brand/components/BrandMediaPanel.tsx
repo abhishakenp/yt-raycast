@@ -1,5 +1,5 @@
 import { Building2, Image as ImageIcon, RefreshCw, Search } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 type BrandMediaPanelProps = {
   prompt?: string
@@ -71,17 +71,32 @@ export const BrandMediaPanel = ({
   const [error, setError] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
 
+  // Cache of brand profiles keyed on the trimmed query so repeated lookups
+  // of the same domain reuse cached data without refetching.
+  const brandProfileCacheRef = useRef<Map<string, BrandProfile>>(new Map())
+
   const lookupBrand = async () => {
+    const query = brandQuery.trim()
+    if (!query) return
+
+    const cached = brandProfileCacheRef.current.get(query)
+    if (cached) {
+      setProfile(cached)
+      setError(undefined)
+      return
+    }
+
     setError(undefined)
     setIsLoading(true)
 
     try {
       const response = await fetch(
-        `/api/brand-profile?query=${encodeURIComponent(brandQuery)}`,
+        `/api/brand-profile?query=${encodeURIComponent(query)}`,
       )
       const data = (await response.json()) as BrandProfile
       if (!response.ok || data.ok !== true)
         throw new Error(data.error ?? 'Brand lookup failed')
+      brandProfileCacheRef.current.set(query, data)
       setProfile(data)
     } catch (lookupError) {
       setProfile(null)
