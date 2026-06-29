@@ -79,12 +79,64 @@ const cleanFence = (value: string): string =>
     .replace(/\s*```$/i, '')
     .trim()
 
+// Hosts allowed to serve <script src="..."> tags. Inline scripts and
+// scripts from any other origin are stripped as a security measure.
+const SAFE_SCRIPT_HOSTS = [
+  'cdn.tailwindcss.com',
+  'unpkg.com',
+  'cdn.jsdelivr.net',
+  'esm.sh',
+  'skypack.dev',
+  'fonts.googleapis.com',
+]
+
+const isAllowedScriptSrc = (src: string): boolean => {
+  if (!src) return false
+  try {
+    const host = new URL(src, 'https://example.com').hostname
+    return SAFE_SCRIPT_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))
+  } catch {
+    return false
+  }
+}
+
+// Strip <script> tags that carry inline content or load from untrusted
+// origins. Known-safe CDN scripts (e.g. Tailwind runtime) are preserved.
+const stripDangerousScripts = (html: string): string =>
+  html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, (match) => {
+    const contentMatch = match.match(/<script\b[^>]*>([\s\S]*?)<\/script>/i)
+    const content = contentMatch?.[1] ?? ''
+    // Inline content (e.g. alert("xss")) is always dangerous → remove.
+    if (content.trim()) return ''
+    const srcMatch = match.match(/\bsrc\s*=\s*["']([^"']+)["']/i)
+    const src = srcMatch?.[1] ?? ''
+    // No src and no content is useless; unknown origins are untrusted.
+    return isAllowedScriptSrc(src) ? match : ''
+  })
+
+// Remove inline event handler attributes (onclick, onload, onerror, …).
+const stripInlineEventHandlers = (html: string): string =>
+  html.replace(/\s+on[a-zA-Z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+
+// Neutralize javascript: URLs in href (and src) attributes.
+const stripJavascriptUrls = (html: string): string =>
+  html
+    .replace(/(href\s*=\s*["'])javascript:[^"']*["']/gi, '$1#"')
+    .replace(/(src\s*=\s*["'])javascript:[^"']*["']/gi, '$1#"')
+    .replace(
+      /\b(href|src)\s*=\s*(?!["'])([^\s>]*javascript:[^\s>]*)/gi,
+      '$1="#"',
+    )
+
 export const sanitizeSffHtml = (raw: string): string => {
   let html = cleanFence(String(raw || ''))
   const start = html.search(/<!doctype\s+html/i)
   if (start > 0) html = html.slice(start).trim()
   const end = html.toLowerCase().lastIndexOf('</html>')
   if (end >= 0) html = html.slice(0, end + '</html>'.length).trim()
+  html = stripDangerousScripts(html)
+  html = stripInlineEventHandlers(html)
+  html = stripJavascriptUrls(html)
   return html
 }
 
