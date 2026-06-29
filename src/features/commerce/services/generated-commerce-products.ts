@@ -10,8 +10,9 @@ export type GeneratedCommerceProduct = {
   title: string
 }
 
-const productNamePropertyPattern = /(?:^|[,\s])(?:name|title|handle)\s*:/
-const productPricePropertyPattern = /(?:^|[,\s])price\s*:/
+const productNamePropertyPattern =
+  /(?:^|[,\s])["']?(?:name|title|handle)["']?\s*:/
+const productPricePropertyPattern = /(?:^|[,\s])["']?price["']?\s*:/
 const maxGeneratedProducts = 25
 
 const isEscaped = (value: string, index: number): boolean => {
@@ -90,7 +91,7 @@ const readStringProperty = (
   key: string,
 ): string | undefined => {
   const pattern = new RegExp(
-    `(?:^|[,\\s])${key}\\s*:\\s*(['"\`])([^'"\`]*?)\\1`,
+    `(?:^|[,\\s])["']?${key}["']?\\s*:\\s*(['"\`])([^'"\`]*?)\\1`,
   )
   const value = directObjectText.match(pattern)?.[2]?.trim()
   return value ? value : undefined
@@ -101,7 +102,7 @@ const readPriceProperty = (directObjectText: string): number | undefined => {
   if (stringPrice !== undefined) return parsePrice(stringPrice)
 
   const numericPrice = directObjectText.match(
-    /(?:^|[,\s])price\s*:\s*(-?\d+(?:\.\d+)?)/,
+    /(?:^|[,\s])["']?price["']?\s*:\s*(-?\d+(?:\.\d+)?)/,
   )?.[1]
   return parsePrice(numericPrice)
 }
