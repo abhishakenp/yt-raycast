@@ -517,7 +517,7 @@ const serializeSchema = (
   return { diagnostics, schema: cleanSchema }
 }
 
-const isReservedEndpointPath = (path: string): boolean =>
+export const isReservedEndpointPath = (path: string): boolean =>
   path === '/' ||
   path === '/index.html' ||
   path === '/client.js' ||

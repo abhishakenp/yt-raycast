@@ -7,6 +7,9 @@ import {
   buildSffHtmlPrompt,
   isCompleteSffHtml,
   sanitizeSffHtml,
+  stripDangerousScripts,
+  stripInlineEventHandlers,
+  stripJavascriptUrls,
   writeSffHtmlHome,
 } from './phase-sff-html.ts'
 
@@ -131,5 +134,76 @@ describe('phase-sff-html', () => {
     )
     expect(stats).toEqual({ chars: htmlFixture.length, cost: 0.001 })
     expect(events).toHaveLength(2)
+  })
+
+  it('stripDangerousScripts removes inline script tags', () => {
+    const html = `<div><script>alert('xss')</script></div>`
+    expect(stripDangerousScripts(html)).toBe('<div></div>')
+  })
+
+  it('stripDangerousScripts removes external script tags', () => {
+    const html = `<div><script src="https://evil.com/attack.js"></script></div>`
+    expect(stripDangerousScripts(html)).toBe('<div></div>')
+  })
+
+  it('stripDangerousScripts preserves CDN scripts from trusted domains', () => {
+    const html = `<head><script src="https://cdn.tailwindcss.com"></script></head>`
+    expect(stripDangerousScripts(html)).toBe(html)
+  })
+
+  it('stripInlineEventHandlers removes onclick', () => {
+    const html = `<div onclick="alert(1)">Click</div>`
+    expect(stripInlineEventHandlers(html)).toBe('<div>Click</div>')
+  })
+
+  it('stripInlineEventHandlers removes onload, onerror, onmouseover', () => {
+    const html = `<img src="x" onload="alert(1)" onerror="alert(2)" onmouseover="alert(3)">`
+    const result = stripInlineEventHandlers(html)
+    expect(result).not.toContain('onload')
+    expect(result).not.toContain('onerror')
+    expect(result).not.toContain('onmouseover')
+    expect(result).toContain('<img src="x">')
+  })
+
+  it('stripJavascriptUrls neutralizes javascript: in href', () => {
+    const html = `<a href="javascript:alert(1)">link</a>`
+    const result = stripJavascriptUrls(html)
+    expect(result).not.toContain('javascript:')
+    expect(result).toContain('href="#"')
+  })
+
+  it('stripJavascriptUrls neutralizes javascript: in src', () => {
+    const html = `<img src="javascript:alert(1)">`
+    const result = stripJavascriptUrls(html)
+    expect(result).not.toContain('javascript:')
+    expect(result).toContain('src="#"')
+  })
+
+  it('sanitizeSffHtml end-to-end: strips scripts + handlers + js: URLs', () => {
+    const raw = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><script>alert('xss')</script></head>
+<body><div onclick="alert(1)"><a href="javascript:alert(1)">link</a></div></body>
+</html>`
+    const result = sanitizeSffHtml(raw)
+    expect(result).not.toContain('<script')
+    expect(result).not.toContain('onclick')
+    expect(result).not.toContain('javascript:')
+    expect(isCompleteSffHtml(result)).toBe(true)
+  })
+
+  it('sanitizeSffHtml preserves safe content', () => {
+    const raw = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><script src="https://cdn.tailwindcss.com"></script></head>
+<body><div class="hero"><span>Launch Ledger</span></div></body>
+</html>`
+    const result = sanitizeSffHtml(raw)
+    expect(result).toContain('<div class="hero">')
+    expect(result).toContain('<span>Launch Ledger</span>')
+    expect(result).toContain(
+      '<script src="https://cdn.tailwindcss.com"></script>',
+    )
+    expect(isCompleteSffHtml(result)).toBe(true)
   })
 })

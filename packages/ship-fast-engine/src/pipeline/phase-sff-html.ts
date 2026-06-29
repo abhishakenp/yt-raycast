@@ -102,7 +102,7 @@ const isAllowedScriptSrc = (src: string): boolean => {
 
 // Strip <script> tags that carry inline content or load from untrusted
 // origins. Known-safe CDN scripts (e.g. Tailwind runtime) are preserved.
-const stripDangerousScripts = (html: string): string =>
+export const stripDangerousScripts = (html: string): string =>
   html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, (match) => {
     const contentMatch = match.match(/<script\b[^>]*>([\s\S]*?)<\/script>/i)
     const content = contentMatch?.[1] ?? ''
@@ -115,11 +115,11 @@ const stripDangerousScripts = (html: string): string =>
   })
 
 // Remove inline event handler attributes (onclick, onload, onerror, …).
-const stripInlineEventHandlers = (html: string): string =>
+export const stripInlineEventHandlers = (html: string): string =>
   html.replace(/\s+on[a-zA-Z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
 
 // Neutralize javascript: URLs in href (and src) attributes.
-const stripJavascriptUrls = (html: string): string =>
+export const stripJavascriptUrls = (html: string): string =>
   html
     .replace(/(href\s*=\s*["'])javascript:[^"']*["']/gi, '$1#"')
     .replace(/(src\s*=\s*["'])javascript:[^"']*["']/gi, '$1#"')

@@ -119,4 +119,17 @@ describe('BackgroundPanel', () => {
     const { getByLabelText } = renderPanel(activeElement)
     expect(getByLabelText('Backdrop blur')).toBeTruthy()
   })
+
+  it('backdrop blur slider max is 100', () => {
+    const { getByLabelText, getAllByRole } = renderPanel(activeElement)
+    // The aria-label "Backdrop blur" is on the Radix Slider Root; the thumb
+    // (role=slider) carries aria-valuemax. Scope thumb queries to the root.
+    const blurRoot = getByLabelText('Backdrop blur')
+    const thumbs = getAllByRole('slider')
+    // Find the thumb contained within the backdrop blur slider root.
+    const blurThumb = thumbs.find((t) => blurRoot.contains(t))
+    expect(blurThumb).toBeTruthy()
+    // Was 20 before the fix; should now be 100.
+    expect(blurThumb?.getAttribute('aria-valuemax')).toBe('100')
+  })
 })

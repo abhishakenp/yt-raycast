@@ -4,7 +4,7 @@ import type { ReactElement } from 'react'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod/v4'
 
-import { defineCapsule } from './openui.ts'
+import { defineCapsule, withLakebed } from './openui.ts'
 import { commerceCartLakebed } from '../registry/sections/commerce/cart-lakebed.ts'
 
 describe('defineCapsule Lakebed contract', () => {
@@ -183,5 +183,34 @@ describe('defineCapsule data-openui-* attr stamping', () => {
     expect(html).toContain('data-openui-component="NoVarProbe"')
     // data-openui-var should be absent (undefined → React omits the attr)
     expect(html).not.toContain('data-openui-var=')
+  })
+})
+
+describe('withLakebed', () => {
+  it('withLakebed is exported and returns a function', () => {
+    expect(typeof withLakebed).toBe('function')
+  })
+
+  it('wraps a renderer and provides a lakebed client with expected runtime shape', () => {
+    let capturedLakebed: Record<string, unknown> | undefined
+    const mockRenderer = (input: { lakebed: Record<string, unknown> }) => {
+      capturedLakebed = input.lakebed
+      return null
+    }
+
+    const wrapped = withLakebed(mockRenderer, undefined, 'TestCapsule')
+    expect(typeof wrapped).toBe('function')
+
+    wrapped({ props: { foo: 'bar' }, statementId: 'stmt1' } as any)
+
+    expect(capturedLakebed).toBeTruthy()
+    // createLakebedClient returns a runtime with hook functions; the
+    // capsule/definition/props are captured in its closure.
+    expect(typeof capturedLakebed?.useData).toBe('function')
+    expect(typeof capturedLakebed?.useQuery).toBe('function')
+    expect(typeof capturedLakebed?.useMutation).toBe('function')
+    expect(typeof capturedLakebed?.useAuth).toBe('function')
+    expect(typeof capturedLakebed?.signInWithGoogle).toBe('function')
+    expect(typeof capturedLakebed?.signOut).toBe('function')
   })
 })

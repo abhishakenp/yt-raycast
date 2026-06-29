@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildLakebedAnonymousDeployRequest,
   deployLakebedProjectFiles,
+  isReservedEndpointPath,
 } from './lakebed-deploy-service'
 
 const files = {
@@ -114,5 +115,48 @@ describe('lakebed deploy service', () => {
       url: 'https://memory-deploy.lakebed.app',
       requestBodyBytes: requests[0]?.body.length,
     })
+  })
+
+  it('isReservedEndpointPath rejects /admin', () => {
+    expect(isReservedEndpointPath('/admin')).toBe(true)
+  })
+
+  it('isReservedEndpointPath rejects /admin/* subpaths', () => {
+    expect(isReservedEndpointPath('/admin/settings')).toBe(true)
+    expect(isReservedEndpointPath('/admin/users')).toBe(true)
+    expect(isReservedEndpointPath('/admin/billing')).toBe(true)
+  })
+
+  it('async handlers are rejected', async () => {
+    const lakebedRoot = join(process.cwd(), '.lakebed')
+    await rm(lakebedRoot, { recursive: true, force: true })
+
+    const asyncFiles = {
+      'server/index.ts': `import { capsule, query, string, table } from "lakebed/server";
+
+const schema = {
+  notes: table({
+    title: string(),
+  }),
+};
+
+export default capsule({
+  name: "Async Deploy",
+  schema,
+  queries: {
+    listNotes: query(async (ctx) => ctx.db.notes.all()),
+  },
+  mutations: {},
+});
+`,
+      'client/index.tsx': `export function App() {
+  return <main><h1>Async Deploy</h1></main>;
+}
+`,
+    }
+
+    await expect(
+      buildLakebedAnonymousDeployRequest(asyncFiles),
+    ).rejects.toThrow(/Async server handlers/)
   })
 })
