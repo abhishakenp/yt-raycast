@@ -336,6 +336,7 @@ export const HomePage = () => {
   const promptLanguageDetectTokenRef = useRef(0)
   const promptSuggestAbortRef = useRef<AbortController | null>(null)
   const promptSuggestTokenRef = useRef(0)
+  const suppressSuggestionsRef = useRef(false)
 
   const placeholderText = SAMPLE_PLACEHOLDERS[placeholderIndex]
   const visiblePlaceholder = useMemo(
@@ -438,6 +439,17 @@ export const HomePage = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
+
+    // If a suggestion was just accepted (applyPromptSuggestion), the
+    // subsequent setPrompt re-triggers this effect. Skip rebuilding the
+    // suggestions list so it stays closed as the caller intended.
+    if (suppressSuggestionsRef.current) {
+      suppressSuggestionsRef.current = false
+      promptSuggestAbortRef.current?.abort()
+      promptSuggestAbortRef.current = null
+      promptSuggestTokenRef.current += 1
+      return
+    }
 
     promptSuggestAbortRef.current?.abort()
     promptSuggestAbortRef.current = null
@@ -588,6 +600,7 @@ export const HomePage = () => {
   const applyPromptSuggestion = (value: string | undefined) => {
     if (!value) return
     closePromptSuggestions()
+    suppressSuggestionsRef.current = true
     setPrompt(value)
   }
 
