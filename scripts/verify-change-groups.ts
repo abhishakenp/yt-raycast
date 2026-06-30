@@ -74,6 +74,7 @@ export const changeGroups: ChangeGroup[] = [
       /^tsconfig\.typecheck\.json$/,
       /^types\/typecheck\//,
       /^vitest\.config\.ts$/,
+      /^vitest\.setup\.ts$/,
     ],
   },
   {
@@ -133,6 +134,7 @@ export const changeGroups: ChangeGroup[] = [
       /^src\/routeTree\.gen\.ts$/,
       /^src\/root-document\.test\.tsx?$/,
       /^src\/routes\/(?:terms|privacy|pricing)\//,
+      /^src\/routes\/-__root\.test\.tsx?$/,
       /^src\/routes\/(?:__root|mine)\.tsx$/,
       /^src\/routes\/api\/agentation-sync\./,
       /^src\/routes\/api\/sessions\.\$sessionId\.(?:chat|section-edit)\.ts$/,

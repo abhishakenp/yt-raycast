@@ -6,6 +6,7 @@ export default defineConfig({
     // workers keep full-suite coverage deterministic on dev Macs.
     hookTimeout: 120_000,
     maxWorkers: 2,
+    setupFiles: ['./vitest.setup.ts'],
     testTimeout: 120_000,
     coverage: {
       provider: 'v8',

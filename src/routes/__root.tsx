@@ -18,14 +18,19 @@ import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
 
 import appCss from '../styles.css?url'
 
-const clerkPublishableKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
-  import.meta.env.CLERK_PUBLISHABLE_KEY
-const configuredClerkPublishableKey =
-  typeof clerkPublishableKey === 'string' &&
-  clerkPublishableKey.trim().length > 0
+const PLAUSIBLE_TRACKED_DOMAIN = 'ship-fast.ai'
+const PLAUSIBLE_SCRIPT_SRC = 'https://plausible.ship-fast.ai/js/script.js'
+
+const getConfiguredClerkPublishableKey = () => {
+  const clerkPublishableKey =
+    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
+    import.meta.env.CLERK_PUBLISHABLE_KEY
+
+  return typeof clerkPublishableKey === 'string' &&
+    clerkPublishableKey.trim().length > 0
     ? clerkPublishableKey
     : null
+}
 
 // Claim-on-sign-in only runs when both Clerk and Convex are configured. Without
 // a Convex provider, useMutation throws during render; without Clerk there is
@@ -66,8 +71,10 @@ const RootDocument = ({ children }: { children: ReactNode }) => {
   )
 }
 
-const RootClerkProvider = ({ children }: { children: ReactNode }) =>
-  configuredClerkPublishableKey ? (
+const RootClerkProvider = ({ children }: { children: ReactNode }) => {
+  const configuredClerkPublishableKey = getConfiguredClerkPublishableKey()
+
+  return configuredClerkPublishableKey ? (
     <ClerkProvider
       publishableKey={configuredClerkPublishableKey}
       afterSignOutUrl="/"
@@ -78,6 +85,7 @@ const RootClerkProvider = ({ children }: { children: ReactNode }) =>
   ) : (
     children
   )
+}
 
 const RootComponent = () => (
   <RootDocument>
@@ -232,6 +240,13 @@ export const Route = createRootRoute({
       {
         rel: 'stylesheet',
         href: appCss,
+      },
+    ],
+    scripts: [
+      {
+        defer: true,
+        'data-domain': PLAUSIBLE_TRACKED_DOMAIN,
+        src: PLAUSIBLE_SCRIPT_SRC,
       },
     ],
   }),
