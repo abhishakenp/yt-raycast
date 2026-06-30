@@ -7,6 +7,7 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 const mockCreateEdit = vi.fn()
 const mockForkSession = vi.fn()
 const mockRestorePreviewVersion = vi.fn()
+const mockUseQuery = vi.fn()
 vi.mock('convex/react', () => ({
   useMutation: (fn: unknown) => {
     const fnName = (fn as Record<string, unknown>).__name as string
@@ -16,7 +17,10 @@ vi.mock('convex/react', () => ({
       return mockRestorePreviewVersion
     return vi.fn()
   },
-  useQuery: () => undefined,
+  useQuery: (fn: unknown, args: unknown) => {
+    mockUseQuery(fn, args)
+    return undefined
+  },
 }))
 
 // Mock anonymous owner secret
@@ -47,6 +51,23 @@ import { useEditController } from './useEditController'
 describe('useEditController: applyEdit error return', () => {
   afterEach(() => {
     vi.clearAllMocks()
+  })
+
+  it('subscribes to read-only edit queries by lookup, not strict Convex id', () => {
+    renderHook(() => useEditController('test-language-popover'))
+
+    expect(mockUseQuery).toHaveBeenCalledWith(
+      { __name: 'sessions:listEdits' },
+      { lookup: 'test-language-popover' },
+    )
+    expect(mockUseQuery).toHaveBeenCalledWith(
+      { __name: 'sessions:listPreviewHistory' },
+      { lookup: 'test-language-popover' },
+    )
+    expect(mockUseQuery).not.toHaveBeenCalledWith(
+      { __name: 'sessions:listEdits' },
+      { sessionId: 'test-language-popover' },
+    )
   })
 
   it('returns { ok: false, error } when mutation throws TEXT_NOT_FOUND', async () => {

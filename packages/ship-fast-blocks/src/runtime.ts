@@ -9,6 +9,13 @@ export {
   useQuery,
 } from '@tanstack/react-query'
 export { ImageContextProvider, type ImageContext } from './lib/img.tsx'
+export {
+  BrandLogoProvider,
+  Logo,
+  getBrandLogoImageSrc,
+  useBrandLogo,
+  type BrandLogoSelection,
+} from './section-kit/Logo.tsx'
 export { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 
 export {

@@ -40,6 +40,7 @@ export default defineConfig({
             'packages/ship-fast-engine/src/renderers/**/*.test.ts',
             'packages/ship-fast-engine/src/renderers/**/*.test.js',
             'packages/ship-fast-engine/src/spec/**/*.test.js',
+            'packages/ship-fast-engine/src/v3/**/*.test.ts',
             'packages/ship-fast-lakebed/src/**/*.test.ts',
             'scripts/**/*.test.ts',
           ],

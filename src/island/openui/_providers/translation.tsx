@@ -5,7 +5,6 @@ import React, {
   useRef,
   type ReactNode,
 } from 'react'
-import { useQuery } from '@ship-fast/blocks/runtime'
 import { translateOnDevice } from './chrome-translator'
 
 type Locale = string
@@ -30,21 +29,93 @@ export function useI18n() {
   return ctx
 }
 
-async function fetchTranslation(text: string, locale: string): Promise<string> {
-  // Tier 1: on-device Chrome/Edge Translator (free, instant) for plain native
-  // locales it supports. Returns null → fall through to the LLM.
-  const onDevice = await translateOnDevice(text, locale)
-  if (onDevice) return onDevice
+const memoryTranslationCache = new Map<string, string>()
 
-  // Tier 2: Groq 70B LLM — handles everything the browser can't: unsupported
-  // languages (gu, ml, …), non-Chromium browsers, and romanized / code-mixed
-  // variants (xx-latn, hinglish, xx-en).
+const translationCacheKey = (locale: string, text: string): string =>
+  `${locale.trim().toLowerCase()}\n${text.trim()}`
+
+const getCachedTranslation = (locale: string, text: string): string | null => {
+  const key = translationCacheKey(locale, text)
+  const memory = memoryTranslationCache.get(key)
+  if (memory !== undefined) return memory
+  if (typeof window === 'undefined') return null
+  try {
+    const stored = window.localStorage.getItem(`sf-translation:${key}`)
+    if (stored !== null) {
+      memoryTranslationCache.set(key, stored)
+      return stored
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
+const setCachedTranslation = (
+  locale: string,
+  text: string,
+  translation: string,
+): void => {
+  const key = translationCacheKey(locale, text)
+  memoryTranslationCache.set(key, translation)
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(`sf-translation:${key}`, translation)
+  } catch {
+    // Best-effort browser cache; server-side Convex cache remains authoritative.
+  }
+}
+
+export async function fetchTranslationBatch(
+  texts: string[],
+  locale: string,
+): Promise<string[]> {
+  const translations = [...texts]
+  const networkTexts: string[] = []
+  const networkIndexes: number[] = []
+
+  for (let index = 0; index < texts.length; index += 1) {
+    const text = texts[index]
+    const cached = getCachedTranslation(locale, text)
+    if (cached !== null) {
+      translations[index] = cached
+      continue
+    }
+
+    // Tier 1: on-device Chrome/Edge Translator (free, instant) for plain native
+    // locales it supports. Run sequentially to avoid a burst of browser jobs.
+    const onDevice = await translateOnDevice(text, locale)
+    if (onDevice) {
+      translations[index] = onDevice
+      setCachedTranslation(locale, text, onDevice)
+      continue
+    }
+
+    networkIndexes.push(index)
+    networkTexts.push(text)
+  }
+
+  if (networkTexts.length === 0) return translations
+
+  // Tier 2: one batched Groq-backed request. The server checks Convex cache
+  // first and only calls the model once for uncached misses.
   const res = await fetch('/api/translate', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ text, locale }),
+    body: JSON.stringify({ texts: networkTexts, locale }),
   })
-  return res.ok ? ((await res.json())?.translation ?? text) : text
+  if (!res.ok) return translations
+
+  const data = (await res.json()) as { translations?: unknown }
+  const batch = Array.isArray(data.translations) ? data.translations : []
+  networkIndexes.forEach((originalIndex, offset) => {
+    const translated = batch[offset]
+    if (typeof translated === 'string' && translated.trim()) {
+      translations[originalIndex] = translated
+      setCachedTranslation(locale, texts[originalIndex], translated)
+    }
+  })
+  return translations
 }
 
 // Inject shimmer keyframes once
@@ -94,67 +165,80 @@ export function applyTranslationResult(
   }
 }
 
-// Single text node translator - uses React Query, updates DOM when done
-function TranslatedTextNode({
-  text,
-  locale,
-  node,
-}: {
-  text: string
-  locale: string
-  node: Text
-}) {
-  const { data, isLoading } = useQuery({
-    queryKey: ['translate', text, locale],
-    queryFn: () => fetchTranslation(text, locale),
-    staleTime: Infinity,
-  })
-
-  useEffect(() => {
-    if (isLoading) {
-      // Add shimmer to parent
-      const parent = node.parentElement
-      if (parent) {
-        parent.classList.add('sf-shimmer-loading')
-        parent.style.backgroundImage = `linear-gradient(90deg, #0000 calc(50% - ${text.length * 2}px), currentColor 50%, #0000 calc(50% + ${text.length * 2}px)), linear-gradient(currentColor, currentColor)`
-      }
-    } else if (data) {
-      // Remove shimmer (always remove when we have data, even if unchanged)
-      applyTranslationResult(node.parentElement, node, data, text)
-    }
-  }, [data, isLoading, text, node])
-
-  return null // This component only handles side effects
+const addTranslationShimmer = (node: Text, text: string): void => {
+  const parent = node.parentElement
+  if (!parent) return
+  parent.classList.add('sf-shimmer-loading')
+  parent.style.backgroundImage = `linear-gradient(90deg, #0000 calc(50% - ${text.length * 2}px), currentColor 50%, #0000 calc(50% + ${text.length * 2}px)), linear-gradient(currentColor, currentColor)`
 }
 
-// T uses MutationObserver to find text nodes, React Query to translate them
+// T uses MutationObserver to find text nodes, then translates them in one
+// serialized batch per collection window.
 export function T({ children }: React.PropsWithChildren) {
   const ref = useRef<HTMLDivElement>(null)
   const { locale } = useI18n()
   const processedRef = useRef(new WeakSet<Node>())
-  const [pendingNodes, setPendingNodes] = React.useState<
-    Array<{ node: Text; text: string; id: number }>
-  >([])
-  const idCounter = useRef(0)
+  const queueRef = useRef<Array<{ node: Text; text: string }>>([])
+  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const inFlightRef = useRef(false)
 
   useEffect(() => {
     const el = ref.current
     if (!el || locale === 'en') return
 
+    let cancelled = false
+
+    const scheduleFlush = () => {
+      if (flushTimerRef.current !== null) return
+      flushTimerRef.current = setTimeout(() => {
+        flushTimerRef.current = null
+        void flushTranslations()
+      }, 0)
+    }
+
+    const flushTranslations = async () => {
+      if (inFlightRef.current || cancelled) return
+      const batch = queueRef.current.splice(0)
+      if (batch.length === 0) return
+
+      inFlightRef.current = true
+      try {
+        const translations = await fetchTranslationBatch(
+          batch.map((item) => item.text),
+          locale,
+        )
+        if (!cancelled) {
+          batch.forEach((item, index) => {
+            applyTranslationResult(
+              item.node.parentElement,
+              item.node,
+              translations[index] ?? item.text,
+              item.text,
+            )
+          })
+        }
+      } finally {
+        inFlightRef.current = false
+        if (!cancelled && queueRef.current.length > 0) scheduleFlush()
+      }
+    }
+
     const collectTextNodes = () => {
       const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
-      const nodes: Array<{ node: Text; text: string; id: number }> = []
+      const nodes: Array<{ node: Text; text: string }> = []
 
       while (walker.nextNode()) {
         const node = walker.currentNode as Text
         const text = node.textContent?.trim()
         if (!text || processedRef.current.has(node)) continue
         processedRef.current.add(node)
-        nodes.push({ node, text, id: idCounter.current++ })
+        addTranslationShimmer(node, text)
+        nodes.push({ node, text })
       }
 
       if (nodes.length) {
-        setPendingNodes((prev) => [...prev, ...nodes])
+        queueRef.current.push(...nodes)
+        scheduleFlush()
       }
     }
 
@@ -168,7 +252,12 @@ export function T({ children }: React.PropsWithChildren) {
     obs.observe(el, { childList: true, subtree: true })
 
     return () => {
+      cancelled = true
       clearTimeout(timer)
+      if (flushTimerRef.current !== null) {
+        clearTimeout(flushTimerRef.current)
+        flushTimerRef.current = null
+      }
       obs.disconnect()
     }
   }, [locale])
@@ -176,9 +265,6 @@ export function T({ children }: React.PropsWithChildren) {
   return (
     <div ref={ref} style={{ display: 'contents' }}>
       {children}
-      {pendingNodes.map(({ node, text, id }) => (
-        <TranslatedTextNode key={id} text={text} locale={locale} node={node} />
-      ))}
     </div>
   )
 }

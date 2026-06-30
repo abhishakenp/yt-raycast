@@ -127,7 +127,7 @@ export const usePromptHomeController = () => {
     designReferenceUrls?: string[]
     designReferenceNotes?: string
     cloneUrl?: string
-    engineVersion?: 'v1' | 'v2'
+    engineVersion?: 'v1' | 'v2' | 'v3'
   }) => {
     const runtimePrompt = normalizePromptDraft(opts?.prompt ?? prompt)
     const preferredLanguage = opts?.preferredLanguage?.trim() || 'en'
@@ -159,7 +159,8 @@ export const usePromptHomeController = () => {
         !(opts?.designReferenceNotes ?? '').trim() &&
         !(opts?.cloneUrl ?? '').trim() &&
         !isClone &&
-        opts?.engineVersion !== 'v2'
+        opts?.engineVersion !== 'v2' &&
+        opts?.engineVersion !== 'v3'
       if (canUseVerifiedReadyCache) {
         const cached = readReadySessionCache(window.localStorage, {
           prompt: runtimePrompt,

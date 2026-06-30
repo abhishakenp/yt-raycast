@@ -59,6 +59,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import ThemePicker from '@/genui/components/ThemePicker'
+import LanguagePicker from '@/genui/components/LanguagePicker'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import { SignInGate, useSignInGate } from '@/shared/auth/SignInGate'
 import { cn } from '#/lib/utils'
@@ -88,6 +89,11 @@ const GitHubPanel = lazy(() =>
 const CommercePanel = lazy(() =>
   import('@/features/commerce/components/CommercePanel').then((module) => ({
     default: module.CommercePanel,
+  })),
+)
+const BrandMediaPanel = lazy(() =>
+  import('@/features/brand/components/BrandMediaPanel').then((module) => ({
+    default: module.BrandMediaPanel,
   })),
 )
 interface DashboardProps {
@@ -134,6 +140,7 @@ type DashboardGenerationView = {
     cloneUrl?: string
     themeOverride?: string | null
     themeMode?: 'light' | 'dark' | null
+    selectedBrandLogo?: BrandLogoSelection | null
     designReferenceUrls?: string[]
     designReferenceNotes?: string
   }
@@ -149,6 +156,14 @@ type DashboardGenerationView = {
     order?: number
     updatedAt?: number
   }>
+}
+
+type BrandLogoSelection = {
+  name: string
+  domain: string | null
+  brandId: string | null
+  icon: string | null
+  logo: string | null
 }
 
 const crownIcon = (
@@ -346,6 +361,7 @@ const toDashboardGenerationView = (
     elapsed: data.elapsed,
     isPrivate: false,
     themeOverride: data.themeOverride ?? null,
+    selectedBrandLogo: data.selectedBrandLogo ?? null,
     designReferenceUrls: [],
     designReferenceNotes: '',
   },
@@ -408,6 +424,9 @@ export function Dashboard({
     [],
   )
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
+  const [selectedBrand, setSelectedBrand] = useState<BrandLogoSelection | null>(
+    null,
+  )
   const [toolbarState, setToolbarState] = useState({
     isOpen: false,
     anchorRect: null as DOMRect | null,
@@ -473,6 +492,10 @@ export function Dashboard({
   )
   const publishPreview = useMutation(api.sessions.publishPreview)
   const setThemeOverrideMutation = useMutation(api.sessions.setThemeOverride)
+  const setPreferredLanguageMutation = useMutation(
+    api.sessions.setPreferredLanguage,
+  )
+  const setBrandLogoMutation = useMutation(api.sessions.setBrandLogo)
   const editController = useEditController(resolvedSessionId || sessionId)
   const undoRedo = useUndoRedo(editController)
   const reorder = useReorderElement({
@@ -528,6 +551,7 @@ export function Dashboard({
           previewVersion: data.previewVersion ?? data.preview?.version ?? 1,
           elapsed: data.elapsed ?? undefined,
           themeOverride: data.themeOverride ?? null,
+          selectedBrandLogo: data.selectedBrandLogo ?? null,
           homeModule: {
             moduleKey: data.homeModule.moduleKey ?? 'home',
             source: data.homeModule.source,
@@ -650,6 +674,7 @@ export function Dashboard({
       previewVersion: session.previewVersion,
       elapsed: session.elapsed,
       themeOverride: session.themeOverride ?? null,
+      selectedBrandLogo: session.selectedBrandLogo ?? null,
       homeModule: {
         moduleKey: readyHomeModule.moduleKey,
         source: readyHomeModule.source,
@@ -781,6 +806,12 @@ export function Dashboard({
     () => formatThemeName(effectiveTheme),
     [effectiveTheme],
   )
+  const serverBrandLogo = generationView?.session.selectedBrandLogo ?? null
+  useEffect(() => {
+    setSelectedBrand(serverBrandLogo)
+  }, [serverBrandLogo])
+  const activeBrand = selectedBrand ?? serverBrandLogo
+  const activeBrandIcon = activeBrand?.icon ?? activeBrand?.logo ?? null
   const activeThemeButtonStyle = useMemo(
     () => themeButtonStyle(themeStyles, isDark),
     [themeStyles, isDark],
@@ -822,6 +853,20 @@ export function Dashboard({
   const renderedPreviewKey = cmsPreviewSource
     ? `cms:${generationView?.latestPreview?.version ?? generationView?.session.previewVersion ?? homeModule?.updatedAt ?? 'latest'}`
     : `${homeModule?.updatedAt ?? generationView?.session.previewVersion}`
+
+  const handleBrandSelect = useCallback(
+    (brand: BrandLogoSelection) => {
+      setSelectedBrand(brand)
+      if (resolvedSessionId === undefined) return
+
+      void setBrandLogoMutation({
+        sessionId: resolvedSessionId,
+        anonymousOwnerSecret: activeAnonymousOwnerSecret,
+        brandLogo: brand,
+      })
+    },
+    [activeAnonymousOwnerSecret, resolvedSessionId, setBrandLogoMutation],
+  )
 
   // Restore the preview scroll position after a remount caused by an inline
   // edit. The preview remounts when renderedPreviewKey changes (because a
@@ -1628,6 +1673,9 @@ export function Dashboard({
                             siteSpecJson={generationView.siteSpec?.specJson}
                             locale={generationView.session.preferredLanguage}
                             prompt={generationView.session.prompt}
+                            selectedBrandLogo={
+                              generationView.session.selectedBrandLogo ?? null
+                            }
                             imageOverrides={imageOverrides}
                             styleOverrides={styleOverrides}
                             textOverrides={textOverrides}
@@ -1750,6 +1798,10 @@ export function Dashboard({
                       <ThemePicker
                         value={effectiveTheme}
                         isDark={isDark}
+                        popoverSide="left"
+                        popoverAlign="start"
+                        popoverSideOffset={12}
+                        popoverClassName="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
                         onSelect={(theme: string) => {
                           setSelectedTheme(theme)
                           if (resolvedSessionId) {
@@ -1817,25 +1869,67 @@ export function Dashboard({
                           icon={
                             <Building2 className="size-3.5" strokeWidth={1.9} />
                           }
-                          sublabel="Brandfetch / Pexels"
                         />
                       }
                     >
-                      <button
-                        type="button"
-                        className={railRowClass}
-                        data-rail-action="brand-media"
-                      >
-                        <span className={railIconClass} aria-hidden="true">
-                          <Building2 className="size-3.5" strokeWidth={1.9} />
-                        </span>
-                        <span className="grid min-w-0 flex-1 gap-0.5">
-                          <span className="truncate">Brand and media</span>
-                          <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
-                            Brandfetch / Pexels
-                          </span>
-                        </span>
-                      </button>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className={railRowClass}
+                            data-rail-action="brand-media"
+                            aria-haspopup="dialog"
+                          >
+                            <span
+                              className={cn(
+                                railIconClass,
+                                activeBrandIcon &&
+                                  'overflow-hidden bg-white text-slate-500',
+                              )}
+                              aria-hidden="true"
+                            >
+                              {activeBrandIcon ? (
+                                <img
+                                  src={activeBrandIcon}
+                                  alt=""
+                                  className="max-h-4 max-w-4 object-contain"
+                                />
+                              ) : (
+                                <Building2
+                                  className="size-3.5"
+                                  strokeWidth={1.9}
+                                />
+                              )}
+                            </span>
+                            <span className="min-w-0 flex-1 truncate">
+                              Brand and media
+                            </span>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="start"
+                          side="left"
+                          sideOffset={12}
+                          className="z-[140] w-72 p-0"
+                        >
+                          <Suspense fallback={<ToolPopoverFallback />}>
+                            <BrandMediaPanel
+                              sessionId={resolvedSessionId ?? sessionId}
+                              prompt={generationView?.session.prompt ?? ''}
+                              cloneUrl={generationView?.session.cloneUrl}
+                              designReferenceUrls={
+                                generationView?.session.designReferenceUrls ??
+                                []
+                              }
+                              designReferenceNotes={
+                                generationView?.session.designReferenceNotes ??
+                                ''
+                              }
+                              onSelectBrand={handleBrandSelect}
+                            />
+                          </Suspense>
+                        </PopoverContent>
+                      </Popover>
                     </SignInGate>
                     <SignInGate
                       locked={
@@ -1851,22 +1945,56 @@ export function Dashboard({
                         />
                       }
                     >
-                      <button
-                        type="button"
-                        className={railRowClass}
-                        data-rail-action="localization"
-                      >
-                        <span className={railIconClass} aria-hidden="true">
-                          <Languages className="size-3.5" strokeWidth={1.9} />
-                        </span>
-                        <span className="grid min-w-0 flex-1 gap-0.5">
-                          <span className="truncate">Localization</span>
-                          <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
-                            {generationView?.session.preferredLanguage ??
-                              'default locale'}
-                          </span>
-                        </span>
-                      </button>
+                      <LanguagePicker
+                        value={
+                          generationView?.session.preferredLanguage ?? null
+                        }
+                        onSelect={(language: string) => {
+                          if (resolvedSessionId) {
+                            setPreferredLanguageMutation({
+                              sessionId: resolvedSessionId,
+                              anonymousOwnerSecret: activeAnonymousOwnerSecret,
+                              preferredLanguage: language,
+                            })
+                          }
+                        }}
+                        trigger={
+                          <button
+                            type="button"
+                            className={cn(
+                              railRowClass,
+                              'border-white/14 bg-white/[0.04] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]',
+                            )}
+                            data-rail-action="localization"
+                          >
+                            <span
+                              className={cn(
+                                railIconClass,
+                                'bg-black/22 text-white/88 backdrop-blur-md group-hover:bg-black/28',
+                              )}
+                              aria-hidden="true"
+                            >
+                              <Languages
+                                className="size-3.5"
+                                strokeWidth={1.9}
+                              />
+                            </span>
+                            <span className="grid min-w-0 flex-1 gap-0.5">
+                              <span className="truncate">Localization</span>
+                              <span className="truncate font-mono text-[10px] leading-tight tracking-[0.04em] text-white/64">
+                                {generationView?.session.preferredLanguage ??
+                                  'default locale'}
+                              </span>
+                            </span>
+                            <span
+                              className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/12 bg-black/18 text-white/72 backdrop-blur-md"
+                              aria-hidden="true"
+                            >
+                              <Languages className="size-4" strokeWidth={1.8} />
+                            </span>
+                          </button>
+                        }
+                      />
                     </SignInGate>
                     <SignInGate
                       locked={

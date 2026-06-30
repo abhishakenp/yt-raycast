@@ -21,6 +21,7 @@ const PRETTIER_EXTENSIONS = new Set([
 const CODE_FILE_PATTERN =
   /^(?:src|convex|scripts)\/.+\.[cm]?[jt]sx?$|^packages\/[^/]+\/(?:src|scripts)\/.+\.[cm]?[jt]sx?$/
 const TEST_FILE_PATTERN = /\.(?:test|spec)\.[cm]?[jt]sx?$/
+const GENERATED_FILE_PATTERN = /^convex\/_generated\//
 const QUALITY_CONFIG_FILES = new Set([
   '.github/workflows/ci.yml',
   'bun.lock',
@@ -51,8 +52,10 @@ export function buildPreCommitPlan(stagedFiles) {
     return []
   }
 
-  const prettierFiles = files.filter((file) =>
-    PRETTIER_EXTENSIONS.has(extname(file)),
+  const prettierFiles = files.filter(
+    (file) =>
+      PRETTIER_EXTENSIONS.has(extname(file)) &&
+      !GENERATED_FILE_PATTERN.test(file),
   )
   const qualityFiles = files.filter(hasQualityImpact)
   const testFiles = files.filter(

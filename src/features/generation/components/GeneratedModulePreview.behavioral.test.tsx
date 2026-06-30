@@ -40,12 +40,18 @@ vi.mock('@/island/openui/OpenUIViewer', () => ({
   default: ({
     response,
     imageContext,
+    selectedBrandLogo,
   }: {
     response: string
     imageContext?: {
       prompt?: string
       brandContext?: string
       overrides?: Record<string, string>
+    } | null
+    selectedBrandLogo?: {
+      name: string
+      icon?: string | null
+      logo?: string | null
     } | null
   }) => (
     <div data-testid="openui-viewer" data-response={response}>
@@ -55,6 +61,10 @@ vi.mock('@/island/openui/OpenUIViewer', () => ({
       <div
         data-testid="image-context"
         data-overrides={JSON.stringify(imageContext?.overrides ?? null)}
+      />
+      <div
+        data-testid="selected-brand-logo"
+        data-logo={JSON.stringify(selectedBrandLogo ?? null)}
       />
     </div>
   ),
@@ -214,6 +224,29 @@ describe('GeneratedModulePreview (real component)', () => {
     const ctx = await screen.findByTestId('image-context')
     expect(JSON.parse(ctx.getAttribute('data-overrides')!)).toEqual(
       imageOverrides,
+    )
+  })
+
+  it('passes the selected brand logo through to the OpenUI renderer', async () => {
+    const selectedBrandLogo = {
+      name: 'Linear',
+      domain: 'linear.app',
+      brandId: 'linear',
+      icon: 'https://cdn.test/linear-icon.png',
+      logo: null,
+    }
+
+    render(
+      <GeneratedModulePreview
+        source='root = Text("OpenUI site")'
+        sessionId="session-1"
+        selectedBrandLogo={selectedBrandLogo}
+      />,
+    )
+
+    const logo = await screen.findByTestId('selected-brand-logo')
+    expect(JSON.parse(logo.getAttribute('data-logo')!)).toEqual(
+      selectedBrandLogo,
     )
   })
 

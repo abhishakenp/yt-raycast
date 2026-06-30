@@ -100,6 +100,7 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 }))
 
 vi.mock('convex/react', () => ({
+  useAction: () => vi.fn(),
   useMutation: () => {
     const state = (
       globalThis as typeof globalThis & {

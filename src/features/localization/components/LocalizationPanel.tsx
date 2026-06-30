@@ -7,7 +7,7 @@ type LocalizationPanelProps = {
 }
 
 type TranslateResult = {
-  translation?: string
+  translations?: string[]
   locale?: string
   translated?: boolean
   skipped?: string
@@ -41,7 +41,7 @@ export const LocalizationPanel = ({
       const response = await fetch('/api/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, locale }),
+        body: JSON.stringify({ texts: [text], locale }),
       })
       const data = (await response.json()) as TranslateResult
       if (!response.ok) throw new Error(data.error ?? 'Translation failed')
@@ -117,7 +117,7 @@ export const LocalizationPanel = ({
             </p>
           </div>
           <p className="m-0 whitespace-pre-wrap text-sm leading-6 text-white/72">
-            {result.translation}
+            {result.translations?.[0] ?? ''}
           </p>
         </section>
       )}

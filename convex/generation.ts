@@ -455,6 +455,77 @@ export const startGeneration = internalAction({
         return { status: 'completed' }
       }
 
+      if (session.engineVersion === 'v3') {
+        const [{ getSelectedEngine }, { runEngineGeneration }] =
+          await Promise.all([
+            import('../src/features/generation/server/engine-selector'),
+            import('../src/features/generation/server/generation-runner'),
+          ])
+
+        await ctx.runMutation(internalFunctions.sessions.addGenerationEvent, {
+          sessionId: args.sessionId,
+          eventType: 'status',
+          message: 'Running Ship Fast engine v3',
+        })
+
+        const result = await runEngineGeneration({
+          sessionId: args.sessionId,
+          prompt: buildGenerationPrompt(session),
+          preferredLanguage: session.preferredLanguage,
+          anonymousOwnerSecret: args.anonymousOwnerSecret,
+          workspaceRoot:
+            process.env.SHIP_FAST_ENGINE_WORKSPACE_ROOT ||
+            '/tmp/ship-fast-engine-workspaces',
+          runAll: getSelectedEngine('v3'),
+          persistence: {
+            completeGeneration: async (input) =>
+              await completeGenerationFromNode(ctx, {
+                sessionId: args.sessionId,
+                anonymousOwnerSecret: args.anonymousOwnerSecret,
+                html: input.html,
+                siteSpecJson: input.siteSpecJson,
+                openUiSource: input.openUiSource,
+                tasks: input.tasks,
+                elapsed: Date.now() - startedAt,
+                provider: 'ship-fast-engine-v3',
+              }),
+            failGeneration: async (input) =>
+              await recordGenerationFailure(
+                ctx,
+                args,
+                input.message,
+                Date.now() - startedAt,
+              ),
+          },
+          onEvent: (event) => {
+            const message = engineAdapterEventMessage(event)
+
+            if (message !== undefined) {
+              void ctx.runMutation(
+                internalFunctions.sessions.addGenerationEvent,
+                {
+                  sessionId: args.sessionId,
+                  eventType: event.type,
+                  message,
+                },
+              )
+            }
+          },
+        })
+
+        if (result.status === 'failed') {
+          return result
+        }
+
+        await ctx.runMutation(internalFunctions.sessions.addGenerationEvent, {
+          sessionId: args.sessionId,
+          eventType: 'completed',
+          message: 'Generation complete',
+        })
+
+        return { status: 'completed' }
+      }
+
       const generationRuntime = await loadGenerationRuntime()
 
       await ctx.runMutation(internalFunctions.sessions.addGenerationEvent, {

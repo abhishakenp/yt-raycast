@@ -10,7 +10,7 @@ export type BuildCreateSessionPayloadInput = {
   designReferenceUrls?: string[]
   designReferenceNotes?: string
   cloneUrl?: string
-  engineVersion?: 'v1' | 'v2'
+  engineVersion?: 'v1' | 'v2' | 'v3'
 }
 
 const toHex = (bytes: Uint8Array): string =>
@@ -68,6 +68,8 @@ export const buildCreateSessionPayload = ({
     ...(refs.length > 0 ? { designReferenceUrls: refs } : {}),
     ...(notes ? { designReferenceNotes: notes } : {}),
     ...(clone ? { cloneUrl: clone } : {}),
-    ...(engineVersion === 'v2' ? { engineVersion } : {}),
+    ...(engineVersion === 'v2' || engineVersion === 'v3'
+      ? { engineVersion }
+      : {}),
   }
 }

@@ -224,6 +224,24 @@ export const setThemeOverrideArgs = {
   ),
 }
 
+export const setPreferredLanguageArgs = {
+  ...ownedSessionArgs,
+  preferredLanguage: v.string(),
+}
+
+export const brandLogoSelection = v.object({
+  name: v.string(),
+  domain: v.union(v.string(), v.null()),
+  brandId: v.union(v.string(), v.null()),
+  icon: v.union(v.string(), v.null()),
+  logo: v.union(v.string(), v.null()),
+})
+
+export const setBrandLogoArgs = {
+  ...ownedSessionArgs,
+  brandLogo: v.union(brandLogoSelection, v.null()),
+}
+
 export const upsertGenerationTaskArgs = {
   sessionId: v.id('sessions'),
   task: engineTask,

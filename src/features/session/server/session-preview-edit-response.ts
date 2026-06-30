@@ -121,7 +121,7 @@ export const createPreviewHistoryResponse = async (
   try {
     const history = await createClient(clientOverride).query(
       api.sessions.listPreviewHistory,
-      { sessionId: asSessionId(sessionId) },
+      { lookup: sessionId },
     )
     return json({ history })
   } catch (error) {

@@ -1,7 +1,7 @@
 import { preferMixedEnglishBcp47FromSnippet } from './mixed-english-hints'
 import { PROMPT_LANG_DETECT_SNIPPET_MAX } from './constants'
 import {
-  KNOWN_LANGUAGES,
+  PROMPT_DETECT_LANGUAGES,
   preferIndicBcp47FromRomanizedPrompt,
   preferRomanizedBcp47FromSnippet,
 } from '../../config/languages'
@@ -175,7 +175,7 @@ const resolveFrancCode3HinglishPreference = (
 
 const detectExplicitLanguageKeyword = (text: string) => {
   const lower = String(text || '').toLowerCase()
-  const ordered = [...KNOWN_LANGUAGES].sort(
+  const ordered = [...PROMPT_DETECT_LANGUAGES].sort(
     (a, b) =>
       Math.max(...b.keywords.map((k: string) => k.length), b.name.length) -
       Math.max(...a.keywords.map((k: string) => k.length), a.name.length),

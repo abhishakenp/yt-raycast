@@ -1,5 +1,6 @@
 import {
   ImageContextProvider,
+  BrandLogoProvider,
   OpenUIIntegrationProviders,
   QueryClient,
   QueryClientProvider,
@@ -7,6 +8,7 @@ import {
   getOpenUIRuntimeLibraryCacheKey,
   loadOpenUIRuntimeLibrary,
   type AiCapsuleRecord,
+  type BrandLogoSelection,
   type ImageContext,
   type Library,
 } from '@ship-fast/blocks/runtime'
@@ -223,6 +225,7 @@ export default function OpenUIViewer({
   sessionId,
   integrations,
   imageContext,
+  selectedBrandLogo,
   onFirstPaint,
 }: {
   response: string
@@ -233,6 +236,8 @@ export default function OpenUIViewer({
   locale?: string
   /** Page-level prompt/brand context so generated <Image>s pick relevant stock photos. */
   imageContext?: ImageContext | null
+  /** Dashboard-selected logo that replaces generated brand marks in block previews. */
+  selectedBrandLogo?: BrandLogoSelection | null
   /** Full-bleed session iframe: no rounded corners, no streaming border/dot overlay */
   embed?: boolean
   /** Session id used by integration providers (for storefront and CMS scope). */
@@ -461,24 +466,26 @@ export default function OpenUIViewer({
             >
               <I18nProvider locale={locale || 'en'}>
                 <T>
-                  <ImageContextProvider value={imageContext}>
-                    {runtimeLibrary ? (
-                      <Renderer
-                        response={preparedResponse}
-                        library={runtimeLibrary}
-                        isStreaming={isStreaming}
-                      />
-                    ) : (
-                      <OpenUIRenderFallback
-                        isStreaming={isStreaming}
-                        message={
-                          runtimeLibraryState.error
-                            ? 'Unable to load preview components.'
-                            : undefined
-                        }
-                      />
-                    )}
-                  </ImageContextProvider>
+                  <BrandLogoProvider value={selectedBrandLogo}>
+                    <ImageContextProvider value={imageContext}>
+                      {runtimeLibrary ? (
+                        <Renderer
+                          response={preparedResponse}
+                          library={runtimeLibrary}
+                          isStreaming={isStreaming}
+                        />
+                      ) : (
+                        <OpenUIRenderFallback
+                          isStreaming={isStreaming}
+                          message={
+                            runtimeLibraryState.error
+                              ? 'Unable to load preview components.'
+                              : undefined
+                          }
+                        />
+                      )}
+                    </ImageContextProvider>
+                  </BrandLogoProvider>
                 </T>
               </I18nProvider>
             </OpenUIIntegrationProviders>

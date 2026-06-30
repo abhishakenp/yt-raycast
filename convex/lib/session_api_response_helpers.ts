@@ -60,6 +60,7 @@ export const serializeSessionApiResponse = (
     exportTargets: artifacts.exports.map((exportRecord) => exportRecord.target),
     payment: null,
     themeOverride: session.themeOverride ?? null,
+    selectedBrandLogo: session.selectedBrandLogo ?? null,
     previewVersion: session.previewVersion ?? 0,
     preview:
       artifacts.latestPreview === null || artifacts.latestPreview === undefined

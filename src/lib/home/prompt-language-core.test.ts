@@ -40,4 +40,12 @@ describe('detectSnippetLanguageBcp47', () => {
       ),
     ).resolves.toBe('fr')
   })
+
+  it('does not treat browser-native picker labels as prompt language requests', async () => {
+    await expect(
+      detectSnippetLanguageBcp47(
+        'Build a Mexican restaurant website with menu, booking, gallery, and customer reviews.',
+      ),
+    ).resolves.toBe('en')
+  })
 })

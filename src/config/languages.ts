@@ -21,6 +21,58 @@ export const HINGLISH_LANGUAGE: LanguageEntry = {
   ],
 }
 
+export const BROWSER_NATIVE_LANGUAGES: LanguageEntry[] = [
+  {
+    code: 'lt',
+    name: 'Lithuanian',
+    nativeName: 'Lietuvių',
+    fontFamily: 'Inter, system-ui, sans-serif',
+    keywords: ['lithuanian', 'lietuvių', 'lietuviu', 'lt'],
+  },
+  {
+    code: 'es-MX',
+    name: 'Mexican Spanish',
+    nativeName: 'Español (México)',
+    fontFamily: 'Inter, system-ui, sans-serif',
+    keywords: ['mexican', 'mexican spanish', 'spanish mexico', 'es-mx'],
+  },
+  {
+    code: 'hu',
+    name: 'Hungarian',
+    nativeName: 'Magyar',
+    fontFamily: 'Inter, system-ui, sans-serif',
+    keywords: ['hungarian', 'magyar', 'hu'],
+  },
+  {
+    code: 'ja',
+    name: 'Japanese',
+    nativeName: '日本語',
+    fontFamily: 'Noto Sans JP, sans-serif',
+    keywords: ['japanese', '日本語', 'nihongo', 'ja'],
+  },
+  {
+    code: 'zh',
+    name: 'Chinese',
+    nativeName: '中文',
+    fontFamily: 'Noto Sans SC, sans-serif',
+    keywords: ['chinese', 'mandarin', '中文', 'zh'],
+  },
+  {
+    code: 'ko',
+    name: 'Korean',
+    nativeName: '한국어',
+    fontFamily: 'Noto Sans KR, sans-serif',
+    keywords: ['korean', '한국어', 'ko'],
+  },
+  {
+    code: 'am',
+    name: 'Amharic',
+    nativeName: 'አማርኛ',
+    fontFamily: 'Noto Sans Ethiopic, sans-serif',
+    keywords: ['amharic', 'አማርኛ', 'am'],
+  },
+]
+
 export const INDIC_PURE_LANGUAGES: LanguageEntry[] = [
   {
     code: 'hi',
@@ -386,10 +438,8 @@ const ROMANIZED_LATIN_LANGUAGES = INDIC_PURE_LANGUAGES.map((l) => {
   }
 })
 
-export const KNOWN_LANGUAGES = [
-  HINGLISH_LANGUAGE,
-  ...INDIC_PURE_LANGUAGES,
-  ...MIXED_ENGLISH_SUFFIX_LANGUAGES.map((l) => {
+const MIXED_ENGLISH_LANGUAGES: LanguageEntry[] =
+  MIXED_ENGLISH_SUFFIX_LANGUAGES.map((l) => {
     const scriptPrimary = l.fontFamily.split(',')[0].trim()
     const slang = MIXED_ENGLISH_SLANG_KEYWORDS[l.code] || []
     return {
@@ -407,11 +457,26 @@ export const KNOWN_LANGUAGES = [
         ...slang,
       ],
     }
-  }),
+  })
+
+export const PROMPT_DETECT_LANGUAGES = [
+  HINGLISH_LANGUAGE,
+  ...INDIC_PURE_LANGUAGES,
+  ...MIXED_ENGLISH_LANGUAGES,
   ...ROMANIZED_LATIN_LANGUAGES,
 ]
 
-export const INDIAN_LANGUAGE_CODES = new Set(KNOWN_LANGUAGES.map((l) => l.code))
+export const KNOWN_LANGUAGES = [
+  HINGLISH_LANGUAGE,
+  ...BROWSER_NATIVE_LANGUAGES,
+  ...INDIC_PURE_LANGUAGES,
+  ...MIXED_ENGLISH_LANGUAGES,
+  ...ROMANIZED_LATIN_LANGUAGES,
+]
+
+export const INDIAN_LANGUAGE_CODES = new Set(
+  PROMPT_DETECT_LANGUAGES.map((l) => l.code),
+)
 
 export const preferMixedEnglishBcp47FromPrompt = (
   prompt: unknown,
@@ -470,6 +535,7 @@ export const isTranslatableLocale = (code: unknown): boolean => {
     /^[a-z]{2}$/.test(c) ||
     /^[a-z]{2,8}-latn$/.test(c) ||
     /^[a-z]{2,8}-en$/.test(c) ||
+    /^[a-z][a-z0-9-]{1,31}$/.test(c) ||
     c === 'hinglish'
   )
 }

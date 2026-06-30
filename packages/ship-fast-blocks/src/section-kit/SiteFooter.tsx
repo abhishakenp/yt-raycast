@@ -1,6 +1,7 @@
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import type { ReactNode } from 'react'
+import { Logo } from './Logo.tsx'
 
 /**
  * SiteFooter — generic, prop-driven multi-column site footer. Renders a brand
@@ -30,15 +31,15 @@ export function SiteFooter(props: {
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-1">
             <div className="flex items-center gap-2">
-              {props.brandMark}
-              <span
-                className={cn(
+              <Logo
+                brand={props.brand}
+                className="size-7"
+                fallback={props.brandMark}
+                labelClassName={cn(
                   'text-lg font-semibold text-foreground',
                   props.brandClassName,
                 )}
-              >
-                {props.brand}
-              </span>
+              />
             </div>
             {props.tagline ? (
               <p className="mt-3 text-sm text-muted-foreground">

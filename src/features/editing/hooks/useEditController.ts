@@ -9,12 +9,14 @@ export const useEditController = (sessionId: string) => {
   const createEdit = useMutation(api.sessions['createEdit'])
   const forkSession = useMutation(api.sessions['forkSession'])
   const restorePreviewVersion = useMutation(api.sessions.restorePreviewVersion)
-  const edits = useQuery(api.sessions.listEdits, {
-    sessionId: sessionId as Id<'sessions'>,
+  const queriedEdits = useQuery(api.sessions.listEdits, {
+    lookup: sessionId,
   })
-  const history = useQuery(api.sessions.listPreviewHistory, {
-    sessionId: sessionId as Id<'sessions'>,
+  const queriedHistory = useQuery(api.sessions.listPreviewHistory, {
+    lookup: sessionId,
   })
+  const edits = Array.isArray(queriedEdits) ? queriedEdits : []
+  const history = Array.isArray(queriedHistory) ? queriedHistory : []
   const [editError, setEditError] = useState<string>()
   const [isEditing, setIsEditing] = useState(false)
   const [isForking, setIsForking] = useState(false)

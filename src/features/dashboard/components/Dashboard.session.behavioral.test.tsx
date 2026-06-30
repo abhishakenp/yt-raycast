@@ -39,6 +39,13 @@ type SessionState = {
   designReferenceUrls?: string[]
   designReferenceNotes?: string
   cloneUrl?: string
+  selectedBrandLogo?: {
+    name: string
+    domain?: string | null
+    brandId?: string | null
+    icon?: string | null
+    logo?: string | null
+  } | null
 }
 
 type GenerationView = {
@@ -154,6 +161,7 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 }))
 
 vi.mock('convex/react', () => ({
+  useAction: () => vi.fn(),
   useMutation: () => {
     const state = (
       globalThis as typeof globalThis & {
@@ -347,6 +355,7 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
     siteSpecJson?: string
     locale?: string
     prompt?: string
+    selectedBrandLogo?: unknown
     onTextChange?: (change: {
       oldText: string
       newText: string
@@ -377,6 +386,9 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
       <span data-testid="gmp-edit-mode">{String(props.editMode)}</span>
       <span data-testid="gmp-site-spec">{props.siteSpecJson ?? ''}</span>
       <span data-testid="gmp-locale">{props.locale ?? ''}</span>
+      <span data-testid="gmp-selected-brand-logo">
+        {JSON.stringify(props.selectedBrandLogo ?? null)}
+      </span>
       <button
         type="button"
         data-testid="gmp-trigger-text-change"
@@ -530,6 +542,29 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
     expect(screen.getByTestId('gmp-source').textContent).toContain(
       '<h1>Ready</h1>',
     )
+  })
+
+  it('passes the persisted selected brand logo into the generated preview', () => {
+    const selectedBrandLogo = {
+      name: 'Linear',
+      domain: 'linear.app',
+      brandId: 'linear',
+      icon: 'https://cdn.test/linear-icon.png',
+      logo: null,
+    }
+    setupReady({
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        selectedBrandLogo,
+      },
+    })
+
+    render(<Dashboard sessionId="ready-session" />)
+
+    expect(
+      JSON.parse(screen.getByTestId('gmp-selected-brand-logo').textContent!),
+    ).toEqual(selectedBrandLogo)
   })
 
   // 3. Fallback polling: WebSocket failure → 1.5s polling; success → stops

@@ -16,6 +16,8 @@ import {
 import {
   claimAnonymousSession,
   deleteOwnedSessions,
+  setSessionBrandLogo,
+  setSessionPreferredLanguage,
   setSessionThemeOverride,
 } from './lib/session_access_helpers'
 import { loadSessionApiResponse } from './lib/session_api_response_helpers'
@@ -147,6 +149,8 @@ import {
   recordUsageMetricArgs,
   restorePreviewVersionArgs,
   sessionIdArgs,
+  setPreferredLanguageArgs,
+  setBrandLogoArgs,
   setThemeOverrideArgs,
   slackNotificationArgs,
   syncMedusaProductsArgs,
@@ -578,13 +582,19 @@ export const forkSession = mutation({
 })
 
 export const listEdits = query({
-  args: sessionIdArgs,
-  handler: async (ctx, args) => listSessionEdits(ctx, args.sessionId),
+  args: lookupArgs,
+  handler: async (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    return sessionId === null ? [] : listSessionEdits(ctx, sessionId)
+  },
 })
 
 export const listPreviewHistory = query({
-  args: sessionIdArgs,
-  handler: async (ctx, args) => listSessionPreviewHistory(ctx, args.sessionId),
+  args: lookupArgs,
+  handler: async (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    return sessionId === null ? [] : listSessionPreviewHistory(ctx, sessionId)
+  },
 })
 
 export const restorePreviewVersion = mutation({
@@ -654,13 +664,26 @@ export const finalizeClonePreview = mutation({
 })
 
 export const listClonePages = query({
-  args: sessionIdArgs,
-  handler: (ctx, args) => listSessionClonePages(ctx, args.sessionId),
+  args: lookupArgs,
+  handler: (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    return sessionId === null ? [] : listSessionClonePages(ctx, sessionId)
+  },
 })
 
 export const setThemeOverride = mutation({
   args: setThemeOverrideArgs,
   handler: (ctx, args) => setSessionThemeOverride(ctx, args),
+})
+
+export const setPreferredLanguage = mutation({
+  args: setPreferredLanguageArgs,
+  handler: (ctx, args) => setSessionPreferredLanguage(ctx, args),
+})
+
+export const setBrandLogo = mutation({
+  args: setBrandLogoArgs,
+  handler: (ctx, args) => setSessionBrandLogo(ctx, args),
 })
 
 export const upsertCommerceConfig = mutation({

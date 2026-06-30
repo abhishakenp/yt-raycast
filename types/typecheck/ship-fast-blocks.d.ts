@@ -10,6 +10,17 @@ declare module '@ship-fast/blocks' {
   export const useQuery: any
   export const ImageContextProvider: ComponentType<any>
   export type ImageContext = any
+  export const BrandLogoProvider: ComponentType<any>
+  export const Logo: ComponentType<any>
+  export function getBrandLogoImageSrc(value: any): string | null
+  export function useBrandLogo(): any
+  export type BrandLogoSelection = {
+    name: string
+    domain?: string | null
+    brandId?: string | null
+    icon?: string | null
+    logo?: string | null
+  }
   export const PersistQueryClientProvider: ComponentType<any>
   export const IntegrationProvider: ComponentType<any>
   export const OpenUIIntegrationProviders: ComponentType<any>
@@ -33,6 +44,17 @@ declare module '@ship-fast/blocks/runtime' {
   export const useQuery: any
   export const ImageContextProvider: ComponentType<any>
   export type ImageContext = any
+  export const BrandLogoProvider: ComponentType<any>
+  export const Logo: ComponentType<any>
+  export function getBrandLogoImageSrc(value: any): string | null
+  export function useBrandLogo(): any
+  export type BrandLogoSelection = {
+    name: string
+    domain?: string | null
+    brandId?: string | null
+    icon?: string | null
+    logo?: string | null
+  }
   export const PersistQueryClientProvider: ComponentType<any>
   export const IntegrationProvider: ComponentType<any>
   export const OpenUIIntegrationProviders: ComponentType<any>

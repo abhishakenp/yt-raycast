@@ -10,6 +10,7 @@ import {
   getUserId,
   hashOwnerSecret,
   isSessionOwner,
+  setSessionBrandLogo,
   setSessionThemeOverride,
 } from './session_access_helpers'
 
@@ -375,6 +376,45 @@ describe('session access helpers', () => {
       { id: sessionId, patch: { themeOverride: 'noir' } },
       { id: sessionId, patch: { themeOverride: undefined } },
       { id: sessionId, patch: { themeMode: 'light' } },
+    ])
+  })
+
+  it('persists and clears selected brand logos only for mutable sessions', async () => {
+    const { ctx, patches } = mutationCtxForSessions({
+      identity: identityFor({ tokenIdentifier: 'token:owner' }),
+      sessions: [sessionDoc({ userId: 'token:owner' })],
+    })
+
+    const brandLogo = {
+      name: 'Linear',
+      domain: 'linear.app',
+      brandId: 'linear-id',
+      icon: 'https://cdn.brandfetch.io/linear/icon.webp',
+      logo: 'https://cdn.brandfetch.io/linear/logo.svg',
+    }
+
+    await expect(
+      setSessionBrandLogo(ctx, { sessionId, brandLogo }),
+    ).resolves.toBeUndefined()
+    await expect(
+      setSessionBrandLogo(ctx, { sessionId, brandLogo: null }),
+    ).resolves.toBeUndefined()
+
+    expect(patches).toEqual([
+      {
+        id: sessionId,
+        patch: {
+          selectedBrandLogo: brandLogo,
+          updatedAt: expect.any(Number),
+        },
+      },
+      {
+        id: sessionId,
+        patch: {
+          selectedBrandLogo: undefined,
+          updatedAt: expect.any(Number),
+        },
+      },
     ])
   })
 

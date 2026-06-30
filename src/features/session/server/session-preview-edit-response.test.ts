@@ -32,25 +32,24 @@ describe('session preview edit responses', () => {
     expect(await response.json()).toEqual({
       history: [{ version: 2, source: 'edit', createdAt: 200 }],
     })
-    expect(calls).toEqual([{ sessionId: 'session_123' }])
+    expect(calls).toEqual([{ lookup: 'session_123' }])
   })
 
-  it('returns not found when preview history receives an invalid session id', async () => {
+  it('queries preview history by lookup so placeholder routes can resolve empty', async () => {
+    const calls: unknown[] = []
     const response = await createPreviewHistoryResponse('fake', {
-      query: async () => {
-        throw new Error(
-          'ArgumentValidationError: Value does not match validator.\nPath: .sessionId\nValue: "fake"\nValidator: v.id("sessions")',
-        )
+      query: async (_ref, args) => {
+        calls.push(args)
+        return []
       },
       mutation: async () => {
         throw new Error('unexpected mutation')
       },
     })
 
-    expect(response.status).toBe(404)
-    expect(await response.json()).toMatchObject({
-      error: expect.stringContaining('ArgumentValidationError'),
-    })
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ history: [] })
+    expect(calls).toEqual([{ lookup: 'fake' }])
   })
 
   it('restores a requested preview version with anonymous ownership', async () => {

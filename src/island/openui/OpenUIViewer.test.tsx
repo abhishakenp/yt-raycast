@@ -8,6 +8,7 @@ const runtimeMock = vi.hoisted(() => ({
 }))
 
 vi.mock('@ship-fast/blocks/runtime', () => ({
+  BrandLogoProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
   ImageContextProvider: ({ children }: { children: ReactNode }) => (
     <>{children}</>
   ),

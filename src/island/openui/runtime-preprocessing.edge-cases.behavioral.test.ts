@@ -34,24 +34,12 @@ import {
 const h = React.createElement
 
 // ---------------------------------------------------------------------------
-// Mocks for the translation provider's heavy dependencies.
-// `useQuery` is controllable per-test via `useQueryMock`; the Chrome Translator
-// surface is left REAL (controlled via globalThis) so the provider's Tier-1
-// fall-through logic is exercised end-to-end.
+// The Chrome Translator surface is controlled via globalThis so the provider's
+// Tier-1 fall-through logic is exercised end-to-end.
 // ---------------------------------------------------------------------------
-const { useQueryMock } = vi.hoisted(() => ({ useQueryMock: vi.fn() }))
-
-vi.mock('@ship-fast/blocks/runtime', () => ({
-  useQuery: useQueryMock,
-  QueryClient: class {},
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) =>
-    children,
-}))
-
-// Import the translation provider AFTER the runtime mock is registered so its
-// internal `useQuery` import resolves to the mock.
 import {
   applyTranslationResult,
+  fetchTranslationBatch,
   I18nProvider,
   T,
   useI18n,
@@ -208,14 +196,14 @@ describe('translation provider', () => {
   const originalFetch = globalThis.fetch
 
   beforeEach(() => {
-    useQueryMock.mockReset()
+    window.localStorage.clear()
     // No Chrome Translator surface during provider tests → Tier-1 returns null
     // and the provider falls through to the fetch (Tier-2) path.
     delete (globalThis as Record<string, unknown>).Translator
     delete (globalThis as Record<string, unknown>).translation
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ translation: 'TRANSLATED' }),
+      json: async () => ({ translations: ['TRANSLATED'] }),
     }) as unknown as typeof fetch
   })
 
@@ -237,8 +225,10 @@ describe('translation provider', () => {
   })
 
   it('16. T detects text nodes via MutationObserver and applies translation', async () => {
-    // useQuery returns a completed translation synchronously.
-    useQueryMock.mockReturnValue({ data: 'नमस्ते', isLoading: false })
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ translations: ['नमस्ते'] }),
+    }) as unknown as typeof fetch
 
     const { container } = render(
       h(I18nProvider, {
@@ -247,8 +237,9 @@ describe('translation provider', () => {
       }),
     )
 
-    // Flush the initial collectTextNodes + the TranslatedTextNode effect.
+    // Flush the initial collectTextNodes + queued batch request.
     await act(async () => {
+      await new Promise((r) => setTimeout(r, 0))
       await new Promise((r) => setTimeout(r, 0))
     })
 
@@ -258,7 +249,9 @@ describe('translation provider', () => {
   })
 
   it('17. shows the shimmer animation while a translation is loading', async () => {
-    useQueryMock.mockReturnValue({ data: undefined, isLoading: true })
+    globalThis.fetch = vi.fn(
+      () => new Promise(() => {}),
+    ) as unknown as typeof fetch
 
     const { container } = render(
       h(I18nProvider, {
@@ -325,62 +318,68 @@ describe('translation provider', () => {
   })
 
   it('19. debounces text-node collection: rapid changes collected after 50ms', async () => {
-    vi.useFakeTimers()
-    try {
-      // Track the unique text strings that have been queried for, rather than
-      // raw call counts (React may render TranslatedTextNode more than once).
-      const queriedTexts = new Set<string>()
-      useQueryMock.mockImplementation((opts: { queryKey: string[] }) => {
-        queriedTexts.add(opts.queryKey[1])
-        return { data: 'X', isLoading: false }
-      })
-
-      function Harness({ children }: { children: React.ReactNode }) {
-        return h(I18nProvider, { locale: 'hi', children: h(T, null, children) })
+    const requestedBatches: string[][] = []
+    globalThis.fetch = vi.fn(async (_input, init) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as {
+        texts?: string[]
       }
+      requestedBatches.push(body.texts ?? [])
+      return {
+        ok: true,
+        json: async () => ({ translations: (body.texts ?? []).map(() => 'X') }),
+      } as Response
+    }) as unknown as typeof fetch
 
-      const { rerender } = render(h(Harness, null, h('span', null, 'First')))
-
-      // Let the initial synchronous collection + effect flush.
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0)
-      })
-      // Initial collection processed the "First" text node.
-      expect(queriedTexts.has('First')).toBe(true)
-      expect(queriedTexts.has('Second')).toBe(false)
-
-      // Rapidly add a second text node — this triggers MutationObserver,
-      // which schedules a debounced collectTextNodes at 50ms.
-      rerender(
-        h(Harness, null, h('span', null, 'First'), h('span', null, 'Second')),
-      )
-
-      // Flush the MutationObserver microtask (sets the 50ms timer) without
-      // advancing the debounce window.
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0)
-      })
-      // Still debounced — "Second" has NOT been collected yet.
-      expect(queriedTexts.has('Second')).toBe(false)
-
-      // At 50ms the debounce fires and the new text node is collected.
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(50)
-      })
-      expect(queriedTexts.has('Second')).toBe(true)
-    } finally {
-      vi.useRealTimers()
+    function Harness({ children }: { children: React.ReactNode }) {
+      return h(I18nProvider, { locale: 'hi', children: h(T, null, children) })
     }
+
+    const { rerender } = render(h(Harness, null, h('span', null, 'First')))
+
+    // Let the initial synchronous collection + effect flush.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0))
+      await new Promise((r) => setTimeout(r, 0))
+    })
+    // Initial collection processed the "First" text node.
+    expect(requestedBatches).toEqual([['First']])
+
+    // Rapidly add a second text node — this triggers MutationObserver, which
+    // schedules a debounced collectTextNodes at 50ms.
+    rerender(
+      h(Harness, null, h('span', null, 'First'), h('span', null, 'Second')),
+    )
+
+    // Still debounced — "Second" has NOT been collected immediately.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0))
+    })
+    expect(requestedBatches).toEqual([['First']])
+
+    // At 50ms the debounce fires and the new text node is collected.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 70))
+      await new Promise((r) => setTimeout(r, 0))
+    })
+    expect(requestedBatches).toEqual([['First'], ['Second']])
   })
 
   it('20. WeakSet tracking: the same text node is not processed twice', async () => {
     vi.useFakeTimers()
     try {
-      const queriedTexts = new Set<string>()
-      useQueryMock.mockImplementation((opts: { queryKey: string[] }) => {
-        queriedTexts.add(opts.queryKey[1])
-        return { data: 'X', isLoading: false }
-      })
+      const requestedBatches: string[][] = []
+      globalThis.fetch = vi.fn(async (_input, init) => {
+        const body = JSON.parse(String(init?.body ?? '{}')) as {
+          texts?: string[]
+        }
+        requestedBatches.push(body.texts ?? [])
+        return {
+          ok: true,
+          json: async () => ({
+            translations: (body.texts ?? []).map(() => 'X'),
+          }),
+        } as Response
+      }) as unknown as typeof fetch
 
       function Harness({ children }: { children: React.ReactNode }) {
         return h(I18nProvider, { locale: 'hi', children: h(T, null, children) })
@@ -392,7 +391,7 @@ describe('translation provider', () => {
       await act(async () => {
         await vi.advanceTimersByTimeAsync(0)
       })
-      expect(queriedTexts.has('Stable')).toBe(true)
+      expect(requestedBatches).toEqual([['Stable']])
 
       // Re-render with an extra NON-text element (<br />) to trigger
       // MutationObserver. The existing "Stable" text node must not be
@@ -405,12 +404,87 @@ describe('translation provider', () => {
       await act(async () => {
         await vi.advanceTimersByTimeAsync(60)
       })
-      // Only "Stable" was ever queried — no duplicate, no spurious new node.
-      expect(queriedTexts.size).toBe(1)
-      expect(queriedTexts.has('Stable')).toBe(true)
+      // Only "Stable" was ever requested — no duplicate, no spurious new node.
+      expect(requestedBatches).toEqual([['Stable']])
     } finally {
       vi.useRealTimers()
     }
+  })
+
+  it('uses one batched API request for multiple uncached text nodes', async () => {
+    const requests: string[][] = []
+    globalThis.fetch = vi.fn(async (_input, init) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as {
+        texts?: string[]
+      }
+      requests.push(body.texts ?? [])
+      return {
+        ok: true,
+        json: async () => ({ translations: ['Un', 'Deux'] }),
+      } as Response
+    }) as unknown as typeof fetch
+
+    const translations = await fetchTranslationBatch(['One', 'Two'], 'fr')
+
+    expect(translations).toEqual(['Un', 'Deux'])
+    expect(requests).toEqual([['One', 'Two']])
+  })
+
+  it('uses browser translations before the API and only sends misses', async () => {
+    const translate = vi
+      .fn()
+      .mockResolvedValueOnce('Uno')
+      .mockResolvedValueOnce('')
+    ;(globalThis as Record<string, unknown>).Translator = {
+      availability: vi.fn(async () => 'available'),
+      create: vi.fn(async () => ({ translate })),
+    }
+    const requests: string[][] = []
+    globalThis.fetch = vi.fn(async (_input, init) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as {
+        texts?: string[]
+      }
+      requests.push(body.texts ?? [])
+      return {
+        ok: true,
+        json: async () => ({ translations: ['Dos'] }),
+      } as Response
+    }) as unknown as typeof fetch
+
+    const translations = await fetchTranslationBatch(['One', 'Two'], 'es')
+
+    expect(translations).toEqual(['Uno', 'Dos'])
+    expect(requests).toEqual([['Two']])
+  })
+
+  it('uses regional browser locale tags before the API and only sends misses', async () => {
+    const translate = vi
+      .fn()
+      .mockResolvedValueOnce('Iniciar')
+      .mockResolvedValueOnce('')
+    ;(globalThis as Record<string, unknown>).Translator = {
+      availability: vi.fn(async () => 'available'),
+      create: vi.fn(async () => ({ translate })),
+    }
+    const requests: string[][] = []
+    globalThis.fetch = vi.fn(async (_input, init) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as {
+        texts?: string[]
+      }
+      requests.push(body.texts ?? [])
+      return {
+        ok: true,
+        json: async () => ({ translations: ['Reservar'] }),
+      } as Response
+    }) as unknown as typeof fetch
+
+    const translations = await fetchTranslationBatch(
+      ['Start now', 'Book'],
+      'es-MX',
+    )
+
+    expect(translations).toEqual(['Iniciar', 'Reservar'])
+    expect(requests).toEqual([['Book']])
   })
 })
 
@@ -459,7 +533,7 @@ describe('chrome on-device translator', () => {
     expect(await mod.translateOnDevice('hello', 'hi')).toBeNull()
   })
 
-  describe('plain 2-char native locale filtering', () => {
+  describe('native locale filtering', () => {
     beforeEach(() => {
       ;(globalThis as Record<string, unknown>).Translator = {
         availability: async () => 'available',
@@ -467,15 +541,42 @@ describe('chrome on-device translator', () => {
       }
     })
 
-    it('23. accepts a plain 2-char locale and rejects romanized/code-mixed variants', () => {
+    it('23. accepts native locale tags and rejects romanized/code-mixed variants', () => {
       // "hi" → used by on-device engine
       expect(mod.canUseChromeTranslator('hi')).toBe(true)
+      // "es-MX" → regional native locale, should try browser translation first.
+      expect(mod.canUseChromeTranslator('es-MX')).toBe(true)
+      // "lt" → Lithuanian is a native browser translation target.
+      expect(mod.canUseChromeTranslator('lt')).toBe(true)
       // "hi-latn" → romanized variant, must NOT use on-device (LLM fallback)
       expect(mod.canUseChromeTranslator('hi-latn')).toBe(false)
       // English is the source language, never a translation target
       expect(mod.canUseChromeTranslator('en')).toBe(false)
       // code-mixed / long-form tags are excluded
       expect(mod.canUseChromeTranslator('hinglish')).toBe(false)
+    })
+  })
+
+  it('canonicalizes regional locale tags before creating a translator', async () => {
+    const create = vi.fn(async () => ({
+      translate: async (t: string) => `MX:${t}`,
+    }))
+    const availability = vi.fn(async () => 'available')
+    ;(globalThis as Record<string, unknown>).Translator = {
+      availability,
+      create,
+    }
+
+    const out = await mod.translateOnDevice('Start now', 'es-mx')
+
+    expect(out).toBe('MX:Start now')
+    expect(availability).toHaveBeenCalledWith({
+      sourceLanguage: 'en',
+      targetLanguage: 'es-MX',
+    })
+    expect(create).toHaveBeenCalledWith({
+      sourceLanguage: 'en',
+      targetLanguage: 'es-MX',
     })
   })
 

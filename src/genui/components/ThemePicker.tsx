@@ -27,6 +27,15 @@ export interface ThemePickerProps {
   onSelect: (name: string) => void
   onToggleMode: () => void
   trigger?: ReactElement
+  /**
+   * Which side of the trigger the popover opens on. Defaults to "bottom"
+   * (suitable for horizontal bars like TopBar). Pass "left" when the picker
+   * lives in a vertical side rail so the panel opens toward the content area.
+   */
+  popoverSide?: 'top' | 'bottom' | 'left' | 'right'
+  popoverAlign?: 'start' | 'center' | 'end'
+  popoverSideOffset?: number
+  popoverClassName?: string
 }
 
 function Swatch({ color }: { color: string }) {
@@ -44,6 +53,10 @@ export default function ThemePicker({
   onSelect,
   onToggleMode,
   trigger,
+  popoverSide = 'bottom',
+  popoverAlign = 'end',
+  popoverSideOffset = 4,
+  popoverClassName,
 }: ThemePickerProps) {
   const mode = isDark ? 'dark' : 'light'
 
@@ -62,7 +75,12 @@ export default function ThemePicker({
           </button>
         )}
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 p-0">
+      <PopoverContent
+        align={popoverAlign}
+        side={popoverSide}
+        sideOffset={popoverSideOffset}
+        className={cn('w-72 p-0', popoverClassName)}
+      >
         <div className="border-b p-1">
           <button
             type="button"
