@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
   InquiryAccountButton,
   InquiryActionBadge,
@@ -87,8 +88,7 @@ export const ContactNavbar = defineCapsule({
             onClick={() => go(homeTarget)}
             className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-foreground"
           >
-            <LogoMark />
-            {brand}
+            <BrandLogo brand={brand} fallback={<LogoMark />} />
           </button>
           <ul className="hidden items-center gap-8 text-[0.9375rem] font-medium text-muted-foreground md:flex">
             {nav.map((label) => (

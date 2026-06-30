@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * EventPlannerFooter — inverted four-column site footer. A foreground-colored band
@@ -89,10 +90,11 @@ export const EventPlannerFooter = defineCapsule({
           <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
             <div className="lg:col-span-1">
               <div className="mb-4 flex items-center gap-2">
-                <Clock className="size-8 text-background/60" />
-                <span className="text-xl font-light text-background">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<Clock className="size-8 text-background/60" />}
+                  labelClassName="text-xl font-light text-background"
+                />
               </div>
               <p className="text-sm leading-relaxed text-background/60">
                 {footerTagline}

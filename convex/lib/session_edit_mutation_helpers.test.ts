@@ -133,7 +133,7 @@ describe('session edit mutation helpers', () => {
     })
 
     await expect(
-      t.query(api.sessions.listEdits, { sessionId }),
+      t.query(api.sessions.listEdits, { lookup: sessionId }),
     ).resolves.toEqual(
       expect.arrayContaining([
         expect.objectContaining({

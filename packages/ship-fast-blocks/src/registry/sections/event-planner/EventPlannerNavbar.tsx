@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import {
@@ -76,10 +77,11 @@ export const EventPlannerNavbar = defineCapsule({
               onClick={() => go(nav[0])}
               className="flex items-center gap-2"
             >
-              <Clock className="size-8 text-foreground/80" />
-              <span className="text-xl font-light tracking-tight text-foreground">
-                {brand}
-              </span>
+              <BrandLogo
+                brand={brand}
+                fallback={<Clock className="size-8 text-foreground/80" />}
+                labelClassName="text-xl font-light tracking-tight text-foreground"
+              />
             </button>
             <div className="hidden items-center gap-8 md:flex">
               {nav.map((label) => (

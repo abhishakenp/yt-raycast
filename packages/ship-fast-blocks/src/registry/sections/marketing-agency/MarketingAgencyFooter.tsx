@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * MarketingAgencyFooter — a 4-column site footer. A bordered footer on the page
@@ -93,10 +94,11 @@ export const MarketingAgencyFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <LogoMark className="size-8 text-foreground" />
-                <span className="text-lg font-semibold tracking-tight">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark className="size-8 text-foreground" />}
+                  labelClassName="text-lg font-semibold tracking-tight"
+                />
               </button>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 {about}

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * CorporateFooter — fat multi-column footer for an enterprise / corporate B2B
@@ -133,10 +134,11 @@ export const CorporateFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-6 flex items-center gap-2"
               >
-                <LogoMark inverse className="size-8 text-sm" />
-                <span className="text-lg font-semibold tracking-tight text-background">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark inverse className="size-8 text-sm" />}
+                  labelClassName="text-lg font-semibold tracking-tight text-background"
+                />
               </button>
               <p className="mb-6 max-w-sm text-sm leading-relaxed text-background/70">
                 {about}

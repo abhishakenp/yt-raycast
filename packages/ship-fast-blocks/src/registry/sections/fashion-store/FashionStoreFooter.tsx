@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * FashionStoreFooter — rich multi-column dark footer for a minimalist fashion
@@ -109,7 +110,7 @@ export const FashionStoreFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 inline-block font-serif text-3xl font-medium text-background"
               >
-                {brand}
+                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
               </button>
               <p className="mb-6 max-w-xs text-sm text-background/60">
                 {footerTagline}

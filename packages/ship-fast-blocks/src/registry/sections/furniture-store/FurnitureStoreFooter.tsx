@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * FurnitureStoreFooter — a rich, multi-column footer on the dark primary
@@ -118,10 +119,13 @@ export const FurnitureStoreFooter = defineCapsule({
                 className="mb-4 flex items-center gap-2"
                 aria-label={`${brand} - Return to homepage`}
               >
-                <LogoMark className="size-8 text-primary-foreground" />
-                <span className="text-xl font-semibold tracking-tight text-primary-foreground">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={
+                    <LogoMark className="size-8 text-primary-foreground" />
+                  }
+                  labelClassName="text-xl font-semibold tracking-tight text-primary-foreground"
+                />
               </button>
               <p className="mb-4 max-w-sm text-sm leading-relaxed">{about}</p>
               <p className="text-sm text-primary-foreground/60">

@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { Image } from '#/lib/img.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
@@ -236,10 +237,11 @@ export const DashboardSidebar = defineCapsule({
             onClick={() => go(nav[0])}
             className="flex items-center gap-3"
           >
-            <LogoMark />
-            <span className="text-lg font-bold tracking-tight text-foreground">
-              {brand}
-            </span>
+            <BrandLogo
+              brand={brand}
+              fallback={<LogoMark />}
+              labelClassName="text-lg font-bold tracking-tight text-foreground"
+            />
           </button>
         </div>
 

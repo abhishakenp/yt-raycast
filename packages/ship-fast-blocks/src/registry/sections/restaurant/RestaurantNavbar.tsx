@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
   RestaurantAccountButton,
   RestaurantMobileMenu,
@@ -88,10 +89,11 @@ export const RestaurantNavbar = defineCapsule({
             onClick={() => go(homeTarget)}
             className="flex items-center gap-3"
           >
-            <ForkKnifeMark className="size-8 text-primary" />
-            <span className="font-serif text-xl font-medium text-foreground">
-              {brand}
-            </span>
+            <BrandLogo
+              brand={brand}
+              fallback={<ForkKnifeMark className="size-8 text-primary" />}
+              labelClassName="font-serif text-xl font-medium text-foreground"
+            />
           </button>
 
           <div className="hidden items-center gap-8 md:flex">

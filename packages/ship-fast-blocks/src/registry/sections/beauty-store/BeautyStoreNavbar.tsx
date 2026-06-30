@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import type { ReactNode } from 'react'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -113,7 +114,7 @@ export const BeautyStoreNavbar = defineCapsule({
               onClick={() => go(homeTarget)}
               className="flex items-center gap-2 font-serif text-2xl font-semibold tracking-tight text-foreground"
             >
-              {brand}
+              <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
             </button>
 
             <nav className="hidden items-center gap-8 md:flex">

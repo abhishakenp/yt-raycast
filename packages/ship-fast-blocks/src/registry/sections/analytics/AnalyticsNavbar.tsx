@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
   SaasAccountButton,
   SaasIntentBadge,
@@ -79,10 +80,11 @@ export const AnalyticsNavbar = defineCapsule({
             onClick={() => go(props.homeTarget ?? nav[0])}
             className="flex min-w-0 items-center gap-3"
           >
-            {brandMark}
-            <span className="truncate text-xl font-semibold tracking-tight text-foreground">
-              {brand}
-            </span>
+            <BrandLogo
+              brand={brand}
+              fallback={brandMark}
+              labelClassName="truncate text-xl font-semibold tracking-tight text-foreground"
+            />
           </button>
 
           <div className="hidden items-center gap-8 md:flex">

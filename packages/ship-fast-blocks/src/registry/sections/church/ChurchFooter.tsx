@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * ChurchFooter — rich dark multi-column footer for a church or faith-community site.
@@ -142,12 +143,15 @@ export const ChurchFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-6 flex items-center gap-2"
               >
-                <span className="text-2xl" aria-hidden="true">
-                  ✦
-                </span>
-                <span className="text-xl font-medium tracking-tight">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={
+                    <span className="text-2xl" aria-hidden="true">
+                      ✦
+                    </span>
+                  }
+                  labelClassName="text-xl font-medium tracking-tight"
+                />
               </button>
               <p className="mb-6 leading-relaxed text-background/70">{about}</p>
               <div className="flex items-center gap-4">

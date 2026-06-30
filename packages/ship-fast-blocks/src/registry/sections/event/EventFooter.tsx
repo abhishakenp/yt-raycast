@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * EventFooter — a rich, dark multi-column footer for a conference or event page.
@@ -131,13 +132,18 @@ export const EventFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <span
-                  className="grid size-8 place-items-center rounded-lg bg-background text-sm font-bold text-foreground"
-                  aria-hidden="true"
-                >
-                  {brand.slice(0, 2).toUpperCase()}
-                </span>
-                <span className="text-lg font-semibold">{brand}</span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={
+                    <span
+                      className="grid size-8 place-items-center rounded-lg bg-background text-sm font-bold text-foreground"
+                      aria-hidden="true"
+                    >
+                      {brand.slice(0, 2).toUpperCase()}
+                    </span>
+                  }
+                  labelClassName="text-lg font-semibold"
+                />
               </button>
               <p className="mb-4 text-sm leading-relaxed text-background/70">
                 {tagline}

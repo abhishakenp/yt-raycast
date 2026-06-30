@@ -33,11 +33,11 @@ interface CloneNavMessage {
 export function useClonePageNav(
   sessionId: string | undefined,
 ): ClonePageNavState {
-  const rows =
-    useQuery(
-      api.sessions.listClonePages,
-      sessionId ? { sessionId: sessionId as Id<'sessions'> } : 'skip',
-    ) ?? []
+  const queriedRows = useQuery(
+    api.sessions.listClonePages,
+    sessionId ? { lookup: sessionId } : 'skip',
+  )
+  const rows = Array.isArray(queriedRows) ? queriedRows : []
   const homePath = useMemo(() => {
     if (rows.length === 0) return ''
     const home = rows.find((row) => row.isHome)

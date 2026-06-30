@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
@@ -45,8 +46,13 @@ export const FilmDirectorNavbar = defineCapsule({
             <button
               type="button"
               onClick={() => go(brand)}
-              className="text-lg font-medium tracking-tight md:text-xl"
+              className="inline-flex items-center text-lg font-medium tracking-tight md:text-xl"
             >
+              <BrandLogo
+                brand={brand}
+                className="mr-2 size-7"
+                showLabel={false}
+              />
               {brand.toUpperCase()}
             </button>
             <div className="hidden items-center gap-8 md:flex">

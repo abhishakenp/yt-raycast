@@ -43,6 +43,26 @@ export type SetSessionThemeOverrideInput = {
   themeMode?: 'light' | 'dark' | null
 }
 
+export type SetSessionPreferredLanguageInput = {
+  sessionId: Id<'sessions'>
+  anonymousOwnerSecret?: string
+  preferredLanguage: string
+}
+
+export type SessionBrandLogoSelection = {
+  name: string
+  domain: string | null
+  brandId: string | null
+  icon: string | null
+  logo: string | null
+}
+
+export type SetSessionBrandLogoInput = {
+  sessionId: Id<'sessions'>
+  anonymousOwnerSecret?: string
+  brandLogo: SessionBrandLogoSelection | null
+}
+
 export const getUserId = async (ctx: AuthCtx) => {
   const identity = await ctx.auth.getUserIdentity()
   return identity?.tokenIdentifier ?? identity?.subject
@@ -240,5 +260,49 @@ export const setSessionThemeOverride = async (
     ...(args.themeMode === undefined
       ? {}
       : { themeMode: args.themeMode ?? undefined }),
+  })
+}
+
+export const setSessionPreferredLanguage = async (
+  ctx: MutationCtx,
+  args: SetSessionPreferredLanguageInput,
+) => {
+  const session = await ctx.db.get(args.sessionId)
+
+  session !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    })()
+
+  await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
+
+  await ctx.db.patch(args.sessionId, {
+    preferredLanguage: args.preferredLanguage,
+    updatedAt: Date.now(),
+  })
+}
+
+export const setSessionBrandLogo = async (
+  ctx: MutationCtx,
+  args: SetSessionBrandLogoInput,
+) => {
+  const session = await ctx.db.get(args.sessionId)
+
+  session !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    })()
+
+  await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
+
+  await ctx.db.patch(args.sessionId, {
+    selectedBrandLogo: args.brandLogo ?? undefined,
+    updatedAt: Date.now(),
   })
 }

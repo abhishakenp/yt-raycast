@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
   PublicationAccountButton,
   PublicationMobileMenu,
@@ -83,10 +84,11 @@ export const BlogNavbar = defineCapsule({
             onClick={() => go(homeTarget)}
             className="flex min-w-0 items-center gap-3"
           >
-            <QuillMark className="size-8 text-primary" />
-            <span className="truncate text-xl font-bold tracking-tight text-foreground">
-              {brand}
-            </span>
+            <BrandLogo
+              brand={brand}
+              fallback={<QuillMark className="size-8 text-primary" />}
+              labelClassName="truncate text-xl font-bold tracking-tight text-foreground"
+            />
           </button>
 
           <div className="hidden items-center gap-8 md:flex">

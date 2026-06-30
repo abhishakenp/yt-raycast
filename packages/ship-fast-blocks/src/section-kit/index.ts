@@ -8,6 +8,13 @@
 
 export { SiteNav } from './SiteNav.tsx'
 export { SiteFooter } from './SiteFooter.tsx'
+export {
+  BrandLogoProvider,
+  Logo,
+  getBrandLogoImageSrc,
+  useBrandLogo,
+  type BrandLogoSelection,
+} from './Logo.tsx'
 export { SectionHeading } from './SectionHeading.tsx'
 export { CtaBand } from './CtaBand.tsx'
 export { StarRating } from './StarRating.tsx'

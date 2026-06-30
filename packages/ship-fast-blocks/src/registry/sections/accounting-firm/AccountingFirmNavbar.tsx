@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
@@ -64,10 +65,11 @@ export const AccountingFirmNavbar = defineCapsule({
               onClick={() => go(nav[0])}
               className="flex items-center gap-2"
             >
-              <LogoMark className="size-8 text-sm" />
-              <span className="text-lg font-semibold tracking-tight text-foreground">
-                {brand}
-              </span>
+              <BrandLogo
+                brand={brand}
+                fallback={<LogoMark className="size-8 text-sm" />}
+                labelClassName="text-lg font-semibold tracking-tight text-foreground"
+              />
             </button>
 
             <div className="hidden items-center gap-8 md:flex">

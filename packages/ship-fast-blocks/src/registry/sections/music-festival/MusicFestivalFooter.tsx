@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * MusicFestivalFooter — a four-column footer for a music / arts festival landing
@@ -70,7 +71,9 @@ export const MusicFestivalFooter = defineCapsule({
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 grid gap-12 md:grid-cols-4">
             <div>
-              <h3 className="mb-4 text-xl font-bold">{brand}</h3>
+              <h3 className="mb-4 text-xl font-bold">
+                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
+              </h3>
               <p className="text-sm leading-relaxed text-foreground/60">
                 {about}
               </p>

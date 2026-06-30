@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * JewelryStoreFooter — rich five-column footer for a luxury jewelry maison on
@@ -106,7 +107,7 @@ export const JewelryStoreFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-6 inline-block font-serif text-2xl tracking-wider text-primary"
               >
-                {brand}
+                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
               </button>
               <p className="mb-6 max-w-sm leading-relaxed text-muted-foreground">
                 {about}

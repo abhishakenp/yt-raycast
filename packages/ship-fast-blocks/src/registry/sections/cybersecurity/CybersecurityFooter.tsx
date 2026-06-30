@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * CybersecurityFooter — dark, full-bleed 5-column mega-footer. A brand-surface
@@ -120,10 +121,11 @@ export const CybersecurityFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <ShieldMark className="size-8 text-background" />
-                <span className="text-xl font-bold text-background">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<ShieldMark className="size-8 text-background" />}
+                  labelClassName="text-xl font-bold text-background"
+                />
               </button>
               <p className="mb-4 text-sm">{tagline}</p>
               <div className="flex gap-4">

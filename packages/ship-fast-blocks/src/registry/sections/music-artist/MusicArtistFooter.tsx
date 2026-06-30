@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * MusicArtistFooter — multi-column closing footer for a music artist / band
@@ -86,7 +87,7 @@ export const MusicArtistFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 inline-block text-2xl font-light tracking-tight text-foreground"
               >
-                {brand}
+                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
               </button>
               <p className="mb-6 max-w-sm text-muted-foreground">
                 {description}

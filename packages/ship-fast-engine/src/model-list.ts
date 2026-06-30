@@ -2,7 +2,7 @@
 // in model.ts so all of them are selectable in the picker for testing — including
 // the small/fast ones. Default is the strongest reliable model.
 
-export type ModelProvider = 'groq' | 'gemini' | 'talaas'
+export type ModelProvider = 'groq' | 'gemini' | 'talaas' | 'windsurf'
 
 export interface ShipFastModel {
   id: string
@@ -29,10 +29,26 @@ export const SHIP_FAST_MODELS: readonly ShipFastModel[] = [
   { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', provider: 'gemini' },
   { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', provider: 'gemini' },
   { id: 'llama3.1-8B', label: 'Llama 3.1 8B (Talaas)', provider: 'talaas' },
+  { id: 'swe-1-6', label: 'SWE-1.6 (Windsurf)', provider: 'windsurf' },
+  {
+    id: 'swe-1-6-fast',
+    label: 'SWE-1.6 Fast (Windsurf)',
+    provider: 'windsurf',
+  },
+  { id: 'glm-5-2', label: 'GLM-5.2 (Windsurf)', provider: 'windsurf' },
+  {
+    id: 'glm-5-2-none',
+    label: 'GLM-5.2 No-Thinking (Windsurf)',
+    provider: 'windsurf',
+  },
 ]
 
-// Strongest reliable default (no free-tier rate limits, strong instruction-following).
-export const DEFAULT_MODEL = 'openai/gpt-oss-120b'
+// Default to GLM-5.2 with thinking OFF (-none suffix) via the Windsurf/Codeium
+// backend (windsurf provider). Thinking is encoded in the model id suffix
+// (-none/-low/-medium/-high/-max); -none disables it. Verified live: swe-1-6
+// rejects thinking variants with permission_denied (no thinking support), while
+// glm-5-2-none is accepted and runs with thinking off.
+export const DEFAULT_MODEL = 'glm-5-2-none'
 
 export function isKnownModel(id: string): boolean {
   return SHIP_FAST_MODELS.some((m) => m.id === id)

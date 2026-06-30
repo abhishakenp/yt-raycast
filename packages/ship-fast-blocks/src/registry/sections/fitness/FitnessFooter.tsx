@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * FitnessFooter — inverted multi-column site footer for a gym or fitness studio. A
@@ -73,15 +74,18 @@ export const FitnessFooter = defineCapsule({
           <div className="mb-12 grid gap-8 md:grid-cols-4">
             <div>
               <div className="mb-4 flex items-center gap-2">
-                <span
-                  className="grid size-8 place-items-center rounded-sm bg-background text-sm font-bold text-foreground"
-                  aria-hidden="true"
-                >
-                  {brandShort.charAt(0)}
-                </span>
-                <span className="text-lg font-semibold tracking-tight text-background">
-                  {brandShort}
-                </span>
+                <BrandLogo
+                  brand={brandShort}
+                  fallback={
+                    <span
+                      className="grid size-8 place-items-center rounded-sm bg-background text-sm font-bold text-foreground"
+                      aria-hidden="true"
+                    >
+                      {brandShort.charAt(0)}
+                    </span>
+                  }
+                  labelClassName="text-lg font-semibold tracking-tight text-background"
+                />
               </div>
               <p className="text-sm text-background/60">{footerTagline}</p>
             </div>

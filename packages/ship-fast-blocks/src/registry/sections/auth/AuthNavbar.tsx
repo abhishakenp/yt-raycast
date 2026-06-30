@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
   SaasAccountButton,
   SaasIntentBadge,
@@ -78,10 +79,14 @@ export const AuthNavbar = defineCapsule({
             onClick={() => go(props.homeTarget ?? 'Home')}
             className="flex min-w-0 items-center gap-3"
           >
-            <KeyholeMark className="size-7 shrink-0 text-primary" />
-            <span className="truncate text-xl font-semibold tracking-tight text-foreground">
-              {brand}
-            </span>
+            <BrandLogo
+              brand={brand}
+              fallback={
+                <KeyholeMark className="size-7 shrink-0 text-primary" />
+              }
+              className="size-7"
+              labelClassName="truncate text-xl font-semibold tracking-tight text-foreground"
+            />
           </button>
 
           <div className="hidden items-center gap-8 md:flex">

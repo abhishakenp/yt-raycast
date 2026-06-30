@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * ConstructionFooter — four-column footer for a construction / general
@@ -124,10 +125,11 @@ export const ConstructionFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-6 flex items-center gap-2"
               >
-                <LogoMark className="size-8" tone="foreground" />
-                <span className="text-xl font-semibold tracking-tight text-foreground">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark className="size-8" tone="foreground" />}
+                  labelClassName="text-xl font-semibold tracking-tight text-foreground"
+                />
               </button>
               <p className="mb-6 leading-relaxed text-muted-foreground">
                 {about}

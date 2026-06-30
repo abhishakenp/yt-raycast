@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * IllustratorFooter — a multi-column dark site footer for an illustrator /
@@ -81,7 +82,7 @@ export const IllustratorFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 font-serif text-2xl"
               >
-                {brand}
+                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
               </button>
               <p className="mb-6 max-w-sm text-sm leading-relaxed text-background/60">
                 {description}

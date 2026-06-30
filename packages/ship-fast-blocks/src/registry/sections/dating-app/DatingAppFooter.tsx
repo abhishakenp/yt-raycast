@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * DatingAppFooter — a multi-column site footer for a dating / matchmaking app. A
@@ -105,12 +106,15 @@ export const DatingAppFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
-                  <HeartGlyph className="size-5" />
-                </span>
-                <span className="text-xl font-bold text-foreground">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={
+                    <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
+                      <HeartGlyph className="size-5" />
+                    </span>
+                  }
+                  labelClassName="text-xl font-bold text-foreground"
+                />
               </button>
               <p className="mb-4 max-w-xs text-muted-foreground">
                 {footerTagline}

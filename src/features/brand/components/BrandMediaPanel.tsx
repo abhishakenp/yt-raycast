@@ -1,35 +1,65 @@
-import { Building2, Image as ImageIcon, RefreshCw, Search } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useAction, useMutation, useQuery } from 'convex/react'
+import { Building2, Check, Loader2, Upload } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { cn } from '@/lib/utils'
 
 type BrandMediaPanelProps = {
+  sessionId?: string
   prompt?: string
   cloneUrl?: string
   designReferenceNotes?: string
   designReferenceUrls?: string[]
+  onSelectBrand?: (brand: {
+    name: string
+    domain: string | null
+    brandId: string | null
+    icon: string | null
+    logo: string | null
+  }) => void | Promise<void>
 }
 
-type BrandProfile = {
-  ok?: boolean
-  error?: string
-  query?: string
-  match?: {
-    name?: string
-    domain?: string
-    brandId?: string
-  } | null
-  logo?: {
-    src?: string
-    url?: string
-  } | null
-  palette?:
-    | {
-        colors?: string[]
-        dominant?: string
-      }
-    | string[]
-    | null
-  confidence?: number | null
+type BrandLogoResult = {
+  id: string
+  name: string
+  domain: string | null
+  brandId: string | null
+  icon: string | null
+  logo: string | null
+  verified: boolean
 }
+
+type BrandSearchPage = {
+  results: BrandLogoResult[]
+  continueCursor: string | null
+  isDone: boolean
+}
+
+type UploadedImage = {
+  url: string | null
+  filename?: string | null
+}
+
+const MAX_FILE_SIZE = 8 * 1024 * 1024
+const ACCEPTED_TYPES = [
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
+]
+const PAGE_SIZE = 5
 
 const domainFromUrl = (value: string | undefined): string => {
   if (!value) return ''
@@ -40,21 +70,26 @@ const domainFromUrl = (value: string | undefined): string => {
   }
 }
 
-const paletteColors = (palette: BrandProfile['palette']): string[] => {
-  if (Array.isArray(palette))
-    return palette.filter((color): color is string => typeof color === 'string')
-  const colors = palette?.colors ?? []
-  const dominant = palette?.dominant
-  return [...(typeof dominant === 'string' ? [dominant] : []), ...colors]
-    .filter(Boolean)
-    .slice(0, 8)
+const validateImageFile = (file: {
+  type: string
+  size: number
+}): string | null => {
+  if (!ACCEPTED_TYPES.includes(file.type)) {
+    return `Unsupported file type: ${file.type}`
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    return `File too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)`
+  }
+  return null
 }
 
 export const BrandMediaPanel = ({
+  sessionId,
   prompt = '',
   cloneUrl,
   designReferenceNotes = '',
   designReferenceUrls = [],
+  onSelectBrand,
 }: BrandMediaPanelProps) => {
   const initialQuery = useMemo(
     () =>
@@ -63,190 +98,324 @@ export const BrandMediaPanel = ({
     [cloneUrl, designReferenceUrls, prompt],
   )
   const [brandQuery, setBrandQuery] = useState(initialQuery)
-  const [imageQuery, setImageQuery] = useState(
-    prompt || initialQuery || 'modern website',
-  )
-  const [profile, setProfile] = useState<BrandProfile | null>(null)
-  const [imageUrl, setImageUrl] = useState<string>()
+  const [results, setResults] = useState<BrandLogoResult[]>([])
+  const [selectedLogo, setSelectedLogo] = useState<BrandLogoResult | null>(null)
+  const [continueCursor, setContinueCursor] = useState<string | null>(null)
+  const [isDone, setIsDone] = useState(true)
   const [error, setError] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string>()
+  const listRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const requestIdRef = useRef(0)
+  const pageCacheRef = useRef<Map<string, BrandSearchPage>>(new Map())
 
-  // Cache of brand profiles keyed on the trimmed query so repeated lookups
-  // of the same domain reuse cached data without refetching.
-  const brandProfileCacheRef = useRef<Map<string, BrandProfile>>(new Map())
+  const searchBrands = useAction(api.brandfetch.search)
+  const generateUploadUrl = useMutation(api.sessions.generateImageUploadUrl)
+  const saveUserImage = useMutation(api.sessions.saveUserImage)
+  const userImages = useQuery(
+    api.sessions.listUserImages,
+    sessionId ? { sessionId: sessionId as Id<'sessions'> } : 'skip',
+  ) as UploadedImage[] | undefined
 
-  const lookupBrand = async () => {
-    const query = brandQuery.trim()
-    if (!query) return
+  const loadBrands = useCallback(
+    async (cursor: string | null, mode: 'replace' | 'append') => {
+      const query = brandQuery.trim()
+      if (query.length < 2) {
+        setResults([])
+        setContinueCursor(null)
+        setIsDone(true)
+        setError(undefined)
+        return
+      }
 
-    const cached = brandProfileCacheRef.current.get(query)
-    if (cached) {
-      setProfile(cached)
-      setError(undefined)
-      return
-    }
+      const cacheKey = `${query}:${cursor ?? 'start'}`
+      const cached = pageCacheRef.current.get(cacheKey)
+      if (cached) {
+        setResults((current) =>
+          mode === 'append' ? [...current, ...cached.results] : cached.results,
+        )
+        setContinueCursor(cached.continueCursor)
+        setIsDone(cached.isDone)
+        setError(undefined)
+        return
+      }
 
-    setError(undefined)
-    setIsLoading(true)
+      const requestId = ++requestIdRef.current
+      if (mode === 'append') setIsLoadingMore(true)
+      else setIsLoading(true)
 
-    try {
-      const response = await fetch(
-        `/api/brand-profile?query=${encodeURIComponent(query)}`,
+      try {
+        const page = (await searchBrands({
+          query,
+          cursor,
+          pageSize: PAGE_SIZE,
+        })) as BrandSearchPage
+        if (requestId !== requestIdRef.current) return
+        pageCacheRef.current.set(cacheKey, page)
+        setResults((current) =>
+          mode === 'append' ? [...current, ...page.results] : page.results,
+        )
+        setContinueCursor(page.continueCursor)
+        setIsDone(page.isDone)
+        setError(undefined)
+      } catch (lookupError) {
+        if (requestId !== requestIdRef.current) return
+        if (mode !== 'append') setResults([])
+        setError(
+          lookupError instanceof Error
+            ? lookupError.message
+            : 'Brand lookup failed',
+        )
+      } finally {
+        if (requestId === requestIdRef.current) {
+          setIsLoading(false)
+          setIsLoadingMore(false)
+        }
+      }
+    },
+    [brandQuery, searchBrands],
+  )
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void loadBrands(null, 'replace')
+    }, 300)
+    return () => window.clearTimeout(timer)
+  }, [loadBrands])
+
+  const loadMore = useCallback(() => {
+    if (isLoading || isLoadingMore || isDone || !continueCursor) return
+    void loadBrands(continueCursor, 'append')
+  }, [continueCursor, isDone, isLoading, isLoadingMore, loadBrands])
+
+  const handleListScroll = useCallback(() => {
+    const el = listRef.current
+    if (!el) return
+    const remaining = el.scrollHeight - el.scrollTop - el.clientHeight
+    if (remaining < 80) loadMore()
+  }, [loadMore])
+
+  const uploadFile = useCallback(
+    async (file: File) => {
+      if (!sessionId) {
+        setUploadError('Open a session before uploading images.')
+        return
+      }
+      const validationError = validateImageFile(file)
+      if (validationError) {
+        setUploadError(validationError)
+        return
+      }
+
+      setIsUploading(true)
+      setUploadError(undefined)
+      try {
+        const anonymousOwnerSecret =
+          typeof window === 'undefined'
+            ? undefined
+            : readAnonymousOwnerSecret(window.localStorage, sessionId)
+        const uploadUrl = await generateUploadUrl({
+          sessionId: sessionId as Id<'sessions'>,
+          anonymousOwnerSecret,
+        })
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': file.type },
+          body: file,
+        })
+        if (!response.ok) throw new Error(`Upload failed: ${response.status}`)
+        const { storageId } = (await response.json()) as {
+          storageId: Id<'_storage'>
+        }
+        await saveUserImage({
+          sessionId: sessionId as Id<'sessions'>,
+          anonymousOwnerSecret,
+          storageId,
+          filename: file.name,
+          contentType: file.type,
+          size: file.size,
+        })
+      } catch (uploadFailure) {
+        setUploadError(
+          uploadFailure instanceof Error
+            ? uploadFailure.message
+            : 'Upload failed',
+        )
+      } finally {
+        setIsUploading(false)
+      }
+    },
+    [generateUploadUrl, saveUserImage, sessionId],
+  )
+
+  const uploadedImages =
+    userImages
+      ?.filter((image): image is UploadedImage & { url: string } =>
+        Boolean(image.url),
       )
-      const data = (await response.json()) as BrandProfile
-      if (!response.ok || data.ok !== true)
-        throw new Error(data.error ?? 'Brand lookup failed')
-      brandProfileCacheRef.current.set(query, data)
-      setProfile(data)
-    } catch (lookupError) {
-      setProfile(null)
-      setError(
-        lookupError instanceof Error
-          ? lookupError.message
-          : 'Brand lookup failed',
-      )
-    } finally {
-      setIsLoading(false)
-    }
-  }
+      .slice(0, 6) ?? []
 
-  const loadImage = () => {
-    const query = imageQuery.trim() || brandQuery.trim() || 'website'
-    setImageUrl(
-      `/api/pexels?query=${encodeURIComponent(query)}&w=960&h=540&seed=${Date.now()}`,
-    )
-  }
-
-  const logoUrl = profile?.logo?.src ?? profile?.logo?.url
-  const colors = paletteColors(profile?.palette)
+  void cloneUrl
+  void designReferenceUrls
+  void designReferenceNotes
 
   return (
-    <div className="grid gap-4">
-      <div className="flex items-center gap-2 border-b border-white/10 pb-3">
-        <Building2 className="size-4 text-cyan-200" />
-        <div>
-          <h2 className="m-0 text-sm font-semibold uppercase tracking-[0.1em] text-white">
-            Brand and media
-          </h2>
-          <p className="m-0 mt-1 text-xs leading-5 text-white/48">
-            Inspect brand profile and stock media helpers for this session.
-          </p>
-        </div>
-      </div>
-
-      <section className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-        <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-white/45">
-          Brand or domain
-          <input
-            className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm normal-case tracking-normal text-white outline-none"
-            disabled={isLoading}
-            onChange={(event) => setBrandQuery(event.target.value)}
+    <div className="w-full overflow-hidden">
+      <Command shouldFilter={false}>
+        <div className="flex items-center gap-1 border-b pr-1">
+          <CommandInput
             value={brandQuery}
+            onValueChange={setBrandQuery}
+            placeholder="Search brands or domains..."
           />
-        </label>
-        <button
-          className="inline-flex min-h-9 items-center justify-center gap-2 rounded-full bg-cyan-300 px-3 py-2 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-45"
-          disabled={isLoading || !brandQuery.trim()}
-          onClick={() => void lookupBrand()}
-          type="button"
-        >
-          {isLoading ? (
-            <RefreshCw className="size-4" />
-          ) : (
-            <Search className="size-4" />
-          )}
-          {isLoading ? 'Looking up...' : 'Lookup brand'}
-        </button>
-        {profile && (
-          <div className="grid gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
-            <div className="flex items-center gap-3">
-              {logoUrl && (
-                <img
-                  alt=""
-                  className="size-10 rounded-xl bg-white object-contain p-1"
-                  src={logoUrl}
-                />
-              )}
-              <div className="min-w-0">
-                <p className="m-0 truncate text-sm font-semibold text-white">
-                  {profile.match?.name ?? profile.query ?? brandQuery}
-                </p>
-                <p className="m-0 mt-1 truncate font-mono text-[0.68rem] uppercase tracking-[0.08em] text-white/38">
-                  {profile.match?.domain ??
-                    profile.match?.brandId ??
-                    'brand profile'}
-                </p>
-              </div>
-            </div>
-            {colors.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {colors.map((color) => (
-                  <span
-                    className="size-6 rounded-lg border border-white/10"
-                    key={color}
-                    style={{ background: color }}
-                    title={color}
-                  />
-                ))}
-              </div>
+          <button
+            type="button"
+            aria-label="Upload custom image"
+            title="Upload custom image"
+            className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-input bg-background text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-50"
+            disabled={isUploading}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {isUploading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Upload className="size-4" />
             )}
-          </div>
-        )}
-      </section>
-
-      <section className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-        <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-white/45">
-          Image search
+          </button>
           <input
-            className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm normal-case tracking-normal text-white outline-none"
-            onChange={(event) => setImageQuery(event.target.value)}
-            value={imageQuery}
+            ref={fileInputRef}
+            type="file"
+            accept={ACCEPTED_TYPES.join(',')}
+            multiple
+            className="hidden"
+            onChange={(event) => {
+              const files = Array.from(event.currentTarget.files ?? [])
+              for (const file of files) void uploadFile(file)
+              event.currentTarget.value = ''
+            }}
           />
-        </label>
-        <button
-          className="inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-bold text-white/72 transition-colors hover:bg-white/[0.08]"
-          onClick={loadImage}
-          type="button"
-        >
-          <ImageIcon className="size-4" />
-          Preview image
-        </button>
-        {imageUrl && (
-          <img
-            alt=""
-            className="aspect-video w-full rounded-xl border border-white/10 object-cover"
-            src={imageUrl}
-          />
-        )}
-      </section>
+        </div>
 
-      {(cloneUrl || designReferenceUrls.length > 0 || designReferenceNotes) && (
-        <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-          <p className="m-0 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-white/42">
-            Design references
+        {uploadError && (
+          <p className="m-0 border-b px-3 py-2 text-xs text-destructive">
+            {uploadError}
           </p>
-          {cloneUrl && (
-            <p className="m-0 mt-2 truncate text-xs text-white/62">
-              Clone: {cloneUrl}
-            </p>
-          )}
-          {designReferenceUrls.map((url) => (
-            <p className="m-0 mt-1 truncate text-xs text-white/62" key={url}>
-              Reference: {url}
-            </p>
-          ))}
-          {designReferenceNotes && (
-            <p className="m-0 mt-2 text-xs leading-5 text-white/48">
-              {designReferenceNotes}
-            </p>
-          )}
-        </section>
-      )}
+        )}
+        {error && (
+          <p className="m-0 border-b px-3 py-2 text-xs text-destructive">
+            {error}
+          </p>
+        )}
 
-      {error && (
-        <p className="m-0 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-200">
-          {error}
-        </p>
+        <CommandList
+          ref={listRef}
+          onScroll={handleListScroll}
+          className="max-h-[360px] overflow-y-auto"
+        >
+          <CommandEmpty>
+            {isLoading ? 'Searching Brandfetch...' : 'No brand logos found.'}
+          </CommandEmpty>
+          <CommandGroup>
+            {isLoading && results.length === 0
+              ? [...Array(6)].map((_, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 px-2 py-1.5"
+                  >
+                    <div className="size-8 animate-pulse rounded-md bg-muted" />
+                    <div className="grid flex-1 gap-1.5">
+                      <div className="h-3 w-28 animate-pulse rounded bg-muted" />
+                      <div className="h-2.5 w-20 animate-pulse rounded bg-muted" />
+                    </div>
+                  </div>
+                ))
+              : results.map((result) => (
+                  <CommandItem
+                    key={`${result.id}-${result.logo ?? result.icon ?? ''}`}
+                    value={[result.name, result.domain, result.brandId]
+                      .filter(Boolean)
+                      .join(' ')}
+                    onSelect={() => {
+                      setSelectedLogo(result)
+                      onSelectBrand?.({
+                        name: result.name,
+                        domain: result.domain,
+                        brandId: result.brandId,
+                        icon: result.icon,
+                        logo: result.logo,
+                      })
+                    }}
+                    className="items-center gap-2"
+                  >
+                    <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-md border bg-white">
+                      {result.logo || result.icon ? (
+                        <img
+                          src={result.logo ?? result.icon ?? ''}
+                          alt=""
+                          className="max-h-6 max-w-6 object-contain"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <Building2 className="size-4 text-slate-500" />
+                      )}
+                    </span>
+                    <span className="grid min-w-0 flex-1 gap-0.5">
+                      <span className="truncate text-sm font-medium">
+                        {result.name}
+                      </span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {result.domain ?? result.brandId ?? 'Brandfetch'}
+                      </span>
+                    </span>
+                    <Check
+                      className={cn(
+                        'ml-auto size-4',
+                        selectedLogo?.id === result.id
+                          ? 'opacity-100'
+                          : 'opacity-0',
+                      )}
+                    />
+                  </CommandItem>
+                ))}
+          </CommandGroup>
+          {isLoadingMore && (
+            <div className="flex items-center justify-center gap-2 py-3">
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                Loading more...
+              </span>
+            </div>
+          )}
+          {!isLoading && !isLoadingMore && results.length > 0 && isDone && (
+            <p className="m-0 py-3 text-center text-xs text-muted-foreground">
+              No more logos
+            </p>
+          )}
+        </CommandList>
+      </Command>
+
+      {uploadedImages.length > 0 && (
+        <div className="grid gap-2 border-t p-2">
+          <div className="grid grid-cols-6 gap-1.5">
+            {uploadedImages.map((image, index) => (
+              <span
+                key={`${image.url}-${index}`}
+                className="aspect-square overflow-hidden rounded-md border bg-muted"
+                title={image.filename ?? `Uploaded image ${index + 1}`}
+              >
+                <img
+                  src={image.url}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </span>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   )

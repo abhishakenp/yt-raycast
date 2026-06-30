@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * FoodTruckFooter — an inverted, multi-column site footer for a food-truck brand. A
@@ -80,13 +81,18 @@ export const FoodTruckFooter = defineCapsule({
           <div className="mb-12 grid gap-8 md:grid-cols-4">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <span
-                  className="grid size-8 place-items-center rounded-full bg-background/10 text-xs font-bold text-background"
-                  aria-hidden="true"
-                >
-                  {initials}
-                </span>
-                <span className="font-semibold text-background">{brand}</span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={
+                    <span
+                      className="grid size-8 place-items-center rounded-full bg-background/10 text-xs font-bold text-background"
+                      aria-hidden="true"
+                    >
+                      {initials}
+                    </span>
+                  }
+                  labelClassName="font-semibold text-background"
+                />
               </div>
               <p className="text-sm">{footerAbout}</p>
             </div>

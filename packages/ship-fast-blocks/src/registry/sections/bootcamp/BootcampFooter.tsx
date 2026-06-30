@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * BootcampFooter — 4-column dark footer for a coding bootcamp / career-school
@@ -83,20 +84,23 @@ export const BootcampFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <span
-                  aria-hidden="true"
-                  className="grid size-8 place-items-center rounded-lg bg-background text-sm font-bold text-foreground"
-                >
-                  {brand
-                    .split(' ')
-                    .map((w) => w.charAt(0))
-                    .join('')
-                    .slice(0, 2)
-                    .toUpperCase()}
-                </span>
-                <span className="text-lg font-semibold text-background">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={
+                    <span
+                      aria-hidden="true"
+                      className="grid size-8 place-items-center rounded-lg bg-background text-sm font-bold text-foreground"
+                    >
+                      {brand
+                        .split(' ')
+                        .map((w) => w.charAt(0))
+                        .join('')
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </span>
+                  }
+                  labelClassName="text-lg font-semibold text-background"
+                />
               </button>
               <p className="mb-4 text-sm">{footerTagline}</p>
               <div className="flex gap-4">

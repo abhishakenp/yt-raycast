@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * MembershipClubNavbar — sticky, translucent top navigation bar for a private
@@ -72,10 +73,11 @@ export const MembershipClubNavbar = defineCapsule({
               className="flex items-center gap-2"
               aria-label={`${brand} Home`}
             >
-              <LogoMark className="size-8 text-foreground" />
-              <span className="text-xl font-light tracking-tight text-foreground">
-                {brand}
-              </span>
+              <BrandLogo
+                brand={brand}
+                fallback={<LogoMark className="size-8 text-foreground" />}
+                labelClassName="text-xl font-light tracking-tight text-foreground"
+              />
             </button>
             <div className="hidden items-center gap-8 md:flex">
               {nav.map((label) => (

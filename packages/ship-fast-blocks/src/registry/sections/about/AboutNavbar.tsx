@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * AboutNavbar — glassy sticky top navigation bar for a modern company / ABOUT
@@ -94,8 +95,7 @@ export const AboutNavbar = defineCapsule({
             onClick={() => go(nav[0])}
             className="flex items-center gap-2.5 text-[1.05rem] font-extrabold tracking-tight text-foreground"
           >
-            <LogoMark />
-            {brand}
+            <BrandLogo brand={brand} fallback={<LogoMark />} />
           </button>
           <ul className="hidden items-center gap-7 text-[0.92rem] font-medium text-muted-foreground md:flex">
             {nav.map((label) => (

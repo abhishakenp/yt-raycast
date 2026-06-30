@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * CrowdfundingFooter — a 4-column closing footer for a crowdfunding / campaign
@@ -102,10 +103,11 @@ export const CrowdfundingFooter = defineCapsule({
           <div className="mb-12 grid gap-12 md:grid-cols-4">
             <div>
               <div className="mb-4 flex items-center gap-2">
-                <LeafMark className="size-8" />
-                <span className="text-xl font-semibold text-background">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LeafMark className="size-8" />}
+                  labelClassName="text-xl font-semibold text-background"
+                />
               </div>
               <p className="text-sm leading-relaxed">{footerTagline}</p>
             </div>

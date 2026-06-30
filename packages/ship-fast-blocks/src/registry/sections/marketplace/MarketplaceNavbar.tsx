@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -87,10 +88,11 @@ export const MarketplaceNavbar = defineCapsule({
               onClick={() => go(homeTarget)}
               className="flex items-center gap-3 text-left"
             >
-              <LogoMark className="size-8 text-sm" />
-              <span className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
-                {brand}
-              </span>
+              <BrandLogo
+                brand={brand}
+                fallback={<LogoMark className="size-8 text-sm" />}
+                labelClassName="text-lg font-bold tracking-tight text-foreground sm:text-xl"
+              />
             </button>
             <div className="hidden items-center gap-6 md:flex">
               {nav.map((label) => (

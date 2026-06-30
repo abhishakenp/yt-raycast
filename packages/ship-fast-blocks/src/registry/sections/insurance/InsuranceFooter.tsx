@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -160,10 +161,11 @@ export const InsuranceFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <Shield className="size-8" />
-                <span className="text-xl font-semibold text-background">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<Shield className="size-8" />}
+                  labelClassName="text-xl font-semibold text-background"
+                />
               </button>
               <p className="mb-4 max-w-xs text-background/60">{tagline}</p>
               <div className="flex items-center gap-4">

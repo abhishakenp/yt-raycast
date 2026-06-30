@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * KidsEducationNavbar — sticky, translucent top navigation bar for a bright,
@@ -81,8 +82,13 @@ export const KidsEducationNavbar = defineCapsule({
             onClick={() => go(homeTarget)}
             className="group flex items-center gap-2"
           >
-            <BookMark className="size-10 transition-transform duration-300 group-hover:rotate-12" />
-            <span className="text-xl font-bold text-foreground">{brand}</span>
+            <BrandLogo
+              brand={brand}
+              fallback={
+                <BookMark className="size-10 transition-transform duration-300 group-hover:rotate-12" />
+              }
+              labelClassName="text-xl font-bold text-foreground"
+            />
           </button>
 
           <div className="hidden items-center gap-8 md:flex">

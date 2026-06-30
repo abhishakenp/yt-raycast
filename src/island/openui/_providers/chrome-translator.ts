@@ -6,10 +6,10 @@
 // caller then falls back to the Groq LLM endpoint) whenever the API is missing, the
 // language pair is unsupported, or the model isn't downloaded yet.
 //
-// Only PLAIN native locales (2-char ISO, e.g. `hi`, `mr`, `kn`, `ta`, `te`, `fr`)
-// route here. Romanized (`xx-latn`) and code-mixed (`hinglish`, `xx-en`) variants
-// always go to the LLM — the browser engine only produces proper native-script
-// translation and cannot romanize or code-mix.
+// Only native locales route here: plain language tags (`hi`, `fr`) and regional
+// BCP-47 tags (`es-MX`). Romanized (`xx-latn`) and code-mixed (`hinglish`,
+// `xx-en`) variants always go to the LLM — the browser engine only produces
+// proper native-script translation and cannot romanize or code-mix.
 
 type TranslatorAvailability =
   | 'unavailable'
@@ -55,15 +55,30 @@ function getFactory(): ChromeTranslatorFactory | null {
 const availabilityCache = new Map<string, Promise<TranslatorAvailability>>()
 const translatorCache = new Map<string, Promise<ChromeTranslator | null>>()
 
-// Plain 2-char native locales only. `hinglish`, `xx-en`, `xx-latn` are excluded —
-// they need the LLM. Mirrors the spirit of `isTranslatableLocale` but narrower:
-// the on-device engine does native-script translation, nothing else.
+const normalizeNativeLocaleForBrowser = (locale: string): string => {
+  const c = String(locale || '').trim()
+  if (!c) return ''
+  try {
+    return Intl.getCanonicalLocales(c)[0] ?? c
+  } catch {
+    return c.toLowerCase()
+  }
+}
+
+// Native locale tags only. `hinglish`, `xx-en`, `xx-latn` are excluded — they
+// need the LLM. Mirrors the spirit of `isTranslatableLocale` but narrower: the
+// on-device engine does native-script translation, nothing else.
 export function canUseChromeTranslator(locale: string): boolean {
   if (!getFactory()) return false
-  const c = String(locale || '')
-    .trim()
-    .toLowerCase()
-  return /^[a-z]{2}$/.test(c) && c !== 'en'
+  const c = normalizeNativeLocaleForBrowser(locale)
+  const lower = c.toLowerCase()
+  return (
+    /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(c) &&
+    lower !== 'en' &&
+    !lower.endsWith('-en') &&
+    !lower.endsWith('-latn') &&
+    lower !== 'hinglish'
+  )
 }
 
 async function getTranslator(target: string): Promise<ChromeTranslator | null> {
@@ -108,7 +123,9 @@ export async function translateOnDevice(
 ): Promise<string | null> {
   if (!canUseChromeTranslator(locale)) return null
   try {
-    const translator = await getTranslator(String(locale).trim().toLowerCase())
+    const translator = await getTranslator(
+      normalizeNativeLocaleForBrowser(locale),
+    )
     if (!translator) return null
     const out = (await translator.translate(text))?.trim()
     return out || null

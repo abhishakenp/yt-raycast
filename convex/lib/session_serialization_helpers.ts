@@ -34,6 +34,7 @@ export const serializeSession = (session: Doc<'sessions'>) => ({
     session.themeMode === 'light' || session.themeMode === 'dark'
       ? session.themeMode
       : null,
+  selectedBrandLogo: session.selectedBrandLogo ?? null,
 })
 
 export const toTaskStatus = (status: EngineTaskStatus): SessionTaskStatus =>

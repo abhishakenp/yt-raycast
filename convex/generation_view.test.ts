@@ -56,6 +56,19 @@ test('getGenerationView accepts lookup-only session ids', async () => {
   expect(view?.session.sessionId).toBe(sessionId)
 })
 
+test('read-only session queries tolerate non-Convex route lookups', async () => {
+  const t = generationConvexTest()
+  const lookup = 'test-language-popover'
+
+  await expect(t.query(api.sessions.listEdits, { lookup })).resolves.toEqual([])
+  await expect(
+    t.query(api.sessions.listPreviewHistory, { lookup }),
+  ).resolves.toEqual([])
+  await expect(
+    t.query(api.sessions.listClonePages, { lookup }),
+  ).resolves.toEqual([])
+})
+
 test('create fails fast when model configuration is missing', async () => {
   const previousGroq = process.env.GROQ_API_KEY
   const previousGemini = process.env.GEMINI_API_KEY
@@ -363,7 +376,9 @@ test('inline preview edits patch canonical source artifacts and history restore 
   expect(editedView?.siteSpec?.specJson).toContain(
     'Edited dashboard artifact headline',
   )
-  await expect(t.query(api.sessions.listEdits, { sessionId })).resolves.toEqual(
+  await expect(
+    t.query(api.sessions.listEdits, { lookup: sessionId }),
+  ).resolves.toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         editType: 'text',
@@ -457,7 +472,9 @@ test('inline preview edits patch canonical artifacts even when rendered text nor
   expect(editedView?.homeModule?.source).not.toContain('Luxury   Car Rental')
   expect(editedView?.siteSpec?.specJson).toContain('Premium Fleet Rentals')
   expect(editedView?.siteSpec?.specJson).not.toContain('Luxury   Car Rental')
-  await expect(t.query(api.sessions.listEdits, { sessionId })).resolves.toEqual(
+  await expect(
+    t.query(api.sessions.listEdits, { lookup: sessionId }),
+  ).resolves.toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         editType: 'text',
@@ -546,7 +563,7 @@ test('inline preview edits reject missing text without creating edit history', a
   const view = await t.query(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
-  const edits = await t.query(api.sessions.listEdits, { sessionId })
+  const edits = await t.query(api.sessions.listEdits, { lookup: sessionId })
 
   expect(view?.session.previewVersion).toBe(1)
   expect(edits).toHaveLength(0)

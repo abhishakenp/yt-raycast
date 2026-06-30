@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { PublicationSubscribeForm } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
@@ -102,7 +103,7 @@ export const NewsroomFooter = defineCapsule({
                 onClick={() => go(brand)}
                 className="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
               >
-                {brand}
+                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
               </button>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                 {blurb}

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -77,7 +78,7 @@ export const JewelryStoreNavbar = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="font-serif text-2xl tracking-wider text-primary"
               >
-                {brand}
+                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
               </button>
             </div>
             <nav className="hidden items-center space-x-10 md:flex">

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * LawFirmFooter — a dark, four-column site footer on the foreground surface for a
@@ -175,12 +176,19 @@ export const LawFirmFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-6 flex items-center gap-3 text-left"
               >
-                <span
-                  className="grid size-10 place-items-center rounded-sm bg-background font-serif text-lg font-bold text-foreground"
-                  aria-hidden="true"
-                >
-                  {brandInitial}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={
+                    <span
+                      className="grid size-10 place-items-center rounded-sm bg-background font-serif text-lg font-bold text-foreground"
+                      aria-hidden="true"
+                    >
+                      {brandInitial}
+                    </span>
+                  }
+                  className="size-10 rounded-sm"
+                  showLabel={false}
+                />
                 <span className="block">
                   <span className="block font-serif text-lg font-semibold tracking-tight text-background">
                     {brand}

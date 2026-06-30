@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * ManufacturingFooter — a dark four-column site footer for a precision-
@@ -123,13 +124,18 @@ export const ManufacturingFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <span
-                  aria-hidden="true"
-                  className="grid size-8 place-items-center rounded-md bg-background text-sm font-bold text-foreground"
-                >
-                  {brandInitials}
-                </span>
-                <span className="font-semibold text-background">{brand}</span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={
+                    <span
+                      aria-hidden="true"
+                      className="grid size-8 place-items-center rounded-md bg-background text-sm font-bold text-foreground"
+                    >
+                      {brandInitials}
+                    </span>
+                  }
+                  labelClassName="font-semibold text-background"
+                />
               </button>
               <p className="text-sm leading-relaxed text-background/60">
                 {about}

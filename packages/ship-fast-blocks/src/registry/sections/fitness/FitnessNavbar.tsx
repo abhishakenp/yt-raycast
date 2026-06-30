@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import {
@@ -56,15 +57,18 @@ export const FitnessNavbar = defineCapsule({
               onClick={() => go(nav[0])}
               className="flex items-center gap-2"
             >
-              <span
-                className="grid size-8 place-items-center rounded-sm bg-foreground text-sm font-bold text-background"
-                aria-hidden="true"
-              >
-                {brandShort.charAt(0)}
-              </span>
-              <span className="text-lg font-semibold tracking-tight">
-                {brandShort}
-              </span>
+              <BrandLogo
+                brand={brandShort}
+                fallback={
+                  <span
+                    className="grid size-8 place-items-center rounded-sm bg-foreground text-sm font-bold text-background"
+                    aria-hidden="true"
+                  >
+                    {brandShort.charAt(0)}
+                  </span>
+                }
+                labelClassName="text-lg font-semibold tracking-tight"
+              />
             </button>
 
             <div className="hidden items-center gap-8 md:flex">

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * FaqFooter — a five-column resource footer for a help-center / SaaS product page.
@@ -125,10 +126,11 @@ export const FaqFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <LogoMark className="size-8" />
-                <span className="text-lg font-semibold text-foreground">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark className="size-8" />}
+                  labelClassName="text-lg font-semibold text-foreground"
+                />
               </button>
               <p className="mb-4 text-sm text-muted-foreground">{tagline}</p>
               <div className="flex items-center gap-3">

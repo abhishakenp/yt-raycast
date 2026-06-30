@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -114,10 +115,13 @@ export const HotelResortFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-6 flex items-center gap-3"
               >
-                <LogoMark className="size-10 bg-background text-lg text-foreground" />
-                <span className="text-xl font-medium tracking-tight">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={
+                    <LogoMark className="size-10 bg-background text-lg text-foreground" />
+                  }
+                  labelClassName="text-xl font-medium tracking-tight"
+                />
               </button>
               <p className="mb-6 text-sm leading-relaxed text-background/60">
                 {about}

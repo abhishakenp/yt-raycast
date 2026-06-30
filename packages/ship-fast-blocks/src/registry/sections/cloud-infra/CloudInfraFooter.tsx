@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * CloudInfraFooter — fat multi-column footer for a cloud-infrastructure / developer-
@@ -131,10 +132,11 @@ export const CloudInfraFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <LogoMark className="size-8" />
-                <span className="text-xl font-semibold tracking-tight">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark className="size-8" />}
+                  labelClassName="text-xl font-semibold tracking-tight"
+                />
               </button>
               <p className="mb-6 max-w-xs text-muted-foreground">{tagline}</p>
               <div className="flex items-center gap-4">

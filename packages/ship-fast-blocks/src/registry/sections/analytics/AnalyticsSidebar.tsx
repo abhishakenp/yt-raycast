@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { Image } from '#/lib/img.tsx'
 import { analyticsAdminLakebed } from './analytics-admin-lakebed.ts'
 
@@ -136,10 +137,11 @@ export const AnalyticsSidebar = defineCapsule({
       >
         <div className="border-b border-border p-6">
           <div className="flex items-center gap-3">
-            <LogoMark className="size-8 text-sm" />
-            <span className="text-lg font-semibold text-card-foreground">
-              {brand}
-            </span>
+            <BrandLogo
+              brand={brand}
+              fallback={<LogoMark className="size-8 text-sm" />}
+              labelClassName="text-lg font-semibold text-card-foreground"
+            />
           </div>
         </div>
 

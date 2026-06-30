@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * KnowledgeBaseFooter — five-column site footer for a help center on the page
@@ -101,10 +102,11 @@ export const KnowledgeBaseFooter = defineCapsule({
                 className="mb-4 flex items-center gap-2"
                 aria-label={`${brand} home`}
               >
-                <LogoMark className="size-8" />
-                <span className="text-lg font-semibold text-foreground">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark className="size-8" />}
+                  labelClassName="text-lg font-semibold text-foreground"
+                />
               </button>
               <p className="mb-4 max-w-xs text-sm text-muted-foreground">
                 {tagline}

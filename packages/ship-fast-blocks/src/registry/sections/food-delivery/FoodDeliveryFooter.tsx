@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * FoodDeliveryFooter — muted multi-column site footer for a food-delivery /
@@ -95,10 +96,11 @@ export const FoodDeliveryFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <PinMark className="size-8 text-foreground" />
-                <span className="text-xl font-semibold tracking-tight">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<PinMark className="size-8 text-foreground" />}
+                  labelClassName="text-xl font-semibold tracking-tight"
+                />
               </button>
               <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
                 {footerDesc}

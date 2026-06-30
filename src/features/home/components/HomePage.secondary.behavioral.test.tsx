@@ -168,19 +168,37 @@ describe('HomePage — secondary features', () => {
     expect(panel.classList.contains('hidden')).toBe(true)
   })
 
-  it('engine v2 toggle changes engine version (checkbox state flips)', () => {
+  it('engine toggle group switches between v1/v2/v3 (aria-pressed flips)', () => {
     render(<HomePage />)
-    const toggle = document.getElementById(
-      'engine-v2-toggle',
-    ) as HTMLInputElement
+    const group = document.querySelector(
+      '[role="group"][aria-label="Engine version"]',
+    ) as HTMLElement
+    const buttons = Array.from(
+      group.querySelectorAll('button'),
+    ) as HTMLButtonElement[]
 
-    expect(toggle.checked).toBe(false)
+    // 3 buttons: v1, v2, v3
+    expect(buttons).toHaveLength(3)
 
-    fireEvent.click(toggle)
-    expect(toggle.checked).toBe(true)
+    // v1 is active by default
+    expect(buttons[0].getAttribute('aria-pressed')).toBe('true')
+    expect(buttons[1].getAttribute('aria-pressed')).toBe('false')
+    expect(buttons[2].getAttribute('aria-pressed')).toBe('false')
 
-    fireEvent.click(toggle)
-    expect(toggle.checked).toBe(false)
+    // Click v2
+    fireEvent.click(buttons[1])
+    expect(buttons[1].getAttribute('aria-pressed')).toBe('true')
+    expect(buttons[0].getAttribute('aria-pressed')).toBe('false')
+
+    // Click v3
+    fireEvent.click(buttons[2])
+    expect(buttons[2].getAttribute('aria-pressed')).toBe('true')
+    expect(buttons[1].getAttribute('aria-pressed')).toBe('false')
+
+    // Click v1 again
+    fireEvent.click(buttons[0])
+    expect(buttons[0].getAttribute('aria-pressed')).toBe('true')
+    expect(buttons[2].getAttribute('aria-pressed')).toBe('false')
   })
 
   it('private generation checkbox opens PrivateGenerationModal, Escape closes it', () => {

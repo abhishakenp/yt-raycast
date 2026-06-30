@@ -22,7 +22,7 @@ describe('createTranslateResponse', () => {
     const response = await createTranslateResponse(
       new Request('https://ship-fast.test/api/translate', {
         method: 'POST',
-        body: JSON.stringify({ locale: 'hi' }),
+        body: JSON.stringify({ texts: [], locale: 'hi' }),
       }),
       async () => 'unused',
     )
@@ -37,7 +37,7 @@ describe('createTranslateResponse', () => {
     const response = await createTranslateResponse(
       new Request('https://ship-fast.test/api/translate', {
         method: 'POST',
-        body: JSON.stringify({ text: 'Start now', locale: 'en' }),
+        body: JSON.stringify({ texts: ['Start now'], locale: 'en' }),
       }),
       async () => {
         throw new Error('model should not run')
@@ -46,7 +46,7 @@ describe('createTranslateResponse', () => {
 
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toMatchObject({
-      translation: 'Start now',
+      translations: ['Start now'],
       locale: 'en',
       translated: false,
       skipped: 'english',
@@ -58,16 +58,17 @@ describe('createTranslateResponse', () => {
     const response = await createTranslateResponse(
       new Request('https://ship-fast.test/api/translate', {
         method: 'POST',
-        body: JSON.stringify({ text: 'Apply now', locale: 'hi' }),
+        body: JSON.stringify({ texts: ['Apply now'], locale: 'hi' }),
       }),
       async (system, user) => {
         calls.push({ system, user })
-        return '"अभी आवेदन करें"'
+        return '["अभी आवेदन करें"]'
       },
+      null,
     )
 
     await expect(response.json()).resolves.toMatchObject({
-      translation: 'अभी आवेदन करें',
+      translations: ['अभी आवेदन करें'],
       locale: 'hi',
       translated: true,
     })
@@ -76,21 +77,122 @@ describe('createTranslateResponse', () => {
     expect(calls[0].user).toContain('Apply now')
   })
 
+  it('translates all cache misses in one positional model call and stores them', async () => {
+    const calls: Array<{ system: string; user: string }> = []
+    const stored: Array<{
+      locale: string
+      entries: Array<{ text: string; translation: string }>
+    }> = []
+    const response = await createTranslateResponse(
+      new Request('https://ship-fast.test/api/translate', {
+        method: 'POST',
+        body: JSON.stringify({
+          texts: ['Start now', 'Book a call'],
+          locale: 'fr',
+        }),
+      }),
+      async (system, user) => {
+        calls.push({ system, user })
+        return '["Commencer", "Reserver un appel"]'
+      },
+      {
+        getBatch: async () => [null, null],
+        setBatch: async (input) => {
+          stored.push(input)
+        },
+      },
+    )
+
+    await expect(response.json()).resolves.toMatchObject({
+      translations: ['Commencer', 'Reserver un appel'],
+      locale: 'fr',
+      translated: true,
+      cached: false,
+    })
+    expect(calls).toHaveLength(1)
+    expect(calls[0].user).toContain('["Start now","Book a call"]')
+    expect(stored).toEqual([
+      {
+        locale: 'fr',
+        entries: [
+          { text: 'Start now', translation: 'Commencer' },
+          { text: 'Book a call', translation: 'Reserver un appel' },
+        ],
+      },
+    ])
+  })
+
+  it('returns cached translations without calling the model', async () => {
+    const response = await createTranslateResponse(
+      new Request('https://ship-fast.test/api/translate', {
+        method: 'POST',
+        body: JSON.stringify({
+          texts: ['Start now', 'Book a call'],
+          locale: 'fr',
+        }),
+      }),
+      async () => {
+        throw new Error('model should not run')
+      },
+      {
+        getBatch: async () => ['Commencer', 'Reserver un appel'],
+        setBatch: async () => {
+          throw new Error('cache write should not run')
+        },
+      },
+    )
+
+    await expect(response.json()).resolves.toMatchObject({
+      translations: ['Commencer', 'Reserver un appel'],
+      locale: 'fr',
+      translated: true,
+      cached: true,
+    })
+  })
+
+  it('translates custom language slugs instead of skipping them as unsupported', async () => {
+    const calls: Array<{ system: string; user: string }> = []
+    const response = await createTranslateResponse(
+      new Request('https://ship-fast.test/api/translate', {
+        method: 'POST',
+        body: JSON.stringify({ texts: ['Start now'], locale: 'dothraki' }),
+      }),
+      async (system, user) => {
+        calls.push({ system, user })
+        return '["Me nem nesa"]'
+      },
+      null,
+    )
+
+    await expect(response.json()).resolves.toMatchObject({
+      translations: ['Me nem nesa'],
+      locale: 'dothraki',
+      translated: true,
+    })
+    expect(calls).toHaveLength(1)
+    expect(calls[0].system).toContain('dothraki')
+    expect(calls[0].system).toContain('native script')
+  })
+
   it('builds a romanized/code-mixed prompt for Hinglish', async () => {
     const calls: Array<{ system: string; user: string }> = []
     const response = await createTranslateResponse(
       new Request('https://ship-fast.test/api/translate', {
         method: 'POST',
-        body: JSON.stringify({ text: 'Book a call today', locale: 'hinglish' }),
+        body: JSON.stringify({
+          texts: ['Book a call today'],
+          locale: 'hinglish',
+        }),
       }),
       async (system, user) => {
         calls.push({ system, user })
-        return 'Aaj hi call book karein'
+        return '["Aaj hi call book karein"]'
       },
+      null,
     )
 
     await expect(response.json()).resolves.toMatchObject({
-      translation: 'Aaj hi call book karein',
+      translations: ['Aaj hi call book karein'],
       locale: 'hinglish',
       translated: true,
     })
@@ -102,17 +204,18 @@ describe('createTranslateResponse', () => {
     const response = await createTranslateResponse(
       new Request('https://ship-fast.test/api/translate', {
         method: 'POST',
-        body: JSON.stringify({ text: 'Start now', locale: 'fr' }),
+        body: JSON.stringify({ texts: ['Start now'], locale: 'fr' }),
       }),
       async () => {
         throw new Error('model unavailable')
       },
+      null,
     )
 
     expect(response.status).toBe(502)
     await expect(response.json()).resolves.toMatchObject({
       error: 'model unavailable',
-      translation: 'Start now',
+      translations: ['Start now'],
       locale: 'fr',
       translated: false,
     })

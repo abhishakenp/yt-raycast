@@ -31,6 +31,13 @@ export type ReadySessionPreviewCacheEntry = {
   previewVersion?: number
   elapsed?: number | null
   themeOverride?: string | null
+  selectedBrandLogo?: {
+    name: string
+    domain: string | null
+    brandId: string | null
+    icon: string | null
+    logo: string | null
+  } | null
   homeModule: {
     moduleKey?: string
     source: string

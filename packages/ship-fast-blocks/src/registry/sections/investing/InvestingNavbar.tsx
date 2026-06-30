@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * InvestingNavbar — sticky, blurred top navigation bar for a modern investing /
@@ -78,10 +79,11 @@ export const InvestingNavbar = defineCapsule({
               onClick={() => go(nav[0])}
               className="flex items-center gap-2"
             >
-              <LogoMark className="size-8" />
-              <span className="text-xl font-semibold tracking-tight">
-                {brand}
-              </span>
+              <BrandLogo
+                brand={brand}
+                fallback={<LogoMark className="size-8" />}
+                labelClassName="text-xl font-semibold tracking-tight"
+              />
             </button>
             <div className="hidden items-center gap-8 md:flex">
               {nav.map((label) => (

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * CafeFooter — rich multi-column footer for a cozy cafe / coffee shop page on
@@ -82,10 +83,11 @@ export const CafeFooter = defineCapsule({
           <div className="mb-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <div className="mb-4 flex items-center gap-2">
-                <OwlMark className="size-7 text-primary" />
-                <span className="font-serif text-lg font-medium text-background">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<OwlMark className="size-7 text-primary" />}
+                  labelClassName="font-serif text-lg font-medium text-background"
+                />
               </div>
               <p className="text-sm">{blurb}</p>
             </div>

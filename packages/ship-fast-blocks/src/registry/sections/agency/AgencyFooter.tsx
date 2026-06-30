@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * AgencyFooter — slim bottom footer for a creative digital-agency site. A
@@ -55,8 +56,11 @@ export const AgencyFooter = defineCapsule({
             onClick={() => go(homeTarget)}
             className="flex items-center gap-2 text-muted-foreground"
           >
-            <LogoMark className="size-6 text-xs" />
-            {brand}
+            <BrandLogo
+              brand={brand}
+              fallback={<LogoMark className="size-6 text-xs" />}
+              className="size-6"
+            />
           </button>
           <div>
             © {new Date().getFullYear()} {brand}. {note}

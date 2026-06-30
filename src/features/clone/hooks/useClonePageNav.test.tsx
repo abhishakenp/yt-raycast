@@ -4,7 +4,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { useClonePageNav } from './useClonePageNav'
 
+vi.mock('../../../../convex/_generated/api', () => ({
+  api: {
+    sessions: {
+      listClonePages: { __name: 'sessions:listClonePages' },
+      getCloneHomePreview: { __name: 'sessions:getCloneHomePreview' },
+    },
+  },
+}))
+
 type CloneHookState = {
+  queryArgs: unknown[]
   rows: Array<{
     pathname: string
     title?: string
@@ -31,6 +41,7 @@ const getState = (): CloneHookState => {
     __shipFastCloneHookState?: CloneHookState
   }
   testGlobal.__shipFastCloneHookState ??= {
+    queryArgs: [],
     rows: [],
     previews: {},
   }
@@ -38,18 +49,24 @@ const getState = (): CloneHookState => {
 }
 
 vi.mock('convex/react', () => ({
-  useQuery: (_query: unknown, args: unknown) => {
+  useQuery: (query: unknown, args: unknown) => {
     const state = getState()
+    state.queryArgs.push(args)
     if (args === 'skip') return undefined
+    if (
+      query &&
+      typeof query === 'object' &&
+      '__name' in query &&
+      query.__name === 'sessions:listClonePages'
+    ) {
+      return state.rows
+    }
     if (args && typeof args === 'object' && 'lookup' in args) {
       const pathname =
         'pathname' in args && typeof args.pathname === 'string'
           ? args.pathname
           : '/'
       return state.previews[pathname] ?? null
-    }
-    if (args && typeof args === 'object' && 'sessionId' in args) {
-      return state.rows
     }
     return undefined
   },
@@ -59,7 +76,19 @@ describe('useClonePageNav', () => {
   afterEach(() => {
     getState().rows = []
     getState().previews = {}
+    getState().queryArgs = []
     vi.restoreAllMocks()
+  })
+
+  it('passes route params as clone lookups instead of Convex session ids', () => {
+    renderHook(() => useClonePageNav('test-language-popover'))
+
+    expect(getState().queryArgs).toContainEqual({
+      lookup: 'test-language-popover',
+    })
+    expect(getState().queryArgs).not.toContainEqual({
+      sessionId: 'test-language-popover',
+    })
   })
 
   it('returns a storage URL for a large clone home page', () => {

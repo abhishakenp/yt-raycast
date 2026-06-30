@@ -318,7 +318,7 @@ export const HomePage = () => {
     submitPrompt,
   } = usePromptHomeController()
   const [designRefOpen, setDesignRefOpen] = useState(false)
-  const [engineVersion, setEngineVersion] = useState<'v1' | 'v2'>('v1')
+  const [engineVersion, setEngineVersion] = useState<'v1' | 'v2' | 'v3'>('v1')
   const [privateModalOpen, setPrivateModalOpen] = useState(false)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [placeholderLength, setPlaceholderLength] = useState(0)
@@ -969,25 +969,31 @@ export const HomePage = () => {
                                 Layout inspiration
                               </label>
                             </div>
-                            <div className="flex shrink-0 items-center gap-2.5">
-                              <input
-                                type="checkbox"
-                                className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-white/20 bg-white/[0.08] outline-none transition-all duration-300 checked:border-violet-300/55 checked:bg-violet-300/25 before:absolute before:left-0.5 before:top-0.5 before:size-3.5 before:rounded-full before:bg-white/40 before:transition-all checked:before:translate-x-4 checked:before:bg-violet-200"
-                                id="engine-v2-toggle"
-                                name="engine-version-v2"
-                                checked={engineVersion === 'v2'}
-                                onChange={(event) =>
-                                  setEngineVersion(
-                                    event.currentTarget.checked ? 'v2' : 'v1',
-                                  )
-                                }
-                              />
-                              <label
-                                className="text-sm text-[rgba(219,237,255,0.75)]"
-                                htmlFor="engine-v2-toggle"
-                              >
-                                Method 2 engine
-                              </label>
+                            <div
+                              className="flex shrink-0 items-center gap-1 rounded-full border border-white/15 bg-white/[0.06] p-0.5"
+                              role="group"
+                              aria-label="Engine version"
+                            >
+                              {(['v1', 'v2', 'v3'] as const).map((ver) => (
+                                <button
+                                  key={ver}
+                                  type="button"
+                                  onClick={() => setEngineVersion(ver)}
+                                  className={cn(
+                                    'rounded-full px-3 py-1 text-xs font-semibold transition-all duration-200',
+                                    engineVersion === ver
+                                      ? 'bg-[linear-gradient(135deg,#6dfbff_0%,#25dff5_45%,#38a8ff_100%)] text-[#00121a] shadow-[0_0_12px_rgba(38,231,255,0.3)]'
+                                      : 'text-[rgba(219,237,255,0.6)] hover:text-[rgba(219,237,255,0.9)]',
+                                  )}
+                                  aria-pressed={engineVersion === ver}
+                                >
+                                  {ver === 'v1'
+                                    ? 'v1'
+                                    : ver === 'v2'
+                                      ? 'v2'
+                                      : 'v3'}
+                                </button>
+                              ))}
                             </div>
                           </div>
                           <GlassPillButton

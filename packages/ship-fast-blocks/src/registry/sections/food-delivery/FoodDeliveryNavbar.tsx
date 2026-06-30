@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
 import {
   FoodDeliveryAccountButton,
@@ -76,10 +77,11 @@ export const FoodDeliveryNavbar = defineCapsule({
               onClick={() => go(homeTarget)}
               className="flex items-center gap-2"
             >
-              <PinMark className="size-8 text-foreground" />
-              <span className="text-xl font-semibold tracking-tight">
-                {brand}
-              </span>
+              <BrandLogo
+                brand={brand}
+                fallback={<PinMark className="size-8 text-foreground" />}
+                labelClassName="text-xl font-semibold tracking-tight"
+              />
             </button>
             <div className="hidden items-center gap-8 md:flex">
               {nav.map((label) => (

@@ -7,6 +7,7 @@ import type { KitAction } from './types.ts'
 import { kitActionClasses } from './types.ts'
 import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { MobileNavDrawer } from './MobileNavDrawer.tsx'
+import { Logo } from './Logo.tsx'
 
 /**
  * Matches CTA labels that express an auth intent (sign in / log in / sign up /
@@ -52,15 +53,15 @@ export function SiteNav(props: {
           onClick={() => go(props.homeTarget ?? 'Home')}
           className="flex items-center gap-3"
         >
-          {props.brandMark}
-          <span
-            className={cn(
+          <Logo
+            brand={props.brand}
+            className="size-8"
+            fallback={props.brandMark}
+            labelClassName={cn(
               'text-xl font-medium text-foreground',
               props.brandClassName,
             )}
-          >
-            {props.brand}
-          </span>
+          />
         </button>
 
         <div className="hidden items-center gap-8 md:flex">

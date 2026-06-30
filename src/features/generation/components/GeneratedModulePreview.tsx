@@ -9,6 +9,14 @@ import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { lazy, Suspense } from 'react'
 
+type BrandLogoSelection = {
+  name: string
+  domain?: string | null
+  brandId?: string | null
+  icon?: string | null
+  logo?: string | null
+}
+
 type GeneratedModulePreviewProps = {
   source: string
   sourceUrl?: string | null
@@ -17,6 +25,8 @@ type GeneratedModulePreviewProps = {
   locale?: string
   /** User's original build prompt — biases generated stock images toward the business. */
   prompt?: string
+  /** Dashboard-selected logo used to replace generated brand marks in OpenUI blocks. */
+  selectedBrandLogo?: BrandLogoSelection | null
   /** Inline image swaps to re-apply on render, keyed by image alt -> new src. */
   imageOverrides?: Record<string, string>
   /** Inline style/align edits to re-apply on render (class + occurrence -> style). */
@@ -140,6 +150,7 @@ export function OpenUIModuleRenderer({
   siteSpecJson,
   locale,
   prompt,
+  selectedBrandLogo,
   imageOverrides,
 }: GeneratedModulePreviewProps) {
   const brandContext = parseSiteSpecBrand(siteSpecJson)
@@ -160,6 +171,7 @@ export function OpenUIModuleRenderer({
         embed
         sessionId={sessionId}
         imageContext={imageContext}
+        selectedBrandLogo={selectedBrandLogo}
       />
     </Suspense>
   )
@@ -172,6 +184,7 @@ export function GeneratedModulePreview({
   siteSpecJson,
   locale,
   prompt,
+  selectedBrandLogo,
   imageOverrides,
   styleOverrides,
   isDark = true,
@@ -221,6 +234,7 @@ export function GeneratedModulePreview({
             siteSpecJson={siteSpecJson}
             locale={locale}
             prompt={prompt}
+            selectedBrandLogo={selectedBrandLogo}
             imageOverrides={imageOverrides}
           />
         )}

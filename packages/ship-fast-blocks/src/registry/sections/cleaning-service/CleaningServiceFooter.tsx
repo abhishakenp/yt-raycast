@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * CleaningServiceFooter — a multi-column footer for a home-cleaning / maid-service landing page. A dark card-background footer with a 5-column layout: brand sparkle-mark + company name + tagline + social-icon buttons on the left (spanning 2 columns on desktop), followed by link-column groups (Services, Company, Support) and a bottom bar with copyright, location, phone, and email — all routable through useNavigate. Every brand click, footer link, phone, email, and social button routes through useNavigate. Use as the closing site footer for residential cleaning companies, maid services, housekeeping platforms, janitorial businesses, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
@@ -117,10 +118,11 @@ export const CleaningServiceFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <SparkleMark className="size-8" />
-                <span className="text-xl font-semibold text-card-foreground">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<SparkleMark className="size-8" />}
+                  labelClassName="text-xl font-semibold text-card-foreground"
+                />
               </button>
               <p className="mb-6 max-w-sm text-muted-foreground">{tagline}</p>
               <div className="flex items-center gap-4">

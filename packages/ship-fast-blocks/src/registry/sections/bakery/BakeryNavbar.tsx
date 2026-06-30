@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -112,7 +113,7 @@ export const BakeryNavbar = defineCapsule({
               onClick={() => go(nav[0])}
               className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground lg:text-2xl"
             >
-              {brand}
+              <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
             </button>
             <nav className="hidden items-center gap-8 md:flex">
               {nav.map((label) => (

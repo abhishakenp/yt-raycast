@@ -9,7 +9,9 @@
  */
 
 import type * as billing from "../billing.js";
+import type * as brandfetch from "../brandfetch.js";
 import type * as contentCache from "../contentCache.js";
+import type * as customLanguages from "../customLanguages.js";
 import type * as export_artifacts from "../export_artifacts.js";
 import type * as generation from "../generation.js";
 import type * as generationConfig from "../generationConfig.js";
@@ -55,6 +57,7 @@ import type * as lib_session_workspace_helpers from "../lib/session_workspace_he
 import type * as referrals from "../referrals.js";
 import type * as session_completion from "../session_completion.js";
 import type * as sessions from "../sessions.js";
+import type * as translationCache from "../translationCache.js";
 
 import type {
   ApiFromModules,
@@ -64,7 +67,9 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   billing: typeof billing;
+  brandfetch: typeof brandfetch;
   contentCache: typeof contentCache;
+  customLanguages: typeof customLanguages;
   export_artifacts: typeof export_artifacts;
   generation: typeof generation;
   generationConfig: typeof generationConfig;
@@ -110,6 +115,7 @@ declare const fullApi: ApiFromModules<{
   referrals: typeof referrals;
   session_completion: typeof session_completion;
   sessions: typeof sessions;
+  translationCache: typeof translationCache;
 }>;
 
 /**

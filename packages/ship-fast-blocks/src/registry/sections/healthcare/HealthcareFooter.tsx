@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * HealthcareFooter — rich multi-column footer for a medical-clinic page. A
@@ -126,10 +127,11 @@ export const HealthcareFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-6 flex items-center gap-3"
               >
-                <HeartMark className="size-10" />
-                <span className="text-xl font-semibold text-background">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<HeartMark className="size-10" />}
+                  labelClassName="text-xl font-semibold text-background"
+                />
               </button>
               <p className="mb-6 leading-relaxed text-background/60">
                 {tagline}

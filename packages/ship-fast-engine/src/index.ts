@@ -17,6 +17,7 @@ export {
 export { preprocessOpenUIResponse } from './lib/openui-preprocess.ts'
 export { runAll, runEdit } from './pipeline/runner.js'
 export { runAllV2 } from './pipeline/runner-v2.ts'
+export { runAllV3 } from './v3/index.ts'
 
 export const IntegrationIntentSchema = z.object({
   type: z.enum(['stripe', 'form', 'auth', 'search', 'database', 'custom']),

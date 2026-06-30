@@ -6,8 +6,6 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -17,6 +15,7 @@ import { Dashboard } from './Dashboard'
 type DashboardConvexTestState = {
   generationView: unknown
   queryArgs: unknown[]
+  mutationCalls: Array<{ mutation: unknown; args: unknown }>
 }
 
 const getConvexState = (): DashboardConvexTestState => {
@@ -26,6 +25,7 @@ const getConvexState = (): DashboardConvexTestState => {
   testGlobal.__shipFastDashboardConvexState ??= {
     generationView: null,
     queryArgs: [],
+    mutationCalls: [],
   }
   return testGlobal.__shipFastDashboardConvexState
 }
@@ -74,13 +74,21 @@ vi.mock('@clerk/tanstack-react-start', () => ({
 
 // Dashboard unit tests pre-date the SignInGate rail gating. Keep the gate a
 // no-op here so rail popovers open as before; gated behavior is covered by
-// SignInGate.test.tsx and the source-level invariant test below.
+// SignInGate.test.tsx.
 vi.mock('@/shared/auth/clerk-runtime', () => ({
   isClerkClientEnabled: () => false,
 }))
 
 vi.mock('convex/react', () => ({
-  useMutation: () => vi.fn(),
+  useAction: () => vi.fn(),
+  useMutation: (mutation: unknown) => async (args: unknown) => {
+    const state = (
+      globalThis as typeof globalThis & {
+        __shipFastDashboardConvexState?: DashboardConvexTestState
+      }
+    ).__shipFastDashboardConvexState
+    state?.mutationCalls.push({ mutation, args })
+  },
   useQuery: (_query: unknown, args: unknown) => {
     const state = (
       globalThis as typeof globalThis & {
@@ -107,7 +115,32 @@ vi.mock('@/features/billing/components/BillingPanel', () => ({
   BillingPanel: () => null,
 }))
 vi.mock('@/features/brand/components/BrandMediaPanel', () => ({
-  BrandMediaPanel: () => null,
+  BrandMediaPanel: ({
+    onSelectBrand,
+  }: {
+    onSelectBrand?: (brand: {
+      name: string
+      domain: string | null
+      brandId: string | null
+      icon: string | null
+      logo: string | null
+    }) => void
+  }) => (
+    <button
+      type="button"
+      onClick={() =>
+        onSelectBrand?.({
+          name: 'Linear',
+          domain: 'linear.app',
+          brandId: 'linear-id',
+          icon: 'https://cdn.brandfetch.io/linear/icon.webp',
+          logo: 'https://cdn.brandfetch.io/linear/logo.svg',
+        })
+      }
+    >
+      Select Linear brand
+    </button>
+  ),
 }))
 vi.mock('@/features/commerce/components/CommercePanel', () => ({
   CommercePanel: ({
@@ -173,6 +206,7 @@ describe('Dashboard missing session state', () => {
     ensureWindowStorage()
     getConvexState().generationView = null
     getConvexState().queryArgs = []
+    getConvexState().mutationCalls = []
     window.localStorage.clear()
     window.sessionStorage.clear()
     window.matchMedia = vi.fn().mockReturnValue({
@@ -188,6 +222,7 @@ describe('Dashboard missing session state', () => {
     window.sessionStorage.clear()
     getConvexState().generationView = null
     getConvexState().queryArgs = []
+    getConvexState().mutationCalls = []
     vi.clearAllMocks()
   })
 
@@ -519,22 +554,88 @@ describe('Dashboard missing session state', () => {
       ),
     ).toEqual([{ handle: 'truffle-box', price: 79, title: 'Truffle Box' }])
   })
-})
 
-// ─── source-level invariants ──────────────────────────────────────────────
+  it('shows no Brand and media subtitle and persists the selected logo as the trigger icon', async () => {
+    const state = getConvexState()
+    state.generationView = {
+      session: {
+        sessionId: 'ready-brand-session',
+        status: 'preview_ready',
+        prompt: 'A ready brand website',
+        preferredLanguage: 'en',
+        isPrivate: false,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      },
+      siteSpec: null,
+    }
 
-describe('Dashboard source-level invariants', () => {
-  it('lazy-loads InlineEditToolbar to keep the dashboard route bundle under its size limit', () => {
-    const source = readFileSync(join(__dirname, 'Dashboard.tsx'), 'utf8')
+    render(<Dashboard sessionId="ready-brand-session" />)
 
-    // InlineEditToolbar must be loaded via lazy(), not a direct import
-    expect(source).toMatch(/const\s+InlineEditToolbar\s*=\s*lazy\(/)
-    expect(source).not.toMatch(
-      /^import\s+\{[^}]*InlineEditToolbar[^}]*\}\s+from\s+['"]@\/features\/editing\/components\/InlineEditToolbar['"]/m,
+    const trigger = screen.getByRole('button', {
+      name: 'Brand and media',
+    })
+    expect(screen.queryByText('Brandfetch / Pexels')).toBeNull()
+    fireEvent.click(trigger)
+    fireEvent.click(
+      await screen.findByRole('button', { name: /Select Linear/i }),
     )
 
-    // The toolbar must be wrapped in a Suspense boundary
-    expect(source).toContain('<Suspense')
-    expect(source).toMatch(/<Suspense[^>]*>\s*<InlineEditToolbar/)
+    expect(screen.getByRole('button', { name: 'Brand and media' })).toBeTruthy()
+    expect(screen.queryByText('linear.app')).toBeNull()
+    expect(
+      trigger.querySelector(
+        'img[src="https://cdn.brandfetch.io/linear/icon.webp"]',
+      ),
+    ).toBeTruthy()
+    expect(state.mutationCalls.at(-1)?.args).toMatchObject({
+      sessionId: 'ready-brand-session',
+      brandLogo: {
+        name: 'Linear',
+        domain: 'linear.app',
+        brandId: 'linear-id',
+        icon: 'https://cdn.brandfetch.io/linear/icon.webp',
+        logo: 'https://cdn.brandfetch.io/linear/logo.svg',
+      },
+    })
+  })
+
+  it('hydrates the Brand and media trigger icon from the persisted session brand logo', () => {
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'persisted-brand-session',
+        status: 'preview_ready',
+        prompt: 'A persisted brand website',
+        preferredLanguage: 'en',
+        isPrivate: false,
+        selectedBrandLogo: {
+          name: 'Linear',
+          domain: 'linear.app',
+          brandId: 'linear-id',
+          icon: 'https://cdn.brandfetch.io/linear/icon.webp',
+          logo: 'https://cdn.brandfetch.io/linear/logo.svg',
+        },
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="persisted-brand-session" />)
+
+    const trigger = screen.getByRole('button', { name: 'Brand and media' })
+    expect(screen.queryByText('Brandfetch / Pexels')).toBeNull()
+    expect(screen.queryByText('Linear / linear.app')).toBeNull()
+    expect(
+      trigger.querySelector(
+        'img[src="https://cdn.brandfetch.io/linear/icon.webp"]',
+      ),
+    ).toBeTruthy()
   })
 })

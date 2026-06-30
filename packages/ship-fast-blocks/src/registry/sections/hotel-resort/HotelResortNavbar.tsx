@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
   HotelAccountButton,
   HotelBookingActionButton,
@@ -78,10 +79,13 @@ export const HotelResortNavbar = defineCapsule({
               onClick={() => go(nav[0])}
               className="flex items-center gap-3"
             >
-              <LogoMark className="size-10 bg-foreground text-lg text-background" />
-              <span className="text-xl font-medium tracking-tight">
-                {brand}
-              </span>
+              <BrandLogo
+                brand={brand}
+                fallback={
+                  <LogoMark className="size-10 bg-foreground text-lg text-background" />
+                }
+                labelClassName="text-xl font-medium tracking-tight"
+              />
             </button>
             <nav className="hidden items-center gap-8 md:flex">
               {nav.map((label) => (

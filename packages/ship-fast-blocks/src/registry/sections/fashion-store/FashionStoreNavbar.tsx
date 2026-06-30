@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -135,6 +136,11 @@ export const FashionStoreNavbar = defineCapsule({
               onClick={() => go(nav[0])}
               className="flex items-center"
             >
+              <BrandLogo
+                brand={brand}
+                className="mr-2 size-8"
+                showLabel={false}
+              />
               <span className="font-serif text-2xl font-medium tracking-tight lg:text-3xl">
                 {brand}
               </span>

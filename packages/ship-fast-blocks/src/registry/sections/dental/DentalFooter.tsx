@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * DentalFooter — rich 4-column footer for a dental practice site. A dark inverted
@@ -135,7 +136,12 @@ export const DentalFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-6 flex items-center gap-3 text-left"
               >
-                <LogoBadge className="size-10" />
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoBadge className="size-10" />}
+                  className="size-10"
+                  showLabel={false}
+                />
                 <span className="leading-tight">
                   <span className="block text-xl font-semibold">{brand}</span>
                   <span className="-mt-1 block text-sm text-background/60">

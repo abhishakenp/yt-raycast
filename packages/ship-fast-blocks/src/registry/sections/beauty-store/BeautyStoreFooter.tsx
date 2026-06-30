@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * BeautyStoreFooter — slim bottom footer for a beauty / skincare / cosmetics
@@ -44,7 +45,7 @@ export const BeautyStoreFooter = defineCapsule({
             onClick={() => go(homeTarget)}
             className="font-serif text-xl font-semibold text-foreground"
           >
-            {brand}
+            <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
           </button>
           <div>
             © {new Date().getFullYear()} {brand}. {note}

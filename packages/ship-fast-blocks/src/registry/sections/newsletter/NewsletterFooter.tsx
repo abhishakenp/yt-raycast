@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * NewsletterFooter — inverted multi-column footer for an editorial newsletter.
@@ -87,10 +88,11 @@ export const NewsletterFooter = defineCapsule({
                 onClick={() => go(brand)}
                 className="mb-4 flex items-center gap-2"
               >
-                <LogoMark className="size-8 text-lg" />
-                <span className="font-serif text-xl font-medium tracking-tight text-background">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark className="size-8 text-lg" />}
+                  labelClassName="font-serif text-xl font-medium tracking-tight text-background"
+                />
               </button>
               <p className="mb-6 max-w-sm text-sm leading-relaxed">{tagline}</p>
               <div className="flex gap-4">

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * CryptoFooter — rich multi-column footer for a crypto / DeFi infrastructure
@@ -112,12 +113,15 @@ export const CryptoFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <span className="grid size-8 place-items-center rounded-lg bg-background text-foreground">
-                  <BoltIcon className="size-5" />
-                </span>
-                <span className="text-xl font-semibold tracking-tight">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={
+                    <span className="grid size-8 place-items-center rounded-lg bg-background text-foreground">
+                      <BoltIcon className="size-5" />
+                    </span>
+                  }
+                  labelClassName="text-xl font-semibold tracking-tight"
+                />
               </button>
               <p className="mb-6 max-w-xs text-sm leading-relaxed text-background/60">
                 {description}

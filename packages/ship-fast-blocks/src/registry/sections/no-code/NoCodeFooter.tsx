@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * NoCodeFooter — rich multi-column footer on a card surface with a top border.
@@ -117,8 +118,11 @@ export const NoCodeFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <LogoMark className="size-8" />
-                <span className="text-xl font-semibold">{brand}</span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark className="size-8" />}
+                  labelClassName="text-xl font-semibold"
+                />
               </button>
               <p className="mb-4 max-w-xs text-muted-foreground">
                 {description}

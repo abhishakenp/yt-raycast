@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * DatingAppNavbar — sticky, translucent top navigation for a dating / matchmaking
@@ -70,10 +71,15 @@ export const DatingAppNavbar = defineCapsule({
             onClick={() => go(nav[0])}
             className="flex items-center gap-2"
           >
-            <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
-              <HeartGlyph className="size-5" />
-            </span>
-            <span className="text-xl font-bold text-foreground">{brand}</span>
+            <BrandLogo
+              brand={brand}
+              fallback={
+                <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
+                  <HeartGlyph className="size-5" />
+                </span>
+              }
+              labelClassName="text-xl font-bold text-foreground"
+            />
           </button>
           <div className="hidden items-center gap-8 md:flex">
             {nav.map((label) => (

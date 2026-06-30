@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -67,7 +68,7 @@ export const BarNightclubNavbar = defineCapsule({
               onClick={() => go(homeTarget)}
               className="text-2xl font-light uppercase tracking-[0.2em] text-foreground"
             >
-              {brand}
+              <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
             </button>
             <div className="hidden items-center gap-8 md:flex">
               {nav.map((label) => (

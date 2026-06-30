@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
   LocalServiceAccountButton,
   LocalServiceBookingButton,
@@ -92,10 +93,11 @@ export const HealthcareNavbar = defineCapsule({
               onClick={() => go(nav[0])}
               className="flex items-center gap-3"
             >
-              <HeartMark className="size-10" />
-              <span className="text-xl font-semibold text-foreground">
-                {brand}
-              </span>
+              <BrandLogo
+                brand={brand}
+                fallback={<HeartMark className="size-10" />}
+                labelClassName="text-xl font-semibold text-foreground"
+              />
             </button>
 
             <div className="hidden items-center gap-8 md:flex">

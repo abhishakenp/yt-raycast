@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -74,10 +75,11 @@ export const FurnitureStoreNavbar = defineCapsule({
               className="flex items-center gap-2"
               aria-label={`${brand} - Return to homepage`}
             >
-              <LogoMark className="size-8 text-muted-foreground" />
-              <span className="text-xl font-semibold tracking-tight lg:text-2xl">
-                {brand}
-              </span>
+              <BrandLogo
+                brand={brand}
+                fallback={<LogoMark className="size-8 text-muted-foreground" />}
+                labelClassName="text-xl font-semibold tracking-tight lg:text-2xl"
+              />
             </button>
 
             <div className="hidden items-center gap-8 md:flex">

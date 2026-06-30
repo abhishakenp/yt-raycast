@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import {
   SaasAccountButton,
   SaasIntentBadge,
@@ -85,8 +86,11 @@ export const CybersecurityNavbar = defineCapsule({
               onClick={() => go(nav[0])}
               className="flex items-center gap-2"
             >
-              <ShieldMark className="size-8 text-foreground" />
-              <span className="text-xl font-bold tracking-tight">{brand}</span>
+              <BrandLogo
+                brand={brand}
+                fallback={<ShieldMark className="size-8 text-foreground" />}
+                labelClassName="text-xl font-bold tracking-tight"
+              />
             </button>
             <div className="hidden items-center gap-8 md:flex">
               {nav.map((label) => (

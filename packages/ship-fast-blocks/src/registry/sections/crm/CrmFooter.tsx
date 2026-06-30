@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * CrmFooter — comprehensive 5-column site footer for a CRM / SaaS landing page.
@@ -126,10 +127,11 @@ export const CrmFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <LogoMark className="size-8 text-primary" />
-                <span className="text-xl font-semibold text-foreground">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark className="size-8 text-primary" />}
+                  labelClassName="text-xl font-semibold text-foreground"
+                />
               </button>
               <p className="mb-6 max-w-sm text-muted-foreground">
                 {description}

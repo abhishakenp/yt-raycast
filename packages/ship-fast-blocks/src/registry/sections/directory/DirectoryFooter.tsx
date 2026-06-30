@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * DirectoryFooter — dark inverted multi-column footer for a local-business
@@ -104,10 +105,11 @@ export const DirectoryFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <PinLogo className="size-6 text-background" />
-                <span className="text-lg font-semibold text-background">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<PinLogo className="size-6 text-background" />}
+                  labelClassName="text-lg font-semibold text-background"
+                />
               </button>
               <p className="text-sm text-background/60">{note}</p>
             </div>

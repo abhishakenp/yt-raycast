@@ -39,6 +39,13 @@ describe('git hook quality gate planning', () => {
     ])
   })
 
+  it('does not run Prettier on Convex generated files', () => {
+    expect(commandNames(['convex/_generated/api.d.ts'])).toEqual([
+      'ESLint',
+      'TypeScript',
+    ])
+  })
+
   it('reserves full QA for pre-push', () => {
     expect(buildPrePushPlan().map((step) => step.name)).toEqual([
       'ESLint',

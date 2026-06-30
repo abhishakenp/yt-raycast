@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * DevToolFooter — a 5-column footer for a developer tool / API platform. A
@@ -123,10 +124,11 @@ export const DevToolFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <BoltMark className="size-8" />
-                <span className="text-xl font-semibold text-foreground">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<BoltMark className="size-8" />}
+                  labelClassName="text-xl font-semibold text-foreground"
+                />
               </button>
               <p className="mb-6 max-w-sm text-sm leading-relaxed text-muted-foreground">
                 {blurb}

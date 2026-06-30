@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
@@ -60,6 +61,11 @@ export const InteriorDesignNavbar = defineCapsule({
               onClick={() => go(nav[0])}
               className="flex items-center gap-2 text-2xl font-light tracking-tight"
             >
+              <BrandLogo
+                brand={brand}
+                className="mr-2 size-7"
+                showLabel={false}
+              />
               <span className="text-foreground">{brandMark}</span>
               {brandSuffix && (
                 <span className="text-muted-foreground">{brandSuffix}</span>

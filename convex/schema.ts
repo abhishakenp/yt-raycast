@@ -64,6 +64,15 @@ export default defineSchema({
     alternativeDesign: v.optional(v.any()),
     themeOverride: v.optional(v.any()),
     themeMode: v.optional(v.union(v.literal('light'), v.literal('dark'))),
+    selectedBrandLogo: v.optional(
+      v.object({
+        name: v.string(),
+        domain: v.union(v.string(), v.null()),
+        brandId: v.union(v.string(), v.null()),
+        icon: v.union(v.string(), v.null()),
+        logo: v.union(v.string(), v.null()),
+      }),
+    ),
     deploymentSlug: v.optional(v.string()),
     deploymentUrl: v.optional(v.string()),
     deployedAt: v.optional(v.number()),
@@ -504,4 +513,35 @@ export default defineSchema({
     size: v.number(),
     createdAt: v.number(),
   }).index('by_sessionId', ['sessionId']),
+
+  // AI-generated custom languages created from the dashboard language picker.
+  // When a user types a language not in the static KNOWN_LANGUAGES list, the
+  // AI generates a native-script name + font family and stores it here so all
+  // future users can find it via full-text search (Roman + native script).
+  customLanguages: defineTable({
+    // Stable slug used as the preferredLanguage code on sessions, e.g. "klingon".
+    code: v.string(),
+    // English / Roman display name, e.g. "Klingon".
+    name: v.string(),
+    // Native-script transcript shown beneath the name, e.g. "tlhIngan Hol".
+    nativeName: v.string(),
+    // Font stack for the script (AI picks from Noto families or Latin fallback).
+    fontFamily: v.string(),
+    // Extra search aliases (Roman variants, alternate spellings).
+    keywords: v.array(v.string()),
+    // Concatenation of name + nativeName + keywords — the search index field.
+    searchText: v.string(),
+    createdAt: v.number(),
+  })
+    .index('by_code', ['code'])
+    .searchIndex('search_all', { searchField: 'searchText' }),
+
+  translationCache: defineTable({
+    cacheKey: v.string(),
+    locale: v.string(),
+    sourceText: v.string(),
+    translation: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index('by_cacheKey', ['cacheKey']),
 })

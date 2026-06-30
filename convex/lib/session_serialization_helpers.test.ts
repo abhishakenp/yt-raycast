@@ -62,6 +62,13 @@ describe('session serialization helpers', () => {
           designReferenceNotes: 'Use the reference',
           themeOverride: 'dark',
           themeMode: 'light',
+          selectedBrandLogo: {
+            name: 'Linear',
+            domain: 'linear.app',
+            brandId: 'linear-id',
+            icon: 'https://cdn.brandfetch.io/linear/icon.webp',
+            logo: 'https://cdn.brandfetch.io/linear/logo.svg',
+          },
         }),
       ),
     ).toMatchObject({
@@ -73,6 +80,13 @@ describe('session serialization helpers', () => {
       designReferenceNotes: 'Use the reference',
       themeOverride: 'dark',
       themeMode: 'light',
+      selectedBrandLogo: {
+        name: 'Linear',
+        domain: 'linear.app',
+        brandId: 'linear-id',
+        icon: 'https://cdn.brandfetch.io/linear/icon.webp',
+        logo: 'https://cdn.brandfetch.io/linear/logo.svg',
+      },
     })
   })
 

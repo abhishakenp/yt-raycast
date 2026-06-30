@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
@@ -64,10 +65,11 @@ export const ChurchNavbar = defineCapsule({
               onClick={() => go(homeTarget)}
               className="flex items-center gap-2"
             >
-              <Star />
-              <span className="text-xl font-medium tracking-tight text-foreground">
-                {brand}
-              </span>
+              <BrandLogo
+                brand={brand}
+                fallback={<Star />}
+                labelClassName="text-xl font-medium tracking-tight text-foreground"
+              />
             </button>
             <div className="hidden items-center gap-8 md:flex">
               {nav.map((label) => (

@@ -23,6 +23,7 @@ if (typeof ResizeObserver === 'undefined') {
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
 const { SiteNav } = await import('./SiteNav.tsx')
+const { BrandLogoProvider } = await import('./Logo.tsx')
 
 afterEach(() => {
   cleanup()
@@ -67,5 +68,31 @@ describe('SiteNav', () => {
       expect(navigate).toHaveBeenCalledWith('Pricing')
       expect(screen.queryByRole('dialog')).toBeNull()
     })
+  })
+
+  it('replaces the nav brand mark with the selected logo image', () => {
+    render(
+      <BrandLogoProvider
+        value={{
+          name: 'Linear',
+          icon: 'https://cdn.test/linear-icon.png',
+          logo: null,
+        }}
+      >
+        <SiteNav
+          brand="Northridge"
+          brandMark={<span data-testid="fallback-mark">N</span>}
+          nav={['Services']}
+        />
+      </BrandLogoProvider>,
+    )
+
+    expect(screen.queryByTestId('fallback-mark')).toBeNull()
+    const image = document.querySelector(
+      '[data-brand-logo-selected="true"] img',
+    ) as HTMLImageElement
+    expect(image).toBeInstanceOf(HTMLImageElement)
+    expect(image.src).toBe('https://cdn.test/linear-icon.png')
+    expect(screen.getByRole('button', { name: 'Northridge' })).toBeTruthy()
   })
 })

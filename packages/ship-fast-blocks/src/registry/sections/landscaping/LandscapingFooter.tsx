@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * LandscapingFooter — a slim, calm closing footer for a landscaping / outdoor-
@@ -68,10 +69,11 @@ export const LandscapingFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-3 flex items-center justify-center gap-2 md:justify-start"
               >
-                <LogoMark className="size-7" />
-                <span className="text-lg font-semibold tracking-tight text-foreground">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<LogoMark className="size-7" />}
+                  labelClassName="text-lg font-semibold tracking-tight text-foreground"
+                />
               </button>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 {tagline}

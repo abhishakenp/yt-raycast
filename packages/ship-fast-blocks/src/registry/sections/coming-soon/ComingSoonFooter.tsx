@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * ComingSoonFooter — slim two-row footer for a "launching soon" / waitlist
@@ -57,7 +58,7 @@ export const ComingSoonFooter = defineCapsule({
                 onClick={() => go(brand)}
                 className="text-lg font-semibold tracking-tight text-foreground"
               >
-                {brand}
+                <BrandLogo brand={brand} className="mr-2 size-7 align-middle" />
               </button>
               <span className="text-muted-foreground/60">|</span>
               <span className="text-sm text-muted-foreground">{note}</span>

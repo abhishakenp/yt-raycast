@@ -42,6 +42,7 @@ const state = vi.hoisted(() => ({
 // Renderer that renders real DOM, and a real cache-key function so source
 // changes produce different keys (drives effect re-runs / library reloads).
 vi.mock('@ship-fast/blocks/runtime', () => ({
+  BrandLogoProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
   ImageContextProvider: ({
     children,
     value,

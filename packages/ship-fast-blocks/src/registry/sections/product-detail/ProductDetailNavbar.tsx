@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import { kitActionClasses } from '#/section-kit/types.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
@@ -83,8 +84,11 @@ export const ProductDetailNavbar = defineCapsule({
             onClick={() => go(nav[0])}
             className="flex items-center gap-3"
           >
-            {mark}
-            <span className="text-xl font-medium text-foreground">{brand}</span>
+            <BrandLogo
+              brand={brand}
+              fallback={mark}
+              labelClassName="text-xl font-medium text-foreground"
+            />
           </button>
 
           <div className="hidden items-center gap-8 md:flex">

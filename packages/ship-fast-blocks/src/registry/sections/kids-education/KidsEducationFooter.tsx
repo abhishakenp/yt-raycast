@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Logo as BrandLogo } from '#/section-kit/Logo.tsx'
 
 /**
  * KidsEducationFooter — dark 5-column mega footer for a kids / family learning
@@ -106,10 +107,11 @@ export const KidsEducationFooter = defineCapsule({
                 onClick={() => go(homeTarget)}
                 className="mb-4 flex items-center gap-2"
               >
-                <BookMark className="size-10" />
-                <span className="text-xl font-bold text-background">
-                  {brand}
-                </span>
+                <BrandLogo
+                  brand={brand}
+                  fallback={<BookMark className="size-10" />}
+                  labelClassName="text-xl font-bold text-background"
+                />
               </button>
               <p className="mb-6 max-w-sm text-background/70">{tagline}</p>
               <div className="flex gap-4">
