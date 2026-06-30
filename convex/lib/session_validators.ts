@@ -100,6 +100,10 @@ export const claimAnonymousArgs = {
   anonymousOwnerSecret: v.string(),
 }
 
+export const claimAnonymousByClientIdArgs = {
+  anonymousClientId: v.string(),
+}
+
 export const publishPreviewArgs = {
   ...ownedSessionArgs,
   requestedSlug: v.optional(v.string()),
@@ -320,6 +324,14 @@ export const publicGallerySessionsArgs = {
 
 export const publicGallerySessionArgs = {
   sessionId: v.string(),
+}
+
+export const ownedGallerySessionsArgs = {
+  anonymousClientId: v.optional(v.string()),
+  limit: v.optional(v.number()),
+  page: v.optional(v.number()),
+  search: v.optional(v.string()),
+  category: v.optional(v.string()),
 }
 
 export const deploymentSlugArgs = {

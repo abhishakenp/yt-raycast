@@ -12,6 +12,8 @@ import { Toaster } from 'sonner'
 import { AppProviders } from '@/app/providers/AppProviders'
 import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
 import { useReferralCapture } from '@/features/referrals/hooks/useReferralCapture'
+import { isClerkClientEnabled } from '@/shared/auth/clerk-runtime'
+import { useClaimAnonymousSessionsOnSignIn } from '@/shared/auth/useClaimAnonymousSessionsOnSignIn'
 import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
 
 import appCss from '../styles.css?url'
@@ -24,6 +26,18 @@ const configuredClerkPublishableKey =
   clerkPublishableKey.trim().length > 0
     ? clerkPublishableKey
     : null
+
+// Claim-on-sign-in only runs when both Clerk and Convex are configured. Without
+// a Convex provider, useMutation throws during render; without Clerk there is
+// no sign-in transition to react to.
+const convexUrl =
+  import.meta.env.VITE_CONVEX_SELF_HOSTED_URL ??
+  import.meta.env.VITE_CONVEX_URL ??
+  import.meta.env.CONVEX_SELF_HOSTED_URL ??
+  import.meta.env.CONVEX_URL
+const isConvexConfigured =
+  typeof convexUrl === 'string' && convexUrl.trim().length > 0
+const isClaimOnSignInEnabled = isClerkClientEnabled() && isConvexConfigured
 
 const RootDocument = ({ children }: { children: ReactNode }) => {
   useReferralCapture()
@@ -69,11 +83,20 @@ const RootComponent = () => (
   <RootDocument>
     <RootClerkProvider>
       <AppProviders>
+        {isClaimOnSignInEnabled ? <AnonymousSessionClaimer /> : null}
         <Outlet />
       </AppProviders>
     </RootClerkProvider>
   </RootDocument>
 )
+
+// Mounts the claim-on-sign-in effect inside the Convex provider tree so the
+// mutation is available. Renders nothing. Only mounted when both Clerk and
+// Convex are configured (see isClaimOnSignInEnabled above).
+const AnonymousSessionClaimer = () => {
+  useClaimAnonymousSessionsOnSignIn()
+  return null
+}
 
 // Rendered inside RootComponent's Outlet, which is already wrapped by
 // RootDocument > RootClerkProvider > AppProviders. Re-wrapping here would

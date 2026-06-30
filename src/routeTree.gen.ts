@@ -15,6 +15,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ReferralsRouteImport } from './routes/referrals'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as MineRouteImport } from './routes/mine'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as IndexRouteImport } from './routes/index'
@@ -98,6 +99,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MineRoute = MineRouteImport.update({
+  id: '/mine',
+  path: '/mine',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
@@ -396,6 +402,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/mine': typeof MineRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/referrals': typeof ReferralsRoute
@@ -458,6 +465,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/mine': typeof MineRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/referrals': typeof ReferralsRoute
@@ -521,6 +529,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/mine': typeof MineRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/referrals': typeof ReferralsRoute
@@ -585,6 +594,7 @@ export interface FileRouteTypes {
     | '/'
     | '/gallery'
     | '/llms.txt'
+    | '/mine'
     | '/pricing'
     | '/privacy'
     | '/referrals'
@@ -647,6 +657,7 @@ export interface FileRouteTypes {
     | '/'
     | '/gallery'
     | '/llms.txt'
+    | '/mine'
     | '/pricing'
     | '/privacy'
     | '/referrals'
@@ -709,6 +720,7 @@ export interface FileRouteTypes {
     | '/'
     | '/gallery'
     | '/llms.txt'
+    | '/mine'
     | '/pricing'
     | '/privacy'
     | '/referrals'
@@ -772,6 +784,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GalleryRoute: typeof GalleryRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
+  MineRoute: typeof MineRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ReferralsRoute: typeof ReferralsRoute
@@ -851,6 +864,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mine': {
+      id: '/mine'
+      path: '/mine'
+      fullPath: '/mine'
+      preLoaderRoute: typeof MineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/llms.txt': {
@@ -1340,6 +1360,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GalleryRoute: GalleryRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
+  MineRoute: MineRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ReferralsRoute: ReferralsRoute,

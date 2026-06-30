@@ -15,6 +15,7 @@ import {
 } from './_generated/server'
 import {
   claimAnonymousSession,
+  claimAnonymousSessionsByClientId,
   deleteOwnedSessions,
   setSessionBrandLogo,
   setSessionPreferredLanguage,
@@ -84,6 +85,7 @@ import {
 } from './lib/session_export_helpers'
 import { loadSessionEventStream } from './lib/session_event_stream_helpers'
 import {
+  listOwnedGallerySessions,
   listPublicGallerySessions,
   loadPublicGallerySession,
 } from './lib/session_gallery_helpers'
@@ -116,6 +118,7 @@ import {
   applyCloneBriefArgs,
   addGenerationEventArgs,
   claimAnonymousArgs,
+  claimAnonymousByClientIdArgs,
   completeGenerationArgs,
   createGenerationSessionArgs,
   createEditArgs,
@@ -138,6 +141,7 @@ import {
   lookupArgs,
   operationalNotificationArgs,
   ownedExportArgs,
+  ownedGallerySessionsArgs,
   ownedExportLookupArgs,
   ownedSessionArgs,
   provisionMedusaTenantArgs,
@@ -348,6 +352,14 @@ export const failGeneration = internalMutation({
 export const claimAnonymous = mutation({
   args: claimAnonymousArgs,
   handler: (ctx, args) => claimAnonymousSession(ctx, args),
+})
+
+// Link all of a caller's anonymous sessions (by anonymousClientIdHash) to their
+// signed-in userId. Called once on sign-in so /mine and ownership follow the
+// user across the anon→authenticated transition. Idempotent.
+export const claimAnonymousSessionsByClientIdMutation = mutation({
+  args: claimAnonymousByClientIdArgs,
+  handler: (ctx, args) => claimAnonymousSessionsByClientId(ctx, args),
 })
 
 export const createExport = mutation({
@@ -699,6 +711,13 @@ export const getCommerceConfig = query({
 export const listPublicSessions = query({
   args: publicGallerySessionsArgs,
   handler: (ctx, args) => listPublicGallerySessions(ctx, args),
+})
+
+// "My generations" — sessions owned by the caller (signed-in userId via Convex
+// auth, or anonymousClientId), including PRIVATE sessions the caller owns.
+export const listOwnedSessions = query({
+  args: ownedGallerySessionsArgs,
+  handler: (ctx, args) => listOwnedGallerySessions(ctx, args),
 })
 
 export const getPublicGallerySession = query({
