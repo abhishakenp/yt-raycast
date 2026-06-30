@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { ReferralDashboard } from './ReferralDashboard'
@@ -9,6 +9,8 @@ const state = vi.hoisted(() => ({
   status: null as ReferralStatus | null,
   isLoading: false,
   error: null as string | null,
+  reload: vi.fn(),
+  requestClerkSignIn: vi.fn(),
 }))
 
 vi.mock('../hooks/useReferralStatus', () => ({
@@ -16,8 +18,12 @@ vi.mock('../hooks/useReferralStatus', () => ({
     status: state.status,
     isLoading: state.isLoading,
     error: state.error,
-    reload: vi.fn(),
+    reload: state.reload,
   }),
+}))
+
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  requestClerkSignIn: state.requestClerkSignIn,
 }))
 
 const baseStatus: ReferralStatus = {
@@ -40,6 +46,9 @@ afterEach(() => {
   state.status = null
   state.error = null
   state.isLoading = false
+  state.reload.mockReset()
+  state.requestClerkSignIn.mockReset()
+  vi.useRealTimers()
 })
 
 describe('ReferralDashboard', () => {
@@ -109,5 +118,29 @@ describe('ReferralDashboard', () => {
     expect(
       screen.getByText('Sign in to see your referral rewards.'),
     ).toBeTruthy()
+  })
+
+  it('opens sign-in on demand from the signed-out referral state', () => {
+    vi.useFakeTimers()
+    state.error = 'Sign in to see your referral rewards.'
+
+    render(<ReferralDashboard />)
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+
+    expect(state.requestClerkSignIn).toHaveBeenCalledTimes(1)
+    vi.advanceTimersByTime(3000)
+    expect(state.reload).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not expose refresh as an active no-op while signed out', () => {
+    state.status = null
+    state.error = 'Sign in to see your referral rewards.'
+
+    render(<ReferralDashboard />)
+    const refresh = screen.getByRole('button', { name: 'Refresh referrals' })
+
+    expect(refresh.hasAttribute('disabled')).toBe(true)
+    fireEvent.click(refresh)
+    expect(state.reload).not.toHaveBeenCalled()
   })
 })

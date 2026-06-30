@@ -1,43 +1,19 @@
 import {
   HeadContent,
   Outlet,
+  Link,
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router'
-import { ClerkProvider } from '@clerk/tanstack-react-start'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 import { Toaster } from 'sonner'
 
 import { AppProviders } from '@/app/providers/AppProviders'
-import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
 import { useReferralCapture } from '@/features/referrals/hooks/useReferralCapture'
-import { isClerkClientEnabled } from '@/shared/auth/clerk-runtime'
-import { useClaimAnonymousSessionsOnSignIn } from '@/shared/auth/useClaimAnonymousSessionsOnSignIn'
 import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
 
 import appCss from '../styles.css?url'
-
-const clerkPublishableKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
-  import.meta.env.CLERK_PUBLISHABLE_KEY
-const configuredClerkPublishableKey =
-  typeof clerkPublishableKey === 'string' &&
-  clerkPublishableKey.trim().length > 0
-    ? clerkPublishableKey
-    : null
-
-// Claim-on-sign-in only runs when both Clerk and Convex are configured. Without
-// a Convex provider, useMutation throws during render; without Clerk there is
-// no sign-in transition to react to.
-const convexUrl =
-  import.meta.env.VITE_CONVEX_SELF_HOSTED_URL ??
-  import.meta.env.VITE_CONVEX_URL ??
-  import.meta.env.CONVEX_SELF_HOSTED_URL ??
-  import.meta.env.CONVEX_URL
-const isConvexConfigured =
-  typeof convexUrl === 'string' && convexUrl.trim().length > 0
-const isClaimOnSignInEnabled = isClerkClientEnabled() && isConvexConfigured
 
 const RootDocument = ({ children }: { children: ReactNode }) => {
   useReferralCapture()
@@ -66,42 +42,17 @@ const RootDocument = ({ children }: { children: ReactNode }) => {
   )
 }
 
-const RootClerkProvider = ({ children }: { children: ReactNode }) =>
-  configuredClerkPublishableKey ? (
-    <ClerkProvider
-      publishableKey={configuredClerkPublishableKey}
-      afterSignOutUrl="/"
-      appearance={clerkFrostedGlassAppearance}
-    >
-      {children}
-    </ClerkProvider>
-  ) : (
-    children
-  )
-
 const RootComponent = () => (
   <RootDocument>
-    <RootClerkProvider>
-      <AppProviders>
-        {isClaimOnSignInEnabled ? <AnonymousSessionClaimer /> : null}
-        <Outlet />
-      </AppProviders>
-    </RootClerkProvider>
+    <AppProviders>
+      <Outlet />
+    </AppProviders>
   </RootDocument>
 )
 
-// Mounts the claim-on-sign-in effect inside the Convex provider tree so the
-// mutation is available. Renders nothing. Only mounted when both Clerk and
-// Convex are configured (see isClaimOnSignInEnabled above).
-const AnonymousSessionClaimer = () => {
-  useClaimAnonymousSessionsOnSignIn()
-  return null
-}
-
 // Rendered inside RootComponent's Outlet, which is already wrapped by
-// RootDocument > RootClerkProvider > AppProviders. Re-wrapping here would
-// mount a second <html> and a second <ClerkProvider> (Clerk throws on
-// "multiple <ClerkProvider>"), so this renders only the 404 content.
+// RootDocument > AppProviders. Re-wrapping here would mount a second <html>,
+// so this renders only the 404 content.
 const NotFoundComponent = () => (
   <main className="grid min-h-screen place-items-center bg-background px-6 text-center text-foreground">
     <div className="max-w-md space-y-3">
@@ -112,12 +63,12 @@ const NotFoundComponent = () => (
       <p className="text-muted-foreground">
         The page you are looking for does not exist.
       </p>
-      <a
+      <Link
+        to="/"
         className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
-        href="/"
       >
         Go home
-      </a>
+      </Link>
     </div>
   </main>
 )

@@ -45,6 +45,10 @@ export const areGenerationLimitsDisabled = (
   env: GenerationLimitEnv = process.env,
 ): boolean => env.DISABLE_LIMIT === 'true' || env.IS_DEV === 'true'
 
+export const isPublicPreviewModeEnabled = (
+  env: Record<string, string | undefined> = process.env,
+): boolean => env.SHIP_FAST_PUBLIC_PREVIEW_MODE === 'true'
+
 export const findReusablePromptCacheSession = async (
   ctx: SessionCreationCtx,
   promptCacheKey: string,
@@ -76,6 +80,7 @@ export type FindIdempotentWorkspaceSessionArgs = {
   isPrivate: boolean
   userId?: string
   anonymousClientIdHash?: string
+  clientIpHash?: string
 }
 
 export const findIdempotentWorkspaceSession = async (
@@ -91,7 +96,8 @@ export const findIdempotentWorkspaceSession = async (
 
   const sameOwner =
     existing.userId === args.userId &&
-    existing.anonymousClientIdHash === args.anonymousClientIdHash
+    existing.anonymousClientIdHash === args.anonymousClientIdHash &&
+    existing.clientIpHash === args.clientIpHash
   const sameRequest =
     existing.prompt === args.prompt &&
     existing.preferredLanguage === args.preferredLanguage &&
@@ -113,8 +119,10 @@ export const findIdempotentWorkspaceSession = async (
 export type GenerationAdmissionInput = {
   userId?: string
   anonymousClientIdHash?: string
+  clientIpHash?: string
   now: number
   disableLimits: boolean
+  publicPreviewMode?: boolean
 }
 
 export type GenerationAdmission = {
@@ -127,6 +135,17 @@ export const loadGenerationAdmission = async (
   ctx: SessionCreationCtx,
   args: GenerationAdmissionInput,
 ): Promise<GenerationAdmission> => {
+  if (
+    args.publicPreviewMode === true &&
+    args.userId === undefined &&
+    args.clientIpHash === undefined
+  ) {
+    throw new ConvexError({
+      code: 'CLIENT_IP_REQUIRED',
+      message: 'Public preview generation requires a server IP bucket.',
+    })
+  }
+
   const recentCutoff = args.now - RATE_WINDOW_MS
   const quotaCutoff =
     args.now - (args.userId === undefined ? DAILY_WINDOW_MS : MONTHLY_WINDOW_MS)
@@ -136,14 +155,21 @@ export const loadGenerationAdmission = async (
           .query('sessions')
           .withIndex('by_userId', (index) => index.eq('userId', args.userId))
           .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
-      : args.anonymousClientIdHash === undefined
-        ? []
-        : await ctx.db
+      : args.publicPreviewMode === true && args.clientIpHash !== undefined
+        ? await ctx.db
             .query('sessions')
-            .withIndex('by_anonymousClientIdHash', (index) =>
-              index.eq('anonymousClientIdHash', args.anonymousClientIdHash),
+            .withIndex('by_clientIpHash', (index) =>
+              index.eq('clientIpHash', args.clientIpHash),
             )
             .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
+        : args.anonymousClientIdHash === undefined
+          ? []
+          : await ctx.db
+              .query('sessions')
+              .withIndex('by_anonymousClientIdHash', (index) =>
+                index.eq('anonymousClientIdHash', args.anonymousClientIdHash),
+              )
+              .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
   const recentCount = sameOwnerSessions.filter(
     (session) => session.createdAt >= recentCutoff,
   ).length
@@ -196,7 +222,9 @@ export const loadGenerationAdmission = async (
         code: 'QUOTA_EXCEEDED',
         message:
           args.userId === undefined
-            ? 'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.'
+            ? args.publicPreviewMode === true
+              ? 'Free preview quota exhausted for this IP address. Try again tomorrow.'
+              : 'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.'
             : 'Monthly quota exhausted',
       })
     })()
@@ -216,6 +244,7 @@ export type CreateGenerationSessionInput = {
   workspace: string
   anonymousOwnerSecret?: string
   anonymousClientId?: string
+  clientIpHash?: string
   designReferenceUrls?: string[]
   designReferenceNotes?: string
   cloneUrl?: string
@@ -242,6 +271,7 @@ export const createGenerationSession = async (
   references: CreateGenerationSessionReferences,
 ): Promise<CreateGenerationSessionResult> => {
   const disableLimits = areGenerationLimitsDisabled()
+  const publicPreviewMode = isPublicPreviewModeEnabled()
   const prompt = args.prompt.trim()
   const userId = await getUserId(ctx)
   const ownerEmail = userId === undefined ? undefined : await getUserEmail(ctx)
@@ -252,6 +282,10 @@ export const createGenerationSession = async (
   const anonymousClientIdHash =
     userId === undefined && args.anonymousClientId !== undefined
       ? await hashOwnerSecret(args.anonymousClientId)
+      : undefined
+  const clientIpHash =
+    userId === undefined && args.clientIpHash !== undefined
+      ? args.clientIpHash
       : undefined
   const now = Date.now()
 
@@ -282,6 +316,7 @@ export const createGenerationSession = async (
     isPrivate: args.isPrivate,
     userId,
     anonymousClientIdHash,
+    clientIpHash,
   })
 
   if (idempotentSession !== null) {
@@ -328,8 +363,10 @@ export const createGenerationSession = async (
   const admission = await loadGenerationAdmission(ctx, {
     userId,
     anonymousClientIdHash,
+    clientIpHash,
     now,
     disableLimits,
+    publicPreviewMode,
   })
 
   const sessionId = await ctx.db.insert('sessions', {
@@ -337,6 +374,7 @@ export const createGenerationSession = async (
     ownerEmail,
     anonOwnerSecretHash,
     anonymousClientIdHash,
+    clientIpHash,
     workspace: args.workspace,
     prompt,
     status: 'queued',

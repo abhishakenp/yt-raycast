@@ -1,7 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
-
-import { GalleryPage } from '@/features/gallery/components/GalleryPage'
+import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/gallery')({
-  component: GalleryPage,
+  component: lazyRouteComponent(
+    () => import('@/features/gallery/components/GalleryPage'),
+    'GalleryPage',
+  ),
 })

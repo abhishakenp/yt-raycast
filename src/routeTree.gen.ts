@@ -40,6 +40,7 @@ import { Route as GenerateSessionIdAdminRouteImport } from './routes/generate.$s
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe.webhook'
 import { Route as ApiSessionsRecentRouteImport } from './routes/api/sessions.recent'
+import { Route as ApiSessionsCreateRouteImport } from './routes/api/sessions.create'
 import { Route as ApiSessionsSessionIdRouteImport } from './routes/api/sessions.$sessionId'
 import { Route as ApiReferralsStatusRouteImport } from './routes/api/referrals.status'
 import { Route as ApiReferralsRecordRouteImport } from './routes/api/referrals.record'
@@ -225,6 +226,11 @@ const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
 const ApiSessionsRecentRoute = ApiSessionsRecentRouteImport.update({
   id: '/api/sessions/recent',
   path: '/api/sessions/recent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSessionsCreateRoute = ApiSessionsCreateRouteImport.update({
+  id: '/api/sessions/create',
+  path: '/api/sessions/create',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSessionsSessionIdRoute = ApiSessionsSessionIdRouteImport.update({
@@ -431,6 +437,7 @@ export interface FileRoutesByFullPath {
   '/api/referrals/record': typeof ApiReferralsRecordRoute
   '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
+  '/api/sessions/create': typeof ApiSessionsCreateRoute
   '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
@@ -494,6 +501,7 @@ export interface FileRoutesByTo {
   '/api/referrals/record': typeof ApiReferralsRecordRoute
   '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
+  '/api/sessions/create': typeof ApiSessionsCreateRoute
   '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
@@ -558,6 +566,7 @@ export interface FileRoutesById {
   '/api/referrals/record': typeof ApiReferralsRecordRoute
   '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
+  '/api/sessions/create': typeof ApiSessionsCreateRoute
   '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
@@ -623,6 +632,7 @@ export interface FileRouteTypes {
     | '/api/referrals/record'
     | '/api/referrals/status'
     | '/api/sessions/$sessionId'
+    | '/api/sessions/create'
     | '/api/sessions/recent'
     | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
@@ -686,6 +696,7 @@ export interface FileRouteTypes {
     | '/api/referrals/record'
     | '/api/referrals/status'
     | '/api/sessions/$sessionId'
+    | '/api/sessions/create'
     | '/api/sessions/recent'
     | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
@@ -749,6 +760,7 @@ export interface FileRouteTypes {
     | '/api/referrals/record'
     | '/api/referrals/status'
     | '/api/sessions/$sessionId'
+    | '/api/sessions/create'
     | '/api/sessions/recent'
     | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
@@ -813,6 +825,7 @@ export interface RootRouteChildren {
   ApiReferralsRecordRoute: typeof ApiReferralsRecordRoute
   ApiReferralsStatusRoute: typeof ApiReferralsStatusRoute
   ApiSessionsSessionIdRoute: typeof ApiSessionsSessionIdRouteWithChildren
+  ApiSessionsCreateRoute: typeof ApiSessionsCreateRoute
   ApiSessionsRecentRoute: typeof ApiSessionsRecentRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ExportSessionIdTargetRoute: typeof ExportSessionIdTargetRoute
@@ -1039,6 +1052,13 @@ declare module '@tanstack/react-router' {
       path: '/api/sessions/recent'
       fullPath: '/api/sessions/recent'
       preLoaderRoute: typeof ApiSessionsRecentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sessions/create': {
+      id: '/api/sessions/create'
+      path: '/api/sessions/create'
+      fullPath: '/api/sessions/create'
+      preLoaderRoute: typeof ApiSessionsCreateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/sessions/$sessionId': {
@@ -1389,6 +1409,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiReferralsRecordRoute: ApiReferralsRecordRoute,
   ApiReferralsStatusRoute: ApiReferralsStatusRoute,
   ApiSessionsSessionIdRoute: ApiSessionsSessionIdRouteWithChildren,
+  ApiSessionsCreateRoute: ApiSessionsCreateRoute,
   ApiSessionsRecentRoute: ApiSessionsRecentRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ExportSessionIdTargetRoute: ExportSessionIdTargetRoute,

@@ -8,10 +8,10 @@ describe('createRuntimeConvexHttpClient', () => {
     const previousConvexUrl = process.env.CONVEX_URL
     const previousViteSelfHostedUrl = process.env.VITE_CONVEX_SELF_HOSTED_URL
     const previousUrl = process.env.VITE_CONVEX_URL
-    delete process.env.CONVEX_SELF_HOSTED_URL
+    process.env.CONVEX_SELF_HOSTED_URL = 'http://127.0.0.1:3210'
     delete process.env.CONVEX_URL
     delete process.env.VITE_CONVEX_SELF_HOSTED_URL
-    process.env.VITE_CONVEX_URL = 'http://127.0.0.1:3210'
+    delete process.env.VITE_CONVEX_URL
 
     try {
       const client = createRuntimeConvexHttpClient(1000)

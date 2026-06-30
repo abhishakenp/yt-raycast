@@ -1,10 +1,9 @@
 /**
  * Client helpers for the referral program.
  *
- * Auth tokens are read from the GLOBAL Clerk SDK (`window.Clerk`), which the
- * root `<ClerkProvider>` loads on every page — the React `useAuth` hook is only
- * available on `/pricing` (see provider-config.ts), so the global SDK is the one
- * source of a Convex token that works app-wide.
+ * Auth tokens are read from the global Clerk SDK (`window.Clerk`) when it has
+ * been loaded by an explicit sign-in action. Public routes intentionally avoid
+ * loading Clerk on first paint.
  */
 
 export const REFERRAL_PENDING_KEY = 'shipfast_ref_pending'
@@ -36,6 +35,7 @@ export const waitForClerkReady = async (
   timeoutMs = 10000,
 ): Promise<boolean> => {
   if (typeof window === 'undefined') return false
+  if (!getClerk()) return false
   const start = Date.now()
   let elapsed = 0
   while (elapsed < timeoutMs) {
