@@ -27,7 +27,6 @@ export default [
   },
   {
     ignores: [
-      '.macp/**',
       '.output/**',
       'convex/_generated/**',
       'dist/**',

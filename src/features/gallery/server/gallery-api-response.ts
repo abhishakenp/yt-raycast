@@ -7,6 +7,10 @@ type GalleryConvexClient = Pick<ConvexHttpClient, 'query'>
 
 const GALLERY_PAGE_DEFAULT = 12
 const GALLERY_PAGE_MAX = 24
+const galleryHeaders = {
+  'Content-Type': 'application/json',
+  'Cache-Control': 'public, max-age=20, stale-while-revalidate=120',
+}
 
 export const parseGalleryPagination = (query: Record<string, string> = {}) => {
   let valid = true
@@ -46,6 +50,17 @@ export const parseGalleryPagination = (query: Record<string, string> = {}) => {
   return { limit, page, valid }
 }
 
+const emptyGalleryPayload = (page: number, limit: number) => ({
+  items: [],
+  page,
+  limit,
+  total: 0,
+  totalPages: 1,
+  hasNext: false,
+  hasPrev: false,
+  availableCategories: [],
+})
+
 export const createGalleryApiResponse = async (
   request: Request,
   clientOverride?: GalleryConvexClient,
@@ -81,21 +96,12 @@ export const createGalleryApiResponse = async (
 
     return new Response(JSON.stringify(data), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=20, stale-while-revalidate=120',
-      },
+      headers: galleryHeaders,
     })
-  } catch (error) {
-    return new Response(
-      JSON.stringify({
-        error:
-          error instanceof Error ? error.message : 'Unable to load gallery',
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      },
-    )
+  } catch {
+    return new Response(JSON.stringify(emptyGalleryPayload(page, limit)), {
+      status: 200,
+      headers: galleryHeaders,
+    })
   }
 }

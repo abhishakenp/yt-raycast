@@ -1,7 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
-
-import { PrivacyPage } from './privacy/-PrivacyPage'
+import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/privacy')({
-  component: PrivacyPage,
+  component: lazyRouteComponent(
+    () => import('./privacy/-PrivacyPage'),
+    'PrivacyPage',
+  ),
 })

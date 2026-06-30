@@ -46,7 +46,6 @@
     "verify:prepush": "node scripts/git-hook-quality-gate.mjs pre-push",
     "verify:qa": "bun run lint && bun run typecheck && bun run test:coverage && bun run verify:change-groups && bun run verify:review-readiness && bun run verify:generated && bun run build && bun run verify:bundle",
     "verify:release": "bun run verify:qa && bun run verify:providers",
-    "prepare": "node scripts/git-hook-quality-gate.mjs install",
     "build": "vite build",
     "deploy:convex": "bun scripts/deploy-convex.mjs",
     "preview": "vite preview",

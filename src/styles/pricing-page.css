@@ -649,7 +649,13 @@ body {
   border-radius: 18px;
   overflow: hidden;
 }
-.faq-item summary {
+.faq-question {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  width: 100%;
   list-style: none;
   cursor: pointer;
   padding: 18px 22px;
@@ -662,11 +668,8 @@ body {
   user-select: none;
   transition: color 0.2s;
 }
-.faq-item summary:hover {
+.faq-question:hover {
   color: #ffffff;
-}
-.faq-item summary::-webkit-details-marker {
-  display: none;
 }
 .faq-chevron {
   width: 18px;
@@ -675,11 +678,11 @@ body {
   color: #97a0b0;
   transition: transform 0.25s;
 }
-.faq-item[open] summary {
+.faq-item[data-open] .faq-question {
   color: #ffffff;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
-.faq-item[open] .faq-chevron {
+.faq-item[data-open] .faq-chevron {
   transform: rotate(180deg);
   color: #c4c9d4;
 }

@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import { useMutation } from 'convex/react'
 import {
   ArrowRight,
   ChevronLeft,
@@ -10,13 +9,14 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
 import { createAnonymousClientId } from '@/features/session/services/session-create-payload'
 import { cn } from '@/lib/utils'
-import { api } from '../../../../convex/_generated/api'
-import type { Id } from '../../../../convex/_generated/dataModel'
 
-import { useGalleryController } from '../hooks/useGalleryController'
+import {
+  getGalleryThumbnailUrl,
+  resolveGalleryThumbnail,
+  useGalleryController,
+} from '../hooks/useGalleryController'
 
 export type GalleryCategory = string
 
@@ -98,29 +98,36 @@ const formatGenerationTime = (elapsed?: number | null) => {
   return `${minutes}m ${remainingSeconds}s`
 }
 
+const getGalleryCardAriaLabel = (session: GallerySession): string => {
+  const title = getPromptTitle(session.prompt)
+  const generationTime = formatGenerationTime(session.elapsed)
+  return generationTime ? `${title}, generated in ${generationTime}` : title
+}
+
 export const getGalleryImageUrl = (session: GallerySession): string => {
   const imageUrl = session.imageUrl?.trim()
   if (imageUrl) return imageUrl
 
-  const version = encodeURIComponent(String(session.previewVersion ?? 0))
-  return `/api/sessions/${encodeURIComponent(session.sessionId)}/gallery-thumb?v=${version}`
+  return getGalleryThumbnailUrl(session)
 }
 
 const getPreviewDocument = (html?: string | null) => {
-  if (!html?.trim()?.length) return undefined
+  const cleaned = html?.trim()
+  if (!cleaned?.length) return undefined
   if (
-    html.includes('id="ship-fast-generated-module"') &&
-    !html.includes('<main')
+    cleaned.includes('Generated OpenUI source is ready') ||
+    cleaned.includes('Failed to render:')
+  ) {
+    return undefined
+  }
+  if (
+    cleaned.includes('id="ship-fast-generated-module"') &&
+    !cleaned.includes('<main')
   ) {
     return undefined
   }
 
-  return html
-}
-
-const getModuleSource = (source?: string | null) => {
-  const cleaned = source?.trim()
-  return cleaned && cleaned.length > 0 ? cleaned : undefined
+  return cleaned
 }
 
 export const GalleryCategoryTabs = ({
@@ -180,17 +187,14 @@ export const GalleryCategoryTabs = ({
 const GalleryPreview = ({ session }: { session: GallerySession }) => {
   const title = getPromptTitle(session.prompt)
   const imageUrl = session.imageUrl?.trim()
-  // Priority: imageUrl > moduleSource > html > gradient.
-  // When imageUrl is present, moduleSource/html are skipped entirely.
-  const moduleSource = imageUrl
-    ? undefined
-    : getModuleSource(session.moduleSource)
+  // Priority: imageUrl > html > gradient. When imageUrl is present,
+  // previewDocument/html are skipped entirely.
   const previewDocument = imageUrl
     ? undefined
     : getPreviewDocument(session.html)
   const imageSrc = imageUrl
     ? imageUrl
-    : moduleSource === undefined && previewDocument === undefined
+    : previewDocument === undefined
       ? getGalleryImageUrl(session)
       : ''
   const [resolvedImageSrc, setResolvedImageSrc] = useState(() =>
@@ -203,44 +207,27 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
       return
     }
 
-    const controller = new AbortController()
-    let objectUrl: string | undefined
+    let cancelled = false
     setResolvedImageSrc('')
 
     const resolveImage = async () => {
-      try {
-        const response = await fetch(imageSrc, { signal: controller.signal })
-        if (!response.ok) throw new Error(`thumbnail ${response.status}`)
-        const blob = await response.blob()
-        objectUrl = URL.createObjectURL(blob)
-        setResolvedImageSrc(objectUrl)
-      } catch {
-        if (!controller.signal.aborted) setResolvedImageSrc('')
-      }
+      const objectUrl = await resolveGalleryThumbnail(imageSrc)
+      if (!cancelled) setResolvedImageSrc(objectUrl ?? '')
     }
 
     void resolveImage()
 
     return () => {
-      controller.abort()
-      if (objectUrl) URL.revokeObjectURL(objectUrl)
+      cancelled = true
     }
   }, [imageSrc])
 
   return (
-    <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]">
-      {moduleSource !== undefined ? (
-        <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
-          <GeneratedModulePreview
-            source={moduleSource}
-            sessionId={session.sessionId}
-            siteSpecJson={session.siteSpecJson ?? undefined}
-            locale={session.preferredLanguage ?? undefined}
-            prompt={session.prompt}
-            isDark
-          />
-        </div>
-      ) : previewDocument !== undefined ? (
+    <div
+      className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]"
+      aria-hidden="true"
+    >
+      {previewDocument !== undefined ? (
         <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
           <div
             className="size-full"
@@ -281,6 +268,8 @@ const GalleryCard = ({
       className="group block overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.055] shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition-colors hover:border-cyan-200/50 hover:bg-white/[0.075]"
       to="/generate/$sessionId"
       params={{ sessionId: session.sessionId }}
+      preload={false}
+      aria-label={getGalleryCardAriaLabel(session)}
       data-gallery-session-id={session.sessionId}
       onPointerEnter={() => onHoverStart(session.sessionId)}
       onPointerLeave={() => onHoverEnd(session.sessionId)}
@@ -356,16 +345,61 @@ const GallerySkeletonCard = ({ index }: { index: number }) => (
   </div>
 )
 
+type GalleryEmptyStateVariant = 'filtered' | 'gallery' | 'home'
+
+const GalleryEmptyState = ({
+  variant = 'gallery',
+}: {
+  variant?: GalleryEmptyStateVariant
+}) => {
+  const isFilteredVariant = variant === 'filtered'
+  const isHomeVariant = variant === 'home'
+
+  return (
+    <div className="sf-gallery-empty col-span-full grid min-h-[360px] place-items-center rounded-[8px] border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(34,211,238,0.08),transparent_28rem),linear-gradient(135deg,rgba(255,255,255,0.045),rgba(255,255,255,0.018))] px-6 py-14 text-center shadow-[0_24px_80px_rgba(0,0,0,0.2)]">
+      <div className="max-w-md">
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-200/70">
+          No previews yet
+        </p>
+        <h2 className="mt-3 text-2xl font-bold tracking-normal text-white">
+          {isFilteredVariant
+            ? 'No matching previews'
+            : isHomeVariant
+              ? 'Fresh launches will appear here'
+              : 'Generate a site to fill this wall'}
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-white/52">
+          {isFilteredVariant
+            ? 'Try a different search or category, or start a fresh generation from the homepage.'
+            : isHomeVariant
+              ? 'The first public previews will land in this gallery as soon as a website is ready.'
+              : 'Public previews appear here after a website is ready. Start a new generation from the homepage and come back when it lands.'}
+        </p>
+        {isHomeVariant ? null : (
+          <Link
+            className="mt-6 inline-flex h-10 items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-300/12 px-4 text-sm font-semibold text-cyan-50 transition-colors hover:border-cyan-100/45 hover:bg-cyan-300/18"
+            to="/"
+          >
+            Start from home
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export const GalleryGrid = ({
   className,
+  emptyStateVariant = 'gallery',
   gallery,
   skeletonCount = 6,
 }: {
   className?: string
+  emptyStateVariant?: GalleryEmptyStateVariant
   gallery?: GalleryPayload
   skeletonCount?: number
 }) => {
-  const deleteMine = useMutation(api.sessions.deleteMine)
   const hoveredSessionIdRef = useRef<string | null>(null)
   const [deletedSessionIds, setDeletedSessionIds] = useState<Set<string>>(
     () => new Set(),
@@ -381,28 +415,28 @@ export const GalleryGrid = ({
     }
   }, [])
 
-  const deleteHoveredSession = useCallback(
-    (sessionId: string) => {
-      const anonymousClientId = createAnonymousClientId(window.localStorage)
-      void deleteMine({
-        anonymousClientId,
-        sessionId: sessionId as Id<'sessions'>,
-      })
-        .then((result) => {
-          if (result.deleted <= 0) return
-          if (hoveredSessionIdRef.current === sessionId) {
-            hoveredSessionIdRef.current = null
-          }
-          setDeletedSessionIds((current) => {
-            const next = new Set(current)
-            next.add(sessionId)
-            return next
-          })
+  const deleteHoveredSession = useCallback((sessionId: string) => {
+    const anonymousClientId = createAnonymousClientId(window.localStorage)
+    void import('@/features/gallery/services/delete-gallery-session')
+      .then(({ deleteGallerySession }) =>
+        deleteGallerySession({
+          anonymousClientId,
+          sessionId,
+        }),
+      )
+      .then((result) => {
+        if (result.deleted <= 0) return
+        if (hoveredSessionIdRef.current === sessionId) {
+          hoveredSessionIdRef.current = null
+        }
+        setDeletedSessionIds((current) => {
+          const next = new Set(current)
+          next.add(sessionId)
+          return next
         })
-        .catch(() => undefined)
-    },
-    [deleteMine],
-  )
+      })
+      .catch(() => undefined)
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -448,6 +482,7 @@ export const GalleryGrid = ({
   const items = gallery.items.filter(
     (session) => !deletedSessionIds.has(session.sessionId),
   )
+  const isEmpty = items.length === 0
 
   return (
     <div
@@ -456,18 +491,21 @@ export const GalleryGrid = ({
         className,
       )}
     >
-      {items.map((session) => (
-        <GalleryCard
-          key={session.sessionId}
-          session={session}
-          onHoverEnd={handleCardHoverEnd}
-          onHoverStart={handleCardHoverStart}
-        />
-      ))}
+      {isEmpty ? (
+        <GalleryEmptyState variant={emptyStateVariant} />
+      ) : (
+        items.map((session) => (
+          <GalleryCard
+            key={session.sessionId}
+            session={session}
+            onHoverEnd={handleCardHoverEnd}
+            onHoverStart={handleCardHoverStart}
+          />
+        ))
+      )}
     </div>
   )
 }
-
 export const GalleryPagination = ({
   hasNext,
   hasPrev,
@@ -550,6 +588,7 @@ export const HomeGallerySection = () => {
         </div>
       </div>
       <GalleryGrid
+        emptyStateVariant="home"
         gallery={gallery}
         skeletonCount={12}
         className="lg:grid-cols-4"

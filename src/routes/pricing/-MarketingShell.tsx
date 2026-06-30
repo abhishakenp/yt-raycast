@@ -1,8 +1,19 @@
-import { useEffect } from 'react'
-import { LaunchBackdrop } from '@/components/launch-backdrop'
+import { useEffect, useRef } from 'react'
+import { Link, useRouter } from '@tanstack/react-router'
 import { TopActions } from '@/components/TopActions'
-import { GlassDefs } from '@/features/home/components/HomePage'
+import { GlassDefs } from '@/features/home/components/GlassPill'
 import styles from './MarketingShell.module.css'
+
+const MARKETING_SHELL_PREWARM_DELAY_MS = 700
+const MARKETING_SHELL_PREWARM_IDLE_TIMEOUT_MS = 1400
+
+type IdleWindow = Window & {
+  requestIdleCallback?: (
+    callback: IdleRequestCallback,
+    options?: IdleRequestOptions,
+  ) => number
+  cancelIdleCallback?: (handle: number) => void
+}
 
 export const MarketingShell = ({
   children,
@@ -11,6 +22,13 @@ export const MarketingShell = ({
   children: React.ReactNode
   footer?: boolean
 }) => {
+  const router = useRouter()
+  const routerRef = useRef(router)
+
+  useEffect(() => {
+    routerRef.current = router
+  }, [router])
+
   useEffect(() => {
     if (typeof window === 'undefined') return
     document.body.classList.add('sf-marketing-page')
@@ -20,13 +38,93 @@ export const MarketingShell = ({
     }
   }, [])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const idleWindow = window as IdleWindow
+    let cancelled = false
+    let didPrewarm = false
+    let idleHandle: number | undefined
+    let idleHandleUsesIdleCallback = false
+
+    const prewarmInternalDestinations = () => {
+      if (cancelled || didPrewarm) return
+      didPrewarm = true
+
+      void routerRef.current.preloadRoute({ to: '/' }).catch(() => undefined)
+      void routerRef.current
+        .preloadRoute({ to: '/pricing' })
+        .catch(() => undefined)
+      void import('@/routes/index')
+      void import('@/features/home/components/HomePage')
+      void import('@/features/gallery/components/PublicGallery')
+      void import('@/features/gallery/hooks/useGalleryController').then(
+        ({ prewarmGalleryPayload, prewarmGalleryThumbnails }) =>
+          prewarmGalleryPayload({ limit: 12 }).then((gallery) =>
+            prewarmGalleryThumbnails(gallery, 12),
+          ),
+      )
+      void import('@/routes/pricing')
+      void import('@/routes/pricing/-PricingPage')
+      void import('@/routes/pricing/-MarketingShell')
+
+      const homeRocket = new Image()
+      homeRocket.decoding = 'async'
+      homeRocket.src = '/assets/rocket-transparent.png'
+
+      if ('fonts' in document) {
+        void document.fonts.ready.then(() =>
+          Promise.all([
+            document.fonts.load('1em Archivo Black'),
+            document.fonts.load('1em JetBrains Mono'),
+          ]),
+        )
+      }
+    }
+
+    const delayHandle = window.setTimeout(() => {
+      if (cancelled) return
+      if (idleWindow.requestIdleCallback) {
+        idleHandleUsesIdleCallback = true
+        idleHandle = idleWindow.requestIdleCallback(
+          prewarmInternalDestinations,
+          {
+            timeout: MARKETING_SHELL_PREWARM_IDLE_TIMEOUT_MS,
+          },
+        )
+        return
+      }
+
+      idleHandleUsesIdleCallback = false
+      idleHandle = window.setTimeout(
+        prewarmInternalDestinations,
+        MARKETING_SHELL_PREWARM_IDLE_TIMEOUT_MS,
+      )
+    }, MARKETING_SHELL_PREWARM_DELAY_MS)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(delayHandle)
+      if (idleHandle === undefined) return
+      if (idleHandleUsesIdleCallback && idleWindow.cancelIdleCallback) {
+        idleWindow.cancelIdleCallback(idleHandle)
+      } else {
+        window.clearTimeout(idleHandle)
+      }
+    }
+  }, [])
+
   return (
     <>
       <GlassDefs />
-      <LaunchBackdrop />
       <TopActions />
       <div className={styles.logoBlock}>
-        <a href="/" className={styles.logo} aria-label="SHIP FAST home">
+        <Link
+          to="/"
+          preload="intent"
+          className={styles.logo}
+          aria-label="SHIP FAST home"
+        >
           <div className={styles.logoIcon}>
             <img
               src="/assets/logo-transparent.png"
@@ -35,7 +133,7 @@ export const MarketingShell = ({
             />
           </div>
           <span className={styles.logoText}>SHIP FAST</span>
-        </a>
+        </Link>
       </div>
 
       {children}
@@ -46,10 +144,18 @@ export const MarketingShell = ({
             SHIP FAST © {new Date().getFullYear()}
           </span>
           <nav className="footer-nav" aria-label="Footer links">
-            <a href="/">Home</a>
-            <a href="/pricing">Pricing</a>
-            <a href="/privacy">Privacy</a>
-            <a href="/terms">Terms</a>
+            <Link to="/" preload="intent">
+              Home
+            </Link>
+            <Link to="/pricing" preload="intent">
+              Pricing
+            </Link>
+            <Link to="/privacy" preload="intent">
+              Privacy
+            </Link>
+            <Link to="/terms" preload="intent">
+              Terms
+            </Link>
           </nav>
         </footer>
       )}

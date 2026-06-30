@@ -342,6 +342,48 @@ describe('session creation helpers', () => {
     })
   })
 
+  it('requires a server IP bucket in public preview mode', async () => {
+    await expect(
+      loadGenerationAdmission(ctxFor({ sessions: [] }), {
+        anonymousClientIdHash: 'anon_hash',
+        now: Date.now(),
+        disableLimits: false,
+        publicPreviewMode: true,
+      }),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'CLIENT_IP_REQUIRED',
+      },
+    })
+  })
+
+  it('uses the server IP bucket for public preview anonymous admission', async () => {
+    const now = Date.now()
+
+    await expect(
+      loadGenerationAdmission(
+        ctxFor({
+          sessions: [
+            sessionDoc({
+              anonymousClientIdHash: 'other_anon_hash',
+              clientIpHash: 'ip_hash',
+              createdAt: now - RATE_WINDOW_MS - 1000,
+            }),
+          ],
+        }),
+        {
+          anonymousClientIdHash: 'anon_hash',
+          clientIpHash: 'ip_hash',
+          now,
+          disableLimits: false,
+          publicPreviewMode: true,
+        },
+      ),
+    ).resolves.toMatchObject({
+      quotaCount: 1,
+    })
+  })
+
   it('rejects short-window rate limits before quota limits', async () => {
     const now = Date.now()
 

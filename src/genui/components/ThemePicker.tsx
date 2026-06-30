@@ -26,6 +26,8 @@ export interface ThemePickerProps {
   isDark: boolean
   onSelect: (name: string) => void
   onToggleMode: () => void
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
   trigger?: ReactElement
   /**
    * Which side of the trigger the popover opens on. Defaults to "bottom"
@@ -52,6 +54,8 @@ export default function ThemePicker({
   isDark,
   onSelect,
   onToggleMode,
+  open,
+  onOpenChange,
   trigger,
   popoverSide = 'bottom',
   popoverAlign = 'end',
@@ -61,7 +65,7 @@ export default function ThemePicker({
   const mode = isDark ? 'dark' : 'light'
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         {trigger ? (
           trigger
