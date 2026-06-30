@@ -328,3 +328,86 @@ describe('useTextEdit: space typing in buttons (end-to-end)', () => {
     container.remove()
   })
 })
+
+describe('useTextEdit: alert dialog focus during active edits', () => {
+  it('keeps the edit active when blur focus moves to an alertdialog portal', () => {
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+
+    const paragraph = document.createElement('p')
+    const textNode = document.createTextNode('Delete me')
+    paragraph.appendChild(textNode)
+    container.appendChild(paragraph)
+
+    const dialog = document.createElement('div')
+    dialog.setAttribute('role', 'alertdialog')
+    dialog.tabIndex = -1
+    document.body.appendChild(dialog)
+
+    const rafCallbacks: FrameRequestCallback[] = []
+    const originalRequestAnimationFrame = globalThis.requestAnimationFrame
+    const originalCancelAnimationFrame = globalThis.cancelAnimationFrame
+    globalThis.requestAnimationFrame = ((callback: FrameRequestCallback) => {
+      rafCallbacks.push(callback)
+      return rafCallbacks.length
+    }) as typeof requestAnimationFrame
+    globalThis.cancelAnimationFrame = vi.fn()
+
+    const onTextChange = vi.fn()
+    const { result, unmount } = renderHook(() => {
+      const ref = useRef(container)
+      return useTextEdit(ref, true, onTextChange)
+    })
+
+    try {
+      act(() => {
+        paragraph.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 0,
+            clientY: 0,
+          }),
+        )
+      })
+
+      textNode.nodeValue = 'Delete me now'
+      act(() => {
+        dialog.focus()
+        paragraph.dispatchEvent(
+          new FocusEvent('blur', {
+            bubbles: false,
+            relatedTarget: dialog,
+          }),
+        )
+      })
+      act(() => {
+        for (const callback of rafCallbacks.splice(0)) {
+          callback(0)
+        }
+      })
+
+      expect(onTextChange).not.toHaveBeenCalled()
+
+      act(() => {
+        result.current.commitEdit()
+      })
+
+      expect(onTextChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          oldText: 'Delete me',
+          newText: 'Delete me now',
+          element: paragraph,
+          occurrenceIndex: 0,
+        }),
+      )
+      expect(paragraph.hasAttribute('contenteditable')).toBe(false)
+    } finally {
+      unmount()
+      container.remove()
+      dialog.remove()
+      globalThis.requestAnimationFrame = originalRequestAnimationFrame
+      globalThis.cancelAnimationFrame = originalCancelAnimationFrame
+    }
+  })
+})

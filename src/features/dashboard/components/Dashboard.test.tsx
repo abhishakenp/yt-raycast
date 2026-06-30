@@ -204,6 +204,20 @@ vi.mock('@/genui/theme-apply', () => ({
 describe('Dashboard missing session state', () => {
   beforeEach(() => {
     ensureWindowStorage()
+    class TestResizeObserver {
+      observe = vi.fn()
+      unobserve = vi.fn()
+      disconnect = vi.fn()
+    }
+    Object.defineProperty(window, 'ResizeObserver', {
+      configurable: true,
+      value: TestResizeObserver,
+    })
+    Object.defineProperty(globalThis, 'ResizeObserver', {
+      configurable: true,
+      value: TestResizeObserver,
+    })
+    Element.prototype.scrollIntoView = vi.fn()
     getConvexState().generationView = null
     getConvexState().queryArgs = []
     getConvexState().mutationCalls = []
@@ -553,6 +567,53 @@ describe('Dashboard missing session state', () => {
           '[]',
       ),
     ).toEqual([{ handle: 'truffle-box', price: 79, title: 'Truffle Box' }])
+  })
+
+  it('opens localization from the rail and persists the selected language', async () => {
+    const state = getConvexState()
+    state.generationView = {
+      session: {
+        sessionId: 'ready-localization-session',
+        status: 'preview_ready',
+        prompt: 'A ready localized website',
+        preferredLanguage: 'en',
+        isPrivate: false,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="ready-localization-session" />)
+
+    const trigger = screen.getByRole('button', { name: /Localization/i })
+    fireEvent.pointerDown(trigger)
+    fireEvent.pointerUp(trigger)
+    fireEvent.click(trigger)
+
+    const input = await screen.findByPlaceholderText('Search languages…')
+    fireEvent.change(input, { target: { value: 'hindi' } })
+
+    const hindiOption = await screen.findByText('Hindi')
+    const option = hindiOption.closest('[role="option"]')
+    expect(option).toBeTruthy()
+    fireEvent.pointerUp(option!)
+    fireEvent.click(option!)
+
+    await waitFor(() => {
+      expect(state.mutationCalls).toContainEqual(
+        expect.objectContaining({
+          args: {
+            sessionId: 'ready-localization-session',
+            anonymousOwnerSecret: undefined,
+            preferredLanguage: 'hi',
+          },
+        }),
+      )
+    })
   })
 
   it('shows no Brand and media subtitle and persists the selected logo as the trigger icon', async () => {

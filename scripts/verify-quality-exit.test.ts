@@ -72,6 +72,19 @@ describe('quality exit verification', () => {
     )
   })
 
+  it('fails when coverage is wired through the old skip flag', () => {
+    const texts = completeTexts()
+    const parsed = JSON.parse(texts.packageJson) as {
+      scripts: Record<string, string>
+    }
+    parsed.scripts['test:coverage'] = 'VITEST_COVERAGE=1 vitest run --coverage'
+    texts.packageJson = JSON.stringify(parsed)
+
+    expect(() => verifyQualityExitFromTexts(texts)).toThrow(
+      /without VITEST_COVERAGE skips/,
+    )
+  })
+
   it('fails when review bundle artifacts are missing for a group', () => {
     const texts = completeTexts()
     texts.reviewBundlesReadme = texts.reviewBundlesReadme.replace(
