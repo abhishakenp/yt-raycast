@@ -1,6 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
-import { ArrowRight, ChevronLeft, ChevronRight, Timer } from 'lucide-react'
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Timer,
+  UserIcon,
+} from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -526,13 +532,22 @@ export const HomeGallerySection = () => {
             See what other speedsters generated
           </h2>
         </div>
-        <Link
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 text-sm font-semibold text-white/80 transition-colors hover:border-cyan-200/45 hover:text-white"
-          to="/gallery"
-        >
-          View all
-          <ArrowRight className="size-4" />
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 text-sm font-semibold text-white/80 transition-colors hover:border-cyan-200/45 hover:text-white"
+            to="/mine"
+          >
+            <UserIcon className="size-4" />
+            My generations
+          </Link>
+          <Link
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 text-sm font-semibold text-white/80 transition-colors hover:border-cyan-200/45 hover:text-white"
+            to="/gallery"
+          >
+            View all
+            <ArrowRight className="size-4" />
+          </Link>
+        </div>
       </div>
       <GalleryGrid
         gallery={gallery}

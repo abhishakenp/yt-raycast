@@ -42,6 +42,7 @@ vi.mock('convex/react', () => ({
 
 vi.mock('@/shared/auth/clerk-runtime', () => ({
   getClerkPublishableKey: () => 'pk_test_dummy',
+  isClerkClientEnabled: () => true,
 }))
 
 vi.mock('@/app/providers/clerk-appearance', () => ({
@@ -54,6 +55,10 @@ vi.mock('@/features/referrals/hooks/useReferralCapture', () => ({
 
 vi.mock('@/lib/chunk-load-recovery', () => ({
   installDynamicImportRecovery: () => () => {},
+}))
+
+vi.mock('@/shared/auth/useClaimAnonymousSessionsOnSignIn', () => ({
+  useClaimAnonymousSessionsOnSignIn: () => {},
 }))
 
 vi.mock('sonner', () => ({

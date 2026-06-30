@@ -36,6 +36,10 @@ export type ClaimAnonymousSessionInput = {
   anonymousOwnerSecret: string
 }
 
+export type ClaimAnonymousSessionsByClientIdInput = {
+  anonymousClientId: string
+}
+
 export type SetSessionThemeOverrideInput = {
   sessionId: Id<'sessions'>
   anonymousOwnerSecret?: string
@@ -235,6 +239,45 @@ export const claimAnonymousSession = async (
   })
 
   return { sessionId: args.sessionId }
+}
+
+// Link ALL of a caller's anonymous sessions (matched by anonymousClientIdHash)
+// to their signed-in userId. Called once on sign-in so the user's /mine view
+// and ownership checks follow them across the anon→authenticated transition.
+// Skips sessions already owned by anyone (including the caller). Idempotent.
+export const claimAnonymousSessionsByClientId = async (
+  ctx: MutationCtx,
+  args: ClaimAnonymousSessionsByClientIdInput,
+) => {
+  const userId = await getUserId(ctx)
+  if (userId === undefined) {
+    throw new ConvexError({
+      code: 'AUTH_REQUIRED',
+      message: 'Sign in to claim anonymous sessions',
+    })
+  }
+
+  const anonymousClientIdHash = await hashOwnerSecret(args.anonymousClientId)
+  const sessions = await ctx.db
+    .query('sessions')
+    .withIndex('by_anonymousClientIdHash', (index) =>
+      index.eq('anonymousClientIdHash', anonymousClientIdHash),
+    )
+    .collect()
+
+  const now = Date.now()
+  let claimed = 0
+  for (const session of sessions) {
+    if (session.userId !== undefined) continue
+    await ctx.db.patch(session._id, {
+      userId,
+      anonOwnerSecretHash: undefined,
+      updatedAt: now,
+    })
+    claimed += 1
+  }
+
+  return { claimed }
 }
 
 export const setSessionThemeOverride = async (
