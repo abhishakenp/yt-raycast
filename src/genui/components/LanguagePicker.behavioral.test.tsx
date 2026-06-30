@@ -403,6 +403,12 @@ describe('LanguagePicker — custom language submission', () => {
   })
 
   it('selects Lithuanian as browser-native code lt without calling the AI action', async () => {
+    ;(globalThis as Record<string, unknown>).Translator = {
+      availability: vi.fn(async ({ targetLanguage }) =>
+        targetLanguage === 'lt' ? 'available' : 'unavailable',
+      ),
+      create: vi.fn(),
+    }
     const onSelect = vi.fn()
     render(
       <LanguagePicker
