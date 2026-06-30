@@ -7,8 +7,6 @@ import { JSDOM } from 'jsdom'
 import ts from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
 
-const itUnlessCoverage = process.env.VITEST_COVERAGE === '1' ? it.skip : it
-
 import {
   buildOpenUILakebedProjectFiles,
   collectRouteImageAlts,
@@ -214,41 +212,39 @@ describe('openui lakebed image source generation', () => {
     ).toBe('1')
   })
 
-  itUnlessCoverage(
-    'renders generated commerce components with same-file helpers and undefined query results',
-    async () => {
-      const built = await buildOpenUILakebedProjectFiles({
-        source:
-          'root = EcommerceHero("Duck Commerce", ["Home"], {"brand":"Duck Commerce"})',
-        siteSpecJson: JSON.stringify({ projectName: 'Duck Commerce' }),
-        sessionId: 'demo',
-        target: 'lakebed',
-      })
-      const serverSource = built.files['server/index.ts'] ?? ''
+  it('renders generated commerce components with same-file helpers and undefined query results', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        'root = EcommerceHero("Duck Commerce", ["Home"], {"brand":"Duck Commerce"})',
+      siteSpecJson: JSON.stringify({ projectName: 'Duck Commerce' }),
+      sessionId: 'demo',
+      target: 'lakebed',
+    })
+    const serverSource = built.files['server/index.ts'] ?? ''
 
-      expect(serverSource).toContain('items: table({')
-      expect(serverSource).toContain('products: table({')
-      expect(serverSource).toContain('cartSummary: query')
-      expect(serverSource).toContain('productCatalog: query')
-      expect(serverSource).toContain('addItem: mutation')
-      expect(serverSource).toContain('syncCatalog: mutation')
-      expect(serverSource).not.toContain('articles: table')
-      expect(serverSource).not.toContain('addToReadingList')
-      expect(serverSource).not.toContain('CommerceCartItemInput')
-      expect(serverSource).not.toContain('CommerceCatalogProductInput')
+    expect(serverSource).toContain('items: table({')
+    expect(serverSource).toContain('products: table({')
+    expect(serverSource).toContain('cartSummary: query')
+    expect(serverSource).toContain('productCatalog: query')
+    expect(serverSource).toContain('addItem: mutation')
+    expect(serverSource).toContain('syncCatalog: mutation')
+    expect(serverSource).not.toContain('articles: table')
+    expect(serverSource).not.toContain('addToReadingList')
+    expect(serverSource).not.toContain('CommerceCartItemInput')
+    expect(serverSource).not.toContain('CommerceCatalogProductInput')
 
-      const directory = mkdtempSync(join(tmpdir(), 'lakebed-commerce-export-'))
+    const directory = mkdtempSync(join(tmpdir(), 'lakebed-commerce-export-'))
 
-      try {
-        for (const [path, source] of Object.entries(built.files)) {
-          const absolutePath = join(directory, path)
-          mkdirSync(join(absolutePath, '..'), { recursive: true })
-          writeFileSync(absolutePath, source)
-        }
-        const entryPath = join(directory, 'render-ecommerce.tsx')
-        writeFileSync(
-          entryPath,
-          `import { h, render } from "preact";
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-ecommerce.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
 import { EcommerceHeroBlock } from "./client/components/EcommerceHero";
 
 const lakebed = {
@@ -267,31 +263,31 @@ const lakebed = {
 
 render(h(EcommerceHeroBlock, { props: {}, lakebed }), document.getElementById("app"));
 `,
-        )
-        const bundled = await build({
-          bundle: true,
-          entryPoints: [entryPath],
-          format: 'iife',
-          jsx: 'automatic',
-          jsxImportSource: 'preact',
-          logLevel: 'silent',
-          nodePaths: [join(process.cwd(), 'node_modules')],
-          platform: 'browser',
-          plugins: [
-            {
-              name: 'lakebed-client-stub',
-              setup(pluginBuild) {
-                pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-client-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
                   namespace: 'lakebed-client-stub',
-                  path: 'lakebed/client',
-                }))
-                pluginBuild.onLoad(
-                  {
-                    filter: /^lakebed\/client$/,
-                    namespace: 'lakebed-client-stub',
-                  },
-                  () => ({
-                    contents: `export const Link = ({ children }) => children;
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
@@ -302,50 +298,47 @@ export function useQuery() { return undefined; }
 export function signInWithGoogle() {}
 export function signOut() {}
 `,
-                    loader: 'tsx',
-                  }),
-                )
-              },
+                  loader: 'tsx',
+                }),
+              )
             },
-          ],
-          write: false,
-        })
-        const dom = new JSDOM('<div id="app"></div>', {
-          runScripts: 'outside-only',
-        })
-
-        expect(() => dom.window.eval(bundled.outputFiles[0].text)).not.toThrow()
-        expect(
-          dom.window.document.querySelector('#app')?.textContent,
-        ).toContain('Shop now')
-      } finally {
-        rmSync(directory, { force: true, recursive: true })
-      }
-    },
-  )
-
-  itUnlessCoverage(
-    'exposes pending state from generated Lakebed mutation adapters',
-    async () => {
-      const built = await buildOpenUILakebedProjectFiles({
-        source:
-          'root = EcommerceHero("Lakebed Commerce", ["Home"], {"brand":"Lakebed Commerce"})',
-        siteSpecJson: JSON.stringify({ projectName: 'Lakebed Commerce' }),
-        sessionId: 'demo',
-        target: 'lakebed',
+          },
+        ],
+        write: false,
       })
-      const directory = mkdtempSync(join(tmpdir(), 'lakebed-pending-export-'))
+      const dom = new JSDOM('<div id="app"></div>', {
+        runScripts: 'outside-only',
+      })
 
-      try {
-        for (const [path, source] of Object.entries(built.files)) {
-          const absolutePath = join(directory, path)
-          mkdirSync(join(absolutePath, '..'), { recursive: true })
-          writeFileSync(absolutePath, source)
-        }
-        const entryPath = join(directory, 'render-pending.tsx')
-        writeFileSync(
-          entryPath,
-          `import { h, render } from "preact";
+      expect(() => dom.window.eval(bundled.outputFiles[0].text)).not.toThrow()
+      expect(dom.window.document.querySelector('#app')?.textContent).toContain(
+        'Shop now',
+      )
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
+  it('exposes pending state from generated Lakebed mutation adapters', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        'root = EcommerceHero("Lakebed Commerce", ["Home"], {"brand":"Lakebed Commerce"})',
+      siteSpecJson: JSON.stringify({ projectName: 'Lakebed Commerce' }),
+      sessionId: 'demo',
+      target: 'lakebed',
+    })
+    const directory = mkdtempSync(join(tmpdir(), 'lakebed-pending-export-'))
+
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-pending.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
 import { useLakebedAdapter } from "./client/lib/lakebed";
 
 function Probe() {
@@ -359,31 +352,31 @@ function Probe() {
 
 render(h(Probe, {}), document.getElementById("app"));
 `,
-        )
-        const bundled = await build({
-          bundle: true,
-          entryPoints: [entryPath],
-          format: 'iife',
-          jsx: 'automatic',
-          jsxImportSource: 'preact',
-          logLevel: 'silent',
-          nodePaths: [join(process.cwd(), 'node_modules')],
-          platform: 'browser',
-          plugins: [
-            {
-              name: 'lakebed-client-stub',
-              setup(pluginBuild) {
-                pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-client-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
                   namespace: 'lakebed-client-stub',
-                  path: 'lakebed/client',
-                }))
-                pluginBuild.onLoad(
-                  {
-                    filter: /^lakebed\/client$/,
-                    namespace: 'lakebed-client-stub',
-                  },
-                  () => ({
-                    contents: `export const Link = ({ children }) => children;
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
@@ -401,59 +394,57 @@ export function useQuery() { return undefined; }
 export function signInWithGoogle() {}
 export function signOut() {}
 `,
-                    loader: 'tsx',
-                  }),
-                )
-              },
+                  loader: 'tsx',
+                }),
+              )
             },
-          ],
-          write: false,
-        })
-        const dom = new JSDOM('<div id="app"></div>', {
-          runScripts: 'outside-only',
-          url: 'https://example.test/',
-        })
+          },
+        ],
+        write: false,
+      })
+      const dom = new JSDOM('<div id="app"></div>', {
+        runScripts: 'outside-only',
+        url: 'https://example.test/',
+      })
 
-        expect(() => dom.window.eval(bundled.outputFiles[0].text)).not.toThrow()
-        const button = Array.from(
-          dom.window.document.querySelectorAll('button'),
-        ).find((candidate): candidate is HTMLButtonElement => {
-          if (typeof candidate !== 'object' || candidate === null) return false
-          if (!(candidate instanceof dom.window.HTMLButtonElement)) return false
-          const textContent = Reflect.get(candidate, 'textContent')
-          return (
-            typeof textContent === 'string' &&
-            textContent.includes('Add to cart')
-          )
-        })
-        expect(button).toBeTruthy()
-
-        button?.dispatchEvent(
-          new dom.window.MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-          }),
+      expect(() => dom.window.eval(bundled.outputFiles[0].text)).not.toThrow()
+      const button = Array.from(
+        dom.window.document.querySelectorAll('button'),
+      ).find((candidate): candidate is HTMLButtonElement => {
+        if (typeof candidate !== 'object' || candidate === null) return false
+        if (!(candidate instanceof dom.window.HTMLButtonElement)) return false
+        const textContent = Reflect.get(candidate, 'textContent')
+        return (
+          typeof textContent === 'string' && textContent.includes('Add to cart')
         )
-        await new Promise((resolve) => setTimeout(resolve, 20))
+      })
+      expect(button).toBeTruthy()
 
-        expect(button?.textContent).toContain('Adding')
-        expect(button?.hasAttribute('disabled')).toBe(true)
-        const resolveAddItemMutation = Reflect.get(
-          dom.window,
-          '__resolveAddItemMutation',
-        )
-        if (typeof resolveAddItemMutation === 'function') {
-          resolveAddItemMutation()
-        }
-        await new Promise((resolve) => setTimeout(resolve, 20))
+      button?.dispatchEvent(
+        new dom.window.MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+      await new Promise((resolve) => setTimeout(resolve, 20))
 
-        expect(button?.textContent).toContain('Add to cart')
-        expect(button?.hasAttribute('disabled')).toBe(false)
-      } finally {
-        rmSync(directory, { force: true, recursive: true })
+      expect(button?.textContent).toContain('Adding')
+      expect(button?.hasAttribute('disabled')).toBe(true)
+      const resolveAddItemMutation = Reflect.get(
+        dom.window,
+        '__resolveAddItemMutation',
+      )
+      if (typeof resolveAddItemMutation === 'function') {
+        resolveAddItemMutation()
       }
-    },
-  )
+      await new Promise((resolve) => setTimeout(resolve, 20))
+
+      expect(button?.textContent).toContain('Add to cart')
+      expect(button?.hasAttribute('disabled')).toBe(false)
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
 
   it('renders generated commerce app with object-shaped Lakebed collection query results', async () => {
     const built = await buildOpenUILakebedProjectFiles({

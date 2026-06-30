@@ -23,6 +23,7 @@ describe('quality gate configuration', () => {
       | undefined
     expect(coverageScript).toBeDefined()
     expect(coverageScript).toContain('--coverage')
+    expect(coverageScript).not.toContain('VITEST_COVERAGE')
 
     // CI must run the coverage script
     expect(ciWorkflow).toContain('test:coverage')

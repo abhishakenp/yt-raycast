@@ -9,8 +9,7 @@ import { changeGroups } from './verify-change-groups'
 function completeTexts() {
   const scripts = {
     'review:groups': 'bun scripts/export-review-groups.ts',
-    'test:coverage':
-      'VITEST_COVERAGE=1 vitest run --config vitest.config.ts --coverage',
+    'test:coverage': 'vitest run --config vitest.config.ts --coverage',
     'verify:change-groups': 'bun scripts/verify-change-groups.ts',
     'verify:change-report':
       'bun scripts/verify-change-groups.ts --check-report',
