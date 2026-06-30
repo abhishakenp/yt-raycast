@@ -37,7 +37,7 @@ This rule exists because claiming unverified fixes wastes time and breaks trust.
 **AFTER implementing:**
 
 1. Write a unit test that covers the fix or restored behavior
-2. Prefer source-level structural assertions (read the file and assert invariants) when testing that a feature gate or code path is present/absent
+2. Write behavioral tests that exercise the actual runtime behavior, public API, rendered DOM, side effects, or generated artifact contract
 3. Run `bun test` and fix any failures BEFORE claiming the work is done
 4. NEVER push without all tests passing
 
@@ -51,8 +51,9 @@ This rule exists because claiming unverified fixes wastes time and breaks trust.
 **Test patterns for this project:**
 
 - Use `vitest` with `describe`/`it`/`expect`
-- Source-level invariant tests: `readFileSync` the source file and assert structural properties (e.g. "file must not contain env var gate X", "file must contain API call Y")
-- Behavioral tests: import the function and test inputs/outputs directly
+- Behavioral tests: import public functions, components, actions, or scripts and test inputs/outputs, rendered DOM, API side effects, command plans, or generated artifacts directly
+- Do NOT add source-assertion/source-grep tests. Tests must not read production source files and assert strings or regexes to prove wiring, branches, imports, or implementation details exist.
+- Reading fixtures, snapshots, generated output, or built artifacts is allowed only when that file content is the runtime artifact under test.
 - Tests live next to the code they cover (`*.test.ts` sibling files)
 
 This rule exists because features keep getting broken by refactors and reimplementations. Unit tests are the permanent guard against regression.

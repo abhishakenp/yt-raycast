@@ -115,6 +115,13 @@ export function verifyQualityExitFromTexts({
     }
   }
 
+  const coverageScript = scripts['test:coverage'] ?? ''
+  if (coverageScript.includes('VITEST_COVERAGE')) {
+    failures.push(
+      'package.json test:coverage must run the coverage suite without VITEST_COVERAGE skips',
+    )
+  }
+
   const assessmentMissing = missingText(assessment, [
     '# Code Quality Assessment Report',
     'Overall Rating:',

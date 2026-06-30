@@ -239,31 +239,4 @@ describe('inline edit persistence — <br> separated text nodes', () => {
     })
     expect(reloaded?.homeModule?.source).toContain('Pizza Delivered NOW')
   })
-
-  // ─────────────────────────────────────────────────────────────────────
-  // SOURCE-LEVEL: verify the diffEdits fallback path exists
-  // The useTextEdit hook's diffEdits function falls back to flattened
-  // textContent when the node structure changes. This is the code path
-  // that produces the unfindable oldText.
-  // ─────────────────────────────────────────────────────────────────────
-
-  it('useTextEdit diffEdits fallback produces textContent-based oldText for <br> edits', async () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/features/editing/hooks/useTextEdit.ts'),
-      'utf-8',
-    )
-
-    // The fallback path: when current.length !== active.originalNodes.length,
-    // it uses element.textContent as oldText
-    expect(source).toContain('flattened')
-    expect(source).toContain('active.element.textContent')
-    expect(source).toContain('active.originalText')
-
-    // The originalText is set from textEl.textContent at activation time
-    expect(source).toContain('const originalText = textEl.textContent')
-
-    // This is the bug: textContent strips <br>, producing a string that
-    // doesn't exist in the stored HTML. There is no <br>-aware fallback
-    // that would search for the individual text fragments instead.
-  })
 })

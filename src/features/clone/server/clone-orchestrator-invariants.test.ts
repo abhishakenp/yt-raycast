@@ -1,352 +1,340 @@
-import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
+import { JSDOM } from 'jsdom'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { CapturedPage } from '@ship-fast/engine/clone/types.ts'
 import {
-  rewriteResidualAnchorNavigation,
   NAV_SHIM_SCRIPT,
+  rewriteResidualAnchorNavigation,
+  selfContainPage,
 } from '@ship-fast/engine/clone/verbatim.ts'
 
-// ---------------------------------------------------------------------------
-// Contract / invariant tests for the clone orchestrator flow.
-//
-// runCloneJob needs a real Playwright browser + Convex client + network, so it
-// cannot be exercised directly here. Instead we assert the SOURCE-LEVEL
-// structural contract (the flow must call the right engine stages, persist the
-// expected page shape, guard SSRF, self-contain, and apply targeted edits) and
-// we behaviorally test the PURE self-containment primitive that the orchestrator
-// depends on (rewriteResidualAnchorNavigation + NAV_SHIM_SCRIPT) to prove the
-// "self-contained, no escape back to source domain" invariant holds.
-// ---------------------------------------------------------------------------
+import { runCloneJob } from './clone-orchestrator-response'
+import { runTargetedEdits } from './targeted-edit-pass'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const readSrc = (rel: string): string =>
-  readFileSync(path.resolve(__dirname, rel), 'utf-8')
+const cloneMocks = vi.hoisted(() => {
+  const browser = {
+    close: vi.fn().mockResolvedValue(undefined),
+  }
+  return {
+    assertPublicUrl: vi.fn().mockResolvedValue(undefined),
+    browser,
+    capturePage: vi.fn(),
+    client: {
+      mutation: vi.fn(),
+      setAuth: vi.fn(),
+    },
+    crawlSite: vi.fn(),
+    generateText: vi.fn(),
+    launch: vi.fn().mockResolvedValue(browser),
+    normalizeUrl: vi.fn((url: string) => new URL(url).toString()),
+  }
+})
 
-const ORCHESTRATOR_SRC = readSrc('./clone-orchestrator-response.ts')
-const EDIT_PASS_SRC = readSrc('./targeted-edit-pass.ts')
-const VERBATIM_SRC = readSrc(
-  '../../../../packages/ship-fast-engine/src/clone/verbatim.ts',
-)
+vi.mock('@/shared/convex/http-client', () => ({
+  createRuntimeConvexHttpClient: () => cloneMocks.client,
+}))
 
-describe('clone orchestrator source contract', () => {
-  it('exports runCloneJob as the server entry point', () => {
-    expect(ORCHESTRATOR_SRC).toContain('export async function runCloneJob')
-  })
+vi.mock('@ship-fast/engine/clone/security.ts', () => ({
+  assertPublicUrl: cloneMocks.assertPublicUrl,
+}))
 
-  it('accepts the documented input shape (sessionId, seedUrl, brief, bearer, anonymousOwnerSecret)', () => {
-    expect(ORCHESTRATOR_SRC).toMatch(/sessionId:\s*string/)
-    expect(ORCHESTRATOR_SRC).toMatch(/seedUrl:\s*string/)
-    expect(ORCHESTRATOR_SRC).toMatch(/brief:\s*string/)
-    expect(ORCHESTRATOR_SRC).toMatch(/anonymousOwnerSecret\?:\s*string/)
-    expect(ORCHESTRATOR_SRC).toMatch(/bearer\?:\s*string/)
-  })
+vi.mock('@ship-fast/engine/clone/crawler.ts', () => ({
+  crawlSite: cloneMocks.crawlSite,
+  normalizeUrl: cloneMocks.normalizeUrl,
+}))
 
-  it('SSRF-guards the seed url before any crawl (assertPublicUrl)', () => {
-    expect(ORCHESTRATOR_SRC).toContain('assertPublicUrl')
-    expect(ORCHESTRATOR_SRC).toMatch(/await engine\.assertPublicUrl\(seedUrl\)/)
-  })
+vi.mock('@ship-fast/engine/clone/capture.ts', () => ({
+  capturePage: cloneMocks.capturePage,
+}))
 
-  it('loads the clone engine via dynamic import (keeps playwright out of the static graph)', () => {
-    expect(ORCHESTRATOR_SRC).toContain(
-      "import('@ship-fast/engine/clone/security.ts')",
+vi.mock('@ship-fast/engine', () => ({
+  generateText: cloneMocks.generateText,
+}))
+
+vi.mock('@ship-fast/engine/model-list.js', () => ({
+  DEFAULT_MODEL: 'mock-model',
+}))
+
+vi.mock('playwright', () => ({
+  chromium: {
+    launch: cloneMocks.launch,
+  },
+}))
+
+const capturedPage = (url: string, title: string): CapturedPage => ({
+  url,
+  normalizedUrl: url,
+  html: `<!doctype html><html><head><title>${title}</title></head><body><h1>${title}</h1><a href="/contact">Contact</a></body></html>`,
+  computedStyles: new Map(),
+  bboxes: new Map(),
+  assetUrls: [],
+})
+
+const mutationArgs = () =>
+  cloneMocks.client.mutation.mock.calls.map(([, args]) => args)
+
+describe('clone orchestrator behavior', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    cloneMocks.browser.close.mockResolvedValue(undefined)
+    cloneMocks.client.mutation.mockResolvedValue(null)
+    cloneMocks.crawlSite.mockResolvedValue({
+      pages: new Map([
+        ['https://example.com/', { html: '<html></html>', depth: 0 }],
+        ['https://example.com/about', { html: '<html></html>', depth: 1 }],
+      ]),
+    })
+    cloneMocks.capturePage.mockImplementation(
+      async (_browser: unknown, url: string) =>
+        capturedPage(
+          url,
+          url.endsWith('/about') ? 'About Title' : 'Home Title',
+        ),
     )
-    expect(ORCHESTRATOR_SRC).toContain(
-      "import('@ship-fast/engine/clone/crawler.ts')",
-    )
-    expect(ORCHESTRATOR_SRC).toContain(
-      "import('@ship-fast/engine/clone/capture.ts')",
-    )
-    expect(ORCHESTRATOR_SRC).toContain(
-      "import('@ship-fast/engine/clone/verbatim.ts')",
-    )
-  })
-
-  it('launches the browser exactly once and always closes it in finally', () => {
-    expect(ORCHESTRATOR_SRC).toMatch(/pw\.chromum\.launch|chromium\.launch/)
-    expect(ORCHESTRATOR_SRC).toMatch(/chromium\.launch\(/)
-    // The single launch is followed by a finally that closes the browser.
-    expect(ORCHESTRATOR_SRC).toContain('} finally {')
-    expect(ORCHESTRATOR_SRC).toMatch(/await browser\.close\(\)/)
-  })
-
-  it('captures HOME first, persists it, then finalizes the preview before the rest stream in', () => {
-    expect(ORCHESTRATOR_SRC).toContain('orderPages')
-    expect(ORCHESTRATOR_SRC).toMatch(/isHome:\s*true/)
-    expect(ORCHESTRATOR_SRC).toContain('finalizeClonePreview')
-    // The rest are captured after finalize, with isHome: false.
-    expect(ORCHESTRATOR_SRC).toMatch(/isHome:\s*false/)
-  })
-
-  it('self-contains every captured page before persisting', () => {
-    expect(ORCHESTRATOR_SRC).toMatch(/engine\.selfContainPage\(/)
-    // Both home and rest paths call selfContainPage.
-    const matches = ORCHESTRATOR_SRC.match(/selfContainPage\(/g) ?? []
-    expect(matches.length).toBeGreaterThanOrEqual(2)
-  })
-
-  it('persists pages with the expected page-doc shape', () => {
-    const requiredFields = [
-      'pathname',
-      'title',
-      'html',
-      'isHome',
-      'failed',
-      'order',
-      'byteLength',
-      'truncated',
-    ]
-    for (const field of requiredFields) {
-      expect(ORCHESTRATOR_SRC).toContain(field)
-    }
-    // Large pages spill to Convex file storage via a storageId.
-    expect(ORCHESTRATOR_SRC).toContain('storageId')
-    expect(ORCHESTRATOR_SRC).toContain('generateCloneUploadUrl')
-    expect(ORCHESTRATOR_SRC).toContain('STORAGE_THRESHOLD_BYTES')
-  })
-
-  it('writes page docs through the Convex writeClonePageDoc mutation', () => {
-    expect(ORCHESTRATOR_SRC).toContain('api.sessions.writeClonePageDoc')
-  })
-
-  it('bounds the job with an overall wall-clock abort timer', () => {
-    expect(ORCHESTRATOR_SRC).toContain('JOB_TIMEOUT_MS')
-    expect(ORCHESTRATOR_SRC).toContain('AbortController')
-    expect(ORCHESTRATOR_SRC).toMatch(
-      /setTimeout\(\(\)\s*=>\s*controller\.abort\(\)/,
+    cloneMocks.generateText.mockResolvedValue(
+      JSON.stringify([{ before: 'Home Title', after: 'Edited Home Title' }]),
     )
   })
 
-  it('never aborts the whole batch on a single page capture failure', () => {
-    // Each capture path writes a failed doc and continues; the catch never rethrows.
-    expect(ORCHESTRATOR_SRC).toMatch(/failed:\s*true/)
-    expect(ORCHESTRATOR_SRC).toContain('.catch(() => undefined)')
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
-  it('runs prompt-driven targeted edits only after home is finalized + homeHtml exists + brief is non-empty', () => {
-    expect(ORCHESTRATOR_SRC).toContain('runTargetedEdits')
-    expect(ORCHESTRATOR_SRC).toMatch(
-      /if\s*\(finalized\s*&&\s*homeHtml\s*&&\s*brief\.trim\(\)\)/,
+  it('guards the seed URL, writes home first, finalizes before rest pages, applies targeted edits, and closes the browser', async () => {
+    await runCloneJob({
+      sessionId: 'clone-session',
+      anonymousOwnerSecret: 'owner-secret',
+      bearer: 'bearer-token',
+      seedUrl: 'https://example.com/',
+      brief: 'Rename the home title',
+    })
+
+    expect(cloneMocks.assertPublicUrl).toHaveBeenCalledWith(
+      'https://example.com/',
     )
+    expect(cloneMocks.client.setAuth).toHaveBeenCalledWith('bearer-token')
+    expect(cloneMocks.launch).toHaveBeenCalledTimes(1)
+    expect(cloneMocks.browser.close).toHaveBeenCalledTimes(1)
+
+    const args = mutationArgs()
+    const homeWriteIndex = args.findIndex(
+      (arg) => arg?.isHome === true && arg?.order === 0,
+    )
+    const finalizeIndex = args.findIndex(
+      (arg) =>
+        arg?.sessionId === 'clone-session' &&
+        arg?.anonymousOwnerSecret === 'owner-secret' &&
+        !('isHome' in arg) &&
+        !('editType' in arg),
+    )
+    const restWriteIndex = args.findIndex(
+      (arg) => arg?.isHome === false && arg?.order === 1,
+    )
+    const editIndex = args.findIndex((arg) => arg?.editType === 'text')
+
+    expect(homeWriteIndex).toBeGreaterThanOrEqual(0)
+    expect(finalizeIndex).toBeGreaterThan(homeWriteIndex)
+    expect(restWriteIndex).toBeGreaterThan(finalizeIndex)
+    expect(editIndex).toBeGreaterThan(finalizeIndex)
+    expect(args[homeWriteIndex]).toMatchObject({
+      sessionId: 'clone-session',
+      anonymousOwnerSecret: 'owner-secret',
+      pathname: '/',
+      title: 'Home Title',
+      isHome: true,
+      failed: false,
+      order: 0,
+      truncated: false,
+    })
+    expect(args[editIndex]).toMatchObject({
+      sessionId: 'clone-session',
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'text',
+      beforeText: 'Home Title',
+      afterText: 'Edited Home Title',
+    })
   })
 
-  it('is generic — contains no per-site / slug conditionals', () => {
-    // No hardcoded site names or slug branches in the orchestrator.
-    expect(ORCHESTRATOR_SRC).not.toMatch(/if\s*\(\s*seedUrl\.includes\(['"]/)
-    expect(ORCHESTRATOR_SRC).not.toContain('blog-dogs')
-    expect(ORCHESTRATOR_SRC).not.toContain('Paws & Tales')
+  it('persists failed rest pages and keeps the clone job alive when one capture fails', async () => {
+    cloneMocks.capturePage.mockImplementation(
+      async (_browser: unknown, url: string) => {
+        if (url.endsWith('/about')) throw new Error('capture failed')
+        return capturedPage(url, 'Home Title')
+      },
+    )
+
+    await runCloneJob({
+      sessionId: 'clone-session',
+      seedUrl: 'https://example.com/',
+      brief: '',
+    })
+
+    expect(cloneMocks.browser.close).toHaveBeenCalledTimes(1)
+    expect(mutationArgs()).toContainEqual(
+      expect.objectContaining({
+        pathname: 'https://example.com/about',
+        isHome: false,
+        failed: true,
+        order: 1,
+        byteLength: 0,
+      }),
+    )
   })
 })
 
-describe('targeted edit pass source contract', () => {
-  it('exports runTargetedEdits', () => {
-    expect(EDIT_PASS_SRC).toContain('export async function runTargetedEdits')
-  })
-
-  it('caps ops and candidates to bounded constants', () => {
-    expect(EDIT_PASS_SRC).toMatch(/MAX_OPS\s*=\s*12/)
-    expect(EDIT_PASS_SRC).toMatch(/MAX_CANDIDATES\s*=\s*40/)
-    expect(EDIT_PASS_SRC).toMatch(/MAX_CANDIDATE_CHARS\s*=\s*160/)
-  })
-
-  it('bounds the edit pass with its own timeout', () => {
-    expect(EDIT_PASS_SRC).toMatch(/EDIT_PASS_TIMEOUT_MS\s*=\s*25_000/)
-    expect(EDIT_PASS_SRC).toContain('AbortController')
-  })
-
-  it('is a no-op when the brief is empty/whitespace', () => {
-    expect(EDIT_PASS_SRC).toMatch(/if\s*\(!trimmedBrief\)\s*return/)
-  })
-
-  it('extracts candidates from the cloned home html (title, h1-h3, hero/CTA, brand)', () => {
-    expect(EDIT_PASS_SRC).toContain('extractCandidates')
-    expect(EDIT_PASS_SRC).toContain("querySelector('title')")
-    for (const sel of ['h1', 'h2', 'h3']) {
-      expect(EDIT_PASS_SRC).toContain(`'${sel}'`)
-    }
-    expect(EDIT_PASS_SRC).toContain('button')
-    expect(EDIT_PASS_SRC).toContain('header')
-    expect(EDIT_PASS_SRC).toContain('nav')
-  })
-
-  it('tolerantly parses the model JSON array (strips code fences, extracts first [...])', () => {
-    expect(EDIT_PASS_SRC).toContain('parseReplaceOps')
-    expect(EDIT_PASS_SRC).toMatch(/```(?:json)?/)
-    expect(EDIT_PASS_SRC).toMatch(/indexOf\('\['\)/)
-    expect(EDIT_PASS_SRC).toMatch(/lastIndexOf\('\]'\)/)
-  })
-
-  it('verifies every `before` literally appears in homeHtml before applying (no hallucinated edits)', () => {
-    expect(EDIT_PASS_SRC).toContain('homeHtml.includes(op.before)')
-  })
-
-  it('skips empty, identical, and duplicate ops', () => {
-    expect(EDIT_PASS_SRC).toMatch(/op\.before\s*===\s*op\.after/)
-    expect(EDIT_PASS_SRC).toMatch(/applied\.has\(op\.before\)/)
-  })
-
-  it('applies edits as text edits via createEdit', () => {
-    expect(EDIT_PASS_SRC).toContain('api.sessions.createEdit')
-    expect(EDIT_PASS_SRC).toMatch(/editType:\s*'text'/)
-    expect(EDIT_PASS_SRC).toMatch(/beforeText:\s*op\.before/)
-    expect(EDIT_PASS_SRC).toMatch(/afterText:\s*op\.after/)
-  })
-
-  it('never aborts the pass on a single failed edit', () => {
-    expect(EDIT_PASS_SRC).toContain('A single failed edit must not abort')
-    // The apply loop wraps each mutation in try/catch and continues.
-    expect(EDIT_PASS_SRC).toMatch(/targeted-edit apply failed/)
-  })
-
-  it('restricts the model to brand/heading/tagline/hero/CTA copy only', () => {
-    expect(EDIT_PASS_SRC).toContain('brand names')
-    expect(EDIT_PASS_SRC).toContain('headings')
-    expect(EDIT_PASS_SRC).toContain('taglines')
-    expect(EDIT_PASS_SRC).toContain('hero/CTA')
-  })
-})
-
-describe('self-containment engine source contract (verbatim.ts)', () => {
-  it('exports selfContainPage and the nav shim', () => {
-    expect(VERBATIM_SRC).toContain('export async function selfContainPage')
-    expect(VERBATIM_SRC).toContain('export const NAV_SHIM_SCRIPT')
-    expect(VERBATIM_SRC).toContain(
-      'export function rewriteResidualAnchorNavigation',
+describe('targeted edit pass behavior', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    cloneMocks.generateText.mockResolvedValue(
+      [
+        '```json',
+        '[',
+        '{"before":"Original Brand","after":"New Brand"},',
+        '{"before":"Buy now","after":"Start today"},',
+        '{"before":"Missing copy","after":"Ignored"},',
+        '{"before":"Original Brand","after":"Duplicate ignored"},',
+        '{"before":"Same","after":"Same"}',
+        ']',
+        '```',
+      ].join('\n'),
     )
   })
 
-  it('strips ALL source scripts and on* handlers (only the nav shim remains)', () => {
-    expect(VERBATIM_SRC).toMatch(
-      /for\s*\(const script of[^)]*querySelectorAll\('script'\)\)/,
+  it('extracts visible candidates, parses fenced JSON, skips unsafe ops, and streams valid text edits', async () => {
+    const mutation = vi.fn().mockResolvedValue(null)
+
+    await runTargetedEdits({
+      client: { mutation },
+      sessionId: 'clone-session',
+      anonymousOwnerSecret: 'owner-secret',
+      brief: 'Rename brand and CTA',
+      homeHtml:
+        '<html><head><title>Original Brand</title></head><body><h1>Original Brand</h1><button>Buy now</button><p>Same</p></body></html>',
+    })
+
+    expect(cloneMocks.generateText).toHaveBeenCalledWith(
+      'mock-model',
+      expect.stringContaining('brand names'),
+      expect.stringContaining('Original Brand'),
+      expect.any(AbortSignal),
     )
-    expect(VERBATIM_SRC).toMatch(/script\.remove\(\)/)
-    expect(VERBATIM_SRC).toMatch(/\/\^on\/i/)
-    expect(VERBATIM_SRC).toMatch(/removeAttribute\(name\)/)
+    expect(mutation).toHaveBeenCalledTimes(2)
+    expect(mutation.mock.calls.map(([, args]) => args)).toEqual([
+      expect.objectContaining({
+        sessionId: 'clone-session',
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'text',
+        beforeText: 'Original Brand',
+        afterText: 'New Brand',
+      }),
+      expect.objectContaining({
+        sessionId: 'clone-session',
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'text',
+        beforeText: 'Buy now',
+        afterText: 'Start today',
+      }),
+    ])
   })
 
-  it('inlines external stylesheets and processes inline <style> blocks', () => {
-    expect(VERBATIM_SRC).toContain("rel.split(/\\s+/).includes('stylesheet')")
-    expect(VERBATIM_SRC).toMatch(/link\.replaceWith\(styleEl\)/)
-    expect(VERBATIM_SRC).toContain('processCss')
-  })
+  it('does not call the model or mutate when the brief is blank', async () => {
+    const mutation = vi.fn()
 
-  it('absolutizes asset urls (img/source/link/use, inline style url())', () => {
-    expect(VERBATIM_SRC).toContain('toAbsolute')
-    expect(VERBATIM_SRC).toContain('absolutizeSrcset')
-    expect(VERBATIM_SRC).toContain('absolutizeCssUrls')
-  })
+    await runTargetedEdits({
+      client: { mutation },
+      sessionId: 'clone-session',
+      brief: '   ',
+      homeHtml: '<h1>Original Brand</h1>',
+    })
 
-  it('rewrites http(s) anchors into clone-nav anchors (no escape back to source)', () => {
-    expect(VERBATIM_SRC).toContain('data-clone-path')
-    expect(VERBATIM_SRC).toContain('data-clone-abs')
-    expect(VERBATIM_SRC).toMatch(/setAttribute\('href',\s*'#'\)/)
-  })
-
-  it('SSRF-guards every network egress in the self-containment layer', () => {
-    expect(VERBATIM_SRC).toContain('assertPublicUrl')
-    expect(VERBATIM_SRC).toContain('safeFetch')
-  })
-
-  it('returns the self-contained page shape the orchestrator persists', () => {
-    expect(VERBATIM_SRC).toMatch(/pathname:\s*string/)
-    expect(VERBATIM_SRC).toMatch(/title:\s*string/)
-    expect(VERBATIM_SRC).toMatch(/html:\s*string/)
-    expect(VERBATIM_SRC).toMatch(/byteLength:\s*number/)
-    expect(VERBATIM_SRC).toMatch(/truncated:\s*boolean/)
+    expect(cloneMocks.generateText).not.toHaveBeenCalled()
+    expect(mutation).not.toHaveBeenCalled()
   })
 })
 
-describe('rewriteResidualAnchorNavigation — self-containment invariant', () => {
+describe('self-containment behavior', () => {
   const finalUrl = 'https://example.com/about'
   const finalHost = 'example.com'
 
-  it('rewrites same-origin http anchors to # with data-clone-path + data-clone-abs and strips target/rel', () => {
-    const html = `<a href="https://example.com/contact" target="_blank" rel="noopener">Contact</a>`
-    const out = rewriteResidualAnchorNavigation(html, finalUrl, finalHost)
-    expect(out).toContain('href="#"')
-    expect(out).toContain('data-clone-path="/contact"')
-    expect(out).toContain('data-clone-abs="https://example.com/contact"')
-    expect(out).not.toContain('target=')
-    expect(out).not.toContain('rel=')
-    // No surviving http(s) href that could navigate back to the source.
-    expect(out).not.toMatch(/href="https?:\/\//i)
+  it('self-contains a captured page by stripping scripts and event handlers, absolutizing assets, and rewriting navigable anchors', async () => {
+    const result = await selfContainPage(
+      {
+        url: finalUrl,
+        normalizedUrl: finalUrl,
+        html: [
+          '<!doctype html><html><head><title>About</title>',
+          '<style>.hero{background:url("/hero.png")}</style>',
+          '<script>window.sourceSiteRan = true</script>',
+          '</head><body onload="sourceSiteRan()">',
+          '<img src="/logo.png" srcset="/small.png 1x, /large.png 2x">',
+          '<a href="https://example.com/contact" target="_blank" rel="noopener">Contact</a>',
+          '<a href="https://external.test/page">External</a>',
+          '<a href="mailto:hello@example.com">Mail</a>',
+          '</body></html>',
+        ].join(''),
+        computedStyles: new Map(),
+        bboxes: new Map(),
+        assetUrls: [],
+      },
+      { finalUrl, fetchImpl: vi.fn() as unknown as typeof fetch },
+    )
+
+    expect(result).toMatchObject({
+      pathname: '/about',
+      title: 'About',
+      truncated: false,
+    })
+    expect(result.byteLength).toBeGreaterThan(0)
+    expect(result.html).not.toContain('window.sourceSiteRan')
+    expect(result.html).not.toContain('onload=')
+    expect(result.html).toContain('src="https://example.com/logo.png"')
+    expect(result.html).toContain('https://example.com/small.png 1x')
+    expect(result.html).toContain('url("https://example.com/hero.png")')
+    expect(result.html).toContain('href="#"')
+    expect(result.html).toContain('data-clone-path="/contact"')
+    expect(result.html).toContain('data-clone-abs="https://external.test/page"')
+    expect(result.html).toContain('href="mailto:hello@example.com"')
+    expect(result.html).not.toMatch(/href="https?:\/\//i)
   })
 
-  it('rewrites external http anchors to # with data-clone-abs only (no data-clone-path)', () => {
-    const html = `<a href="https://other.site/x">External</a>`
-    const out = rewriteResidualAnchorNavigation(html, finalUrl, finalHost)
-    expect(out).toContain('href="#"')
-    expect(out).toContain('data-clone-abs="https://other.site/x"')
-    expect(out).not.toContain('data-clone-path')
-    expect(out).not.toMatch(/href="https?:\/\//i)
-  })
+  it('rewrites residual same-origin and external anchors without leaving http href escape hatches', () => {
+    const out = rewriteResidualAnchorNavigation(
+      '<a href="/pricing">Pricing</a><a href="https://other.site/x">External</a>',
+      finalUrl,
+      finalHost,
+    )
 
-  it('leaves non-http anchors (mailto, tel, #, data:) untouched', () => {
-    const html =
-      `<a href="mailto:a@b.com">mail</a>` +
-      `<a href="tel:+1">tel</a>` +
-      `<a href="#section">hash</a>` +
-      `<a href="data:text/plain,hi">data</a>`
-    const out = rewriteResidualAnchorNavigation(html, finalUrl, finalHost)
-    expect(out).toContain('href="mailto:a@b.com"')
-    expect(out).toContain('href="tel:+1"')
-    expect(out).toContain('href="#section"')
-    expect(out).toContain('href="data:text/plain,hi"')
-  })
-
-  it('resolves relative anchors against finalUrl before classifying origin', () => {
-    const html = `<a href="/pricing">Pricing</a>`
-    const out = rewriteResidualAnchorNavigation(html, finalUrl, finalHost)
-    expect(out).toContain('href="#"')
     expect(out).toContain('data-clone-path="/pricing"')
-    expect(out).toContain('data-clone-abs="https://example.com/pricing"')
+    expect(out).toContain('data-clone-abs="https://other.site/x"')
+    expect(out.match(/href="https?:\/\/[^"]*"/gi) ?? []).toHaveLength(0)
   })
 
-  it('produces zero surviving http(s) hrefs across a mixed anchor set', () => {
-    const html =
-      `<a href="https://example.com/a">a</a>` +
-      `<a href="https://other.com/b">b</a>` +
-      `<a href="/c">c</a>` +
-      `<a href="#d">d</a>` +
-      `<a href="mailto:e@f.com">e</a>`
-    const out = rewriteResidualAnchorNavigation(html, finalUrl, finalHost)
-    const surviving = out.match(/href="https?:\/\/[^"]*"/gi) ?? []
-    expect(surviving).toHaveLength(0)
-  })
+  it('nav shim posts clone navigation messages instead of navigating', () => {
+    const dom = new JSDOM(
+      '<a href="#" data-clone-path="/pricing" data-clone-abs="https://example.com/pricing">Pricing</a>',
+      { runScripts: 'outside-only', url: finalUrl },
+    )
+    const postMessage = vi.fn()
+    Object.defineProperty(dom.window, 'parent', {
+      configurable: true,
+      value: { postMessage },
+    })
 
-  it('does not reference the source domain as a navigable href anywhere in output', () => {
-    const html = `<a href="https://example.com/secret">x</a><a href="https://example.com/other">y</a>`
-    const out = rewriteResidualAnchorNavigation(html, finalUrl, finalHost)
-    // The source host may appear inside data-clone-abs (intentional, for nav),
-    // but must NEVER appear as a navigable href.
-    expect(out).not.toMatch(/href="https?:\/\/example\.com/i)
-  })
-})
+    dom.window.eval(NAV_SHIM_SCRIPT)
+    const event = new dom.window.MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    })
+    dom.window.document.querySelector('a')?.dispatchEvent(event)
 
-describe('NAV_SHIM_SCRIPT — clone nav shim invariant', () => {
-  it('is a self-invoking script that postMessages ship-clone-nav to the parent', () => {
-    expect(NAV_SHIM_SCRIPT).toMatch(/^\(function\(\)\{/)
-    expect(NAV_SHIM_SCRIPT).toContain('ship-clone-nav')
-    expect(NAV_SHIM_SCRIPT).toContain('window.parent.postMessage')
-    expect(NAV_SHIM_SRC()).toContain('data-clone-path')
-    expect(NAV_SHIM_SRC()).toContain('data-clone-abs')
-  })
-
-  it('does not fetch from or reference any source domain (offline-renderable)', () => {
-    expect(NAV_SHIM_SCRIPT).not.toMatch(/fetch\(/)
-    expect(NAV_SHIM_SCRIPT).not.toMatch(/XMLHttpRequest/)
-    expect(NAV_SHIM_SCRIPT).not.toMatch(/https?:\/\//i)
-  })
-
-  it('only prevents default + toggles UI state; never navigates the top window', () => {
-    expect(NAV_SHIM_SCRIPT).toContain('e.preventDefault()')
-    expect(NAV_SHIM_SCRIPT).not.toMatch(/window\.location\s*=/)
-    expect(NAV_SHIM_SCRIPT).not.toMatch(/location\.href\s*=/)
+    expect(event.defaultPrevented).toBe(true)
+    expect(postMessage).toHaveBeenCalledWith(
+      {
+        type: 'ship-clone-nav',
+        path: '/pricing',
+        abs: 'https://example.com/pricing',
+      },
+      '*',
+    )
   })
 })
-
-// small helper so we can assert on the shim source without re-reading the file
-function NAV_SHIM_SRC(): string {
-  return NAV_SHIM_SCRIPT
-}

@@ -2,7 +2,6 @@
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import { createElement } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { readFileSync } from 'node:fs'
 
 import { InlineEditToolbar } from './InlineEditToolbar'
 
@@ -567,20 +566,5 @@ describe('InlineEditToolbar — copy/paste style', () => {
     expect(activeElement.getAttribute('style')).toBe(
       'color: blue; font-weight: 700',
     )
-  })
-
-  // Source-level invariant: handleClickOutside must recognize AlertDialog
-  // portals so the delete confirmation dialog doesn't close the toolbar.
-  // Regression guard for the delete-button-broken bug.
-  it('source invariant: handleClickOutside checks [role=alertdialog]', () => {
-    const source = readFileSync(
-      require.resolve('./InlineEditToolbar.tsx'),
-      'utf-8',
-    )
-    const outsideSection = source.slice(
-      source.indexOf('handleClickOutside'),
-      source.indexOf('document.addEventListener'),
-    )
-    expect(outsideSection).toContain('[role="alertdialog"]')
   })
 })

@@ -57,6 +57,8 @@ export const changeGroups: ChangeGroup[] = [
     title: 'Quality gates and local enforcement',
     patterns: [
       /^\.claude\/skills\//,
+      /^AGENTS\.md$/,
+      /^CLAUDE\.md$/,
       /^skills-lock\.json$/,
       /^\.github\/workflows\/ci\.yml$/,
       /^\.githooks\//,
@@ -92,7 +94,7 @@ export const changeGroups: ChangeGroup[] = [
       /^src\/features\/exports\/services\/(?:export-engine-contract|export-library-manifest-sync|export-artifact-build-contract|export-fixture-contract|export-localization-cms-commerce-contract|export-session-corpus)\.test\.ts$/,
       /^src\/features\/exports\/services\/section-kit-render\.(?:test\.)?ts$/,
       /^src\/features\/generation\/components\/GeneratedModulePreview\.(?:(?:behavioral\.)?test\.)?tsx$/,
-      /^src\/features\/generation\/server\/engine-selector\.ts$/,
+      /^src\/features\/generation\/server\/engine-selector\.(?:test\.)?ts$/,
       /^src\/island\/openui\//,
       /^public\/scripts\/tailwind-browser\.js$/,
       /^public\/styles\/openui-preview-tailwind\.css$/,
