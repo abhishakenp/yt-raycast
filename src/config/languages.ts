@@ -21,58 +21,6 @@ export const HINGLISH_LANGUAGE: LanguageEntry = {
   ],
 }
 
-export const BROWSER_NATIVE_LANGUAGES: LanguageEntry[] = [
-  {
-    code: 'lt',
-    name: 'Lithuanian',
-    nativeName: 'Lietuvių',
-    fontFamily: 'Inter, system-ui, sans-serif',
-    keywords: ['lithuanian', 'lietuvių', 'lietuviu', 'lt'],
-  },
-  {
-    code: 'es-MX',
-    name: 'Mexican Spanish',
-    nativeName: 'Español (México)',
-    fontFamily: 'Inter, system-ui, sans-serif',
-    keywords: ['mexican', 'mexican spanish', 'spanish mexico', 'es-mx'],
-  },
-  {
-    code: 'hu',
-    name: 'Hungarian',
-    nativeName: 'Magyar',
-    fontFamily: 'Inter, system-ui, sans-serif',
-    keywords: ['hungarian', 'magyar', 'hu'],
-  },
-  {
-    code: 'ja',
-    name: 'Japanese',
-    nativeName: '日本語',
-    fontFamily: 'Noto Sans JP, sans-serif',
-    keywords: ['japanese', '日本語', 'nihongo', 'ja'],
-  },
-  {
-    code: 'zh',
-    name: 'Chinese',
-    nativeName: '中文',
-    fontFamily: 'Noto Sans SC, sans-serif',
-    keywords: ['chinese', 'mandarin', '中文', 'zh'],
-  },
-  {
-    code: 'ko',
-    name: 'Korean',
-    nativeName: '한국어',
-    fontFamily: 'Noto Sans KR, sans-serif',
-    keywords: ['korean', '한국어', 'ko'],
-  },
-  {
-    code: 'am',
-    name: 'Amharic',
-    nativeName: 'አማርኛ',
-    fontFamily: 'Noto Sans Ethiopic, sans-serif',
-    keywords: ['amharic', 'አማርኛ', 'am'],
-  },
-]
-
 export const INDIC_PURE_LANGUAGES: LanguageEntry[] = [
   {
     code: 'hi',
@@ -468,7 +416,6 @@ export const PROMPT_DETECT_LANGUAGES = [
 
 export const KNOWN_LANGUAGES = [
   HINGLISH_LANGUAGE,
-  ...BROWSER_NATIVE_LANGUAGES,
   ...INDIC_PURE_LANGUAGES,
   ...MIXED_ENGLISH_LANGUAGES,
   ...ROMANIZED_LATIN_LANGUAGES,

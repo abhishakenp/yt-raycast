@@ -20,6 +20,7 @@ import {
 import { ScrollArea } from '../../components/ui/scroll-area'
 import { Input } from '../../components/ui/input'
 import { KNOWN_LANGUAGES, type LanguageEntry } from '../../config/languages'
+import { resolveBrowserNativeLanguage } from '../../features/localization/browser-native-language'
 import { api } from '../../../convex/_generated/api'
 import { cn } from '../../lib/utils'
 
@@ -159,10 +160,20 @@ export default function LanguagePicker({
       return
     }
 
-    // 2. No match — ask the AI to generate the native name + persist it.
+    // 2. If the browser can translate this language locally, use that locale
+    // directly and skip Convex/AI entirely.
     setIsResolving(true)
     setResolveError(null)
     try {
+      const browserNative = await resolveBrowserNativeLanguage(trimmed)
+      if (browserNative?.code) {
+        onSelect(browserNative.code)
+        setCustomLanguage('')
+        return
+      }
+
+      // 3. No browser-native match — ask the AI to generate metadata and
+      // persist it for future search.
       const result = await resolveOrCreate({ languageInput: trimmed })
       if (result?.code) {
         onSelect(result.code)

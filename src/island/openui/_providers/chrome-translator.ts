@@ -81,6 +81,36 @@ export function canUseChromeTranslator(locale: string): boolean {
   )
 }
 
+export async function getChromeTranslatorAvailability(
+  locale: string,
+): Promise<TranslatorAvailability | null> {
+  if (!canUseChromeTranslator(locale)) return null
+  const target = normalizeNativeLocaleForBrowser(locale)
+  const factory = getFactory()
+  if (!factory) return null
+  const key = `${SOURCE}>${target}`
+  let avail = availabilityCache.get(key)
+  if (!avail) {
+    avail = factory.availability({
+      sourceLanguage: SOURCE,
+      targetLanguage: target,
+    })
+    availabilityCache.set(key, avail)
+  }
+  try {
+    return await avail
+  } catch {
+    return null
+  }
+}
+
+export async function isChromeTranslatorLocaleAvailable(
+  locale: string,
+): Promise<boolean> {
+  const status = await getChromeTranslatorAvailability(locale)
+  return Boolean(status && status !== 'unavailable')
+}
+
 async function getTranslator(target: string): Promise<ChromeTranslator | null> {
   const factory = getFactory()
   if (!factory) return null
@@ -90,16 +120,8 @@ async function getTranslator(target: string): Promise<ChromeTranslator | null> {
 
   const created = (async () => {
     try {
-      let avail = availabilityCache.get(key)
-      if (!avail) {
-        avail = factory.availability({
-          sourceLanguage: SOURCE,
-          targetLanguage: target,
-        })
-        availabilityCache.set(key, avail)
-      }
-      const status = await avail
-      if (status === 'unavailable') return null
+      const status = await getChromeTranslatorAvailability(target)
+      if (!status || status === 'unavailable') return null
       // 'available' | 'downloadable' | 'downloading' → attempt create. A
       // 'downloadable' model may require a user gesture; if create() rejects we
       // cache the null and let the LLM take over for this session.

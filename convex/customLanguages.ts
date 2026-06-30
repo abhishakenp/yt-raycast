@@ -136,86 +136,7 @@ interface AiLanguageResult {
 const CANONICAL_LANGUAGE_METADATA: Record<
   string,
   { code: string; name: string; nativeName: string; fontFamily: string }
-> = {
-  lithuanian: {
-    code: 'lt',
-    name: 'Lithuanian',
-    nativeName: 'Lietuvių',
-    fontFamily: 'Inter, system-ui, sans-serif',
-  },
-  lietuvių: {
-    code: 'lt',
-    name: 'Lithuanian',
-    nativeName: 'Lietuvių',
-    fontFamily: 'Inter, system-ui, sans-serif',
-  },
-  lietuviu: {
-    code: 'lt',
-    name: 'Lithuanian',
-    nativeName: 'Lietuvių',
-    fontFamily: 'Inter, system-ui, sans-serif',
-  },
-  mexican: {
-    code: 'es-MX',
-    name: 'Mexican Spanish',
-    nativeName: 'Español (México)',
-    fontFamily: 'Inter, system-ui, sans-serif',
-  },
-  'mexican spanish': {
-    code: 'es-MX',
-    name: 'Mexican Spanish',
-    nativeName: 'Español (México)',
-    fontFamily: 'Inter, system-ui, sans-serif',
-  },
-  'spanish mexico': {
-    code: 'es-MX',
-    name: 'Mexican Spanish',
-    nativeName: 'Español (México)',
-    fontFamily: 'Inter, system-ui, sans-serif',
-  },
-  'spanish (mexico)': {
-    code: 'es-MX',
-    name: 'Mexican Spanish',
-    nativeName: 'Español (México)',
-    fontFamily: 'Inter, system-ui, sans-serif',
-  },
-  hungarian: {
-    code: 'hu',
-    name: 'Hungarian',
-    nativeName: 'Magyar',
-    fontFamily: 'Inter, system-ui, sans-serif',
-  },
-  japanese: {
-    code: 'ja',
-    name: 'Japanese',
-    nativeName: '日本語',
-    fontFamily: 'Noto Sans JP, sans-serif',
-  },
-  chinese: {
-    code: 'zh',
-    name: 'Chinese',
-    nativeName: '中文',
-    fontFamily: 'Noto Sans SC, sans-serif',
-  },
-  mandarin: {
-    code: 'zh',
-    name: 'Chinese',
-    nativeName: '中文',
-    fontFamily: 'Noto Sans SC, sans-serif',
-  },
-  amharic: {
-    code: 'am',
-    name: 'Amharic',
-    nativeName: 'አማርኛ',
-    fontFamily: 'Noto Sans Ethiopic, sans-serif',
-  },
-  korean: {
-    code: 'ko',
-    name: 'Korean',
-    nativeName: '한국어',
-    fontFamily: 'Noto Sans KR, sans-serif',
-  },
-}
+> = {}
 
 const canonicalLanguageMetadata = (value: string) =>
   CANONICAL_LANGUAGE_METADATA[value.trim().toLowerCase().replace(/\s+/g, ' ')]
@@ -422,10 +343,10 @@ export const resolveOrCreate = action({
     })
     if (existing && !needsCanonicalRepair(existing, input)) return existing
 
-    const canonical = canonicalLanguageMetadata(input)
-    const resolved =
-      canonical ??
-      withCanonicalLanguageMetadata(input, await generateNativeName(input))
+    const resolved = withCanonicalLanguageMetadata(
+      input,
+      await generateNativeName(input),
+    )
 
     // If the slug collides with an existing code, reuse that entry.
     return await ctx.runMutation(api.customLanguages.add, {
