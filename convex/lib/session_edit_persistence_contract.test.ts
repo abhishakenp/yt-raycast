@@ -2,7 +2,7 @@ import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/tes
 import { convexTest } from 'convex-test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import { api, internal } from '../_generated/api'
 import schema from '../schema'
@@ -14,11 +14,34 @@ const fixtureDir = join(process.cwd(), '__fixtures__', 'openui-sources')
 const loadFixture = (name: string): string =>
   readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
 
+// Track the active convexTest instance so afterEach can drain pending
+// scheduled functions (export_artifacts:build is scheduled by
+// completeGeneration and otherwise writes after the test's transaction
+// context is torn down, causing "Write outside of transaction" errors).
+let activeTest: ReturnType<typeof convexTest> | null = null
+
 const sessionEditContractTest = () => {
   const t = convexTest(schema, modules)
   registerDebouncer(t)
+  activeTest = t
   return t
 }
+
+afterEach(async () => {
+  if (activeTest) {
+    // completeGeneration schedules export_artifacts:build via
+    // ctx.scheduler.runAfter(0, ...), which convex-test fires via
+    // setTimeout(0). We need to let that timer fire so the scheduled
+    // function runs within the convexTest's transaction context, then
+    // drain it. Without this, the function fires after the test is torn
+    // down, causing "Write outside of transaction" unhandled errors.
+    for (let i = 0; i < 5; i++) {
+      await new Promise((r) => setTimeout(r, 10))
+      await activeTest.finishInProgressScheduledFunctions()
+    }
+    activeTest = null
+  }
+})
 
 /**
  * Create a ready session with a REAL engine output fixture as the OpenUI source.

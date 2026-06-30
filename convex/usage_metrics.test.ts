@@ -5,6 +5,14 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
+let activeTest: ReturnType<typeof convexTest> | null = null
+
+const usageMetricsTest = () => {
+  const t = convexTest(schema, modules)
+  activeTest = t
+  return t
+}
+
 const requireEventStream = <T>(stream: T | null): T => {
   if (stream === null) throw new Error('Expected event stream')
   return stream
@@ -23,12 +31,19 @@ const createTestSession = (
     anonymousClientId: `anon-${prompt}`,
   })
 
-afterEach(() => {
+afterEach(async () => {
   vi.unstubAllGlobals()
+  if (activeTest) {
+    for (let i = 0; i < 5; i++) {
+      await new Promise((r) => setTimeout(r, 10))
+      await activeTest.finishInProgressScheduledFunctions()
+    }
+    activeTest = null
+  }
 })
 
 test('recordUsageMetric stores metric data', async () => {
-  const t = convexTest(schema, modules)
+  const t = usageMetricsTest()
 
   const { sessionId } = await createTestSession(t)
 
@@ -45,7 +60,7 @@ test('recordUsageMetric stores metric data', async () => {
 })
 
 test('getUsageMetrics aggregates session metrics', async () => {
-  const t = convexTest(schema, modules)
+  const t = usageMetricsTest()
 
   const { sessionId } = await createTestSession(t)
 
@@ -75,7 +90,7 @@ test('getUsageMetrics aggregates session metrics', async () => {
 })
 
 test('getUserUsageMetrics filters by time', async () => {
-  const t = convexTest(schema, modules)
+  const t = usageMetricsTest()
 
   const { sessionId } = await createTestSession(t)
 
@@ -99,7 +114,7 @@ test('getUserUsageMetrics filters by time', async () => {
 })
 
 test('recordOperationalEvent stores completed generation metrics and observable event metadata', async () => {
-  const t = convexTest(schema, modules)
+  const t = usageMetricsTest()
 
   const { sessionId } = await createTestSession(t)
 
@@ -139,7 +154,7 @@ test('recordOperationalEvent stores completed generation metrics and observable 
 })
 
 test('completeGeneration records runtime usage metrics and a replayable completion event', async () => {
-  const t = convexTest(schema, modules)
+  const t = usageMetricsTest()
 
   const { sessionId } = await createTestSession(t)
 
@@ -183,7 +198,7 @@ test('completeGeneration records runtime usage metrics and a replayable completi
 })
 
 test('duplicate public prompt cache hits record replayable alert metadata', async () => {
-  const t = convexTest(schema, modules)
+  const t = usageMetricsTest()
   const prompt = 'Reusable public cache prompt'
 
   const { sessionId } = await t.mutation(api.sessions.create, {
@@ -230,7 +245,7 @@ test('duplicate public prompt cache hits record replayable alert metadata', asyn
 })
 
 test('recordOperationalEvent makes failure and quota-limit events replayable without usage metrics', async () => {
-  const t = convexTest(schema, modules)
+  const t = usageMetricsTest()
 
   const { sessionId } = await createTestSession(t)
 
@@ -271,7 +286,7 @@ test('recordOperationalEvent makes failure and quota-limit events replayable wit
 test('failGeneration records a structured replayable failure event', async () => {
   const previousGroq = process.env.GROQ_API_KEY
   process.env.GROQ_API_KEY = 'test-groq-key'
-  const t = convexTest(schema, modules)
+  const t = usageMetricsTest()
 
   try {
     const { sessionId } = await createTestSession(t)
@@ -312,7 +327,7 @@ test('failGeneration records a structured replayable failure event', async () =>
 })
 
 test('notification adapters skip without credentials and send only when explicitly configured', async () => {
-  const t = convexTest(schema, modules)
+  const t = usageMetricsTest()
   const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }))
   vi.stubGlobal('fetch', fetchMock)
 

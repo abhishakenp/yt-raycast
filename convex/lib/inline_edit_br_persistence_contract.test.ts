@@ -2,7 +2,7 @@ import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/tes
 import { convexTest } from 'convex-test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import { api, internal } from '../_generated/api'
 import schema from '../schema'
@@ -15,11 +15,24 @@ const fixtureDir = join(process.cwd(), '__fixtures__', 'openui-sources')
 const loadFixture = (name: string): string =>
   readFileSync(join(fixtureDir, `${name}.openui`), 'utf-8')
 
+let activeTest: ReturnType<typeof convexTest> | null = null
+
 const sessionEditContractTest = () => {
   const t = convexTest(schema, modules)
   registerDebouncer(t)
+  activeTest = t
   return t
 }
+
+afterEach(async () => {
+  if (activeTest) {
+    for (let i = 0; i < 5; i++) {
+      await new Promise((r) => setTimeout(r, 10))
+      await activeTest.finishInProgressScheduledFunctions()
+    }
+    activeTest = null
+  }
+})
 
 const createReadySessionWithFixture = async (
   t: ReturnType<typeof sessionEditContractTest>,

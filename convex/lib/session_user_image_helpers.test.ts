@@ -1,6 +1,6 @@
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import { convexTest } from 'convex-test'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import { api, internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
@@ -8,11 +8,24 @@ import schema from '../schema'
 
 const modules = import.meta.glob('../**/*.ts')
 
+let activeTest: ReturnType<typeof convexTest> | null = null
+
 const userImageTest = () => {
   const t = convexTest(schema, modules)
   registerDebouncer(t)
+  activeTest = t
   return t
 }
+
+afterEach(async () => {
+  if (activeTest) {
+    for (let i = 0; i < 5; i++) {
+      await new Promise((r) => setTimeout(r, 10))
+      await activeTest.finishInProgressScheduledFunctions()
+    }
+    activeTest = null
+  }
+})
 
 const createReadySession = async (
   t: ReturnType<typeof userImageTest>,

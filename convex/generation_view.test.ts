@@ -1,5 +1,5 @@
 import { convexTest } from 'convex-test'
-import { expect, test } from 'vitest'
+import { afterEach, expect, test } from 'vitest'
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import type { DebouncerComponentApi } from '@ikhrustalev/convex-debouncer'
 import { api, components, internal } from './_generated/api'
@@ -8,11 +8,28 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
+// Track the active convexTest instance so afterEach can drain pending
+// scheduled functions (export_artifacts:build is scheduled by
+// completeGeneration and otherwise writes after the test's transaction
+// context is torn down, causing "Write outside of transaction" errors).
+let activeTest: ReturnType<typeof convexTest> | null = null
+
 const generationConvexTest = () => {
   const t = convexTest(schema, modules)
   registerDebouncer(t)
+  activeTest = t
   return t
 }
+
+afterEach(async () => {
+  if (activeTest) {
+    for (let i = 0; i < 5; i++) {
+      await new Promise((r) => setTimeout(r, 10))
+      await activeTest.finishInProgressScheduledFunctions()
+    }
+    activeTest = null
+  }
+})
 
 const requireEventStream = <T>(stream: T | null): T => {
   if (stream === null) throw new Error('Expected event stream')
