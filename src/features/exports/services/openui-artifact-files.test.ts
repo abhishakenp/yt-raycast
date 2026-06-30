@@ -3,8 +3,6 @@ import ts from 'typescript'
 
 import { buildOpenUIArtifactFiles } from './openui-artifact-files'
 
-const itUnlessCoverage = process.env.VITEST_COVERAGE === '1' ? it.skip : it
-
 // Section-family components take flat positional string args (signature order),
 // not the old (brand, nav, props) KimiPage shape. Required text is placed in the
 // heading/title slot so it renders into the DOM and serializes into pages.ts.
@@ -272,27 +270,24 @@ describe('openui artifact files', () => {
     expect(files['ship-fast-genui.json']).toContain('publication-newsroom-v1')
   })
 
-  itUnlessCoverage(
-    'wires baked admin access into React artifact routes',
-    async () => {
-      const { files } = await buildOpenUIArtifactFiles({
-        source: v1PublicationSource,
-        siteSpecJson: siteSpecJsonWithGenUI,
-        sessionId: 'demo',
-        target: 'react',
-      })
+  it('wires baked admin access into React artifact routes', async () => {
+    const { files } = await buildOpenUIArtifactFiles({
+      source: v1PublicationSource,
+      siteSpecJson: siteSpecJsonWithGenUI,
+      sessionId: 'demo',
+      target: 'react',
+    })
 
-      expect(files['src/App.tsx']).toContain('ShipFastAdminGate')
-      expect(files['src/App.tsx']).toContain('isShipFastAdminRoute')
-      expect(files['src/lib/ship-fast-admin-gate.tsx']).toContain(
-        'assertShipFastAdminAccess',
-      )
-      expect(files['src/lib/ship-fast-admin-gate.tsx']).toContain(
-        'shipFastAdminEmail',
-      )
-      expect(files['src/ship-fast-admin.ts']).toContain('founder@example.com')
-    },
-  )
+    expect(files['src/App.tsx']).toContain('ShipFastAdminGate')
+    expect(files['src/App.tsx']).toContain('isShipFastAdminRoute')
+    expect(files['src/lib/ship-fast-admin-gate.tsx']).toContain(
+      'assertShipFastAdminAccess',
+    )
+    expect(files['src/lib/ship-fast-admin-gate.tsx']).toContain(
+      'shipFastAdminEmail',
+    )
+    expect(files['src/ship-fast-admin.ts']).toContain('founder@example.com')
+  })
 
   it('wires baked admin access into Next admin route files', async () => {
     const { files } = await buildOpenUIArtifactFiles({
