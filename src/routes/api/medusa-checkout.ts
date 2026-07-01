@@ -21,7 +21,15 @@ export const Route = createFileRoute('/api/medusa-checkout')({
           )
         }
 
-        const body = await request.json()
+        let body
+        try {
+          body = await request.json()
+        } catch {
+          return Response.json(
+            { error: 'Invalid checkout request body' },
+            { status: 400 },
+          )
+        }
         const baseUrl = getMedusaBackendUrl()
 
         try {

@@ -41,7 +41,11 @@ const deploymentDoc = (
     ...overrides,
   }) as Doc<'deployments'>
 
-const previewDoc = (id: string, version: number): Doc<'previews'> =>
+const previewDoc = (
+  id: string,
+  version: number,
+  overrides: Partial<Doc<'previews'>> = {},
+): Doc<'previews'> =>
   ({
     _id: id as Id<'previews'>,
     _creationTime: version,
@@ -50,7 +54,17 @@ const previewDoc = (id: string, version: number): Doc<'previews'> =>
     html: `<main>Preview ${version}</main>`,
     createdAt: version,
     source: 'generation',
+    ...overrides,
   }) as Doc<'previews'>
+
+const realConvexPreviewWithRendererError = {
+  previewId: 'ns70q8624bp2dk2qvehc0dc8jd89mdvb',
+  sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',
+  status: 'preview_ready',
+  previewVersion: 1,
+  title: 'Nyx',
+  html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
+} as const
 
 const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
   const tables: Record<TableName, Row[]> = {
@@ -182,5 +196,36 @@ describe('session public preview helpers', () => {
       previewVersion: 0,
       html: undefined,
     })
+  })
+
+  it('never exposes a preview_ready stored preview that contains OpenUI renderer error HTML', async () => {
+    const result = await loadPublicPreview(
+      ctxFor({
+        sessions: [
+          sessionDoc({
+            _id: realConvexPreviewWithRendererError.sessionId as Id<'sessions'>,
+            status: realConvexPreviewWithRendererError.status,
+            previewVersion: realConvexPreviewWithRendererError.previewVersion,
+          }),
+        ],
+        previews: [
+          previewDoc(
+            realConvexPreviewWithRendererError.previewId,
+            realConvexPreviewWithRendererError.previewVersion,
+            {
+              sessionId:
+                realConvexPreviewWithRendererError.sessionId as Id<'sessions'>,
+              html: realConvexPreviewWithRendererError.html,
+            },
+          ),
+        ],
+      }),
+      realConvexPreviewWithRendererError.sessionId,
+    )
+
+    expect(result).not.toBeNull()
+    expect(result?.status).toBe('preview_ready')
+    expect(result?.html?.toLowerCase()).not.toContain('openui-error')
+    expect(result?.html?.toLowerCase()).not.toContain('failed to render')
   })
 })

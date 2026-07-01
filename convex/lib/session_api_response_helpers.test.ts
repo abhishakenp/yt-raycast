@@ -26,6 +26,14 @@ type Row =
   | Doc<'siteSpecs'>
 
 const sessionId = 'session_api_response' as Id<'sessions'>
+const realConvexRendererErrorSessionApiPreview = {
+  previewId: 'ns70q8624bp2dk2qvehc0dc8jd89mdvb',
+  sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',
+  prompt:
+    'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a polished interactive product experience. It should be dark mode. Focus on making it beautiful.',
+  html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
+  previewVersion: 1,
+} as const
 
 const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
   ({
@@ -365,6 +373,41 @@ describe('session API response helpers', () => {
         slug: 'deployed-site',
       },
     })
+  })
+
+  it('does not expose real renderer-error preview HTML through the session API response', async () => {
+    const brokenSessionId =
+      realConvexRendererErrorSessionApiPreview.sessionId as Id<'sessions'>
+
+    const response = await loadSessionApiResponse(
+      ctxFor({
+        sessions: [
+          sessionDoc({
+            _id: brokenSessionId,
+            prompt: realConvexRendererErrorSessionApiPreview.prompt,
+            status: 'preview_ready',
+            previewVersion:
+              realConvexRendererErrorSessionApiPreview.previewVersion,
+            updatedAt: 1782821638453,
+          }),
+        ],
+        previews: [
+          previewDoc({
+            _id: realConvexRendererErrorSessionApiPreview.previewId as Id<'previews'>,
+            sessionId: brokenSessionId,
+            version: realConvexRendererErrorSessionApiPreview.previewVersion,
+            html: realConvexRendererErrorSessionApiPreview.html,
+          }),
+        ],
+      }),
+      realConvexRendererErrorSessionApiPreview.sessionId,
+    )
+
+    expect(response).not.toBeNull()
+    expect(response?.preview?.html?.toLowerCase()).not.toContain('openui-error')
+    expect(response?.preview?.html?.toLowerCase()).not.toContain(
+      'failed to render',
+    )
   })
 
   it('returns null for invalid lookups and deleted sessions', async () => {

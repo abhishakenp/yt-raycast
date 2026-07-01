@@ -28,6 +28,14 @@ type SessionRecord = Doc<'sessions'>
 type SiteSpecRecord = Doc<'siteSpecs'>
 
 const sessionId = 'session_gallery_helpers' as Id<'sessions'>
+const realConvexRendererErrorGalleryPreview = {
+  previewId: 'ns70q8624bp2dk2qvehc0dc8jd89mdvb',
+  sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',
+  prompt:
+    'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a polished interactive product experience. It should be dark mode. Focus on making it beautiful.',
+  html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
+  previewVersion: 1,
+} as const
 
 const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
   ({
@@ -337,6 +345,43 @@ describe('listPublicGallerySessions', () => {
     expect(
       result.availableCategories.map((category) => category.value),
     ).toEqual(['saas'])
+  })
+
+  it('does not expose real renderer-error preview HTML in public gallery lists', async () => {
+    const brokenSessionId =
+      realConvexRendererErrorGalleryPreview.sessionId as Id<'sessions'>
+    const ctx = ctxFor({
+      sessions: [
+        sessionDoc({
+          _id: brokenSessionId,
+          prompt: realConvexRendererErrorGalleryPreview.prompt,
+          status: 'preview_ready',
+          previewVersion: realConvexRendererErrorGalleryPreview.previewVersion,
+          isPrivate: false,
+          createdAt: 1782821638453,
+          updatedAt: 1782821638453,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          _id: realConvexRendererErrorGalleryPreview.previewId as Id<'previews'>,
+          sessionId: brokenSessionId,
+          version: realConvexRendererErrorGalleryPreview.previewVersion,
+          html: realConvexRendererErrorGalleryPreview.html,
+        }),
+      ],
+    })
+
+    const result = await listPublicGallerySessions(ctx, {
+      limit: 12,
+      page: 1,
+    })
+
+    expect(result.items).toEqual([])
+    expect(JSON.stringify(result).toLowerCase()).not.toContain('openui-error')
+    expect(JSON.stringify(result).toLowerCase()).not.toContain(
+      'failed to render',
+    )
   })
 })
 

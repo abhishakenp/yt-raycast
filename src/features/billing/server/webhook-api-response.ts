@@ -197,7 +197,12 @@ export const createWebhookApiResponse = async (
     return json({ error: 'Invalid webhook signature.' }, { status: 400 })
   }
 
-  const event = JSON.parse(rawBody)
+  let event
+  try {
+    event = JSON.parse(rawBody)
+  } catch {
+    return json({ error: 'Invalid webhook body.' }, { status: 400 })
+  }
   const mutationPayload =
     provider === 'stripe'
       ? stripePayloadToMutation(event)

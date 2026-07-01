@@ -29,6 +29,14 @@ type Row =
   | Doc<'generatedModules'>
 
 const sessionId = 'session_deployment' as Id<'sessions'>
+const realConvexRendererErrorPreview = {
+  previewId: 'ns70q8624bp2dk2qvehc0dc8jd89mdvb',
+  sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',
+  title: 'Nyx',
+  html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
+  openUiSource: '$page = "Home"\nroot = Text("Nyx")',
+  version: 1,
+} as const
 
 const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
   ({
@@ -430,30 +438,34 @@ describe('session deployment helpers', () => {
     })
   })
 
-  it('prepares OpenUI Lakebed deployments from a home module when preview source is absent', async () => {
-    const openUiSource = '$page = "Home"\nroot = Text("OpenUI deploy")'
+  it('never prepares Lakebed deployment payloads with stored OpenUI renderer error HTML', async () => {
     const ctx = ctxFor({
       sessions: [
         sessionDoc({
+          _id: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
+          prompt: realConvexRendererErrorPreview.title,
           openuiReady: false,
           preferredExportTarget: 'html',
           userId: 'user_1',
+          previewVersion: realConvexRendererErrorPreview.version,
         }),
       ],
       previews: [
         previewDoc({
-          html: '<div class="openui-error">Failed to render: te is not a function</div>',
+          _id: realConvexRendererErrorPreview.previewId as Id<'previews'>,
+          sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
+          html: realConvexRendererErrorPreview.html,
           openUiSource: undefined,
-          version: 11,
+          version: realConvexRendererErrorPreview.version,
         }),
       ],
       generatedModules: [
         {
           _id: 'generated_module_home' as Id<'generatedModules'>,
           _creationTime: 1,
-          sessionId,
+          sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
           moduleKey: 'home',
-          source: openUiSource,
+          source: realConvexRendererErrorPreview.openUiSource,
           status: 'succeeded',
           createdAt: 100,
           updatedAt: 110,
@@ -461,15 +473,17 @@ describe('session deployment helpers', () => {
       ],
     }) as QueryCtx
 
-    await expect(
-      prepareLakebedSessionDeployment(ctx, { sessionId }),
-    ).resolves.toMatchObject({
-      source: openUiSource,
-      sourceKind: 'openui',
-      previewHtml:
-        '<div class="openui-error">Failed to render: te is not a function</div>',
-      previewVersion: 11,
+    const result = await prepareLakebedSessionDeployment(ctx, {
+      sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
     })
+
+    expect(result).toMatchObject({
+      source: realConvexRendererErrorPreview.openUiSource,
+      sourceKind: 'openui',
+      previewVersion: realConvexRendererErrorPreview.version,
+    })
+    expect(result.previewHtml.toLowerCase()).not.toContain('openui-error')
+    expect(result.previewHtml.toLowerCase()).not.toContain('failed to render')
   })
 
   it('records Lakebed deployment metadata without using the local build folder', async () => {
