@@ -1,4 +1,11 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const thumbnailCaptureMocks = vi.hoisted(() => ({
+  captureGalleryThumb: vi.fn(),
+  readCachedGalleryThumb: vi.fn(),
+}))
+
+vi.mock('./gallery-thumbnail-capture', () => thumbnailCaptureMocks)
 
 import {
   generateDeterministicThumbnailSvg,
@@ -8,6 +15,11 @@ import {
 } from './gallery-thumbnail-response'
 
 describe('Gallery Thumbnail Response', () => {
+  beforeEach(() => {
+    thumbnailCaptureMocks.captureGalleryThumb.mockResolvedValue(null)
+    thumbnailCaptureMocks.readCachedGalleryThumb.mockReturnValue(null)
+  })
+
   describe('getGalleryCategories', () => {
     it('should extract SaaS categories from prompt', () => {
       const categories = getGalleryCategories(
@@ -383,6 +395,57 @@ describe('Gallery Thumbnail Response', () => {
       expect(body).not.toContain('Generated OpenUI source is ready')
       expect(body).not.toContain('Boutique Coffee Roastery')
       expect(body).not.toContain('ship-fast-openui-source')
+    })
+
+    it('does not capture or return a PNG for a DB-observed OpenUI gallery session', async () => {
+      thumbnailCaptureMocks.captureGalleryThumb.mockResolvedValue(
+        Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+      )
+      const mockClient = {
+        query: async () => ({
+          categories: ['service'],
+          cost: 0,
+          elapsed: 6424,
+          html: '<!doctype html><html lang="lt"><body><main data-sf-export-page="Pradzia"><h1>Redaguotas aludario meniu</h1><p>Ananasų sezoninis elis</p></main></body></html>',
+          openuiReady: true,
+          preferredLanguage: 'lt',
+          previewVersion: 1,
+          prompt:
+            'a craft beer brewery with taproom tours and seasonal releases in portland',
+          readiness: {
+            homepageReady: null,
+            openuiReady: true,
+            previewReady: true,
+            siteSpecReady: null,
+          },
+          selectedBrandLogo: {
+            brandId: 'idwTkaYgXe',
+            domain: 'thebeerstore.ca',
+            icon: 'https://cdn.brandfetch.io/idwTkaYgXe/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782982741853bfumLaCV7mbdS0jiIv',
+            logo: 'https://cdn.brandfetch.io/idwTkaYgXe/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782982741853bfumLaCV7mbdS0jiIv',
+            name: 'The Beer Store',
+          },
+          sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+          status: 'preview_ready',
+          themeMode: 'dark',
+          themeOverride: 'darkmatter',
+        }),
+      }
+
+      const response = await createGalleryThumbnailResponse(
+        'k574ms14ma9f94keq30r7dq24x89n1k2',
+        new Request(
+          'http://localhost/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/gallery-thumb',
+        ),
+        mockClient,
+      )
+
+      expect(
+        thumbnailCaptureMocks.readCachedGalleryThumb,
+      ).not.toHaveBeenCalled()
+      expect(thumbnailCaptureMocks.captureGalleryThumb).not.toHaveBeenCalled()
+      expect(response.headers.get('content-type')).not.toContain('image/png')
+      expect(await response.text()).not.toBe('\uFFFDPNG')
     })
 
     it('returns a stable unavailable thumbnail when the gallery lookup fails', async () => {

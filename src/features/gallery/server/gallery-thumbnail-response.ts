@@ -250,22 +250,37 @@ export const createGalleryThumbnailResponse = async (
       return new Response('Session not found or not public', { status: 404 })
     }
 
-    // Prefer a real screenshot of the generated site (captured once and saved).
-    // Only fall back to the deterministic SVG when capture is unavailable or
-    // fails; that SVG is the explicit error/placeholder state.
-    const version = (session as { previewVersion?: number }).previewVersion ?? 0
-    const cached = readCachedGalleryThumb(sessionId, version)
-    if (cached) return pngResponse(cached)
+    // OpenUI sessions render an interactive client-side app that cannot be
+    // meaningfully screenshotted as a static PNG (the canvas is empty until
+    // hydration). Skip capture/cache entirely and serve the deterministic SVG
+    // placeholder so the gallery never shows a blank or misleading thumbnail.
+    const isOpenUiSession = Boolean(
+      session.readiness?.openuiReady ?? session.openuiReady,
+    )
 
-    const shouldCapture =
-      request !== undefined &&
-      new URL(request.url).searchParams.get('fallback') !== '1'
+    if (!isOpenUiSession) {
+      // Prefer a real screenshot of the generated site (captured once and
+      // saved). Only fall back to the deterministic SVG when capture is
+      // unavailable or fails; that SVG is the explicit error/placeholder state.
+      const version =
+        (session as { previewVersion?: number }).previewVersion ?? 0
+      const cached = readCachedGalleryThumb(sessionId, version)
+      if (cached) return pngResponse(cached)
 
-    if (shouldCapture) {
-      const origin = new URL(request.url).origin
-      const previewUrl = `${origin}/api/sessions/${encodeURIComponent(sessionId)}/preview-raw`
-      const captured = await captureGalleryThumb(sessionId, version, previewUrl)
-      if (captured) return pngResponse(captured)
+      const shouldCapture =
+        request !== undefined &&
+        new URL(request.url).searchParams.get('fallback') !== '1'
+
+      if (shouldCapture) {
+        const origin = new URL(request.url).origin
+        const previewUrl = `${origin}/api/sessions/${encodeURIComponent(sessionId)}/preview-raw`
+        const captured = await captureGalleryThumb(
+          sessionId,
+          version,
+          previewUrl,
+        )
+        if (captured) return pngResponse(captured)
+      }
     }
 
     const categories = session.categories?.length
