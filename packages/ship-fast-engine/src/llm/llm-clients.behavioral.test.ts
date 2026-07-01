@@ -841,27 +841,30 @@ describe('retry: withLLMRetry', () => {
   it('gives up after max retries and throws last error', async () => {
     const fn = vi.fn().mockRejectedValue(new Error('timeout'))
     const p = withLLMRetry(fn, { attempts: 3, baseDelayMs: 100 })
+    const rejection = expect(p).rejects.toThrow('timeout')
     await vi.advanceTimersByTimeAsync(100)
     await vi.advanceTimersByTimeAsync(200)
-    await expect(p).rejects.toThrow('timeout')
+    await rejection
     expect(fn).toHaveBeenCalledTimes(3)
   })
 
   it('gives up after max retries on transient result.error and throws', async () => {
     const fn = vi.fn().mockResolvedValue({ content: '', error: 'overloaded' })
     const p = withLLMRetry(fn, { attempts: 2, baseDelayMs: 50 })
+    const rejection = expect(p).rejects.toThrow('overloaded')
     await vi.advanceTimersByTimeAsync(50)
-    await expect(p).rejects.toThrow('overloaded')
+    await rejection
     expect(fn).toHaveBeenCalledTimes(2)
   })
 
   it('uses default attempts=3 and baseDelayMs=1000 when opts omitted', async () => {
     const fn = vi.fn().mockRejectedValue(new Error('502 bad gateway'))
     const p = withLLMRetry(fn)
+    const rejection = expect(p).rejects.toThrow('502 bad gateway')
     // 3 attempts -> 2 delays: 1000, 2000
     await vi.advanceTimersByTimeAsync(1000)
     await vi.advanceTimersByTimeAsync(2000)
-    await expect(p).rejects.toThrow('502 bad gateway')
+    await rejection
     expect(fn).toHaveBeenCalledTimes(3)
   })
 
