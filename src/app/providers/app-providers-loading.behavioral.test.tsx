@@ -209,6 +209,48 @@ describe('app provider loading', () => {
       ).toHaveBeenCalledTimes(1)
       expect(screen.getByTestId('child')).toBeTruthy()
     })
+
+    it('reuses the Clerk-backed Convex client until the Convex URL changes', async () => {
+      const { ClerkConvexProvider } =
+        await import('@/app/providers/ClerkConvexProvider')
+      const { rerender } = render(
+        <ClerkConvexProvider
+          clerkPublishableKey="pk_live_real"
+          convexUrl="https://first-convex.example.test"
+        >
+          <div data-testid="child">first child</div>
+        </ClerkConvexProvider>,
+      )
+
+      rerender(
+        <ClerkConvexProvider
+          clerkPublishableKey="pk_live_real"
+          convexUrl="https://first-convex.example.test"
+        >
+          <div data-testid="child">second child</div>
+        </ClerkConvexProvider>,
+      )
+
+      expect(screen.getByText('second child')).toBeTruthy()
+      expect(appProviderMocks.convexClients).toHaveLength(1)
+
+      rerender(
+        <ClerkConvexProvider
+          clerkPublishableKey="pk_live_real"
+          convexUrl="https://second-convex.example.test"
+        >
+          <div data-testid="child">third child</div>
+        </ClerkConvexProvider>,
+      )
+
+      expect(screen.getByText('third child')).toBeTruthy()
+      expect(
+        appProviderMocks.convexClients.map((client) => client.url),
+      ).toEqual([
+        'https://first-convex.example.test',
+        'https://second-convex.example.test',
+      ])
+    })
   })
 
   describe('AppProviders', () => {
