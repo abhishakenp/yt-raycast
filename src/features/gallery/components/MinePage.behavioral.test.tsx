@@ -57,12 +57,19 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
   ),
 }))
 
+vi.mock('@/features/gallery/services/delete-gallery-session', () => ({
+  deleteGallerySession: ownedMocks.deleteMine,
+}))
+
 const controllerState = {
   loading: false,
   sessions: [] as GallerySession[],
 }
 
 vi.mock('../hooks/useGalleryController', () => ({
+  getGalleryThumbnailUrl: (session: GallerySession) =>
+    `/api/sessions/${session.sessionId}/thumbnail`,
+  resolveGalleryThumbnail: vi.fn(async () => undefined),
   useOwnedGalleryController: ({
     category = '',
     limit = 12,
@@ -144,6 +151,25 @@ const baseSessions: GallerySession[] = [
   },
 ]
 
+const realPrivatePetWellnessSessions: GallerySession[] = [
+  {
+    sessionId: 'k57cnvbhxynnmhap6dmp05grfx88r8wc',
+    prompt:
+      'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
+    categories: ['app', 'health', 'services'],
+    elapsed: 4200,
+    previewVersion: 43,
+  },
+  {
+    sessionId: 'k5771j4djf89f2rh3nk1q3nkq588sdjp',
+    prompt:
+      'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
+    categories: ['app', 'health', 'services'],
+    elapsed: 3900,
+    previewVersion: 12,
+  },
+]
+
 let originalFetch: typeof globalThis.fetch
 
 const resetController = (sessions: GallerySession[] = baseSessions) => {
@@ -186,6 +212,45 @@ describe('MinePage behavioral', () => {
     ).toContain('portfolio')
   })
 
+  it('renders real private pet wellness generations from Convex-owned data', () => {
+    resetController(realPrivatePetWellnessSessions)
+
+    const { getAllByText, getByText, container } = render(<MinePage />)
+
+    expect(getByText('2 previews')).not.toBeNull()
+    expect(
+      getAllByText(
+        'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
+      ),
+    ).toHaveLength(2)
+    expect(container.textContent).toContain('health')
+    expect(container.textContent).toContain('services')
+  })
+
+  it('filters real private Convex generations by prompt and category', () => {
+    resetController(realPrivatePetWellnessSessions)
+
+    const { getByPlaceholderText, getAllByText, getByText } = render(
+      <MinePage />,
+    )
+    const input = getByPlaceholderText(
+      'Search your prompts, categories, sessions...',
+    ) as HTMLInputElement
+
+    fireEvent.change(input, { target: { value: 'wellness' } })
+
+    expect(getByText('2 previews')).not.toBeNull()
+    expect(
+      getAllByText(
+        'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
+      ),
+    ).toHaveLength(2)
+
+    fireEvent.change(input, { target: { value: 'restaurant' } })
+
+    expect(getByText('0 previews')).not.toBeNull()
+  })
+
   it('search input filters owned sessions', () => {
     const { getByPlaceholderText, queryByText, getByText } = render(
       <MinePage />,
@@ -206,8 +271,9 @@ describe('MinePage behavioral', () => {
 
     const grid = container.querySelector('.sf-gallery-grid') as HTMLElement
     expect(grid).not.toBeNull()
-    expect(grid.children).toHaveLength(0)
+    expect(container.querySelector('.sf-gallery-empty')).not.toBeNull()
     expect(getByText('0 previews')).not.toBeNull()
+    expect(getByText('Generate a site to fill this wall')).not.toBeNull()
     expect(getByText('Start generating')).not.toBeNull()
   })
 
