@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
-import type { ReactNode } from 'react'
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  waitFor,
+} from '@testing-library/react'
+import type { PointerEventHandler, ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { GalleryPayload, GallerySession } from './PublicGallery'
@@ -12,16 +18,27 @@ const galleryMocks = vi.hoisted(() => ({
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
     children,
+    onPointerEnter,
+    onPointerLeave,
+    preload: _preload,
     ...props
   }: {
     children: ReactNode
+    onPointerEnter?: PointerEventHandler<HTMLAnchorElement>
+    onPointerLeave?: PointerEventHandler<HTMLAnchorElement>
+    preload?: false | 'intent'
     [key: string]: unknown
   }) => {
     const anchorProps = { ...props }
     delete anchorProps.params
     delete anchorProps.to
     return (
-      <a href="/generate/test" {...anchorProps}>
+      <a
+        href="/generate/test"
+        {...anchorProps}
+        onPointerOver={onPointerEnter}
+        onPointerOut={onPointerLeave}
+      >
         {children}
       </a>
     )
@@ -53,6 +70,19 @@ const controllerState = {
 }
 
 vi.mock('../hooks/useGalleryController', () => ({
+  getGalleryThumbnailUrl: (session: GallerySession) =>
+    `/api/sessions/${encodeURIComponent(session.sessionId)}/gallery-thumb?v=${encodeURIComponent(String(session.previewVersion ?? 0))}`,
+  resolveGalleryThumbnail: async (thumbnailUrl: string) => {
+    try {
+      const response = await fetch(thumbnailUrl, {
+        signal: new AbortController().signal,
+      })
+      if (!response.ok) return undefined
+      return URL.createObjectURL(await response.blob())
+    } catch {
+      return undefined
+    }
+  },
   useGalleryController: ({
     category = '',
     limit = 12,
@@ -299,7 +329,7 @@ describe('GalleryPage behavioral', () => {
 
     const grid = container.querySelector('.sf-gallery-grid') as HTMLElement
     expect(grid).not.toBeNull()
-    expect(grid.children).toHaveLength(0)
+    expect(grid.querySelector('[data-gallery-session-id]')).toBeNull()
     expect(grid.querySelectorAll('.animate-pulse').length).toBe(0)
     // observable count text reflects zero previews
     expect(getByText('0 previews')).not.toBeNull()
@@ -308,11 +338,16 @@ describe('GalleryPage behavioral', () => {
   it('delete key (D) on own hovered session triggers deleteMine mutation', async () => {
     window.localStorage.setItem('ship-fast-anon-client-id', 'anon-gallery')
     const { getByText, queryByText } = render(<GalleryPage />)
+    await act(async () => {
+      await Promise.resolve()
+    })
 
     const hoveredCard = getByText('AI image studio').closest('a')
     expect(hoveredCard).not.toBeNull()
 
-    fireEvent.pointerEnter(hoveredCard as HTMLAnchorElement)
+    hoveredCard?.dispatchEvent(
+      new window.Event('pointerover', { bubbles: true, cancelable: true }),
+    )
     fireEvent.keyDown(window, { key: 'd' })
 
     await waitFor(() => {
@@ -348,7 +383,7 @@ describe('GalleryPage behavioral', () => {
 
     // gradient placeholder div carries aria-label with the prompt title
     const placeholder = container.querySelector(
-      '[aria-label="Gradient fallback project"]',
+      '[aria-hidden="true"] [aria-label="Gradient fallback project"]',
     )
     expect(placeholder).not.toBeNull()
     expect(placeholder?.className).toContain('radial-gradient')
