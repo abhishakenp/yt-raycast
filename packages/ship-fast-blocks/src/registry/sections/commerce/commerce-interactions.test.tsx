@@ -1055,6 +1055,37 @@ describe('commerce interaction surfaces', () => {
     })
   })
 
+  it('renders the cart drawer when cartSummary omits the items array', () => {
+    const noopMutation = Object.assign(
+      vi.fn(async () => []),
+      {
+        isPending: false,
+        lastError: null,
+        pendingCount: 0,
+        reset: vi.fn(),
+      },
+    )
+    const lakebed = {
+      useMutation: () => noopMutation,
+      useQuery: (name: string) =>
+        name === 'cartSummary' ? { count: 3 } : null,
+    } as unknown as CommerceLakebed
+
+    render(<CommerceCartButton lakebed={lakebed} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
+
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    expect(screen.getByText('You have 3 items in your cart.')).toBeTruthy()
+    expect(
+      screen.getByText('Add a product to see it here instantly.'),
+    ).toBeTruthy()
+    expect(
+      (screen.getByRole('button', { name: 'Clear cart' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true)
+  })
+
   it('uses destructive alert dialogs for item deletion and cart clearing', async () => {
     const { lakebed } = createCommerceLakebedStub({
       items: [

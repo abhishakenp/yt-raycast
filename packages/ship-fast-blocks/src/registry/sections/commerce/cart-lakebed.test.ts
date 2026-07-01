@@ -147,6 +147,48 @@ describe('commerceCartLakebed', () => {
     })
   })
 
+  it('summarizes malformed cart quantities without throwing in deployed output', () => {
+    const { context } = createLakebedHandlerContext({
+      data: {
+        items: [
+          {
+            createdAt: '2026-06-26T00:00:00.000Z',
+            id: 'cart-missing-quantity',
+            itemKey: 'Serum\u0000$28',
+            label: 'Serum',
+            price: '$28',
+            updatedAt: '2026-06-26T00:00:00.000Z',
+          },
+          {
+            createdAt: '2026-06-26T00:00:00.000Z',
+            id: 'cart-nan-quantity',
+            itemKey: 'Cream\u0000$34',
+            label: 'Cream',
+            price: '$34',
+            quantity: Number.NaN,
+            updatedAt: '2026-06-26T00:00:00.000Z',
+          },
+          {
+            createdAt: '2026-06-26T00:00:00.000Z',
+            id: 'cart-float-quantity',
+            itemKey: 'Balm\u0000$18',
+            label: 'Balm',
+            price: '$18',
+            quantity: 2.8,
+            updatedAt: '2026-06-26T00:00:00.000Z',
+          },
+        ],
+      },
+      props: {},
+      schema: commerceCartLakebed.schema,
+    })
+
+    expect(() => commerceCartLakebed.queries.cartSummary(context)).not.toThrow()
+    expect(commerceCartLakebed.queries.cartSummary(context)).toMatchObject({
+      count: 4,
+    })
+  })
+
   it('syncs searchable product catalog rows into the shared commerce document', async () => {
     const first = createLakebedHandlerContext({
       data: { items: [], products: [] },
