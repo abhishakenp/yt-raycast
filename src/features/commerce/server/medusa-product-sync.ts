@@ -485,10 +485,11 @@ export const syncGeneratedProductsToMedusa = async ({
     }
 
     return { synced, tenant: defaults.tenant }
-  } catch {
+  } catch (error) {
     return {
       synced: 0,
-      warning: 'Medusa product sync failed.',
+      warning:
+        error instanceof Error ? error.message : 'Medusa product sync failed.',
     }
   }
 }

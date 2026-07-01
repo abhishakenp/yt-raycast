@@ -54,34 +54,31 @@ export function useAITextEdit(
         return
       }
 
-      // Skip if selection is inside buttons, links, inputs, etc. Walk up the
-      // ancestor chain so selections nested inside interactive elements (e.g.
-      // text inside a <span> within an <a>) are ignored too.
-      const interactiveTags = [
-        'button',
-        'a',
-        'input',
-        'textarea',
-        'select',
-        'svg',
-        'img',
-        'video',
-        'audio',
-        'script',
-        'style',
-      ]
+      // Skip if selection is inside buttons, inputs, etc.
       const commonAncestor = range.commonAncestorContainer
-      const startEl =
+      const parentEl =
         commonAncestor.nodeType === Node.ELEMENT_NODE
           ? (commonAncestor as HTMLElement)
           : commonAncestor.parentElement
-      let el: HTMLElement | null = startEl
-      while (el && containerEl.contains(el)) {
-        const tag = el.tagName.toLowerCase()
-        if (interactiveTags.includes(tag)) {
+      if (parentEl) {
+        const tag = parentEl.tagName.toLowerCase()
+        if (
+          [
+            'button',
+            'a',
+            'input',
+            'textarea',
+            'select',
+            'svg',
+            'img',
+            'video',
+            'audio',
+            'script',
+            'style',
+          ].includes(tag)
+        ) {
           return
         }
-        el = el.parentElement
       }
 
       const rect = range.getBoundingClientRect()

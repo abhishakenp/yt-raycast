@@ -227,7 +227,7 @@ export function GeneratedModulePreview({
           <HtmlModuleUrlRenderer sourceUrl={sourceUrl} />
         ) : isHtmlDocumentSource(source) ? (
           <HtmlModuleRenderer source={source} />
-        ) : source && source.trim().length > 0 ? (
+        ) : (
           <OpenUIModuleRenderer
             source={source}
             sessionId={sessionId}
@@ -237,13 +237,6 @@ export function GeneratedModulePreview({
             selectedBrandLogo={selectedBrandLogo}
             imageOverrides={imageOverrides}
           />
-        ) : (
-          <div
-            role="status"
-            className="flex size-full items-center justify-center bg-background p-8 text-center text-sm text-muted-foreground"
-          >
-            Generating preview…
-          </div>
         )}
       </DirectPreview>
     </LakebedSessionProvider>

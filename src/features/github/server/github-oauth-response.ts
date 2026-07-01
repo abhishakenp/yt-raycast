@@ -237,17 +237,9 @@ export async function createGitHubConnectStartResponse(
     const message =
       error instanceof Error
         ? error.message
-        : 'Unable to start GitHub connection.'
-    if (/AUTH_REQUIRED|Sign in/i.test(message)) {
-      return json(
-        { error: 'Sign in before connecting GitHub.' },
-        { status: 401 },
-      )
-    }
-    return json(
-      { error: 'Unable to start GitHub connection.' },
-      { status: 503 },
-    )
+        : 'Sign in before connecting GitHub.'
+    const status = /AUTH_REQUIRED|Sign in/i.test(message) ? 401 : 500
+    return json({ error: message }, { status })
   }
 
   const url = new URL(getGitHubAuthorizeUrl(env))

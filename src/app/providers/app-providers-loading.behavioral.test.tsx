@@ -353,6 +353,39 @@ describe('app provider loading', () => {
       expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
     })
 
+    it('prevents Convex hook consumers from crashing on real generate, gallery, and mine routes when Convex is unconfigured', async () => {
+      vi.stubEnv('VITE_CONVEX_SELF_HOSTED_URL', '')
+      vi.stubEnv('VITE_CONVEX_URL', '')
+      vi.stubEnv('CONVEX_SELF_HOSTED_URL', '')
+      vi.stubEnv('CONVEX_URL', '')
+      const { AppProviders } = await import('@/app/providers/AppProviders')
+      const ConvexHookConsumer = () => {
+        throw new Error(
+          'Could not find Convex client! `useQuery` must be used in the React component tree under `ConvexProvider`.',
+        )
+      }
+
+      for (const pathname of [
+        '/generate/k574ms14ma9f94keq30r7dq24x89n1k2',
+        '/gallery',
+        '/mine',
+      ]) {
+        cleanup()
+        appProviderMocks.pathname = pathname
+
+        expect(() =>
+          render(
+            <AppProviders>
+              <ConvexHookConsumer />
+            </AppProviders>,
+          ),
+        ).not.toThrow()
+        expect(screen.queryByTestId('convex-anonymous')).toBeNull()
+        expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
+        expect(screen.queryByLabelText('Loading secure workspace')).toBeTruthy()
+      }
+    })
+
     it('mounts the sign-in host only after the global sign-in event fires', async () => {
       appProviderMocks.pathname = '/'
       const { openSignInEventName } =

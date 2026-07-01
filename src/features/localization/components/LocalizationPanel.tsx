@@ -1,8 +1,6 @@
 import { Languages, Send } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { readJsonOrThrow } from '@/lib/safe-fetch'
-
 type LocalizationPanelProps = {
   preferredLanguage?: string
   prompt?: string
@@ -45,10 +43,7 @@ export const LocalizationPanel = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ texts: [text], locale }),
       })
-      const data = await readJsonOrThrow<TranslateResult>(
-        response,
-        'Translation failed',
-      )
+      const data = (await response.json()) as TranslateResult
       if (!response.ok) throw new Error(data.error ?? 'Translation failed')
       setResult(data)
     } catch (translateError) {

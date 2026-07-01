@@ -161,16 +161,12 @@ export const searchStockImages = async ({
             { headers: { Authorization: pexelsKey } },
           )
           if (!res.ok) return []
-          try {
-            const data = (await res.json()) as PexelsResponse
-            return (data.photos ?? []).slice(0, half).map((photo) => ({
-              imageUrl: pexelsPhotoUrl(photo, w, h),
-              source: 'pexels' as const,
-              query,
-            }))
-          } catch {
-            return [] as StockImageResult[]
-          }
+          const data = (await res.json()) as PexelsResponse
+          return (data.photos ?? []).slice(0, half).map((photo) => ({
+            imageUrl: pexelsPhotoUrl(photo, w, h),
+            source: 'pexels' as const,
+            query,
+          }))
         })()
       : Promise.resolve([] as StockImageResult[]),
     unsplashKey
@@ -180,16 +176,12 @@ export const searchStockImages = async ({
             { headers: { Authorization: `Client-ID ${unsplashKey}` } },
           )
           if (!res.ok) return []
-          try {
-            const data = (await res.json()) as UnsplashResponse
-            return (data.results ?? []).slice(0, half).map((photo) => ({
-              imageUrl: `${photo.urls.regular || photo.urls.small || photo.urls.full}${unsplashSizeParam(w, h)}`,
-              source: 'unsplash' as const,
-              query,
-            }))
-          } catch {
-            return [] as StockImageResult[]
-          }
+          const data = (await res.json()) as UnsplashResponse
+          return (data.results ?? []).slice(0, half).map((photo) => ({
+            imageUrl: `${photo.urls.regular || photo.urls.small || photo.urls.full}${unsplashSizeParam(w, h)}`,
+            source: 'unsplash' as const,
+            query,
+          }))
         })()
       : Promise.resolve([] as StockImageResult[]),
   ])
@@ -211,33 +203,13 @@ export const searchStockImages = async ({
       interleaved.push(unsplashResults.value[i])
   }
 
-  // If no API keys, or all configured providers returned no usable results
-  // (e.g. malformed HTML instead of JSON), fall back to picsum with
-  // deterministic seeds per page. The seed uses the full slugified query
-  // (no truncation) so each query/page/index combination is unique.
-  const fullSlug = (text: string): string =>
-    text
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'image'
-
-  const picsumFallback = (): StockImageResult[] =>
-    Array.from({ length: perPage }, (_, i) => {
-      const seed = `${fullSlug(query)}-${page}-${i}`
-      return {
-        imageUrl: `https://picsum.photos/seed/${seed}/${w}/${h}`,
-        source: 'picsum' as const,
-        query,
-      }
-    })
-
+  // If no API keys, fall back to picsum with deterministic seeds per page
   if (!pexelsKey && !unsplashKey) {
-    return picsumFallback()
-  }
-
-  if (interleaved.length === 0) {
-    return picsumFallback()
+    return Array.from({ length: perPage }, (_, i) => ({
+      imageUrl: picsumUrl(`${slugifyAlt(query)}-${page}-${i}`, w, h),
+      source: 'picsum' as const,
+      query,
+    }))
   }
 
   return interleaved.slice(0, perPage)

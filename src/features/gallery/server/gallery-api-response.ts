@@ -1,17 +1,12 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
-import { isOpenUiErrorHtml } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type GalleryConvexClient = Pick<ConvexHttpClient, 'query'>
 
 const GALLERY_PAGE_DEFAULT = 12
 const GALLERY_PAGE_MAX = 24
-const galleryHeaders = {
-  'Content-Type': 'application/json',
-  'Cache-Control': 'public, max-age=20, stale-while-revalidate=120',
-}
 
 export const parseGalleryPagination = (query: Record<string, string> = {}) => {
   let valid = true
@@ -51,17 +46,6 @@ export const parseGalleryPagination = (query: Record<string, string> = {}) => {
   return { limit, page, valid }
 }
 
-const emptyGalleryPayload = (page: number, limit: number) => ({
-  items: [],
-  page,
-  limit,
-  total: 0,
-  totalPages: 1,
-  hasNext: false,
-  hasPrev: false,
-  availableCategories: [],
-})
-
 export const createGalleryApiResponse = async (
   request: Request,
   clientOverride?: GalleryConvexClient,
@@ -95,51 +79,23 @@ export const createGalleryApiResponse = async (
       category,
     })
 
-    const rawItems = Array.isArray(data?.items) ? data.items : []
-    // Drop malformed public session rows (null entries, non-object shapes,
-    // or rows missing a sessionId) before serializing gallery JSON, and
-    // suppress renderer-error previews so they never reach the public feed.
-    const filteredItems = rawItems
-      .filter((item) => {
-        if (item === null || typeof item !== 'object') return false
-        if (typeof item.sessionId !== 'string' || item.sessionId === '')
-          return false
-        if (isOpenUiErrorHtml(item.html)) return false
-        return true
-      })
-      .map((item) => ({
-        ...item,
-        categories: Array.isArray(item.categories) ? item.categories : [],
-      }))
-    // Recompute the pagination totals so the public payload reflects only
-    // the visible items after dropping malformed/renderer-error rows.
-    const suppressedCount = rawItems.length - filteredItems.length
-    const total =
-      suppressedCount > 0 ? filteredItems.length : (data?.total ?? 0)
-    const totalPages =
-      suppressedCount > 0
-        ? Math.max(1, Math.ceil(total / limit))
-        : (data?.totalPages ?? 1)
-    const hasNext =
-      suppressedCount > 0 ? page < totalPages : (data?.hasNext ?? false)
-    const hasPrev = suppressedCount > 0 ? page > 1 : (data?.hasPrev ?? false)
-    const sanitized = {
-      ...data,
-      items: filteredItems,
-      total,
-      totalPages,
-      hasNext,
-      hasPrev,
-    }
-
-    return new Response(JSON.stringify(sanitized), {
+    return new Response(JSON.stringify(data), {
       status: 200,
-      headers: galleryHeaders,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=20, stale-while-revalidate=120',
+      },
     })
-  } catch {
-    return new Response(JSON.stringify(emptyGalleryPayload(page, limit)), {
-      status: 200,
-      headers: galleryHeaders,
-    })
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        error:
+          error instanceof Error ? error.message : 'Unable to load gallery',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    )
   }
 }

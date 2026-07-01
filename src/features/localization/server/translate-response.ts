@@ -258,9 +258,9 @@ export const createTranslateResponse = async (
       cached: !result.modelCalled,
     }
     return json(response)
-  } catch {
+  } catch (error) {
     const response = {
-      error: 'Translation failed.',
+      error: error instanceof Error ? error.message : 'Translation failed.',
       translations: texts,
       locale,
       translated: false,

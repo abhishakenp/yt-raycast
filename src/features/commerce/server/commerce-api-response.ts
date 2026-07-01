@@ -126,10 +126,18 @@ const isUnsupportedProductCountError = (error: unknown): boolean => {
 
 const errorStatus = (error: unknown): number => {
   const message = error instanceof Error ? error.message : String(error)
-  if (/FORBIDDEN/i.test(message)) return 403
+  if (/FORBIDDEN|own/i.test(message)) return 403
   if (/NOT_FOUND|Validator: v\.id\("sessions"\)/i.test(message)) return 404
   return 500
 }
+
+const errorResponse = (error: unknown) =>
+  json(
+    {
+      error: error instanceof Error ? error.message : 'Commerce request failed',
+    },
+    { status: errorStatus(error) },
+  )
 
 const validateMedusaStoreApi = async (
   backendUrl: string,
@@ -269,11 +277,8 @@ export const createSessionMedusaConfigResponse = async (
       sessionId,
       config,
     })
-  } catch {
-    return json(
-      { error: 'Commerce configuration is unavailable.' },
-      { status: 503 },
-    )
+  } catch (error) {
+    return errorResponse(error)
   }
 }
 
@@ -385,7 +390,7 @@ export const createSessionMedusaProvisionResponse = async (
       status: 'ready',
       ...(warning === undefined ? {} : { warning }),
     })
-  } catch {
-    return json({ error: 'Commerce provisioning failed.' }, { status: 503 })
+  } catch (error) {
+    return errorResponse(error)
   }
 }

@@ -119,14 +119,17 @@ const TopActions = () => {
       aria-label="Primary"
     >
       <div className="pointer-events-auto ml-auto flex items-center gap-2">
-        <GlassPillAnchor className="pill--top-actions" href="/pricing">
+        <GlassPillAnchor
+          className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5"
+          href="/pricing"
+        >
           Pricing
         </GlassPillAnchor>
         {isClerkConfigured ? (
           <Suspense
             fallback={
               <GlassPillButton
-                className="pill--top-actions"
+                className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5"
                 onClick={() => setAuthRequested(true)}
               >
                 Sign in

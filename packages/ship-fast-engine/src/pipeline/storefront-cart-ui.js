@@ -140,7 +140,7 @@ header .utilities>a[href*="search"],header .utilities button[aria-label="Search"
   function renderMedusaCart(cart){
     lastCart=cart;
     if(!summary)return;
-    var items=cart&&Array.isArray(cart.items)?cart.items:[];
+    var items=cart&&cart.items?cart.items:[];
     var n=items.reduce(function(a,it){return a+(it.quantity||0);},0);
     if(countEl)countEl.textContent=String(n);
     if(!linesEl)return;
@@ -265,8 +265,8 @@ header .utilities>a[href*="search"],header .utilities button[aria-label="Search"
       e.stopPropagation();
       if(drawer.classList.contains('is-open'))closeD();
       else{
-        openD();
-        if(storeEnabled)refreshMedusaCart();
+        if(storeEnabled)refreshMedusaCart().then(function(){openD();});
+        else openD();
       }
     },true);
   }

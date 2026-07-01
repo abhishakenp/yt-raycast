@@ -29,7 +29,6 @@ import { toast } from 'sonner'
 
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
-import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import type { PreviewSelection } from '@/components/GenUI/DirectPreview'
 import type { InspectorSelection } from '@/features/editing/element-path'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
@@ -298,12 +297,8 @@ const readSiteThemeName = (specJson: string | undefined): string | null => {
   }
 }
 
-const isFullHtmlDocument = (html: string | undefined): boolean =>
-  typeof html === 'string' &&
-  (/^\s*<!doctype\s+html/i.test(html) || /^\s*<html[\s>]/i.test(html))
-
 const isOpenUIHandoffHtml = (html: string | undefined): boolean =>
-  isUnsafePublicPreviewHtml(html)
+  typeof html === 'string' && html.includes('ship-fast-openui-source')
 
 const ToolPopoverFallback = () => (
   <div className="grid gap-3" aria-hidden="true">
@@ -464,11 +459,8 @@ export function Dashboard({
   const homeModule = generationView?.homeModule
   const cmsPreviewHtml = generationView?.latestPreview?.html
   const cmsPreviewSource =
-    typeof cmsPreviewHtml === 'string' &&
-    cmsPreviewHtml.length > 0 &&
-    !isOpenUIHandoffHtml(cmsPreviewHtml) &&
-    (cmsPreviewHtml.includes('ship-fast-cms:') ||
-      isFullHtmlDocument(cmsPreviewHtml))
+    cmsPreviewHtml?.includes('ship-fast-cms:') &&
+    !isOpenUIHandoffHtml(cmsPreviewHtml)
       ? cmsPreviewHtml
       : undefined
   const hasRenderableClonePage = Boolean(
@@ -1327,7 +1319,7 @@ export function Dashboard({
 
       <audio id="launch-sfx" preload="auto" src="/assets/launch.mp3"></audio>
 
-      {!isPreviewRenderable && !isMissingSession && !isAdminActive ? (
+      {startedFromGenerationFlow && !isPreviewRenderable && !isAdminActive ? (
         <IntroLoader
           progress={Math.min(0.94, progress / 100)}
           playSound={startedFromGenerationFlow}

@@ -430,14 +430,9 @@ export const createSectionEditResponse = async (
   const anonymousOwnerSecret = getOwnerSecret(request, body)
 
   // Load current artifacts
-  let generationView: GenerationViewSnapshot | null
-  try {
-    generationView = (await client.query(api.sessions.getGenerationView, {
-      sessionId: asSessionId(sessionId),
-    })) as GenerationViewSnapshot | null
-  } catch {
-    return json({ error: 'Unable to edit section.' }, { status: 503 })
-  }
+  const generationView = (await client.query(api.sessions.getGenerationView, {
+    sessionId: asSessionId(sessionId),
+  })) as GenerationViewSnapshot | null
 
   if (!generationView) {
     return json({ error: 'Session not found.' }, { status: 404 })

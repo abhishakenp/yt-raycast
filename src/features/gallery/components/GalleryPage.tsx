@@ -24,7 +24,6 @@ export const GalleryPage = () => {
   const [category, setCategory] = useState<GalleryCategory>('all')
   const [page, setPage] = useState(1)
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const hasActiveFilter = search.trim().length > 0 || category !== 'all'
   const { gallery } = useGalleryController({
     category: category === 'all' ? '' : category,
     limit: PAGE_SIZE,
@@ -120,11 +119,7 @@ export const GalleryPage = () => {
               )}
             </div>
 
-            <GalleryGrid
-              emptyStateVariant={hasActiveFilter ? 'filtered' : 'gallery'}
-              gallery={gallery}
-              skeletonCount={PAGE_SIZE}
-            />
+            <GalleryGrid gallery={gallery} skeletonCount={PAGE_SIZE} />
 
             {gallery !== undefined ? (
               <GalleryPagination

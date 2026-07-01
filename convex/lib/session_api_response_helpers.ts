@@ -1,9 +1,7 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
-import { isSessionOwner } from './session_access_helpers'
-import { isOpenUiErrorHtml } from './openui_error_html'
 
-type SessionApiResponseCtx = Pick<QueryCtx, 'db' | 'auth'>
+type SessionApiResponseCtx = Pick<QueryCtx, 'db'>
 
 export type SessionApiResponseArtifacts = {
   tasks: Doc<'tasks'>[]
@@ -69,9 +67,7 @@ export const serializeSessionApiResponse = (
         ? null
         : {
             version: artifacts.latestPreview.version,
-            html: isOpenUiErrorHtml(artifacts.latestPreview.html)
-              ? ''
-              : artifacts.latestPreview.html,
+            html: artifacts.latestPreview.html,
             openUiSource: artifacts.latestPreview.openUiSource,
             siteSpecJson: artifacts.latestPreview.siteSpecJson,
             createdAt: artifacts.latestPreview.createdAt,
@@ -132,13 +128,6 @@ export const loadSessionApiResponse = async (
 
   const session = await ctx.db.get(sessionId)
   if (session === null) return null
-
-  // Enforce private-session ownership: unauthenticated or wrong-user callers
-  // get null instead of the session payload.
-  if (session.isPrivate === true) {
-    const owner = await isSessionOwner(ctx, session, undefined)
-    if (!owner) return null
-  }
 
   const [
     tasks,

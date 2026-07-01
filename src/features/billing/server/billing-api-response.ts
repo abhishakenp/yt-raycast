@@ -44,7 +44,15 @@ export const createBillingApiResponse = async (
     client.setAuth(token)
     const data = await client.query(getFunctionReference(endpoint), {})
     return json(data)
-  } catch {
-    return json({ error: 'Unable to load billing details.' }, { status: 503 })
+  } catch (error) {
+    return json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to load billing details.',
+      },
+      { status: 500 },
+    )
   }
 }

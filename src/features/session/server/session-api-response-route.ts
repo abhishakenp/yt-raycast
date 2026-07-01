@@ -33,7 +33,13 @@ export const createSessionApiResponse = async (
         'Cache-Control': 'private, max-age=30, stale-while-revalidate=300',
       },
     })
-  } catch {
-    return json({ error: 'Unable to load session.' }, { status: 503 })
+  } catch (error) {
+    return json(
+      {
+        error:
+          error instanceof Error ? error.message : 'Unable to load session.',
+      },
+      { status: 500 },
+    )
   }
 }

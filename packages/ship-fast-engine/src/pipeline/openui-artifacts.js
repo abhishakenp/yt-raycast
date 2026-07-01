@@ -9,9 +9,9 @@ import { slug, writeFile } from './workspace.js'
 
 export function routeToOpenUIFile(route = '/') {
   const clean = String(route || '/').trim()
-  const stripped = clean.replace(/^\/+|\/+$/g, '')
-  if (!stripped) return HOME_OPENUI_FILE
-  const parts = stripped
+  if (!clean || clean === '/') return HOME_OPENUI_FILE
+  const parts = clean
+    .replace(/^\/+|\/+$/g, '')
     .split('/')
     .filter(Boolean)
     .map((part) => slug(part) || 'page')
@@ -81,8 +81,9 @@ export function upsertOpenUIManifestEntry(workspace, siteSpec, entry) {
 export function readOpenUIFileForRoute(workspace, route = '/') {
   const manifest = readOpenUIManifest(workspace)
   const normalizedRoute = String(route || '/').trim() || '/'
-  const pages = Array.isArray(manifest?.pages) ? manifest.pages : []
-  const manifestEntry = pages.find((page) => page.route === normalizedRoute)
+  const manifestEntry = manifest?.pages?.find(
+    (page) => page.route === normalizedRoute,
+  )
   const rel = manifestEntry?.file || routeToOpenUIFile(normalizedRoute)
   const path = join(workspace, rel)
   if (!existsSync(path)) return null
@@ -97,12 +98,11 @@ export function openUIArtifactsReady(workspace, siteSpec) {
   if (!existsSync(join(workspace, HOME_OPENUI_FILE))) return false
   const manifest = readOpenUIManifest(workspace)
   if (!manifest) return true
-  if (!Array.isArray(manifest.pages)) return false
   const requiredRoutes = new Set(
     (siteSpec?.pages || []).map((page) => page.route || '/'),
   )
   for (const route of requiredRoutes) {
-    const entry = manifest.pages.find((page) => page.route === route)
+    const entry = manifest.pages?.find((page) => page.route === route)
     if (!entry?.ready || !existsSync(join(workspace, entry.file))) return false
   }
   return true

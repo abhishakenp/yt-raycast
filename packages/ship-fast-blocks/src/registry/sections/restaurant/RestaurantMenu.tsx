@@ -221,7 +221,6 @@ export const RestaurantMenu = defineCapsule({
                     <button
                       key={item.name}
                       type="button"
-                      aria-label={`Add ${item.name}`}
                       aria-busy={restaurantOrder.isAdding(item.name)}
                       onClick={() => {
                         void restaurantOrder.add(item.name, {

@@ -1,7 +1,6 @@
 import { CreditCard, RefreshCw, Wallet } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { readJsonOrThrow } from '@/lib/safe-fetch'
 import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 type BillingPanelProps = {
@@ -50,10 +49,7 @@ export const BillingPanel = ({ sessionId }: BillingPanelProps) => {
       const response = await fetch('/api/billing-overview', {
         headers: { Authorization: `Bearer ${token}` },
       })
-      const data = await readJsonOrThrow<BillingOverview & { error?: string }>(
-        response,
-        'Unable to load billing',
-      )
+      const data = await response.json()
       if (!response.ok) throw new Error(data?.error ?? 'Unable to load billing')
       setOverview(data)
     } catch (loadError) {
@@ -99,14 +95,8 @@ export const BillingPanel = ({ sessionId }: BillingPanelProps) => {
           sessionId,
         }),
       })
-      const data = await readJsonOrThrow<Record<string, unknown>>(
-        response,
-        'Checkout failed',
-      )
-      if (!response.ok)
-        throw new Error(
-          typeof data?.error === 'string' ? data.error : 'Checkout failed',
-        )
+      const data = await response.json()
+      if (!response.ok) throw new Error(data?.error ?? 'Checkout failed')
 
       if (typeof data.url === 'string' && data.url) {
         window.location.href = data.url

@@ -40,8 +40,14 @@ export const createReferralStatusApiResponse = async (
     await client.mutation(api.referrals.getOrCreateMyReferralCode, {})
     const status = await client.query(api.referrals.getMyReferralStatus, {})
     return json(status)
-  } catch {
-    return json({ error: 'Unable to load referrals.' }, { status: 503 })
+  } catch (error) {
+    return json(
+      {
+        error:
+          error instanceof Error ? error.message : 'Unable to load referrals.',
+      },
+      { status: 500 },
+    )
   }
 }
 
@@ -75,7 +81,13 @@ export const createReferralRecordApiResponse = async (
     })) as { recorded: boolean; reason: string }
 
     return json(result)
-  } catch {
-    return json({ error: 'Unable to record referral.' }, { status: 503 })
+  } catch (error) {
+    return json(
+      {
+        error:
+          error instanceof Error ? error.message : 'Unable to record referral.',
+      },
+      { status: 500 },
+    )
   }
 }

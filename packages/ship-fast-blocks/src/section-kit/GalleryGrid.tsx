@@ -16,7 +16,6 @@ export function GalleryGrid(props: {
   className?: string
 }) {
   const columns = props.columns ?? 3
-  const images = Array.isArray(props.images) ? props.images : []
   const colClass =
     columns === 2
       ? 'sm:grid-cols-2'
@@ -30,7 +29,7 @@ export function GalleryGrid(props: {
         <SectionHeading title={props.heading} subtitle={props.subheading} />
       ) : null}
       <div className={cn('grid gap-4', 'grid-cols-1', colClass)}>
-        {images.filter(Boolean).map((img, i) => (
+        {props.images.map((img, i) => (
           <figure
             key={i}
             className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-border"

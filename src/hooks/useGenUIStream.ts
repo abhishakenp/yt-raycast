@@ -153,14 +153,7 @@ export function useGenUIStream() {
           if (!line.startsWith('data:')) continue
           const json = line.slice(5).trim()
           if (!json) continue
-          let ev: GenUIEvent
-          try {
-            ev = JSON.parse(json) as GenUIEvent
-          } catch {
-            // Skip malformed SSE frames (e.g. gateway error HTML) and keep
-            // reducing later valid stream events.
-            continue
-          }
+          const ev = JSON.parse(json) as GenUIEvent
           setState((prev) => reduce(prev, ev))
         }
       }

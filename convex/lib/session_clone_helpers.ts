@@ -248,10 +248,6 @@ export const loadClonePagePreview = async (
   const session = sessionId === null ? null : await ctx.db.get(sessionId)
   if (session === null) return null
 
-  // Private sessions must not be exposed through unauthenticated public
-  // preview lookups.
-  if (session.isPrivate === true) return null
-
   const pages = await ctx.db
     .query('clonePages')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', session._id))

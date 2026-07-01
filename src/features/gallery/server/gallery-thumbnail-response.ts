@@ -1,7 +1,6 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
-import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import {
   captureGalleryThumb,
   readCachedGalleryThumb,
@@ -19,7 +18,6 @@ type GalleryThumbnailSession = {
   homepageReady?: boolean | null
   siteSpecReady?: boolean | null
   openuiReady?: boolean | null
-  html?: string | null
   readiness?: {
     homepageReady?: boolean | null
     siteSpecReady?: boolean | null
@@ -243,13 +241,6 @@ export const createGalleryThumbnailResponse = async (
       return new Response('Session not found or not public', { status: 404 })
     }
 
-    // A session whose preview was suppressed as renderer-error HTML (html set
-    // to null, or still containing the error marker) must not be exposed as a
-    // public thumbnail.
-    if (session.html === null || isUnsafePublicPreviewHtml(session.html)) {
-      return new Response('Session not found or not public', { status: 404 })
-    }
-
     // Prefer a real screenshot of the generated site (captured once and saved).
     // Only fall back to the deterministic SVG when capture is unavailable or
     // fails; that SVG is the explicit error/placeholder state.
@@ -286,10 +277,10 @@ export const createGalleryThumbnailResponse = async (
         'Cache-Control': 'public, max-age=10',
       },
     })
-  } catch {
-    return new Response('Thumbnail temporarily unavailable', {
-      status: 503,
-      headers: { 'content-type': 'text/plain' },
-    })
+  } catch (error) {
+    return new Response(
+      error instanceof Error ? error.message : 'Unable to generate thumbnail',
+      { status: 500 },
+    )
   }
 }

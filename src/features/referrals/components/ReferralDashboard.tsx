@@ -2,7 +2,6 @@ import { Check, Copy, Gift, RefreshCw, Share2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { useReferralStatus } from '@/features/referrals/hooks/useReferralStatus'
-import { requestClerkSignIn } from '@/shared/auth/use-optional-auth'
 
 const buildReferralLink = (code: string | null): string => {
   if (!code) return ''
@@ -26,12 +25,6 @@ export const ReferralDashboard = () => {
   const { status, isLoading, error, reload } = useReferralStatus()
   const [copied, setCopied] = useState(false)
 
-  const signInForReferrals = () => {
-    requestClerkSignIn()
-    window.setTimeout(() => void reload(), 1200)
-    window.setTimeout(() => void reload(), 3000)
-  }
-
   const link = useMemo(() => buildReferralLink(status?.code ?? null), [status])
 
   const copyLink = async () => {
@@ -48,7 +41,6 @@ export const ReferralDashboard = () => {
   const threshold = status?.threshold ?? 2
   const qualified = status?.qualifiedCount ?? 0
   const progress = Math.min(100, Math.round((qualified / threshold) * 100))
-  const refreshDisabled = isLoading || !status
 
   return (
     <div className="mx-auto grid w-full max-w-2xl gap-5 p-6">
@@ -69,8 +61,8 @@ export const ReferralDashboard = () => {
         </div>
         <button
           aria-label="Refresh referrals"
-          className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white/60 hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white/[0.04] disabled:hover:text-white/60"
-          disabled={refreshDisabled}
+          className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white/60 hover:bg-white/[0.08] hover:text-white"
+          disabled={isLoading}
           onClick={() => void reload()}
           type="button"
         >
@@ -79,16 +71,9 @@ export const ReferralDashboard = () => {
       </header>
 
       {error && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3">
-          <p className="m-0 text-sm text-rose-200">{error}</p>
-          <button
-            className="inline-flex h-9 shrink-0 items-center rounded-xl bg-cyan-300 px-3 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
-            onClick={signInForReferrals}
-            type="button"
-          >
-            Sign in
-          </button>
-        </div>
+        <p className="m-0 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-200">
+          {error}
+        </p>
       )}
 
       {/* Share link */}

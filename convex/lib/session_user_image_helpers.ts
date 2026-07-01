@@ -2,10 +2,7 @@ import { ConvexError } from 'convex/values'
 
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
-import {
-  assertCanMutateSession,
-  isSessionOwner,
-} from './session_access_helpers'
+import { assertCanMutateSession } from './session_access_helpers'
 
 const assertSessionExists = async (
   ctx: Pick<MutationCtx, 'db'>,
@@ -73,14 +70,6 @@ export const listUserImages = async (
   ctx: QueryCtx,
   args: { sessionId: Id<'sessions'> },
 ) => {
-  // Suppress uploaded images for private sessions when the caller is not
-  // the owner (unauthenticated list queries return an empty array).
-  const session = await ctx.db.get(args.sessionId)
-  if (session?.isPrivate === true) {
-    const owner = await isSessionOwner(ctx, session, undefined)
-    if (!owner) return []
-  }
-
   const images = await ctx.db
     .query('userImages')
     .withIndex('by_sessionId', (q) => q.eq('sessionId', args.sessionId))
