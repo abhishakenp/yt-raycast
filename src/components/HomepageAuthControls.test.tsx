@@ -166,4 +166,30 @@ describe('HomepageAuthControls', () => {
       expect(appContent.hasAttribute('inert')).toBe(false)
     })
   })
+
+  it('restores app content accessibility if auth controls unmount while the Clerk modal exists', async () => {
+    setClerk({ openSignIn: vi.fn() })
+    const appContent = document.createElement('main')
+    appContent.id = 'ship-fast-app-content'
+    appContent.textContent = 'Homepage'
+    document.body.append(appContent)
+    const { HomepageAuthControls } = await importControls('pk_test_homepage')
+
+    const { unmount } = render(<HomepageAuthControls wrapProvider={false} />)
+
+    const modal = document.createElement('div')
+    modal.className = 'cl-modalContent'
+    modal.setAttribute('role', 'dialog')
+    document.body.append(modal)
+
+    await waitFor(() => {
+      expect(appContent.getAttribute('aria-hidden')).toBe('true')
+      expect(appContent.hasAttribute('inert')).toBe(true)
+    })
+
+    unmount()
+
+    expect(appContent.hasAttribute('aria-hidden')).toBe(false)
+    expect(appContent.hasAttribute('inert')).toBe(false)
+  })
 })
