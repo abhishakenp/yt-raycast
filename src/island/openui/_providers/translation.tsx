@@ -15,7 +15,7 @@ export function I18nProvider({
   children,
   locale = 'en',
 }: {
-  children: ReactNode
+  children?: ReactNode
   locale?: Locale
 }) {
   return (
