@@ -141,6 +141,11 @@ export const createSessionEventStreamResponse = async (
 
     return createSseResponse(`${heartbeatKeepAlive}${replay}${replayComplete}`)
   } catch (error) {
+    const isForbidden =
+      error instanceof Error &&
+      typeof (error as { data?: { code?: string } }).data?.code === 'string' &&
+      (error as unknown as { data: { code: string } }).data.code === 'FORBIDDEN'
+
     return createSseResponse(
       [
         sseLine('event', 'error'),
@@ -155,7 +160,7 @@ export const createSessionEventStreamResponse = async (
         ),
         '\n',
       ].join(''),
-      { status: 500 },
+      { status: isForbidden ? 403 : 500 },
     )
   }
 }

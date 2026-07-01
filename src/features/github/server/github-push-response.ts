@@ -128,7 +128,12 @@ const loadPrebuiltFiles = async (
   if (!url) return null
   const response = await fetch(url)
   if (!response.ok) return null
-  const parsed = await readUnknownJson(response)
+  let parsed: unknown
+  try {
+    parsed = await readUnknownJson(response)
+  } catch {
+    return null
+  }
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
     return null
   }
@@ -214,15 +219,25 @@ async function githubRequest<T>(
   })
 
   const raw = await response.text()
-  const data = raw ? JSON.parse(raw) : null
+  let data: Record<string, unknown> | null = null
+  if (raw) {
+    try {
+      data = JSON.parse(raw) as Record<string, unknown>
+    } catch {
+      data = null
+    }
+  }
 
   if (!expectedStatus.includes(response.status)) {
+    const errors = Array.isArray(data?.errors)
+      ? (data?.errors as { message?: string }[])
+      : undefined
     const message =
-      data?.errors
-        ?.map((entry: { message?: string }) => entry.message)
+      errors
+        ?.map((entry) => entry.message)
         .filter(Boolean)
         .join(', ') ||
-      data?.message ||
+      (typeof data?.message === 'string' ? data.message : undefined) ||
       response.statusText ||
       'GitHub request failed.'
     const error = new Error(message)
