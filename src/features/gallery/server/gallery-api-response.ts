@@ -95,12 +95,24 @@ export const createGalleryApiResponse = async (
       category,
     })
 
-    const rawItems = data?.items ?? []
-    const filteredItems = rawItems.filter(
-      (item) => !isOpenUiErrorHtml(item?.html),
-    )
-    // When renderer-error previews are suppressed, recompute the pagination
-    // totals so the public payload reflects only the visible items.
+    const rawItems = Array.isArray(data?.items) ? data.items : []
+    // Drop malformed public session rows (null entries, non-object shapes,
+    // or rows missing a sessionId) before serializing gallery JSON, and
+    // suppress renderer-error previews so they never reach the public feed.
+    const filteredItems = rawItems
+      .filter((item) => {
+        if (item === null || typeof item !== 'object') return false
+        if (typeof item.sessionId !== 'string' || item.sessionId === '')
+          return false
+        if (isOpenUiErrorHtml(item.html)) return false
+        return true
+      })
+      .map((item) => ({
+        ...item,
+        categories: Array.isArray(item.categories) ? item.categories : [],
+      }))
+    // Recompute the pagination totals so the public payload reflects only
+    // the visible items after dropping malformed/renderer-error rows.
     const suppressedCount = rawItems.length - filteredItems.length
     const total =
       suppressedCount > 0 ? filteredItems.length : (data?.total ?? 0)

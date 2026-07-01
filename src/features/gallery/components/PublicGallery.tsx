@@ -563,7 +563,17 @@ const GalleryGridInner = ({
     )
   }
 
-  const items = gallery.items.filter(
+  const rawItems = Array.isArray(gallery?.items) ? gallery.items : []
+  // Ignore malformed gallery rows (null entries, non-object shapes, or rows
+  // missing a sessionId) instead of crashing the preview grid.
+  const validItems = rawItems.filter(
+    (session): session is GallerySession =>
+      session !== null &&
+      typeof session === 'object' &&
+      typeof session.sessionId === 'string' &&
+      session.sessionId !== '',
+  )
+  const items = validItems.filter(
     (session) => !deletedSessionIds.has(session.sessionId),
   )
   const isEmpty = items.length === 0
