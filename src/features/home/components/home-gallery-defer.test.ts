@@ -5,15 +5,66 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LaunchBackdrop } from '@/components/launch-backdrop'
 
-describe('homepage gallery deferral', () => {
-  it('resolves the lazy home gallery import with HomeGallerySection', async () => {
-    const module = await import('@/features/gallery/components/PublicGallery')
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({
+    children,
+    to,
+    ...props
+  }: {
+    children: React.ReactNode
+    to: string
+    [key: string]: unknown
+  }) => createElement('a', { href: to, ...props }, children),
+}))
 
-    expect(module.HomeGallerySection).toBeTypeOf('function')
+vi.mock('convex/react', () => ({
+  useMutation: () => vi.fn(),
+}))
+
+vi.mock('../../../../convex/_generated/api', () => ({
+  api: {
+    sessions: {
+      deleteMine: 'sessions.deleteMine',
+    },
+  },
+}))
+
+vi.mock('@/features/gallery/hooks/useGalleryController', () => ({
+  useGalleryController: () => ({
+    gallery: undefined,
+  }),
+}))
+
+describe('homepage gallery deferral', () => {
+  it('renders the deferred home gallery surface with loading cards and navigation links', async () => {
+    const { HomeGallerySection } =
+      await import('@/features/gallery/components/PublicGallery')
+
+    const { container, getByRole, getByText } = render(
+      createElement(HomeGallerySection),
+    )
+
+    expect(getByText('Gallery')).toBeTruthy()
+    expect(getByRole('heading').textContent).toBe(
+      'See what other speedsters generated',
+    )
+    expect(getByRole('link', { name: /my generations/i })).toHaveProperty(
+      'pathname',
+      '/mine',
+    )
+    expect(getByRole('link', { name: /view all/i })).toHaveProperty(
+      'pathname',
+      '/gallery',
+    )
+    expect(container.querySelector('.sf-gallery-grid')?.children).toHaveLength(
+      12,
+    )
   })
 
-  it('exports the LaunchBackdrop component used by the homepage', () => {
-    expect(LaunchBackdrop).toBeTypeOf('function')
+  it('renders the launch backdrop canvas layer used by the homepage', () => {
+    const { container } = render(createElement(LaunchBackdrop))
+
+    expect(container.querySelector('canvas')).not.toBeNull()
   })
 
   describe('LaunchBackdrop visibility pause', () => {
