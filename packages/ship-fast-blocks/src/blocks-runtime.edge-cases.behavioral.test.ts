@@ -45,6 +45,7 @@ import {
 import {
   OpenUIIntegrationProviders,
   OpenUIMedusaContext,
+  provisionMedusaIntegration,
   type OpenUIIntegrationConfig,
 } from './integrations.tsx'
 import {
@@ -662,6 +663,29 @@ describe('integrations', () => {
       expect(value.status).toBe('error')
       // The error string is trimmed and surfaced verbatim from the body.
       expect(value.error).toBe('Medusa is down')
+    })
+  })
+
+  it('25. provisionMedusaIntegration converts malformed HTML provision output into an error result', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response('<!doctype html><h1>Proxy error</h1>', {
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+        status: 200,
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(
+      provisionMedusaIntegration('sess-html', {
+        backendUrl: 'https://api.example.com',
+        storefrontUrl: 'https://shop.example.com',
+      }),
+    ).resolves.toMatchObject({
+      backendUrl: 'https://api.example.com',
+      storefrontUrl: 'https://shop.example.com',
+      ready: false,
+      status: 'error',
+      error: 'Medusa config check failed',
     })
   })
 })
