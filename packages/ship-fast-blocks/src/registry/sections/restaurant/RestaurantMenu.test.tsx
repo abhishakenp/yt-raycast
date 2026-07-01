@@ -159,6 +159,9 @@ const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
 const { RestaurantMenu } = await import('./RestaurantMenu.tsx')
 const { RestaurantNavbar } = await import('./RestaurantNavbar.tsx')
+const { RestaurantTestimonials } = await import('./RestaurantTestimonials.tsx')
+const { RestaurantGallery } = await import('./RestaurantGallery.tsx')
+const { RestaurantStory } = await import('./RestaurantStory.tsx')
 
 const now = '2026-06-26T00:00:00.000Z'
 
@@ -177,10 +180,12 @@ function createDeferred() {
 function createRestaurantLakebedStub({
   addDelay,
   reserveDelay,
+  restaurantOrderOverride,
   selectDelay,
 }: {
   addDelay?: () => Promise<void>
   reserveDelay?: () => Promise<void>
+  restaurantOrderOverride?: unknown
   selectDelay?: () => Promise<void>
 } = {}) {
   let version = 0
@@ -251,6 +256,9 @@ function createRestaurantLakebedStub({
 
       if (name === 'menuCatalog') return catalog
       if (name === 'restaurantExperience') return experience()
+      if (name === 'restaurantOrder' && restaurantOrderOverride !== undefined) {
+        return restaurantOrderOverride as RestaurantOrder
+      }
       if (name === 'restaurantOrder') return summary()
       return null
     },
@@ -456,6 +464,104 @@ afterEach(() => {
 })
 
 describe('RestaurantMenu fullstack ordering', () => {
+  it('renders real generated menu props when the live order payload has no items array', () => {
+    const { lakebed } = createRestaurantLakebedStub({
+      restaurantOrderOverride: {
+        count: 0,
+        lastSelection: null,
+        selections: [],
+      },
+    })
+    lakebedRef.current = lakebed
+    const Menu = RestaurantMenu.client.component
+
+    expect(() =>
+      render(
+        <Menu
+          props={{
+            categories: [
+              {
+                items: [
+                  {
+                    description: 'Tropical notes with a crisp finish',
+                    name: 'Pineapple Saison',
+                    price: '$7',
+                    tag: 'Limited',
+                  },
+                  {
+                    description: 'Rich cocoa and roasted malt',
+                    name: 'Chocolate Stout',
+                    price: '$8',
+                    tag: 'Seasonal',
+                  },
+                  {
+                    description: 'Balanced hop profile with citrus aroma',
+                    name: 'Year-Round Classics>Portland Pale Ale',
+                    price: '$6',
+                    tag: 'Core',
+                  },
+                  {
+                    description: 'Bold bitterness with pine and mango',
+                    name: 'Hoppy IPA',
+                    price: '$7',
+                    tag: 'Core]',
+                  },
+                ],
+                name: 'categories[Seasonal Releases',
+              },
+            ],
+            description:
+              'Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.',
+            heading: 'Our Brew Selection',
+          }}
+          statementId="restaurant_menu"
+        />,
+      ),
+    ).not.toThrow()
+
+    expect(screen.getByText('Our Brew Selection')).toBeTruthy()
+    expect(screen.getByText('Pineapple Saison')).toBeTruthy()
+    expect(screen.getAllByText('Add').length).toBeGreaterThan(0)
+  })
+
+  it('does not crash when generated category data is array-like instead of a real array', () => {
+    const { lakebed } = createRestaurantLakebedStub()
+    lakebedRef.current = lakebed
+    const Menu = RestaurantMenu.client.component
+
+    expect(() =>
+      render(
+        <Menu
+          props={
+            {
+              categories: {
+                0: {
+                  items: [
+                    {
+                      description: 'Citrus and pine over a clean malt base',
+                      name: 'Portland Pale Ale',
+                      price: '$6',
+                    },
+                  ],
+                  name: 'Drafts',
+                },
+                length: 1,
+              },
+              heading: 'Tap List',
+            } as unknown as Parameters<typeof Menu>[0]['props']
+          }
+          statementId="restaurant_menu"
+        />,
+      ),
+    ).not.toThrow()
+
+    expect(screen.getByText('Tap List')).toBeTruthy()
+    expect(
+      screen.getByText('Tap dishes to build a live table order.'),
+    ).toBeTruthy()
+    expect(screen.getByText('Burrata & Heirloom Tomato')).toBeTruthy()
+  })
+
   it('shares menu catalog with search, Shoo account, reservations, and mobile navigation', async () => {
     const { catalog, lakebed, reservations, signInWithGoogle, state } =
       createRestaurantLakebedStub()
@@ -706,5 +812,172 @@ describe('RestaurantMenu fullstack ordering', () => {
         },
       ])
     })
+  })
+})
+
+describe('RestaurantTestimonials generated review data', () => {
+  it('renders real generated string ratings as usable star ratings without leaking malformed fragments', () => {
+    lakebedRef.current = createRestaurantLakebedStub().lakebed
+    const Testimonials = RestaurantTestimonials.client.component
+
+    render(
+      <Testimonials
+        props={
+          {
+            heading: 'What Our Patrons Say',
+            reviews: [
+              {
+                name: 'name',
+                quote: 'reviews[quote',
+                rating: 'rating]“The Pineapple Saison is a summer must-try!”',
+                role: 'role',
+              },
+              {
+                name: 'Javier Lopez',
+                quote: 'Loved the tour - the staff are so knowledgeable.',
+                rating: '5',
+                role: 'Software Engineer',
+              },
+              {
+                name: 'Samantha Reed',
+                quote: 'Great vibe, amazing beers, and friendly people.',
+                rating: '4',
+                role: 'Graphic Designer',
+              },
+            ],
+          } as unknown as Parameters<typeof Testimonials>[0]['props']
+        }
+        statementId="restaurant_testimonials"
+      />,
+    )
+
+    expect(screen.getByText('What Our Patrons Say')).toBeTruthy()
+    expect(screen.queryByText('Javier Lopez')).toBeTruthy()
+    expect(screen.queryByText('Samantha Reed')).toBeTruthy()
+    expect(screen.queryByText('Elena Rossi')).toBeNull()
+    expect(
+      screen.queryByLabelText(
+        'rating]“The Pineapple Saison is a summer must-try!” out of 5 stars',
+      ),
+    ).toBeNull()
+    expect(screen.getAllByLabelText('5 out of 5 stars').length).toBeGreaterThan(
+      0,
+    )
+    expect(screen.getByLabelText('4 out of 5 stars')).toBeTruthy()
+  })
+
+  it('renders array-like generated reviews without crashing or falling back to defaults', () => {
+    lakebedRef.current = createRestaurantLakebedStub().lakebed
+    const Testimonials = RestaurantTestimonials.client.component
+
+    expect(() =>
+      render(
+        <Testimonials
+          props={
+            {
+              heading: 'Generated Guest Notes',
+              reviews: {
+                0: {
+                  name: 'Array-Like Guest',
+                  quote: 'The tasting menu held together even with odd data.',
+                  rating: '5',
+                  source: 'Generated Review',
+                },
+                length: 1,
+              },
+            } as unknown as Parameters<typeof Testimonials>[0]['props']
+          }
+          statementId="restaurant_testimonials"
+        />,
+      ),
+    ).not.toThrow()
+
+    expect(screen.getByText('Generated Guest Notes')).toBeTruthy()
+    expect(screen.getByText('Array-Like Guest')).toBeTruthy()
+    expect(screen.queryByText('Elena Rossi')).toBeNull()
+  })
+})
+
+describe('RestaurantGallery generated image data', () => {
+  it('renders real generated captionless image rows instead of replacing them with defaults', () => {
+    lakebedRef.current = createRestaurantLakebedStub().lakebed
+    const Gallery = RestaurantGallery.client.component
+
+    render(
+      <Gallery
+        props={
+          {
+            description: 'Snapshots of our space and gatherings.',
+            heading: 'Taproom & Events',
+            images: [{ alt: 'images[alt]Taproom bar area' }],
+          } as unknown as Parameters<typeof Gallery>[0]['props']
+        }
+        statementId="restaurant_gallery"
+      />,
+    )
+
+    expect(screen.getByText('Taproom & Events')).toBeTruthy()
+    expect(screen.getByAltText('images[alt]Taproom bar area')).toBeTruthy()
+    expect(screen.queryByAltText(/Wood-fired whole branzino/i)).toBeNull()
+  })
+
+  it('renders array-like generated image rows without crashing or falling back to defaults', () => {
+    lakebedRef.current = createRestaurantLakebedStub().lakebed
+    const Gallery = RestaurantGallery.client.component
+
+    expect(() =>
+      render(
+        <Gallery
+          props={
+            {
+              heading: 'Generated Gallery',
+              images: {
+                0: {
+                  alt: 'Array-like dining room image',
+                  caption: 'Dining room',
+                },
+                length: 1,
+              },
+            } as unknown as Parameters<typeof Gallery>[0]['props']
+          }
+          statementId="restaurant_gallery"
+        />,
+      ),
+    ).not.toThrow()
+
+    expect(screen.getByText('Generated Gallery')).toBeTruthy()
+    expect(screen.getByAltText('Array-like dining room image')).toBeTruthy()
+    expect(screen.queryByAltText(/Wood-fired whole branzino/i)).toBeNull()
+  })
+})
+
+describe('RestaurantStory generated feature data', () => {
+  it('renders array-like generated story features without crashing or falling back to defaults', () => {
+    lakebedRef.current = createRestaurantLakebedStub().lakebed
+    const Story = RestaurantStory.client.component
+
+    expect(() =>
+      render(
+        <Story
+          props={
+            {
+              features: {
+                0: {
+                  title: 'Array-Like Prep',
+                  description: 'Feature metadata arrived as an indexed object.',
+                },
+                length: 1,
+              },
+              heading: 'Generated Story',
+            } as unknown as Parameters<typeof Story>[0]['props']
+          }
+          statementId="restaurant_story"
+        />,
+      ),
+    ).not.toThrow()
+
+    expect(screen.getByText('Generated Story')).toBeTruthy()
+    expect(screen.getByText('Array-Like Prep')).toBeTruthy()
+    expect(screen.queryByText('18-Hour Tonkotsu')).toBeNull()
   })
 })

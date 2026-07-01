@@ -54,6 +54,47 @@ function isDroppableKey(schema: unknown): boolean {
 }
 
 /**
+ * Does `schema` (an array element schema) itself declare any nested array
+ * field, directly or through optional/nullable/union/object wrappers? Used to
+ * decide whether an array-like object is safe to coerce into a real array:
+ *
+ *   - flat element schemas (only scalars) -> coerce array-like -> render the
+ *     generated rows instead of falling back to defaults;
+ *   - element schemas with nested arrays (e.g. a category carrying an `items`
+ *     array) -> keep the existing crash-safe fallback, since such array-like
+ *     shapes are usually DB-shaped records that were never meant to be array
+ *     elements and rendering them half-converted can produce wrong output.
+ *
+ * Generic: keys off the declared schema shape, never a component name.
+ */
+function schemaContainsArray(schema: unknown, depth: number): boolean {
+  if (depth > 12) return false
+  const def = defOf(schema)
+  if (!def?.type) return false
+  switch (def.type) {
+    case 'array':
+      return true
+    case 'optional':
+    case 'nullable':
+    case 'default':
+    case 'catch':
+    case 'readonly':
+    case 'lazy':
+      return schemaContainsArray(def.innerType, depth + 1)
+    case 'object':
+      return Object.values(def.shape ?? {}).some((child) =>
+        schemaContainsArray(child, depth + 1),
+      )
+    case 'union':
+      return (def.options ?? []).some((option) =>
+        schemaContainsArray(option, depth + 1),
+      )
+    default:
+      return false
+  }
+}
+
+/**
  * Coerce `value` to satisfy `schema`. Returns `{ ok: false }` when the value is
  * unrepairable for a *required* slot, so the caller (array/object) can drop it.
  * Never throws.
@@ -87,9 +128,39 @@ function coerce(value: unknown, schema: unknown, depth: number): Coerced {
 
     case 'array': {
       if (value === undefined || value === null) return OK([])
-      if (!Array.isArray(value)) return FAIL
+      // Accept array-like objects (e.g. `{ 0: {...}, length: 1 }`) emitted by
+      // some LLM generators / DB-shaped serializers by coercing them into a
+      // real array so each indexed entry can be validated against the element
+      // schema. Only do this for flat element schemas (no nested arrays): an
+      // array-like whose elements themselves carry arrays is usually a DB
+      // record collection, safer to fall back than render half-converted.
+      // Generic across every capsule -- never name-specific.
+      let items: unknown[] | null = null
+      if (Array.isArray(value)) {
+        items = value
+      } else if (
+        isPlainObject(value) &&
+        typeof (value as Record<string, unknown>).length === 'number' &&
+        !schemaContainsArray(def.element, 0)
+      ) {
+        const len = (value as Record<string, unknown>).length as number
+        if (Number.isInteger(len) && len >= 0) {
+          const arr: unknown[] = []
+          let complete = true
+          for (let i = 0; i < len; i++) {
+            if (String(i) in value) {
+              arr.push((value as Record<string, unknown>)[String(i)])
+            } else {
+              complete = false
+              break
+            }
+          }
+          if (complete) items = arr
+        }
+      }
+      if (items === null) return FAIL
       const out: unknown[] = []
-      for (const item of value) {
+      for (const item of items) {
         const res = coerce(item, def.element, depth + 1)
         if (res.ok && res.value !== undefined) out.push(res.value)
       }

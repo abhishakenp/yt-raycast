@@ -106,4 +106,27 @@ describe('referral client helpers', () => {
       body: JSON.stringify({ code: 'ABCD2345', email: 'ref@example.com' }),
     })
   })
+
+  it('treats malformed referral attribution JSON as an unrecorded attribution attempt', async () => {
+    setClerk({
+      user: { primaryEmailAddress: { emailAddress: 'ref@example.com' } },
+      session: { getToken: vi.fn(async () => 'convex-token') },
+    })
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => {
+        throw new SyntaxError('Unexpected token < in JSON')
+      },
+    } as unknown as Response)
+
+    await expect(postReferralRecord('ABCD2345')).resolves.toBeNull()
+    expect(fetch).toHaveBeenCalledWith('/api/referrals/record', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer convex-token',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ code: 'ABCD2345', email: 'ref@example.com' }),
+    })
+  })
 })
