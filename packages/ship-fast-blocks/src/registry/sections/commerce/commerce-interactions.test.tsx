@@ -1556,6 +1556,42 @@ describe('commerce interaction surfaces', () => {
     expect(navigate).not.toHaveBeenCalledWith('Hydrating Serum')
   })
 
+  it('opens product search when the Lakebed catalog query returns DB-shaped records with malformed rows', async () => {
+    const { lakebed } = createCommerceLakebedStub()
+    const malformedCatalogLakebed = {
+      ...lakebed,
+      useQuery: ((name: string) => {
+        if (name === 'productCatalog') {
+          return {
+            missing: null,
+            product_1: {
+              id: 123,
+              label: null,
+              price: false,
+            },
+            product_2: {
+              id: 'product_2',
+              label: 'Truffle Box',
+              price: '$12.50',
+              subtitle: 'Gift set',
+            },
+          }
+        }
+        return lakebed.useQuery(name as never)
+      }) as CommerceLakebed['useQuery'],
+    } satisfies CommerceLakebed
+
+    expect(() =>
+      render(<CommerceSearchButton lakebed={malformedCatalogLakebed} />),
+    ).not.toThrow()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }))
+
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    expect(screen.getByText('Truffle Box')).toBeTruthy()
+    expect(screen.getByText('Gift set · $12.50')).toBeTruthy()
+  })
+
   it('filters product views from the shared Lakebed search state', async () => {
     const { lakebed } = createCommerceLakebedStub({
       products: [

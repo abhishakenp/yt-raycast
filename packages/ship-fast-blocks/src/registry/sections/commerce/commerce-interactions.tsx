@@ -48,6 +48,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '#/components/ui/sheet.tsx'
+import { normalizeRecords } from '#/lib/normalize-records.ts'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import type {
@@ -608,7 +609,9 @@ export function CommerceSearchButton({
   const [open, setOpen] = useState(false)
   const commerceSearch = useCommerceSearch(lakebed)
   const searchState = commerceSearch.state
-  const catalog = lakebed.useQuery('productCatalog') ?? []
+  const catalog = normalizeRecords<CommerceCatalogProduct>(
+    lakebed.useQuery('productCatalog'),
+  )
   const query = searchState?.query ?? ''
   const chooseProduct = (product: CommerceCatalogProduct) => {
     commerceSearch.chooseSearch({

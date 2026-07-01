@@ -138,6 +138,8 @@ if (typeof window !== 'undefined' && 'FormData' in window) {
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { FoodDeliverySearchButton } =
+  await import('./food-delivery-interactions.tsx')
 const { FoodDeliveryHero } = await import('./FoodDeliveryHero.tsx')
 const { FoodDeliveryNavbar } = await import('./FoodDeliveryNavbar.tsx')
 const { FoodDeliveryRestaurants } =
@@ -480,6 +482,45 @@ describe('food delivery fullstack search', () => {
     )
     expect(screen.getByText('Sakura Sushi Bar')).toBeTruthy()
     expect(screen.queryByText("Mario's Pizzeria")).toBeNull()
+  })
+
+  it('opens restaurant search when the Lakebed catalog query returns DB-shaped records with malformed rows', async () => {
+    const { lakebed } = createFoodDeliveryLakebedStub()
+    const malformedCatalogLakebed = {
+      ...lakebed,
+      useQuery: ((name: string) => {
+        if (name === 'restaurantCatalog') {
+          return {
+            missing: null,
+            restaurant_1: {
+              id: 123,
+              name: null,
+              cuisine: false,
+              category: null,
+            },
+            restaurant_2: {
+              id: 'restaurant_2',
+              name: 'Sakura Sushi Bar',
+              cuisine: 'Japanese',
+              category: 'Sushi',
+            },
+          }
+        }
+        return lakebed.useQuery(name as never)
+      }) as FoodDeliveryLakebed['useQuery'],
+    } satisfies FoodDeliveryLakebed
+
+    expect(() =>
+      render(<FoodDeliverySearchButton lakebed={malformedCatalogLakebed} />),
+    ).not.toThrow()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }))
+
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Search restaurants',
+    })
+    expect(within(dialog).getByText('Sakura Sushi Bar')).toBeTruthy()
+    expect(within(dialog).getByText('Japanese · Sushi')).toBeTruthy()
   })
 
   it('records navbar and app-download actions without navigation fallbacks', async () => {
