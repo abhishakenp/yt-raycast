@@ -15,9 +15,10 @@ function normalizePreferredLanguage(value) {
     .toLowerCase()
   if (!requested || requested === 'en') return DEFAULT_PREFERRED_LANGUAGE
   if (requested === 'hinglish') return 'hinglish'
-  if (/^[a-z]{2,8}-en$/.test(requested)) return requested
-  if (/^[a-z]{2,8}-latn$/.test(requested)) return requested
-  return /^[a-z]{2,8}$/.test(requested) ? requested : DEFAULT_PREFERRED_LANGUAGE
+  // Preserve browser-native language tags: bare codes (hi), script subtags
+  // (hi-latn), region subtags (es-mx), and code-mixed variants (ta-en).
+  if (/^[a-z]{2,8}(-[a-z]{2,8}){0,2}$/.test(requested)) return requested
+  return DEFAULT_PREFERRED_LANGUAGE
 }
 
 /**
