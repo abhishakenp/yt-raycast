@@ -8,43 +8,47 @@
 // implementation only when running in a DOM-like environment that is missing it,
 // so pure `node`-environment tests are left untouched.
 
-class MemoryStorage implements Storage {
-  #map = new Map<string, string>()
+type MemoryStorage = Pick<
+  Storage,
+  'clear' | 'getItem' | 'key' | 'length' | 'removeItem' | 'setItem'
+>
 
-  get length(): number {
-    return this.#map.size
-  }
+const createMemoryStorage = (): MemoryStorage => {
+  const store = new Map<string, string>()
 
-  clear(): void {
-    this.#map.clear()
-  }
-
-  getItem(key: string): string | null {
-    return this.#map.has(key) ? (this.#map.get(key) as string) : null
-  }
-
-  key(index: number): string | null {
-    return Array.from(this.#map.keys())[index] ?? null
-  }
-
-  removeItem(key: string): void {
-    this.#map.delete(key)
-  }
-
-  setItem(key: string, value: string): void {
-    this.#map.set(key, String(value))
+  return {
+    clear: () => store.clear(),
+    getItem: (key) => store.get(String(key)) ?? null,
+    key: (index) => Array.from(store.keys())[index] ?? null,
+    get length() {
+      return store.size
+    },
+    removeItem: (key) => {
+      store.delete(String(key))
+    },
+    setItem: (key, value) => {
+      store.set(String(key), String(value))
+    },
   }
 }
 
-const installStorage = (name: 'localStorage' | 'sessionStorage'): void => {
-  if (typeof window === 'undefined') return
-  if (window[name]) return
-  Object.defineProperty(window, name, {
-    value: new MemoryStorage(),
-    configurable: true,
-    writable: false,
-  })
+const defineStorage = (name: 'localStorage' | 'sessionStorage') => {
+  const storage = createMemoryStorage()
+
+  for (const target of [globalThis, globalThis.window].filter(Boolean)) {
+    const host = target as typeof globalThis
+    try {
+      if (host[name]) continue
+    } catch {
+      // Some DOM shims expose a throwing storage getter for opaque origins.
+    }
+
+    Object.defineProperty(host, name, {
+      configurable: true,
+      value: storage,
+    })
+  }
 }
 
-installStorage('localStorage')
-installStorage('sessionStorage')
+defineStorage('localStorage')
+defineStorage('sessionStorage')
