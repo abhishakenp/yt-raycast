@@ -171,13 +171,10 @@ export default function LanguagePicker({
 
   const allLanguages = useMemo<LanguageEntry[]>(
     () =>
-      mergeLanguageEntries(
-        KNOWN_LANGUAGES,
-        [
-          ...repairedCustomLanguages,
-          ...((customLanguages ?? []) as LanguageEntry[]),
-        ],
-      ),
+      mergeLanguageEntries(KNOWN_LANGUAGES, [
+        ...repairedCustomLanguages,
+        ...((customLanguages ?? []) as LanguageEntry[]),
+      ]),
     [customLanguages, repairedCustomLanguages],
   )
 
@@ -186,16 +183,20 @@ export default function LanguagePicker({
     const trimmed = customLanguage.trim()
     if (!trimmed || isResolving) return
 
-    // 1. Check if the typed text already matches a known or custom language.
-    const existingCode = findExistingLanguage(trimmed, allLanguages)
-    if (existingCode) {
-      onSelect(existingCode)
+    // 1. Fast path: the typed text matches a curated known language — select
+    // it synchronously without any async round-trip.
+    const knownCode = findExistingLanguage(trimmed, KNOWN_LANGUAGES)
+    if (knownCode) {
+      onSelect(knownCode)
       setCustomLanguage('')
       return
     }
 
     // 2. If the browser can translate this language locally, use that locale
-    // directly and skip Convex/AI entirely.
+    // directly. The on-device translator is the first tier, so a browser-native
+    // locale (e.g. es-MX for "Mexican") is preferred over a stale custom row
+    // (e.g. a Nahuatl entry keyed on the "mexican" keyword) and skips Convex/AI
+    // entirely.
     setIsResolving(true)
     setResolveError(null)
     try {
@@ -206,8 +207,16 @@ export default function LanguagePicker({
         return
       }
 
-      // 3. No browser-native match — ask the AI to generate metadata and
-      // persist it for future search.
+      // 3. Fall back to a previously-persisted custom language row from the DB.
+      const existingCode = findExistingLanguage(trimmed, allLanguages)
+      if (existingCode) {
+        onSelect(existingCode)
+        setCustomLanguage('')
+        return
+      }
+
+      // 4. No match — ask the AI to generate metadata and persist it for
+      // future search.
       const result = await resolveOrCreate({ languageInput: trimmed })
       if (result?.code) {
         onSelect(result.code)
