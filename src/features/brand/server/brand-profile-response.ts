@@ -43,6 +43,15 @@ const normalizeBrandQuery = (request: Request): string => {
 const providerStatus = (value: number | undefined): number =>
   value !== undefined && value >= 400 && value < 500 ? value : 502
 
+const sanitizeProviderWarning = (
+  warning: unknown,
+): { status: number } | null => {
+  if (!warning || typeof warning !== 'object') return null
+  const status = (warning as { status?: unknown }).status
+  if (typeof status !== 'number') return null
+  return { status }
+}
+
 const loadDefaultBrandProfileResolver =
   async (): Promise<BrandProfileResolver> => {
     const { resolveBrandfetchBrandProfile } =
@@ -90,7 +99,7 @@ export const createBrandProfileResponse = async (
         logo: result.logo ?? null,
         palette: result.palette ?? null,
         confidence: result.confidence ?? null,
-        providerWarning: result.providerWarning ?? null,
+        providerWarning: sanitizeProviderWarning(result.providerWarning),
       },
       {
         headers: {

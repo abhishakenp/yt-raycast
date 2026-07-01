@@ -533,7 +533,7 @@ describe('PublicGallery edge cases', () => {
     expect(getByText('Someone else project')).not.toBeNull()
   })
 
-  it('12. preview priority: static html > imageUrl > generated fallback > gradient', () => {
+  it('12. preview priority: static html > generated fallback > gradient, never PNG imageUrl', () => {
     // EXPECTED: server-rendered static HTML is the preview source of truth.
     // If an image thumbnail or live generated source wins when final HTML exists,
     // the gallery can show stale screenshots or expensive live OpenUI previews.
@@ -594,7 +594,8 @@ describe('PublicGallery edge cases', () => {
     expect(queryByText('HTML wins')).not.toBeNull()
     expect(queryByTestId('generated-module-preview')).toBeNull()
 
-    // imageUrl is only a fallback when no static HTML is present.
+    // imageUrl is not a valid gallery preview source; OpenUI previews must be
+    // server-rendered to static HTML, otherwise the card falls through.
     const imageOnly: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -608,9 +609,7 @@ describe('PublicGallery edge cases', () => {
       total: 1,
     }
     rerender(<GalleryGrid gallery={imageOnly} />)
-    expect(document.querySelector('img')?.getAttribute('src')).toBe(
-      'https://cdn.example.test/img.png',
-    )
+    expect(document.querySelector('img')).toBeNull()
 
     // nothing → gradient fallback placeholder.
     const none: GalleryPayload = {

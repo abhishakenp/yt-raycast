@@ -27,6 +27,10 @@ vi.mock('@/features/gallery/services/delete-gallery-session', () => ({
   deleteGallerySession: vi.fn().mockResolvedValue({ deleted: 1 }),
 }))
 
+vi.mock('convex/react', () => ({
+  useMutation: () => vi.fn().mockResolvedValue({ deleted: 1 }),
+}))
+
 // Surface the live module preview runtime as a marker so we can assert it
 // never mounts in the public gallery.
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
@@ -244,8 +248,36 @@ describe('public gallery preview cards', () => {
     expect(
       container.querySelectorAll('[data-testid="generated-module-preview"]'),
     ).toHaveLength(0)
+    expect(container.querySelector('img')).toBeNull()
     // No gallery-preview-frame id (legacy live preview iframe id).
     expect(container.querySelector('#gallery-preview-frame')).toBeNull()
+  })
+
+  it('ignores PNG imageUrl payloads instead of using them as public gallery previews', () => {
+    const gallery: GalleryPayload = {
+      ...emptyGallery,
+      items: [
+        sessionWith({
+          html: null,
+          imageUrl: 'https://cdn.example.test/k574-gallery.png',
+          moduleSource: null,
+          prompt:
+            'a craft beer brewery with taproom tours and seasonal releases in portland',
+          sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+        }),
+      ],
+      total: 1,
+    }
+
+    const { container, queryByText } = render(<GalleryGrid gallery={gallery} />)
+
+    expect(container.querySelector('img')).toBeNull()
+    expect(container.querySelector('iframe')).toBeNull()
+    expect(
+      container.querySelector('[data-testid="generated-module-preview"]'),
+    ).toBeNull()
+    expect(queryByText('Our Brew Selection')).toBeNull()
+    expect(document.body.innerHTML).not.toContain('k574-gallery.png')
   })
 
   it('renders server-produced static HTML for DB-observed OpenUI v1 and v3 gallery rows without fetching thumbnails or mounting the live runtime', () => {

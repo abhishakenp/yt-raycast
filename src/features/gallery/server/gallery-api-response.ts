@@ -119,8 +119,10 @@ const renderGalleryItemStaticHtml = async (
     const { imageUrl: _imageUrl, moduleSource: _moduleSource, ...rest } = item
     return { ...rest, html: body }
   } catch {
-    if (unsafeHtml) return null
-    return item
+    // When an OpenUI row has a moduleSource but cannot be rendered to
+    // static HTML, drop it entirely rather than forwarding stale preview
+    // HTML or a PNG fallback imageUrl.
+    return null
   }
 }
 

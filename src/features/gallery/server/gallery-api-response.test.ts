@@ -358,6 +358,61 @@ describe('Gallery API Response', () => {
       )
     })
 
+    it('does not serialize stale HTML or PNG fallback when an OpenUI gallery row cannot be rendered to static HTML', async () => {
+      const mockClient = {
+        query: async () => ({
+          availableCategories: [],
+          hasNext: false,
+          hasPrev: false,
+          items: [
+            {
+              categories: ['service'],
+              elapsed: 6424,
+              html: '<main><h1>Stale preview before edits</h1><img alt="stale screenshot" src="https://cdn.example.test/stale-openui-preview.png"></main>',
+              imageUrl: 'https://cdn.example.test/k574-gallery.png',
+              moduleSource:
+                'Edited Taproom Releases / Pineapple Saison / not a parseable OpenUI program',
+              preferredLanguage: 'lt',
+              previewVersion: 1,
+              prompt:
+                'a craft beer brewery with taproom tours and seasonal releases in portland',
+              readiness: {
+                homepageReady: null,
+                openuiReady: true,
+                previewReady: true,
+                siteSpecReady: null,
+              },
+              sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+              siteSpecJson: JSON.stringify({
+                brand: 'Craft Beer Brewery',
+                projectName: 'Craft Beer Brewery',
+                theme: 'darkmatter',
+              }),
+              themeMode: 'dark',
+              themeOverride: 'darkmatter',
+            },
+          ],
+          limit: 12,
+          page: 1,
+          total: 1,
+          totalPages: 1,
+        }),
+      }
+      const request = new Request('http://localhost/api/gallery')
+
+      const response = await createGalleryApiResponse(request, mockClient)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.items).toEqual([])
+      expect(data.total).toBe(0)
+      expect(data.totalPages).toBe(1)
+      expect(JSON.stringify(data)).not.toContain('stale-openui-preview.png')
+      expect(JSON.stringify(data)).not.toContain('k574-gallery.png')
+      expect(JSON.stringify(data)).not.toContain('RestaurantMenu("')
+      expect(JSON.stringify(data)).not.toContain('Stale preview before edits')
+    })
+
     it('drops malformed public session rows before serializing gallery JSON', async () => {
       const mockClient = {
         query: async () => ({
