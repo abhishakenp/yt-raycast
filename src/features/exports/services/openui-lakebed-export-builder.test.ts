@@ -938,7 +938,144 @@ export function signOut() {}
     }
   })
 
-  it('renders generated food-delivery navigation when Lakebed restaurant catalogs are DB-shaped records', async () => {
+  it('renders generated commerce cart drawers when Lakebed commerce query payloads contain malformed rows', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        'root = EcommerceNavbar({"brand":"CocoaCraft","nav":["Shop","Deals"],"cartCount":"0"})',
+      siteSpecJson: JSON.stringify({ projectName: 'CocoaCraft' }),
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+      target: 'lakebed',
+    })
+    const directory = mkdtempSync(
+      join(tmpdir(), 'lakebed-commerce-cart-malformed-'),
+    )
+
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-commerce-cart-malformed.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
+import { App } from "./client/index";
+
+render(h(App, {}), document.getElementById("app"));
+`,
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-client-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
+                  namespace: 'lakebed-client-stub',
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { displayName: "Guest", isAuthenticated: false, isGuest: true, isLoading: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery(name) {
+  if (name === "productCatalog") {
+    return {
+      missing: null,
+      product_1: {
+        id: 123,
+        label: null,
+        price: false,
+      },
+      product_2: {
+        id: "product_2",
+        label: "Truffle Box",
+        price: "$12.50",
+      },
+    };
+  }
+  if (name === "cartSummary") {
+    return {
+      count: "2",
+      subtotal: 25,
+      items: {
+        missing: null,
+        malformed: {
+          id: "malformed",
+          quantity: undefined,
+          product: null,
+        },
+        line_1: {
+          id: "line_1",
+          productId: "product_2",
+          quantity: undefined,
+          product: null,
+        },
+      },
+    };
+  }
+  if (name === "commerceSearchState") return { query: "", selectedLabel: "" };
+  return undefined;
+}
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                  loader: 'tsx',
+                }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+      const dom = new JSDOM('<div id="app"></div>', {
+        runScripts: 'outside-only',
+        url: 'https://silver-river-766492ba9a.lakebed.app/',
+      })
+      const runtimeErrors = collectWindowRuntimeErrors(dom)
+
+      let renderError: unknown
+      try {
+        dom.window.eval(bundled.outputFiles[0].text)
+        dom.window.document
+          .querySelector('button[aria-label="Cart"]')
+          ?.dispatchEvent(
+            new dom.window.MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          )
+      } catch (error) {
+        renderError = error
+      }
+      await flushWindowPromises()
+
+      expect(renderError).toBeUndefined()
+      expect(runtimeErrors).toEqual([])
+      expect(dom.window.document.body.textContent).toContain('Your cart')
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
+  it('renders generated food-delivery navigation when Lakebed restaurant catalogs are DB-shaped records with malformed rows', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source:
         'root = FoodDeliveryNavbar({"brand":"Nosh","nav":["Restaurants","Deals"]})',
@@ -1000,6 +1137,13 @@ export function useMutation() { return async () => undefined; }
 export function useQuery(name) {
   if (name === "restaurantCatalog") {
     return {
+      missing: null,
+      malformed: {
+        id: 123,
+        name: null,
+        cuisine: false,
+        category: null,
+      },
       restaurant_1: {
         id: "restaurant_1",
         name: "Portland Taproom Kitchen",

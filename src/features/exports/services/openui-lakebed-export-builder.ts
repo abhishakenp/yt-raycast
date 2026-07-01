@@ -3248,19 +3248,44 @@ function isDbRecordCollection(value: unknown): boolean {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const entries = Object.entries(value);
   if (!entries.length) return false;
-  return entries.every(
-    ([, v]) => v && typeof v === "object" && !Array.isArray(v),
+  // A DB-shaped record collection maps record IDs to record objects. Tolerate
+  // malformed rows (null / undefined / non-object entries) by ignoring them,
+  // but reject values that contain genuine scalar primitive fields (strings,
+  // numbers, booleans) or arrays — those indicate a scalar record, not a
+  // collection. At least one entry must be a record object.
+  let hasRecord = false;
+  for (const [, v] of entries) {
+    if (v == null) continue;
+    if (typeof v === "object" && !Array.isArray(v)) {
+      hasRecord = true;
+      continue;
+    }
+    return false;
+  }
+  return hasRecord;
+}
+
+function recordCollectionValues(
+  value: Record<string, unknown>,
+): Record<string, unknown>[] {
+  return Object.values(value).filter(
+    (v): v is Record<string, unknown> =>
+      Boolean(v) && typeof v === "object" && !Array.isArray(v),
   );
 }
 
 function normalizeDbShapedQueryResult(name: string, value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return value;
   const collectionKeys = ["items", "rows", "data", "result"];
+  // Null / undefined entries are malformed rows, not scalar fields — exclude
+  // them so a DB record collection with missing rows is still detected.
   const hasScalarField = Object.values(value).some(
-    (v) => v == null || typeof v !== "object" || Array.isArray(v),
+    (v) => v != null && (typeof v !== "object" || Array.isArray(v)),
   );
   if (!hasScalarField && !collectionKeys.some((key) => key in value)) {
-    if (isDbRecordCollection(value)) return Object.values(value);
+    if (isDbRecordCollection(value)) {
+      return recordCollectionValues(value as Record<string, unknown>);
+    }
     return value;
   }
   let normalized = value as Record<string, unknown>;
@@ -3270,7 +3295,9 @@ function normalizeDbShapedQueryResult(name: string, value: unknown) {
     if (Array.isArray(nested)) continue;
     if (isDbRecordCollection(nested)) {
       if (normalized === value) normalized = { ...normalized };
-      normalized[key] = Object.values(nested as Record<string, unknown>);
+      normalized[key] = recordCollectionValues(
+        nested as Record<string, unknown>,
+      );
     } else if (nested == null) {
       if (normalized === value) normalized = { ...normalized };
       normalized[key] = [];
