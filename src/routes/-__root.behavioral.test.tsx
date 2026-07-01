@@ -131,6 +131,40 @@ describe('__root route behavior', () => {
     expect(installDynamicImportRecoveryMock).toHaveBeenCalledWith(window)
   })
 
+  it('keeps the root app shell mounted when matchMedia is unavailable', async () => {
+    localStorage.removeItem('theme')
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: undefined,
+    })
+
+    expect(() =>
+      render(React.createElement(rootRouteOptions.component)),
+    ).not.toThrow()
+
+    expect(screen.getByTestId('app-providers')).toBeTruthy()
+    expect(screen.getByTestId('route-outlet')).toBeTruthy()
+    await waitFor(() =>
+      expect(installDynamicImportRecoveryMock).toHaveBeenCalledWith(window),
+    )
+  })
+
+  it('keeps the root app shell mounted when localStorage is unavailable', async () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('localStorage unavailable')
+    })
+
+    expect(() =>
+      render(React.createElement(rootRouteOptions.component)),
+    ).not.toThrow()
+
+    expect(screen.getByTestId('app-providers')).toBeTruthy()
+    expect(screen.getByTestId('route-outlet')).toBeTruthy()
+    await waitFor(() =>
+      expect(installDynamicImportRecoveryMock).toHaveBeenCalledWith(window),
+    )
+  })
+
   it('renders the 404 page inside the existing document shell instead of nesting another html document', () => {
     const view = render(React.createElement(rootRouteOptions.notFoundComponent))
 
