@@ -303,6 +303,56 @@ describe('app provider loading', () => {
       expect(screen.queryByTestId('clerk-provider')).toBeNull()
     })
 
+    it('loads anonymous Convex on gallery routes that render Convex hook consumers', async () => {
+      appProviderMocks.pathname = '/gallery'
+      vi.stubEnv('VITE_CONVEX_URL', 'http://localhost:3001')
+      const { AppProviders } = await import('@/app/providers/AppProviders')
+
+      const { rerender } = render(
+        <AppProviders>
+          <main>Gallery page</main>
+        </AppProviders>,
+      )
+
+      expect(await screen.findByTestId('convex-anonymous')).toBeTruthy()
+      expect(screen.getByText('Gallery page')).toBeTruthy()
+      expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
+      expect(screen.queryByTestId('clerk-provider')).toBeNull()
+
+      appProviderMocks.pathname = '/mine'
+      rerender(
+        <AppProviders>
+          <main>Mine page</main>
+        </AppProviders>,
+      )
+
+      expect(await screen.findByTestId('convex-anonymous')).toBeTruthy()
+      expect(screen.getByText('Mine page')).toBeTruthy()
+      expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
+      expect(screen.queryByTestId('clerk-provider')).toBeNull()
+    })
+
+    it('does not mount generation route children outside Convex when Convex is not configured', async () => {
+      appProviderMocks.pathname = '/generate/session-without-convex-url'
+      vi.stubEnv('VITE_CONVEX_SELF_HOSTED_URL', '')
+      vi.stubEnv('VITE_CONVEX_URL', '')
+      vi.stubEnv('CONVEX_SELF_HOSTED_URL', '')
+      vi.stubEnv('CONVEX_URL', '')
+      const { AppProviders } = await import('@/app/providers/AppProviders')
+
+      render(
+        <AppProviders>
+          <main>Generation workspace that calls Convex hooks</main>
+        </AppProviders>,
+      )
+
+      expect(
+        screen.queryByText('Generation workspace that calls Convex hooks'),
+      ).toBeNull()
+      expect(screen.queryByTestId('convex-anonymous')).toBeNull()
+      expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
+    })
+
     it('mounts the sign-in host only after the global sign-in event fires', async () => {
       appProviderMocks.pathname = '/'
       const { openSignInEventName } =

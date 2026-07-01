@@ -524,6 +524,52 @@ describe('RestaurantMenu fullstack ordering', () => {
     expect(screen.getAllByText('Add').length).toBeGreaterThan(0)
   })
 
+  it('renders real generated menu props when the live order payload has a malformed items object', () => {
+    const { lakebed } = createRestaurantLakebedStub({
+      restaurantOrderOverride: {
+        count: 1,
+        items: { stale: true },
+        lastSelection: null,
+        selections: [],
+      },
+    })
+    lakebedRef.current = lakebed
+    const Menu = RestaurantMenu.client.component
+
+    expect(() =>
+      render(
+        <Menu
+          props={{
+            categories: [
+              {
+                items: [
+                  {
+                    description: 'Wood-fired tomatoes and basil',
+                    name: 'Margherita Pizza',
+                    price: '$16',
+                    tag: 'Popular',
+                  },
+                ],
+                name: 'Pizzas',
+              },
+            ],
+            description: 'Order seasonal favorites from the live table menu.',
+            heading: 'Dinner Menu',
+          }}
+          statementId="restaurant_menu"
+        />,
+      ),
+    ).not.toThrow()
+
+    expect(screen.getByText('Dinner Menu')).toBeTruthy()
+    expect(screen.getByText('Margherita Pizza')).toBeTruthy()
+    const itemButton = screen.getByRole('button', {
+      name: /margherita pizza/i,
+    })
+    expect(itemButton).toBeTruthy()
+    expect(within(itemButton).getByText('Add')).toBeTruthy()
+  })
+
   it('does not crash when generated category data is array-like instead of a real array', () => {
     const { lakebed } = createRestaurantLakebedStub()
     lakebedRef.current = lakebed

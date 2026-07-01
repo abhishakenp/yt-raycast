@@ -5,17 +5,6 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { api, internal } from '../_generated/api'
 import schema from '../schema'
 
-import {
-  createGenerationSessionArgs,
-  deleteMineArgs,
-  deploymentSlugArgs,
-  eventStreamArgs,
-  generationViewArgs,
-  lookupArgs,
-  publicGallerySessionsArgs,
-  sessionIdArgs,
-} from './session_validators'
-
 const modules = import.meta.glob('../**/*.ts')
 
 let activeTest: ReturnType<typeof convexTest> | null = null
@@ -115,21 +104,53 @@ describe('session decomposition boundary', () => {
     ).resolves.toBeDefined()
   })
 
-  it('requires session_validators as the single source of shared validators', () => {
-    // The validators consumed by sessions.ts must be exported from
-    // ./lib/session_validators — importing them here proves they are the
-    // canonical, reusable definitions (no inline duplicates in sessions.ts).
-    expect(sessionIdArgs).toBeDefined()
-    expect(lookupArgs).toBeDefined()
-    expect(generationViewArgs).toBeDefined()
-    expect(eventStreamArgs).toBeDefined()
-    expect(deleteMineArgs).toBeDefined()
-    expect(createGenerationSessionArgs).toBeDefined()
-    expect(deploymentSlugArgs).toBeDefined()
-    expect(publicGallerySessionsArgs).toBeDefined()
+  it('rejects malformed public session API inputs at the runtime boundary', async () => {
+    const t = sessionBoundaryConvexTest()
 
-    // Each must be a plain object (validator map), not undefined/null.
-    expect(typeof sessionIdArgs).toBe('object')
-    expect(typeof createGenerationSessionArgs).toBe('object')
+    await expect(
+      t.mutation(api.sessions.create, {
+        prompt: 12,
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: 'workspace_bad_prompt',
+      } as any),
+    ).rejects.toThrow()
+
+    await expect(
+      t.query(api.sessions.getGenerationView, {
+        sessionId: 123,
+      } as any),
+    ).rejects.toThrow()
+
+    await expect(
+      t.query(api.sessions.getEventStream, {
+        lookup: 123,
+      } as any),
+    ).rejects.toThrow()
+
+    await expect(
+      t.query(api.sessions.getSessionApiResponse, {
+        lookup: 123,
+      } as any),
+    ).rejects.toThrow()
+
+    await expect(
+      t.query(api.sessions.getDeploymentBySlug, {
+        slug: 42,
+      } as any),
+    ).rejects.toThrow()
+
+    await expect(
+      t.query(api.sessions.listPublicSessions, {
+        limit: 'twenty',
+      } as any),
+    ).rejects.toThrow()
+
+    await expect(
+      t.mutation(api.sessions.deleteMine, {
+        sessionId: 123,
+      } as any),
+    ).rejects.toThrow()
   })
 })

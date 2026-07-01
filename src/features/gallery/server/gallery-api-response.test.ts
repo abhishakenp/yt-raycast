@@ -168,6 +168,49 @@ describe('Gallery API Response', () => {
       )
     })
 
+    it('drops malformed public session rows before serializing gallery JSON', async () => {
+      const mockClient = {
+        query: async () => ({
+          availableCategories: [],
+          hasNext: false,
+          hasPrev: false,
+          items: [
+            null,
+            { prompt: 'Missing session id', previewVersion: 1 },
+            {
+              categories: { primary: 'saas' },
+              elapsed: Number.NaN,
+              html: '<main><h1>Valid preview</h1></main>',
+              previewVersion: 2,
+              prompt: 'Valid public project',
+              sessionId: 'valid_public_project',
+            },
+          ],
+          limit: 12,
+          page: 1,
+          total: 3,
+          totalPages: 1,
+        }),
+      }
+      const request = new Request('http://localhost/api/gallery')
+
+      const response = await createGalleryApiResponse(request, mockClient)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.items).toHaveLength(1)
+      expect(data.items[0]).toMatchObject({
+        prompt: 'Valid public project',
+        sessionId: 'valid_public_project',
+      })
+      expect(Array.isArray(data.items[0].categories)).toBe(true)
+      expect(JSON.stringify(data)).not.toContain('Missing session id')
+      expect(data.total).toBe(1)
+      expect(data.totalPages).toBe(1)
+      expect(data.hasNext).toBe(false)
+      expect(data.hasPrev).toBe(false)
+    })
+
     it('should handle page parameter', async () => {
       const mockClient = {
         query: async (_fn: any, args: any) => {

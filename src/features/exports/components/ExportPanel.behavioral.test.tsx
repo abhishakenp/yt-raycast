@@ -344,6 +344,40 @@ describe('ExportPanel behavioral', () => {
     expect(revokeObjectUrl).toHaveBeenCalledWith('blob:export')
   })
 
+  it('shows a stable download error and does not create a browser download when the ready download route returns HTML', async () => {
+    setExportTargets([
+      target({
+        target: 'html',
+        ready: true,
+        status: 'ready',
+        artifactReady: true,
+        artifactStatus: 'ready',
+        downloadUrl: '/api/sessions/session_123/download/html',
+      }),
+    ])
+    const clickMock = silenceAnchorClick()
+    const { createObjectUrl, revokeObjectUrl } = installUrlMocks()
+    const fetchMock = vi.fn(
+      async () =>
+        new Response('<!doctype html><h1>Function crashed</h1>', {
+          headers: { 'content-type': 'text/html' },
+          status: 500,
+        }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const view = render(<ExportPanel sessionId="session_123" />)
+    fireEvent.click(view.getByText('HTML').closest('button')!)
+
+    await waitFor(() => expect(view.getByText('Download failed')).toBeTruthy())
+    expect(view.container.textContent).not.toMatch(
+      /doctype|function crashed|unexpected token|valid json/i,
+    )
+    expect(createObjectUrl).not.toHaveBeenCalled()
+    expect(clickMock).not.toHaveBeenCalled()
+    expect(revokeObjectUrl).not.toHaveBeenCalled()
+  })
+
   it('sends the persisted anonymous owner secret on ready downloads and new export creation', async () => {
     persistAnonymousOwnerSecret(
       window.localStorage,
