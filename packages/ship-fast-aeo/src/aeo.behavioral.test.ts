@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { parseHTML } from 'linkedom'
 
 import { buildNextMetadata } from './metadata/build-next-metadata.ts'
 import { buildPreviewSeoHead } from './metadata/build-preview-head.ts'
@@ -89,6 +90,57 @@ const SITE: SiteSpecLike = {
 
 describe('AEO behavioral', () => {
   describe('buildPreviewSeoHead', () => {
+    it('escapes generated preview head text and attributes without emitting executable markup', () => {
+      const markup = buildPreviewSeoHead(
+        {
+          projectName: 'Acme <script>alert(1)</script>',
+          seo: {
+            siteName: 'Acme "quoted"',
+            siteUrl: 'https://acme.test',
+            description: 'Build <strong>fast</strong> & ship "safely"',
+            ogImage: '/social/<bad>.png',
+            ogImageAlt: 'Preview "alt" <tag>',
+          },
+          pages: [
+            {
+              route: '/',
+              title: 'Home <script>alert(2)</script>',
+              description: 'Trusted <copy> for teams',
+              seo: {
+                title: 'Custom "Title" <script>alert(3)</script>',
+              },
+            },
+          ],
+        },
+        'Acme <script>alert(4)</script>',
+        'Prompt <script>alert(5)</script>',
+      )
+
+      const { document: doc } = parseHTML(
+        `<!doctype html><head>${markup}</head>`,
+      )
+
+      expect(doc.querySelectorAll('script')).toHaveLength(1)
+      expect(
+        doc.querySelector('script[type="application/ld+json"]'),
+      ).toBeTruthy()
+      expect(doc.querySelector('title')?.textContent).toBe(
+        'Custom "Title" <script>alert(3)</script>',
+      )
+      expect(
+        doc.querySelector('meta[name="description"]')?.getAttribute('content'),
+      ).toBe('Trusted <copy> for teams')
+      expect(
+        doc.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+      ).toBe('Custom "Title" <script>alert(3)</script>')
+      expect(
+        doc.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+      ).toBe('https://acme.test/social/%3Cbad%3E.png')
+      expect(markup).not.toContain('<script>alert')
+      expect(markup).not.toContain('<strong>')
+      expect(markup).not.toContain('<copy>')
+    })
+
     it('generates title, description, canonical, og and twitter meta tags for a preview', () => {
       const markup = buildPreviewSeoHead(
         SITE,
