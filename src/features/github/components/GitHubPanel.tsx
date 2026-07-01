@@ -14,6 +14,7 @@ import {
   useOptionalClerk,
 } from '@/shared/auth/use-optional-auth'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { readJsonOrThrow } from '@/lib/safe-fetch'
 import {
   HtmlIcon,
   ReactIcon,
@@ -247,8 +248,14 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
       },
       body: JSON.stringify({ target, anonymousOwnerSecret }),
     })
-    const data = await response.json()
-    if (!response.ok) throw new Error(data?.error ?? 'Export failed')
+    const data = await readJsonOrThrow<Record<string, unknown>>(
+      response,
+      'Export failed',
+    )
+    if (!response.ok)
+      throw new Error(
+        typeof data?.error === 'string' ? data.error : 'Export failed',
+      )
   }
 
   const pushTarget = async (targetConfig: GitHubTarget) => {
@@ -326,7 +333,10 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
         })
 
       const response = await pushExport()
-      const data = await response.json()
+      const data = await readJsonOrThrow<Record<string, unknown>>(
+        response,
+        'GitHub push failed',
+      )
       if (
         !response.ok &&
         response.status === 409 &&
@@ -337,7 +347,9 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
         return
       }
       if (!response.ok) {
-        throw new Error(data?.error ?? 'GitHub push failed')
+        throw new Error(
+          typeof data?.error === 'string' ? data.error : 'GitHub push failed',
+        )
       }
       if (typeof data.repoUrl === 'string' && data.repoUrl.trim()) {
         const nextRepoUrl = data.repoUrl
