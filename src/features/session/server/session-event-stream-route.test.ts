@@ -2,6 +2,38 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { createSessionEventStreamResponse } from './session-event-stream-route'
 
+const realCraftBeerGenerationEvents = [
+  {
+    _id: 'nn71e09qjzhekm9357c588n1wn89n1y3',
+    createdAt: 1782814094925,
+    eventType: 'preview_ready',
+    message: 'Homepage preview ready',
+    previewVersion: 1,
+    sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+  },
+  {
+    _id: 'nn73dxzcz5emzpgw6xwgrt6gwh89mwbw',
+    cacheHit: false,
+    cost: 0,
+    createdAt: 1782814095839,
+    elapsedMs: 6424,
+    eventType: 'run_completed',
+    message: 'Generation completed',
+    previewVersion: 1,
+    provider: 'ship-fast-engine-v3',
+    sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+  },
+  {
+    _id: 'nn7bc9kw22rpxj960nfs6kkwy189m33k',
+    createdAt: 1782814139243,
+    eventType: 'published',
+    message:
+      'Published Lakebed app to https://silver-river-766492ba9a.lakebed.app',
+    previewVersion: 1,
+    sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+  },
+]
+
 describe('createSessionEventStreamResponse', () => {
   it('replays Convex generation events as server-sent events', async () => {
     const calls: unknown[] = []
@@ -98,5 +130,41 @@ describe('createSessionEventStreamResponse', () => {
 
     expect(response.status).toBe(200)
     expect(setAuth).toHaveBeenCalledWith('token_123')
+  })
+
+  it('serializes real Convex generation event shapes with stable replay metadata', async () => {
+    const client = {
+      query: vi.fn(async () => ({
+        cursor: 1782814139243,
+        events: realCraftBeerGenerationEvents,
+        session: { sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2' },
+      })),
+    }
+
+    const response = await createSessionEventStreamResponse(
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+      new Request(
+        'http://localhost/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/stream',
+        { headers: { 'Last-Event-ID': '1782814094000' } },
+      ),
+      client,
+    )
+    const text = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(client.query).toHaveBeenCalledWith(expect.anything(), {
+      lookup: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+      since: 1782814094000,
+    })
+    expect(text).toContain('event: preview_ready')
+    expect(text).toContain('"message":"Homepage preview ready"')
+    expect(text).toContain('event: run_completed')
+    expect(text).toContain('"provider":"ship-fast-engine-v3"')
+    expect(text).toContain('"elapsedMs":6424')
+    expect(text).toContain('event: published')
+    expect(text).toContain('silver-river-766492ba9a.lakebed.app')
+    expect(text).toContain('event: replay_complete')
+    expect(text).toContain('"count":3')
+    expect(text).toContain('"cursor":1782814139243')
   })
 })
