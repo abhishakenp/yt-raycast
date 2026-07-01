@@ -129,6 +129,42 @@ describe('Gallery API Response', () => {
       })
     })
 
+    it('does not expose real renderer-error preview markup in public gallery JSON', async () => {
+      const mockClient = {
+        query: async () => ({
+          availableCategories: [],
+          hasNext: false,
+          hasPrev: false,
+          items: [
+            {
+              categories: ['saas', 'commerce', 'portfolio', 'app'],
+              elapsed: 123,
+              html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
+              preferredLanguage: 'en',
+              previewVersion: 1,
+              prompt:
+                'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a polished interactive product experience. It should be dark mode. Focus on making it beautiful.',
+              sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',
+            },
+          ],
+          limit: 12,
+          page: 1,
+          total: 1,
+          totalPages: 1,
+        }),
+      }
+      const request = new Request('http://localhost/api/gallery')
+
+      const response = await createGalleryApiResponse(request, mockClient)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(JSON.stringify(data).toLowerCase()).not.toContain('openui-error')
+      expect(JSON.stringify(data).toLowerCase()).not.toContain(
+        'failed to render',
+      )
+    })
+
     it('should handle page parameter', async () => {
       const mockClient = {
         query: async (_fn: any, args: any) => {

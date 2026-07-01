@@ -26,6 +26,7 @@ type ArtifactDownloadPayload = {
     filename?: string
     contentType?: string
     previewVersion?: number
+    errorMessage?: string
   } | null
   storageUrl?: string | null
   latestPreviewVersion?: number
@@ -104,7 +105,9 @@ const isArtifactDownloadPayload = (
         (artifact.contentType === undefined ||
           typeof artifact.contentType === 'string') &&
         (artifact.previewVersion === undefined ||
-          typeof artifact.previewVersion === 'number'))) &&
+          typeof artifact.previewVersion === 'number') &&
+        (artifact.errorMessage === undefined ||
+          typeof artifact.errorMessage === 'string'))) &&
     (value.storageUrl === undefined ||
       value.storageUrl === null ||
       typeof value.storageUrl === 'string') &&
@@ -291,6 +294,16 @@ export const createExportResponse = async (
       })
     }
 
+    if (download.artifact?.status === 'failed') {
+      return new Response(
+        download.artifact.errorMessage ?? 'Export artifact failed to build.',
+        {
+          status: 409,
+          headers: { 'content-type': 'text/plain' },
+        },
+      )
+    }
+
     if (download.artifact?.status !== 'ready' || !download.storageUrl) {
       const fallback = await buildExportOnDemand(
         client,
@@ -309,7 +322,13 @@ export const createExportResponse = async (
         normalizedTarget,
         getOwnerSecret(request),
       )
-      return fallback ?? buildingResponse('queued')
+      return (
+        fallback ??
+        new Response('Export artifact is unavailable and could not be rebuilt.', {
+          status: 502,
+          headers: { 'content-type': 'text/plain' },
+        })
+      )
     }
 
     return new Response(artifactResponse.body, {

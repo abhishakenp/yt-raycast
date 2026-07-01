@@ -79,6 +79,16 @@ export const createLakebedPublishResponse = async (
       return json(existing)
     }
 
+    if (
+      existing?.provider === 'lakebed' &&
+      existing.status === 'failed'
+    ) {
+      return json(
+        { status: 'failed', error: existing.errorMessage },
+        { status: 500 },
+      )
+    }
+
     const artifactResult = await client.query(
       api.sessions.getOwnedLakebedDeploymentArtifactByLookup,
       {
