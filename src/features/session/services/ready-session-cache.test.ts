@@ -24,6 +24,14 @@ const createStorage = () => {
   }
 }
 
+const realRendererErrorReadyPreview = {
+  sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',
+  prompt:
+    'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a polished interactive product experience. It should be dark mode. Focus on making it beautiful.',
+  html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
+  preferredLanguage: 'en',
+} as const
+
 describe('ready session cache', () => {
   afterEach(() => {
     vi.useRealTimers()
@@ -156,6 +164,34 @@ describe('ready session cache', () => {
     ).toBeNull()
   })
 
+  it('does not store ready preview snapshots that contain real OpenUI renderer-error HTML', () => {
+    const storage = createStorage()
+
+    rememberReadySessionPreview(storage, {
+      sessionId: realRendererErrorReadyPreview.sessionId,
+      status: 'preview_ready',
+      prompt: realRendererErrorReadyPreview.prompt,
+      preferredLanguage: realRendererErrorReadyPreview.preferredLanguage,
+      homeModule: {
+        moduleKey: 'home',
+        source: realRendererErrorReadyPreview.html,
+        status: 'succeeded',
+      },
+      preview: {
+        html: realRendererErrorReadyPreview.html,
+        version: 1,
+      },
+      createdAt: 1000,
+    })
+
+    expect(
+      readReadySessionPreview(storage, {
+        sessionId: realRendererErrorReadyPreview.sessionId,
+        now: 2000,
+      }),
+    ).toBeNull()
+  })
+
   it('verifies a ready session against the session API before reuse', async () => {
     const fetchSession = vi.fn().mockResolvedValue({
       ok: true,
@@ -203,6 +239,85 @@ describe('ready session cache', () => {
           sessionId: 'session_ready',
           prompt: 'a blog about dogs',
           preferredLanguage: 'en',
+        },
+        fetchSession,
+      ),
+    ).resolves.toBeNull()
+  })
+
+  it('treats a successful non-JSON session API response as a verification miss', async () => {
+    const fetchSession = vi.fn().mockResolvedValue(
+      new Response('<!doctype html><h1>Gateway failure</h1>', {
+        headers: { 'content-type': 'text/html' },
+        status: 200,
+      }),
+    )
+
+    await expect(
+      verifyReadySession(
+        {
+          sessionId: 'session_ready',
+          prompt: 'a blog about dogs',
+          preferredLanguage: 'en',
+        },
+        fetchSession,
+      ),
+    ).resolves.toBeNull()
+  })
+
+  it('rejects a verified ready session when the session API exposes renderer-error preview HTML', async () => {
+    const fetchSession = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        sessionId: realRendererErrorReadyPreview.sessionId,
+        prompt: realRendererErrorReadyPreview.prompt,
+        preferredLanguage: realRendererErrorReadyPreview.preferredLanguage,
+        status: 'preview_ready',
+        preview: {
+          html: realRendererErrorReadyPreview.html,
+          version: 1,
+        },
+      }),
+    })
+
+    await expect(
+      verifyReadySession(
+        {
+          sessionId: realRendererErrorReadyPreview.sessionId,
+          prompt: realRendererErrorReadyPreview.prompt,
+          preferredLanguage: realRendererErrorReadyPreview.preferredLanguage,
+        },
+        fetchSession,
+      ),
+    ).resolves.toBeNull()
+  })
+
+  it('rejects a verified ready session when the session API has no renderable preview content', async () => {
+    const fetchSession = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        sessionId: realRendererErrorReadyPreview.sessionId,
+        prompt: realRendererErrorReadyPreview.prompt,
+        preferredLanguage: realRendererErrorReadyPreview.preferredLanguage,
+        status: 'preview_ready',
+        homeModule: {
+          moduleKey: 'home',
+          source: '',
+          status: 'succeeded',
+        },
+        preview: {
+          html: '',
+          version: 1,
+        },
+      }),
+    })
+
+    await expect(
+      verifyReadySession(
+        {
+          sessionId: realRendererErrorReadyPreview.sessionId,
+          prompt: realRendererErrorReadyPreview.prompt,
+          preferredLanguage: realRendererErrorReadyPreview.preferredLanguage,
         },
         fetchSession,
       ),

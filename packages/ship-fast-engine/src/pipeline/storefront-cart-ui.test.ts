@@ -1,3 +1,4 @@
+import { JSDOM, VirtualConsole } from 'jsdom'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -55,5 +56,76 @@ describe('storefront cart UI injection', () => {
 
     expect(stripStorefrontCartUi(first)).not.toContain('sf-cart-drawer')
     expect(replaced.match(/id="sf-cart-drawer"/g)).toHaveLength(1)
+  })
+
+  it('keeps the injected drawer usable when a cart API returns a malformed items collection', async () => {
+    const html = injectStorefrontCartUi(themedStorefrontHtml, {
+      variantMap: { byTitle: { 'Alpha Serum': 'variant_alpha' } },
+    })
+    const runtimeErrors: unknown[] = []
+    const virtualConsole = new VirtualConsole()
+    virtualConsole.on('jsdomError', (error: unknown) =>
+      runtimeErrors.push(error),
+    )
+
+    const dom = new JSDOM(html, {
+      beforeParse(window: any) {
+        window.requestAnimationFrame = (callback: (time: number) => void) => {
+          callback(0)
+          return 0
+        }
+        window.addEventListener('error', (event: ErrorEvent) => {
+          runtimeErrors.push(event.error || event.message)
+        })
+        window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+          const url = String(input)
+          if (url.endsWith('/config')) {
+            return new Response(JSON.stringify({ enabled: true }))
+          }
+          if (url.endsWith('/cart') && init?.method === 'POST') {
+            return new Response(
+              JSON.stringify({
+                cart: { completed_at: null, id: 'cart_malformed' },
+              }),
+            )
+          }
+          if (url.includes('/cart/cart_malformed')) {
+            return new Response(
+              JSON.stringify({
+                cart: {
+                  completed_at: null,
+                  id: 'cart_malformed',
+                  items: { stale: true },
+                  region: { currency_code: 'USD' },
+                  total: 0,
+                },
+              }),
+            )
+          }
+          return new Response(JSON.stringify({}), { status: 404 })
+        }
+      },
+      runScripts: 'dangerously',
+      url: 'https://example.test/',
+      virtualConsole,
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    dom.window.document
+      .getElementById('cart-toggle')
+      ?.dispatchEvent(
+        new dom.window.MouseEvent('click', { bubbles: true, cancelable: true }),
+      )
+
+    expect(runtimeErrors).toEqual([])
+    expect(dom.window.document.getElementById('sf-cart-drawer')?.hidden).toBe(
+      false,
+    )
+    expect(
+      dom.window.document.getElementById('sf-cart-summary')?.textContent,
+    ).toBe('Your bag is empty.')
+    dom.window.close()
   })
 })

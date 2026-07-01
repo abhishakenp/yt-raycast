@@ -238,4 +238,29 @@ describe('LakebedAdminPanel', () => {
     expect(screen.getByRole('button', { name: 'Edit' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Delete' })).toBeTruthy()
   })
+
+  it('renders editable valid rows when one Lakebed admin doc has malformed data', () => {
+    mocks.docs = [
+      {
+        capsule: 'BrokenProducts:home_products',
+        createdAt: 1,
+        updatedAt: 2,
+        data: undefined as never,
+      },
+      {
+        capsule: 'BeautyStoreProducts:home_products',
+        createdAt: 1,
+        updatedAt: 3,
+        data: {
+          items: [{ id: 'p1', title: 'Serum' }],
+        },
+      },
+    ]
+
+    renderAdminPanel()
+
+    expect(screen.getByRole('button', { name: 'items' })).toBeTruthy()
+    expect(screen.getByText('Serum')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Add' })).toBeTruthy()
+  })
 })

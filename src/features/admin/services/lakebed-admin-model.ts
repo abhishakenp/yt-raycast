@@ -85,7 +85,7 @@ export function createLakebedAdminTables(
   if (!docs) return []
 
   const contentDocs = docs.filter(
-    (doc) => !isStructuralChromeCapsule(doc.capsule),
+    (doc) => !isStructuralChromeCapsule(doc.capsule) && isJsonRecord(doc.data),
   )
   const tables: LakebedAdminTable[] = []
 

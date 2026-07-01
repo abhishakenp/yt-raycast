@@ -1,4 +1,5 @@
 import { normalizePromptDraft } from '@/features/home/services/home-prompts'
+import { isOpenUiErrorHtml } from '../../../../convex/lib/openui_error_html'
 
 const READY_SESSION_CACHE_PREFIX = 'ship-fast:ready-session:v1:'
 const READY_SESSION_PREVIEW_CACHE_PREFIX = 'ship-fast:ready-session-preview:v1:'
@@ -20,6 +21,8 @@ type ReadySessionApiResponse = {
   status?: unknown
   homepageReady?: unknown
   openuiReady?: unknown
+  preview?: { html?: unknown; source?: unknown } | null
+  homeModule?: { source?: unknown } | null
 }
 
 export type ReadySessionPreviewCacheEntry = {
@@ -200,6 +203,13 @@ export const rememberReadySessionPreview = (
     return
   }
 
+  // Reject snapshots whose home module source or preview HTML is real OpenUI
+  // renderer-error output — these are broken artifacts that must never be
+  // cached for reuse.
+  if (isOpenUiErrorHtml(source) || isOpenUiErrorHtml(input.preview?.html)) {
+    return
+  }
+
   const entry: ReadySessionPreviewCacheEntry = {
     ...input,
     sessionId,
@@ -292,7 +302,12 @@ export const verifyReadySession = async (
 
   if (!response.ok) return null
 
-  const data = (await response.json()) as ReadySessionApiResponse
+  let data: ReadySessionApiResponse
+  try {
+    data = (await response.json()) as ReadySessionApiResponse
+  } catch {
+    return null
+  }
   const responseSessionId =
     typeof data.sessionId === 'string'
       ? data.sessionId
@@ -312,6 +327,33 @@ export const verifyReadySession = async (
       normalizeLanguage(input.preferredLanguage ?? 'en')
   ) {
     return null
+  }
+
+  // Reject sessions whose preview HTML is real OpenUI renderer-error output
+  // or whose preview content is entirely empty (no renderable HTML or module
+  // source). These are broken or incomplete artifacts that must not be reused.
+  // Only apply this check when the API response explicitly includes preview or
+  // homeModule fields — a minimal response without them is still valid.
+  const hasPreview = data.preview !== undefined && data.preview !== null
+  const hasHomeModule =
+    data.homeModule !== undefined && data.homeModule !== null
+
+  if (hasPreview || hasHomeModule) {
+    const previewHtml =
+      typeof data.preview?.html === 'string' ? data.preview.html : ''
+    const homeModuleSource =
+      typeof data.homeModule?.source === 'string' ? data.homeModule.source : ''
+
+    if (isOpenUiErrorHtml(previewHtml) || isOpenUiErrorHtml(homeModuleSource)) {
+      return null
+    }
+
+    if (
+      previewHtml.trim().length === 0 &&
+      homeModuleSource.trim().length === 0
+    ) {
+      return null
+    }
   }
 
   return responseSessionId

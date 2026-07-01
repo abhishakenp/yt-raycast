@@ -99,6 +99,33 @@ describe('lakebed admin model', () => {
     )
   })
 
+  it('keeps valid Lakebed docs editable when a generated doc has malformed data', () => {
+    const tables = createLakebedAdminTables([
+      {
+        capsule: 'BrokenProducts:home_products',
+        createdAt: 1,
+        updatedAt: 2,
+        data: undefined,
+      },
+      {
+        capsule: 'BeautyStoreProducts:home_products',
+        createdAt: 1,
+        updatedAt: 3,
+        data: {
+          items: [{ id: 'p1', title: 'Serum' }],
+        },
+      },
+    ] as never)
+
+    const products = expectTable(tables.find((table) => table.name === 'items'))
+    expect(products.rows).toHaveLength(1)
+    expect(products.rows[0].cells).toMatchObject({
+      _id: 'p1',
+      id: 'p1',
+      title: 'Serum',
+    })
+  })
+
   it('filters all structural chrome docs out of admin tables', () => {
     const tables = createLakebedAdminTables([
       {

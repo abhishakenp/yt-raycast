@@ -514,7 +514,7 @@ export function CartProvider({ children }) {
     }
   }, [cart?.id, refreshCart, setPendingAction])
 
-  const itemCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
+  const itemCount = Array.isArray(cart?.items) ? cart.items.reduce((sum, item) => sum + item.quantity, 0) : 0
   const actionPendingCount = Object.keys(pendingActions).length
 
   return (
@@ -703,7 +703,7 @@ export default function CartDrawer() {
             {loading ? <p>Loading...</p> : null}
             {!loading && (!cart?.items?.length) ? <p>Your cart is empty.</p> : null}
             <ul className="cart-items">
-              {(cart?.items || []).map((item) => (
+              {(Array.isArray(cart?.items) ? cart.items : []).map((item) => (
                 <li key={item?.id || item?.title} className="cart-item">
                   <div className="cart-item__row">
                     <div className="cart-item__meta">
@@ -1033,7 +1033,7 @@ export default function CheckoutView() {
           <aside className="checkout-summary" aria-label="Order summary">
             <h3>Order summary</h3>
             <ul className="checkout-summary__items">
-              {(cart?.items || []).slice(0, 6).map((item) => (
+              {(Array.isArray(cart?.items) ? cart.items : []).slice(0, 6).map((item) => (
                 <li key={item?.id || Math.random()} className="checkout-summary__item">
                   <span className="checkout-summary__itemTitle">{item.title}</span>
                   <span className="checkout-summary__itemQty">×{item.quantity}</span>
