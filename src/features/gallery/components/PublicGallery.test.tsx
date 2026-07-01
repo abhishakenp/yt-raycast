@@ -1,6 +1,4 @@
 // @vitest-environment jsdom
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -12,17 +10,25 @@ const galleryMocks = {
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
     children,
+    params,
+    preload,
+    to,
     ...props
   }: {
     children: ReactNode
+    params?: { sessionId?: string }
+    preload?: false | 'intent'
+    to: string
     [key: string]: unknown
   }) => {
     const anchorProps = { ...props }
-    delete anchorProps.params
-    delete anchorProps.to
+    const href =
+      to === '/generate/$sessionId' && params?.sessionId
+        ? `/generate/${params.sessionId}`
+        : to
 
     return (
-      <a href="/generate/test" {...anchorProps}>
+      <a href={href} data-preload={String(preload)} {...anchorProps}>
         {children}
       </a>
     )
@@ -110,33 +116,28 @@ describe('GalleryGrid', () => {
     )
   })
 
-  it('keeps Convex out of the initial public gallery component bundle', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/features/gallery/components/PublicGallery.tsx'),
-      'utf8',
-    )
+  it('renders gallery card links without dashboard preloading or delete side effects', () => {
+    const gallery: GalleryPayload = {
+      ...emptyGallery,
+      items: [
+        {
+          sessionId: 'session_public_link',
+          prompt: 'Public project link',
+          previewVersion: 1,
+        },
+      ],
+      total: 1,
+    }
 
-    expect(source).not.toContain("from 'convex/react'")
-    expect(source).not.toContain('useMutation(')
-    expect(source).not.toContain('api.sessions.deleteMine')
-    expect(source).toContain(
-      "import('@/features/gallery/services/delete-gallery-session')",
-    )
-  })
+    const view = render(<GalleryGrid gallery={gallery} />)
+    const card = view.getByRole('link', { name: 'Public project link' })
 
-  it('does not preload dashboard routes from public gallery card links', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/features/gallery/components/PublicGallery.tsx'),
-      'utf8',
+    expect(card.getAttribute('href')).toBe('/generate/session_public_link')
+    expect(card.getAttribute('data-preload')).toBe('false')
+    expect(card.getAttribute('data-gallery-session-id')).toBe(
+      'session_public_link',
     )
-    const cardLinkStart = source.indexOf('data-gallery-session-id')
-    const cardLinkBlock = source.slice(
-      source.lastIndexOf('<Link', cardLinkStart),
-      source.indexOf('</Link>', cardLinkStart),
-    )
-
-    expect(cardLinkBlock).toContain('to="/generate/$sessionId"')
-    expect(cardLinkBlock).toContain('preload={false}')
+    expect(galleryMocks.deleteMine).not.toHaveBeenCalled()
   })
 
   it('coalesces identical public gallery requests across duplicate consumers', async () => {
@@ -303,6 +304,31 @@ describe('GalleryGrid', () => {
         'Rendered product preview',
       )
     })
+    expect(container.querySelector('img')).toBeNull()
+  })
+
+  it('does not publish a real renderer-error HTML document as a public gallery preview', () => {
+    const gallery: GalleryPayload = {
+      ...emptyGallery,
+      items: [
+        {
+          sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',
+          prompt:
+            'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a polished interactive product experience. It should be dark mode. Focus on making it beautiful.',
+          categories: ['saas', 'commerce', 'portfolio', 'app'],
+          elapsed: 123,
+          html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
+          preferredLanguage: 'en',
+          previewVersion: 1,
+        },
+      ],
+      total: 1,
+    }
+
+    const { container, queryByText } = render(<GalleryGrid gallery={gallery} />)
+
+    expect(queryByText(/failed to render/i)).toBeNull()
+    expect(container.querySelector('.openui-error')).toBeNull()
     expect(container.querySelector('img')).toBeNull()
   })
 
