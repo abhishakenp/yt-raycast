@@ -131,10 +131,17 @@ const fetchStripeCheckout = async (
     },
     body: formBody(checkoutFields),
   })
-  const data = (await response.json()) as {
+  let data: {
     id?: string
     url?: string
     error?: { message?: string }
+  }
+  let parseFailed = false
+  try {
+    data = (await response.json()) as typeof data
+  } catch {
+    data = {}
+    parseFailed = true
   }
 
   if (!response.ok) {
@@ -142,6 +149,10 @@ const fetchStripeCheckout = async (
       { error: data.error?.message ?? 'Stripe checkout failed.' },
       { status: response.status },
     )
+  }
+
+  if (parseFailed) {
+    return json({ error: 'Stripe checkout failed.' }, { status: 502 })
   }
 
   return json({
@@ -197,15 +208,25 @@ const fetchRazorpayCheckout = async (
         notes: { userId, tier },
       }),
     })
-    const data = (await response.json()) as {
+    let data: {
       id?: string
       error?: { description?: string }
+    }
+    let parseFailed = false
+    try {
+      data = (await response.json()) as typeof data
+    } catch {
+      data = {}
+      parseFailed = true
     }
     if (!response.ok) {
       return json(
         { error: data.error?.description ?? 'Razorpay subscription failed.' },
         { status: response.status },
       )
+    }
+    if (parseFailed) {
+      return json({ error: 'Razorpay subscription failed.' }, { status: 502 })
     }
     return json({
       provider: 'razorpay',
@@ -238,17 +259,27 @@ const fetchRazorpayCheckout = async (
       notes: { userId, packId, credits: pack.credits },
     }),
   })
-  const data = (await response.json()) as {
+  let data: {
     id?: string
     amount?: number
     currency?: string
     error?: { description?: string }
+  }
+  let parseFailed = false
+  try {
+    data = (await response.json()) as typeof data
+  } catch {
+    data = {}
+    parseFailed = true
   }
   if (!response.ok) {
     return json(
       { error: data.error?.description ?? 'Razorpay order failed.' },
       { status: response.status },
     )
+  }
+  if (parseFailed) {
+    return json({ error: 'Razorpay order failed.' }, { status: 502 })
   }
   return json({
     provider: 'razorpay',
