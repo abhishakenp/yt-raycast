@@ -64,7 +64,7 @@ const jwtFor = (sub = 'user_123') =>
     'signature',
   ].join('.')
 
-function createGitHubFetch() {
+function createGitHubFetch({ login = 'shipfast-test-user' } = {}) {
   const requests: Array<{ method: string; path: string; body: unknown }> = []
   const fetchMock: typeof fetch = async (url, init) => {
     const parsed = new URL(String(url))
@@ -73,7 +73,7 @@ function createGitHubFetch() {
     requests.push({ method, path: parsed.pathname, body })
 
     if (parsed.pathname === '/user') {
-      return new Response(JSON.stringify({ login: 'shipfast-test-user' }))
+      return new Response(JSON.stringify({ login }))
     }
 
     if (method === 'POST' && parsed.pathname === '/user/repos') {
@@ -81,8 +81,8 @@ function createGitHubFetch() {
         JSON.stringify({
           id: 42,
           name: body.name,
-          full_name: `shipfast-test-user/${body.name}`,
-          html_url: `https://github.com/shipfast-test-user/${body.name}`,
+          full_name: `${login}/${body.name}`,
+          html_url: `https://github.com/${login}/${body.name}`,
           default_branch: 'main',
           private: true,
         }),
@@ -187,6 +187,51 @@ describe('createGitHubPushResponse', () => {
 
     expect(response.status).toBe(200)
     expect(client.query).toHaveBeenCalledWith(expect.anything(), {})
+  })
+
+  it('pushes with a real Convex GitHub connection shape without exposing token metadata', async () => {
+    const { fetchMock } = createGitHubFetch({ login: 'abhishakenp' })
+    const realConvexConnectionShape = {
+      accessToken: 'gho_redacted_live_shape',
+      clerkTokenIdentifier:
+        'https://sweeping-leech-2.clerk.accounts.dev|user_3FfuCxvVvTRfufF3XVox7unK8w8',
+      clerkUserId: 'user_3FfuCxvVvTRfufF3XVox7unK8w8',
+      connectedAt: 1782485567549,
+      githubLogin: 'abhishakenp',
+      githubUserId: 290690087,
+      scopes: ['repo'],
+      updatedAt: 1782485567549,
+    }
+    client.query.mockImplementation(async (_ref, args) => {
+      if (args && 'lookup' in args) return exportData
+      return realConvexConnectionShape
+    })
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/github/push',
+        {
+          body: JSON.stringify({ target: 'html' }),
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          method: 'POST',
+        },
+      ),
+      'session_123',
+      env,
+      client,
+      fetchMock,
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body).toMatchObject({
+      ok: true,
+      repoFullName: 'abhishakenp/a-product-website-for-atlas-html',
+      target: 'html',
+    })
+    expect(JSON.stringify(body)).not.toContain('gho_redacted_live_shape')
+    expect(JSON.stringify(body)).not.toContain('clerkTokenIdentifier')
+    expect(JSON.stringify(body)).not.toContain('accessToken')
   })
 
   it('requires app authentication and connected GitHub', async () => {
