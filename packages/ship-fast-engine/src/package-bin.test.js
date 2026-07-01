@@ -1,27 +1,72 @@
 import { describe, expect, it } from 'vitest'
-import { accessSync, existsSync, readFileSync, constants } from 'node:fs'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { spawn } from 'node:child_process'
 
-const packageDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+function waitForOutput(proc, needle) {
+  return new Promise((resolve, reject) => {
+    let output = ''
+    const timeout = setTimeout(() => {
+      reject(new Error(`Timed out waiting for "${needle}". Output: ${output}`))
+    }, 8_000)
+
+    proc.stdout.on('data', (chunk) => {
+      output += chunk.toString('utf8')
+      if (output.includes(needle)) {
+        clearTimeout(timeout)
+        resolve(output)
+      }
+    })
+
+    proc.on('error', (error) => {
+      clearTimeout(timeout)
+      reject(error)
+    })
+
+    proc.on('exit', (code) => {
+      if (!output.includes(needle)) {
+        clearTimeout(timeout)
+        reject(
+          new Error(
+            `Exited with ${code} before "${needle}". Output: ${output}`,
+          ),
+        )
+      }
+    })
+  })
+}
 
 describe('@ship-fast/engine package binary', () => {
-  it('exposes the standalone runner as an installed binary', () => {
-    const packageJson = JSON.parse(
-      readFileSync(resolve(packageDir, 'package.json'), 'utf8'),
+  it('starts the standalone runner from the installed package command', async () => {
+    const prompt = 'binary package smoke test'
+    const proc = spawn(
+      'bun',
+      ['x', '--no-install', 'ship-fast-engine', prompt],
+      {
+        env: {
+          ...process.env,
+          // The smoke test only needs to prove the binary launches. Keep any
+          // accidental provider calls from reaching real services before kill.
+          GEMINI_API_KEY: '',
+          GROQ_API_KEY: '',
+        },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
     )
-    const binPath = packageJson.bin?.['ship-fast-engine']
 
-    expect(binPath).toBe('./scripts/run-engine-standalone.ts')
-    expect(existsSync(resolve(packageDir, binPath))).toBe(true)
-  })
-
-  it('keeps the standalone runner directly executable', () => {
-    const packageJson = JSON.parse(
-      readFileSync(resolve(packageDir, 'package.json'), 'utf8'),
-    )
-    const binPath = resolve(packageDir, packageJson.bin['ship-fast-engine'])
-
-    expect(() => accessSync(binPath, constants.X_OK)).not.toThrow()
-  })
+    try {
+      const output = await waitForOutput(proc, `Prompt: ${prompt}`)
+      expect(output).toContain('Running Ship Faster engine standalone')
+      expect(output).toContain(`Prompt: ${prompt}`)
+    } finally {
+      if (proc.exitCode === null) {
+        proc.kill('SIGTERM')
+        await new Promise((resolve) => {
+          const timeout = setTimeout(resolve, 1_000)
+          proc.once('close', () => {
+            clearTimeout(timeout)
+            resolve()
+          })
+        })
+      }
+    }
+  }, 10_000)
 })
