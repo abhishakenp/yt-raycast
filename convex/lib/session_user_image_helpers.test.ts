@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { api, internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
 import schema from '../schema'
+import { listUserImages } from './session_user_image_helpers'
 
 const modules = import.meta.glob('../**/*.ts')
 
@@ -258,5 +259,60 @@ describe('user image upload helpers', () => {
         sessionId: sessionId as Id<'sessions'>,
       }),
     ).resolves.toEqual([])
+  })
+
+  it('filters uploaded image rows whose storage URL can no longer be resolved', async () => {
+    const sessionId = 'session_deleted_upload' as Id<'sessions'>
+    const rows = [
+      {
+        _id: 'image_missing_url',
+        _creationTime: 1,
+        sessionId,
+        storageId: 'storage_missing' as Id<'_storage'>,
+        filename: 'missing.png',
+        contentType: 'image/png',
+        size: 123,
+        createdAt: 10,
+      },
+      {
+        _id: 'image_ready_url',
+        _creationTime: 2,
+        sessionId,
+        storageId: 'storage_ready' as Id<'_storage'>,
+        filename: 'ready.png',
+        contentType: 'image/png',
+        size: 456,
+        createdAt: 20,
+      },
+    ]
+    const ctx = {
+      db: {
+        get: async () => ({ _id: sessionId, isPrivate: false }),
+        query: () => ({
+          withIndex: () => ({
+            order: () => ({
+              collect: async () => rows,
+            }),
+          }),
+        }),
+      },
+      storage: {
+        getUrl: async (storageId: Id<'_storage'>) =>
+          storageId === 'storage_ready'
+            ? 'https://storage.test/ready.png'
+            : null,
+      },
+      auth: {
+        getUserIdentity: async () => null,
+      },
+    } as unknown as Parameters<typeof listUserImages>[0]
+
+    await expect(listUserImages(ctx, { sessionId })).resolves.toEqual([
+      expect.objectContaining({
+        _id: 'image_ready_url',
+        filename: 'ready.png',
+        url: 'https://storage.test/ready.png',
+      }),
+    ])
   })
 })
