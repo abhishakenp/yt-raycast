@@ -541,6 +541,42 @@ describe('createGitHubPushResponse', () => {
     expect(client.mutation).not.toHaveBeenCalled()
   })
 
+  it('returns a stable JSON error when the GitHub API request rejects', async () => {
+    const fetchMock: typeof fetch = async (url) => {
+      const parsed = new URL(String(url))
+      if (parsed.pathname === '/user') {
+        throw new Error(
+          'github network unavailable for k571fbfbggczv4pfz2evtrxdzx89qqbb',
+        )
+      }
+      return Response.json({ error: `Unexpected ${parsed.pathname}` })
+    }
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/k571fbfbggczv4pfz2evtrxdzx89qqbb/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'html' }),
+        },
+      ),
+      'k571fbfbggczv4pfz2evtrxdzx89qqbb',
+      env,
+      client,
+      fetchMock,
+      tokenResolver,
+    )
+
+    const body = await response.json()
+    expect(body).toEqual({ error: 'GitHub request failed.' })
+    expect(JSON.stringify(body)).not.toContain(
+      'k571fbfbggczv4pfz2evtrxdzx89qqbb',
+    )
+    expect(response.status).toBe(502)
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
   it('pushes React target files when requested', async () => {
     const { fetchMock, requests } = createGitHubFetch()
 

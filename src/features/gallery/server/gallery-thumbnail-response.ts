@@ -286,10 +286,10 @@ export const createGalleryThumbnailResponse = async (
         'Cache-Control': 'public, max-age=10',
       },
     })
-  } catch (error) {
-    return new Response(
-      error instanceof Error ? error.message : 'Unable to generate thumbnail',
-      { status: 500 },
-    )
+  } catch {
+    return new Response('Thumbnail temporarily unavailable', {
+      status: 503,
+      headers: { 'content-type': 'text/plain' },
+    })
   }
 }

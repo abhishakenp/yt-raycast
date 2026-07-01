@@ -1,7 +1,10 @@
 import { Buffer } from 'node:buffer'
 import { describe, expect, it, vi } from 'vitest'
 
-import { patchOpenUiSourceWithAiCapsule } from './section-edit-response'
+import {
+  createSectionEditResponse,
+  patchOpenUiSourceWithAiCapsule,
+} from './section-edit-response'
 
 // We test the exported pure functions plus behavioral invariants that guard
 // against regressions which the old AST-structural tests covered indirectly:
@@ -72,6 +75,52 @@ footer = AICustom_SaasHero_xyz({})`)
 })
 
 describe('section-edit-response behavioral invariants', () => {
+  it('returns a stable public error when the generation view lookup fails', async () => {
+    const response = await createSectionEditResponse(
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+      new Request(
+        'https://ship-fast.test/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/section-edit',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            instruction: 'make Pineapple Saison feel more seasonal',
+            selection: {
+              elementPath: 'main section:nth-of-type(2)',
+              tag: 'section',
+              outerHTML: '<section><h2>Our Brew Selection</h2></section>',
+              openuiComponent: 'RestaurantMenu',
+              openuiVar: 'home_menu',
+            },
+          }),
+        },
+      ),
+      {
+        client: {
+          query: async () => {
+            throw new Error(
+              'ConvexError: section edit lookup failed for k574ms14ma9f94keq30r7dq24x89n1k2 Craft Beer Brewery',
+            )
+          },
+          mutation: async () => {
+            throw new Error('unexpected mutation')
+          },
+        },
+        generate: async () => {
+          throw new Error('model should not run before lookup succeeds')
+        },
+      },
+    )
+    const body = await response.json()
+
+    expect(body).toEqual({ error: 'Unable to edit section.' })
+    expect(JSON.stringify(body)).not.toContain(
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+    )
+    expect(JSON.stringify(body)).not.toContain('ConvexError')
+    expect(JSON.stringify(body)).not.toContain('Craft Beer Brewery')
+    expect(response.status).toBe(503)
+  })
+
   it('does not eagerly load esbuild at module import time', async () => {
     // esbuild (and its native fsevents dep) must only be loaded when a capsule
     // is actually compiled, never when section-edit-response is first imported.

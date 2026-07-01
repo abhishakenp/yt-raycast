@@ -64,6 +64,31 @@ describe('session preview edit responses', () => {
     expect(calls).toEqual([{ lookup: 'fake' }])
   })
 
+  it('returns a stable public error when preview history cannot be loaded', async () => {
+    const response = await createPreviewHistoryResponse(
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+      {
+        query: async () => {
+          throw new Error(
+            'ConvexError: preview history unavailable for k574ms14ma9f94keq30r7dq24x89n1k2 Craft Beer Brewery',
+          )
+        },
+        mutation: async () => {
+          throw new Error('unexpected mutation')
+        },
+      },
+    )
+    const body = await response.json()
+
+    expect(body).toEqual({ error: 'Unable to load preview history.' })
+    expect(JSON.stringify(body)).not.toContain(
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+    )
+    expect(JSON.stringify(body)).not.toContain('ConvexError')
+    expect(JSON.stringify(body)).not.toContain('Craft Beer Brewery')
+    expect(response.status).toBe(503)
+  })
+
   it('restores a requested preview version with anonymous ownership', async () => {
     const calls: unknown[] = []
     const response = await createPreviewRestoreResponse(

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   generateDeterministicThumbnailSvg,
@@ -356,20 +356,27 @@ describe('Gallery Thumbnail Response', () => {
       expect(await response.text()).toBe('Session not found or not public')
     })
 
-    it('should return 500 on error', async () => {
+    it('returns a stable unavailable thumbnail when the gallery lookup fails', async () => {
+      const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
       const mockClient = {
-        query: async () => {
-          throw new Error('Convex error')
-        },
+        query: vi.fn(async () => {
+          throw new Error(
+            `Convex gallery lookup failed for ${realSessionId}: Craft Beer Brewery Pineapple Saison`,
+          )
+        }),
       }
       const response = await createGalleryThumbnailResponse(
-        'error-session-id',
+        realSessionId,
         undefined,
         mockClient,
       )
 
-      expect(response.status).toBe(500)
-      expect(await response.text()).toBe('Convex error')
+      expect(response.status).toBe(503)
+      expect(response.headers.get('content-type')).toContain('text/plain')
+      const body = await response.text()
+      expect(body).toBe('Thumbnail temporarily unavailable')
+      expect(body).not.toContain(realSessionId)
+      expect(body).not.toContain('Pineapple Saison')
     })
 
     it('should use stable lookup via getPublicGallerySession', async () => {

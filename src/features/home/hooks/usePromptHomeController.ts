@@ -116,11 +116,18 @@ const createSessionFromHttp = async (
       'error' in data &&
       data.error === 'Public preview session creation is disabled.'
 
-    // A 200 response with a non-JSON/HTML body is a malformed success — fall
-    // back to the Convex mutation instead of navigating with an undefined id.
-    const malformedSuccess = response.ok && data === null
+    const hasSessionId =
+      data !== null &&
+      'sessionId' in data &&
+      typeof (data as CreateSessionResult).sessionId === 'string' &&
+      ((data as CreateSessionResult).sessionId as string).trim() !== ''
 
-    if (response.ok && data !== null) return data as CreateSessionResult
+    // A 200 response with a non-JSON/HTML body, or JSON missing a session id,
+    // is a malformed success — fall back to the Convex mutation instead of
+    // navigating with an undefined id.
+    const malformedSuccess = response.ok && (data === null || !hasSessionId)
+
+    if (response.ok && hasSessionId) return data as CreateSessionResult
     if (!disabled && !malformedSuccess) {
       throw new Error(
         data !== null && 'error' in data && data.error
@@ -266,6 +273,10 @@ export const usePromptHomeController = () => {
         }),
       )
       const sessionId = result.sessionId
+
+      if (!sessionId || typeof sessionId !== 'string' || !sessionId.trim()) {
+        throw new Error('Session creation returned no session id.')
+      }
 
       const isOwnedCachedClone =
         result.cached === true && result.cloned === true

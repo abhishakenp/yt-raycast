@@ -184,6 +184,34 @@ describe('createCheckoutApiResponse', () => {
     })
   })
 
+  it('returns stable JSON when Stripe checkout network request rejects', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(
+      new Error(
+        'stripe network unavailable for k571fbfbggczv4pfz2evtrxdzx89qqbb',
+      ),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'subscription',
+          gateway: 'stripe',
+          sessionId: 'k571fbfbggczv4pfz2evtrxdzx89qqbb',
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(502)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    await expect(response.json()).resolves.toEqual({
+      error: 'Stripe checkout failed.',
+    })
+  })
+
   it('returns JSON when Razorpay checkout returns a malformed upstream body', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response('<html>razorpay unavailable</html>', {
@@ -229,6 +257,35 @@ describe('createCheckoutApiResponse', () => {
           mode: 'credit_pack',
           gateway: 'razorpay',
           packId: '3_credits',
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(502)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    await expect(response.json()).resolves.toEqual({
+      error: 'Razorpay order failed.',
+    })
+  })
+
+  it('returns stable JSON when Razorpay order network request rejects', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(
+      new Error(
+        'razorpay order network unavailable for k571fbfbggczv4pfz2evtrxdzx89qqbb',
+      ),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'credit_pack',
+          gateway: 'razorpay',
+          packId: '3_credits',
+          sessionId: 'k571fbfbggczv4pfz2evtrxdzx89qqbb',
         }),
       }),
       env,

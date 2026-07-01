@@ -144,8 +144,8 @@ export const createPreviewHistoryResponse = async (
       { lookup: sessionId },
     )
     return json({ history })
-  } catch (error) {
-    return errorResponse(error)
+  } catch {
+    return json({ error: 'Unable to load preview history.' }, { status: 503 })
   }
 }
 

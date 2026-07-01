@@ -19,6 +19,8 @@ const client = {
 }
 
 describe('GitHub OAuth response handlers', () => {
+  const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
+
   beforeEach(() => {
     client.mutation.mockReset()
     client.setAuth.mockReset()
@@ -127,6 +129,34 @@ describe('GitHub OAuth response handlers', () => {
       error: 'Sign in before connecting GitHub.',
     })
     expect(client.mutation).not.toHaveBeenCalled()
+  })
+
+  it('returns a stable start error when OAuth state persistence fails', async () => {
+    client.mutation.mockRejectedValueOnce(
+      new Error(
+        `Convex OAuth state write failed for ${realSessionId}: Craft Beer Brewery`,
+      ),
+    )
+
+    const response = await createGitHubConnectStartResponse(
+      new Request('https://ship-fast.test/api/github/connect/start', {
+        body: JSON.stringify({
+          sessionId: realSessionId,
+          target: 'lakebed',
+          returnTo: `/generate/${realSessionId}?tab=github`,
+        }),
+        headers: { authorization: 'Bearer app-token' },
+        method: 'POST',
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(503)
+    const body = await response.json()
+    expect(body).toEqual({ error: 'Unable to start GitHub connection.' })
+    expect(JSON.stringify(body)).not.toContain(realSessionId)
+    expect(JSON.stringify(body)).not.toContain('Craft Beer Brewery')
   })
 
   it('exchanges the callback code, stores the GitHub token, and redirects back', async () => {

@@ -1,8 +1,34 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { createSessionMedusaProvisionResponse } from './commerce-api-response'
+import {
+  createSessionMedusaConfigResponse,
+  createSessionMedusaProvisionResponse,
+} from './commerce-api-response'
 
 describe('createSessionMedusaProvisionResponse', () => {
+  const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
+  const realPrompt =
+    'a craft beer brewery with taproom tours and seasonal releases in portland'
+
+  it('returns a stable unavailable config response when Convex lookup fails', async () => {
+    const response = await createSessionMedusaConfigResponse(realSessionId, {
+      mutation: vi.fn(),
+      query: vi.fn(async () => {
+        throw new Error(
+          `Convex commerce config failed for ${realSessionId}: ${realPrompt}`,
+        )
+      }),
+    })
+
+    expect(response.status).toBe(503)
+    const body = await response.json()
+    expect(body).toEqual({
+      error: 'Commerce configuration is unavailable.',
+    })
+    expect(JSON.stringify(body)).not.toContain(realSessionId)
+    expect(JSON.stringify(body)).not.toContain('craft beer brewery')
+  })
+
   it('provisions commerce from server Medusa settings without URL input', async () => {
     const mutation = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
     const fetchImpl = vi.fn().mockResolvedValue(
@@ -610,5 +636,55 @@ describe('createSessionMedusaProvisionResponse', () => {
     expect(mutation).toHaveBeenCalledTimes(2)
     expect(mutation.mock.calls[0]?.[1]).toMatchObject({ productCount: 1 })
     expect(mutation.mock.calls[1]?.[1]).not.toHaveProperty('productCount')
+  })
+
+  it('returns a stable unavailable provision response when Convex persistence fails', async () => {
+    const mutation = vi.fn(async () => {
+      throw new Error(
+        `Convex commerce upsert failed for ${realSessionId} owner_secret Pineapple Saison`,
+      )
+    })
+    const response = await createSessionMedusaProvisionResponse(
+      realSessionId,
+      new Request(
+        `http://ship-fast.test/api/sessions/${realSessionId}/provision/medusa`,
+        {
+          body: JSON.stringify({
+            anonymousOwnerSecret: 'owner_secret',
+            products: [
+              {
+                handle: 'pineapple-saison',
+                price: 7,
+                title: 'Pineapple Saison',
+              },
+            ],
+          }),
+          method: 'POST',
+        },
+      ),
+      { mutation, query: vi.fn() },
+      {
+        env: {
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+          MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+        },
+        fetch: vi
+          .fn()
+          .mockResolvedValue(
+            new Response(
+              JSON.stringify({ regions: [{ currency_code: 'usd' }] }),
+              { status: 200 },
+            ),
+          ),
+        metaEnv: {},
+      },
+    )
+
+    expect(response.status).toBe(503)
+    const body = await response.json()
+    expect(body).toEqual({ error: 'Commerce provisioning failed.' })
+    expect(JSON.stringify(body)).not.toContain(realSessionId)
+    expect(JSON.stringify(body)).not.toContain('owner_secret')
+    expect(JSON.stringify(body)).not.toContain('Pineapple Saison')
   })
 })

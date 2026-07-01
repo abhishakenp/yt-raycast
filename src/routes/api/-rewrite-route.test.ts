@@ -32,6 +32,10 @@ const importRoute = async (): Promise<RouteWithHandlers> => {
 }
 
 describe('rewrite API route', () => {
+  const realConvexText = 'Pineapple Saison'
+  const realConvexInstruction =
+    'make this fit a craft beer brewery with taproom tours'
+
   it('registers a POST handler at /api/rewrite', async () => {
     const Route = await importRoute()
     expect(Route.path).toBe('/api/rewrite')
@@ -88,5 +92,33 @@ describe('rewrite API route', () => {
       expect.any(AbortSignal),
       2,
     )
+  })
+
+  it('returns a stable public JSON error when the rewrite model fails', async () => {
+    generateTextMock.mockRejectedValue(
+      new Error(
+        'model transport failed for k574ms14ma9f94keq30r7dq24x89n1k2 while rewriting Pineapple Saison',
+      ),
+    )
+    const Route = await importRoute()
+
+    const res = await Route.options.server.handlers.POST({
+      request: new Request('https://ship-fast.test/api/rewrite', {
+        method: 'POST',
+        body: JSON.stringify({
+          text: realConvexText,
+          instruction: realConvexInstruction,
+        }),
+      }),
+    })
+    const body = await res.json()
+
+    expect(body).toEqual({ error: 'Rewrite failed.' })
+    expect(JSON.stringify(body)).not.toContain(
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+    )
+    expect(JSON.stringify(body)).not.toContain(realConvexText)
+    expect(res.status).toBe(502)
+    expect(generateTextMock).toHaveBeenCalledTimes(1)
   })
 })

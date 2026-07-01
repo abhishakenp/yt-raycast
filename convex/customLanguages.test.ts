@@ -129,6 +129,43 @@ describe('customLanguages', () => {
     expect(stored).toMatchObject({ code: 'lt', name: 'Lithuanian' })
   })
 
+  it('resolveOrCreate does not reuse the live stale Mexican-to-Nahuatl custom row', async () => {
+    process.env.GROQ_API_KEY = 'test-key'
+    process.env.GROQ_HOST = 'https://groq.test'
+    const fetchMock = vi.fn(async () =>
+      makeGroqResponse({
+        code: 'es-MX',
+        name: 'Mexican Spanish',
+        nativeName: 'Español (México)',
+        fontFamily: 'Inter, system-ui, sans-serif',
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    const t = convexTest(schema, modules)
+
+    // Observed via `npx convex run customLanguages:list '{}'`: a stale row
+    // exists with keyword "mexican" but code/name/nativeName for Nahuatl.
+    await t.mutation(api.customLanguages.add, {
+      code: 'nahuatl',
+      name: 'Nahuatl',
+      nativeName: 'Nāhuatl',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      keywords: ['mexican', 'nahuatl'],
+    })
+
+    const resolved = await t.action(api.customLanguages.resolveOrCreate, {
+      languageInput: 'Mexican',
+    })
+
+    expect(resolved).toMatchObject({
+      code: 'es-MX',
+      name: 'Mexican Spanish',
+      nativeName: 'Español (México)',
+    })
+    expect(resolved?.code).not.toBe('nahuatl')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
   it('resolveOrCreate strips leaked reasoning before parsing observed native-script AI output', async () => {
     process.env.GROQ_API_KEY = 'test-key'
     process.env.GROQ_HOST = 'https://groq.test'

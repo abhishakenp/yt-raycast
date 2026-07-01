@@ -135,6 +135,9 @@ export default function LanguagePicker({
   const [repairedCustomLanguages, setRepairedCustomLanguages] = useState<
     LanguageEntry[]
   >([])
+  const [supersededCustomCodes, setSupersededCustomCodes] = useState<
+    Set<string>
+  >(new Set())
 
   // Custom languages persisted by previous users (AI-generated). Merged with
   // the static KNOWN_LANGUAGES so everyone can search + select them.
@@ -144,25 +147,49 @@ export default function LanguagePicker({
   // Repair stale browser-native custom rows: a previous AI run may have stored
   // a language with a non-locale code and a Latin native name (e.g. code
   // "chinese", nativeName "Chinese") even though the browser can translate the
-  // proper locale (zh) natively. Resolve each custom row's name against the
-  // browser-native index and merge the repaired entries in so search results
-  // show the real native script + locale code.
+  // proper locale (zh) natively. Resolve each custom row's name AND keywords
+  // against the browser-native index and merge the repaired entries in so
+  // search results show the real native script + locale code. Rows whose
+  // keywords resolve to a different browser-native locale (e.g. a Nahuatl row
+  // keyed on "mexican") are superseded and hidden in favor of the repaired
+  // browser-native entry.
   useEffect(() => {
     const custom = (customLanguages ?? []) as LanguageEntry[]
     if (custom.length === 0) {
       setRepairedCustomLanguages([])
+      setSupersededCustomCodes(new Set())
       return
     }
     let cancelled = false
     void (async () => {
-      const repaired: LanguageEntry[] = []
-      await Promise.all(
+      const results = await Promise.all(
         custom.map(async (entry) => {
-          const browserNative = await resolveBrowserNativeLanguage(entry.name)
-          if (browserNative) repaired.push(browserNative)
+          const candidates = [entry.name, ...entry.keywords]
+          for (const candidate of candidates) {
+            const browserNative = await resolveBrowserNativeLanguage(candidate)
+            if (browserNative) {
+              return {
+                browserNative,
+                superseded:
+                  browserNative.code !== entry.code ? entry.code : null,
+              }
+            }
+          }
+          return null
         }),
       )
-      if (!cancelled) setRepairedCustomLanguages(repaired)
+      if (!cancelled) {
+        const repaired: LanguageEntry[] = []
+        const superseded = new Set<string>()
+        for (const result of results) {
+          if (result?.browserNative) {
+            repaired.push(result.browserNative)
+            if (result.superseded) superseded.add(result.superseded)
+          }
+        }
+        setRepairedCustomLanguages(repaired)
+        setSupersededCustomCodes(superseded)
+      }
     })()
     return () => {
       cancelled = true
@@ -173,9 +200,11 @@ export default function LanguagePicker({
     () =>
       mergeLanguageEntries(KNOWN_LANGUAGES, [
         ...repairedCustomLanguages,
-        ...((customLanguages ?? []) as LanguageEntry[]),
+        ...((customLanguages ?? []) as LanguageEntry[]).filter(
+          (entry) => !supersededCustomCodes.has(entry.code),
+        ),
       ]),
-    [customLanguages, repairedCustomLanguages],
+    [customLanguages, repairedCustomLanguages, supersededCustomCodes],
   )
 
   const submitCustom = async (e: React.FormEvent) => {

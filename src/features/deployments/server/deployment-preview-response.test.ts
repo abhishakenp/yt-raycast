@@ -93,6 +93,24 @@ describe('createDeploymentPreviewResponse', () => {
     expect(response.status).toBe(404)
   })
 
+  it('returns a stable unavailable response when deployment lookup fails', async () => {
+    const client = {
+      query: async () => {
+        throw new Error('Convex query failed')
+      },
+    }
+
+    const response = await createDeploymentPreviewResponse(
+      'a-craft-beer-brewery',
+      new Request('https://ship-fast.io/preview/a-craft-beer-brewery'),
+      client as any,
+    )
+
+    expect(response.status).toBe(503)
+    expect(await response.text()).toBe('Deployment preview is unavailable')
+    expect(response.headers.get('x-ship-fast-deployment')).toBeNull()
+  })
+
   it('serves a real ready Lakebed deployment preview with canonical metadata', async () => {
     const client = {
       query: async (_ref: any, args: any) => {

@@ -107,6 +107,18 @@ export const createSessionCreateResponse = async (
       clientIpHash,
     } as CreateSessionArgs)
 
+    if (
+      result === null ||
+      typeof result !== 'object' ||
+      typeof (result as { sessionId?: unknown }).sessionId !== 'string' ||
+      !(result as { sessionId?: string }).sessionId
+    ) {
+      return json(
+        { error: 'Generation could not start. Try again.' },
+        { status: 502 },
+      )
+    }
+
     return json(result)
   } catch (error) {
     if (error instanceof SyntaxError) {

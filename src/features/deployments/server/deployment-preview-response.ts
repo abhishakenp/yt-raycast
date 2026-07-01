@@ -43,10 +43,19 @@ export const createDeploymentPreviewResponse = async (
   }
 
   const client = clientOverride ?? createRuntimeConvexHttpClient()
-  const [deployment, preview] = await Promise.all([
-    client.query(api.sessions.getDeploymentBySlug, { slug: normalizedSlug }),
-    client.query(api.sessions.getPublicPreview, { lookup: normalizedSlug }),
-  ])
+  let deployment: Awaited<ReturnType<typeof client.query>>
+  let preview: Awaited<ReturnType<typeof client.query>>
+  try {
+    ;[deployment, preview] = await Promise.all([
+      client.query(api.sessions.getDeploymentBySlug, { slug: normalizedSlug }),
+      client.query(api.sessions.getPublicPreview, { lookup: normalizedSlug }),
+    ])
+  } catch {
+    return new Response('Deployment preview is unavailable', {
+      status: 503,
+      headers: { 'content-type': 'text/plain' },
+    })
+  }
 
   if (deployment === null || deployment.status !== 'ready') {
     return new Response('Deployment not found', {

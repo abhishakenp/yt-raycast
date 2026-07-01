@@ -65,38 +65,27 @@ const setClientAuth = (client: ExportApiClient, request: Request) => {
   if (token !== null) client.setAuth?.(token)
 }
 
-const errorStatus = (error: unknown): number => {
-  const message = error instanceof Error ? error.message : String(error)
-  if (/FORBIDDEN|own/i.test(message)) return 403
-  if (/NOT_FOUND|Validator: v\.id\("sessions"\)/i.test(message)) return 404
-  if (/PREVIEW_NOT_READY|NOT_READY/i.test(message)) return 409
-  if (/PAYMENT_REQUIRED|Subscribe|purchase/i.test(message)) return 402
-  return 500
-}
-
-const errorResponse = (error: unknown) =>
-  json(
-    {
-      error: error instanceof Error ? error.message : 'Export request failed',
-    },
-    { status: errorStatus(error) },
-  )
-
 export const createSessionExportResponse = async (
   sessionId: string,
   request: Request,
   clientOverride?: ExportApiClient,
 ): Promise<Response> => {
+  let body: Record<string, unknown>
   try {
-    const body = await readJsonBody(request)
-    const target = normalizeTarget(body.target ?? body.exportTarget)
-    if (target === null) {
-      return json(
-        { error: 'Export target must be html, react, next, or lakebed.' },
-        { status: 400 },
-      )
-    }
+    body = await readJsonBody(request)
+  } catch {
+    return json({ error: 'Invalid export request.' }, { status: 400 })
+  }
 
+  const target = normalizeTarget(body.target ?? body.exportTarget)
+  if (target === null) {
+    return json(
+      { error: 'Export target must be html, react, next, or lakebed.' },
+      { status: 400 },
+    )
+  }
+
+  try {
     const client = createClient(clientOverride)
     setClientAuth(client, request)
     const result = await client.mutation(api.sessions.createExportByLookup, {
@@ -109,8 +98,8 @@ export const createSessionExportResponse = async (
       ...result,
       downloadUrl: `/api/sessions/${sessionId}/download/${target}`,
     })
-  } catch (error) {
-    return errorResponse(error)
+  } catch {
+    return json({ error: 'Export request failed.' }, { status: 503 })
   }
 }
 

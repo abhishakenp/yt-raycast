@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { createSessionMedusaProductsResponse } from './medusa-product-read'
 
 describe('createSessionMedusaProductsResponse', () => {
+  const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
+
   it('uses the session tenant publishable key from commerce config when available', async () => {
     const fetchImpl = vi
       .fn()
@@ -281,6 +283,84 @@ describe('createSessionMedusaProductsResponse', () => {
       sessionId: 'session_123',
       warning: 'Medusa Store API product read failed.',
     })
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+
+  it('returns an empty product list when Medusa admin auth returns malformed HTML during tenant discovery', async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce(
+      new Response('<!doctype html><title>admin auth unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+    const query = vi.fn().mockRejectedValue(new Error('FORBIDDEN'))
+
+    const response = await createSessionMedusaProductsResponse(
+      realSessionId,
+      {
+        env: {
+          MEDUSA_ADMIN_EMAIL: 'owner@brewery.example',
+          MEDUSA_ADMIN_PASSWORD: 'super-secret-password',
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        },
+        fetch: fetchImpl,
+        metaEnv: {},
+      },
+      { mutation: vi.fn(), query },
+    )
+
+    expect(response.status).toBe(200)
+    const body = await response.json()
+    expect(body).toEqual({
+      products: [],
+      sessionId: realSessionId,
+      warning: 'Medusa Store API product read failed.',
+    })
+    expect(JSON.stringify(body)).not.toContain('owner@brewery.example')
+    expect(JSON.stringify(body)).not.toContain('super-secret-password')
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns an empty product list when Medusa admin API keys return malformed HTML during tenant discovery', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ token: 'admin-token' }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response('<!doctype html><title>api keys unavailable</title>', {
+          headers: { 'Content-Type': 'text/html' },
+          status: 200,
+        }),
+      )
+    const query = vi.fn().mockRejectedValue(new Error('FORBIDDEN'))
+
+    const response = await createSessionMedusaProductsResponse(
+      realSessionId,
+      {
+        env: {
+          MEDUSA_ADMIN_EMAIL: 'owner@brewery.example',
+          MEDUSA_ADMIN_PASSWORD: 'super-secret-password',
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        },
+        fetch: fetchImpl,
+        metaEnv: {},
+      },
+      { mutation: vi.fn(), query },
+    )
+
+    expect(response.status).toBe(200)
+    const body = await response.json()
+    expect(body).toEqual({
+      products: [],
+      sessionId: realSessionId,
+      warning: 'Medusa Store API product read failed.',
+    })
+    expect(JSON.stringify(body)).not.toContain('owner@brewery.example')
+    expect(JSON.stringify(body)).not.toContain('super-secret-password')
+    expect(JSON.stringify(body)).not.toContain('admin-token')
     expect(fetchImpl).toHaveBeenCalledTimes(2)
   })
 })

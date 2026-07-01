@@ -225,15 +225,27 @@ export const createSessionMedusaProductsResponse = async (
     getMedusaBackendUrl(options.env, options.metaEnv),
   )
   const fetchImpl = options.fetch ?? fetch
-  const publishableKey =
-    (await readTenantPublishableKey(sessionId, clientOverride)) ??
-    (await discoverTenantPublishableKey({
-      backendUrl,
-      fetchImpl,
-      options,
-      sessionId,
-    })) ??
-    getMedusaPublishableKey(options.env, options.metaEnv)
+  let publishableKey: string
+  try {
+    publishableKey =
+      (await readTenantPublishableKey(sessionId, clientOverride)) ??
+      (await discoverTenantPublishableKey({
+        backendUrl,
+        fetchImpl,
+        options,
+        sessionId,
+      })) ??
+      getMedusaPublishableKey(options.env, options.metaEnv)
+  } catch {
+    return json(
+      {
+        products: [],
+        sessionId,
+        warning: 'Medusa Store API product read failed.',
+      },
+      { status: 200 },
+    )
+  }
   if (!publishableKey.trim()) {
     return json({
       products: [],

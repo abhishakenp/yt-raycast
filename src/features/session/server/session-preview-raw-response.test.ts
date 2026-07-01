@@ -67,4 +67,20 @@ describe('createSessionPreviewRawResponse', () => {
     expect(body.toLowerCase()).not.toContain('openui-error')
     expect(body.toLowerCase()).not.toContain('failed to render')
   })
+
+  it('returns a stable public error when the preview lookup fails', async () => {
+    query.mockRejectedValueOnce(
+      new Error('ConvexError: private session owner secret mismatch'),
+    )
+
+    const response = await createSessionPreviewRawResponse(
+      'k571fbfbggczv4pfz2evtrxdzx89qqbb',
+    )
+
+    expect(response.status).toBe(503)
+    const body = await response.text()
+    expect(body).toBe('Preview temporarily unavailable')
+    expect(body).not.toContain('owner secret')
+    expect(body).not.toContain('ConvexError')
+  })
 })

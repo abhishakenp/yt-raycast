@@ -48,17 +48,26 @@ describe('createSessionApiResponse', () => {
     expect(data).toEqual({ error: 'Session not found' })
   })
 
-  it('returns JSON errors for Convex failures', async () => {
+  it('returns a stable public JSON error when Convex fails to load the session payload', async () => {
     const client = {
       query: async (_ref: any, _args: any) => {
-        throw new Error('convex unavailable')
+        throw new Error(
+          'convex unavailable for k571fbfbggczv4pfz2evtrxdzx89qqbb a food site for dogs and other pets',
+        )
       },
     }
 
-    const response = await createSessionApiResponse('session_123', client)
+    const response = await createSessionApiResponse(
+      'k571fbfbggczv4pfz2evtrxdzx89qqbb',
+      client,
+    )
     const data = await response.json()
 
-    expect(response.status).toBe(500)
-    expect(data).toEqual({ error: 'convex unavailable' })
+    expect(data).toEqual({ error: 'Unable to load session.' })
+    expect(JSON.stringify(data)).not.toContain(
+      'k571fbfbggczv4pfz2evtrxdzx89qqbb',
+    )
+    expect(JSON.stringify(data)).not.toContain('a food site for dogs')
+    expect(response.status).toBe(503)
   })
 })

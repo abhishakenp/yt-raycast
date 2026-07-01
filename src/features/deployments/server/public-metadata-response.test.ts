@@ -187,6 +187,24 @@ describe('public metadata responses', () => {
     ])
   })
 
+  it('returns stable unavailable metadata when deployment lookup fails', async () => {
+    const client = {
+      query: async () => {
+        throw new Error('Convex query failed')
+      },
+    }
+
+    const response = await createPublicMetadataResponse(
+      'llms',
+      new Request('https://a-craft-beer-brewery.ship-fast.io/llms.txt'),
+      { client },
+    )
+
+    expect(response.status).toBe(503)
+    expect(await response.text()).toBe('Deployment metadata is unavailable')
+    expect(response.headers.get('x-ship-fast-deployment')).toBeNull()
+  })
+
   it('does not expose real failed Lakebed deployment metadata or build errors', async () => {
     const client = {
       query: async (_ref: unknown, args: any) => {

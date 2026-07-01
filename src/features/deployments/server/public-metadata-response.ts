@@ -125,10 +125,19 @@ export const createPublicMetadataResponse = async (
   }
 
   const client = options.client ?? createRuntimeConvexHttpClient()
-  const [deployment, preview] = await Promise.all([
-    client.query(api.sessions.getDeploymentBySlug, { slug }),
-    client.query(api.sessions.getPublicPreview, { lookup: slug }),
-  ])
+  let deployment: Awaited<ReturnType<typeof client.query>>
+  let preview: Awaited<ReturnType<typeof client.query>>
+  try {
+    ;[deployment, preview] = await Promise.all([
+      client.query(api.sessions.getDeploymentBySlug, { slug }),
+      client.query(api.sessions.getPublicPreview, { lookup: slug }),
+    ])
+  } catch {
+    return new Response('Deployment metadata is unavailable', {
+      status: 503,
+      headers: { 'content-type': 'text/plain; charset=utf-8' },
+    })
+  }
 
   if (deployment === null || deployment.status !== 'ready') {
     return new Response('Deployment metadata not found', {

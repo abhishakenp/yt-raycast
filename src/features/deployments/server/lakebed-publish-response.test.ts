@@ -81,7 +81,7 @@ describe('createLakebedPublishResponse', () => {
     })
   })
 
-  it('returns the real failed Lakebed deployment error instead of reporting that publishing is still preparing', async () => {
+  it('returns a stable failed Lakebed deployment response without leaking build logs', async () => {
     const client = {
       query: vi.fn().mockResolvedValueOnce({
         provider: 'lakebed',
@@ -101,10 +101,16 @@ describe('createLakebedPublishResponse', () => {
 
     expect(response.status).toBeGreaterThanOrEqual(400)
     expect(client.action).not.toHaveBeenCalled()
-    await expect(response.json()).resolves.toMatchObject({
+    const body = await response.json()
+    expect(body).toMatchObject({
       status: realConvexFailedLakebedDeployment.status,
-      error: expect.stringContaining('No matching export'),
+      error: 'Lakebed deployment failed.',
     })
+    expect(JSON.stringify(body)).not.toContain('No matching export')
+    expect(JSON.stringify(body)).not.toContain('SignInButton.tsx')
+    expect(JSON.stringify(body)).not.toContain(
+      realConvexFailedLakebedDeployment.sessionId,
+    )
   })
 
   it('deploys by lookup once the Lakebed artifact file map is ready', async () => {
@@ -139,7 +145,7 @@ describe('createLakebedPublishResponse', () => {
     })
   })
 
-  it('returns the actual Lakebed action build error when deployment crashes after the artifact is ready', async () => {
+  it('returns a stable Lakebed publish error when deployment crashes after the artifact is ready', async () => {
     const client = {
       query: vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce({
         status: 'ready',
@@ -162,8 +168,12 @@ describe('createLakebedPublishResponse', () => {
       lookup: realConvexFailedLakebedDeployment.sessionId,
       anonymousOwnerSecret: 'owner-secret',
     })
-    await expect(response.json()).resolves.toMatchObject({
-      error: expect.stringContaining('No matching export'),
-    })
+    const body = await response.json()
+    expect(body).toEqual({ error: 'Lakebed publish failed.' })
+    expect(JSON.stringify(body)).not.toContain('No matching export')
+    expect(JSON.stringify(body)).not.toContain('SignInButton.tsx')
+    expect(JSON.stringify(body)).not.toContain(
+      realConvexFailedLakebedDeployment.sessionId,
+    )
   })
 })

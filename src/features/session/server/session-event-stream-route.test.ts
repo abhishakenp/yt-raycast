@@ -192,4 +192,67 @@ describe('createSessionEventStreamResponse', () => {
     expect(text).toContain('"count":3')
     expect(text).toContain('"cursor":1782814139243')
   })
+
+  it('returns a stable SSE error when Convex returns malformed events instead of an array', async () => {
+    const response = await createSessionEventStreamResponse(
+      'k571fbfbggczv4pfz2evtrxdzx89qqbb',
+      new Request(
+        'http://localhost/api/sessions/k571fbfbggczv4pfz2evtrxdzx89qqbb/stream',
+      ),
+      {
+        query: async () =>
+          ({
+            cursor: 1782916824759,
+            events: {
+              latest: {
+                createdAt: 1782916824759,
+                eventType: 'run_failed',
+                message:
+                  'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.',
+              },
+            },
+            session: { sessionId: 'k571fbfbggczv4pfz2evtrxdzx89qqbb' },
+          }) as never,
+      },
+    )
+
+    const text = await response.text()
+
+    expect(text).toContain('event: error')
+    expect(text).toContain('Unable to load session events.')
+    expect(text).not.toContain('events.map')
+    expect(text).not.toContain('TypeError')
+    expect(response.status).toBe(502)
+  })
+
+  it('returns a stable SSE error when Convex returns events without a session object', async () => {
+    const response = await createSessionEventStreamResponse(
+      'k571fbfbggczv4pfz2evtrxdzx89qqbb',
+      new Request(
+        'http://localhost/api/sessions/k571fbfbggczv4pfz2evtrxdzx89qqbb/stream',
+      ),
+      {
+        query: async () =>
+          ({
+            cursor: 1782916824759,
+            events: [
+              {
+                createdAt: 1782916824759,
+                eventType: 'run_failed',
+                message:
+                  'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.',
+              },
+            ],
+          }) as never,
+      },
+    )
+
+    const text = await response.text()
+
+    expect(text).toContain('event: error')
+    expect(text).toContain('Unable to load session events.')
+    expect(text).not.toContain('sessionId')
+    expect(text).not.toContain('TypeError')
+    expect(response.status).toBe(502)
+  })
 })

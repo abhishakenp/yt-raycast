@@ -328,7 +328,25 @@ export const createExportResponse = async (
       return fallback ?? buildingResponse(download.artifact?.status)
     }
 
-    const artifactResponse = await fetch(download.storageUrl)
+    let artifactResponse: Response
+    try {
+      artifactResponse = await fetch(download.storageUrl)
+    } catch {
+      const fallback = await buildExportOnDemand(
+        client,
+        sessionId,
+        normalizedTarget,
+        getOwnerSecret(request),
+      )
+      if (fallback) return fallback
+      return new Response(
+        'Export artifact is unavailable and could not be rebuilt.',
+        {
+          status: 502,
+          headers: { 'content-type': 'text/plain' },
+        },
+      )
+    }
     if (!artifactResponse.ok || artifactResponse.body === null) {
       const fallback = await buildExportOnDemand(
         client,

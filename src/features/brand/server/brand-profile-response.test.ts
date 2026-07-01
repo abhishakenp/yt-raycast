@@ -196,18 +196,27 @@ describe('createBrandProfileResponse', () => {
     })
   })
 
-  it('handles resolver exceptions without leaking non-json responses', async () => {
+  it('returns a stable public error when the brand resolver rejects', async () => {
     const response = await createBrandProfileResponse(
-      new Request('https://ship-fast.test/api/brand-profile?query=linear'),
+      new Request(
+        'https://ship-fast.test/api/brand-profile?query=Craft%20Beer%20Brewery',
+      ),
       async () => {
-        throw new Error('Brandfetch unavailable')
+        throw new Error(
+          'Brandfetch unavailable for k574ms14ma9f94keq30r7dq24x89n1k2 Craft Beer Brewery',
+        )
       },
     )
+    const body = await response.json()
 
     expect(response.status).toBe(502)
-    await expect(response.json()).resolves.toMatchObject({
+    expect(body).toEqual({
       ok: false,
-      error: 'Brandfetch unavailable',
+      error: 'Brand profile lookup failed.',
     })
+    expect(JSON.stringify(body)).not.toContain(
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+    )
+    expect(JSON.stringify(body)).not.toContain('Craft Beer Brewery')
   })
 })

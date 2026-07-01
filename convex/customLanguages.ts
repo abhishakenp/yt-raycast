@@ -167,6 +167,12 @@ const CANONICAL_LANGUAGE_METADATA: Record<
     nativeName: 'العربية',
     fontFamily: 'Noto Naskh Arabic, sans-serif',
   },
+  mexican: {
+    code: 'es-MX',
+    name: 'Mexican Spanish',
+    nativeName: 'Español (México)',
+    fontFamily: 'Inter, system-ui, sans-serif',
+  },
 }
 
 const canonicalLanguageMetadata = (value: string) =>

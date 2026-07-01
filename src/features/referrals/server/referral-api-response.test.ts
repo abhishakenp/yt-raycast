@@ -9,6 +9,10 @@ const readJson = async (response: Response) =>
   (await response.json()) as Record<string, unknown>
 
 describe('referral API responses', () => {
+  const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
+  const realPrompt =
+    'a craft beer brewery with taproom tours and seasonal releases in portland'
+
   it('requires a bearer token before returning referral status', async () => {
     const client = {
       mutation: vi.fn(),
@@ -120,5 +124,61 @@ describe('referral API responses', () => {
       recorded: true,
       reason: 'ok',
     })
+  })
+
+  it('returns a stable unavailable status response when Convex referral reads fail', async () => {
+    const client = {
+      mutation: vi.fn(async () => ({ code: 'BREWERY50' })),
+      query: vi.fn(async () => {
+        throw new Error(
+          `Convex referral status failed for ${realSessionId}: ${realPrompt}`,
+        )
+      }),
+      setAuth: vi.fn(),
+    }
+
+    const response = await createReferralStatusApiResponse(
+      new Request('https://ship-fast.test/api/referrals/status', {
+        headers: { Authorization: 'Bearer convex-jwt' },
+      }),
+      client,
+    )
+
+    expect(response.status).toBe(503)
+    const body = await readJson(response)
+    expect(body).toEqual({ error: 'Unable to load referrals.' })
+    expect(JSON.stringify(body)).not.toContain(realSessionId)
+    expect(JSON.stringify(body)).not.toContain('craft beer brewery')
+  })
+
+  it('returns a stable unavailable record response when Convex referral writes fail', async () => {
+    const client = {
+      mutation: vi.fn(async () => {
+        throw new Error(
+          `Convex referral write failed for ${realSessionId} using BREWERY50 and Pineapple Saison`,
+        )
+      }),
+      query: vi.fn(),
+      setAuth: vi.fn(),
+    }
+
+    const response = await createReferralRecordApiResponse(
+      new Request('https://ship-fast.test/api/referrals/record', {
+        body: JSON.stringify({
+          code: 'BREWERY50',
+          email: 'brewery.customer@example.test',
+        }),
+        headers: { Authorization: 'Bearer convex-jwt' },
+        method: 'POST',
+      }),
+      client,
+    )
+
+    expect(response.status).toBe(503)
+    const body = await readJson(response)
+    expect(body).toEqual({ error: 'Unable to record referral.' })
+    expect(JSON.stringify(body)).not.toContain(realSessionId)
+    expect(JSON.stringify(body)).not.toContain('BREWERY50')
+    expect(JSON.stringify(body)).not.toContain('Pineapple Saison')
   })
 })
