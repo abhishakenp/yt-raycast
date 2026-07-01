@@ -313,6 +313,56 @@ describe('LanguagePicker — search behavior', () => {
     }
   })
 
+  it('repairs the live stale Lithuanian custom row before rendering the search result', async () => {
+    ;(globalThis as Record<string, unknown>).Translator = {
+      availability: vi.fn(async ({ targetLanguage }) =>
+        targetLanguage === 'lt' ? 'available' : 'unavailable',
+      ),
+      create: vi.fn(),
+    }
+    convexState.customLanguages = [
+      {
+        code: 'lt',
+        name: 'Lithuanian',
+        nativeName: 'Lithuanian',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        keywords: ['lithuanian', 'lithuanian', 'lt'],
+      },
+    ]
+    try {
+      const onSelect = vi.fn()
+      render(
+        <LanguagePicker
+          value={null}
+          onSelect={onSelect}
+          trigger={<button type="button">Pick language</button>}
+        />,
+      )
+
+      const input = await openPicker(screen.getByText('Pick language'))
+      fireEvent.change(input, { target: { value: 'Lithuanian' } })
+
+      const nativeName = await screen.findByText(/lietu/i)
+      expect((nativeName as HTMLElement).style.fontFamily).toContain(
+        'Inter, system-ui, sans-serif',
+      )
+      expect(screen.getAllByText('Lithuanian')).toHaveLength(1)
+
+      const lithuanianItem = screen
+        .getByText('Lithuanian')
+        .closest('[role="option"]')!
+      fireEvent.pointerUp(lithuanianItem)
+      fireEvent.click(lithuanianItem)
+
+      await waitFor(() => {
+        expect(onSelect).toHaveBeenCalledWith('lt')
+      })
+    } finally {
+      convexState.customLanguages = []
+      delete (globalThis as Record<string, unknown>).Translator
+    }
+  })
+
   it('renders custom native names with the stored script font', async () => {
     convexState.customLanguages = [
       {
@@ -508,6 +558,50 @@ describe('LanguagePicker — custom language submission', () => {
       expect(onSelect).toHaveBeenCalledWith('es-MX')
     })
     expect(convexState.resolveCalls).toHaveLength(0)
+  })
+
+  it('prefers browser-native Mexican Spanish over the live stale Nahuatl custom row', async () => {
+    ;(globalThis as Record<string, unknown>).Translator = {
+      availability: vi.fn(async ({ targetLanguage }) =>
+        targetLanguage === 'es-MX' ? 'available' : 'unavailable',
+      ),
+      create: vi.fn(),
+    }
+    convexState.customLanguages = [
+      {
+        code: 'nahuatl',
+        name: 'Nahuatl',
+        nativeName: 'Nāhuatl',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        keywords: ['mexican', 'nahuatl'],
+      },
+    ]
+    try {
+      const onSelect = vi.fn()
+      render(
+        <LanguagePicker
+          value={null}
+          onSelect={onSelect}
+          trigger={<button type="button">Pick language</button>}
+        />,
+      )
+
+      await openPicker(screen.getByText('Pick language'))
+
+      const customInput = screen.getByPlaceholderText('Custom language…')
+      fireEvent.change(customInput, { target: { value: 'Mexican' } })
+      const form = customInput.closest('form')!
+      fireEvent.submit(form)
+
+      await waitFor(() => {
+        expect(onSelect).toHaveBeenCalledWith('es-MX')
+      })
+      expect(onSelect).not.toHaveBeenCalledWith('nahuatl')
+      expect(convexState.resolveCalls).toHaveLength(0)
+    } finally {
+      convexState.customLanguages = []
+      delete (globalThis as Record<string, unknown>).Translator
+    }
   })
 
   it('selects an existing known language by native script without calling the AI action', async () => {
