@@ -24,6 +24,12 @@ const emptyGallery: GalleryPayload = {
   totalPages: 1,
 }
 
+const dbObservedPublicSession = {
+  prompt:
+    'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.',
+  sessionId: 'k571fbfbggczv4pfz2evtrxdzx89qqbb',
+}
+
 describe('useGalleryController cache prewarm', () => {
   beforeEach(() => {
     originalFetch = globalThis.fetch
@@ -76,6 +82,28 @@ describe('useGalleryController cache prewarm', () => {
       '/api/sessions/recent?limit=12&page=1&search=malformed-public-gallery-payload',
       { headers: { accept: 'application/json' } },
     )
+  })
+
+  it('falls back to an empty gallery when the public gallery API returns a parseable payload with malformed items', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ...emptyGallery,
+        items: {
+          [dbObservedPublicSession.sessionId]: dbObservedPublicSession,
+        },
+        total: 1,
+      }),
+    })
+
+    const { result } = renderHook(() =>
+      useGalleryController({ search: 'parseable-malformed-gallery-payload' }),
+    )
+
+    await waitFor(() => {
+      expect(result.current.gallery).toEqual(emptyGallery)
+      expect(result.current.sessions).toEqual([])
+    })
   })
 
   it('reuses prewarmed thumbnail object URLs when cards later resolve images', async () => {

@@ -56,13 +56,8 @@ export const Route = createFileRoute('/api/rewrite')({
           return json({
             rewritten: result.trim().replace(/^["“”]+|["“”]+$/g, ''),
           })
-        } catch (error) {
-          return json(
-            {
-              error: error instanceof Error ? error.message : 'Rewrite failed',
-            },
-            { status: 500 },
-          )
+        } catch {
+          return json({ error: 'Rewrite failed.' }, { status: 502 })
         }
       },
     },

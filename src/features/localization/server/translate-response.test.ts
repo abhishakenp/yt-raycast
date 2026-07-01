@@ -291,24 +291,34 @@ describe('createTranslateResponse', () => {
     expect(calls[0].user).toContain(JSON.stringify([DB_OBSERVED_TEXT.taproom]))
   })
 
-  it('returns the source text with a 502 when the model fails', async () => {
+  it('returns a stable public error with source text when the model fails', async () => {
     const response = await createTranslateResponse(
       new Request('https://ship-fast.test/api/translate', {
         method: 'POST',
-        body: JSON.stringify({ texts: ['Start now'], locale: 'fr' }),
+        body: JSON.stringify({
+          texts: [DB_OBSERVED_TEXT.brand, DB_OBSERVED_TEXT.menuItem],
+          locale: 'fr',
+        }),
       }),
       async () => {
-        throw new Error('model unavailable')
+        throw new Error(
+          'translation model unavailable for k574ms14ma9f94keq30r7dq24x89n1k2 Pineapple Saison',
+        )
       },
       null,
     )
+    const body = await response.json()
 
     expect(response.status).toBe(502)
-    await expect(response.json()).resolves.toMatchObject({
-      error: 'model unavailable',
-      translations: ['Start now'],
+    expect(body).toEqual({
+      error: 'Translation failed.',
+      translations: [DB_OBSERVED_TEXT.brand, DB_OBSERVED_TEXT.menuItem],
       locale: 'fr',
       translated: false,
     })
+    expect(JSON.stringify(body)).not.toContain(
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+    )
+    expect(JSON.stringify(body)).not.toContain('model unavailable')
   })
 })

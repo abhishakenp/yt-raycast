@@ -288,6 +288,48 @@ describe('createExportResponse', () => {
     expect(await response.text()).toContain('artifact')
   })
 
+  it('returns a stable export failure when ready artifact storage fetch rejects', async () => {
+    queryMock
+      .mockResolvedValueOnce({
+        export: {
+          status: 'ready',
+          requiresPayment: false,
+          previewVersion: realConvexReadyHtmlExportArtifact.previewVersion,
+        },
+        artifact: {
+          status: realConvexReadyHtmlExportArtifact.status,
+          filename: realConvexReadyHtmlExportArtifact.filename,
+          contentType: realConvexReadyHtmlExportArtifact.contentType,
+          previewVersion: realConvexReadyHtmlExportArtifact.previewVersion,
+        },
+        storageUrl: realConvexReadyHtmlExportArtifact.storageUrl,
+        latestPreviewVersion: realConvexReadyHtmlExportArtifact.previewVersion,
+      })
+      .mockResolvedValueOnce(null)
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error(
+          `storage network unavailable for ${realConvexReadyHtmlExportArtifact.sessionId}`,
+        )
+      }),
+    )
+
+    const response = await createExportResponse(
+      realConvexReadyHtmlExportArtifact.sessionId,
+      realConvexReadyHtmlExportArtifact.target,
+      fakeClient,
+    )
+
+    const body = await response.text()
+    expect(body).toBe(
+      'Export artifact is unavailable and could not be rebuilt.',
+    )
+    expect(body).not.toContain(realConvexReadyHtmlExportArtifact.sessionId)
+    expect(body).not.toContain('storage network unavailable')
+    expect(response.status).toBe(502)
+  })
+
   it('forwards bearer auth and owner secret to the owned download query', async () => {
     queryMock.mockResolvedValueOnce({
       export: {

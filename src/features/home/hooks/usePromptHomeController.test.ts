@@ -241,6 +241,72 @@ describe('usePromptHomeController submit guard', () => {
     })
   })
 
+  it('falls back to Convex instead of navigating when the public create route returns JSON without a session id', async () => {
+    const state = getTestState()
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({
+        prompt:
+          'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.',
+      }),
+    } as Response)
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt(
+        'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.',
+      )
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId',
+      params: { sessionId: 'session_double_submit_guard' },
+    })
+    expect(state.navigate).not.toHaveBeenCalledWith({
+      to: '/generate/$sessionId',
+      params: { sessionId: undefined },
+    })
+  })
+
+  it('does not navigate or write a launch handoff when the fallback Convex create result is missing a session id', async () => {
+    const state = getTestState()
+    state.createSession.mockResolvedValueOnce({
+      cached: false,
+      prompt:
+        'a boutique coffee roastery with subscription delivery and tasting events',
+    })
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt(
+        'a boutique coffee roastery with subscription delivery and tasting events',
+      )
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.navigate).not.toHaveBeenCalled()
+    expect(
+      Object.keys(window.sessionStorage).filter((key) =>
+        key.startsWith('ship-fast:generation-launch:'),
+      ),
+    ).toEqual([])
+    expect(result.current.isSubmitting).toBe(false)
+    expect(result.current.errorMessage).toBe(
+      'Generation could not start. Try again.',
+    )
+  })
+
   it('keeps launch feedback visible briefly when session creation fails immediately', async () => {
     vi.useFakeTimers()
     const state = getTestState()

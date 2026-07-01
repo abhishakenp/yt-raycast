@@ -363,6 +363,55 @@ describe('LanguagePicker — search behavior', () => {
     }
   })
 
+  it('shows browser-native Mexican Spanish instead of the live stale Nahuatl row in search results', async () => {
+    ;(globalThis as Record<string, unknown>).Translator = {
+      availability: vi.fn(async ({ targetLanguage }) =>
+        targetLanguage === 'es-MX' ? 'available' : 'unavailable',
+      ),
+      create: vi.fn(),
+    }
+    convexState.customLanguages = [
+      {
+        code: 'nahuatl',
+        name: 'Nahuatl',
+        nativeName: 'Nāhuatl',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        keywords: ['mexican', 'nahuatl'],
+      },
+    ]
+    try {
+      const onSelect = vi.fn()
+      render(
+        <LanguagePicker
+          value={null}
+          onSelect={onSelect}
+          trigger={<button type="button">Pick language</button>}
+        />,
+      )
+
+      const input = await openPicker(screen.getByText('Pick language'))
+      fireEvent.change(input, { target: { value: 'mexican' } })
+
+      expect(await screen.findByText('Mexican Spanish')).toBeTruthy()
+      expect(screen.getByText('español de México')).toBeTruthy()
+      expect(screen.queryByText('Nahuatl')).toBeNull()
+      expect(screen.queryByText('Nāhuatl')).toBeNull()
+
+      const mexicanItem = screen
+        .getByText('Mexican Spanish')
+        .closest('[role="option"]')!
+      fireEvent.pointerUp(mexicanItem)
+      fireEvent.click(mexicanItem)
+
+      await waitFor(() => {
+        expect(onSelect).toHaveBeenCalledWith('es-MX')
+      })
+    } finally {
+      convexState.customLanguages = []
+      delete (globalThis as Record<string, unknown>).Translator
+    }
+  })
+
   it('renders custom native names with the stored script font', async () => {
     convexState.customLanguages = [
       {

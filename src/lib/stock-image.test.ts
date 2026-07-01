@@ -309,4 +309,31 @@ describe('searchStockImages', () => {
     expect(results.length).toBeGreaterThan(0)
     expect(results.every((r) => r.source === 'unsplash')).toBe(true)
   })
+
+  it('falls back to deterministic Picsum results when configured providers return malformed HTML', async () => {
+    const fetch = vi.fn().mockResolvedValue(
+      new Response('<!doctype html><title>provider unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+    vi.stubGlobal('fetch', fetch)
+    const { searchStockImages } = await loadStockImage({
+      PEXELS_API_KEY: 'pk',
+      UNSPLASH_ACCESS_KEY: 'uk',
+    })
+
+    const results = await searchStockImages({
+      query: 'a craft beer brewery with taproom tours and seasonal releases',
+      page: 2,
+      perPage: 6,
+    })
+
+    expect(results).toHaveLength(6)
+    expect(results.every((result) => result.source === 'picsum')).toBe(true)
+    expect(results[0].imageUrl).toContain(
+      'https://picsum.photos/seed/a-craft-beer-brewery-with-taproom-tours-and-seasonal-releases-2-0/',
+    )
+    expect(fetch).toHaveBeenCalledTimes(2)
+  })
 })

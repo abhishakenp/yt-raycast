@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    clearMocks: true,
     // OpenUI SSR/generation tests are CPU-heavy and use provider mocks; bounded
     // workers keep full-suite coverage deterministic on dev Macs.
     hookTimeout: 120_000,
@@ -36,9 +37,11 @@ export default defineConfig({
             'src/**/*.test.ts',
             'packages/ship-fast-aeo/src/**/*.test.ts',
             'packages/ship-fast-blocks/src/**/*.test.ts',
+            'packages/ship-fast-engine/src/**/*.test.ts',
             'packages/ship-fast-engine/src/*.test.js',
             'packages/ship-fast-engine/src/clone/**/*.test.ts',
             'packages/ship-fast-engine/src/genui/**/*.test.ts',
+            'packages/ship-fast-engine/src/**/*.test.js',
             'packages/ship-fast-engine/src/llm/**/*.test.js',
             'packages/ship-fast-engine/src/pipeline/**/*.test.ts',
             'packages/ship-fast-engine/src/renderers/**/*.test.ts',
@@ -59,6 +62,7 @@ export default defineConfig({
             'src/**/*.test.tsx',
             'packages/ship-fast-blocks/src/**/*.test.tsx',
             'packages/ship-fast-lakebed/src/**/*.test.tsx',
+            'public/scripts/**/*.test.js',
           ],
         },
       },

@@ -123,14 +123,19 @@ const fetchStripeCheckout = async (
     checkoutFields['discounts[0][coupon]'] = referralCouponId
   }
 
-  const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: formBody(checkoutFields),
-  })
+  let response: Response
+  try {
+    response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formBody(checkoutFields),
+    })
+  } catch {
+    return json({ error: 'Stripe checkout failed.' }, { status: 502 })
+  }
   let data: {
     id?: string
     url?: string
@@ -247,18 +252,23 @@ const fetchRazorpayCheckout = async (
     )
   }
 
-  const response = await fetch('https://api.razorpay.com/v1/orders', {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${auth}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      amount,
-      currency: 'INR',
-      notes: { userId, packId, credits: pack.credits },
-    }),
-  })
+  let response: Response
+  try {
+    response = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount,
+        currency: 'INR',
+        notes: { userId, packId, credits: pack.credits },
+      }),
+    })
+  } catch {
+    return json({ error: 'Razorpay order failed.' }, { status: 502 })
+  }
   let data: {
     id?: string
     amount?: number

@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { createSessionExportResponse } from './export-api-response'
 
 describe('createSessionExportResponse', () => {
+  const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
+
   it('forwards bearer auth before creating an export', async () => {
     const client = {
       mutation: vi.fn().mockResolvedValue({
@@ -68,5 +70,67 @@ describe('createSessionExportResponse', () => {
       target: 'react',
       anonymousOwnerSecret: 'owner-secret',
     })
+  })
+
+  it('rejects malformed export JSON without calling Convex', async () => {
+    const client = {
+      mutation: vi.fn(),
+      query: vi.fn(),
+      setAuth: vi.fn(),
+    }
+
+    const response = await createSessionExportResponse(
+      realSessionId,
+      new Request(
+        `https://ship-fast.test/api/sessions/${realSessionId}/export`,
+        {
+          body: '{',
+          headers: { 'content-type': 'application/json' },
+          method: 'POST',
+        },
+      ),
+      client,
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Invalid export request.',
+    })
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
+  it('returns a stable export creation error when Convex rejects the request', async () => {
+    const client = {
+      mutation: vi.fn(async () => {
+        throw new Error(
+          `Convex export failed for ${realSessionId} owner_secret Pineapple Saison`,
+        )
+      }),
+      query: vi.fn(),
+      setAuth: vi.fn(),
+    }
+
+    const response = await createSessionExportResponse(
+      realSessionId,
+      new Request(
+        `https://ship-fast.test/api/sessions/${realSessionId}/export`,
+        {
+          body: JSON.stringify({
+            target: 'lakebed',
+            anonymousOwnerSecret: 'owner_secret',
+          }),
+          headers: { 'content-type': 'application/json' },
+          method: 'POST',
+        },
+      ),
+      client,
+    )
+
+    expect(response.status).toBe(503)
+    const body = await response.json()
+    expect(body).toEqual({ error: 'Export request failed.' })
+    expect(JSON.stringify(body)).not.toContain(realSessionId)
+    expect(JSON.stringify(body)).not.toContain('owner_secret')
+    expect(JSON.stringify(body)).not.toContain('Pineapple Saison')
   })
 })

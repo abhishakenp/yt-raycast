@@ -42,4 +42,28 @@ describe('createBillingApiResponse', () => {
     expect(client.query).toHaveBeenCalledWith(expect.anything(), {})
     expect(await response.json()).toEqual({ remaining: 3 })
   })
+
+  it('returns a stable billing error without leaking Convex details', async () => {
+    const client = {
+      query: vi
+        .fn()
+        .mockRejectedValue(
+          new Error('ConvexError: internal billing index missing for user_123'),
+        ),
+      setAuth: vi.fn(),
+    }
+
+    const response = await createBillingApiResponse(
+      new Request('https://ship-fast.test/api/billing-overview', {
+        headers: { authorization: 'Bearer token_123' },
+      }),
+      'billing-overview',
+      client,
+    )
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Unable to load billing details.',
+    })
+  })
 })

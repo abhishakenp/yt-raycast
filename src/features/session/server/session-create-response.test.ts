@@ -172,4 +172,29 @@ describe('createSessionCreateResponse', () => {
         'Too many generation requests. Please wait a few minutes and try again.',
     })
   })
+
+  it('returns a stable error when Convex reports success without a session id', async () => {
+    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
+    const mutation = vi.fn().mockResolvedValue({
+      prompt:
+        'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.',
+      remaining: 1,
+    })
+
+    const response = await createSessionCreateResponse(
+      new Request('http://ship-fast.test/api/sessions/create', {
+        body: JSON.stringify({
+          prompt:
+            'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.',
+        }),
+        method: 'POST',
+      }),
+      { mutation },
+    )
+
+    expect(response.status).toBe(502)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Generation could not start. Try again.',
+    })
+  })
 })

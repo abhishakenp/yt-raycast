@@ -206,17 +206,24 @@ async function githubRequest<T>(
     expectedStatus?: number[]
   },
 ): Promise<T | null> {
-  const response = await fetchFn(`${getGithubApiBase(env)}${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'ship-fast',
-      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
-    },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  })
+  let response: Response
+  try {
+    response = await fetchFn(`${getGithubApiBase(env)}${path}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'ship-fast',
+        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+  } catch {
+    const error = new Error('GitHub request failed.')
+    ;(error as Error & { status?: number }).status = 502
+    throw error
+  }
 
   const raw = await response.text()
   let data: Record<string, unknown> | null = null

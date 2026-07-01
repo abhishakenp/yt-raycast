@@ -32,10 +32,7 @@ export const createSessionPreviewRawResponse = async (
         'X-Robots-Tag': 'noindex',
       },
     })
-  } catch (error) {
-    return new Response(
-      error instanceof Error ? error.message : 'Unable to load preview',
-      { status: 500 },
-    )
+  } catch {
+    return new Response('Preview temporarily unavailable', { status: 503 })
   }
 }

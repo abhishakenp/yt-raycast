@@ -62,7 +62,11 @@ const fetchGalleryPayload = async (
   })
     .then(async (response) => {
       if (!response.ok) throw new Error(`gallery ${response.status}`)
-      return (await response.json()) as GalleryPayload
+      const payload = (await response.json()) as GalleryPayload
+      if (!payload || !Array.isArray(payload.items)) {
+        return emptyGalleryPayload(page, limit)
+      }
+      return payload
     })
     .catch(() => emptyGalleryPayload(page, limit))
     .then((payload) => {

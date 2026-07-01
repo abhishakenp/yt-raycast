@@ -746,7 +746,8 @@ describe('Lakebed publish response', () => {
     })
   })
 
-  it('returns a 500 auth error when the owner secret is missing and the deploy action rejects', async () => {
+  it('returns a stable publish error when the owner secret is missing and the deploy action rejects', async () => {
+    const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
     const client = {
       query: vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce({
         status: 'ready',
@@ -761,19 +762,22 @@ describe('Lakebed publish response', () => {
     // No anonymousOwnerSecret in the body.
     const response = await createLakebedPublishResponse(
       requestFor({}),
-      'session_edge',
+      realSessionId,
       client,
     )
 
     expect(response.status).toBe(500)
     const body = await response.json()
-    expect(body.error).toMatch(/anonymous owner secret required/)
+    expect(body).toEqual({ error: 'Lakebed publish failed.' })
+    expect(JSON.stringify(body)).not.toContain('anonymous owner secret')
+    expect(JSON.stringify(body)).not.toContain(realSessionId)
   })
 
-  it('returns a 500 auth error when the bearer token is invalid', async () => {
+  it('returns a stable publish error when the bearer token is invalid', async () => {
+    const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
     const client = {
       query: vi.fn(async () => {
-        throw new Error('AUTH_REQUIRED: invalid token')
+        throw new Error(`AUTH_REQUIRED: invalid token for ${realSessionId}`)
       }),
       action: vi.fn(),
       setAuth: vi.fn(),
@@ -781,14 +785,16 @@ describe('Lakebed publish response', () => {
 
     const response = await createLakebedPublishResponse(
       requestFor({}, 'Bearer invalid-token'),
-      'session_edge',
+      realSessionId,
       client,
     )
 
     expect(response.status).toBe(500)
     expect(client.setAuth).toHaveBeenCalledWith('invalid-token')
     const body = await response.json()
-    expect(body.error).toMatch(/invalid token/)
+    expect(body).toEqual({ error: 'Lakebed publish failed.' })
+    expect(JSON.stringify(body)).not.toContain('invalid token')
+    expect(JSON.stringify(body)).not.toContain(realSessionId)
   })
 
   it('returns the deploy URL on a successful deploy', async () => {
