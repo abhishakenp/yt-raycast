@@ -15,6 +15,8 @@ import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
 
 import appCss from '../styles.css?url'
 
+const PLAUSIBLE_TRACKED_DOMAIN = 'ship-fast.ai'
+const PLAUSIBLE_SCRIPT_SRC = 'https://plausible.ship-fast.ai/js/script.js'
 const RootDocument = ({ children }: { children: ReactNode }) => {
   useReferralCapture()
 
@@ -183,6 +185,13 @@ export const Route = createRootRoute({
       {
         rel: 'stylesheet',
         href: appCss,
+      },
+    ],
+    scripts: [
+      {
+        defer: true,
+        'data-domain': PLAUSIBLE_TRACKED_DOMAIN,
+        src: PLAUSIBLE_SCRIPT_SRC,
       },
     ],
   }),

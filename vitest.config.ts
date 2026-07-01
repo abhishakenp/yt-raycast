@@ -6,6 +6,7 @@ export default defineConfig({
     // workers keep full-suite coverage deterministic on dev Macs.
     hookTimeout: 120_000,
     maxWorkers: 2,
+    setupFiles: ['./vitest.setup.ts'],
     testTimeout: 120_000,
     // Installs an in-memory Web Storage polyfill for jsdom test files (jsdom here
     // does not expose window.localStorage/sessionStorage). No-op in node env.
