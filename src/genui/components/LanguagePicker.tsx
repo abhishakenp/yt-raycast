@@ -1,6 +1,6 @@
 'use client'
 
-import { type ReactElement, useMemo, useState } from 'react'
+import { type ReactElement, useEffect, useMemo, useState } from 'react'
 import { Languages, Check, Plus, Loader2 } from 'lucide-react'
 import { useAction, useQuery } from 'convex/react'
 
@@ -132,19 +132,53 @@ export default function LanguagePicker({
   const [customLanguage, setCustomLanguage] = useState('')
   const [isResolving, setIsResolving] = useState(false)
   const [resolveError, setResolveError] = useState<string | null>(null)
+  const [repairedCustomLanguages, setRepairedCustomLanguages] = useState<
+    LanguageEntry[]
+  >([])
 
   // Custom languages persisted by previous users (AI-generated). Merged with
   // the static KNOWN_LANGUAGES so everyone can search + select them.
   const customLanguages = useQuery(api.customLanguages.list, {})
   const resolveOrCreate = useAction(api.customLanguages.resolveOrCreate)
 
+  // Repair stale browser-native custom rows: a previous AI run may have stored
+  // a language with a non-locale code and a Latin native name (e.g. code
+  // "chinese", nativeName "Chinese") even though the browser can translate the
+  // proper locale (zh) natively. Resolve each custom row's name against the
+  // browser-native index and merge the repaired entries in so search results
+  // show the real native script + locale code.
+  useEffect(() => {
+    const custom = (customLanguages ?? []) as LanguageEntry[]
+    if (custom.length === 0) {
+      setRepairedCustomLanguages([])
+      return
+    }
+    let cancelled = false
+    void (async () => {
+      const repaired: LanguageEntry[] = []
+      await Promise.all(
+        custom.map(async (entry) => {
+          const browserNative = await resolveBrowserNativeLanguage(entry.name)
+          if (browserNative) repaired.push(browserNative)
+        }),
+      )
+      if (!cancelled) setRepairedCustomLanguages(repaired)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [customLanguages])
+
   const allLanguages = useMemo<LanguageEntry[]>(
     () =>
       mergeLanguageEntries(
         KNOWN_LANGUAGES,
-        (customLanguages ?? []) as LanguageEntry[],
+        [
+          ...repairedCustomLanguages,
+          ...((customLanguages ?? []) as LanguageEntry[]),
+        ],
       ),
-    [customLanguages],
+    [customLanguages, repairedCustomLanguages],
   )
 
   const submitCustom = async (e: React.FormEvent) => {

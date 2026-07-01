@@ -71,6 +71,7 @@ const HomepageAuthInner = ({
     let cancelled = false
     let attempts = 0
     let mountedUserButton = false
+    let mountedUserButtonElement: HTMLElement | null = null
 
     const openWhenReady = () => {
       if (cancelled) return
@@ -85,7 +86,8 @@ const HomepageAuthInner = ({
           typeof clerk.mountUserButton === 'function'
         ) {
           try {
-            void clerk.mountUserButton(userButtonRef.current)
+            mountedUserButtonElement = userButtonRef.current
+            void clerk.mountUserButton(mountedUserButtonElement)
             mountedUserButton = true
             return
           } catch {
@@ -112,11 +114,10 @@ const HomepageAuthInner = ({
       cancelled = true
       const clerk = (window as ClerkWindow).Clerk
       if (
-        mountedUserButton &&
-        userButtonRef.current &&
+        mountedUserButtonElement &&
         typeof clerk?.unmountUserButton === 'function'
       ) {
-        void clerk.unmountUserButton(userButtonRef.current)
+        void clerk.unmountUserButton(mountedUserButtonElement)
       }
     }
   }, [autoOpen, renderButton])
