@@ -92,6 +92,48 @@ describe('createCheckoutApiResponse', () => {
     })
   })
 
+  it('returns JSON instead of throwing when an authenticated checkout request has malformed JSON', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: '{not-json',
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(400)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    await expect(response.json()).resolves.toEqual({ error: 'Invalid JSON.' })
+    expect(client.setAuth).not.toHaveBeenCalled()
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('rejects unsupported checkout modes before calling payment providers', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({ mode: 'lifetime_deal', gateway: 'stripe' }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(400)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    await expect(response.json()).resolves.toEqual({
+      error: 'Invalid checkout mode.',
+    })
+    expect(client.setAuth).not.toHaveBeenCalled()
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
   it('returns JSON when Stripe checkout returns a malformed upstream body', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response('<html>stripe unavailable</html>', {
