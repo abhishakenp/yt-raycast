@@ -44,6 +44,18 @@ const realConvexOpenUiHandoffSessionApiPreview = {
   previewVersion: 1,
 } as const
 
+const realConvexStaleStreamingFailureSession = {
+  sessionId: 'k5739j2a2meyfe8ah0fe5g9jx189jndy',
+  prompt:
+    'dog food saas with a premium responsive layout, strong visuals, useful content blocks, FAQs, and a simple contact flow. with a modern SaaS layout, dashboard preview, benefits, use cases, testimonials, and conversion-focused pricing.',
+  status: 'streaming',
+  errorCode: 'GENERATION_FAILED',
+  errorMessage: 'Ship Fast engine did not write index.html',
+  previewVersion: 0,
+  preferredLanguage: 'en',
+  preferredExportTarget: 'html',
+} as const
+
 const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
   ({
     _id: sessionId,
@@ -399,6 +411,45 @@ describe('session API response helpers', () => {
         slug: 'deployed-site',
       },
     })
+  })
+
+  it('serializes DB-observed stale streaming generation errors as failed API payloads', async () => {
+    const failedSessionId =
+      realConvexStaleStreamingFailureSession.sessionId as Id<'sessions'>
+
+    const response = await loadSessionApiResponse(
+      ctxFor({
+        sessions: [
+          sessionDoc({
+            _id: failedSessionId,
+            prompt: realConvexStaleStreamingFailureSession.prompt,
+            status: realConvexStaleStreamingFailureSession.status,
+            errorCode: realConvexStaleStreamingFailureSession.errorCode,
+            errorMessage: realConvexStaleStreamingFailureSession.errorMessage,
+            previewVersion:
+              realConvexStaleStreamingFailureSession.previewVersion,
+            preferredLanguage:
+              realConvexStaleStreamingFailureSession.preferredLanguage,
+            preferredExportTarget:
+              realConvexStaleStreamingFailureSession.preferredExportTarget,
+          }),
+        ],
+      }),
+      realConvexStaleStreamingFailureSession.sessionId,
+    )
+
+    expect(response).toMatchObject({
+      sessionId: realConvexStaleStreamingFailureSession.sessionId,
+      status: 'failed',
+      previewVersion: 0,
+      preview: null,
+      homeModule: null,
+    })
+    expect(response).toHaveProperty('errorCode', 'GENERATION_FAILED')
+    expect(response).toHaveProperty(
+      'errorMessage',
+      'Ship Fast engine did not write index.html',
+    )
   })
 
   it('enforces private-session ownership when reconstructing session API payloads', async () => {

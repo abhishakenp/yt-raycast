@@ -143,6 +143,8 @@ type DashboardGenerationView = {
     selectedBrandLogo?: BrandLogoSelection | null
     designReferenceUrls?: string[]
     designReferenceNotes?: string
+    errorCode?: string
+    errorMessage?: string
   }
   siteSpec?: {
     specJson?: string
@@ -348,6 +350,37 @@ const MissingProjectState = ({ onBackHome }: { onBackHome: () => void }) => (
   </div>
 )
 
+const GenerationFailureState = ({
+  errorMessage,
+  onBackHome,
+}: {
+  errorMessage: string
+  onBackHome: () => void
+}) => (
+  <div
+    className="grid h-full min-h-[480px] place-items-center bg-[#05070c] px-6 text-center"
+    role="alert"
+    aria-live="assertive"
+  >
+    <div className="max-w-md rounded-3xl border border-rose-500/20 bg-white/[0.045] p-8 shadow-[0_22px_80px_rgba(0,0,0,0.35)]">
+      <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-rose-300/80">
+        Generation failed
+      </p>
+      <h1 className="text-2xl font-bold tracking-tight text-white">
+        We couldn&apos;t finish building this website.
+      </h1>
+      <p className="mt-3 text-sm leading-6 text-white/56">{errorMessage}</p>
+      <button
+        type="button"
+        onClick={onBackHome}
+        className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
+      >
+        Back to home
+      </button>
+    </div>
+  </div>
+)
+
 const toDashboardGenerationView = (
   data: ReadySessionPreviewCacheEntry,
 ): DashboardGenerationView => ({
@@ -464,6 +497,11 @@ export function Dashboard({
   const resolvedSessionId = generationView?.session.sessionId
   const clonePageNav = useClonePageNav(resolvedSessionId ?? sessionId)
   const isMissingSession = generationView === null
+  const hasGenerationFailure =
+    !isMissingSession &&
+    generationView != null &&
+    Boolean(generationView.session.errorCode) &&
+    generationView.session.status !== 'preview_ready'
   const homeModule = generationView?.homeModule
   const cmsPreviewHtml = generationView?.latestPreview?.html
   const cmsPreviewSource =
@@ -641,7 +679,12 @@ export function Dashboard({
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    if (reduce || isPreviewRenderable || isMissingSession) {
+    if (
+      reduce ||
+      isPreviewRenderable ||
+      isMissingSession ||
+      hasGenerationFailure
+    ) {
       setIsDashboardActive(true)
       return
     }
@@ -656,7 +699,12 @@ export function Dashboard({
     return () => {
       window.clearTimeout(tDashboard)
     }
-  }, [isMissingSession, isPreviewRenderable, startedFromGenerationFlow])
+  }, [
+    isMissingSession,
+    isPreviewRenderable,
+    startedFromGenerationFlow,
+    hasGenerationFailure,
+  ])
 
   useEffect(() => {
     if (typeof window === 'undefined' || !isPreviewReady || !generationView) {
@@ -1335,7 +1383,10 @@ export function Dashboard({
 
       <audio id="launch-sfx" preload="auto" src="/assets/launch.mp3"></audio>
 
-      {!isPreviewRenderable && !isMissingSession && !isAdminActive ? (
+      {!isPreviewRenderable &&
+      !isMissingSession &&
+      !hasGenerationFailure &&
+      !isAdminActive ? (
         <IntroLoader
           progress={Math.min(0.94, progress / 100)}
           playSound={startedFromGenerationFlow}
@@ -1352,7 +1403,10 @@ export function Dashboard({
         <div
           className={cn(
             'mx-auto flex min-h-[calc(100vh-32px)] w-full max-w-[1680px] items-center justify-center',
-            (isPreviewRenderable || isAdminActive || isMissingSession) &&
+            (isPreviewRenderable ||
+              isAdminActive ||
+              isMissingSession ||
+              hasGenerationFailure) &&
               'items-stretch',
           )}
           id="right-panel"
@@ -1361,7 +1415,10 @@ export function Dashboard({
             id="dashboard-cockpit"
             className={cn(
               'flex h-[calc(100vh-32px)] w-full flex-col overflow-hidden rounded-3xl rounded-bl-none border border-white/10 bg-[#0b0d14]/88 shadow-[0_24px_90px_rgba(0,0,0,0.48)] backdrop-blur-[22px]',
-              (isPreviewRenderable || isAdminActive || isMissingSession) &&
+              (isPreviewRenderable ||
+                isAdminActive ||
+                isMissingSession ||
+                hasGenerationFailure) &&
                 'bg-[#080a10]/92',
               isDashboardActive && 'cockpit-fade-up',
             )}
@@ -1618,7 +1675,7 @@ export function Dashboard({
             <div
               className={cn(
                 'relative grid min-h-0 flex-1',
-                isAdminActive || isMissingSession
+                isAdminActive || isMissingSession || hasGenerationFailure
                   ? 'grid-cols-1'
                   : 'grid-cols-[minmax(0,1fr)_280px] max-[1100px]:grid-cols-1',
               )}
@@ -1640,6 +1697,17 @@ export function Dashboard({
                 >
                   {isMissingSession ? (
                     <MissingProjectState
+                      onBackHome={() => {
+                        window.location.href = '/'
+                      }}
+                    />
+                  ) : hasGenerationFailure ? (
+                    <GenerationFailureState
+                      errorMessage={
+                        generationView?.session.errorMessage ??
+                        generationView?.session.errorCode ??
+                        'Generation failed unexpectedly.'
+                      }
                       onBackHome={() => {
                         window.location.href = '/'
                       }}
@@ -1715,7 +1783,8 @@ export function Dashboard({
               <aside
                 className={cn(
                   'relative flex min-h-0 flex-col border-l border-white/10 bg-[#0c1018]/92 max-[1100px]:hidden',
-                  (isAdminActive || isMissingSession) && 'hidden',
+                  (isAdminActive || isMissingSession || hasGenerationFailure) &&
+                    'hidden',
                 )}
                 id="preview-site-rail"
                 aria-label="Site tools"
@@ -2288,9 +2357,11 @@ export function Dashboard({
                   <span id="status-text">
                     {isMissingSession
                       ? 'Project missing'
-                      : isPreviewReady
-                        ? 'Preview ready'
-                        : 'Generating'}
+                      : hasGenerationFailure
+                        ? 'Generation failed'
+                        : isPreviewReady
+                          ? 'Preview ready'
+                          : 'Generating'}
                   </span>
                 </div>
               </aside>

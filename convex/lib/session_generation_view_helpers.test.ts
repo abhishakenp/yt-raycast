@@ -40,6 +40,18 @@ const realConvexOpenUiHandoffGenerationView = {
   version: 1,
 } as const
 
+const realConvexStaleStreamingFailureGenerationView = {
+  sessionId: 'k5739j2a2meyfe8ah0fe5g9jx189jndy',
+  prompt:
+    'dog food saas with a premium responsive layout, strong visuals, useful content blocks, FAQs, and a simple contact flow. with a modern SaaS layout, dashboard preview, benefits, use cases, testimonials, and conversion-focused pricing.',
+  status: 'streaming',
+  errorCode: 'GENERATION_FAILED',
+  errorMessage: 'Ship Fast engine did not write index.html',
+  previewVersion: 0,
+  preferredLanguage: 'en',
+  preferredExportTarget: 'html',
+} as const
+
 const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
   ({
     _id: sessionId,
@@ -328,6 +340,42 @@ describe('session generation view helpers', () => {
     const serialized = JSON.stringify(view)
     expect(serialized).not.toContain('Generated OpenUI source is ready')
     expect(serialized).not.toContain('ship-fast-openui-source')
+  })
+
+  it('loads DB-observed stale streaming generation errors as failed view state', async () => {
+    const failedSessionId =
+      realConvexStaleStreamingFailureGenerationView.sessionId as Id<'sessions'>
+    const view = await loadGenerationView(
+      ctxFor({
+        sessions: [
+          sessionDoc({
+            _id: failedSessionId,
+            prompt: realConvexStaleStreamingFailureGenerationView.prompt,
+            status: realConvexStaleStreamingFailureGenerationView.status,
+            errorCode: realConvexStaleStreamingFailureGenerationView.errorCode,
+            errorMessage:
+              realConvexStaleStreamingFailureGenerationView.errorMessage,
+            previewVersion:
+              realConvexStaleStreamingFailureGenerationView.previewVersion,
+            preferredLanguage:
+              realConvexStaleStreamingFailureGenerationView.preferredLanguage,
+            preferredExportTarget:
+              realConvexStaleStreamingFailureGenerationView.preferredExportTarget,
+          }),
+        ],
+      }),
+      { lookup: realConvexStaleStreamingFailureGenerationView.sessionId },
+    )
+
+    expect(view?.session).toMatchObject({
+      sessionId: realConvexStaleStreamingFailureGenerationView.sessionId,
+      status: 'failed',
+      errorCode: 'GENERATION_FAILED',
+      errorMessage: 'Ship Fast engine did not write index.html',
+      previewVersion: 0,
+    })
+    expect(view?.latestPreview).toBeNull()
+    expect(view?.homeModule).toBeNull()
   })
 
   it('returns null when lookup resolution or session loading fails', async () => {

@@ -4,10 +4,6 @@ import { useQuery } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
 import { createAnonymousClientId } from '@/features/session/services/session-create-payload'
 import type { GalleryPayload } from '@/features/gallery/components/PublicGallery'
-import {
-  getGalleryThumbnailUrl,
-  resolveGalleryThumbnail,
-} from './gallery-thumbnail'
 
 export type { GalleryThumbnailSession } from './gallery-thumbnail'
 export {
@@ -104,18 +100,13 @@ export const prewarmGalleryPayload = (
   return fetchGalleryPayload(buildGalleryRequestUrl(options), page, limit)
 }
 
+// Gallery previews must come from server-rendered HTML or a local gradient
+// placeholder — never from fetched PNG thumbnails. Prewarming thumbnails is a
+// no-op so we never trigger thumbnail blob fetches.
 export const prewarmGalleryThumbnails = async (
-  gallery: GalleryPayload,
-  limit = gallery.items.length,
-): Promise<void> => {
-  await Promise.all(
-    gallery.items
-      .slice(0, limit)
-      .map((session) =>
-        resolveGalleryThumbnail(getGalleryThumbnailUrl(session)),
-      ),
-  )
-}
+  _gallery: GalleryPayload,
+  _limit = 0,
+): Promise<void> => undefined
 
 export const useGalleryController = ({
   category = '',

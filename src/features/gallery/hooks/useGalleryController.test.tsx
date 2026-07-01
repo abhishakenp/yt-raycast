@@ -4,10 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { GalleryPayload } from '@/features/gallery/components/PublicGallery'
 import {
-  getGalleryThumbnailUrl,
   prewarmGalleryPayload,
   prewarmGalleryThumbnails,
-  resolveGalleryThumbnail,
   useGalleryController,
 } from './useGalleryController'
 
@@ -106,7 +104,7 @@ describe('useGalleryController cache prewarm', () => {
     })
   })
 
-  it('reuses prewarmed thumbnail object URLs when cards later resolve images', async () => {
+  it('does not prewarm PNG thumbnails because gallery previews must come from server-rendered HTML', async () => {
     const gallery: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -117,8 +115,7 @@ describe('useGalleryController cache prewarm', () => {
       ],
       total: 1,
     }
-    const objectUrl = 'blob:gallery-thumb'
-    globalThis.URL.createObjectURL = vi.fn(() => objectUrl)
+    globalThis.URL.createObjectURL = vi.fn(() => 'blob:gallery-thumb')
     globalThis.URL.revokeObjectURL = vi.fn()
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -126,14 +123,8 @@ describe('useGalleryController cache prewarm', () => {
     })
 
     await prewarmGalleryThumbnails(gallery)
-    const resolved = await resolveGalleryThumbnail(
-      getGalleryThumbnailUrl(gallery.items[0]),
-    )
 
-    expect(resolved).toBe(objectUrl)
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1)
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      '/api/sessions/thumb-session/gallery-thumb?v=7',
-    )
+    expect(globalThis.fetch).not.toHaveBeenCalled()
+    expect(globalThis.URL.createObjectURL).not.toHaveBeenCalled()
   })
 })

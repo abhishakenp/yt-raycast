@@ -19,6 +19,29 @@ const sessionDoc = (
     ...overrides,
   }) as Doc<'sessions'>
 
+const dbObservedGenerationFailure = {
+  sessionId: 'k5785546fefkxmfrwkqy70st3n89j7ah',
+  prompt: 'a cozy coffee shop with online ordering and loyalty program',
+  status: 'failed',
+  errorCode: 'GENERATION_FAILED',
+  errorMessage: 'Ship Fast engine did not write index.html',
+  previewVersion: 0,
+  preferredLanguage: 'en',
+  preferredExportTarget: 'html',
+} as const
+
+const dbObservedStaleStreamingFailure = {
+  sessionId: 'k5739j2a2meyfe8ah0fe5g9jx189jndy',
+  prompt:
+    'dog food saas with a premium responsive layout, strong visuals, useful content blocks, FAQs, and a simple contact flow. with a modern SaaS layout, dashboard preview, benefits, use cases, testimonials, and conversion-focused pricing.',
+  status: 'streaming',
+  errorCode: 'GENERATION_FAILED',
+  errorMessage: 'Ship Fast engine did not write index.html',
+  previewVersion: 0,
+  preferredLanguage: 'en',
+  preferredExportTarget: 'html',
+} as const
+
 describe('session serialization helpers', () => {
   it('serializes legacy generated sessions as preview-ready', () => {
     expect(
@@ -87,6 +110,54 @@ describe('session serialization helpers', () => {
         icon: 'https://cdn.brandfetch.io/linear/icon.webp',
         logo: 'https://cdn.brandfetch.io/linear/logo.svg',
       },
+    })
+  })
+
+  it('preserves DB-observed failed generation errors for the dashboard', () => {
+    expect(
+      serializeSession(
+        sessionDoc({
+          _id: dbObservedGenerationFailure.sessionId as Doc<'sessions'>['_id'],
+          prompt: dbObservedGenerationFailure.prompt,
+          status: dbObservedGenerationFailure.status,
+          errorCode: dbObservedGenerationFailure.errorCode,
+          errorMessage: dbObservedGenerationFailure.errorMessage,
+          previewVersion: dbObservedGenerationFailure.previewVersion,
+          preferredLanguage: dbObservedGenerationFailure.preferredLanguage,
+          preferredExportTarget:
+            dbObservedGenerationFailure.preferredExportTarget,
+        }),
+      ),
+    ).toMatchObject({
+      sessionId: dbObservedGenerationFailure.sessionId,
+      status: 'failed',
+      errorCode: 'GENERATION_FAILED',
+      errorMessage: 'Ship Fast engine did not write index.html',
+      previewVersion: 0,
+    })
+  })
+
+  it('normalizes DB-observed stale streaming generation errors to failed so the UI cannot spin forever', () => {
+    expect(
+      serializeSession(
+        sessionDoc({
+          _id: dbObservedStaleStreamingFailure.sessionId as Doc<'sessions'>['_id'],
+          prompt: dbObservedStaleStreamingFailure.prompt,
+          status: dbObservedStaleStreamingFailure.status,
+          errorCode: dbObservedStaleStreamingFailure.errorCode,
+          errorMessage: dbObservedStaleStreamingFailure.errorMessage,
+          previewVersion: dbObservedStaleStreamingFailure.previewVersion,
+          preferredLanguage: dbObservedStaleStreamingFailure.preferredLanguage,
+          preferredExportTarget:
+            dbObservedStaleStreamingFailure.preferredExportTarget,
+        }),
+      ),
+    ).toMatchObject({
+      sessionId: dbObservedStaleStreamingFailure.sessionId,
+      status: 'failed',
+      errorCode: 'GENERATION_FAILED',
+      errorMessage: 'Ship Fast engine did not write index.html',
+      previewVersion: 0,
     })
   })
 

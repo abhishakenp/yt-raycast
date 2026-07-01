@@ -2,6 +2,7 @@ import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
 import { isSessionOwner } from './session_access_helpers'
 import { isUnsafePublicPreviewHtml } from './openui_error_html'
+import { normalizeSessionStatus } from './session_serialization_helpers'
 
 type SessionApiResponseCtx = Pick<QueryCtx, 'db' | 'auth'>
 
@@ -51,9 +52,9 @@ export const serializeSessionApiResponse = (
     prompt: session.prompt,
     createdAt: session.createdAt,
     updatedAt: session.updatedAt ?? session.createdAt,
-    status:
-      session.status ??
-      (session.genuiStatus === 'done' ? 'preview_ready' : 'queued'),
+    status: normalizeSessionStatus(session),
+    errorCode: session.errorCode,
+    errorMessage: session.errorMessage,
     deployment: serializeDeployment(session, artifacts.deployment),
     homepageReady: session.homepageReady === true,
     siteSpecReady: session.siteSpecReady === true,

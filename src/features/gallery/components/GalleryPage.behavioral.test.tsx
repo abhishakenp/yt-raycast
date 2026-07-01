@@ -361,9 +361,8 @@ describe('GalleryPage behavioral', () => {
     })
   })
 
-  it('thumbnail fallback shows gradient placeholder when fetch fails', async () => {
+  it('missing static HTML shows gradient placeholder without fetching a PNG thumbnail', async () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error('network down'))
-    // session with no html/moduleSource/imageUrl -> uses /api/sessions thumb path
     resetController([
       {
         sessionId: 'thumb_fail_session',
@@ -376,12 +375,10 @@ describe('GalleryPage behavioral', () => {
 
     expect(getByText('Gradient fallback project')).not.toBeNull()
 
-    // no <img> should render (fetch fails, resolvedImageSrc stays '')
-    await waitFor(() => {
-      expect(container.querySelector('img')).toBeNull()
-    })
+    await Promise.resolve()
 
-    // gradient placeholder div carries aria-label with the prompt title
+    expect(globalThis.fetch).not.toHaveBeenCalled()
+    expect(container.querySelector('img')).toBeNull()
     const placeholder = container.querySelector(
       '[aria-hidden="true"] [aria-label="Gradient fallback project"]',
     )

@@ -4,6 +4,25 @@ export type EngineTaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'FAILED'
 
 export type SessionTaskStatus = 'pending' | 'running' | 'succeeded' | 'failed'
 
+/**
+ * A session may be left in a stale `streaming` state in the DB even though the
+ * generation engine already recorded a terminal error (errorCode/errorMessage).
+ * Without normalization the UI would spin forever waiting for a preview that
+ * will never arrive, so we collapse any stale streaming status carrying an
+ * errorCode into a `failed` status so the dashboard can render the error.
+ */
+export const normalizeSessionStatus = (
+  session: Doc<'sessions'>,
+): Doc<'sessions'>['status'] => {
+  const fallbackStatus =
+    session.status ??
+    (session.genuiStatus === 'done' ? 'preview_ready' : 'queued')
+  if (fallbackStatus === 'streaming' && session.errorCode !== undefined) {
+    return 'failed'
+  }
+  return fallbackStatus
+}
+
 export const serializeSession = (session: Doc<'sessions'>) => ({
   sessionId: session._id,
   userId: session.userId,
@@ -11,9 +30,7 @@ export const serializeSession = (session: Doc<'sessions'>) => ({
     session.userId === undefined && session.anonOwnerSecretHash !== undefined,
   prompt: session.prompt,
   workspace: session.workspace,
-  status:
-    session.status ??
-    (session.genuiStatus === 'done' ? 'preview_ready' : 'queued'),
+  status: normalizeSessionStatus(session),
   preferredLanguage: session.preferredLanguage,
   preferredExportTarget: session.preferredExportTarget,
   isPrivate: session.isPrivate,
