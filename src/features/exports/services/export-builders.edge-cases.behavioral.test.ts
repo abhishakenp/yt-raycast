@@ -53,6 +53,39 @@ pricingText = Text("Pricing")
 home = Stack([homeText])
 pricing = Stack([pricingText])`
 const siteSpecJson = JSON.stringify({ projectName: 'Export Demo' })
+const dbObservedBrewerySource =
+  'home_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"categories[Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"},{"name":"Chocolate Stout","description":"Rich cocoa and roasted malt","price":"$8","tag":"Seasonal"},{"name":"Year-Round Classics>Portland Pale Ale","description":"Balanced hop profile with citrus aroma","price":"$6","tag":"Core"},{"name":"Hoppy IPA","description":"Bold bitterness with pine and mango","price":"$7","tag":"Core]"}]}])\nroot = PageSwitch(["Home"], [home_menu], "", {"Home":"home"})'
+const dbObservedBrewerySiteSpecJson = JSON.stringify({
+  brand: 'Craft Beer Brewery',
+  projectName: 'Craft Beer Brewery',
+  theme: 'darkmatter',
+})
+const openUiHandoffPreviewHtml = `<!doctype html>
+<html lang="en">
+<body>
+  <main id="openui-root" data-openui-ready="source">
+    <section>
+      <p>Generated OpenUI source is ready.</p>
+      <h1>Craft Beer Brewery</h1>
+      <p>The interactive source is available for export and deployment.</p>
+    </section>
+  </main>
+</body>
+</html>`
+const editedBreweryPreviewHtml = `<!doctype html>
+<html lang="en">
+<body>
+  <div id="openui-root" class="genui-preview dark">
+    <section data-sf-export-page="Home">
+      <h1 class="hero-title" style="color: rgb(255, 255, 255);">Portland's Craft Brew Haven</h1>
+      <p>Taproom tours, seasonal releases, and community events</p>
+      <article><img alt="Exterior of Riverbend Brewing taproom" src="https://cdn.example.test/brewery-edited.jpg" /></article>
+      <h2>Our Brew Selection</h2>
+      <p>Pineapple Saison</p>
+    </section>
+  </div>
+</body>
+</html>`
 
 const unzipTextFiles = (body: Uint8Array): Record<string, string> =>
   Object.fromEntries(
@@ -529,6 +562,65 @@ describe('OpenUI HTML export builder edge cases', () => {
     expect(document.querySelector('title')?.textContent).toBe('Export Demo')
     // SSR-rendered page content present as data-sf-export-page section
     expect(document.querySelectorAll('[data-sf-export-page]')).toHaveLength(1)
+  })
+
+  it('renders a DB-observed OpenUI session to static HTML instead of exporting the handoff placeholder', async () => {
+    const result = await buildOpenUIHtmlExport({
+      source: dbObservedBrewerySource,
+      siteSpecJson: dbObservedBrewerySiteSpecJson,
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+      target: 'html',
+      previewHtml: openUiHandoffPreviewHtml,
+      themeName: 'darkmatter',
+      isDark: true,
+    })
+    const html = decodeExportBody(result.body)
+    const document = parseHtmlDocument(html)
+    const root = document.querySelector('#openui-root')
+    const page = document.querySelector('[data-sf-export-page]')
+
+    expect(result.contentType).toBe('text/html; charset=utf-8')
+    expect(root).not.toBeNull()
+    expect(root?.getAttribute('class')).toContain('dark')
+    expect(root?.getAttribute('style')).toContain('color-scheme: dark')
+    expect(page).not.toBeNull()
+    expect(document.body.textContent).toContain('Our Brew Selection')
+    expect(document.body.textContent).toContain('Pineapple Saison')
+    expect(document.querySelector('[data-openui-ready="source"]')).toBeNull()
+    expect(document.body.textContent).not.toContain(
+      'Generated OpenUI source is ready.',
+    )
+    expect(document.querySelector('.openui-error')).toBeNull()
+  })
+
+  it('preserves DB-observed edited static preview markup and theme shell for OpenUI HTML output', async () => {
+    const result = await buildOpenUIHtmlExport({
+      source: dbObservedBrewerySource,
+      siteSpecJson: dbObservedBrewerySiteSpecJson,
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+      target: 'html',
+      previewHtml: editedBreweryPreviewHtml,
+      themeName: 'darkmatter',
+      isDark: true,
+    })
+    const html = decodeExportBody(result.body)
+    const document = parseHtmlDocument(html)
+    const root = document.querySelector('#openui-root')
+    const headline = document.querySelector('.hero-title')
+    const image = document.querySelector('img')
+
+    expect(root?.getAttribute('class')).toContain('dark')
+    expect(root?.getAttribute('style')).toContain('color-scheme: dark')
+    expect(headline?.textContent).toBe("Portland's Craft Brew Haven")
+    expect(headline?.getAttribute('style')).toBe('color: rgb(255, 255, 255);')
+    expect(image?.getAttribute('src')).toBe(
+      'https://cdn.example.test/brewery-edited.jpg',
+    )
+    expect(image?.getAttribute('alt')).toBe(
+      'Exterior of Riverbend Brewing taproom',
+    )
+    expect(document.body.textContent).toContain('Pineapple Saison')
+    expect(document.querySelectorAll('#openui-root')).toHaveLength(1)
   })
 })
 

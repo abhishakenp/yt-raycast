@@ -192,4 +192,51 @@ describe('createWebhookApiResponse', () => {
     })
     expect(client.mutation).not.toHaveBeenCalled()
   })
+
+  it('returns a stable non-leaking error when a signed webhook cannot be written to Convex', async () => {
+    const body = JSON.stringify({
+      id: 'evt_write_failure',
+      data: {
+        object: {
+          id: 'cs_write_failure',
+          subscription: 'sub_write_failure',
+          client_reference_id: 'user_123',
+          mode: 'subscription',
+          status: 'active',
+          metadata: { userId: 'user_123', tier: 'pro' },
+        },
+      },
+    })
+    const signature = `t=1,v1=${await sign('whsec_test', `1.${body}`)}`
+    const client = {
+      mutation: vi
+        .fn()
+        .mockRejectedValue(
+          new Error(
+            'Convex billing mutation failed for user_123 with mutation_secret',
+          ),
+        ),
+    }
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/stripe/webhook', {
+        method: 'POST',
+        headers: { 'stripe-signature': signature },
+        body,
+      }),
+      'stripe',
+      {
+        STRIPE_WEBHOOK_SECRET: 'whsec_test',
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+      },
+      client,
+    )
+    const result = await response.json()
+
+    expect(response.status).toBe(502)
+    expect(result).toEqual({ error: 'Webhook processing failed.' })
+    expect(JSON.stringify(result)).not.toContain('mutation_secret')
+    expect(JSON.stringify(result)).not.toContain('user_123')
+    expect(JSON.stringify(result)).not.toContain('Convex billing mutation')
+  })
 })

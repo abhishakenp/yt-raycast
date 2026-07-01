@@ -108,6 +108,41 @@ describe('generation runner', () => {
     ])
   })
 
+  it('returns a failed generation result even when failure persistence rejects', async () => {
+    const failedInputs: unknown[] = []
+    const persistence: GenerationPersistence = {
+      completeGeneration: async () => ({ previewVersion: 1 }),
+      failGeneration: async (input) => {
+        failedInputs.push(input)
+        throw new Error('Convex fail mutation rejected generation failure')
+      },
+    }
+
+    await expect(
+      runEngineGeneration({
+        sessionId: 'session-fail-persist-rejected',
+        prompt: dbObservedPrompt,
+        anonymousOwnerSecret: 'secret',
+        workspaceRoot: createTempRoot(),
+        runAll: async () => {
+          throw new Error('Provider returned empty model output')
+        },
+        persistence,
+      }),
+    ).resolves.toEqual({
+      status: 'failed',
+      message: 'Provider returned empty model output',
+    })
+
+    expect(failedInputs).toEqual([
+      {
+        sessionId: 'session-fail-persist-rejected',
+        anonymousOwnerSecret: 'secret',
+        message: 'Provider returned empty model output',
+      },
+    ])
+  })
+
   it('fails the session when an engine returns without generated homepage artifacts', async () => {
     const completedInputs: unknown[] = []
     const failedInputs: unknown[] = []
