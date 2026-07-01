@@ -2589,6 +2589,12 @@ function rewriteLakebedClientImports(
     if (allowed) return allowed
 
     if (moduleName.startsWith('#/lib/utils')) {
+      copyBlocksClientSourceForLakebed(
+        'src/lib/utils',
+        context.files,
+        context.seenVendorFiles,
+        context.seenBlockFiles,
+      )
       return relativeImportPath(context.outPath, 'client/lib/cn.ts')
     }
     if (moduleName.startsWith('#/lib/use-navigate')) {

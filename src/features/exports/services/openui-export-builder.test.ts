@@ -2,6 +2,11 @@ import { parseHTML } from 'linkedom'
 import { describe, expect, it } from 'vitest'
 import { strFromU8, unzipSync } from 'fflate'
 import ts from 'typescript'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { build } from 'esbuild'
+import { JSDOM } from 'jsdom'
 
 import {
   buildOpenUIExport,
@@ -44,175 +49,262 @@ const unzipBuiltExportTextFiles = (body: string | Uint8Array) => {
   return unzipTextFiles(body)
 }
 
-const parseTsx = (fileName: string, moduleSource: string): ts.SourceFile =>
-  ts.createSourceFile(
-    fileName,
-    moduleSource,
-    ts.ScriptTarget.Latest,
-    true,
-    fileName.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
-  )
-
-const importSpecifiers = (sourceFile: ts.SourceFile): string[] =>
-  sourceFile.statements
-    .filter(ts.isImportDeclaration)
-    .flatMap((statement) =>
-      ts.isStringLiteral(statement.moduleSpecifier)
-        ? [statement.moduleSpecifier.text]
-        : [],
-    )
-
-const namedImportsFromModule = (
-  sourceFile: ts.SourceFile,
-  moduleName: string,
-): string[] =>
-  sourceFile.statements
-    .filter(ts.isImportDeclaration)
-    .filter(
-      (statement) =>
-        ts.isStringLiteral(statement.moduleSpecifier) &&
-        statement.moduleSpecifier.text === moduleName,
-    )
-    .flatMap((statement) => {
-      const bindings = statement.importClause?.namedBindings
-      if (!bindings || !ts.isNamedImports(bindings)) return []
-      return bindings.elements.map((element) => element.name.text)
-    })
-
-const hasExportedFunction = (
-  sourceFile: ts.SourceFile,
-  functionName: string,
-): boolean =>
-  sourceFile.statements.some(
-    (statement) =>
-      ts.isFunctionDeclaration(statement) &&
-      statement.name?.text === functionName &&
-      statement.modifiers?.some(
-        (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
-      ),
-  )
-
-const hasVariableInitializedByCall = (
-  sourceFile: ts.SourceFile,
-  variableName: string,
-  callName: string,
-): boolean => {
-  let found = false
-
-  const visit = (node: ts.Node) => {
-    if (
-      ts.isVariableDeclaration(node) &&
-      ts.isIdentifier(node.name) &&
-      node.name.text === variableName &&
-      node.initializer &&
-      ts.isCallExpression(node.initializer) &&
-      ts.isIdentifier(node.initializer.expression) &&
-      node.initializer.expression.text === callName
-    ) {
-      found = true
-      return
-    }
-    ts.forEachChild(node, visit)
-  }
-
-  visit(sourceFile)
-  return found
-}
-
-const useMemoObjectPropertyNamesInFunction = (
-  sourceFile: ts.SourceFile,
-  functionName: string,
-): string[] => {
-  const names = new Set<string>()
-
-  const propertyNameText = (name: ts.PropertyName): string | null => {
-    if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text
-    return null
-  }
-
-  const collectObjectProperties = (
-    objectLiteral: ts.ObjectLiteralExpression,
-  ) => {
-    for (const property of objectLiteral.properties) {
-      if (ts.isShorthandPropertyAssignment(property)) {
-        names.add(property.name.text)
-      } else if (
-        ts.isPropertyAssignment(property) ||
-        ts.isMethodDeclaration(property)
-      ) {
-        const name = propertyNameText(property.name)
-        if (name) names.add(name)
-      }
-    }
-  }
-
-  const visitFunctionBody = (node: ts.Node) => {
-    if (
-      ts.isCallExpression(node) &&
-      ts.isIdentifier(node.expression) &&
-      node.expression.text === 'useMemo'
-    ) {
-      const firstArg = node.arguments[0]
-      if (firstArg && ts.isArrowFunction(firstArg)) {
-        const body = firstArg.body
-        if (ts.isObjectLiteralExpression(body)) collectObjectProperties(body)
-        if (
-          ts.isParenthesizedExpression(body) &&
-          ts.isObjectLiteralExpression(body.expression)
-        ) {
-          collectObjectProperties(body.expression)
-        }
-      }
-    }
-    ts.forEachChild(node, visitFunctionBody)
-  }
-
-  for (const statement of sourceFile.statements) {
-    if (
-      ts.isFunctionDeclaration(statement) &&
-      statement.name?.text === functionName &&
-      statement.body
-    ) {
-      visitFunctionBody(statement.body)
-    }
-  }
-
-  return [...names].sort()
-}
-
-const hasJsxElementNamed = (
-  sourceFile: ts.SourceFile,
-  elementName: string,
-): boolean => {
-  let found = false
-
-  const visit = (node: ts.Node) => {
-    if (
-      (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
-      ts.isIdentifier(node.tagName) &&
-      node.tagName.text === elementName
-    ) {
-      found = true
-      return
-    }
-    ts.forEachChild(node, visit)
-  }
-
-  visit(sourceFile)
-  return found
-}
-
-const exportedFilesLeakPackageImport = (
-  files: Record<string, string>,
-  packagePrefix: string,
-): boolean =>
-  Object.entries(files).some(([fileName, moduleSource]) =>
-    importSpecifiers(parseTsx(fileName, moduleSource)).some((specifier) =>
-      specifier.startsWith(packagePrefix),
-    ),
-  )
-
 const parseHtmlDocument = (html: string) => parseHTML(html).document
+
+const collectWindowRuntimeErrors = (dom: JSDOM) => {
+  const errors: unknown[] = []
+
+  dom.window.addEventListener('error', (event: ErrorEvent) => {
+    errors.push(event.error ?? event.message)
+  })
+  dom.window.addEventListener(
+    'unhandledrejection',
+    (event: Event & { reason?: unknown }) => {
+      errors.push(event.reason ?? event)
+    },
+  )
+
+  return errors
+}
+
+const flushWindowPromises = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  await new Promise((resolve) => setTimeout(resolve, 0))
+}
+
+const writeExportFiles = (files: Record<string, string>, directory: string) => {
+  for (const [path, fileSource] of Object.entries(files)) {
+    const absolutePath = join(directory, path)
+    mkdirSync(join(absolutePath, '..'), { recursive: true })
+    writeFileSync(absolutePath, fileSource)
+  }
+}
+
+const loadBundledCommonJsModule = async (
+  entryPoint: string,
+): Promise<Record<string, unknown>> => {
+  const result = await build({
+    bundle: true,
+    entryPoints: [entryPoint],
+    format: 'cjs',
+    logLevel: 'silent',
+    platform: 'node',
+    target: 'node20',
+    write: false,
+  })
+  const module = { exports: {} as Record<string, unknown> }
+  const requireStub = (specifier: string) => {
+    throw new Error(`Unexpected external dependency: ${specifier}`)
+  }
+  const output = result.outputFiles[0]
+  if (!output) throw new Error('esbuild did not return bundled route output')
+
+  new Function('module', 'exports', 'require', output.text)(
+    module,
+    // eslint-disable-next-line import/no-commonjs
+    module.exports,
+    requireStub,
+  )
+  // eslint-disable-next-line import/no-commonjs
+  return module.exports
+}
+
+const loadDirectGeneratedEndpointRoute = async (routeSource: string) => {
+  const directory = mkdtempSync(join(tmpdir(), 'ship-fast-next-route-'))
+  try {
+    writeExportFiles(
+      {
+        'app/api/webhooks/incoming/route.ts': routeSource,
+        'src/lib/site-data-store.ts': `
+          export const endpoint = (_definition: unknown, handler: unknown) => ({ handler })
+          export const json = (value: unknown, init?: ResponseInit) => ({ kind: 'json', value, init })
+          export const text = (value: string, init?: ResponseInit) => new Response(value, init)
+          export const empty = (init?: ResponseInit) => new Response(null, init)
+          export const redirect = (url: string, init?: ResponseInit) => Response.redirect(url, init?.status ?? 302)
+          export const toEndpointRequest = (request: Request) => request
+          export const toEndpointResponse = (result: unknown) => {
+            if (result instanceof Response) return result
+            if (result && typeof result === 'object' && (result as { kind?: string }).kind === 'json') {
+              const jsonResult = result as { value: unknown; init?: ResponseInit }
+              return Response.json(jsonResult.value, jsonResult.init)
+            }
+            return Response.json(result)
+          }
+          export const createSiteEndpointContext = () => ({
+            auth: { userId: 'route-user' },
+            db: {
+              messages: {
+                insert(value: unknown) {
+                  ;((globalThis as any).__shipFastRouteInserts ??= []).push({
+                    collection: 'messages',
+                    value,
+                  })
+                  return value
+                },
+              },
+            },
+          })
+        `,
+      },
+      directory,
+    )
+    return await loadBundledCommonJsModule(
+      join(directory, 'app/api/webhooks/incoming/route.ts'),
+    )
+  } finally {
+    rmSync(directory, { force: true, recursive: true })
+  }
+}
+
+const loadBuiltExportRoute = async (
+  files: Record<string, string>,
+  routePath: string,
+) => {
+  const directory = mkdtempSync(join(tmpdir(), 'ship-fast-built-route-'))
+  try {
+    writeExportFiles(files, directory)
+    return await loadBundledCommonJsModule(join(directory, routePath))
+  } finally {
+    rmSync(directory, { force: true, recursive: true })
+  }
+}
+
+const renderExportedBrowserEntry = async (
+  files: Record<string, string>,
+  entrySource: string,
+  url = 'https://export.test/',
+) => {
+  const directory = mkdtempSync(join(tmpdir(), 'ship-fast-browser-entry-'))
+  try {
+    writeExportFiles(files, directory)
+    writeFileSync(join(directory, 'test-entry.tsx'), entrySource)
+    const bundled = await build({
+      bundle: true,
+      define: {
+        'import.meta.env.VITE_SERVER_URL': JSON.stringify(
+          'https://ship-fast.io',
+        ),
+      },
+      entryPoints: [join(directory, 'test-entry.tsx')],
+      format: 'iife',
+      jsx: 'automatic',
+      logLevel: 'silent',
+      nodePaths: [join(process.cwd(), 'node_modules')],
+      platform: 'browser',
+      plugins: [
+        {
+          name: 'export-browser-entry-stubs',
+          setup(pluginBuild) {
+            pluginBuild.onResolve(
+              { filter: /^react$/, namespace: 'react-router-dom-stub' },
+              () => ({
+                path: join(process.cwd(), 'node_modules/react/index.js'),
+              }),
+            )
+            pluginBuild.onResolve({ filter: /^react-router-dom$/ }, () => ({
+              namespace: 'react-router-dom-stub',
+              path: 'react-router-dom',
+            }))
+            pluginBuild.onResolve({ filter: /^@ship-fast\// }, (args) => ({
+              errors: [
+                {
+                  text: `Exported browser bundle leaked workspace package import: ${args.path}`,
+                },
+              ],
+            }))
+            pluginBuild.onLoad(
+              {
+                filter: /^react-router-dom$/,
+                namespace: 'react-router-dom-stub',
+              },
+              () => ({
+                contents: `import React from "react";
+const Fragment = React.Fragment;
+export const BrowserRouter = ({ children }) => React.createElement(Fragment, null, children);
+export const HashRouter = BrowserRouter;
+export const MemoryRouter = BrowserRouter;
+export const Routes = ({ children }) => React.createElement(Fragment, null, children);
+export const Route = ({ element, children }) => element ?? React.createElement(Fragment, null, children);
+export const Link = ({ children, to = "#", ...props }) => React.createElement("a", { ...props, href: String(to) }, children);
+export const NavLink = Link;
+export const Navigate = () => null;
+export function useNavigate() { return () => {}; }
+export function useLocation() { return { pathname: "/", search: "", hash: "", state: null, key: "default" }; }
+export function useParams() { return {}; }
+`,
+                loader: 'tsx',
+              }),
+            )
+            pluginBuild.onResolve(
+              { filter: /^next\/(navigation|link|image)$/ },
+              (args) => ({
+                namespace: 'next-stub',
+                path: args.path,
+              }),
+            )
+            pluginBuild.onLoad(
+              { filter: /.*/, namespace: 'next-stub' },
+              (args) => {
+                if (args.path === 'next/link') {
+                  return {
+                    contents: `import React from "react";
+export default function Link({ children, href = "#", ...props }) {
+  return React.createElement("a", { ...props, href: String(href) }, children);
+}`,
+                    loader: 'tsx',
+                  }
+                }
+                if (args.path === 'next/image') {
+                  return {
+                    contents: `import React from "react";
+export default function Image(props) {
+  return React.createElement("img", props);
+}`,
+                    loader: 'tsx',
+                  }
+                }
+                return {
+                  contents: `export function useRouter() { return { push() {}, replace() {}, prefetch() {} }; }
+export function usePathname() { return "/"; }
+export function useSearchParams() { return new URLSearchParams(); }`,
+                  loader: 'js',
+                }
+              },
+            )
+            pluginBuild.onResolve({ filter: /\.css$/ }, (args) => ({
+              namespace: 'css-stub',
+              path: args.path,
+            }))
+            pluginBuild.onLoad({ filter: /.*/, namespace: 'css-stub' }, () => ({
+              contents: '',
+              loader: 'js',
+            }))
+          },
+        },
+      ],
+      write: false,
+    })
+    const dom = new JSDOM('<div id="root"></div>', {
+      runScripts: 'outside-only',
+      url,
+    })
+    ;(
+      dom.window as Window & { process?: { env: Record<string, string> } }
+    ).process = { env: {} }
+    const runtimeErrors = collectWindowRuntimeErrors(dom)
+    let renderError: unknown
+    try {
+      dom.window.eval(bundled.outputFiles[0]?.text ?? '')
+    } catch (error) {
+      renderError = error
+    }
+    await flushWindowPromises()
+    await flushWindowPromises()
+    return { dom, renderError, runtimeErrors }
+  } finally {
+    rmSync(directory, { force: true, recursive: true })
+  }
+}
 
 const extractRouteScriptText = (html: string): string => {
   const document = parseHtmlDocument(html)
@@ -301,19 +393,47 @@ describe('openui-export-builder', () => {
     expect(targetMap['Get Started']).toBe('Pricing#pricing_pricing')
     expect(targetMap['get started']).toBe('Pricing#pricing_pricing')
 
-    // client-side routing helpers are defined in the route script
-    expect(scriptText).toContain('function fixedHeaderOffset()')
-    expect(scriptText).toContain('function scrollToSection(id)')
-    expect(scriptText).toContain('window.scrollTo({ top: top, behavior:')
-    expect(scriptText).toContain(
-      "window.scrollTo({ top: 0, behavior: 'smooth' })",
-    )
-
     // routes render as data-sf-export-page sections (first visible, rest hidden)
     const pages = document.querySelectorAll('[data-sf-export-page]')
     expect(pages).toHaveLength(2)
     expect(pages[0]?.getAttribute('hidden')).toBeNull()
     expect(pages[1]?.getAttribute('hidden')).not.toBeNull()
+
+    const runtime = new JSDOM(html, {
+      pretendToBeVisual: true,
+      runScripts: 'dangerously',
+      url: 'https://export.test/',
+    })
+    const scrolledSections: string[] = []
+    runtime.window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+      callback(0)
+      return 1
+    }
+    Object.defineProperty(
+      runtime.window.HTMLElement.prototype,
+      'scrollIntoView',
+      {
+        configurable: true,
+        value(this: HTMLElement) {
+          scrolledSections.push(this.id)
+        },
+      },
+    )
+
+    const runtimePages = (
+      runtime.window.document as Document
+    ).querySelectorAll<HTMLElement>('[data-sf-export-page]')
+    runtimePages[1]?.setAttribute('id', 'pricing_pricing')
+    const button = runtime.window.document.createElement('button')
+    button.type = 'button'
+    button.textContent = 'Get Started'
+    runtime.window.document.body.append(button)
+    button.click()
+
+    expect(runtimePages[0]?.hidden).toBe(true)
+    expect(runtimePages[1]?.hidden).toBe(false)
+    expect(runtime.window.location.hash).toBe('#pricing_pricing')
+    expect(scrolledSections).toEqual(['pricing_pricing'])
   })
 
   it('builds standalone HTML with a dark shell and baked theme variables', async () => {
@@ -473,6 +593,102 @@ describe('openui-export-builder', () => {
     )
   })
 
+  it('runs exported React apps built from malformed generated restaurant props without runtime crashes', async () => {
+    const result = await buildOpenUIExport({
+      source:
+        'root = RestaurantMenu({"heading":"Our Brew Selection","description":"Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.","categories":[{"name":"categories[Seasonal Releases","items":[{"description":"Tropical notes with a crisp finish","name":"Pineapple Saison","price":"$7","tag":"Limited"},{"description":"Rich cocoa and roasted malt","name":"Chocolate Stout","price":"$8","tag":"Seasonal"},{"description":"Balanced hop profile with citrus aroma","name":"Year-Round Classics>Portland Pale Ale","price":"$6","tag":"Core"},{"description":"Bold bitterness with pine and mango","name":"Hoppy IPA","price":"$7","tag":"Core]"}]}]})',
+      siteSpecJson: JSON.stringify({ projectName: 'Craft Beer Brewery' }),
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+      target: 'react',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    const directory = mkdtempSync(join(tmpdir(), 'react-restaurant-export-'))
+
+    try {
+      writeExportFiles(files, directory)
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [join(directory, 'src/main.tsx')],
+        format: 'iife',
+        jsx: 'automatic',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'export-browser-test-stubs',
+            setup(pluginBuild) {
+              pluginBuild.onResolve(
+                { filter: /^react$/, namespace: 'react-router-dom-stub' },
+                () => ({
+                  path: join(process.cwd(), 'node_modules/react/index.js'),
+                }),
+              )
+              pluginBuild.onResolve({ filter: /^react-router-dom$/ }, () => ({
+                namespace: 'react-router-dom-stub',
+                path: 'react-router-dom',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^react-router-dom$/,
+                  namespace: 'react-router-dom-stub',
+                },
+                () => ({
+                  contents: `import React from "react";
+const Fragment = React.Fragment;
+export const BrowserRouter = ({ children }) => React.createElement(Fragment, null, children);
+export const HashRouter = BrowserRouter;
+export const MemoryRouter = BrowserRouter;
+export const Routes = ({ children }) => React.createElement(Fragment, null, children);
+export const Route = ({ element, children }) => element ?? React.createElement(Fragment, null, children);
+export const Link = ({ children, to = "#", ...props }) => React.createElement("a", { ...props, href: String(to) }, children);
+export const NavLink = Link;
+export const Navigate = () => null;
+export function useNavigate() { return () => {}; }
+export function useLocation() { return { pathname: "/", search: "", hash: "", state: null, key: "default" }; }
+export function useParams() { return {}; }
+`,
+                  loader: 'tsx',
+                }),
+              )
+              pluginBuild.onResolve({ filter: /\.css$/ }, (args) => ({
+                namespace: 'css-stub',
+                path: args.path,
+              }))
+              pluginBuild.onLoad(
+                { filter: /.*/, namespace: 'css-stub' },
+                () => ({ contents: '', loader: 'js' }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+      const dom = new JSDOM('<div id="root"></div>', {
+        runScripts: 'outside-only',
+        url: 'https://craft-beer-brewery.example.test/',
+      })
+      const runtimeErrors = collectWindowRuntimeErrors(dom)
+
+      let renderError: unknown
+      try {
+        dom.window.eval(bundled.outputFiles[0].text)
+      } catch (error) {
+        renderError = error
+      }
+      await flushWindowPromises()
+
+      expect(renderError).toBeUndefined()
+      expect(runtimeErrors).toEqual([])
+      expect(dom.window.document.body.textContent).toContain(
+        'Our Brew Selection',
+      )
+      expect(dom.window.document.body.textContent).toContain('Pineapple Saison')
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
   // DELETED: 'packages UI primitive dependencies for FitnessKimiPage React exports'
   // and 'copies maintained block dependencies from the generated manifest when the
   // source tree is unavailable'. Both asserted deleted-capsule-specific bundling of
@@ -542,41 +758,15 @@ describe('openui-export-builder', () => {
       target: 'react',
     })
     const files = unzipBuiltExportTextFiles(result.body)
-    const component = parseTsx(
-      'src/components/EcommerceHero.tsx',
-      files['src/components/EcommerceHero.tsx'] ?? '',
-    )
-    const siteData = parseTsx(
-      'src/lib/site-data.ts',
-      files['src/lib/site-data.ts'] ?? '',
-    )
 
     expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
     expect(files['src/lib/site-data.ts']).toBeDefined()
-    expect(
-      hasVariableInitializedByCall(component, 'lakebed', 'useLakebedAdapter'),
-    ).toBe(true)
-    expect(namedImportsFromModule(siteData, 'react')).toEqual(
-      expect.arrayContaining(['useRef']),
-    )
-    expect(hasExportedFunction(siteData, 'useLakebedAdapter')).toBe(true)
-    expect(hasExportedFunction(siteData, 'useKeyedLakebedMutation')).toBe(true)
-    expect(
-      useMemoObjectPropertyNamesInFunction(siteData, 'useKeyedLakebedMutation'),
-    ).toEqual(
-      expect.arrayContaining([
-        'hasPending',
-        'isPending',
-        'lastError',
-        'pendingKey',
-        'pendingKeys',
-        'reset',
-        'run',
-      ]),
-    )
-    expect(exportedFilesLeakPackageImport(files, '@ship-fast/lakebed')).toBe(
-      false,
-    )
+    const { dom, renderError, runtimeErrors } =
+      await renderExportedBrowserEntry(files, `import './src/main'`)
+    expect(renderError).toBeUndefined()
+    expect(runtimeErrors).toEqual([])
+    expect(dom.window.document.body.textContent).toContain('Shop')
+    expect(dom.window.document.body.textContent).toContain('Add')
   })
 
   it('exports nested composed route sections in React ZIPs without exporting Stack', async () => {
@@ -587,21 +777,17 @@ describe('openui-export-builder', () => {
       target: 'react',
     })
     const files = unzipBuiltExportTextFiles(result.body)
-    const routeComponent = parseTsx(
-      'src/components/RoutePage1Home.tsx',
-      files['src/components/RoutePage1Home.tsx'] ?? '',
-    )
 
     expect(files['src/components/RoutePage1Home.tsx']).toBeDefined()
     expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
     expect(files['src/components/ProductDetailHero.tsx']).toBeDefined()
     expect(files['src/components/Stack.tsx']).toBeUndefined()
-    expect(importSpecifiers(routeComponent)).toEqual(
-      expect.arrayContaining(['./EcommerceHero', './ProductDetailHero']),
-    )
-    expect(hasJsxElementNamed(routeComponent, 'EcommerceHero')).toBe(true)
-    expect(hasJsxElementNamed(routeComponent, 'ProductDetailHero')).toBe(true)
-    expect(exportedFilesLeakPackageImport(files, '@ship-fast/')).toBe(false)
+    const { dom, renderError, runtimeErrors } =
+      await renderExportedBrowserEntry(files, `import './src/main'`)
+    expect(renderError).toBeUndefined()
+    expect(runtimeErrors).toEqual([])
+    expect(dom.window.document.body.textContent).toContain('Aurora Pro')
+    expect(dom.window.document.body.textContent).toContain('Shop')
   })
 
   it('packages shared section-kit dependencies for React exports', async () => {
@@ -625,8 +811,15 @@ describe('openui-export-builder', () => {
       const files = unzipBuiltExportTextFiles(result.body)
 
       expect(files[`src/components/${componentName}.tsx`]).toBeDefined()
-      expect(exportedFilesLeakPackageImport(files, '#/')).toBe(false)
-      expect(exportedFilesLeakPackageImport(files, '@ship-fast/')).toBe(false)
+      const { renderError, runtimeErrors } = await renderExportedBrowserEntry(
+        files,
+        `import React from 'react'
+import { createRoot } from 'react-dom/client'
+import { ${componentName} } from './src/components/${componentName}'
+createRoot(document.getElementById('root')!).render(<${componentName} />)`,
+      )
+      expect(renderError).toBeUndefined()
+      expect(runtimeErrors).toEqual([])
     }
   })
 
@@ -638,44 +831,23 @@ describe('openui-export-builder', () => {
       target: 'next',
     })
     const files = unzipBuiltExportTextFiles(result.body)
-    const component = parseTsx(
-      'src/components/EcommerceHero.tsx',
-      files['src/components/EcommerceHero.tsx'] ?? '',
-    )
-    const layout = parseTsx('app/layout.tsx', files['app/layout.tsx'] ?? '')
-    const siteData = parseTsx(
-      'src/lib/site-data.ts',
-      files['src/lib/site-data.ts'] ?? '',
-    )
 
     expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
     expect(files['app/layout.tsx']).toBeDefined()
     expect(files['src/lib/site-data.ts']).toBeDefined()
-    expect(
-      hasVariableInitializedByCall(component, 'lakebed', 'useLakebedAdapter'),
-    ).toBe(true)
-    expect(importSpecifiers(layout)).toContain('../src/lib/site-data-provider')
-    expect(namedImportsFromModule(siteData, 'react')).toEqual(
-      expect.arrayContaining(['useRef']),
-    )
-    expect(hasExportedFunction(siteData, 'useLakebedAdapter')).toBe(true)
-    expect(hasExportedFunction(siteData, 'useKeyedLakebedMutation')).toBe(true)
-    expect(
-      useMemoObjectPropertyNamesInFunction(siteData, 'useKeyedLakebedMutation'),
-    ).toEqual(
-      expect.arrayContaining([
-        'hasPending',
-        'isPending',
-        'lastError',
-        'pendingKey',
-        'pendingKeys',
-        'reset',
-        'run',
-      ]),
-    )
-    expect(exportedFilesLeakPackageImport(files, '@ship-fast/lakebed')).toBe(
-      false,
-    )
+    const { dom, renderError, runtimeErrors } =
+      await renderExportedBrowserEntry(
+        files,
+        `import React from 'react'
+import { createRoot } from 'react-dom/client'
+import Page from './app/page'
+import { SiteDataProvider } from './src/lib/site-data-provider'
+createRoot(document.getElementById('root')!).render(<SiteDataProvider><Page /></SiteDataProvider>)`,
+      )
+    expect(renderError).toBeUndefined()
+    expect(runtimeErrors).toEqual([])
+    expect(dom.window.document.body.textContent).toContain('Shop')
+    expect(dom.window.document.body.textContent).toContain('Add')
   })
 
   it('exports nested composed route sections in Next ZIPs without exporting Stack', async () => {
@@ -686,26 +858,27 @@ describe('openui-export-builder', () => {
       target: 'next',
     })
     const files = unzipBuiltExportTextFiles(result.body)
-    const routeComponent = parseTsx(
-      'src/components/RoutePage1Home.tsx',
-      files['src/components/RoutePage1Home.tsx'] ?? '',
-    )
-    const nextPage = parseTsx('app/page.tsx', files['app/page.tsx'] ?? '')
 
     expect(files['src/components/RoutePage1Home.tsx']).toBeDefined()
     expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
     expect(files['src/components/ProductDetailHero.tsx']).toBeDefined()
     expect(files['src/components/Stack.tsx']).toBeUndefined()
-    expect(importSpecifiers(routeComponent)).toEqual(
-      expect.arrayContaining(['./EcommerceHero', './ProductDetailHero']),
-    )
-    expect(hasJsxElementNamed(routeComponent, 'EcommerceHero')).toBe(true)
-    expect(hasJsxElementNamed(routeComponent, 'ProductDetailHero')).toBe(true)
-    expect(hasJsxElementNamed(nextPage, 'RoutePage1Home')).toBe(true)
-    expect(exportedFilesLeakPackageImport(files, '@ship-fast/')).toBe(false)
+    const { dom, renderError, runtimeErrors } =
+      await renderExportedBrowserEntry(
+        files,
+        `import React from 'react'
+import { createRoot } from 'react-dom/client'
+import Page from './app/page'
+import { SiteDataProvider } from './src/lib/site-data-provider'
+createRoot(document.getElementById('root')!).render(<SiteDataProvider><Page /></SiteDataProvider>)`,
+      )
+    expect(renderError).toBeUndefined()
+    expect(runtimeErrors).toEqual([])
+    expect(dom.window.document.body.textContent).toContain('Aurora Pro')
+    expect(dom.window.document.body.textContent).toContain('Shop')
   })
 
-  it('translates source Lakebed endpoints to Next route handlers', () => {
+  it('translates source Lakebed endpoints to executable Next route handlers', async () => {
     const files = renderNextEndpointRouteFiles([
       {
         componentName: 'WebhookHero',
@@ -718,12 +891,45 @@ describe('openui-export-builder', () => {
     ])
     const route = files['app/api/webhooks/incoming/route.ts']
 
-    expect(route).toContain('export async function POST(request: Request)')
-    expect(route).toContain('path: "/api/webhooks/incoming"')
-    expect(route).toContain('ctx.db.messages.insert')
-    expect(route).toContain('return json({ ok: true });')
-    expect(route).not.toContain('/api/status')
-    expect(route).not.toContain('StatusPage')
+    expect(Object.keys(files)).toEqual(['app/api/webhooks/incoming/route.ts'])
+    expect(route).toBeDefined()
+    ;(
+      globalThis as typeof globalThis & {
+        __shipFastRouteInserts?: unknown[]
+      }
+    ).__shipFastRouteInserts = []
+    const routeModule = await loadDirectGeneratedEndpointRoute(route ?? '')
+    const response = await (
+      routeModule.POST as (request: Request) => Promise<Response>
+    )(
+      new Request('https://export.test/api/webhooks/incoming', {
+        body: JSON.stringify({ body: 'Saved from generated route' }),
+        method: 'POST',
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({ ok: true })
+    expect(
+      (
+        globalThis as typeof globalThis & {
+          __shipFastRouteInserts?: unknown[]
+        }
+      ).__shipFastRouteInserts,
+    ).toEqual([
+      {
+        collection: 'messages',
+        value: {
+          body: 'Saved from generated route',
+          ownerId: 'route-user',
+        },
+      },
+    ])
+    delete (
+      globalThis as typeof globalThis & {
+        __shipFastRouteInserts?: unknown[]
+      }
+    ).__shipFastRouteInserts
   })
 
   it('translates endpoint calls from full OpenUI source to Next route handlers', async () => {
@@ -737,19 +943,24 @@ endpoint({ method: "POST", path: "/api/webhooks/incoming" }, async (ctx, req) =>
     const files = unzipBuiltExportTextFiles(result.body)
     const route = files['app/api/webhooks/incoming/route.ts']
 
-    expect(route).toContain('export async function POST(request: Request)')
-    expect(route).toContain('path: "/api/webhooks/incoming"')
-    expect(route).toContain('ctx.db.messages.insert')
-    expect(route).toContain('return json({ ok: true });')
-    expect(route).not.toContain('/api/status')
-    expect(route).not.toContain('StatusPage')
-    expect(files['src/lib/site-data-store.ts']).toContain(
-      'type SiteEndpointHandler =',
+    expect(route).toBeDefined()
+    expect(files['app/api/status/route.ts']).toBeUndefined()
+
+    const routeModule = await loadBuiltExportRoute(
+      files,
+      'app/api/webhooks/incoming/route.ts',
     )
-    expect(files['src/lib/site-data-store.ts']).toContain('json: <T = any>()')
-    expect(files['src/lib/site-data-store.ts']).not.toContain(
-      'handler: Function',
+    const response = await (
+      routeModule.POST as (request: Request) => Promise<Response>
+    )(
+      new Request('https://export.test/api/webhooks/incoming', {
+        body: JSON.stringify({ body: 'Saved from full export' }),
+        method: 'POST',
+      }),
     )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({ ok: true })
   })
 
   it('embeds preview image swaps in React and Next image helpers', async () => {
@@ -780,17 +991,25 @@ endpoint({ method: "POST", path: "/api/webhooks/incoming" }, async (ctx, req) =>
     )
 
     for (const files of [react, next]) {
-      expect(files['src/lib/image.tsx']).toContain('previewImageSources')
-      expect(files['src/lib/image.tsx']).toContain('Edited hero image')
-      expect(files['src/lib/image.tsx']).toContain(
-        'https://cdn.example.test/edited-hero.jpg',
-      )
-      expect(files['src/lib/image.tsx']).toContain(
-        'const previewSrc = previewImageSourceByAlt.get(normalizedAlt)',
-      )
-      expect(files['src/lib/image.tsx']).toContain(
-        'const imageSrc = previewSrc ||',
-      )
+      const { dom, renderError, runtimeErrors } =
+        await renderExportedBrowserEntry(
+          files,
+          `import React from 'react'
+import { createRoot } from 'react-dom/client'
+import { Image } from './src/lib/image'
+
+createRoot(document.getElementById('root')!).render(
+  <Image alt="Edited hero image" src="https://cdn.example.test/original.jpg" />,
+)`,
+        )
+
+      expect(renderError).toBeUndefined()
+      expect(runtimeErrors).toEqual([])
+      expect(
+        dom.window.document
+          .querySelector('img[alt="Edited hero image"]')
+          ?.getAttribute('src'),
+      ).toBe('https://cdn.example.test/edited-hero.jpg')
     }
   })
 
@@ -821,31 +1040,34 @@ endpoint({ method: "POST", path: "/api/webhooks/incoming" }, async (ctx, req) =>
       ).body,
     )
 
-    expect(react['src/main.tsx']).toContain(
-      "import { StyleOverrides } from './lib/style-overrides'",
-    )
-    expect(react['src/main.tsx']).toContain('<StyleOverrides />')
-    expect(next['app/layout.tsx']).toContain(
-      "import { StyleOverrides } from '../src/lib/style-overrides'",
-    )
-    expect(next['app/layout.tsx']).toContain('<StyleOverrides />')
-
     for (const files of [react, next]) {
-      expect(files['src/lib/style-overrides.tsx']).toContain('use client')
-      expect(files['src/lib/style-overrides.tsx']).toContain('styleOverrides')
-      expect(files['src/lib/style-overrides.tsx']).toContain(
-        'hero-title text-4xl',
-      )
-      expect(files['src/lib/style-overrides.tsx']).toContain(
-        'color: rgb(255, 0, 0); text-align: center;',
-      )
-      expect(files['src/lib/style-overrides.tsx']).toContain(
-        'new MutationObserver',
-      )
+      const { dom, renderError, runtimeErrors } =
+        await renderExportedBrowserEntry(
+          files,
+          `import React from 'react'
+import { createRoot } from 'react-dom/client'
+import { StyleOverrides } from './src/lib/style-overrides'
+
+createRoot(document.getElementById('root')!).render(
+  <>
+    <StyleOverrides />
+    <h1 className="hero-title text-4xl">Hello export</h1>
+  </>,
+)`,
+        )
+
+      const heading = dom.window.document.querySelector(
+        '.hero-title.text-4xl',
+      ) as HTMLElement | null
+
+      expect(renderError).toBeUndefined()
+      expect(runtimeErrors).toEqual([])
+      expect(heading?.style.color).toBe('rgb(255, 0, 0)')
+      expect(heading?.style.textAlign).toBe('center')
     }
   })
 
-  it('preserves ReactNode type imports required by extracted component helpers', async () => {
+  it('type-checks extracted Next component helpers that use ReactNode props', async () => {
     const result = await buildOpenUIExport({
       source:
         'root = AboutHero("Native Store", ["Home"], {"heading":"About Native Store"})',
@@ -854,21 +1076,82 @@ endpoint({ method: "POST", path: "/api/webhooks/incoming" }, async (ctx, req) =>
       target: 'next',
     })
     const files = unzipBuiltExportTextFiles(result.body)
+    const directory = mkdtempSync(join(tmpdir(), 'ship-fast-typecheck-export-'))
 
-    // AboutHero emits a ReactNode type import consumed by an extracted helper
-    // (e.g. the `Eyebrow` subcomponent typing `icon: ReactNode`). This is the
-    // type-import-preservation contract; quote style belongs to the formatter.
-    expect(files['src/components/AboutHero.tsx']).toMatch(
-      /import type \{ ReactNode \} from ['"]react['"]/,
-    )
-    expect(files['src/components/AboutHero.tsx']).toContain('icon: ReactNode')
-    expect(files['src/components/AboutHero.tsx']).toContain(
-      'export type AboutHeroProps = {',
-    )
-    expect(files['src/components/AboutHero.tsx']).toContain('heading?: string')
-    expect(files['src/components/AboutHero.tsx']).not.toContain(
-      'AboutHeroPropsSchema',
-    )
-    expect(files['src/components/AboutHero.tsx']).not.toContain('z.infer')
+    try {
+      writeExportFiles(files, directory)
+      mkdirSync(join(directory, 'node_modules/react'), { recursive: true })
+      mkdirSync(join(directory, 'node_modules/next'), { recursive: true })
+      writeFileSync(
+        join(directory, 'node_modules/react/index.d.ts'),
+        `
+          export type ReactNode = unknown
+          export function useEffect(effect: () => void | (() => void), deps?: unknown[]): void
+          export function useMemo<T>(factory: () => T, deps?: unknown[]): T
+          export const Fragment: unknown
+          declare global {
+            namespace JSX {
+              interface IntrinsicElements {
+                [name: string]: any
+              }
+            }
+          }
+        `,
+      )
+      writeFileSync(
+        join(directory, 'node_modules/react/jsx-runtime.d.ts'),
+        `
+          export namespace JSX {
+            interface IntrinsicElements {
+              [name: string]: any
+            }
+          }
+          export const Fragment: unknown
+          export function jsx(type: unknown, props: unknown, key?: unknown): unknown
+          export function jsxs(type: unknown, props: unknown, key?: unknown): unknown
+        `,
+      )
+      writeFileSync(
+        join(directory, 'node_modules/next/navigation.d.ts'),
+        `
+          export function useRouter(): { push(path: string): void }
+        `,
+      )
+      writeFileSync(
+        join(directory, 'src/lib/cn.ts'),
+        `
+          export function cn(...classes: unknown[]) {
+            return classes.filter(Boolean).join(' ')
+          }
+        `,
+      )
+      const program = ts.createProgram({
+        options: {
+          esModuleInterop: true,
+          jsx: ts.JsxEmit.ReactJSX,
+          module: ts.ModuleKind.ESNext,
+          moduleResolution: ts.ModuleResolutionKind.Node10,
+          noEmit: true,
+          skipLibCheck: true,
+          strict: true,
+          target: ts.ScriptTarget.ES2022,
+        },
+        rootNames: [join(directory, 'src/components/AboutHero.tsx')],
+      })
+      const diagnostics = ts
+        .getPreEmitDiagnostics(program)
+        .filter((diagnostic) =>
+          ts
+            .flattenDiagnosticMessageText(diagnostic.messageText, '\n')
+            .includes('ReactNode'),
+        )
+      const messages = diagnostics.map((diagnostic) =>
+        ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
+      )
+
+      expect(messages).toEqual([])
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
   })
 })

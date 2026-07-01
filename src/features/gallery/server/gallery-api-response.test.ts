@@ -159,6 +159,9 @@ describe('Gallery API Response', () => {
       const data = await response.json()
 
       expect(response.status).toBe(200)
+      expect(data.items).toEqual([])
+      expect(data.total).toBe(0)
+      expect(data.totalPages).toBe(1)
       expect(JSON.stringify(data).toLowerCase()).not.toContain('openui-error')
       expect(JSON.stringify(data).toLowerCase()).not.toContain(
         'failed to render',

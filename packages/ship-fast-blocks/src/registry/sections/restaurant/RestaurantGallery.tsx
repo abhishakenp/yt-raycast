@@ -21,9 +21,9 @@ export const RestaurantGallery = defineCapsule({
     heading: z.string().optional(),
     /** Supporting line under the heading (maps to GalleryGrid subheading). */
     description: z.string().optional(),
-    /** Gallery tiles — each has alt text driving the photo and a short caption. */
+    /** Gallery tiles — each has alt text driving the photo and an optional caption. */
     images: z
-      .array(z.object({ alt: z.string(), caption: z.string() }))
+      .array(z.object({ alt: z.string(), caption: z.string().optional() }))
       .optional(),
     className: z.string().optional(),
   }),

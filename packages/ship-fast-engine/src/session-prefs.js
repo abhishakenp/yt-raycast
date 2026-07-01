@@ -13,7 +13,8 @@ function normalizePreferredLanguage(value) {
   const requested = String(value || '')
     .trim()
     .toLowerCase()
-  if (!requested || requested === 'en') return DEFAULT_PREFERRED_LANGUAGE
+  if (!requested || requested === 'en' || requested === 'english')
+    return DEFAULT_PREFERRED_LANGUAGE
   if (requested === 'hinglish') return 'hinglish'
   // Preserve browser-native language tags: bare codes (hi), script subtags
   // (hi-latn), region subtags (es-mx), and code-mixed variants (ta-en).

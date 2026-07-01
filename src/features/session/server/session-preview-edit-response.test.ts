@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   createInlineStyleEditResponse,
@@ -14,6 +14,18 @@ const jsonRequest = (body: unknown, headers?: HeadersInit) =>
     headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify(body),
   })
+
+const rawPostRequest = (body: string) =>
+  new Request('http://localhost/api', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+  })
+
+const realConvexRendererErrorPreviewHtml = {
+  sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',
+  html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
+} as const
 
 describe('session preview edit responses', () => {
   it('lists preview history from Convex', async () => {
@@ -108,6 +120,28 @@ describe('session preview edit responses', () => {
     ])
   })
 
+  it('does not save OpenUI renderer-error HTML as a durable preview edit', async () => {
+    const mutation = vi.fn(async () => ({ saved: true, previewVersion: 2 }))
+
+    const response = await createPreviewHtmlSaveResponse(
+      realConvexRendererErrorPreviewHtml.sessionId,
+      jsonRequest({
+        html: realConvexRendererErrorPreviewHtml.html,
+        instruction: 'manual save',
+      }),
+      {
+        query: async () => null,
+        mutation,
+      },
+    )
+    const body = await response.json()
+
+    expect(response.status).toBeGreaterThanOrEqual(400)
+    expect(JSON.stringify(body).toLowerCase()).not.toContain('openui-error')
+    expect(JSON.stringify(body).toLowerCase()).not.toContain('failed to render')
+    expect(mutation).not.toHaveBeenCalled()
+  })
+
   it('maps inline text edit payloads to the Convex edit mutation', async () => {
     const calls: unknown[] = []
     const response = await createInlineTextEditResponse(
@@ -157,6 +191,25 @@ describe('session preview edit responses', () => {
     expect(await response.json()).toMatchObject({
       error: expect.stringContaining('Selected text was not found'),
     })
+  })
+
+  it('returns a 400 JSON error for malformed inline edit request JSON', async () => {
+    const mutation = vi.fn()
+
+    const response = await createInlineTextEditResponse(
+      'session_123',
+      rawPostRequest('{not-json'),
+      {
+        query: async () => null,
+        mutation,
+      },
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Request body must be valid JSON.',
+    })
+    expect(mutation).not.toHaveBeenCalled()
   })
 
   it('maps inline style payloads to an HTML replacement edit', async () => {

@@ -16,6 +16,13 @@ describe('generation prefetch reuse', () => {
     ).toBe(true)
   })
 
+  it('reuses complete prompts written in non-Latin scripts', () => {
+    const prompt = 'मुंबई के लिए मराठी शादी प्लानर वेबसाइट'
+
+    expect(normalizedPromptForReuse(prompt)).toBe(prompt)
+    expect(canReusePrefetchedPrompt(prompt, `${prompt}!!`)).toBe(true)
+  })
+
   it('does not reuse when the prefetched prompt ends on an open phrase', () => {
     expect(canReusePrefetchedPrompt('a blog about', 'a blog about dogs')).toBe(
       false,

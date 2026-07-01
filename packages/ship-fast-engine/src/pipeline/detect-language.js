@@ -73,6 +73,7 @@ export function resolveLanguageModeFromPreference(preferredLanguage) {
   const requested = String(preferredLanguage || '')
     .trim()
     .toLowerCase()
+  if (requested === 'english') return ENGLISH_MODE
   if (requested && requested !== 'en') {
     if (isRomanizedIndicCode(requested)) {
       const romanized = lookupKnownLanguage(requested)

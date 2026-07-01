@@ -22,6 +22,32 @@ const readyArtifactResult = (target = 'html') => ({
   latestPreviewVersion: 1,
 })
 
+const realConvexFailedExportArtifact = {
+  artifactId: 'q57b2zz2n5w0rkq69hhzk65pc189neqx',
+  sessionId: 'k574gc39ktqpnpdbqzrdw2n7qs89nta1',
+  target: 'lakebed',
+  status: 'failed',
+  errorMessage: 'Export build stalled before completion. Click to retry.',
+  previewVersion: 1,
+} as const
+
+const realConvexReadyHtmlExportArtifact = {
+  artifactId: 'q570z3gzc72x7r5marnffgp8ks89np8g',
+  sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+  target: 'html',
+  status: 'ready',
+  filename: 'index.html',
+  contentType: 'text/html; charset=utf-8',
+  previewVersion: 1,
+  storageUrl: 'https://storage.test/kg2egxhnf5xnff8689bb3p4ve989mpce',
+} as const
+
+const realConvexRendererErrorPreview = {
+  sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',
+  target: 'react',
+  html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
+} as const
+
 describe('createExportResponse', () => {
   beforeEach(() => {
     queryMock.mockReset()
@@ -100,6 +126,37 @@ describe('createExportResponse', () => {
     })
   })
 
+  it('returns the real failed artifact error instead of treating a failed export as still preparing', async () => {
+    queryMock
+      .mockResolvedValueOnce({
+        export: {
+          status: 'ready',
+          requiresPayment: false,
+          previewVersion: realConvexFailedExportArtifact.previewVersion,
+        },
+        artifact: {
+          status: realConvexFailedExportArtifact.status,
+          errorMessage: realConvexFailedExportArtifact.errorMessage,
+          previewVersion: realConvexFailedExportArtifact.previewVersion,
+        },
+        storageUrl: null,
+        latestPreviewVersion: realConvexFailedExportArtifact.previewVersion,
+      })
+      .mockResolvedValueOnce(null)
+
+    const response = await createExportResponse(
+      realConvexFailedExportArtifact.sessionId,
+      realConvexFailedExportArtifact.target,
+      fakeClient,
+    )
+
+    expect(response.status).toBe(409)
+    expect(await response.text()).toContain(
+      realConvexFailedExportArtifact.errorMessage,
+    )
+    expect(queryMock).toHaveBeenCalledTimes(1)
+  })
+
   it('builds the download on demand when the stored artifact is not ready', async () => {
     queryMock
       .mockResolvedValueOnce({
@@ -139,6 +196,41 @@ describe('createExportResponse', () => {
     expect(queryMock).toHaveBeenCalledTimes(2)
   })
 
+  it('does not build an on-demand download from OpenUI renderer-error HTML', async () => {
+    queryMock
+      .mockResolvedValueOnce({
+        export: {
+          status: 'ready',
+          requiresPayment: false,
+          previewVersion: 1,
+        },
+        artifact: {
+          status: 'building',
+          previewVersion: 1,
+        },
+        storageUrl: null,
+        latestPreviewVersion: 1,
+      })
+      .mockResolvedValueOnce({
+        sessionId: realConvexRendererErrorPreview.sessionId,
+        target: realConvexRendererErrorPreview.target,
+        source: realConvexRendererErrorPreview.html,
+        html: realConvexRendererErrorPreview.html,
+      })
+
+    const response = await createExportResponse(
+      realConvexRendererErrorPreview.sessionId,
+      realConvexRendererErrorPreview.target,
+      fakeClient,
+    )
+    const body = await response.text()
+
+    expect(response.status).toBeGreaterThanOrEqual(400)
+    expect(response.headers.get('content-disposition')).toBeNull()
+    expect(body.toLowerCase()).not.toContain('openui-error')
+    expect(body.toLowerCase()).not.toContain('failed to render')
+  })
+
   it('streams Lakebed artifacts through the same prebuilt artifact path', async () => {
     queryMock.mockResolvedValueOnce(readyArtifactResult('lakebed'))
     vi.stubGlobal(
@@ -158,6 +250,42 @@ describe('createExportResponse', () => {
       'attachment; filename="paid-export-lakebed.zip"',
     )
     expect(fetch).toHaveBeenCalledWith('https://storage.test/lakebed.zip')
+  })
+
+  it('returns a real export failure when the ready artifact storage object is unavailable and cannot be rebuilt', async () => {
+    queryMock
+      .mockResolvedValueOnce({
+        export: {
+          status: 'ready',
+          requiresPayment: false,
+          previewVersion: realConvexReadyHtmlExportArtifact.previewVersion,
+        },
+        artifact: {
+          status: realConvexReadyHtmlExportArtifact.status,
+          filename: realConvexReadyHtmlExportArtifact.filename,
+          contentType: realConvexReadyHtmlExportArtifact.contentType,
+          previewVersion: realConvexReadyHtmlExportArtifact.previewVersion,
+        },
+        storageUrl: realConvexReadyHtmlExportArtifact.storageUrl,
+        latestPreviewVersion: realConvexReadyHtmlExportArtifact.previewVersion,
+      })
+      .mockResolvedValueOnce(null)
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('missing artifact', { status: 404 })),
+    )
+
+    const response = await createExportResponse(
+      realConvexReadyHtmlExportArtifact.sessionId,
+      realConvexReadyHtmlExportArtifact.target,
+      fakeClient,
+    )
+
+    expect(fetch).toHaveBeenCalledWith(
+      realConvexReadyHtmlExportArtifact.storageUrl,
+    )
+    expect(response.status).toBeGreaterThanOrEqual(500)
+    expect(await response.text()).toContain('artifact')
   })
 
   it('forwards bearer auth and owner secret to the owned download query', async () => {

@@ -4,6 +4,21 @@ import { z } from 'zod/v4'
 import { TestimonialGrid } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
+ * Coerce a generated review rating (which may arrive as a string, number, or
+ * malformed fragment) into a usable numeric star rating. Returns `null` when
+ * the value cannot be parsed so the caller can skip rendering a StarRating
+ * rather than leaking raw fragments into aria labels.
+ */
+const coerceRating = (rating: unknown): number | null => {
+  if (typeof rating === 'number' && Number.isFinite(rating)) return rating
+  if (typeof rating === 'string') {
+    const parsed = Number(rating)
+    if (Number.isFinite(parsed) && parsed > 0) return parsed
+  }
+  return null
+}
+
+/**
  * RestaurantTestimonials — 3-up guest-review wall for a restaurant page. Thin
  * configuration over the shared `TestimonialGrid` composite: a centered serif
  * heading above a responsive card grid where each card renders a star row from
@@ -21,14 +36,15 @@ export const RestaurantTestimonials = defineCapsule({
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
-    /** Guest reviews: quote, name, rating, source. */
+    /** Guest reviews: quote, name, rating, source/role. */
     reviews: z
       .array(
         z.object({
           quote: z.string(),
           name: z.string(),
-          rating: z.number(),
-          source: z.string(),
+          rating: z.union([z.number(), z.string()]),
+          source: z.string().optional(),
+          role: z.string().optional(),
         }),
       )
       .optional(),
@@ -65,7 +81,8 @@ export const RestaurantTestimonials = defineCapsule({
     const items = reviews.map((r) => ({
       quote: r.quote,
       name: r.name,
-      rating: r.rating,
+      rating: coerceRating(r.rating) ?? undefined,
+      role: r.role,
       company: r.source,
     }))
 

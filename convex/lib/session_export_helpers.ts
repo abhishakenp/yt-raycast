@@ -12,6 +12,7 @@ import {
   applyImageSwap,
   applyStyleEdit,
 } from './session_edit_helpers'
+import { isOpenUiErrorHtml } from './openui_error_html'
 
 export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 export type ExportArtifactStatus = 'queued' | 'building' | 'ready' | 'failed'
@@ -791,6 +792,13 @@ export const createSessionExport = async (
       })
     })()
 
+  if (preview.html.trim().length === 0 || isOpenUiErrorHtml(preview.html)) {
+    throw new ConvexError({
+      code: 'PREVIEW_NOT_READY',
+      message: 'Preview is not ready to export',
+    })
+  }
+
   const homeModule = await ctx.db
     .query('generatedModules')
     .withIndex('by_sessionId_moduleKey', (index) =>
@@ -981,6 +989,13 @@ export const ensureExportArtifactBuild = async (
       })
     })()
 
+  if (preview.html.trim().length === 0 || isOpenUiErrorHtml(preview.html)) {
+    throw new ConvexError({
+      code: 'PREVIEW_NOT_READY',
+      message: 'Preview is not ready to export',
+    })
+  }
+
   const homeModule = await ctx.db
     .query('generatedModules')
     .withIndex('by_sessionId_moduleKey', (index) =>
@@ -1071,6 +1086,13 @@ export const prepareExportArtifactBuild = async (
     siteSpec,
   )
   const source = applyEditsToSource(canonicalSource, edits)
+
+  if (isOpenUiErrorHtml(source) || isOpenUiErrorHtml(preview.html)) {
+    throw new ConvexError({
+      code: 'ARTIFACT_NOT_READY',
+      message: 'Generated source is not ready to export',
+    })
+  }
 
   source.trim().length > 0 ||
     (() => {
@@ -1309,6 +1331,12 @@ export const loadOwnedExportForGitHubPush = async (
     resolveExportOpenUISource(preview, homeModule, siteSpec),
     edits,
   )
+  if (isOpenUiErrorHtml(source) || isOpenUiErrorHtml(preview.html)) {
+    throw new ConvexError({
+      code: 'ARTIFACT_NOT_READY',
+      message: 'Generated source is not ready to export',
+    })
+  }
   const themeName = readAppliedThemeName(session)
   const isDark = readAppliedIsDark(session)
 

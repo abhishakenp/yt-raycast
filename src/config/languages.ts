@@ -430,10 +430,12 @@ export const preferMixedEnglishBcp47FromPrompt = (
   pureBcp47Code: string,
 ): string | null => {
   const pl = String(prompt || '').toLowerCase()
-  const words = MIXED_ENGLISH_SLANG_KEYWORDS[pureBcp47Code]
-  if (!words) return null
-  for (const w of words) {
-    if (pl.includes(w.toLowerCase())) return `${pureBcp47Code}-en`
+  const mixed = MIXED_ENGLISH_LANGUAGES.find(
+    (l) => l.code === `${pureBcp47Code}-en`,
+  )
+  if (!mixed) return null
+  for (const keyword of mixed.keywords) {
+    if (pl.includes(String(keyword).toLowerCase())) return mixed.code
   }
   return null
 }

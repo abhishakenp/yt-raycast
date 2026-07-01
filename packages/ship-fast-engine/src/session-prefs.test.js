@@ -60,6 +60,34 @@ describe('workspace preferred language', () => {
     ).toBe('es-mx')
   })
 
+  it('preserves browser-native language codes observed on live sessions', () => {
+    expect(
+      getWorkspacePreferredLanguage(
+        makeWorkspace(
+          JSON.stringify({
+            sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+            preferredLanguage: 'lt',
+          }),
+        ),
+      ),
+    ).toBe('lt')
+  })
+
+  it('normalizes a live DB "english" preference to the no-translation English code', () => {
+    expect(
+      getWorkspacePreferredLanguage(
+        makeWorkspace(
+          JSON.stringify({
+            sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+            preferredLanguage: 'english',
+            prompt:
+              'a boutique coffee roastery with subscription delivery and tasting events',
+          }),
+        ),
+      ),
+    ).toBe('en')
+  })
+
   it('falls back to English for malformed metadata or unsafe values', () => {
     expect(getWorkspacePreferredLanguage(makeWorkspace('{not-json'))).toBe('en')
     expect(

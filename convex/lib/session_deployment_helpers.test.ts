@@ -712,4 +712,68 @@ describe('session deployment helpers', () => {
       data: { code: 'SLUG_TAKEN' },
     })
   })
+
+  it('rejects publishing an empty latest preview as a ready public deployment', async () => {
+    const { ctx, inserted } = mutationCtxFor({
+      sessions: [sessionDoc({ userId: 'user_1' })],
+      previews: [previewDoc({ html: '', version: 11 })],
+    })
+
+    await expect(
+      publishSessionPreview(ctx, {
+        sessionId,
+        requestedSlug: 'empty-preview-site',
+      }),
+    ).rejects.toMatchObject({
+      data: { code: 'PREVIEW_NOT_READY' },
+    })
+
+    expect(
+      inserted.some(
+        (row) =>
+          row.table === 'deployments' &&
+          row.value.status === 'ready' &&
+          row.value.previewVersion === 11,
+      ),
+    ).toBe(false)
+  })
+
+  it('rejects publishing stored OpenUI renderer-error HTML as a ready public deployment', async () => {
+    const { ctx, inserted } = mutationCtxFor({
+      sessions: [
+        sessionDoc({
+          _id: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
+          userId: 'user_1',
+          prompt: realConvexRendererErrorPreview.title,
+          previewVersion: realConvexRendererErrorPreview.version,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          _id: realConvexRendererErrorPreview.previewId as Id<'previews'>,
+          sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
+          html: realConvexRendererErrorPreview.html,
+          version: realConvexRendererErrorPreview.version,
+        }),
+      ],
+    })
+
+    await expect(
+      publishSessionPreview(ctx, {
+        sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
+        requestedSlug: 'renderer-error-site',
+      }),
+    ).rejects.toMatchObject({
+      data: { code: 'PREVIEW_NOT_READY' },
+    })
+
+    expect(
+      inserted.some(
+        (row) =>
+          row.table === 'deployments' &&
+          row.value.status === 'ready' &&
+          row.value.previewVersion === realConvexRendererErrorPreview.version,
+      ),
+    ).toBe(false)
+  })
 })

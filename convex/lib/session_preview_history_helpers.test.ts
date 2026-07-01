@@ -19,6 +19,12 @@ type SessionRecord = Doc<'sessions'>
 type SiteSpecRecord = Doc<'siteSpecs'>
 
 const sessionId = 'session_preview_history' as Id<'sessions'>
+const realConvexRendererErrorHistoryPreview = {
+  previewId: 'ns70q8624bp2dk2qvehc0dc8jd89mdvb',
+  sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',
+  html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
+  version: 1,
+} as const
 
 const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
   ({
@@ -441,6 +447,42 @@ describe('session preview history helpers', () => {
         previewVersion: 5,
       }),
     ])
+  })
+
+  it('does not restore OpenUI renderer-error HTML from preview history into the active preview', async () => {
+    const brokenSessionId =
+      realConvexRendererErrorHistoryPreview.sessionId as Id<'sessions'>
+    const session = sessionDoc({
+      _id: brokenSessionId,
+      userId: 'user_history',
+      previewVersion: realConvexRendererErrorHistoryPreview.version,
+    })
+    const preview = previewDoc({
+      _id: realConvexRendererErrorHistoryPreview.previewId as Id<'previews'>,
+      sessionId: brokenSessionId,
+      version: realConvexRendererErrorHistoryPreview.version,
+      html: realConvexRendererErrorHistoryPreview.html,
+    })
+    const { ctx, previews, generatedModules, siteSpecs, generationEvents } =
+      ctxFor({
+        sessions: [session],
+        previews: [preview],
+        userId: 'user_history',
+      })
+
+    await expect(
+      restoreOwnedPreviewVersion(ctx, {
+        sessionId: brokenSessionId,
+        version: realConvexRendererErrorHistoryPreview.version,
+      }),
+    ).rejects.toMatchObject({
+      data: { code: 'PREVIEW_NOT_READY' },
+    })
+
+    expect(previews).toEqual([preview])
+    expect(generatedModules).toEqual([])
+    expect(siteSpecs).toEqual([])
+    expect(generationEvents).toEqual([])
   })
 
   it('rejects restore when the session is missing', async () => {

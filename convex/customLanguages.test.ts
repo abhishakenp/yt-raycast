@@ -61,6 +61,42 @@ describe('customLanguages', () => {
     ])
   })
 
+  it('hides stale duplicate custom rows when a native-script replacement exists', async () => {
+    const t = convexTest(schema, modules)
+
+    await t.mutation(api.customLanguages.add, {
+      code: 'chinese',
+      name: 'Chinese',
+      nativeName: 'Chinese',
+      fontFamily: 'Noto Sans CJK SC, sans-serif',
+      keywords: ['chinese'],
+    })
+    await t.mutation(api.customLanguages.add, {
+      code: 'zh',
+      name: 'Chinese',
+      nativeName: '中文',
+      fontFamily: 'Noto Sans SC, sans-serif',
+      keywords: ['chinese', 'mandarin'],
+    })
+
+    await expect(t.query(api.customLanguages.list, {})).resolves.toEqual([
+      expect.objectContaining({
+        code: 'zh',
+        name: 'Chinese',
+        nativeName: '中文',
+      }),
+    ])
+    await expect(
+      t.query(api.customLanguages.search, { query: 'chinese' }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        code: 'zh',
+        name: 'Chinese',
+        nativeName: '中文',
+      }),
+    ])
+  })
+
   it('resolveOrCreate uses the AI-provided BCP-47 code and normalized key variants', async () => {
     process.env.GROQ_API_KEY = 'test-key'
     process.env.GROQ_HOST = 'https://groq.test'
@@ -91,6 +127,44 @@ describe('customLanguages', () => {
       text: 'lt',
     })
     expect(stored).toMatchObject({ code: 'lt', name: 'Lithuanian' })
+  })
+
+  it('resolveOrCreate strips leaked reasoning before parsing observed native-script AI output', async () => {
+    process.env.GROQ_API_KEY = 'test-key'
+    process.env.GROQ_HOST = 'https://groq.test'
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              content:
+                '<thinking>mapping script and font</thinking>{"code":"am","english_name":"Amharic","native_name":"አማሪኛ","font_family":"Noto Sans Ethiopic, sans-serif"}',
+            },
+          },
+        ],
+      }),
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+    const t = convexTest(schema, modules)
+
+    const resolved = await t.action(api.customLanguages.resolveOrCreate, {
+      languageInput: 'Amharic',
+    })
+
+    expect(resolved).toMatchObject({
+      code: 'am',
+      name: 'Amharic',
+      nativeName: 'አማሪኛ',
+      fontFamily: 'Noto Sans Ethiopic, sans-serif',
+    })
+    await expect(
+      t.query(api.customLanguages.findExact, { text: 'አማሪኛ' }),
+    ).resolves.toMatchObject({
+      code: 'am',
+      name: 'Amharic',
+      nativeName: 'አማሪኛ',
+    })
   })
 
   it('resolveOrCreate falls back to a stable slug when AI omits a valid locale code', async () => {

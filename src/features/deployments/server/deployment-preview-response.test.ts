@@ -141,4 +141,86 @@ describe('createDeploymentPreviewResponse', () => {
     expect(body).not.toContain('useAuth')
     expect(response.headers.get('x-ship-fast-deployment')).toBeNull()
   })
+
+  it('does not serve a ready deployment when its public preview HTML is empty', async () => {
+    const client = {
+      query: async (_ref: any, args: any) => {
+        if ('slug' in args) return realReadyLakebedDeployment
+        return {
+          previewVersion: 1,
+          sessionId: realReadyLakebedDeployment.sessionId,
+          slug: realReadyLakebedDeployment.slug,
+          status: 'preview_ready',
+          html: '',
+        }
+      },
+    }
+
+    const response = await createDeploymentPreviewResponse(
+      'a-craft-beer-brewery',
+      new Request('https://ship-fast.io/preview/a-craft-beer-brewery'),
+      client,
+    )
+
+    expect(response.status).toBe(202)
+    expect(await response.text()).toBe('Deployment preview is not ready yet')
+    expect(response.headers.get('x-ship-fast-deployment')).toBeNull()
+  })
+
+  it('does not serve OpenUI renderer-error HTML for a ready deployment', async () => {
+    const client = {
+      query: async (_ref: any, args: any) => {
+        if ('slug' in args) return realReadyLakebedDeployment
+        return {
+          previewVersion: 1,
+          sessionId: realReadyLakebedDeployment.sessionId,
+          slug: realReadyLakebedDeployment.slug,
+          status: 'preview_ready',
+          html: '<!doctype html><html><body><div class="openui-error">Failed to render: te is not a function</div></body></html>',
+        }
+      },
+    }
+
+    const response = await createDeploymentPreviewResponse(
+      'a-craft-beer-brewery',
+      new Request('https://ship-fast.io/preview/a-craft-beer-brewery'),
+      client,
+    )
+    const body = await response.text()
+
+    expect(response.status).toBeGreaterThanOrEqual(400)
+    expect(body.toLowerCase()).not.toContain('openui-error')
+    expect(body.toLowerCase()).not.toContain('failed to render')
+    expect(response.headers.get('x-ship-fast-deployment')).toBeNull()
+  })
+
+  it('does not serve a preview version newer than the published deployment version', async () => {
+    const client = {
+      query: async (_ref: any, args: any) => {
+        if ('slug' in args) {
+          return {
+            ...realReadyLakebedDeployment,
+            previewVersion: 1,
+          }
+        }
+        return {
+          ...realReadyLakebedPreview,
+          previewVersion: 2,
+          html: '<!doctype html><html><head><title>Unpublished</title></head><body><h1>Unpublished edit</h1></body></html>',
+        }
+      },
+    }
+
+    const response = await createDeploymentPreviewResponse(
+      'a-craft-beer-brewery',
+      new Request('https://ship-fast.io/preview/a-craft-beer-brewery'),
+      client,
+    )
+    const body = await response.text()
+
+    expect(response.status).toBe(202)
+    expect(body).toBe('Deployment preview is not ready yet')
+    expect(body).not.toContain('Unpublished edit')
+    expect(response.headers.get('x-ship-fast-preview-version')).toBeNull()
+  })
 })

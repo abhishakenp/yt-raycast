@@ -95,11 +95,29 @@ export const createGalleryApiResponse = async (
       category,
     })
 
+    const rawItems = data?.items ?? []
+    const filteredItems = rawItems.filter(
+      (item) => !isOpenUiErrorHtml(item?.html),
+    )
+    // When renderer-error previews are suppressed, recompute the pagination
+    // totals so the public payload reflects only the visible items.
+    const suppressedCount = rawItems.length - filteredItems.length
+    const total =
+      suppressedCount > 0 ? filteredItems.length : (data?.total ?? 0)
+    const totalPages =
+      suppressedCount > 0
+        ? Math.max(1, Math.ceil(total / limit))
+        : (data?.totalPages ?? 1)
+    const hasNext =
+      suppressedCount > 0 ? page < totalPages : (data?.hasNext ?? false)
+    const hasPrev = suppressedCount > 0 ? page > 1 : (data?.hasPrev ?? false)
     const sanitized = {
       ...data,
-      items: (data?.items ?? []).filter(
-        (item) => !isOpenUiErrorHtml(item?.html),
-      ),
+      items: filteredItems,
+      total,
+      totalPages,
+      hasNext,
+      hasPrev,
     }
 
     return new Response(JSON.stringify(sanitized), {

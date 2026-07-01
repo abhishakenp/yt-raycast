@@ -1,6 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import { isOpenUiErrorHtml } from '../../../../convex/lib/openui_error_html'
 import { buildHtmlExport } from '@/features/exports/services/html-export-builder'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
@@ -54,7 +55,28 @@ export const createDeploymentPreviewResponse = async (
     })
   }
 
-  if (preview === null || preview.html === undefined) {
+  if (
+    preview === null ||
+    preview.html === undefined ||
+    preview.html.trim() === '' ||
+    isOpenUiErrorHtml(preview.html)
+  ) {
+    return new Response(
+      isOpenUiErrorHtml(preview?.html)
+        ? 'Deployment preview is not available'
+        : 'Deployment preview is not ready yet',
+      {
+        status: isOpenUiErrorHtml(preview?.html) ? 422 : 202,
+        headers: { 'content-type': 'text/plain' },
+      },
+    )
+  }
+
+  if (
+    typeof deployment.previewVersion === 'number' &&
+    typeof preview.previewVersion === 'number' &&
+    preview.previewVersion > deployment.previewVersion
+  ) {
     return new Response('Deployment preview is not ready yet', {
       status: 202,
       headers: { 'content-type': 'text/plain' },

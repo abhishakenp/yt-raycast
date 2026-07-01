@@ -332,6 +332,30 @@ describe('Gallery Thumbnail Response', () => {
       expect(await response.text()).toContain('Fallback prompt')
     })
 
+    it('does not generate a public thumbnail for a session whose preview was suppressed as renderer-error HTML', async () => {
+      const mockClient = {
+        query: async () => ({
+          prompt:
+            'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a polished interactive product experience. It should be dark mode. Focus on making it beautiful.',
+          status: 'preview_ready',
+          categories: ['saas', 'commerce', 'portfolio', 'app'],
+          html: null,
+          previewVersion: 1,
+        }),
+      }
+
+      const response = await createGalleryThumbnailResponse(
+        'k57fkjjt99avgnxyzq7w3xy46589nmy3',
+        new Request(
+          'http://localhost/api/sessions/k57fkjjt99avgnxyzq7w3xy46589nmy3/gallery-thumb?fallback=1',
+        ),
+        mockClient,
+      )
+
+      expect(response.status).toBe(404)
+      expect(await response.text()).toBe('Session not found or not public')
+    })
+
     it('should return 500 on error', async () => {
       const mockClient = {
         query: async () => {

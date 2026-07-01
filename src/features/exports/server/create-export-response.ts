@@ -1,6 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import { isOpenUiErrorHtml } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import type {
   ExportTarget,
@@ -25,8 +26,8 @@ type ArtifactDownloadPayload = {
     status: string
     filename?: string
     contentType?: string
-    previewVersion?: number
     errorMessage?: string
+    previewVersion?: number
   } | null
   storageUrl?: string | null
   latestPreviewVersion?: number
@@ -104,10 +105,10 @@ const isArtifactDownloadPayload = (
           typeof artifact.filename === 'string') &&
         (artifact.contentType === undefined ||
           typeof artifact.contentType === 'string') &&
-        (artifact.previewVersion === undefined ||
-          typeof artifact.previewVersion === 'number') &&
         (artifact.errorMessage === undefined ||
-          typeof artifact.errorMessage === 'string'))) &&
+          typeof artifact.errorMessage === 'string') &&
+        (artifact.previewVersion === undefined ||
+          typeof artifact.previewVersion === 'number'))) &&
     (value.storageUrl === undefined ||
       value.storageUrl === null ||
       typeof value.storageUrl === 'string') &&
@@ -200,6 +201,19 @@ const buildExportOnDemand = async (
   )
 
   if (!isExportBuildInputPayload(buildInputResult)) return null
+
+  if (
+    isOpenUiErrorHtml(buildInputResult.html) ||
+    isOpenUiErrorHtml(buildInputResult.source)
+  ) {
+    return new Response(
+      'Export preview is not available. Regenerate the preview before exporting.',
+      {
+        status: 422,
+        headers: { 'content-type': 'text/plain' },
+      },
+    )
+  }
 
   const input: OpenUIExportInput = {
     source: buildInputResult.source,
@@ -296,7 +310,7 @@ export const createExportResponse = async (
 
     if (download.artifact?.status === 'failed') {
       return new Response(
-        download.artifact.errorMessage ?? 'Export artifact failed to build.',
+        download.artifact.errorMessage ?? 'Export artifact failed.',
         {
           status: 409,
           headers: { 'content-type': 'text/plain' },
@@ -322,12 +336,13 @@ export const createExportResponse = async (
         normalizedTarget,
         getOwnerSecret(request),
       )
-      return (
-        fallback ??
-        new Response('Export artifact is unavailable and could not be rebuilt.', {
+      if (fallback) return fallback
+      return new Response(
+        'Export artifact is unavailable and could not be rebuilt.',
+        {
           status: 502,
           headers: { 'content-type': 'text/plain' },
-        })
+        },
       )
     }
 

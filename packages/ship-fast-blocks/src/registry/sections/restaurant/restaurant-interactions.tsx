@@ -84,7 +84,7 @@ export function useRestaurantOrder(lakebed: RestaurantLakebed) {
   )
   const quantityFor = useCallback(
     (name: string) =>
-      order?.items.find((item) => item.name === name)?.quantity ?? 0,
+      order?.items?.find((item) => item.name === name)?.quantity ?? 0,
     [order],
   )
 
