@@ -23,14 +23,13 @@ export function PricingGrid(props: {
   className?: string
 }) {
   const go = useNavigate()
-  const tiers = Array.isArray(props.tiers) ? props.tiers : []
   return (
     <section className={cn('flex flex-col gap-10', props.className)}>
       {props.heading ? (
         <SectionHeading title={props.heading} subtitle={props.subheading} />
       ) : null}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {tiers.filter(Boolean).map((t, i) => (
+        {props.tiers.map((t, i) => (
           <div
             key={i}
             className={cn(
@@ -60,7 +59,7 @@ export function PricingGrid(props: {
                 ) : null}
               </div>
             </div>
-            {Array.isArray(t.features) && t.features.length ? (
+            {t.features?.length ? (
               <ul className="flex flex-col gap-3">
                 {t.features.map((feat, fi) => (
                   <li

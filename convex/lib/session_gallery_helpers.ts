@@ -1,6 +1,5 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
-import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import {
   getGalleryCategories,
   getGalleryCategoryOptions,
@@ -83,11 +82,7 @@ export const serializePublicGallerySession = (
     previewVersion: artifacts.preview?.version ?? session.previewVersion ?? 0,
     createdAt: session.createdAt,
     updatedAt: session.updatedAt ?? session.createdAt,
-    html:
-      artifacts.preview !== null &&
-      isUnsafePublicPreviewHtml(artifacts.preview.html)
-        ? null
-        : (artifacts.preview?.html ?? null),
+    html: artifacts.preview?.html ?? null,
     moduleSource: artifacts.homeModule?.source ?? null,
     siteSpecJson,
     categories: getGalleryCategories(session.prompt),
@@ -126,28 +121,17 @@ export const listPublicGallerySessions = async (
     matchesGalleryFilters(session, undefined, args.category),
   )
 
-  const filteredWithArtifacts = await Promise.all(
-    filteredSessions.map(async (session) => ({
-      session,
-      artifacts: await loadPublicGalleryArtifacts(ctx, session._id),
-    })),
-  )
-  const validSessions = filteredWithArtifacts.filter(
-    ({ artifacts }) =>
-      !(
-        artifacts.preview !== null &&
-        isUnsafePublicPreviewHtml(artifacts.preview.html)
-      ),
-  )
-
-  const total = validSessions.length
+  const total = filteredSessions.length
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const page = Math.min(requestedPage, totalPages)
-  const pageSessions = validSessions.slice((page - 1) * limit, page * limit)
-  const items = pageSessions.map(({ session, artifacts }) =>
-    serializePublicGallerySession(session, artifacts, {
-      legacySiteSpecFallback: true,
-      previewReadyFromStoredPreview: true,
+  const sessions = filteredSessions.slice((page - 1) * limit, page * limit)
+  const items = await Promise.all(
+    sessions.map(async (session) => {
+      const artifacts = await loadPublicGalleryArtifacts(ctx, session._id)
+      return serializePublicGallerySession(session, artifacts, {
+        legacySiteSpecFallback: true,
+        previewReadyFromStoredPreview: true,
+      })
     }),
   )
 
@@ -180,12 +164,6 @@ export const loadPublicGallerySession = async (
   }
 
   const artifacts = await loadPublicGalleryArtifacts(ctx, session._id)
-  if (
-    artifacts.preview !== null &&
-    isUnsafePublicPreviewHtml(artifacts.preview.html)
-  ) {
-    return null
-  }
   return serializePublicGallerySession(session, artifacts)
 }
 
@@ -250,29 +228,17 @@ export const listOwnedGallerySessions = async (
 
   const limit = Math.min(Math.max(args.limit ?? 12, 1), 48)
   const requestedPage = Math.max(args.page ?? 1, 1)
-
-  const filteredWithArtifacts = await Promise.all(
-    filteredSessions.map(async (session) => ({
-      session,
-      artifacts: await loadPublicGalleryArtifacts(ctx, session._id),
-    })),
-  )
-  const validSessions = filteredWithArtifacts.filter(
-    ({ artifacts }) =>
-      !(
-        artifacts.preview !== null &&
-        isUnsafePublicPreviewHtml(artifacts.preview.html)
-      ),
-  )
-
-  const total = validSessions.length
+  const total = filteredSessions.length
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const page = Math.min(requestedPage, totalPages)
-  const pageSessions = validSessions.slice((page - 1) * limit, page * limit)
-  const items = pageSessions.map(({ session, artifacts }) =>
-    serializePublicGallerySession(session, artifacts, {
-      legacySiteSpecFallback: true,
-      previewReadyFromStoredPreview: true,
+  const sessions = filteredSessions.slice((page - 1) * limit, page * limit)
+  const items = await Promise.all(
+    sessions.map(async (session) => {
+      const artifacts = await loadPublicGalleryArtifacts(ctx, session._id)
+      return serializePublicGallerySession(session, artifacts, {
+        legacySiteSpecFallback: true,
+        previewReadyFromStoredPreview: true,
+      })
     }),
   )
 

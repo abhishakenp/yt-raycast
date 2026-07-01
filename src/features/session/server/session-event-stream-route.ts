@@ -121,24 +121,6 @@ export const createSessionEventStreamResponse = async (
       )
     }
 
-    if (
-      !data.session ||
-      typeof data.session.sessionId !== 'string' ||
-      !Array.isArray(data.events)
-    ) {
-      return createSseResponse(
-        [
-          sseLine('event', 'error'),
-          sseLine(
-            'data',
-            JSON.stringify({ error: 'Unable to load session events.' }),
-          ),
-          '\n',
-        ].join(''),
-        { status: 502 },
-      )
-    }
-
     const events = data.events
     const replay = events.map(serializeSseEvent).join('')
     const cursor = data.cursor ?? parseSince(request) ?? Date.now()
@@ -159,11 +141,6 @@ export const createSessionEventStreamResponse = async (
 
     return createSseResponse(`${heartbeatKeepAlive}${replay}${replayComplete}`)
   } catch (error) {
-    const isForbidden =
-      error instanceof Error &&
-      typeof (error as { data?: { code?: string } }).data?.code === 'string' &&
-      (error as unknown as { data: { code: string } }).data.code === 'FORBIDDEN'
-
     return createSseResponse(
       [
         sseLine('event', 'error'),
@@ -178,7 +155,7 @@ export const createSessionEventStreamResponse = async (
         ),
         '\n',
       ].join(''),
-      { status: isForbidden ? 403 : 500 },
+      { status: 500 },
     )
   }
 }

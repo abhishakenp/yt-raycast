@@ -17,7 +17,6 @@ export function FeatureGrid(props: {
   className?: string
 }) {
   const columns = props.columns ?? 3
-  const features = Array.isArray(props.features) ? props.features : []
   const colClass =
     columns === 2
       ? 'md:grid-cols-2'
@@ -31,7 +30,7 @@ export function FeatureGrid(props: {
         <SectionHeading title={props.heading} subtitle={props.subheading} />
       ) : null}
       <div className={cn('grid gap-6', 'grid-cols-1', colClass)}>
-        {features.filter(Boolean).map((f, i) => (
+        {props.features.map((f, i) => (
           <div
             key={i}
             className="flex flex-col gap-3 rounded-xl border border-border bg-card p-6"

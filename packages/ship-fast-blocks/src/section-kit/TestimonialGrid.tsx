@@ -23,7 +23,6 @@ export function TestimonialGrid(props: {
   className?: string
 }) {
   const columns = props.columns ?? 3
-  const items = Array.isArray(props.items) ? props.items : []
   const colClass =
     columns === 2 ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'
 
@@ -33,7 +32,7 @@ export function TestimonialGrid(props: {
         <SectionHeading title={props.heading} subtitle={props.subheading} />
       ) : null}
       <div className={cn('grid gap-6', 'grid-cols-1', colClass)}>
-        {items.filter(Boolean).map((i, idx) => {
+        {props.items.map((i, idx) => {
           const meta = [i.role, i.company].filter(Boolean).join(' · ')
           return (
             <figure

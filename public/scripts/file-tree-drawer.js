@@ -1,6 +1,6 @@
 var u = class {
   constructor(e = {}) {
-    ;((this.pages = this.normalizePages(e.pages || [])),
+    ;((this.pages = e.pages || []),
       (this.currentRoute = e.currentRoute || '/'),
       (this.onNavigate = e.onNavigate || (() => {})),
       (this.isOpen = e.isOpen || !1),
@@ -35,7 +35,7 @@ var u = class {
         <rect x="7" y="7" width="10" height="10" rx="2"/>
       </svg>
     `),
-      this.toggleButton.addEventListener('click', () => this.toggle()),
+      this.toggleButton.addEventListener('click', () => this.close()),
       document.body.appendChild(this.toggleButton))
   }
   createOverlay() {
@@ -77,36 +77,10 @@ var u = class {
       this.drawerElement.appendChild(r),
       document.body.appendChild(this.drawerElement))
   }
-  normalizePages(e) {
-    if (!e) return []
-    if (Array.isArray(e)) return e
-    if (typeof e.length === 'number') {
-      try {
-        return Array.from(e)
-      } catch {
-        return []
-      }
-    }
-    return []
-  }
-  escapeHtml(e) {
-    return String(e == null ? '' : e).replace(
-      /[&<>"']/g,
-      (t) =>
-        ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;',
-        })[t],
-    )
-  }
   buildTreeFromPages(e) {
     let t = [],
       r = new Map()
     for (let s of e) {
-      if (!s || typeof s.route !== 'string') continue
       let n = s.route.split('/').filter(Boolean)
       if (n.length === 0) {
         let o = { id: s.id, name: s.name, route: s.route, isFolder: !1 }
@@ -168,12 +142,12 @@ var u = class {
         <div
           class="tree-node flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer hover:bg-white/5 transition-colors duration-150 ${s ? 'bg-white/10 text-white' : 'text-gray-400'}"
           style="padding-left: ${n}"
-          data-route="${this.escapeHtml(e.route)}"
+          data-route="${e.route}"
           data-is-folder="${r}"
         >
           ${i}
           ${l}
-          <span class="text-sm truncate">${this.escapeHtml(e.name)}</span>
+          <span class="text-sm truncate">${e.name}</span>
         </div>
         ${o}
       </div>
@@ -224,7 +198,7 @@ var u = class {
     this.isOpen ? this.close() : this.open()
   }
   updatePages(e) {
-    this.pages = this.normalizePages(e)
+    this.pages = e
     let t = this.drawerElement.querySelector('.flex-1.overflow-y-auto')
     t && ((t.innerHTML = this.renderTree()), this.attachTreeClickHandlers(t))
   }

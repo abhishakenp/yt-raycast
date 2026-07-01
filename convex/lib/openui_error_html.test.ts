@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { isOpenUiErrorHtml } from './openui_error_html'
+import { isOpenUiErrorHtml, isOpenUiHandoffHtml } from './openui_error_html'
 
 describe('isOpenUiErrorHtml', () => {
   it('flags full OpenUI renderer-error documents', () => {
@@ -12,6 +12,14 @@ describe('isOpenUiErrorHtml', () => {
     expect(
       isOpenUiErrorHtml(
         '<html><body><main>Failed to render: missing component</main></body></html>',
+      ),
+    ).toBe(true)
+  })
+
+  it('flags DB-observed OpenUI handoff documents that are not rendered previews', () => {
+    expect(
+      isOpenUiHandoffHtml(
+        '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
       ),
     ).toBe(true)
   })

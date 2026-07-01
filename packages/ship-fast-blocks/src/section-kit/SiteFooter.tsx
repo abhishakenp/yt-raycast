@@ -22,9 +22,6 @@ export function SiteFooter(props: {
 }) {
   const go = useNavigate()
   const year = new Date().getFullYear()
-  const social = Array.isArray(props.social) ? props.social : []
-  const columns = Array.isArray(props.columns) ? props.columns : []
-  const legal = Array.isArray(props.legal) ? props.legal : []
 
   return (
     <footer
@@ -49,9 +46,9 @@ export function SiteFooter(props: {
                 {props.tagline}
               </p>
             ) : null}
-            {social.length > 0 ? (
+            {props.social ? (
               <div className="mt-4 flex flex-wrap gap-3">
-                {social.filter(Boolean).map((s, i) => (
+                {props.social.map((s, i) => (
                   <a
                     key={`${s.label}-${i}`}
                     href={s.href ?? '#'}
@@ -64,24 +61,22 @@ export function SiteFooter(props: {
             ) : null}
           </div>
 
-          {columns.filter(Boolean).map((col, i) => (
+          {props.columns?.map((col, i) => (
             <div key={`${col.title}-${i}`}>
               <h3 className="text-sm font-semibold text-foreground">
                 {col.title}
               </h3>
               <ul className="mt-3 space-y-2">
-                {(Array.isArray(col.links) ? col.links : [])
-                  .filter(Boolean)
-                  .map((link, j) => (
-                    <li key={`${link}-${j}`}>
-                      <button
-                        onClick={() => go(link)}
-                        className="text-sm text-muted-foreground hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
+                {col.links.map((link, j) => (
+                  <li key={`${link}-${j}`}>
+                    <button
+                      onClick={() => go(link)}
+                      className="text-sm text-muted-foreground hover:text-foreground"
+                    >
+                      {link}
+                    </button>
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
@@ -92,9 +87,9 @@ export function SiteFooter(props: {
             © {year} {props.brand}
             {props.note ? ` · ${props.note}` : ''}
           </p>
-          {legal.length > 0 ? (
+          {props.legal ? (
             <div className="flex flex-wrap gap-4">
-              {legal.filter(Boolean).map((item, i) => (
+              {props.legal.map((item, i) => (
                 <button
                   key={`${item}-${i}`}
                   onClick={() => go(item)}

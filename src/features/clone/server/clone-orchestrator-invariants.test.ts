@@ -240,6 +240,79 @@ describe('clone orchestrator behavior', () => {
     )
     expect(cloneMocks.browser.close).toHaveBeenCalledTimes(1)
   })
+
+  it('writes a failed home doc and finalizes when the real storage-sized clone home upload returns malformed HTML', async () => {
+    const largeHomeBody = 'TVNL - Tenughat Vidyut Nigam Limited '.repeat(45_000)
+    cloneMocks.client.mutation.mockImplementation(async (_ref, args) => {
+      if (
+        args &&
+        typeof args === 'object' &&
+        !('pathname' in args) &&
+        !('editType' in args)
+      ) {
+        return 'https://convex-upload.test/tvnl-home'
+      }
+      return null
+    })
+    cloneMocks.capturePage.mockImplementation(
+      async (_browser: unknown, url: string) => {
+        if (url === 'https://example.com/') {
+          return {
+            ...capturedPage(url, 'TVNL - Tenughat Vidyut Nigam Limited'),
+            html: `<!doctype html><html><head><title>TVNL - Tenughat Vidyut Nigam Limited</title></head><body><main>${largeHomeBody}</main></body></html>`,
+          }
+        }
+        return capturedPage(url, 'About Title')
+      },
+    )
+    const fetchMock = vi.fn(
+      async () =>
+        new Response('<!doctype html><h1>upload gateway failure</h1>', {
+          headers: { 'content-type': 'text/html' },
+          status: 502,
+        }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(
+      runCloneJob({
+        sessionId: 'k572681p1rzad6rekf97pkqrhn89b6zt',
+        seedUrl: 'https://example.com/',
+        brief: '',
+      }),
+    ).resolves.toBeUndefined()
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://convex-upload.test/tvnl-home',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'text/html' },
+      }),
+    )
+    const args = mutationArgs()
+    const failedHomeIndex = args.findIndex(
+      (arg) => arg?.isHome === true && arg?.failed === true,
+    )
+    const finalizeIndex = args.findIndex(
+      (arg, index) =>
+        index > failedHomeIndex &&
+        arg?.sessionId === 'k572681p1rzad6rekf97pkqrhn89b6zt' &&
+        !('pathname' in arg) &&
+        !('editType' in arg),
+    )
+    expect(failedHomeIndex).toBeGreaterThanOrEqual(0)
+    expect(args[failedHomeIndex]).toMatchObject({
+      byteLength: 0,
+      failed: true,
+      html: '',
+      isHome: true,
+      order: 0,
+      pathname: '/',
+      sessionId: 'k572681p1rzad6rekf97pkqrhn89b6zt',
+    })
+    expect(finalizeIndex).toBeGreaterThan(failedHomeIndex)
+    expect(cloneMocks.browser.close).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('targeted edit pass behavior', () => {

@@ -225,27 +225,15 @@ export const createSessionMedusaProductsResponse = async (
     getMedusaBackendUrl(options.env, options.metaEnv),
   )
   const fetchImpl = options.fetch ?? fetch
-  let publishableKey: string
-  try {
-    publishableKey =
-      (await readTenantPublishableKey(sessionId, clientOverride)) ??
-      (await discoverTenantPublishableKey({
-        backendUrl,
-        fetchImpl,
-        options,
-        sessionId,
-      })) ??
-      getMedusaPublishableKey(options.env, options.metaEnv)
-  } catch {
-    return json(
-      {
-        products: [],
-        sessionId,
-        warning: 'Medusa Store API product read failed.',
-      },
-      { status: 200 },
-    )
-  }
+  const publishableKey =
+    (await readTenantPublishableKey(sessionId, clientOverride)) ??
+    (await discoverTenantPublishableKey({
+      backendUrl,
+      fetchImpl,
+      options,
+      sessionId,
+    })) ??
+    getMedusaPublishableKey(options.env, options.metaEnv)
   if (!publishableKey.trim()) {
     return json({
       products: [],
@@ -254,48 +242,37 @@ export const createSessionMedusaProductsResponse = async (
     })
   }
 
-  try {
-    const regionId = await readDefaultRegionId({
-      backendUrl,
-      fetchImpl,
-      publishableKey: publishableKey.trim(),
-    })
-    const regionQuery =
-      regionId === undefined ? '' : `&region_id=${encodeURIComponent(regionId)}`
-    const response = await fetchImpl(
-      `${backendUrl}/store/products?limit=100${regionQuery}&fields=${encodeURIComponent(
-        '+metadata,*variants.calculated_price',
-      )}`,
-      {
-        headers: { 'x-publishable-api-key': publishableKey.trim() },
-      },
-    )
+  const regionId = await readDefaultRegionId({
+    backendUrl,
+    fetchImpl,
+    publishableKey: publishableKey.trim(),
+  })
+  const regionQuery =
+    regionId === undefined ? '' : `&region_id=${encodeURIComponent(regionId)}`
+  const response = await fetchImpl(
+    `${backendUrl}/store/products?limit=100${regionQuery}&fields=${encodeURIComponent(
+      '+metadata,*variants.calculated_price',
+    )}`,
+    {
+      headers: { 'x-publishable-api-key': publishableKey.trim() },
+    },
+  )
 
-    if (!response.ok) {
-      return json(
-        {
-          products: [],
-          sessionId,
-          warning: `Medusa Store API product read failed (${response.status}).`,
-        },
-        { status: 200 },
-      )
-    }
-
-    const payload = (await response.json()) as { products?: unknown }
-    const products = (Array.isArray(payload.products) ? payload.products : [])
-      .map((product) => normalizeProduct(sessionId, product))
-      .filter((product) => product !== undefined)
-
-    return json({ products, sessionId })
-  } catch {
+  if (!response.ok) {
     return json(
       {
         products: [],
         sessionId,
-        warning: 'Medusa Store API product read failed.',
+        warning: `Medusa Store API product read failed (${response.status}).`,
       },
       { status: 200 },
     )
   }
+
+  const payload = (await response.json()) as { products?: unknown }
+  const products = (Array.isArray(payload.products) ? payload.products : [])
+    .map((product) => normalizeProduct(sessionId, product))
+    .filter((product) => product !== undefined)
+
+  return json({ products, sessionId })
 }

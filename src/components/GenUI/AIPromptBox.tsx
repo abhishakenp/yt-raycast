@@ -25,13 +25,11 @@ export function AIPromptBox({
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      // Don't close on Escape while a rewrite is loading — the request is
-      // in-flight and dismissing the box would orphan the pending result.
-      if (e.key === 'Escape' && !isLoading) onCancel()
+      if (e.key === 'Escape') onCancel()
     }
     document.addEventListener('keydown', handleEsc)
     return () => document.removeEventListener('keydown', handleEsc)
-  }, [onCancel, isLoading])
+  }, [onCancel])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,7 +1,6 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
-import { isOpenUiErrorHtml } from '../../../../convex/lib/openui_error_html'
 import { buildHtmlExport } from '@/features/exports/services/html-export-builder'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
@@ -43,19 +42,10 @@ export const createDeploymentPreviewResponse = async (
   }
 
   const client = clientOverride ?? createRuntimeConvexHttpClient()
-  let deployment: Awaited<ReturnType<typeof client.query>>
-  let preview: Awaited<ReturnType<typeof client.query>>
-  try {
-    ;[deployment, preview] = await Promise.all([
-      client.query(api.sessions.getDeploymentBySlug, { slug: normalizedSlug }),
-      client.query(api.sessions.getPublicPreview, { lookup: normalizedSlug }),
-    ])
-  } catch {
-    return new Response('Deployment preview is unavailable', {
-      status: 503,
-      headers: { 'content-type': 'text/plain' },
-    })
-  }
+  const [deployment, preview] = await Promise.all([
+    client.query(api.sessions.getDeploymentBySlug, { slug: normalizedSlug }),
+    client.query(api.sessions.getPublicPreview, { lookup: normalizedSlug }),
+  ])
 
   if (deployment === null || deployment.status !== 'ready') {
     return new Response('Deployment not found', {
@@ -64,28 +54,7 @@ export const createDeploymentPreviewResponse = async (
     })
   }
 
-  if (
-    preview === null ||
-    preview.html === undefined ||
-    preview.html.trim() === '' ||
-    isOpenUiErrorHtml(preview.html)
-  ) {
-    return new Response(
-      isOpenUiErrorHtml(preview?.html)
-        ? 'Deployment preview is not available'
-        : 'Deployment preview is not ready yet',
-      {
-        status: isOpenUiErrorHtml(preview?.html) ? 422 : 202,
-        headers: { 'content-type': 'text/plain' },
-      },
-    )
-  }
-
-  if (
-    typeof deployment.previewVersion === 'number' &&
-    typeof preview.previewVersion === 'number' &&
-    preview.previewVersion > deployment.previewVersion
-  ) {
+  if (preview === null || preview.html === undefined) {
     return new Response('Deployment preview is not ready yet', {
       status: 202,
       headers: { 'content-type': 'text/plain' },

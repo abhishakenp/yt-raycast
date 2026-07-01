@@ -128,12 +128,7 @@ const loadPrebuiltFiles = async (
   if (!url) return null
   const response = await fetch(url)
   if (!response.ok) return null
-  let parsed: unknown
-  try {
-    parsed = await readUnknownJson(response)
-  } catch {
-    return null
-  }
+  const parsed = await readUnknownJson(response)
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
     return null
   }
@@ -206,45 +201,28 @@ async function githubRequest<T>(
     expectedStatus?: number[]
   },
 ): Promise<T | null> {
-  let response: Response
-  try {
-    response = await fetchFn(`${getGithubApiBase(env)}${path}`, {
-      method,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-        'User-Agent': 'ship-fast',
-        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
-      },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    })
-  } catch {
-    const error = new Error('GitHub request failed.')
-    ;(error as Error & { status?: number }).status = 502
-    throw error
-  }
+  const response = await fetchFn(`${getGithubApiBase(env)}${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'ship-fast',
+      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
 
   const raw = await response.text()
-  let data: Record<string, unknown> | null = null
-  if (raw) {
-    try {
-      data = JSON.parse(raw) as Record<string, unknown>
-    } catch {
-      data = null
-    }
-  }
+  const data = raw ? JSON.parse(raw) : null
 
   if (!expectedStatus.includes(response.status)) {
-    const errors = Array.isArray(data?.errors)
-      ? (data?.errors as { message?: string }[])
-      : undefined
     const message =
-      errors
-        ?.map((entry) => entry.message)
+      data?.errors
+        ?.map((entry: { message?: string }) => entry.message)
         .filter(Boolean)
         .join(', ') ||
-      (typeof data?.message === 'string' ? data.message : undefined) ||
+      data?.message ||
       response.statusText ||
       'GitHub request failed.'
     const error = new Error(message)

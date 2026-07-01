@@ -98,11 +98,14 @@ export const createBrandProfileResponse = async (
         },
       },
     )
-  } catch {
+  } catch (error) {
     return json(
       {
         ok: false,
-        error: 'Brand profile lookup failed.',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Brand profile lookup failed.',
       },
       { status: 502 },
     )

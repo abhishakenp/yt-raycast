@@ -1,6 +1,6 @@
 'use client'
 
-import { type ReactElement, useEffect, useMemo, useState } from 'react'
+import { type ReactElement, useMemo, useState } from 'react'
 import { Languages, Check, Plus, Loader2 } from 'lucide-react'
 import { useAction, useQuery } from 'convex/react'
 
@@ -132,79 +132,19 @@ export default function LanguagePicker({
   const [customLanguage, setCustomLanguage] = useState('')
   const [isResolving, setIsResolving] = useState(false)
   const [resolveError, setResolveError] = useState<string | null>(null)
-  const [repairedCustomLanguages, setRepairedCustomLanguages] = useState<
-    LanguageEntry[]
-  >([])
-  const [supersededCustomCodes, setSupersededCustomCodes] = useState<
-    Set<string>
-  >(new Set())
 
   // Custom languages persisted by previous users (AI-generated). Merged with
   // the static KNOWN_LANGUAGES so everyone can search + select them.
   const customLanguages = useQuery(api.customLanguages.list, {})
   const resolveOrCreate = useAction(api.customLanguages.resolveOrCreate)
 
-  // Repair stale browser-native custom rows: a previous AI run may have stored
-  // a language with a non-locale code and a Latin native name (e.g. code
-  // "chinese", nativeName "Chinese") even though the browser can translate the
-  // proper locale (zh) natively. Resolve each custom row's name AND keywords
-  // against the browser-native index and merge the repaired entries in so
-  // search results show the real native script + locale code. Rows whose
-  // keywords resolve to a different browser-native locale (e.g. a Nahuatl row
-  // keyed on "mexican") are superseded and hidden in favor of the repaired
-  // browser-native entry.
-  useEffect(() => {
-    const custom = (customLanguages ?? []) as LanguageEntry[]
-    if (custom.length === 0) {
-      setRepairedCustomLanguages([])
-      setSupersededCustomCodes(new Set())
-      return
-    }
-    let cancelled = false
-    void (async () => {
-      const results = await Promise.all(
-        custom.map(async (entry) => {
-          const candidates = [entry.name, ...entry.keywords]
-          for (const candidate of candidates) {
-            const browserNative = await resolveBrowserNativeLanguage(candidate)
-            if (browserNative) {
-              return {
-                browserNative,
-                superseded:
-                  browserNative.code !== entry.code ? entry.code : null,
-              }
-            }
-          }
-          return null
-        }),
-      )
-      if (!cancelled) {
-        const repaired: LanguageEntry[] = []
-        const superseded = new Set<string>()
-        for (const result of results) {
-          if (result?.browserNative) {
-            repaired.push(result.browserNative)
-            if (result.superseded) superseded.add(result.superseded)
-          }
-        }
-        setRepairedCustomLanguages(repaired)
-        setSupersededCustomCodes(superseded)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [customLanguages])
-
   const allLanguages = useMemo<LanguageEntry[]>(
     () =>
-      mergeLanguageEntries(KNOWN_LANGUAGES, [
-        ...repairedCustomLanguages,
-        ...((customLanguages ?? []) as LanguageEntry[]).filter(
-          (entry) => !supersededCustomCodes.has(entry.code),
-        ),
-      ]),
-    [customLanguages, repairedCustomLanguages, supersededCustomCodes],
+      mergeLanguageEntries(
+        KNOWN_LANGUAGES,
+        (customLanguages ?? []) as LanguageEntry[],
+      ),
+    [customLanguages],
   )
 
   const submitCustom = async (e: React.FormEvent) => {
@@ -212,20 +152,16 @@ export default function LanguagePicker({
     const trimmed = customLanguage.trim()
     if (!trimmed || isResolving) return
 
-    // 1. Fast path: the typed text matches a curated known language — select
-    // it synchronously without any async round-trip.
-    const knownCode = findExistingLanguage(trimmed, KNOWN_LANGUAGES)
-    if (knownCode) {
-      onSelect(knownCode)
+    // 1. Check if the typed text already matches a known or custom language.
+    const existingCode = findExistingLanguage(trimmed, allLanguages)
+    if (existingCode) {
+      onSelect(existingCode)
       setCustomLanguage('')
       return
     }
 
     // 2. If the browser can translate this language locally, use that locale
-    // directly. The on-device translator is the first tier, so a browser-native
-    // locale (e.g. es-MX for "Mexican") is preferred over a stale custom row
-    // (e.g. a Nahuatl entry keyed on the "mexican" keyword) and skips Convex/AI
-    // entirely.
+    // directly and skip Convex/AI entirely.
     setIsResolving(true)
     setResolveError(null)
     try {
@@ -236,16 +172,8 @@ export default function LanguagePicker({
         return
       }
 
-      // 3. Fall back to a previously-persisted custom language row from the DB.
-      const existingCode = findExistingLanguage(trimmed, allLanguages)
-      if (existingCode) {
-        onSelect(existingCode)
-        setCustomLanguage('')
-        return
-      }
-
-      // 4. No match — ask the AI to generate metadata and persist it for
-      // future search.
+      // 3. No browser-native match — ask the AI to generate metadata and
+      // persist it for future search.
       const result = await resolveOrCreate({ languageInput: trimmed })
       if (result?.code) {
         onSelect(result.code)

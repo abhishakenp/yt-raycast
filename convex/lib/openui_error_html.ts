@@ -19,18 +19,6 @@ export const isOpenUiErrorHtml = (html: string | undefined | null): boolean => {
   )
 }
 
-/**
- * Detect DB-observed OpenUI handoff placeholder HTML — a full standalone
- * document stored when OpenUI rendering fails or returns an error shell. It
- * contains the `data-openui-ready="source"` marker, the
- * `ship-fast-openui-source` script tag, and/or the
- * "Generated OpenUI source is ready." placeholder text. This is NOT real
- * preview content and must never be exposed as public preview/gallery/
- * thumbnail/raw-preview content.
- *
- * Only full documents (`<!doctype html>` / `<html>`) are flagged so that bare
- * source fragments are left untouched.
- */
 export const isOpenUiHandoffHtml = (
   html: string | undefined | null,
 ): boolean => {
@@ -45,10 +33,6 @@ export const isOpenUiHandoffHtml = (
   )
 }
 
-/**
- * Detect any preview HTML that is unsafe to expose publicly — either a real
- * OpenUI renderer-error document or a DB-observed OpenUI handoff placeholder.
- */
 export const isUnsafePublicPreviewHtml = (
   html: string | undefined | null,
 ): boolean => isOpenUiErrorHtml(html) || isOpenUiHandoffHtml(html)

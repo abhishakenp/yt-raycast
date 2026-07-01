@@ -78,16 +78,11 @@ export const runEngineGeneration = async ({
   } catch (error) {
     const message = toErrorMessage(error)
 
-    await persistence
-      .failGeneration({
-        sessionId,
-        anonymousOwnerSecret,
-        message,
-      })
-      .catch(() => {
-        // Failure persistence is best-effort; the generation has already
-        // failed and we must still surface a failed result to the caller.
-      })
+    await persistence.failGeneration({
+      sessionId,
+      anonymousOwnerSecret,
+      message,
+    })
 
     return { status: 'failed', message }
   }

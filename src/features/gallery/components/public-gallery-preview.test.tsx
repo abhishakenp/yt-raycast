@@ -55,6 +55,80 @@ const sessionWith = (overrides: Partial<GalleryPayload['items'][number]>) => ({
   ...overrides,
 })
 
+const dbObservedOpenUiRows = [
+  {
+    sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+    prompt:
+      'a craft beer brewery with taproom tours and seasonal releases in portland',
+    status: 'preview_ready',
+    createdAt: 1782814087992,
+    updatedAt: 1782896344035,
+    elapsed: 6424,
+    cost: 0,
+    previewVersion: 1,
+    preferredLanguage: 'lt',
+    categories: [],
+    homepageReady: null,
+    siteSpecReady: null,
+    openuiReady: true,
+    readiness: {
+      homepageReady: null,
+      openuiReady: true,
+      previewReady: true,
+      siteSpecReady: null,
+    },
+    engineVersion: 'v1',
+    html: `<!DOCTYPE html>
+<html lang="en">
+<body>
+  <main id="openui-root" class="genui-preview dark" style="color-scheme: dark">
+    <section data-sf-export-page="Home">
+      <h1>Our Brew Selection</h1>
+      <p>Pineapple Saison</p>
+    </section>
+  </main>
+</body>
+</html>`,
+    moduleSource:
+      'home_navbar = RestaurantNavbar("Craft Beer Brewery", ["Home","Menu","Gallery","Story","Testimonials"])\nhome_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"}]}])\nroot = PageSwitch(["Home"], [home_menu], "", {"Home":"home"})',
+  },
+  {
+    sessionId: 'k572nbkrw902ef81nn4ha1yq7989njsg',
+    prompt: 'gov site in hindi',
+    status: 'preview_ready',
+    createdAt: 1782803975237,
+    updatedAt: 1782803984993,
+    elapsed: 8654,
+    cost: 0,
+    previewVersion: 1,
+    preferredLanguage: 'hi',
+    categories: [],
+    homepageReady: null,
+    siteSpecReady: null,
+    openuiReady: true,
+    readiness: {
+      homepageReady: null,
+      openuiReady: true,
+      previewReady: true,
+      siteSpecReady: null,
+    },
+    engineVersion: 'v3',
+    html: `<!doctype html>
+<html lang="hi">
+<body>
+  <main id="openui-root" style="color-scheme: light">
+    <section data-sf-export-page="Home">
+      <h1>हमारी प्रमुख सेवाएँ</h1>
+      <p>डिजिटल पहचान प्रमाणन</p>
+    </section>
+  </main>
+</body>
+</html>`,
+    moduleSource:
+      'home_navbar = GovernmentPortalNavbar("Gov Hindi", "भारत सरकार", "सभी नागरिकों की सेवा में", "भारत राजधानी, नई दिल्ली", ["Home","Contact","Events","About","Services"], "/")\nhome_services = GovernmentPortalServices("हमारी प्रमुख सेवाएँ", [{"title":"डिजिटल पहचान प्रमाणन","href":"/services/digital-id"}])\nroot = PageSwitch(["Home"], [home_services], "", {"Home":"Home"})',
+  },
+] as Array<GalleryPayload['items'][number] & { engineVersion: 'v1' | 'v3' }>
+
 describe('public gallery preview cards', () => {
   let originalFetch: typeof globalThis.fetch
 
@@ -172,5 +246,30 @@ describe('public gallery preview cards', () => {
     ).toHaveLength(0)
     // No gallery-preview-frame id (legacy live preview iframe id).
     expect(container.querySelector('#gallery-preview-frame')).toBeNull()
+  })
+
+  it('renders server-produced static HTML for DB-observed OpenUI v1 and v3 gallery rows without fetching thumbnails or mounting the live runtime', () => {
+    const fetchMock = vi.fn().mockRejectedValue(new Error('thumbnail offline'))
+    globalThis.fetch = fetchMock
+    const gallery: GalleryPayload = {
+      ...emptyGallery,
+      items: dbObservedOpenUiRows,
+      total: dbObservedOpenUiRows.length,
+    }
+
+    const { container, queryByText } = render(<GalleryGrid gallery={gallery} />)
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(
+      container.querySelectorAll('[data-testid="generated-module-preview"]'),
+    ).toHaveLength(0)
+    expect(container.querySelectorAll('iframe')).toHaveLength(0)
+    expect(queryByText('Our Brew Selection')).not.toBeNull()
+    expect(queryByText('Pineapple Saison')).not.toBeNull()
+    expect(queryByText('हमारी प्रमुख सेवाएँ')).not.toBeNull()
+    expect(queryByText('डिजिटल पहचान प्रमाणन')).not.toBeNull()
+    expect(queryByText('Generated OpenUI source is ready.')).toBeNull()
+    expect(queryByText('Craft Beer Brewery')).toBeNull()
+    expect(queryByText('Gov Hindi')).toBeNull()
   })
 })

@@ -123,30 +123,18 @@ const fetchStripeCheckout = async (
     checkoutFields['discounts[0][coupon]'] = referralCouponId
   }
 
-  let response: Response
-  try {
-    response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formBody(checkoutFields),
-    })
-  } catch {
-    return json({ error: 'Stripe checkout failed.' }, { status: 502 })
-  }
-  let data: {
+  const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formBody(checkoutFields),
+  })
+  const data = (await response.json()) as {
     id?: string
     url?: string
     error?: { message?: string }
-  }
-  let parseFailed = false
-  try {
-    data = (await response.json()) as typeof data
-  } catch {
-    data = {}
-    parseFailed = true
   }
 
   if (!response.ok) {
@@ -154,10 +142,6 @@ const fetchStripeCheckout = async (
       { error: data.error?.message ?? 'Stripe checkout failed.' },
       { status: response.status },
     )
-  }
-
-  if (parseFailed) {
-    return json({ error: 'Stripe checkout failed.' }, { status: 502 })
   }
 
   return json({
@@ -213,25 +197,15 @@ const fetchRazorpayCheckout = async (
         notes: { userId, tier },
       }),
     })
-    let data: {
+    const data = (await response.json()) as {
       id?: string
       error?: { description?: string }
-    }
-    let parseFailed = false
-    try {
-      data = (await response.json()) as typeof data
-    } catch {
-      data = {}
-      parseFailed = true
     }
     if (!response.ok) {
       return json(
         { error: data.error?.description ?? 'Razorpay subscription failed.' },
         { status: response.status },
       )
-    }
-    if (parseFailed) {
-      return json({ error: 'Razorpay subscription failed.' }, { status: 502 })
     }
     return json({
       provider: 'razorpay',
@@ -252,44 +226,29 @@ const fetchRazorpayCheckout = async (
     )
   }
 
-  let response: Response
-  try {
-    response = await fetch('https://api.razorpay.com/v1/orders', {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${auth}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        amount,
-        currency: 'INR',
-        notes: { userId, packId, credits: pack.credits },
-      }),
-    })
-  } catch {
-    return json({ error: 'Razorpay order failed.' }, { status: 502 })
-  }
-  let data: {
+  const response = await fetch('https://api.razorpay.com/v1/orders', {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${auth}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      amount,
+      currency: 'INR',
+      notes: { userId, packId, credits: pack.credits },
+    }),
+  })
+  const data = (await response.json()) as {
     id?: string
     amount?: number
     currency?: string
     error?: { description?: string }
-  }
-  let parseFailed = false
-  try {
-    data = (await response.json()) as typeof data
-  } catch {
-    data = {}
-    parseFailed = true
   }
   if (!response.ok) {
     return json(
       { error: data.error?.description ?? 'Razorpay order failed.' },
       { status: response.status },
     )
-  }
-  if (parseFailed) {
-    return json({ error: 'Razorpay order failed.' }, { status: 502 })
   }
   return json({
     provider: 'razorpay',

@@ -25,6 +25,9 @@ const getBearerToken = (request: Request): string | null => {
   return match?.[1]?.trim() || null
 }
 
+const normalizeError = (error: unknown): string =>
+  error instanceof Error ? error.message : 'Lakebed publish failed'
+
 const isLakebedPublishBody = (value: unknown): value is LakebedPublishBody =>
   value !== null &&
   typeof value === 'object' &&
@@ -76,16 +79,6 @@ export const createLakebedPublishResponse = async (
       return json(existing)
     }
 
-    if (existing?.provider === 'lakebed' && existing.status === 'failed') {
-      return json(
-        {
-          status: existing.status,
-          error: 'Lakebed deployment failed.',
-        },
-        { status: 500 },
-      )
-    }
-
     const artifactResult = await client.query(
       api.sessions.getOwnedLakebedDeploymentArtifactByLookup,
       {
@@ -114,6 +107,6 @@ export const createLakebedPublishResponse = async (
     return json(result)
   } catch (error) {
     console.error('[lakebed_publish]', error)
-    return json({ error: 'Lakebed publish failed.' }, { status: 500 })
+    return json({ error: normalizeError(error) }, { status: 500 })
   }
 }

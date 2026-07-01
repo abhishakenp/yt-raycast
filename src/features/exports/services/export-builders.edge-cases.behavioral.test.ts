@@ -86,6 +86,29 @@ const editedBreweryPreviewHtml = `<!doctype html>
   </div>
 </body>
 </html>`
+const dbObservedHindiGovernmentSource =
+  'home_navbar = GovernmentPortalNavbar("Gov Hindi", "भारत सरकार", "सभी नागरिकों की सेवा में", "भारत राजधानी, नई दिल्ली", ["Home","Contact","Events","About","Services"], "/")\n' +
+  'home_services = GovernmentPortalServices("मुख्य सेवाएँ", [{"title":"स्वास्थ्य सेवा","href":"/services/health","color":"#4CAF50","icon":"health","desc":"सरकारी अस्पतालों में निःशुल्क उपचार"},{"title":"शिक्षा पोर्टल","href":"/services/education","color":"#2196F3","icon":"business","desc":"ऑनलाइन पाठ्यक्रम और परीक्षा परिणाम"}])\n' +
+  'home = Stack([home_navbar, home_services])\n' +
+  'root = PageSwitch(["Home"], [home], "", {"Home":"Home"})'
+const dbObservedHindiGovernmentSiteSpecJson = JSON.stringify({
+  brand: 'Gov Hindi',
+  projectName: 'Gov Hindi',
+  theme: 'twitter',
+  locale: 'hi',
+})
+const openUiHindiHandoffPreviewHtml = `<!doctype html>
+<html lang="hi">
+<body>
+  <main id="openui-root" data-openui-ready="source">
+    <section>
+      <p>Generated OpenUI source is ready.</p>
+      <h1>Gov Hindi</h1>
+      <p>सार्वजनिक सेवाएँ पोर्टल</p>
+    </section>
+  </main>
+</body>
+</html>`
 
 const unzipTextFiles = (body: Uint8Array): Record<string, string> =>
   Object.fromEntries(
@@ -621,6 +644,33 @@ describe('OpenUI HTML export builder edge cases', () => {
     )
     expect(document.body.textContent).toContain('Pineapple Saison')
     expect(document.querySelectorAll('#openui-root')).toHaveLength(1)
+  })
+
+  it('renders DB-observed Hindi OpenUI output to static HTML instead of exporting the handoff placeholder', async () => {
+    const result = await buildOpenUIHtmlExport({
+      source: dbObservedHindiGovernmentSource,
+      siteSpecJson: dbObservedHindiGovernmentSiteSpecJson,
+      sessionId: 'k572nbkrw902ef81nn4ha1yq7989njsg',
+      target: 'html',
+      previewHtml: openUiHindiHandoffPreviewHtml,
+      themeName: 'twitter',
+      isDark: false,
+    })
+    const html = decodeExportBody(result.body)
+    const document = parseHtmlDocument(html)
+    const root = document.querySelector('#openui-root')
+
+    expect(root).not.toBeNull()
+    expect(root?.getAttribute('class')).not.toContain('dark')
+    expect(root?.getAttribute('style')).toContain('color-scheme: light')
+    expect(document.querySelector('[data-sf-export-page]')).not.toBeNull()
+    expect(document.body.textContent).toContain('मुख्य सेवाएँ')
+    expect(document.body.textContent).toContain('स्वास्थ्य सेवा')
+    expect(document.querySelector('[data-openui-ready="source"]')).toBeNull()
+    expect(document.body.textContent).not.toContain(
+      'Generated OpenUI source is ready.',
+    )
+    expect(document.querySelector('.openui-error')).toBeNull()
   })
 })
 

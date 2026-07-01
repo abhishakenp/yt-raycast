@@ -6,7 +6,6 @@ import {
   type ImageContext,
 } from '@/lib/image-context'
 import { searchStockImages, type StockImageResult } from '@/lib/stock-image'
-import { readJsonOrThrow } from '@/lib/safe-fetch'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
@@ -218,9 +217,9 @@ export function ImageSwapPanel({
         })
         if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
 
-        const { storageId } = await readJsonOrThrow<{
+        const { storageId } = (await res.json()) as {
           storageId: Id<'_storage'>
-        }>(res, 'Upload failed')
+        }
 
         await saveUserImage({
           sessionId: sessionId as Id<'sessions'>,

@@ -11,29 +11,16 @@ const json = (body: unknown, init?: ResponseInit) =>
     },
   })
 
-function getClientIp(request: Request): string | null {
+function getClientIp(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) {
-    const ip = forwarded.split(',')[0].trim()
-    if (ip) return ip
+    return forwarded.split(',')[0].trim()
   }
-  const cfIp = request.headers.get('cf-connecting-ip')
-  if (cfIp) return cfIp.trim()
-  return null
+  return request.headers.get('cf-connecting-ip') || 'unknown'
 }
 
 const getShareBonusStatus = (request: Request) => {
   const ip = getClientIp(request)
-  if (ip === null) {
-    return json(
-      {
-        claimed: false,
-        error: 'Unable to identify client IP.',
-        success: false,
-      },
-      { status: 400 },
-    )
-  }
   const stored = shareBonusIps.get(ip)
   const today = new Date().toISOString().slice(0, 10)
   const claimed = stored === today
@@ -43,16 +30,6 @@ const getShareBonusStatus = (request: Request) => {
 
 const claimShareBonus = (request: Request) => {
   const ip = getClientIp(request)
-  if (ip === null) {
-    return json(
-      {
-        claimed: false,
-        error: 'Unable to identify client IP.',
-        success: false,
-      },
-      { status: 400 },
-    )
-  }
   const today = new Date().toISOString().slice(0, 10)
   const stored = shareBonusIps.get(ip)
 

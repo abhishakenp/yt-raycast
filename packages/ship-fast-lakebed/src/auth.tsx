@@ -343,40 +343,30 @@ async function handleGoogleCallback() {
   }
 
   const options = resolveGoogleAuthOptions()
-  try {
-    const token = await exchangeCode({
-      code: callback.code,
-      codeVerifier: parsedPkce.verifier,
-      options,
-    })
+  const token = await exchangeCode({
+    code: callback.code,
+    codeVerifier: parsedPkce.verifier,
+    options,
+  })
 
-    if (!token?.id_token || !token?.pairwise_sub) {
-      throw new Error(
-        'Google sign-in token response was missing identity claims.',
-      )
-    }
-
-    persistIdentity(token.pairwise_sub, token.id_token, token.expires_in)
-    storage?.removeItem(PKCE_STORAGE_KEY)
-
-    const localAuth = createGoogleAuthFromToken(token.id_token)
-    if (localAuth) {
-      setAuth(withAuthLoading(localAuth, false))
-    }
-
-    const returnTo = popReturnTo() ?? fallbackRoute()
-    clearCallbackParams()
-    browserWindow()?.location.replace(returnTo)
-    return token
-  } catch (error) {
-    // Clean up callback state so a malformed token exchange (e.g. gateway
-    // returning HTML instead of JSON) doesn't leave stale PKCE / return-to
-    // entries or callback query params in the URL.
-    storage?.removeItem(PKCE_STORAGE_KEY)
-    storage?.removeItem(RETURN_TO_STORAGE_KEY)
-    clearCallbackParams()
-    throw error
+  if (!token?.id_token || !token?.pairwise_sub) {
+    throw new Error(
+      'Google sign-in token response was missing identity claims.',
+    )
   }
+
+  persistIdentity(token.pairwise_sub, token.id_token, token.expires_in)
+  storage?.removeItem(PKCE_STORAGE_KEY)
+
+  const localAuth = createGoogleAuthFromToken(token.id_token)
+  if (localAuth) {
+    setAuth(withAuthLoading(localAuth, false))
+  }
+
+  const returnTo = popReturnTo() ?? fallbackRoute()
+  clearCallbackParams()
+  browserWindow()?.location.replace(returnTo)
+  return token
 }
 
 function readStoredIdentity({
