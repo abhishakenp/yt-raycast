@@ -9,6 +9,9 @@ const createTempRoot = (): string =>
   mkdtempSync(join(tmpdir(), 'ship-fast-v2-adapter-'))
 
 describe('ship fast engine adapter', () => {
+  const dbObservedPrompt =
+    'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.'
+
   it('runs the engine in an isolated workspace and returns generated artifacts', async () => {
     const seenLanguages: Array<string | undefined> = []
     const runAll: RunShipFastEngine = async ({
@@ -82,5 +85,62 @@ describe('ship fast engine adapter', () => {
       'task',
       'preview_ready',
     ])
+  })
+
+  it('returns generated artifacts when progress event persistence rejects', async () => {
+    const onEventCalls: unknown[] = []
+    const runAll: RunShipFastEngine = async ({ workspace, sessionCtx }) => {
+      mkdirSync(workspace, { recursive: true })
+      sessionCtx.setTasks([
+        { id: 'home.openui', label: 'Generate Home page', status: 'PENDING' },
+      ])
+      sessionCtx.signalHomepageReady()
+      writeFileSync(
+        join(workspace, 'index.html'),
+        '<!doctype html><h1>Pet food conversion site</h1>',
+      )
+      writeFileSync(
+        join(workspace, 'site-spec.json'),
+        JSON.stringify({ brand: 'Pet Food Site' }),
+      )
+      writeFileSync(
+        join(workspace, 'home.openui'),
+        'root = Text("Pet food conversion site")',
+      )
+    }
+
+    const adapter = createShipFastEngineAdapter({
+      runAll,
+      workspaceRoot: createTempRoot(),
+      onEvent: async (event, context) => {
+        onEventCalls.push({ event, context })
+        throw new Error(`Failed to persist ${event.type}`)
+      },
+    })
+
+    await expect(
+      adapter.generate({
+        sessionId: 'event-persistence-failure',
+        prompt: dbObservedPrompt,
+      }),
+    ).resolves.toMatchObject({
+      html: '<!doctype html><h1>Pet food conversion site</h1>',
+      siteSpecJson: '{"brand":"Pet Food Site"}',
+      openUiSource: 'root = Text("Pet food conversion site")',
+      events: [
+        {
+          tasks: [
+            {
+              id: 'home.openui',
+              label: 'Generate Home page',
+              status: 'PENDING',
+            },
+          ],
+          type: 'tasks',
+        },
+        { type: 'preview_ready' },
+      ],
+    })
+    expect(onEventCalls).toHaveLength(2)
   })
 })
