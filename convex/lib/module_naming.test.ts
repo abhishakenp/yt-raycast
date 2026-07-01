@@ -1,27 +1,21 @@
-import { readdirSync } from 'node:fs'
-import { basename, dirname, join, relative } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { convexTest } from 'convex-test'
 import { describe, expect, it } from 'vitest'
 
-const convexRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
+import { api } from '../_generated/api'
+import schema from '../schema'
 
-const listTypeScriptFiles = (directory: string): string[] =>
-  readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const path = join(directory, entry.name)
-
-    if (entry.isDirectory()) {
-      return entry.name === '_generated' ? [] : listTypeScriptFiles(path)
-    }
-
-    return entry.isFile() && entry.name.endsWith('.ts') ? [path] : []
-  })
+const modules = import.meta.glob('../**/*.ts')
 
 describe('Convex module naming', () => {
-  it('keeps TypeScript module filenames compatible with Convex', () => {
-    const hyphenatedFiles = listTypeScriptFiles(convexRoot)
-      .filter((path) => basename(path).includes('-'))
-      .map((path) => relative(convexRoot, path))
+  it('loads the Convex module graph and executes a public query', async () => {
+    const t = convexTest(schema, modules)
 
-    expect(hyphenatedFiles).toEqual([])
+    await expect(
+      t.query(api.sessions.listPublicSessions, {}),
+    ).resolves.toMatchObject({
+      items: [],
+      availableCategories: [],
+      total: 0,
+    })
   })
 })
