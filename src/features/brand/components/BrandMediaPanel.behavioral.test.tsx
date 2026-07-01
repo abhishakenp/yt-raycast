@@ -77,6 +77,16 @@ const linearLogo = {
   verified: true,
 }
 
+const realCraftBeerSelectedBrandLogo = {
+  id: 'idGPw_2fQs',
+  name: 'Khalti Official',
+  domain: 'khalti.com',
+  brandId: 'idGPw_2fQs',
+  icon: 'https://cdn.brandfetch.io/idGPw_2fQs/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782916993928bfumLaCV7mU0GSSwHb',
+  logo: 'https://cdn.brandfetch.io/idGPw_2fQs/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782916993928bfumLaCV7mU0GSSwHb',
+  verified: false,
+}
+
 describe('BrandMediaPanel', () => {
   beforeEach(() => {
     vi.useRealTimers()
@@ -164,6 +174,44 @@ describe('BrandMediaPanel', () => {
       logo: 'https://cdn.brandfetch.io/linear/logo.svg',
     })
     expect(view.getAllByText('linear.app')).toHaveLength(1)
+  })
+
+  it('selects a real Convex-stored Brandfetch logo shape without dropping CDN image fields', async () => {
+    convexState.searchPages = new Map([
+      [
+        'start',
+        {
+          results: [realCraftBeerSelectedBrandLogo],
+          continueCursor: null,
+          isDone: true,
+        },
+      ],
+    ])
+    const onSelectBrand = vi.fn()
+
+    const view = render(
+      <BrandMediaPanel
+        sessionId="k574ms14ma9f94keq30r7dq24x89n1k2"
+        prompt="a craft beer brewery with taproom tours and seasonal releases in portland"
+        onSelectBrand={onSelectBrand}
+      />,
+    )
+
+    await waitFor(() => expect(view.getByText('Khalti Official')).toBeTruthy())
+    fireEvent.click(view.getByText('Khalti Official'))
+
+    expect(onSelectBrand).toHaveBeenCalledWith({
+      brandId: 'idGPw_2fQs',
+      domain: 'khalti.com',
+      icon: realCraftBeerSelectedBrandLogo.icon,
+      logo: realCraftBeerSelectedBrandLogo.logo,
+      name: 'Khalti Official',
+    })
+    expect(
+      view.container.querySelector(
+        `img[src="${realCraftBeerSelectedBrandLogo.logo}"]`,
+      ),
+    ).toBeTruthy()
   })
 
   it('loads the next Brandfetch page when the logo list scrolls near the bottom', async () => {
