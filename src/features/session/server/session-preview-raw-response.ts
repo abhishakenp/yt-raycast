@@ -1,4 +1,5 @@
 import { api } from '../../../../convex/_generated/api'
+import { isOpenUiErrorHtml } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 /**
@@ -16,6 +17,10 @@ export const createSessionPreviewRawResponse = async (
 
     const html = session?.html
     if (typeof html !== 'string' || html.trim().length === 0) {
+      return new Response('Preview not found or not public', { status: 404 })
+    }
+
+    if (isOpenUiErrorHtml(html)) {
       return new Response('Preview not found or not public', { status: 404 })
     }
 

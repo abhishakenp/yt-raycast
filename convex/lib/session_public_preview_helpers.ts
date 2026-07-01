@@ -1,4 +1,5 @@
 import type { QueryCtx } from '../_generated/server'
+import { isOpenUiErrorHtml } from './openui_error_html'
 
 type SessionPublicPreviewCtx = Pick<QueryCtx, 'db'>
 
@@ -51,6 +52,6 @@ export const loadPublicPreview = async (
         slug: deployment?.slug,
         status: session.status,
         previewVersion: preview.version,
-        html: preview.html,
+        html: isOpenUiErrorHtml(preview.html) ? '' : preview.html,
       }
 }

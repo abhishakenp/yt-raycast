@@ -79,12 +79,14 @@ export const createLakebedPublishResponse = async (
       return json(existing)
     }
 
-    if (
-      existing?.provider === 'lakebed' &&
-      existing.status === 'failed'
-    ) {
+    if (existing?.provider === 'lakebed' && existing.status === 'failed') {
       return json(
-        { status: 'failed', error: existing.errorMessage },
+        {
+          status: existing.status,
+          error:
+            (existing as { errorMessage?: string }).errorMessage ??
+            'Lakebed deployment failed.',
+        },
         { status: 500 },
       )
     }

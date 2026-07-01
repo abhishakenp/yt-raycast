@@ -2,6 +2,7 @@ import { ConvexError } from 'convex/values'
 
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
+import { isOpenUiErrorHtml } from './openui_error_html'
 import {
   assertCanMutateSession,
   assertCanReadOwnedSession,
@@ -128,9 +129,10 @@ const isLikelyOpenUiSource = (source: string | undefined): source is string => {
   return /(?:^|\n)\s*root\s*=/.test(trimmed)
 }
 
-const isOpenUiErrorHtml = (html: string): boolean =>
-  /class=["'][^"']*\bopenui-error\b/i.test(html) ||
-  /Failed to render:/i.test(html)
+const containsOpenUiErrorMarker = (html: string | undefined): boolean =>
+  typeof html === 'string' &&
+  (/class=["'][^"']*\bopenui-error\b/i.test(html) ||
+    /Failed to render:/i.test(html))
 
 const lakebedDeploymentMetadata = (deployment: {
   provider?: 'ship-fast' | 'lakebed'
@@ -334,7 +336,7 @@ export const prepareLakebedSessionDeployment = async (
   const homeModuleOpenUiSource = isLikelyOpenUiSource(homeModule?.source)
     ? homeModule.source
     : undefined
-  const previewHasOpenUiError = isOpenUiErrorHtml(preview.html)
+  const previewHasOpenUiError = containsOpenUiErrorMarker(preview.html)
   const openUiSource =
     previewOpenUiSource ?? homeModuleOpenUiSource ?? homeModule?.source
   const shouldUseOpenUiSource =
@@ -379,7 +381,7 @@ export const prepareLakebedSessionDeployment = async (
     source,
     sourceKind,
     siteSpecJson: preview.siteSpecJson,
-    previewHtml: preview.html,
+    previewHtml: isOpenUiErrorHtml(preview.html) ? '' : preview.html,
     previewVersion: preview.version,
     projectName: session.prompt,
     themeName: readLakebedThemeName(preview.siteSpecJson, session.genuiTheme),
