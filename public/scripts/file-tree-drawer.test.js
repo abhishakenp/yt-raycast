@@ -133,4 +133,23 @@ describe('public file tree drawer runtime', () => {
 
     drawer.destroy()
   })
+
+  it('renders generated page metadata as text instead of injecting HTML', () => {
+    const Drawer = window.FileTreeDrawer
+    const drawer = new Drawer({
+      isOpen: true,
+      pages: [
+        {
+          id: 'unsafe',
+          name: '<img src=x onerror=alert(1)>Home',
+          route: '/',
+        },
+      ],
+    })
+
+    expect(document.body.textContent).toContain('Home')
+    expect(document.querySelector('img')).toBeNull()
+
+    drawer.destroy()
+  })
 })
