@@ -224,4 +224,63 @@ describe('createSessionMedusaProductsResponse', () => {
       warning: 'Medusa Store API not configured.',
     })
   })
+
+  it('returns an empty product list when the region endpoint returns malformed HTML', async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce(
+      new Response('<!doctype html><title>regions unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+
+    const response = await createSessionMedusaProductsResponse('session_123', {
+      env: {
+        MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+      },
+      fetch: fetchImpl,
+      metaEnv: {},
+    })
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      products: [],
+      sessionId: 'session_123',
+      warning: 'Medusa Store API product read failed.',
+    })
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns an empty product list when the products endpoint returns malformed HTML', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ regions: [{ id: 'reg_123' }] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response('<!doctype html><title>products unavailable</title>', {
+          headers: { 'Content-Type': 'text/html' },
+          status: 200,
+        }),
+      )
+
+    const response = await createSessionMedusaProductsResponse('session_123', {
+      env: {
+        MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+      },
+      fetch: fetchImpl,
+      metaEnv: {},
+    })
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      products: [],
+      sessionId: 'session_123',
+      warning: 'Medusa Store API product read failed.',
+    })
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
 })

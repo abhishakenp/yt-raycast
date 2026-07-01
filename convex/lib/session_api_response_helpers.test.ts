@@ -7,7 +7,7 @@ import {
   serializeSessionApiResponse,
 } from './session_api_response_helpers'
 
-type SessionApiCtx = Pick<QueryCtx, 'db'>
+type SessionApiCtx = Pick<QueryCtx, 'auth' | 'db'>
 type TableName =
   | 'sessions'
   | 'tasks'
@@ -142,7 +142,10 @@ const siteSpecDoc = (
     ...overrides,
   }) as Doc<'siteSpecs'>
 
-const ctxFor = (input: Partial<Record<TableName, Row[]>>): SessionApiCtx => {
+const ctxFor = (
+  input: Partial<Record<TableName, Row[]>>,
+  options: { userId?: string } = {},
+): SessionApiCtx => {
   const tables: Record<TableName, Row[]> = {
     sessions: [...(input.sessions ?? [])],
     tasks: [...(input.tasks ?? [])],
@@ -209,7 +212,21 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>): SessionApiCtx => {
     },
   } as unknown as SessionApiCtx['db']
 
-  return { db }
+  return {
+    auth: {
+      getUserIdentity: async () =>
+        options.userId === undefined
+          ? null
+          : ({
+              issuer: 'https://convex.test',
+              subject: options.userId,
+              tokenIdentifier: options.userId,
+            } as NonNullable<
+              Awaited<ReturnType<SessionApiCtx['auth']['getUserIdentity']>>
+            >),
+    },
+    db,
+  }
 }
 
 describe('session API response helpers', () => {
@@ -372,6 +389,48 @@ describe('session API response helpers', () => {
       deployment: {
         slug: 'deployed-site',
       },
+    })
+  })
+
+  it('enforces private-session ownership when reconstructing session API payloads', async () => {
+    const privateRows: Partial<Record<TableName, Row[]>> = {
+      sessions: [
+        sessionDoc({
+          isPrivate: true,
+          prompt: 'Private customer analytics dashboard',
+          userId: 'user_private',
+        }),
+      ],
+      tasks: [taskDoc('task_private_home', 'succeeded', 0, 'Private home')],
+      previews: [
+        previewDoc({
+          html: '<main><h1>Private revenue dashboard</h1></main>',
+        }),
+      ],
+    }
+
+    await expect(
+      loadSessionApiResponse(ctxFor(privateRows), sessionId),
+    ).resolves.toBeNull()
+
+    await expect(
+      loadSessionApiResponse(
+        ctxFor(privateRows, { userId: 'user_other' }),
+        sessionId,
+      ),
+    ).resolves.toBeNull()
+
+    const ownerResponse = await loadSessionApiResponse(
+      ctxFor(privateRows, { userId: 'user_private' }),
+      sessionId,
+    )
+
+    expect(ownerResponse).toMatchObject({
+      prompt: 'Private customer analytics dashboard',
+      preview: {
+        html: '<main><h1>Private revenue dashboard</h1></main>',
+      },
+      taskCount: 1,
     })
   })
 

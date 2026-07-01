@@ -96,6 +96,31 @@ describe('createSessionEventStreamResponse', () => {
     expect(text).toContain('Session not found')
   })
 
+  it('returns an SSE 403 error when Convex denies private-session access', async () => {
+    const forbidden = Object.assign(new Error('You do not own this session'), {
+      data: {
+        code: 'FORBIDDEN',
+        message: 'You do not own this session',
+      },
+    })
+
+    const response = await createSessionEventStreamResponse(
+      'private-session',
+      new Request('http://localhost/api/sessions/private-session/stream'),
+      {
+        query: async () => {
+          throw forbidden
+        },
+      },
+    )
+
+    const text = await response.text()
+
+    expect(response.status).toBe(403)
+    expect(text).toContain('event: error')
+    expect(text).toContain('You do not own this session')
+  })
+
   it('forwards bearer auth and anonymous owner secret to Convex', async () => {
     const setAuth = vi.fn()
     const client = {

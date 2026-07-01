@@ -4,6 +4,7 @@ import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { hashOwnerSecret } from './session_access_helpers'
 import {
+  applyCloneBriefAndGenerate,
   finalizeSessionClonePreview,
   listSessionClonePages,
   loadClonePagePreview,
@@ -366,6 +367,56 @@ describe('session clone helpers', () => {
     })
   })
 
+  describe('applyCloneBriefAndGenerate', () => {
+    it('stores the clone brief, exits clone mode, preserves theme override, and schedules generation', async () => {
+      const { ctx, patches } = await mutationCtxFor({
+        session: await sessionDoc({ cloneMode: true }),
+      })
+
+      await expect(
+        applyCloneBriefAndGenerate(ctx, {
+          sessionId,
+          anonymousOwnerSecret: 'owner-secret',
+          cloneBrief: 'Make the cloned brewery homepage feel more premium',
+          themeOverride: 'darkmatter',
+        }),
+      ).resolves.toEqual({ sessionId })
+
+      expect(patches).toEqual([
+        {
+          id: sessionId,
+          value: expect.objectContaining({
+            cloneBrief: 'Make the cloned brewery homepage feel more premium',
+            cloneMode: false,
+            themeOverride: 'darkmatter',
+          }),
+        },
+      ])
+      expect(ctx.scheduler.runAfter).toHaveBeenCalledWith(
+        0,
+        expect.anything(),
+        {
+          sessionId,
+          anonymousOwnerSecret: 'owner-secret',
+        },
+      )
+    })
+
+    it('rejects clone brief generation when the owner secret does not match', async () => {
+      const { ctx } = await mutationCtxFor({})
+
+      await expect(
+        applyCloneBriefAndGenerate(ctx, {
+          sessionId,
+          anonymousOwnerSecret: 'wrong-secret',
+          cloneBrief: 'Update the clone',
+        }),
+      ).rejects.toMatchObject({ data: { code: 'FORBIDDEN' } })
+
+      expect(ctx.scheduler.runAfter).not.toHaveBeenCalled()
+    })
+  })
+
   describe('listSessionClonePages', () => {
     it('returns rows ordered by order with the expected fields', async () => {
       const { ctx } = await mutationCtxFor({
@@ -515,6 +566,34 @@ describe('session clone helpers', () => {
         url: 'https://storage.test/stored_home',
         version: 1,
       })
+    })
+
+    it('does not expose private clone page HTML through an unauthenticated preview lookup', async () => {
+      const { ctx } = await mutationCtxFor({
+        session: await sessionDoc({ isPrivate: true }),
+        clonePages: [
+          clonePageRow({
+            _id: 'clone_private_home',
+            pathname: '/',
+            html: '<main>Private clone content</main>',
+            isHome: true,
+            order: 0,
+          }),
+        ],
+      })
+      const queryCtx = {
+        db: {
+          ...ctx.db,
+          normalizeId: vi.fn(() => sessionId),
+        },
+        storage: {
+          getUrl: vi.fn(async () => null),
+        },
+      } as unknown as Pick<QueryCtx, 'db' | 'storage'>
+
+      await expect(
+        loadClonePagePreview(queryCtx, sessionId),
+      ).resolves.toBeNull()
     })
   })
 })

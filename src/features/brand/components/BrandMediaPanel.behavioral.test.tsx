@@ -298,6 +298,31 @@ describe('BrandMediaPanel', () => {
     })
   })
 
+  it('shows a stable upload error when Convex storage returns malformed HTML instead of JSON', async () => {
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response('<!doctype html><h1>Gateway failure</h1>', {
+          headers: { 'content-type': 'text/html' },
+          status: 200,
+        }),
+    ) as unknown as typeof fetch
+    const view = render(
+      <BrandMediaPanel sessionId="session-1" prompt="linear" />,
+    )
+    const file = new File(['image-bytes'], 'logo.png', { type: 'image/png' })
+    const input = view.container.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement
+
+    fireEvent.change(input, { target: { files: [file] } })
+
+    await waitFor(() => expect(view.getByText(/upload failed/i)).toBeTruthy())
+    expect(view.container.textContent).not.toMatch(
+      /unexpected token|valid json|doctype|gateway failure/i,
+    )
+    expect(convexState.saveUserImage).not.toHaveBeenCalled()
+  })
+
   it('shows existing uploaded custom images without adding section chrome', () => {
     convexState.userImages = [
       {

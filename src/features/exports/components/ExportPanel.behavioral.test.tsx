@@ -471,6 +471,39 @@ describe('ExportPanel behavioral', () => {
     expect(calledUrls).not.toContain('/api/sessions/session_123/download/next')
   })
 
+  it('shows a stable export error when create-export returns malformed HTML instead of JSON', async () => {
+    setExportTargets([
+      target({
+        target: 'react',
+        ready: false,
+        status: 'available',
+        artifactReady: false,
+        artifactStatus: 'not_ready',
+        downloadUrl: null,
+      }),
+    ])
+    const fetchMock = vi.fn(
+      async () =>
+        new Response('<!doctype html><h1>Gateway failure</h1>', {
+          headers: { 'content-type': 'text/html' },
+          status: 502,
+        }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    installUrlMocks()
+
+    const view = render(<ExportPanel sessionId="session_123" />)
+    const button = view.getByText('React').closest('button')
+    expect(button).toBeTruthy()
+    if (button) fireEvent.click(button)
+
+    await waitFor(() => expect(view.getByText(/export failed/i)).toBeTruthy())
+    expect(view.container.textContent).not.toMatch(
+      /unexpected token|valid json|doctype/i,
+    )
+    expect(view.container.querySelector('.border-rose-500\\/30')).toBeTruthy()
+  })
+
   it('stale export shows regenerate prompt and does not run the download flow on click', async () => {
     setExportTargets([
       target({
@@ -693,6 +726,38 @@ describe('ExportPanel behavioral', () => {
 
     await waitFor(() => expect(view.getByText('Download failed')).toBeTruthy())
     // Error renders inside the rose error panel.
+    expect(view.container.querySelector('.border-rose-500\\/30')).toBeTruthy()
+  })
+
+  it('shows a stable download error when a ready export download returns malformed HTML', async () => {
+    setExportTargets([
+      target({
+        target: 'lakebed',
+        ready: true,
+        status: 'ready',
+        artifactReady: true,
+        artifactStatus: 'ready',
+        downloadUrl: '/api/sessions/session_123/download/lakebed',
+      }),
+    ])
+    installUrlMocks()
+    silenceAnchorClick()
+    const fetchMock = vi.fn(
+      async () =>
+        new Response('<!doctype html><h1>Gateway failure</h1>', {
+          headers: { 'content-type': 'text/html' },
+          status: 502,
+        }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const view = render(<ExportPanel sessionId="session_123" />)
+    const button = view.getByText('Lakebed').closest('button')
+    expect(button).toBeTruthy()
+    if (button) fireEvent.click(button)
+
+    await waitFor(() => expect(view.getByText(/download failed/i)).toBeTruthy())
+    expect(view.container.textContent).not.toMatch(/doctype|gateway failure/i)
     expect(view.container.querySelector('.border-rose-500\\/30')).toBeTruthy()
   })
 

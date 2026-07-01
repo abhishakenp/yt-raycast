@@ -222,6 +222,30 @@ describe('ImageSwapPanel (behavioral)', () => {
     await waitFor(() => expect(saveUserImageMock).toHaveBeenCalled())
   })
 
+  it('shows a stable upload error when Convex storage returns malformed HTML instead of JSON', async () => {
+    searchStockImagesMock.mockResolvedValue([])
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response('<!doctype html><h1>Gateway failure</h1>', {
+          headers: { 'content-type': 'text/html' },
+          status: 200,
+        }),
+    ) as unknown as typeof fetch
+    const file = new File(['data'], 'pic.png', { type: 'image/png' })
+    const { container } = renderPanel()
+    const fileInput = container.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement
+
+    fireEvent.change(fileInput, { target: { files: [file] } })
+
+    await waitFor(() => expect(screen.getByText(/upload failed/i)).toBeTruthy())
+    expect(container.textContent).not.toMatch(
+      /unexpected token|valid json|doctype|gateway failure/i,
+    )
+    expect(saveUserImageMock).not.toHaveBeenCalled()
+  })
+
   it('7. file validation: rejects non-image types and files >8MB', async () => {
     searchStockImagesMock.mockResolvedValue([])
     const { container } = renderPanel()

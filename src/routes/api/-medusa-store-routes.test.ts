@@ -178,6 +178,29 @@ describe('Medusa Store API route contracts', () => {
     )
   })
 
+  it('returns stable JSON when cart creation receives malformed region data', async () => {
+    medusaEnvMock.publishableKey = 'pk_medusa'
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      new Response('<!doctype html><title>regions unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    const { Route } = await import('./medusa-store.cart')
+
+    const response = await (
+      Route as unknown as RouteWithHandlers
+    ).options.server.handlers.POST({})
+
+    expect(await readJson(response)).toMatchObject({
+      body: { error: 'cart create failed' },
+      contentType: expect.stringContaining('application/json'),
+      status: 500,
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
   it('retrieves carts by id and preserves upstream status on failures', async () => {
     medusaEnvMock.publishableKey = 'pk_medusa'
     const fetchMock = vi
@@ -203,6 +226,30 @@ describe('Medusa Store API route contracts', () => {
     )
   })
 
+  it('returns stable JSON when cart retrieval receives malformed upstream data', async () => {
+    medusaEnvMock.publishableKey = 'pk_medusa'
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response('<!doctype html><title>cart unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    const { Route } = await import('./medusa-store.cart.$id')
+
+    const response = await (
+      Route as unknown as RouteWithHandlers
+    ).options.server.handlers.GET({
+      params: { id: 'cart_123' },
+    })
+
+    expect(await readJson(response)).toMatchObject({
+      body: { error: 'cart retrieve failed' },
+      contentType: expect.stringContaining('application/json'),
+      status: 500,
+    })
+  })
+
   it('validates line item requests before calling Medusa', async () => {
     medusaEnvMock.publishableKey = 'pk_medusa'
     const fetchMock = vi.fn()
@@ -223,6 +270,32 @@ describe('Medusa Store API route contracts', () => {
 
     expect(await readJson(response)).toMatchObject({
       body: { error: 'cart_id and variant_id required' },
+      contentType: expect.stringContaining('application/json'),
+      status: 400,
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('returns stable JSON when line item request JSON is malformed', async () => {
+    medusaEnvMock.publishableKey = 'pk_medusa'
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const { Route } = await import('./medusa-store.cart.line-items')
+
+    const response = await (
+      Route as unknown as RouteWithHandlers
+    ).options.server.handlers.POST({
+      request: new Request(
+        'https://ship-fast.test/api/medusa-store/cart/line-items',
+        {
+          method: 'POST',
+          body: '{not-json',
+        },
+      ),
+    })
+
+    expect(await readJson(response)).toMatchObject({
+      body: { error: 'Invalid line item request body' },
       contentType: expect.stringContaining('application/json'),
       status: 400,
     })
@@ -273,6 +346,40 @@ describe('Medusa Store API route contracts', () => {
     )
   })
 
+  it('returns stable JSON when line item creation receives malformed upstream data', async () => {
+    medusaEnvMock.publishableKey = 'pk_medusa'
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response('<!doctype html><title>line item unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    const { Route } = await import('./medusa-store.cart.line-items')
+
+    const response = await (
+      Route as unknown as RouteWithHandlers
+    ).options.server.handlers.POST({
+      request: new Request(
+        'https://ship-fast.test/api/medusa-store/cart/line-items',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            cart_id: 'cart_123',
+            quantity: 1,
+            variant_id: 'variant_123',
+          }),
+        },
+      ),
+    })
+
+    expect(await readJson(response)).toMatchObject({
+      body: { error: 'line item failed' },
+      contentType: expect.stringContaining('application/json'),
+      status: 500,
+    })
+  })
+
   it('proxies checkout payloads and preserves the upstream success envelope', async () => {
     medusaEnvMock.publishableKey = 'pk_medusa'
     const fetchMock = vi.fn().mockResolvedValue(
@@ -312,6 +419,33 @@ describe('Medusa Store API route contracts', () => {
         body: JSON.stringify({ cart_id: 'cart_123' }),
       },
     )
+  })
+
+  it('returns stable JSON when checkout receives malformed upstream data', async () => {
+    medusaEnvMock.publishableKey = 'pk_medusa'
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response('<!doctype html><title>checkout unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    const { Route } = await import('./medusa-checkout')
+
+    const response = await (
+      Route as unknown as RouteWithHandlers
+    ).options.server.handlers.POST({
+      request: new Request('https://ship-fast.test/api/medusa-checkout', {
+        method: 'POST',
+        body: JSON.stringify({ cart_id: 'cart_123' }),
+      }),
+    })
+
+    expect(await readJson(response)).toMatchObject({
+      body: { error: 'checkout failed' },
+      contentType: expect.stringContaining('application/json'),
+      status: 500,
+    })
   })
 
   it('returns a stable checkout error without calling Medusa when Store API auth is missing', async () => {

@@ -101,4 +101,26 @@ describe('useReferralStatus', () => {
     expect(result.current.status).toEqual(realEmptyReferralStatus)
     expect(fetch).toHaveBeenCalledTimes(2)
   })
+
+  it('surfaces a stable error when the referral status API returns malformed JSON', async () => {
+    setClerk({
+      loaded: true,
+      user: { id: 'user_123' },
+      session: { getToken: vi.fn(async () => 'convex-token') },
+    })
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response('<html>bad gateway</html>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 502,
+      }),
+    )
+
+    const { result } = renderHook(() => useReferralStatus())
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+    expect(result.current.status).toBeNull()
+    expect(result.current.error).toBe('Unable to load referrals.')
+  })
 })

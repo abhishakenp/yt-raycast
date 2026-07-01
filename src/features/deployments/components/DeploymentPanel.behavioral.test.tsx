@@ -560,6 +560,32 @@ describe('DeploymentPanel (behavioral)', () => {
       )
     })
 
+    it('shows a stable Lakebed deploy error when the deploy route returns malformed HTML', async () => {
+      setExportTargets([
+        { target: 'lakebed', artifactReady: true, artifactStatus: 'ready' },
+      ])
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(
+          async () =>
+            new Response('<!doctype html><h1>Gateway failure</h1>', {
+              headers: { 'content-type': 'text/html' },
+              status: 502,
+            }),
+        ),
+      )
+
+      const view = render(<DeploymentPanel sessionId="session_123" />)
+      fireEvent.click(view.getByText('Publish Lakebed').closest('button')!)
+
+      await waitFor(() =>
+        expect(view.getByText(/lakebed publish failed/i)).toBeTruthy(),
+      )
+      expect(view.container.textContent).not.toMatch(
+        /unexpected token|valid json|doctype|gateway failure/i,
+      )
+    })
+
     it('shows an error message when the publish mutation throws', async () => {
       convexState.publishPreview.mockRejectedValueOnce(
         new Error('ShipFast publish exploded'),

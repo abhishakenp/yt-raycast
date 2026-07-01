@@ -26,6 +26,21 @@ const sseResponse = (events: unknown[]) => {
   )
 }
 
+const rawSseResponse = (chunks: string[]) => {
+  const encoder = new TextEncoder()
+  return new Response(
+    new ReadableStream({
+      start(controller) {
+        for (const chunk of chunks) {
+          controller.enqueue(encoder.encode(chunk))
+        }
+        controller.close()
+      },
+    }),
+    { status: 200 },
+  )
+}
+
 describe('useGenUIStream', () => {
   afterEach(() => {
     cleanup()
@@ -95,6 +110,38 @@ describe('useGenUIStream', () => {
 
     expect(result.current.isStreaming).toBe(false)
     expect(result.current.error).toBe('request failed (503)')
+  })
+
+  it('ignores malformed SSE frames and keeps reducing later valid stream events', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          rawSseResponse([
+            'data: {"type":"skeleton","text":"root = PageSwitch({})"}\n\n',
+            'data: <!doctype html><title>gateway error</title>\n\n',
+            'data: {"type":"module","id":"hero","text":"hero = SaasHero({})"}\n\n',
+            'data: {"type":"done","modules":1,"ms":42}\n\n',
+          ]),
+        ),
+    )
+    const { result } = renderHook(() => useGenUIStream())
+
+    await act(async () => {
+      await result.current.start('Build a page')
+    })
+
+    expect(result.current).toMatchObject({
+      done: true,
+      error: null,
+      isStreaming: false,
+      modules: 1,
+      ms: 42,
+      status: 'Done',
+    })
+    expect(result.current.buffer).toContain('root = PageSwitch({})')
+    expect(result.current.buffer).toContain('hero = SaasHero({})')
   })
 
   it('aborts in-flight streams when stopped', async () => {

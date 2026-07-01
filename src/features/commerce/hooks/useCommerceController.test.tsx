@@ -134,4 +134,24 @@ describe('useCommerceController', () => {
     expect(result.current.commerceHandoff).toBeUndefined()
     expect(result.current.isSaving).toBe(false)
   })
+
+  it('surfaces a stable error when provisioning succeeds with malformed HTML instead of JSON', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response('<!doctype html><title>Medusa unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+    const { result } = renderHook(() =>
+      useCommerceController('k577jbx9tbkcc3bhs1fvqepf9989fm0w'),
+    )
+
+    await act(async () => {
+      await result.current.provisionCommerce()
+    })
+
+    expect(result.current.commerceError).toBe('Commerce provisioning failed')
+    expect(result.current.commerceHandoff).toBeUndefined()
+    expect(result.current.isSaving).toBe(false)
+  })
 })

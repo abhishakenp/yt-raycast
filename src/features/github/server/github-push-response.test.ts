@@ -459,6 +459,88 @@ describe('createGitHubPushResponse', () => {
     expect(client.mutation).not.toHaveBeenCalled()
   })
 
+  it('treats malformed prebuilt export file manifests as not ready before touching GitHub', async () => {
+    const { fetchMock, requests } = createGitHubFetch()
+    globalThis.fetch = vi.fn(async (url: string | URL) => {
+      if (String(url) === 'https://storage.test/html-files.json') {
+        return new Response('<!doctype html><title>storage down</title>', {
+          headers: { 'Content-Type': 'text/html' },
+          status: 200,
+        })
+      }
+      return new Response('Unhandled storage fetch', { status: 404 })
+    }) as typeof fetch
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'html' }),
+        },
+      ),
+      'session_123',
+      env,
+      client,
+      fetchMock,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(202)
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Export is still being prepared.',
+      status: 'building',
+    })
+    expect(requests).toEqual([])
+    expect(tokenResolver).not.toHaveBeenCalled()
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
+  it('returns a stable JSON error when GitHub responds with malformed HTML', async () => {
+    const requests: Array<{ method: string; path: string }> = []
+    const fetchMock: typeof fetch = async (url, init) => {
+      const parsed = new URL(String(url))
+      requests.push({
+        method: init?.method ?? 'GET',
+        path: parsed.pathname,
+      })
+      if (parsed.pathname === '/user') {
+        return new Response(
+          '<!doctype html><title>GitHub unavailable</title>',
+          {
+            headers: { 'Content-Type': 'text/html' },
+            status: 502,
+          },
+        )
+      }
+      return Response.json({ error: `Unexpected ${parsed.pathname}` })
+    }
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'html' }),
+        },
+      ),
+      'session_123',
+      env,
+      client,
+      fetchMock,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(502)
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'GitHub request failed.',
+    })
+    expect(requests).toEqual([{ method: 'GET', path: '/user' }])
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
   it('pushes React target files when requested', async () => {
     const { fetchMock, requests } = createGitHubFetch()
 

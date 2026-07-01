@@ -71,4 +71,22 @@ describe('/api/share-bonus route', () => {
     })
     expect(await second.json()).toEqual({ claimed: true, success: false })
   })
+
+  it('does not grant a share bonus to requests without an attributable client IP', async () => {
+    const { Route } = await import('./share-bonus')
+    const route = Route as unknown as RouteWithHandlers
+
+    const response = await route.options.server.handlers.POST({
+      request: new Request('https://ship-fast.test/api/share-bonus', {
+        method: 'POST',
+      }),
+    })
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({
+      claimed: false,
+      error: 'Unable to identify client IP.',
+      success: false,
+    })
+  })
 })

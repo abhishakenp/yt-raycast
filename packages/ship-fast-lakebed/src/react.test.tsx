@@ -232,4 +232,37 @@ describe('buildSeedPatchFromProps', () => {
 
     expect(patch).not.toHaveProperty('scratch')
   })
+
+  it('ignores malformed generated collection props instead of crashing seeding', () => {
+    expect(() =>
+      buildSeedPatchFromProps({
+        data: {},
+        definition: seededCatalogDefinition,
+        props: {
+          items: {
+            0: {
+              label: 'Indexed but not iterable',
+              price: '$10',
+            },
+            length: 1,
+          },
+        },
+      }),
+    ).not.toThrow()
+
+    expect(
+      buildSeedPatchFromProps({
+        data: {},
+        definition: seededCatalogDefinition,
+        props: {
+          items: {
+            rows: {
+              0: { label: 'Nested malformed row' },
+              length: 1,
+            },
+          },
+        },
+      }),
+    ).toEqual({})
+  })
 })

@@ -75,4 +75,32 @@ describe('OpenUI Medusa integration provider', () => {
       expect.anything(),
     )
   })
+
+  it('surfaces a stable error when the Medusa config route returns malformed HTML', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response('<!doctype html><title>Medusa config unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <IntegrationProvider medusa={{ enabled: true }} sessionId="session_123">
+        <MedusaProbe />
+      </IntegrationProvider>,
+    )
+
+    await waitFor(() => {
+      const state = JSON.parse(
+        screen.getByTestId('medusa-state').textContent ?? '{}',
+      )
+      expect(state.ready).toBe(false)
+      expect(state.status).toBe('error')
+      expect(state.error).toBe('Medusa config check failed')
+    })
+    expect(screen.getByTestId('medusa-state').textContent).not.toMatch(
+      /unexpected token|valid json|doctype|medusa config unavailable/i,
+    )
+  })
 })

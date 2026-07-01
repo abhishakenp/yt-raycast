@@ -54,6 +54,7 @@ let saveUserImageMock = vi.fn(async () => undefined)
 let userImagesValue:
   | Array<{ url: string | null; filename: string | null }>
   | undefined = undefined
+const originalFetch = globalThis.fetch
 
 // ── Mock external dependencies ───────────────────────────────────────────────
 vi.mock('convex/react', () => ({
@@ -255,6 +256,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   document.body.innerHTML = ''
+  globalThis.fetch = originalFetch
 })
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -522,6 +524,29 @@ describe('BackgroundPanel (edge cases)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Remove image' }))
     expect(activeElement.style.getPropertyValue('background-image')).toBe('')
     expect(onModified).toHaveBeenCalledTimes(2)
+  })
+
+  it('11b. Upload image — malformed storage JSON shows stable error without saving', async () => {
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response('<!doctype html><h1>Gateway failure</h1>', {
+          headers: { 'Content-Type': 'text/html' },
+          status: 200,
+        }),
+    ) as unknown as typeof fetch
+    const file = new File(['data'], 'background.png', { type: 'image/png' })
+    const { container } = renderPanel()
+    const fileInput = container.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement
+
+    fireEvent.change(fileInput, { target: { files: [file] } })
+
+    await waitFor(() => expect(screen.getByText(/upload failed/i)).toBeTruthy())
+    expect(container.textContent).not.toMatch(
+      /unexpected token|valid json|doctype|gateway failure/i,
+    )
+    expect(saveUserImageMock).not.toHaveBeenCalled()
   })
 
   it('12. Backdrop blur — slider 0→50 → value updates', () => {
