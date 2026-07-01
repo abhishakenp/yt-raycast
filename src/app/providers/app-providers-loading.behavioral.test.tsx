@@ -4,6 +4,10 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { shouldUseAuthenticatedProviders } from '@/app/providers/provider-config'
 
+const appProviderMocks = vi.hoisted(() => ({
+  pathname: '/generate/abc',
+}))
+
 // File-level mocks: ClerkProvider is surfaced as a marker so we can detect
 // exactly where the real provider shell mounts; useAuth is stubbed for the
 // ClerkConvexProvider path. ConvexProviderWithClerk is surfaced as a marker so
@@ -49,6 +53,16 @@ vi.mock('@/app/providers/clerk-appearance', () => ({
   clerkFrostedGlassAppearance: {},
 }))
 
+vi.mock('@/app/providers/SignInModalHost', () => ({
+  SignInModalHost: ({ requestId }: { requestId: number }) => (
+    <div data-testid="sign-in-modal-host">request {requestId}</div>
+  ),
+}))
+
+vi.mock('@/components/launch-backdrop', () => ({
+  LaunchBackdrop: () => <div data-testid="launch-backdrop" />,
+}))
+
 vi.mock('@/features/referrals/hooks/useReferralCapture', () => ({
   useReferralCapture: () => {},
 }))
@@ -72,7 +86,7 @@ vi.mock('@tanstack/react-router', () => ({
     select,
   }: {
     select: (state: { location: { pathname: string } }) => unknown
-  }) => select({ location: { pathname: '/generate/abc' } }),
+  }) => select({ location: { pathname: appProviderMocks.pathname } }),
   HeadContent: () => null,
   Scripts: () => null,
   Outlet: () => <div data-testid="outlet" />,
@@ -98,6 +112,7 @@ describe('app provider loading', () => {
 
   afterEach(() => {
     cleanup()
+    appProviderMocks.pathname = '/generate/abc'
     vi.resetModules()
     vi.unstubAllEnvs()
   })
@@ -147,6 +162,43 @@ describe('app provider loading', () => {
       // Convex to Clerk via ConvexProviderWithClerk (mocked marker).
       expect(await screen.findByTestId('convex-with-clerk')).toBeTruthy()
       expect(screen.getByTestId('child')).toBeTruthy()
+    })
+
+    it('shows the public launch backdrop on the homepage without loading Convex providers', async () => {
+      appProviderMocks.pathname = '/'
+      vi.stubEnv('VITE_CONVEX_URL', 'http://localhost:3001')
+      const { AppProviders } = await import('@/app/providers/AppProviders')
+
+      render(
+        <AppProviders>
+          <main>Public home</main>
+        </AppProviders>,
+      )
+
+      expect(await screen.findByTestId('launch-backdrop')).toBeTruthy()
+      expect(screen.getByText('Public home')).toBeTruthy()
+      expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
+    })
+
+    it('mounts the sign-in host only after the global sign-in event fires', async () => {
+      appProviderMocks.pathname = '/'
+      const { openSignInEventName } =
+        await import('@/shared/auth/use-optional-auth')
+      const { AppProviders } = await import('@/app/providers/AppProviders')
+
+      render(
+        <AppProviders>
+          <main>Public home</main>
+        </AppProviders>,
+      )
+
+      expect(screen.queryByTestId('sign-in-modal-host')).toBeNull()
+
+      window.dispatchEvent(new Event(openSignInEventName))
+
+      expect(
+        (await screen.findByTestId('sign-in-modal-host')).textContent,
+      ).toBe('request 1')
     })
   })
 
