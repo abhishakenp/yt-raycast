@@ -49,6 +49,9 @@ const Probe = ({
         <button type="button" data-testid="ignored-button">
           Button label
         </button>
+        <a href="/pricing" data-testid="ignored-link">
+          <span>Nested link label</span>
+        </a>
       </div>
       <p data-testid="outside-copy">Outside selected text</p>
     </>
@@ -127,6 +130,18 @@ describe('useAITextEdit', () => {
     render(<Probe aiEditMode onSelect={onSelect} />)
 
     const node = screen.getByTestId('ignored-button').firstChild
+    expect(node).toBeTruthy()
+    selectNodeText(node!, 0, node!.textContent!.length)
+    dispatchSelectionChange()
+
+    expect(onSelect).not.toHaveBeenCalled()
+  })
+
+  it('ignores selections nested inside interactive links and controls', () => {
+    const onSelect = vi.fn()
+    render(<Probe aiEditMode onSelect={onSelect} />)
+
+    const node = screen.getByText('Nested link label').firstChild
     expect(node).toBeTruthy()
     selectNodeText(node!, 0, node!.textContent!.length)
     dispatchSelectionChange()

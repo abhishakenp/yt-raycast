@@ -165,6 +165,40 @@ describe('useClonePageNav', () => {
     ])
   })
 
+  it('ignores malformed clone page rows and keeps valid captured pages renderable', () => {
+    getState().rows = [
+      null,
+      { pathname: null, isHome: true, failed: false },
+      {
+        pathname: '/valid',
+        title: 'Valid captured page',
+        html: '<main>Valid clone page</main>',
+        isHome: true,
+        failed: false,
+        order: 0,
+        byteLength: 512,
+      },
+    ] as unknown as CloneHookState['rows']
+
+    expect(() =>
+      renderHook(() => useClonePageNav('session-malformed')),
+    ).not.toThrow()
+
+    const { result } = renderHook(() => useClonePageNav('session-malformed'))
+
+    expect(result.current).toMatchObject({
+      currentHtml: '<main>Valid clone page</main>',
+      currentPath: '/valid',
+      isClone: true,
+    })
+    expect(result.current.pages).toEqual([
+      expect.objectContaining({
+        pathname: '/valid',
+        title: 'Valid captured page',
+      }),
+    ])
+  })
+
   it('navigates captured clone paths without opening the source site', () => {
     getState().rows = [
       {

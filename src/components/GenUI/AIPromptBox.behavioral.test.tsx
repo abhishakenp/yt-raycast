@@ -153,4 +153,21 @@ describe('AIPromptBox', () => {
       true,
     )
   })
+
+  it('does not close from Escape while a rewrite is loading', () => {
+    const onCancel = vi.fn()
+    render(
+      <AIPromptBox
+        text="Some text"
+        rect={baseRect}
+        onSubmit={vi.fn()}
+        onCancel={onCancel}
+        isLoading
+      />,
+    )
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect(onCancel).not.toHaveBeenCalled()
+  })
 })
