@@ -68,4 +68,37 @@ describe('provider verifier gate helpers', () => {
       },
     })
   })
+
+  test('recursively redacts secret-like evidence fields from nested provider payloads', () => {
+    const result = normalizeProviderResult('stripe', {
+      ok: true,
+      webhook: {
+        id: 'evt_123',
+        stripeSignature: 't=123,v1=secret',
+      },
+      requests: [
+        {
+          status: 200,
+          authorizationToken: 'bearer secret',
+        },
+        {
+          status: 201,
+          body: { client_secret: 'cs_test_secret', customer: 'cus_123' },
+        },
+      ],
+    })
+
+    expect(result).toEqual({
+      name: 'stripe',
+      status: 'passed',
+      evidence: {
+        ok: true,
+        webhook: { id: 'evt_123' },
+        requests: [
+          { status: 200 },
+          { status: 201, body: { customer: 'cus_123' } },
+        ],
+      },
+    })
+  })
 })
