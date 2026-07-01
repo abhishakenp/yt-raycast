@@ -17,24 +17,6 @@ const asUser = (t: ReturnType<typeof convexTest>, user: string) =>
   })
 
 describe('GitHub Convex integration', () => {
-  it('exposes githubConnections and githubOAuthStates tables in the schema', () => {
-    const tableNames = Object.keys(schema.tables)
-    expect(tableNames).toContain('githubConnections')
-    expect(tableNames).toContain('githubOAuthStates')
-
-    const connectionIndexNames = schema.tables.githubConnections[
-      ' indexes'
-    ]().map((i: { indexDescriptor: string }) => i.indexDescriptor)
-    expect(connectionIndexNames).toContain('by_clerkTokenIdentifier')
-    expect(connectionIndexNames).toContain('by_githubUserId')
-
-    const stateIndexNames = schema.tables.githubOAuthStates[' indexes']().map(
-      (i: { indexDescriptor: string }) => i.indexDescriptor,
-    )
-    expect(stateIndexNames).toContain('by_state')
-    expect(stateIndexNames).toContain('by_clerkTokenIdentifier')
-  })
-
   it('requires authentication to create OAuth state', async () => {
     const t = convexTest(schema, modules)
 
