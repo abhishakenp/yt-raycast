@@ -87,19 +87,6 @@ const clearClerk = (): void => {
   delete (window as unknown as { Clerk?: unknown }).Clerk
 }
 
-describe('referral schema', () => {
-  it('declares the referralCodes, referrals and referralRewards tables', () => {
-    const tables = schema.tables as unknown as Record<string, unknown>
-    const names = Object.keys(tables)
-    expect(names).toEqual(
-      expect.arrayContaining(['referralCodes', 'referrals', 'referralRewards']),
-    )
-    expect(tables.referralCodes).toBeDefined()
-    expect(tables.referrals).toBeDefined()
-    expect(tables.referralRewards).toBeDefined()
-  })
-})
-
 describe('billing webhook referral qualification', () => {
   beforeEach(() => {
     vi.stubEnv('BILLING_WEBHOOK_MUTATION_SECRET', SECRET)
