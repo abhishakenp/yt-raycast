@@ -180,6 +180,66 @@ describe('clone orchestrator behavior', () => {
       }),
     )
   })
+
+  it('marks an oversized rest page as failed when Convex upload returns malformed HTML', async () => {
+    const largeBody = 'Oversized rest page '.repeat(60_000)
+    cloneMocks.client.mutation.mockImplementation(async (_ref, args) => {
+      if (
+        args &&
+        typeof args === 'object' &&
+        !('pathname' in args) &&
+        !('editType' in args)
+      ) {
+        return 'https://convex-upload.test/clone-html'
+      }
+      return null
+    })
+    cloneMocks.capturePage.mockImplementation(
+      async (_browser: unknown, url: string) => {
+        if (url.endsWith('/about')) {
+          return {
+            ...capturedPage(url, 'About Title'),
+            html: `<!doctype html><html><head><title>About Title</title></head><body><main>${largeBody}</main></body></html>`,
+          }
+        }
+        return capturedPage(url, 'Home Title')
+      },
+    )
+    const fetchMock = vi.fn(
+      async () =>
+        new Response('<!doctype html><h1>upload gateway failure</h1>', {
+          headers: { 'content-type': 'text/html' },
+          status: 502,
+        }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(
+      runCloneJob({
+        sessionId: 'clone-session',
+        seedUrl: 'https://example.com/',
+        brief: '',
+      }),
+    ).resolves.toBeUndefined()
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://convex-upload.test/clone-html',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'text/html' },
+      }),
+    )
+    expect(mutationArgs()).toContainEqual(
+      expect.objectContaining({
+        pathname: 'https://example.com/about',
+        isHome: false,
+        failed: true,
+        order: 1,
+        byteLength: 0,
+      }),
+    )
+    expect(cloneMocks.browser.close).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('targeted edit pass behavior', () => {
