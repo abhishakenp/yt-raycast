@@ -5,9 +5,6 @@ import {
   getMedusaPublishableKey,
 } from '@/features/commerce/server/medusa-store-env'
 
-const errorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback
-
 export const Route = createFileRoute('/api/medusa-checkout')({
   server: {
     handlers: {
@@ -21,7 +18,15 @@ export const Route = createFileRoute('/api/medusa-checkout')({
           )
         }
 
-        const body = await request.json()
+        let body: unknown
+        try {
+          body = await request.json()
+        } catch {
+          return Response.json(
+            { error: 'Invalid checkout request body' },
+            { status: 400 },
+          )
+        }
         const baseUrl = getMedusaBackendUrl()
 
         try {
@@ -43,11 +48,8 @@ export const Route = createFileRoute('/api/medusa-checkout')({
 
           const data = await response.json()
           return Response.json(data)
-        } catch (error) {
-          return Response.json(
-            { error: errorMessage(error, 'checkout failed') },
-            { status: 500 },
-          )
+        } catch {
+          return Response.json({ error: 'checkout failed' }, { status: 500 })
         }
       },
     },

@@ -1,5 +1,11 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
+import { isUnsafePublicPreviewHtml } from './openui_error_html'
+import {
+  applyImageSwap,
+  applyPreviewTextEdit,
+  applyStyleEdit,
+} from './session_edit_helpers'
 import {
   getGalleryCategories,
   getGalleryCategoryOptions,
@@ -12,6 +18,7 @@ export type PublicGalleryArtifacts = {
   preview: Doc<'previews'> | null
   homeModule: Doc<'generatedModules'> | null
   siteSpec: Doc<'siteSpecs'> | null
+  edits?: Doc<'edits'>[] | null
 }
 
 export type PublicGallerySessionOptions = {
@@ -53,8 +60,106 @@ export const loadPublicGalleryArtifacts = async (
       .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
       .first(),
   ])
+  const edits = await ctx.db
+    .query('edits')
+    .withIndex('by_sessionId_createdAt', (index) =>
+      index.eq('sessionId', sessionId),
+    )
+    .collect()
+    .catch(() => [])
 
-  return { preview, homeModule, siteSpec }
+  return edits.length > 0
+    ? { preview, homeModule, siteSpec, edits }
+    : { preview, homeModule, siteSpec }
+}
+
+const isLikelyOpenUISource = (source: string | undefined): boolean => {
+  if (source === undefined) return false
+  const trimmed = source.trim()
+  if (!trimmed) return false
+  if (/^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)) {
+    return true
+  }
+  return /(?:^|\n)\s*(?:root|\$page)\s*=/.test(trimmed)
+}
+
+const readOpenUISourceFromSiteSpec = (
+  siteSpec: Doc<'siteSpecs'> | null,
+): string | undefined => {
+  const candidates = [siteSpec?.specJson, siteSpec?.spec]
+
+  for (const candidate of candidates) {
+    if (typeof candidate !== 'string' || !candidate.trim()) continue
+
+    try {
+      const parsed = JSON.parse(candidate) as unknown
+      if (
+        parsed !== null &&
+        typeof parsed === 'object' &&
+        'pages' in parsed &&
+        parsed.pages !== null &&
+        typeof parsed.pages === 'object'
+      ) {
+        const home = (parsed.pages as Record<string, unknown>).home
+        if (typeof home === 'string' && isLikelyOpenUISource(home)) return home
+      }
+    } catch {
+      if (isLikelyOpenUISource(candidate)) return candidate
+    }
+  }
+
+  return undefined
+}
+
+const resolveGalleryOpenUISource = (
+  artifacts: PublicGalleryArtifacts,
+): string => {
+  const { preview, homeModule, siteSpec } = artifacts
+  return preview?.openUiSource && isLikelyOpenUISource(preview.openUiSource)
+    ? preview.openUiSource
+    : (readOpenUISourceFromSiteSpec(siteSpec) ??
+        (homeModule?.source && isLikelyOpenUISource(homeModule.source)
+          ? homeModule.source
+          : undefined) ??
+        '')
+}
+
+const applyGalleryEditsToSource = (
+  source: string,
+  edits: Doc<'edits'>[] | null | undefined,
+): string => {
+  if (!edits || edits.length === 0) return source
+
+  let result = source
+  for (const edit of [...edits].reverse()) {
+    if (edit.editType === 'text' && edit.beforeText && edit.afterText) {
+      const textResult = applyPreviewTextEdit(
+        result,
+        edit.beforeText,
+        edit.afterText,
+        edit.occurrenceIndex,
+      )
+      if (textResult.replaced) result = textResult.html
+    } else if (edit.editType === 'image' && edit.beforeText && edit.afterText) {
+      const imageResult = applyImageSwap(
+        result,
+        edit.beforeText,
+        edit.afterText,
+        edit.occurrenceIndex,
+      )
+      if (imageResult.replaced) result = imageResult.html
+    } else if (edit.editType === 'style' && edit.beforeText && edit.afterText) {
+      const styleResult = applyStyleEdit(
+        result,
+        edit.beforeText,
+        edit.afterText,
+        edit.occurrenceIndex,
+      )
+      if (styleResult.replaced) result = styleResult.html
+    }
+  }
+
+  return result
 }
 
 export const serializePublicGallerySession = (
@@ -72,18 +177,28 @@ export const serializePublicGallerySession = (
       ? artifacts.siteSpec?.spec
       : undefined) ??
     null
+  const moduleSource = applyGalleryEditsToSource(
+    resolveGalleryOpenUISource(artifacts),
+    artifacts.edits,
+  )
+  const previewHtml = isUnsafePublicPreviewHtml(artifacts.preview?.html)
+    ? null
+    : (artifacts.preview?.html ?? null)
 
   return {
     id: session._id,
     sessionId: session._id,
     prompt: session.prompt,
     preferredLanguage: session.preferredLanguage,
+    themeOverride: session.themeOverride ?? null,
+    themeMode: session.themeMode ?? null,
+    genuiTheme: session.genuiTheme ?? null,
     status: session.status ?? null,
     previewVersion: artifacts.preview?.version ?? session.previewVersion ?? 0,
     createdAt: session.createdAt,
     updatedAt: session.updatedAt ?? session.createdAt,
-    html: artifacts.preview?.html ?? null,
-    moduleSource: artifacts.homeModule?.source ?? null,
+    html: previewHtml,
+    moduleSource: moduleSource.trim().length > 0 ? moduleSource : null,
     siteSpecJson,
     categories: getGalleryCategories(session.prompt),
     elapsed: session.elapsed ?? null,
@@ -121,17 +236,26 @@ export const listPublicGallerySessions = async (
     matchesGalleryFilters(session, undefined, args.category),
   )
 
-  const total = filteredSessions.length
+  const filteredWithArtifacts = await Promise.all(
+    filteredSessions.map(async (session) => ({
+      session,
+      artifacts: await loadPublicGalleryArtifacts(ctx, session._id),
+    })),
+  )
+  const validSessions = filteredWithArtifacts.filter(({ artifacts }) => {
+    if (artifacts.preview === null) return artifacts.homeModule?.source
+    if (!isUnsafePublicPreviewHtml(artifacts.preview.html)) return true
+    return resolveGalleryOpenUISource(artifacts).trim().length > 0
+  })
+
+  const total = validSessions.length
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const page = Math.min(requestedPage, totalPages)
-  const sessions = filteredSessions.slice((page - 1) * limit, page * limit)
-  const items = await Promise.all(
-    sessions.map(async (session) => {
-      const artifacts = await loadPublicGalleryArtifacts(ctx, session._id)
-      return serializePublicGallerySession(session, artifacts, {
-        legacySiteSpecFallback: true,
-        previewReadyFromStoredPreview: true,
-      })
+  const pageSessions = validSessions.slice((page - 1) * limit, page * limit)
+  const items = pageSessions.map(({ session, artifacts }) =>
+    serializePublicGallerySession(session, artifacts, {
+      legacySiteSpecFallback: true,
+      previewReadyFromStoredPreview: true,
     }),
   )
 
@@ -164,6 +288,13 @@ export const loadPublicGallerySession = async (
   }
 
   const artifacts = await loadPublicGalleryArtifacts(ctx, session._id)
+  if (
+    artifacts.preview !== null &&
+    isUnsafePublicPreviewHtml(artifacts.preview.html) &&
+    resolveGalleryOpenUISource(artifacts).trim().length === 0
+  ) {
+    return null
+  }
   return serializePublicGallerySession(session, artifacts)
 }
 
@@ -228,17 +359,27 @@ export const listOwnedGallerySessions = async (
 
   const limit = Math.min(Math.max(args.limit ?? 12, 1), 48)
   const requestedPage = Math.max(args.page ?? 1, 1)
-  const total = filteredSessions.length
+
+  const filteredWithArtifacts = await Promise.all(
+    filteredSessions.map(async (session) => ({
+      session,
+      artifacts: await loadPublicGalleryArtifacts(ctx, session._id),
+    })),
+  )
+  const validSessions = filteredWithArtifacts.filter(({ artifacts }) => {
+    if (artifacts.preview === null) return artifacts.homeModule?.source
+    if (!isUnsafePublicPreviewHtml(artifacts.preview.html)) return true
+    return resolveGalleryOpenUISource(artifacts).trim().length > 0
+  })
+
+  const total = validSessions.length
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const page = Math.min(requestedPage, totalPages)
-  const sessions = filteredSessions.slice((page - 1) * limit, page * limit)
-  const items = await Promise.all(
-    sessions.map(async (session) => {
-      const artifacts = await loadPublicGalleryArtifacts(ctx, session._id)
-      return serializePublicGallerySession(session, artifacts, {
-        legacySiteSpecFallback: true,
-        previewReadyFromStoredPreview: true,
-      })
+  const pageSessions = validSessions.slice((page - 1) * limit, page * limit)
+  const items = pageSessions.map(({ session, artifacts }) =>
+    serializePublicGallerySession(session, artifacts, {
+      legacySiteSpecFallback: true,
+      previewReadyFromStoredPreview: true,
     }),
   )
 

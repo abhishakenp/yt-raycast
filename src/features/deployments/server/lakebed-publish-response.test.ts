@@ -25,6 +25,9 @@ const realConvexFailedLakebedDeployment = {
     'Build failed with 3 errors:\nlakebed-source:client/section-kit/SignInButton.tsx:3:9: ERROR: No matching export in "lakebed-source:client/lib/lakebed.ts" for import "useAuth"\nlakebed-source:client/section-kit/SignInButton.tsx:3:18: ERROR: No matching export in "lakebed-source:client/lib/lakebed.ts" for import "signInWithGoogle"\nlakebed-source:client/section-kit/SignInButton.tsx:3:36: ERROR: No matching export in "lakebed-source:client/lib/lakebed.ts" for import "signOut"',
 } as const
 
+const dbObservedOpenUiHandoffHtml =
+  '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>'
+
 describe('createLakebedPublishResponse', () => {
   it('returns an existing ready Lakebed deployment without redeploying', async () => {
     const client = {
@@ -143,6 +146,52 @@ describe('createLakebedPublishResponse', () => {
       status: 'ready',
       url: 'https://site.lakebed.app',
     })
+  })
+
+  it('does not publish a ready Lakebed artifact whose static preview still contains DB-observed OpenUI handoff HTML', async () => {
+    const filesUrl = 'https://storage.test/boutique-coffee-lakebed-files.json'
+    const fetchMock = vi.fn(async () =>
+      Response.json({
+        files: {
+          'client/preview.ts': `export const previewHtml = ${JSON.stringify(dbObservedOpenUiHandoffHtml)};\n`,
+          'client/index.tsx':
+            'import { previewHtml } from "./preview";\nexport default function App(){ return <iframe srcDoc={previewHtml} /> }\n',
+        },
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    const client = {
+      query: vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce({
+        status: 'ready',
+        filesUrl,
+      }),
+      action: vi.fn(async () => ({
+        provider: 'lakebed',
+        status: 'ready',
+        url: 'https://silver-river-1fa25d328e.lakebed.app',
+      })),
+      setAuth: vi.fn(),
+    }
+
+    try {
+      const response = await createLakebedPublishResponse(
+        requestFor({ anonymousOwnerSecret: 'owner-secret' }),
+        'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+        client,
+      )
+      const body = await response.json()
+
+      expect(response.status).toBe(409)
+      expect(fetchMock).toHaveBeenCalledWith(filesUrl)
+      expect(client.action).not.toHaveBeenCalled()
+      expect(JSON.stringify(body)).not.toContain(
+        'Generated OpenUI source is ready',
+      )
+      expect(JSON.stringify(body)).not.toContain('ship-fast-openui-source')
+      expect(JSON.stringify(body)).not.toContain('Boutique Coffee Roastery')
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 
   it('returns a stable Lakebed publish error when deployment crashes after the artifact is ready', async () => {

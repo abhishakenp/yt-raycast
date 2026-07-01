@@ -378,7 +378,7 @@ describe('GalleryGrid', () => {
     expect(container.querySelector('img')).toBeNull()
   })
 
-  it('prefers a gallery image URL over stored generated HTML', () => {
+  it('prefers server-rendered static HTML over a gallery image URL', () => {
     const gallery: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -395,10 +395,10 @@ describe('GalleryGrid', () => {
 
     const { container } = render(<GalleryGrid gallery={gallery} />)
 
-    expect(container.querySelector('img')?.getAttribute('src')).toBe(
-      'https://cdn.example.test/generated-theme.png',
+    expect(container.querySelector('h1')?.textContent).toBe(
+      'Rendered stock HTML preview',
     )
-    expect(container.querySelector('h1')).toBeNull()
+    expect(container.querySelector('img')).toBeNull()
     expect(globalThis.fetch).not.toHaveBeenCalled()
   })
 

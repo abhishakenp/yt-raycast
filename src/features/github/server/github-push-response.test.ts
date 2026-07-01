@@ -29,6 +29,39 @@ const exportData = {
   filesUrl: 'https://storage.test/html-files.json',
 }
 
+const dbObservedBreweryHtmlExport = {
+  sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+  prompt:
+    'a craft beer brewery with taproom tours and seasonal releases in portland',
+  target: 'html',
+  previewVersion: 1,
+  html: '',
+  includeBadge: false,
+  artifact: {
+    byteLength: 13937,
+    contentType: 'text/html; charset=utf-8',
+    fileCount: 1,
+    filename: 'index.html',
+    hash: '684afc6a35a8459d9b1d8078b8b402d14ab42345e861094daf20d133a6fca85d',
+    status: 'ready',
+  },
+  filesUrl: 'https://storage.test/db-brewery-html-files.json',
+}
+
+const dbObservedBreweryLakebedExport = {
+  ...dbObservedBreweryHtmlExport,
+  target: 'lakebed',
+  artifact: {
+    byteLength: 171132,
+    contentType: 'application/zip',
+    fileCount: 117,
+    filename: 'ship-fast-k574ms14ma9f94keq30r7dq24x89n1k2-lakebed.zip',
+    hash: '538868f9ee345a5bbf618651394c0b767ae803b310f7a4f1065f6c08f0957aca',
+    status: 'ready',
+  },
+  filesUrl: 'https://storage.test/db-brewery-lakebed-files.json',
+}
+
 const htmlPrebuiltFiles = {
   'README.md':
     '# Atlas Notes\n\nGenerated with [ShipFast](https://ship-fast.io) 🚀.\n',
@@ -497,6 +530,180 @@ describe('createGitHubPushResponse', () => {
     expect(client.mutation).not.toHaveBeenCalled()
   })
 
+  it('does not push a DB-observed ready HTML artifact when the file manifest lacks index.html', async () => {
+    const { fetchMock, requests } = createGitHubFetch()
+    globalThis.fetch = vi.fn(async (url: string | URL) => {
+      if (String(url) === 'https://storage.test/db-brewery-html-files.json') {
+        return Response.json({
+          'README.md':
+            '# Craft Beer Brewery\n\nGenerated artifact metadata says index.html exists, but the files manifest does not include it.',
+        })
+      }
+      return new Response('Unhandled storage fetch', { status: 404 })
+    }) as typeof fetch
+    client.query.mockResolvedValueOnce(dbObservedBreweryHtmlExport)
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'html' }),
+        },
+      ),
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+      env,
+      client,
+      fetchMock,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Export artifact is missing index.html.',
+    })
+    expect(requests).toEqual([])
+    expect(tokenResolver).not.toHaveBeenCalled()
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
+  it('does not push a DB-observed ready HTML artifact when index.html is blank', async () => {
+    const { fetchMock, requests } = createGitHubFetch()
+    globalThis.fetch = vi.fn(async (url: string | URL) => {
+      if (String(url) === 'https://storage.test/db-brewery-html-files.json') {
+        return Response.json({
+          'README.md': '# Craft Beer Brewery',
+          'index.html': '   \n\t',
+          'llms.txt':
+            'a craft beer brewery with taproom tours and seasonal releases in portland',
+          'robots.txt': 'User-agent: *',
+          'sitemap.xml': '<urlset />',
+        })
+      }
+      return new Response('Unhandled storage fetch', { status: 404 })
+    }) as typeof fetch
+    client.query.mockResolvedValueOnce(dbObservedBreweryHtmlExport)
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'html' }),
+        },
+      ),
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+      env,
+      client,
+      fetchMock,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Export artifact is missing rendered HTML.',
+    })
+    expect(requests).toEqual([])
+    expect(tokenResolver).not.toHaveBeenCalled()
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
+  it('does not push a DB-observed ready Lakebed artifact when required project entrypoints are missing', async () => {
+    const { fetchMock, requests } = createGitHubFetch()
+    globalThis.fetch = vi.fn(async (url: string | URL) => {
+      if (
+        String(url) === 'https://storage.test/db-brewery-lakebed-files.json'
+      ) {
+        return Response.json({
+          'README.md':
+            '# Craft Beer Brewery Lakebed\n\nGenerated artifact metadata says 117 files exist, but the manifest lacks the runnable client/server entrypoints.',
+          'package.json': '{"scripts":{"dev":"lakebed dev"}}',
+        })
+      }
+      return new Response('Unhandled storage fetch', { status: 404 })
+    }) as typeof fetch
+    client.query.mockResolvedValueOnce(dbObservedBreweryLakebedExport)
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'lakebed' }),
+        },
+      ),
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+      env,
+      client,
+      fetchMock,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Lakebed export artifact is missing required project files.',
+    })
+    expect(requests).toEqual([])
+    expect(tokenResolver).not.toHaveBeenCalled()
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
+  it('does not push a ready artifact whose index.html is the DB-observed OpenUI handoff placeholder', async () => {
+    const { fetchMock, requests } = createGitHubFetch()
+    const dbObservedOpenUiHandoffHtml =
+      '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>'
+    globalThis.fetch = vi.fn(async (url: string | URL) => {
+      if (String(url) === 'https://storage.test/html-files.json') {
+        return Response.json({
+          ...htmlPrebuiltFiles,
+          'index.html': dbObservedOpenUiHandoffHtml,
+        })
+      }
+      return new Response('Unhandled storage fetch', { status: 404 })
+    }) as typeof fetch
+    client.query.mockResolvedValueOnce({
+      ...exportData,
+      sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+      prompt:
+        'a boutique coffee roastery with subscription delivery and tasting events',
+      artifact: { status: 'ready' },
+      filesUrl: 'https://storage.test/html-files.json',
+      previewVersion: 1,
+    })
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/k57eyt2na1n9pzn5x7rh4sdbah89mh9e/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'html' }),
+        },
+      ),
+      'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+      env,
+      client,
+      fetchMock,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(409)
+    const body = await response.json()
+    expect(body).toMatchObject({
+      error: 'Export artifact is not a rendered static site.',
+    })
+    expect(JSON.stringify(body)).not.toContain(
+      'Generated OpenUI source is ready',
+    )
+    expect(JSON.stringify(body)).not.toContain('ship-fast-openui-source')
+    expect(requests).toEqual([])
+    expect(tokenResolver).not.toHaveBeenCalled()
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
   it('returns a stable JSON error when GitHub responds with malformed HTML', async () => {
     const requests: Array<{ method: string; path: string }> = []
     const fetchMock: typeof fetch = async (url, init) => {
@@ -725,6 +932,42 @@ describe('createGitHubPushResponse', () => {
     )
 
     expect(response.status).toBe(403)
+  })
+
+  it('does not leak DB-observed session details from Convex ownership failures', async () => {
+    client.query.mockRejectedValueOnce(
+      new Error(
+        'FORBIDDEN: owner_secret mismatch for k574ms14ma9f94keq30r7dq24x89n1k2 while exporting Pineapple Saison',
+      ),
+    )
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'html' }),
+        },
+      ),
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+      env,
+      client,
+      unusedFetch,
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(body).toEqual({
+      error: 'You do not have access to this export.',
+    })
+    expect(JSON.stringify(body)).not.toContain(
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+    )
+    expect(JSON.stringify(body)).not.toContain('owner_secret')
+    expect(JSON.stringify(body)).not.toContain('Pineapple Saison')
+    expect(tokenResolver).not.toHaveBeenCalled()
+    expect(client.mutation).not.toHaveBeenCalled()
   })
 
   it('maps missing paid export access to an actionable payment response', async () => {

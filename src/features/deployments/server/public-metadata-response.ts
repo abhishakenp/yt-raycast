@@ -1,6 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import {
   createLlmsTxt,
   createRobotsTxt,
@@ -124,10 +125,19 @@ export const createPublicMetadataResponse = async (
   }
 
   const client = options.client ?? createRuntimeConvexHttpClient()
-  const [deployment, preview] = await Promise.all([
-    client.query(api.sessions.getDeploymentBySlug, { slug }),
-    client.query(api.sessions.getPublicPreview, { lookup: slug }),
-  ])
+  let deployment: Awaited<ReturnType<typeof client.query>>
+  let preview: Awaited<ReturnType<typeof client.query>>
+  try {
+    ;[deployment, preview] = await Promise.all([
+      client.query(api.sessions.getDeploymentBySlug, { slug }),
+      client.query(api.sessions.getPublicPreview, { lookup: slug }),
+    ])
+  } catch {
+    return new Response('Deployment metadata is unavailable', {
+      status: 503,
+      headers: { 'content-type': 'text/plain; charset=utf-8' },
+    })
+  }
 
   if (deployment === null || deployment.status !== 'ready') {
     return new Response('Deployment metadata not found', {
@@ -136,9 +146,41 @@ export const createPublicMetadataResponse = async (
     })
   }
 
-  if (preview === null || preview.html === undefined) {
+  if (
+    preview === null ||
+    preview.html === undefined ||
+    preview.html.trim() === '' ||
+    isUnsafePublicPreviewHtml(preview.html)
+  ) {
+    return new Response(
+      isUnsafePublicPreviewHtml(preview?.html)
+        ? 'Deployment metadata is not available'
+        : 'Deployment metadata is not ready yet',
+      {
+        status: isUnsafePublicPreviewHtml(preview?.html) ? 422 : 202,
+        headers: { 'content-type': 'text/plain; charset=utf-8' },
+      },
+    )
+  }
+
+  if (
+    typeof deployment.previewVersion === 'number' &&
+    typeof preview.previewVersion === 'number' &&
+    preview.previewVersion > deployment.previewVersion
+  ) {
     return new Response('Deployment metadata is not ready yet', {
       status: 202,
+      headers: { 'content-type': 'text/plain; charset=utf-8' },
+    })
+  }
+
+  if (
+    typeof deployment.sessionId === 'string' &&
+    typeof preview.sessionId === 'string' &&
+    preview.sessionId !== deployment.sessionId
+  ) {
+    return new Response('Deployment metadata is not available', {
+      status: 422,
       headers: { 'content-type': 'text/plain; charset=utf-8' },
     })
   }

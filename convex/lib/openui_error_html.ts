@@ -27,12 +27,27 @@ export const isOpenUiHandoffHtml = (
     /^\s*<!doctype\s+html/i.test(html) || /^\s*<html[\s>]/i.test(html)
   if (!isFullDocument) return false
   return (
-    /data-openui-ready=["']source["']/i.test(html) ||
-    /id=["']ship-fast-openui-source["']/i.test(html) ||
-    /Generated OpenUI source is ready/i.test(html)
+    (/id=["']ship-fast-openui-source["']/i.test(html) ||
+      /Generated OpenUI source is ready/i.test(html)) &&
+    /data-openui-ready=["']source["']/i.test(html)
   )
 }
 
 export const isUnsafePublicPreviewHtml = (
   html: string | undefined | null,
 ): boolean => isOpenUiErrorHtml(html) || isOpenUiHandoffHtml(html)
+
+/**
+ * Detect OpenUI handoff markers in arbitrary text (e.g. bundled source files)
+ * without requiring a full HTML document. Used to scan export artifacts for
+ * leaked handoff placeholders before publishing.
+ */
+export const containsOpenUiHandoffMarkers = (
+  text: string | undefined | null,
+): boolean => {
+  if (typeof text !== 'string' || text.length === 0) return false
+  return (
+    /id=["']ship-fast-openui-source["']/i.test(text) ||
+    /Generated OpenUI source is ready/i.test(text)
+  )
+}

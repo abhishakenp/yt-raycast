@@ -1,3 +1,4 @@
+import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import { createShipFastEngineAdapter } from './ship-fast-engine-adapter'
 import type { EngineWorkspaceTask } from './engine-workspace'
 import type {
@@ -65,6 +66,13 @@ export const runEngineGeneration = async ({
       prompt,
       preferredLanguage,
     })
+
+    if (isUnsafePublicPreviewHtml(result.html)) {
+      throw new Error(
+        'Ship Fast engine wrote OpenUI handoff HTML instead of a rendered preview',
+      )
+    }
+
     const persisted = await persistence.completeGeneration({
       sessionId,
       anonymousOwnerSecret,
@@ -78,11 +86,16 @@ export const runEngineGeneration = async ({
   } catch (error) {
     const message = toErrorMessage(error)
 
-    await persistence.failGeneration({
-      sessionId,
-      anonymousOwnerSecret,
-      message,
-    })
+    await persistence
+      .failGeneration({
+        sessionId,
+        anonymousOwnerSecret,
+        message,
+      })
+      .catch(() => {
+        // Failure persistence is best-effort; the generation has already
+        // failed and we must still surface a failed result to the caller.
+      })
 
     return { status: 'failed', message }
   }

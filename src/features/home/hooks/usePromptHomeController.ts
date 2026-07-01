@@ -1,8 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
-import { useMutation } from 'convex/react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 
-import { api } from '../../../../convex/_generated/api'
 import {
   checkPromptContentPolicy,
   CONTENT_POLICY_CLIENT_MESSAGE,
@@ -27,15 +25,27 @@ import {
   verifyReadySession,
 } from '@/features/session/services/ready-session-cache'
 import { rememberGenerationLaunchHandoff } from '@/features/session/services/generation-launch-handoff'
-import { parseClonePrompt } from '@/features/clone/services/parse-clone-url'
-import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 const CREATE_SESSION_TIMEOUT_MS = 12_000
 const CREATE_SESSION_RETRY_DELAY_MS = 450
+const MIN_LAUNCH_FEEDBACK_MS = 1_200
+
+type CreateSessionPayload = ReturnType<typeof buildCreateSessionPayload>
+type CreateSessionResult = {
+  sessionId: string
+  cached?: boolean
+  cloned?: boolean
+}
+
 const delay = (ms: number) =>
   new Promise((resolve) => {
     window.setTimeout(resolve, ms)
   })
+
+const waitForMinimumLaunchFeedback = async (startedAt: number) => {
+  const remainingMs = MIN_LAUNCH_FEEDBACK_MS - (Date.now() - startedAt)
+  if (remainingMs > 0) await delay(remainingMs)
+}
 
 const withTimeout = async <T>(
   promise: Promise<T>,
@@ -80,10 +90,66 @@ const createSessionWithRetry = async <Payload, Result>(
   throw lastError
 }
 
+const createSessionFromHttp = async (
+  payload: CreateSessionPayload,
+): Promise<CreateSessionResult> => {
+  const response = await fetch('/api/sessions/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  }).catch(() => null)
+
+  if (response !== null) {
+    const contentType = response.headers?.get('content-type') ?? ''
+    const isHtml = contentType.includes('text/html')
+    const data = isHtml
+      ? null
+      : ((await response.json().catch(() => null)) as
+          | CreateSessionResult
+          | { error?: string }
+          | null)
+    const disabled =
+      response.status === 404 &&
+      data !== null &&
+      'error' in data &&
+      data.error === 'Public preview session creation is disabled.'
+
+    const hasSessionId =
+      data !== null &&
+      'sessionId' in data &&
+      typeof (data as CreateSessionResult).sessionId === 'string' &&
+      ((data as CreateSessionResult).sessionId as string).trim() !== ''
+
+    // A 200 response with a non-JSON/HTML body, or JSON missing a session id,
+    // is a malformed success — fall back to the Convex mutation instead of
+    // navigating with an undefined id.
+    const malformedSuccess = response.ok && (data === null || !hasSessionId)
+
+    if (response.ok && hasSessionId) return data as CreateSessionResult
+    if (!disabled && !malformedSuccess) {
+      throw new Error(
+        data !== null && 'error' in data && data.error
+          ? data.error
+          : 'Generation could not start.',
+      )
+    }
+  }
+
+  const [{ api }, { createRuntimeConvexHttpClient }] = await Promise.all([
+    import('../../../../convex/_generated/api'),
+    import('@/shared/convex/http-client'),
+  ])
+  const client = createRuntimeConvexHttpClient(CREATE_SESSION_TIMEOUT_MS)
+  return (await client.mutation(
+    api.sessions.create,
+    payload,
+  )) as CreateSessionResult
+}
+
 export const usePromptHomeController = () => {
   const navigate = useNavigate()
-  const createSession = useMutation(api.sessions.create)
-  const { getToken, isSignedIn } = useOptionalAuth()
   const [prompt, setPrompt] = useState('')
   const [errorMessage, setErrorMessage] = useState<string>()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -143,13 +209,9 @@ export const usePromptHomeController = () => {
     }
 
     submitInFlightRef.current = true
+    const launchFeedbackStartedAt = Date.now()
     setErrorMessage(undefined)
     setIsSubmitting(true)
-
-    const { isClone, seedUrls, brief } = parseClonePrompt(runtimePrompt)
-    const explicitCloneUrl = opts?.cloneUrl?.trim() || ''
-    const targetCloneUrl = isClone ? seedUrls[0] : explicitCloneUrl
-    const targetCloneBrief = isClone ? brief : runtimePrompt
 
     try {
       const canUseVerifiedReadyCache =
@@ -158,7 +220,6 @@ export const usePromptHomeController = () => {
           0 &&
         !(opts?.designReferenceNotes ?? '').trim() &&
         !(opts?.cloneUrl ?? '').trim() &&
-        !isClone &&
         opts?.engineVersion !== 'v2' &&
         opts?.engineVersion !== 'v3'
       if (canUseVerifiedReadyCache) {
@@ -197,7 +258,7 @@ export const usePromptHomeController = () => {
       const anonymousClientId = createAnonymousClientId(window.localStorage)
       const workspace = createSessionWorkspaceKey()
       const result = await createSessionWithRetry(
-        createSession,
+        createSessionFromHttp,
         buildCreateSessionPayload({
           prompt: runtimePrompt,
           preferredLanguage,
@@ -207,11 +268,15 @@ export const usePromptHomeController = () => {
           workspace,
           designReferenceUrls: opts?.designReferenceUrls,
           designReferenceNotes: opts?.designReferenceNotes,
-          cloneUrl: targetCloneUrl,
-          engineVersion: targetCloneUrl ? 'v1' : opts?.engineVersion,
+          cloneUrl: opts?.cloneUrl,
+          engineVersion: opts?.engineVersion,
         }),
       )
       const sessionId = result.sessionId
+
+      if (!sessionId || typeof sessionId !== 'string' || !sessionId.trim()) {
+        throw new Error('Session creation returned no session id.')
+      }
 
       const isOwnedCachedClone =
         result.cached === true && result.cloned === true
@@ -234,26 +299,6 @@ export const usePromptHomeController = () => {
         })
       }
 
-      if (targetCloneUrl) {
-        const headers: Record<string, string> = {
-          'content-type': 'application/json',
-        }
-        if (isSignedIn) {
-          const token = await getToken({ template: 'convex' })
-          if (token) headers.Authorization = `Bearer ${token}`
-        }
-        void fetch('/api/clone', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            sessionId,
-            anonymousOwnerSecret,
-            seedUrl: targetCloneUrl,
-            brief: targetCloneBrief,
-          }),
-        }).catch(() => {})
-      }
-
       await navigate({
         to: '/generate/$sessionId',
         params: {
@@ -261,6 +306,7 @@ export const usePromptHomeController = () => {
         },
       })
     } catch {
+      await waitForMinimumLaunchFeedback(launchFeedbackStartedAt)
       submitInFlightRef.current = false
       setErrorMessage('Generation could not start. Try again.')
       setIsSubmitting(false)

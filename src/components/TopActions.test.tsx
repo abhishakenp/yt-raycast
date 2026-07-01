@@ -37,6 +37,14 @@ vi.mock('@/components/HomepageAuthControls', () => ({
   HomepageAuthControls: topActionMocks.authControls,
 }))
 
+vi.mock('@clerk/tanstack-react-start', () => ({
+  Show: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SignInButton: ({ children }: { children?: React.ReactNode }) => (
+    <span>{children ?? 'Sign in'}</span>
+  ),
+  UserButton: () => <span>Account</span>,
+}))
+
 const importTopActions = async (publishableKey: string | undefined) => {
   vi.resetModules()
   vi.unstubAllEnvs()

@@ -34,6 +34,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '#/components/ui/sheet.tsx'
+import { normalizeRecords } from '#/lib/normalize-records.ts'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import type {
@@ -47,6 +48,9 @@ export type RestaurantLakebed = LakebedClientRuntime<typeof restaurantLakebed>
 type RestaurantCatalogItem = ReturnType<
   typeof restaurantLakebed.queries.menuCatalog
 >[number]
+type RestaurantOrderItem = ReturnType<
+  typeof restaurantLakebed.queries.restaurantOrder
+>['items'][number]
 
 export function RestaurantMutationSpinner({
   className,
@@ -84,7 +88,9 @@ export function useRestaurantOrder(lakebed: RestaurantLakebed) {
   )
   const quantityFor = useCallback(
     (name: string) =>
-      order?.items.find((item) => item.name === name)?.quantity ?? 0,
+      normalizeRecords<RestaurantOrderItem>(order?.items).find(
+        (item) => item.name === name,
+      )?.quantity ?? 0,
     [order],
   )
 

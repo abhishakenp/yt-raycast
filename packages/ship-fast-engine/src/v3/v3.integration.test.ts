@@ -271,10 +271,16 @@ describe('runAllV3', () => {
     // openui-manifest.json written.
     expect(existsSync(join(workspace, 'openui-manifest.json'))).toBe(true)
 
-    // index.html written by SSR step (required by engine adapter).
+    // index.html written by SSR step (required by engine adapter) must be the
+    // final static OpenUI document, not a live preview-client shell.
     expect(existsSync(join(workspace, 'index.html'))).toBe(true)
     const indexHtml = readFileSync(join(workspace, 'index.html'), 'utf8')
     expect(indexHtml.length).toBeGreaterThan(0)
+    expect(indexHtml).toContain('data-sf-export-page')
+    expect(indexHtml).not.toContain('openui-preview-client.js')
+    expect(indexHtml).not.toContain('<div id="openui-root"></div>')
+    expect(indexHtml).not.toContain('Generated OpenUI source is ready')
+    expect(indexHtml).not.toContain('ship-fast-openui-source')
 
     // tasks.json shows DONE.
     const tasks = JSON.parse(

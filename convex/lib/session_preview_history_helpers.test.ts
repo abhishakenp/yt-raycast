@@ -26,6 +26,15 @@ const realConvexRendererErrorHistoryPreview = {
   version: 1,
 } as const
 
+const realConvexOpenUiHandoffHistoryPreview = {
+  previewId: 'ns79pp36cdnxp2znd343t2tjw589n4yq',
+  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+  openUiSource:
+    'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})',
+  version: 1,
+} as const
+
 const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
   ({
     _id: sessionId,
@@ -480,6 +489,45 @@ describe('session preview history helpers', () => {
     })
 
     expect(previews).toEqual([preview])
+    expect(generatedModules).toEqual([])
+    expect(siteSpecs).toEqual([])
+    expect(generationEvents).toEqual([])
+  })
+
+  it('does not restore DB-observed OpenUI handoff HTML from preview history into the active preview', async () => {
+    const handoffSessionId =
+      realConvexOpenUiHandoffHistoryPreview.sessionId as Id<'sessions'>
+    const session = sessionDoc({
+      _id: handoffSessionId,
+      userId: 'user_history',
+      previewVersion: realConvexOpenUiHandoffHistoryPreview.version,
+      openuiReady: true,
+    })
+    const preview = previewDoc({
+      _id: realConvexOpenUiHandoffHistoryPreview.previewId as Id<'previews'>,
+      sessionId: handoffSessionId,
+      version: realConvexOpenUiHandoffHistoryPreview.version,
+      html: realConvexOpenUiHandoffHistoryPreview.html,
+      openUiSource: realConvexOpenUiHandoffHistoryPreview.openUiSource,
+    })
+    const { ctx, previews, generatedModules, siteSpecs, generationEvents } =
+      ctxFor({
+        sessions: [session],
+        previews: [preview],
+        userId: 'user_history',
+      })
+
+    await expect(
+      restoreOwnedPreviewVersion(ctx, {
+        sessionId: handoffSessionId,
+        version: realConvexOpenUiHandoffHistoryPreview.version,
+      }),
+    ).rejects.toMatchObject({
+      data: { code: 'PREVIEW_NOT_READY' },
+    })
+
+    expect(previews).toEqual([preview])
+    expect(previews[0]?.html).toBe(realConvexOpenUiHandoffHistoryPreview.html)
     expect(generatedModules).toEqual([])
     expect(siteSpecs).toEqual([])
     expect(generationEvents).toEqual([])

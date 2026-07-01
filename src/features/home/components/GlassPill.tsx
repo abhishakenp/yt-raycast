@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Link } from '@tanstack/react-router'
 
 import { GLASS_LENS_FILTER_ID } from '@/lib/glass-pill-html'
 import { cn } from '@/lib/utils'
@@ -111,6 +112,9 @@ export const GlassPillButton = ({
   </button>
 )
 
+const isInternalHref = (href: string): boolean =>
+  href.startsWith('/') && !href.startsWith('//')
+
 export const GlassPillAnchor = ({
   children,
   className = '',
@@ -119,17 +123,26 @@ export const GlassPillAnchor = ({
   children: ReactNode
   className?: string
   href: string
-}) => (
-  <a
-    href={href}
-    className={cn(
-      'pill relative isolate inline-flex min-h-12 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-5 py-3 font-[inherit] font-semibold tracking-[-0.015em] text-inherit shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white',
-      className,
-    )}
-  >
-    <PillDecorations />
-    <span className="pill__body relative z-[7] inline-flex items-center justify-center gap-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">
-      {children}
-    </span>
-  </a>
-)
+}) => {
+  const cls = cn(
+    'pill relative isolate inline-flex min-h-12 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-5 py-3 font-[inherit] font-semibold tracking-[-0.015em] text-inherit shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white',
+    className,
+  )
+  const inner = (
+    <>
+      <PillDecorations />
+      <span className="pill__body relative z-[7] inline-flex items-center justify-center gap-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">
+        {children}
+      </span>
+    </>
+  )
+  return isInternalHref(href) ? (
+    <Link to={href} className={cls}>
+      {inner}
+    </Link>
+  ) : (
+    <a href={href} className={cls}>
+      {inner}
+    </a>
+  )
+}

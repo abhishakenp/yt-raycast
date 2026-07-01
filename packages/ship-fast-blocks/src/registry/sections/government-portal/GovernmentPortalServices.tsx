@@ -83,8 +83,11 @@ export const GovernmentPortalServices = defineCapsule({
         z.object({
           title: z.string(),
           href: z.string(),
-          color: z.string(),
-          icon: z.enum(['power', 'business', 'environment', 'sustainability']),
+          color: z.string().optional().default('#94BEE0'),
+          icon: z
+            .enum(['power', 'business', 'environment', 'sustainability'])
+            .optional()
+            .default('business'),
           desc: z.string().optional(),
         }),
       )

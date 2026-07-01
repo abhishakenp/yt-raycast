@@ -1,6 +1,6 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
-import { isOpenUiErrorHtml } from './openui_error_html'
+import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import { recordOperationalGenerationEvent } from './session_operational_notifications'
 
 type OperationalNotificationReference = Parameters<
@@ -99,7 +99,8 @@ export const cloneCachedGeneratedArtifacts = async (
     return false
   }
 
-  if (isOpenUiErrorHtml(latestPreview.html)) {
+  if (isUnsafePublicPreviewHtml(latestPreview.html)) {
+    await ctx.db.patch(latestPreview._id, { html: '' })
     return false
   }
 

@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { readJsonOrThrow } from '@/lib/safe-fetch'
 
 type DeploymentPanelProps = {
   sessionId: string
@@ -59,7 +60,10 @@ const publishLakebedViaApi = async (
       method: 'POST',
     },
   )
-  const result = await response.json()
+  const result = await readJsonOrThrow<PublishResult>(
+    response,
+    'Lakebed publish failed',
+  )
   if (!isPublishResponse(result)) {
     throw new Error('Lakebed publish failed')
   }

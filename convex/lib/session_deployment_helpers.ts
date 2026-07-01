@@ -2,7 +2,7 @@ import { ConvexError } from 'convex/values'
 
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
-import { isOpenUiErrorHtml } from './openui_error_html'
+import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import {
   assertCanMutateSession,
   assertCanReadOwnedSession,
@@ -381,7 +381,7 @@ export const prepareLakebedSessionDeployment = async (
     source,
     sourceKind,
     siteSpecJson: preview.siteSpecJson,
-    previewHtml: isOpenUiErrorHtml(preview.html) ? '' : preview.html,
+    previewHtml: isUnsafePublicPreviewHtml(preview.html) ? '' : preview.html,
     previewVersion: preview.version,
     projectName: session.prompt,
     themeName: readLakebedThemeName(preview.siteSpecJson, session.genuiTheme),
@@ -634,7 +634,10 @@ export const publishSessionPreview = async (
       })
     })()
 
-  if (preview.html.trim().length === 0 || isOpenUiErrorHtml(preview.html)) {
+  if (
+    preview.html.trim().length === 0 ||
+    isUnsafePublicPreviewHtml(preview.html)
+  ) {
     throw new ConvexError({
       code: 'PREVIEW_NOT_READY',
       message: 'Preview is not ready to publish',

@@ -136,7 +136,44 @@ interface AiLanguageResult {
 const CANONICAL_LANGUAGE_METADATA: Record<
   string,
   { code: string; name: string; nativeName: string; fontFamily: string }
-> = {}
+> = {
+  chinese: {
+    code: 'zh',
+    name: 'Chinese',
+    nativeName: '中文',
+    fontFamily: 'Noto Sans SC, sans-serif',
+  },
+  mandarin: {
+    code: 'zh',
+    name: 'Chinese',
+    nativeName: '中文',
+    fontFamily: 'Noto Sans SC, sans-serif',
+  },
+  japanese: {
+    code: 'ja',
+    name: 'Japanese',
+    nativeName: '日本語',
+    fontFamily: 'Noto Sans JP, sans-serif',
+  },
+  korean: {
+    code: 'ko',
+    name: 'Korean',
+    nativeName: '한국어',
+    fontFamily: 'Noto Sans KR, sans-serif',
+  },
+  arabic: {
+    code: 'ar',
+    name: 'Arabic',
+    nativeName: 'العربية',
+    fontFamily: 'Noto Naskh Arabic, sans-serif',
+  },
+  mexican: {
+    code: 'es-MX',
+    name: 'Mexican Spanish',
+    nativeName: 'Español (México)',
+    fontFamily: 'Inter, system-ui, sans-serif',
+  },
+}
 
 const canonicalLanguageMetadata = (value: string) =>
   CANONICAL_LANGUAGE_METADATA[value.trim().toLowerCase().replace(/\s+/g, ' ')]

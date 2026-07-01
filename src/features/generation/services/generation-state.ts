@@ -56,7 +56,12 @@ export const createInitialGenerationState = (): GenerationState => ({
 export const canTransitionGenerationStatus = (
   from: GenerationStatus,
   to: GenerationStatus,
-): boolean => transitionRules[from].includes(to)
+): boolean => {
+  // Fail closed for unknown/persisted-legacy statuses instead of crashing
+  // when `transitionRules[from]` is undefined.
+  const allowed = transitionRules[from]
+  return Array.isArray(allowed) ? allowed.includes(to) : false
+}
 
 export const applyGenerationEvent = (
   state: GenerationState,

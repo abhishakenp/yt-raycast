@@ -28,6 +28,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '#/components/ui/sheet.tsx'
+import { normalizeRecords } from '#/lib/normalize-records.ts'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -206,7 +207,9 @@ export function FoodDeliverySearchButton({
 }) {
   const [open, setOpen] = useState(false)
   const foodSearch = useFoodDeliverySearch(lakebed)
-  const catalog = lakebed.useQuery('restaurantCatalog') ?? []
+  const catalog = normalizeRecords<FoodRestaurantCatalogItem>(
+    lakebed.useQuery('restaurantCatalog'),
+  )
 
   const chooseRestaurant = (restaurant: FoodRestaurantCatalogItem) => {
     foodSearch.chooseSearch({

@@ -27,6 +27,17 @@ const realConvexPreviewWithRendererError = {
   html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
 } as const
 
+const realConvexPreviewWithOpenUiHandoff = {
+  previewId: 'ns79pp36cdnxp2znd343t2tjw589n4yq',
+  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+  status: 'preview_ready',
+  previewVersion: 1,
+  title: 'Boutique Coffee Roastery',
+  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+  source:
+    'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})',
+} as const
+
 const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
   ({
     _id: 'site_spec_existing' as Id<'siteSpecs'>,
@@ -677,6 +688,63 @@ describe('session artifact helpers', () => {
           preview.html === realConvexPreviewWithRendererError.html,
       ),
     ).toBe(false)
+    expect(generationEvents).toEqual([])
+    expect(usageMetrics).toEqual([])
+    expect(sessions).toContainEqual(
+      expect.objectContaining({
+        _id: targetSession._id,
+        status: 'queued',
+        previewVersion: 0,
+      }),
+    )
+  })
+
+  it('does not promote cached DB-observed OpenUI handoff HTML into a ready cloned preview', async () => {
+    const cachedSession = sessionDoc({
+      _id: realConvexPreviewWithOpenUiHandoff.sessionId as Id<'sessions'>,
+      status: realConvexPreviewWithOpenUiHandoff.status,
+      previewVersion: realConvexPreviewWithOpenUiHandoff.previewVersion,
+    })
+    const targetSession = sessionDoc({
+      _id: 'session_target_handoff' as Id<'sessions'>,
+      status: 'queued',
+      previewVersion: 0,
+    })
+    const { ctx, previews, sessions, generationEvents, usageMetrics } =
+      cloneCtxFor({
+        sessions: [cachedSession, targetSession],
+        previews: [
+          previewDoc({
+            _id: realConvexPreviewWithOpenUiHandoff.previewId as Id<'previews'>,
+            sessionId: cachedSession._id,
+            version: realConvexPreviewWithOpenUiHandoff.previewVersion,
+            html: realConvexPreviewWithOpenUiHandoff.html,
+            openUiSource: realConvexPreviewWithOpenUiHandoff.source,
+          }),
+        ],
+        generatedModules: [
+          generatedModuleDoc({
+            sessionId: cachedSession._id,
+            source: realConvexPreviewWithOpenUiHandoff.source,
+          }),
+        ],
+      })
+
+    await expect(
+      cloneCachedGeneratedArtifacts(ctx, {
+        cachedSession,
+        targetSessionId: targetSession._id,
+        now: 1000,
+        sendOperationalNotification:
+          'sendOperationalNotification' as unknown as Parameters<
+            MutationCtx['scheduler']['runAfter']
+          >[1],
+      }),
+    ).resolves.toBe(false)
+
+    const serializedPreviews = JSON.stringify(previews)
+    expect(serializedPreviews).not.toContain('Generated OpenUI source is ready')
+    expect(serializedPreviews).not.toContain('ship-fast-openui-source')
     expect(generationEvents).toEqual([])
     expect(usageMetrics).toEqual([])
     expect(sessions).toContainEqual(

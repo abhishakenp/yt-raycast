@@ -20,6 +20,15 @@ type Row =
 
 const sessionId = 'session_workspace' as Id<'sessions'>
 
+const realConvexOpenUiHandoffWorkspacePreview = {
+  previewId: 'ns79pp36cdnxp2znd343t2tjw589n4yq',
+  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+  prompt:
+    'a boutique coffee roastery with subscription delivery and tasting events',
+  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+  version: 1,
+} as const
+
 const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
   ({
     _id: sessionId,
@@ -199,6 +208,40 @@ describe('session workspace helpers', () => {
       'Middle',
       'Newest',
     ])
+  })
+
+  it('does not expose DB-observed OpenUI handoff HTML in workspace state', async () => {
+    const handoffSessionId =
+      realConvexOpenUiHandoffWorkspacePreview.sessionId as Id<'sessions'>
+    const workspace = await loadSessionWorkspace(
+      ctxFor({
+        sessions: [
+          sessionDoc({
+            _id: handoffSessionId,
+            prompt: realConvexOpenUiHandoffWorkspacePreview.prompt,
+            status: 'preview_ready',
+            openuiReady: true,
+            previewVersion: realConvexOpenUiHandoffWorkspacePreview.version,
+          }),
+        ],
+        previews: [
+          {
+            _id: realConvexOpenUiHandoffWorkspacePreview.previewId as Id<'previews'>,
+            _creationTime: 1,
+            sessionId: handoffSessionId,
+            version: realConvexOpenUiHandoffWorkspacePreview.version,
+            html: realConvexOpenUiHandoffWorkspacePreview.html,
+            createdAt: 1,
+          } as Doc<'previews'>,
+        ],
+      }),
+      handoffSessionId,
+    )
+
+    expect(workspace).not.toBeNull()
+    const serialized = JSON.stringify(workspace)
+    expect(serialized).not.toContain('Generated OpenUI source is ready')
+    expect(serialized).not.toContain('ship-fast-openui-source')
   })
 
   it('returns null when the session has been deleted', async () => {

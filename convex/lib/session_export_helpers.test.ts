@@ -43,6 +43,15 @@ const realConvexRendererErrorPreview = {
   html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
   version: 1,
 } as const
+const realConvexOpenUiHandoffPreview = {
+  previewId: 'ns79pp36cdnxp2znd343t2tjw589n4yq',
+  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+  title: 'Boutique Coffee Roastery',
+  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+  source:
+    'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})',
+  version: 1,
+} as const
 const buildExportArtifactReference =
   'buildExportArtifact' as unknown as Parameters<
     MutationCtx['scheduler']['runAfter']
@@ -971,7 +980,7 @@ describe('createSessionExport', () => {
     ).rejects.toMatchObject({ data: { code: 'ARTIFACT_NOT_READY' } })
   })
 
-  it('rejects empty and OpenUI renderer-error previews instead of creating ready exports', async () => {
+  it('rejects empty, renderer-error, and handoff previews instead of creating ready exports', async () => {
     const emptyPreview = workflowCtxFor({
       identityUserId: userId,
       subscriptions: [subscriptionDoc()],
@@ -1016,6 +1025,42 @@ describe('createSessionExport', () => {
       }),
     ).rejects.toMatchObject({ data: { code: 'PREVIEW_NOT_READY' } })
     expect(rendererErrorPreview.exportRows).toHaveLength(0)
+
+    const handoffPreview = workflowCtxFor({
+      identityUserId: userId,
+      subscriptions: [subscriptionDoc()],
+      sessions: [
+        sessionDoc({
+          _id: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          prompt: realConvexOpenUiHandoffPreview.title,
+          previewVersion: realConvexOpenUiHandoffPreview.version,
+          openuiReady: true,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          _id: realConvexOpenUiHandoffPreview.previewId as Id<'previews'>,
+          sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          html: realConvexOpenUiHandoffPreview.html,
+          openUiSource: realConvexOpenUiHandoffPreview.source,
+          version: realConvexOpenUiHandoffPreview.version,
+        }),
+      ],
+      generatedModules: [
+        generatedModuleDoc({
+          sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          source: realConvexOpenUiHandoffPreview.source,
+        }),
+      ],
+    })
+
+    await expect(
+      createSessionExport(handoffPreview.ctx, {
+        sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+        target: 'html',
+      }),
+    ).rejects.toMatchObject({ data: { code: 'PREVIEW_NOT_READY' } })
+    expect(handoffPreview.exportRows).toHaveLength(0)
   })
 })
 
@@ -1138,7 +1183,7 @@ describe('ensureExportArtifactBuild', () => {
     expect(ready.scheduledBuilds).toHaveLength(0)
   })
 
-  it('does not queue artifact builds for empty or OpenUI renderer-error previews', async () => {
+  it('does not queue artifact builds for empty, renderer-error, or handoff previews', async () => {
     const emptyPreview = workflowCtxFor({
       identityUserId: userId,
       previews: [previewDoc({ html: '', version: 8 })],
@@ -1188,6 +1233,43 @@ describe('ensureExportArtifactBuild', () => {
     ).rejects.toMatchObject({ data: { code: 'PREVIEW_NOT_READY' } })
     expect(rendererErrorPreview.exportArtifacts).toHaveLength(0)
     expect(rendererErrorPreview.scheduledBuilds).toHaveLength(0)
+
+    const handoffPreview = workflowCtxFor({
+      identityUserId: userId,
+      sessions: [
+        sessionDoc({
+          _id: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          prompt: realConvexOpenUiHandoffPreview.title,
+          previewVersion: realConvexOpenUiHandoffPreview.version,
+          openuiReady: true,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          _id: realConvexOpenUiHandoffPreview.previewId as Id<'previews'>,
+          sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          html: realConvexOpenUiHandoffPreview.html,
+          openUiSource: realConvexOpenUiHandoffPreview.source,
+          version: realConvexOpenUiHandoffPreview.version,
+        }),
+      ],
+      generatedModules: [
+        generatedModuleDoc({
+          sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          source: realConvexOpenUiHandoffPreview.source,
+        }),
+      ],
+    })
+
+    await expect(
+      ensureExportArtifactBuild(handoffPreview.ctx, {
+        sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+        target: 'react',
+        buildExportArtifact: buildExportArtifactReference,
+      }),
+    ).rejects.toMatchObject({ data: { code: 'PREVIEW_NOT_READY' } })
+    expect(handoffPreview.exportArtifacts).toHaveLength(0)
+    expect(handoffPreview.scheduledBuilds).toHaveLength(0)
   })
 })
 
@@ -1659,6 +1741,57 @@ describe('loadOwnedExportForGitHubPush', () => {
     await expect(
       loadOwnedExportForGitHubPush(ctx, {
         sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
+        target: 'html',
+      }),
+    ).rejects.toMatchObject({ data: { code: 'ARTIFACT_NOT_READY' } })
+  })
+
+  it('rejects ready GitHub push records when the current preview is DB-observed OpenUI handoff HTML', async () => {
+    const { ctx } = workflowCtxFor({
+      identityUserId: userId,
+      sessions: [
+        sessionDoc({
+          _id: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          prompt: realConvexOpenUiHandoffPreview.title,
+          previewVersion: realConvexOpenUiHandoffPreview.version,
+          openuiReady: true,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          _id: realConvexOpenUiHandoffPreview.previewId as Id<'previews'>,
+          sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          html: realConvexOpenUiHandoffPreview.html,
+          openUiSource: realConvexOpenUiHandoffPreview.source,
+          siteSpecJson: undefined,
+          version: realConvexOpenUiHandoffPreview.version,
+        }),
+      ],
+      generatedModules: [
+        generatedModuleDoc({
+          sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          source: realConvexOpenUiHandoffPreview.source,
+        }),
+      ],
+      siteSpecs: [
+        siteSpecDoc({
+          sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          specJson: undefined,
+        }),
+      ],
+      exports: [
+        exportDoc({
+          sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          previewVersion: realConvexOpenUiHandoffPreview.version,
+          status: 'ready',
+          requiresPayment: false,
+        }),
+      ],
+    })
+
+    await expect(
+      loadOwnedExportForGitHubPush(ctx, {
+        sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
         target: 'html',
       }),
     ).rejects.toMatchObject({ data: { code: 'ARTIFACT_NOT_READY' } })

@@ -672,6 +672,33 @@ describe('OpenUI HTML export builder edge cases', () => {
     )
     expect(document.querySelector('.openui-error')).toBeNull()
   })
+
+  it('renders the live DB-observed Hindi government service item text in static HTML', async () => {
+    const source =
+      'home_navbar = GovernmentPortalNavbar("Gov Hindi", "भारत सरकार", "सभी नागरिकों की सेवा में", "भारत राजधानी, नई दिल्ली", ["Home","Contact","Events","About","Services"], "/")\n' +
+      'home_services = GovernmentPortalServices("हमारी प्रमुख सेवाएँ", [{"title":"डिजिटल पहचान प्रमाणन","href":"/services/digital-id"}])\n' +
+      'root = PageSwitch(["Home"], [home_services], "", {"Home":"Home"})'
+    const result = await buildOpenUIHtmlExport({
+      source,
+      siteSpecJson: dbObservedHindiGovernmentSiteSpecJson,
+      sessionId: 'k572nbkrw902ef81nn4ha1yq7989njsg',
+      target: 'html',
+      themeName: 'twitter',
+      isDark: false,
+      locale: 'hi',
+    })
+    const html = decodeExportBody(result.body)
+    const document = parseHtmlDocument(html)
+    const text = document.body.textContent ?? ''
+
+    expect(document.documentElement.getAttribute('lang')).toBe('hi')
+    expect(document.querySelector('[data-sf-export-page]')).not.toBeNull()
+    expect(text.includes('हमारी प्रमुख सेवाएँ')).toBe(true)
+    expect(text.includes('डिजिटल पहचान प्रमाणन')).toBe(true)
+    expect(text.includes('Generated OpenUI source is ready.')).toBe(false)
+    expect(text.includes('Power Generation')).toBe(false)
+    expect(document.querySelector('.openui-error')).toBeNull()
+  })
 })
 
 // ---------------------------------------------------------------------------

@@ -24,6 +24,7 @@ type PublicGallerySessionArgs = {
 }
 
 type GeneratedModuleRecord = Doc<'generatedModules'>
+type EditRecord = Doc<'edits'>
 type PreviewRecord = Doc<'previews'>
 type SessionRecord = Doc<'sessions'>
 type SiteSpecRecord = Doc<'siteSpecs'>
@@ -94,6 +95,19 @@ const generatedModuleDoc = (
     ...overrides,
   }) as GeneratedModuleRecord
 
+const editDoc = (overrides: Partial<EditRecord> = {}): EditRecord =>
+  ({
+    _id: 'edit_gallery' as Id<'edits'>,
+    _creationTime: 1,
+    sessionId,
+    previewVersion: 1,
+    editType: 'text',
+    beforeText: 'Original headline',
+    afterText: 'Edited gallery headline',
+    createdAt: 100,
+    ...overrides,
+  }) as EditRecord
+
 const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
   ({
     _id: 'site_spec_gallery' as Id<'siteSpecs'>,
@@ -110,12 +124,14 @@ const ctxFor = (input: {
   previews?: PreviewRecord[]
   generatedModules?: GeneratedModuleRecord[]
   siteSpecs?: SiteSpecRecord[]
+  edits?: EditRecord[]
   userId?: string | null
 }) => {
   const sessions = [...(input.sessions ?? [])]
   const previews = [...(input.previews ?? [])]
   const generatedModules = [...(input.generatedModules ?? [])]
   const siteSpecs = [...(input.siteSpecs ?? [])]
+  const edits = [...(input.edits ?? [])]
 
   const rowsFor = (table: string): Array<Record<string, unknown>> => {
     switch (table) {
@@ -127,6 +143,8 @@ const ctxFor = (input: {
         return generatedModules as unknown as Array<Record<string, unknown>>
       case 'siteSpecs':
         return siteSpecs as unknown as Array<Record<string, unknown>>
+      case 'edits':
+        return edits as unknown as Array<Record<string, unknown>>
       default:
         throw new Error(`Unhandled table ${table}`)
     }
@@ -142,7 +160,12 @@ const ctxFor = (input: {
         (row) => row._id === id,
       ) ?? null,
     query: (
-      table: 'sessions' | 'previews' | 'generatedModules' | 'siteSpecs',
+      table:
+        | 'sessions'
+        | 'previews'
+        | 'generatedModules'
+        | 'siteSpecs'
+        | 'edits',
     ) => {
       const query = {
         withIndex: (
@@ -411,7 +434,7 @@ describe('listPublicGallerySessions', () => {
     )
   })
 
-  it('does not expose DB-observed OpenUI handoff preview HTML in public gallery lists', async () => {
+  it('keeps DB-observed OpenUI rows renderable for the web server without exposing handoff preview HTML', async () => {
     const handoffSessionId =
       realConvexOpenUiHandoffGalleryPreview.sessionId as Id<'sessions'>
     const ctx = ctxFor({
@@ -447,8 +470,17 @@ describe('listPublicGallerySessions', () => {
       page: 1,
     })
 
-    expect(result.items).toEqual([])
-    expect(result.total).toBe(0)
+    expect(result.items).toHaveLength(1)
+    expect(result.total).toBe(1)
+    expect(result.items[0]).toMatchObject({
+      sessionId: handoffSessionId,
+      html: null,
+      moduleSource: realConvexOpenUiHandoffGalleryPreview.moduleSource,
+      readiness: {
+        openuiReady: null,
+        previewReady: true,
+      },
+    })
     const serialized = JSON.stringify(result)
     expect(serialized).not.toContain('Generated OpenUI source is ready')
     expect(serialized).not.toContain('ship-fast-openui-source')
@@ -755,5 +787,66 @@ describe('serializePublicGallerySession', () => {
       'Generated OpenUI source is ready',
     )
     expect(JSON.stringify(result)).not.toContain('ship-fast-openui-source')
+  })
+
+  it('serializes editor changes into the OpenUI source returned to the gallery API', async () => {
+    const editedSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2' as Id<'sessions'>
+    const source =
+      'home_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"}]}])\nroot = PageSwitch(["Home"], [home_menu], "", {"Home":"home"})'
+    const ctx = ctxFor({
+      sessions: [
+        sessionDoc({
+          _id: editedSessionId,
+          prompt:
+            'a craft beer brewery with taproom tours and seasonal releases in portland',
+          preferredLanguage: 'lt',
+          themeMode: 'dark',
+          themeOverride: 'darkmatter',
+          status: 'preview_ready',
+          previewVersion: 1,
+          isPrivate: false,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          sessionId: editedSessionId,
+          version: 1,
+          html: '<main><h1>Stale preview before edits</h1></main>',
+          openUiSource: source,
+        }),
+      ],
+      generatedModules: [
+        generatedModuleDoc({
+          sessionId: editedSessionId,
+          source,
+        }),
+      ],
+      edits: [
+        editDoc({
+          sessionId: editedSessionId,
+          previewVersion: 1,
+          editType: 'text',
+          beforeText: 'Our Brew Selection',
+          afterText: 'Edited Taproom Releases',
+          createdAt: 1782896344035,
+        }),
+      ],
+    })
+
+    const result = await listPublicGallerySessions(ctx, {
+      limit: 12,
+      page: 1,
+    })
+
+    expect(result.items).toHaveLength(1)
+    expect(result.items[0]).toMatchObject({
+      sessionId: editedSessionId,
+      preferredLanguage: 'lt',
+      themeMode: 'dark',
+      themeOverride: 'darkmatter',
+    })
+    expect(result.items[0].moduleSource).toContain('Edited Taproom Releases')
+    expect(result.items[0].moduleSource).toContain('Pineapple Saison')
+    expect(result.items[0].moduleSource).not.toContain('Our Brew Selection')
   })
 })

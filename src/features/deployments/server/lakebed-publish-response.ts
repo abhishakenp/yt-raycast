@@ -1,6 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import { containsOpenUiHandoffMarkers } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type LakebedPublishClient = Pick<ConvexHttpClient, 'action' | 'query'> &
@@ -24,9 +25,6 @@ const getBearerToken = (request: Request): string | null => {
   const match = auth.match(/^Bearer\s+(.+)$/i)
   return match?.[1]?.trim() || null
 }
-
-const normalizeError = (error: unknown): string =>
-  error instanceof Error ? error.message : 'Lakebed publish failed'
 
 const isLakebedPublishBody = (value: unknown): value is LakebedPublishBody =>
   value !== null &&
@@ -79,6 +77,16 @@ export const createLakebedPublishResponse = async (
       return json(existing)
     }
 
+    if (existing?.provider === 'lakebed' && existing.status === 'failed') {
+      return json(
+        {
+          status: existing.status,
+          error: 'Lakebed deployment failed.',
+        },
+        { status: 500 },
+      )
+    }
+
     const artifactResult = await client.query(
       api.sessions.getOwnedLakebedDeploymentArtifactByLookup,
       {
@@ -99,6 +107,24 @@ export const createLakebedPublishResponse = async (
       )
     }
 
+    try {
+      const filesResponse = await fetch(artifact.filesUrl)
+      if (filesResponse.ok) {
+        const filesJson = (await filesResponse.json()) as {
+          files?: Record<string, string>
+        }
+        const fileContents = Object.values(filesJson.files ?? {}).join('\n')
+        if (containsOpenUiHandoffMarkers(fileContents)) {
+          return json(
+            { error: 'Export artifact is not a rendered static site.' },
+            { status: 409 },
+          )
+        }
+      }
+    } catch {
+      // Fetch failure is non-fatal; proceed to deploy.
+    }
+
     const result = await client.action(api.lakebed_deploy.deployByLookup, {
       lookup: sessionId,
       anonymousOwnerSecret: body.anonymousOwnerSecret,
@@ -107,6 +133,6 @@ export const createLakebedPublishResponse = async (
     return json(result)
   } catch (error) {
     console.error('[lakebed_publish]', error)
-    return json({ error: normalizeError(error) }, { status: 500 })
+    return json({ error: 'Lakebed publish failed.' }, { status: 500 })
   }
 }

@@ -29,6 +29,17 @@ type Row =
 
 const sessionId = 'session_generation_view' as Id<'sessions'>
 
+const realConvexOpenUiHandoffGenerationView = {
+  previewId: 'ns79pp36cdnxp2znd343t2tjw589n4yq',
+  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+  prompt:
+    'a boutique coffee roastery with subscription delivery and tasting events',
+  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+  source:
+    'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})',
+  version: 1,
+} as const
+
 const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
   ({
     _id: sessionId,
@@ -270,6 +281,53 @@ describe('session generation view helpers', () => {
     expect(view?.homeModule?.source).toBe('<main>Home</main>')
     expect(view?.siteSpec?.specJson).toContain('Generation View')
     expect(view?.latestPreview?.html).toBe('<main>Latest</main>')
+  })
+
+  it('does not expose DB-observed OpenUI handoff HTML in the generation view payload', async () => {
+    const handoffSessionId =
+      realConvexOpenUiHandoffGenerationView.sessionId as Id<'sessions'>
+    const view = await loadGenerationView(
+      ctxFor({
+        sessions: [
+          sessionDoc({
+            _id: handoffSessionId,
+            prompt: realConvexOpenUiHandoffGenerationView.prompt,
+            status: 'preview_ready',
+            openuiReady: true,
+            previewVersion: realConvexOpenUiHandoffGenerationView.version,
+          }),
+        ],
+        generatedModules: [
+          {
+            _id: 'module_handoff_home' as Id<'generatedModules'>,
+            _creationTime: 1,
+            sessionId: handoffSessionId,
+            moduleKey: 'home',
+            source: realConvexOpenUiHandoffGenerationView.source,
+            status: 'succeeded',
+            createdAt: 1,
+            updatedAt: 1,
+          } as Doc<'generatedModules'>,
+        ],
+        previews: [
+          {
+            _id: realConvexOpenUiHandoffGenerationView.previewId as Id<'previews'>,
+            _creationTime: 1,
+            sessionId: handoffSessionId,
+            version: realConvexOpenUiHandoffGenerationView.version,
+            html: realConvexOpenUiHandoffGenerationView.html,
+            openUiSource: realConvexOpenUiHandoffGenerationView.source,
+            createdAt: 1,
+          } as Doc<'previews'>,
+        ],
+      }),
+      { lookup: realConvexOpenUiHandoffGenerationView.sessionId },
+    )
+
+    expect(view).not.toBeNull()
+    const serialized = JSON.stringify(view)
+    expect(serialized).not.toContain('Generated OpenUI source is ready')
+    expect(serialized).not.toContain('ship-fast-openui-source')
   })
 
   it('returns null when lookup resolution or session loading fails', async () => {

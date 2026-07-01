@@ -584,12 +584,13 @@ export async function parseOpenUIForHtmlExport(
 const renderPageHtml = async (
   page: ElementNode,
   library: ParsedOpenUIProgram['library'],
+  locale: string,
 ): Promise<string> => {
   const pageSource = jsonToOpenUI(page, library)
   const { html } = (await renderOpenUIToHTMLWithTheme(
     pageSource,
     undefined,
-    'en',
+    locale,
     undefined,
   )) as {
     html: string
@@ -598,12 +599,15 @@ const renderPageHtml = async (
   return html
 }
 
-const buildPagesMarkup = async (parsed: ParsedOpenUIProgram): Promise<string> =>
+const buildPagesMarkup = async (
+  parsed: ParsedOpenUIProgram,
+  locale: string,
+): Promise<string> =>
   (
     await Promise.all(
       parsed.pages.map(async (page, index) => {
         const label = parsed.routes[index] ?? `Page ${index + 1}`
-        return `<section data-sf-export-page="${escapeHtml(label)}"${index === 0 ? '' : ' hidden'}>${await renderPageHtml(page, parsed.library)}</section>`
+        return `<section data-sf-export-page="${escapeHtml(label)}"${index === 0 ? '' : ' hidden'}>${await renderPageHtml(page, parsed.library, locale)}</section>`
       }),
     )
   ).join('\n')
@@ -615,6 +619,7 @@ const buildStandaloneHtmlDocument = async (
   const siteSpec = parseSiteSpec(input.siteSpecJson)
   const themeName = readThemeName(siteSpec, input.themeName)
   const isDark = input.isDark ?? true
+  const locale = input.locale ?? 'en'
   const themeStyles =
     resolveThemeStyles(themeName) ?? resolveThemeStyles('modern-minimal')
   const themeStyle = buildThemeStyle(themeStyles, isDark)
@@ -622,14 +627,16 @@ const buildStandaloneHtmlDocument = async (
   const { cssVars } = (await renderOpenUIToHTMLWithTheme(
     input.source,
     undefined,
-    'en',
+    locale,
     undefined,
   )) as {
     html: string
     cssVars: string
   }
   const css = readPreviewCss()
-  const pagesMarkup = absolutizeHtmlAssetUrls(await buildPagesMarkup(parsed))
+  const pagesMarkup = absolutizeHtmlAssetUrls(
+    await buildPagesMarkup(parsed, locale),
+  )
   const bodyMarkup = isUsablePreviewHtml(input.previewHtml)
     ? extractBodyMarkup(input.previewHtml)
     : pagesMarkup
@@ -637,7 +644,7 @@ const buildStandaloneHtmlDocument = async (
 
   return buildHtmlExport(
     `<!doctype html>
-<html lang="en">
+<html lang="${escapeAttribute(locale)}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />

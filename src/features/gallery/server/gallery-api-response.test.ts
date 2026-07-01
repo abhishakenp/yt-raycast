@@ -168,6 +168,196 @@ describe('Gallery API Response', () => {
       )
     })
 
+    it('renders DB-observed OpenUI source into static gallery HTML instead of dropping or forwarding handoff markup', async () => {
+      const mockClient = {
+        query: async () => ({
+          availableCategories: [],
+          hasNext: false,
+          hasPrev: false,
+          items: [
+            {
+              categories: ['service'],
+              elapsed: 6424,
+              html: '<!DOCTYPE html><html lang="en"><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Craft Beer Brewery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_menu = RestaurantMenu(\\"Our Brew Selection\\")"</script></body></html>',
+              moduleSource:
+                'home_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"}]}])\nroot = PageSwitch(["Home"], [home_menu], "", {"Home":"home"})',
+              preferredLanguage: 'lt',
+              previewVersion: 1,
+              prompt:
+                'a craft beer brewery with taproom tours and seasonal releases in portland',
+              readiness: {
+                homepageReady: null,
+                openuiReady: true,
+                previewReady: true,
+                siteSpecReady: null,
+              },
+              sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+              siteSpecJson: JSON.stringify({
+                brand: 'Craft Beer Brewery',
+                projectName: 'Craft Beer Brewery',
+                theme: 'darkmatter',
+                locale: 'lt',
+              }),
+            },
+          ],
+          limit: 12,
+          page: 1,
+          total: 1,
+          totalPages: 1,
+        }),
+      }
+      const request = new Request('http://localhost/api/gallery')
+
+      const response = await createGalleryApiResponse(request, mockClient)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.items).toHaveLength(1)
+      expect(data.total).toBe(1)
+      expect(data.totalPages).toBe(1)
+      expect(data.items[0].sessionId).toBe('k574ms14ma9f94keq30r7dq24x89n1k2')
+      expect(data.items[0].html).toContain('data-sf-export-page')
+      expect(data.items[0].html).toContain('Our Brew Selection')
+      expect(data.items[0].html).toContain('Pineapple Saison')
+      expect(data.items[0].html).toContain('color-scheme: dark')
+      expect(data.items[0].html).toContain('"themeName":"darkmatter"')
+      expect(data.items[0].html).not.toContain(
+        'Generated OpenUI source is ready',
+      )
+      expect(data.items[0].html).not.toContain('ship-fast-openui-source')
+      expect('moduleSource' in data.items[0]).toBe(false)
+      expect(JSON.stringify(data.items[0])).not.toContain('RestaurantMenu("')
+    })
+
+    it('renders edited OpenUI source as static gallery HTML instead of reusing a PNG thumbnail or stale preview HTML', async () => {
+      const stalePreviewHtml =
+        '<main><h1>Craft Beer Brewery</h1><img alt="gallery screenshot" src="https://cdn.example.test/stale-preview.png"></main>'
+      const editedOpenUiSource =
+        'home_menu = RestaurantMenu("Edited Taproom Releases", "Lithuanian-ready seasonal beer list.", [{"name":"Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"}]}])\nroot = PageSwitch(["Home"], [home_menu], "", {"Home":"home"})'
+      const mockClient = {
+        query: async () => ({
+          availableCategories: [],
+          hasNext: false,
+          hasPrev: false,
+          items: [
+            {
+              categories: ['service'],
+              elapsed: 6424,
+              html: stalePreviewHtml,
+              imageUrl: 'https://cdn.example.test/k574-gallery.png',
+              moduleSource: editedOpenUiSource,
+              preferredLanguage: 'lt',
+              previewVersion: 1,
+              prompt:
+                'a craft beer brewery with taproom tours and seasonal releases in portland',
+              readiness: {
+                homepageReady: null,
+                openuiReady: true,
+                previewReady: true,
+                siteSpecReady: null,
+              },
+              sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+              siteSpecJson: JSON.stringify({
+                brand: 'Craft Beer Brewery',
+                projectName: 'Craft Beer Brewery',
+              }),
+              themeMode: 'dark',
+              themeOverride: 'darkmatter',
+            },
+          ],
+          limit: 12,
+          page: 1,
+          total: 1,
+          totalPages: 1,
+        }),
+      }
+      const request = new Request('http://localhost/api/gallery')
+
+      const response = await createGalleryApiResponse(request, mockClient)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get('content-type')).toContain('application/json')
+      expect(data.items).toHaveLength(1)
+      const renderedHtml = data.items[0].html as string
+      expect(renderedHtml.includes('data-sf-export-page')).toBe(true)
+      expect(renderedHtml.includes('lang="lt"')).toBe(true)
+      expect(renderedHtml.includes('color-scheme: dark')).toBe(true)
+      expect(renderedHtml.includes('"themeName":"darkmatter"')).toBe(true)
+      expect(renderedHtml.includes('Edited Taproom Releases')).toBe(true)
+      expect(renderedHtml.includes('Pineapple Saison')).toBe(true)
+      expect(renderedHtml.includes('Craft Beer Brewery</h1>')).toBe(false)
+      expect(renderedHtml.includes('stale-preview.png')).toBe(false)
+      expect(renderedHtml.includes('k574-gallery.png')).toBe(false)
+      expect('imageUrl' in data.items[0]).toBe(false)
+      expect('moduleSource' in data.items[0]).toBe(false)
+      expect(JSON.stringify(data.items[0])).not.toContain('k574-gallery.png')
+      expect(JSON.stringify(data.items[0])).not.toContain(
+        'Edited Taproom Releases",',
+      )
+    })
+
+    it('renders DB-observed translated OpenUI source as static gallery HTML instead of a PNG preview', async () => {
+      const translatedOpenUiSource =
+        'home_navbar = GovernmentPortalNavbar("Gov Hindi", "भारत सरकार", "सभी नागरिकों की सेवा में", "भारत राजधानी, नई दिल्ली", ["Home","Contact","Events","About","Services"], "/")\nhome_services = GovernmentPortalServices("हमारी प्रमुख सेवाएँ", [{"title":"डिजिटल पहचान प्रमाणन","href":"/services/digital-id"}])\nroot = PageSwitch(["Home"], [home_services], "", {"Home":"Home"})'
+      const mockClient = {
+        query: async () => ({
+          availableCategories: [],
+          hasNext: false,
+          hasPrev: false,
+          items: [
+            {
+              categories: ['government'],
+              elapsed: 8654,
+              html: '',
+              imageUrl: 'https://cdn.example.test/hindi-gov-preview.png',
+              moduleSource: translatedOpenUiSource,
+              preferredLanguage: 'hi',
+              previewVersion: 1,
+              prompt: 'gov site in hindi',
+              readiness: {
+                homepageReady: null,
+                openuiReady: true,
+                previewReady: true,
+                siteSpecReady: null,
+              },
+              sessionId: 'k572nbkrw902ef81nn4ha1yq7989njsg',
+              siteSpecJson: JSON.stringify({
+                brand: 'Gov Hindi',
+                projectName: 'Gov Hindi',
+              }),
+              themeMode: 'light',
+            },
+          ],
+          limit: 12,
+          page: 1,
+          total: 1,
+          totalPages: 1,
+        }),
+      }
+      const request = new Request('http://localhost/api/gallery')
+
+      const response = await createGalleryApiResponse(request, mockClient)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.items).toHaveLength(1)
+      const renderedHtml = data.items[0].html as string
+      expect(renderedHtml.includes('data-sf-export-page')).toBe(true)
+      expect(renderedHtml.includes('lang="hi"')).toBe(true)
+      expect(renderedHtml.includes('हमारी प्रमुख सेवाएँ')).toBe(true)
+      expect(renderedHtml.includes('डिजिटल पहचान प्रमाणन')).toBe(true)
+      expect(renderedHtml.includes('hindi-gov-preview.png')).toBe(false)
+      expect('imageUrl' in data.items[0]).toBe(false)
+      expect('moduleSource' in data.items[0]).toBe(false)
+      expect(JSON.stringify(data.items[0])).not.toContain(
+        'hindi-gov-preview.png',
+      )
+      expect(JSON.stringify(data.items[0])).not.toContain(
+        'GovernmentPortalServices("',
+      )
+    })
+
     it('drops malformed public session rows before serializing gallery JSON', async () => {
       const mockClient = {
         query: async () => ({

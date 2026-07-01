@@ -38,6 +38,16 @@ const realConvexRendererErrorPreview = {
   version: 1,
 } as const
 
+const realConvexOpenUiHandoffPreview = {
+  previewId: 'ns79pp36cdnxp2znd343t2tjw589n4yq',
+  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+  title: 'Boutique Coffee Roastery',
+  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+  openUiSource:
+    'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})',
+  version: 1,
+} as const
+
 const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
   ({
     _id: sessionId,
@@ -486,6 +496,54 @@ describe('session deployment helpers', () => {
     expect(result.previewHtml.toLowerCase()).not.toContain('failed to render')
   })
 
+  it('never prepares Lakebed deployment payloads with DB-observed OpenUI handoff HTML', async () => {
+    const ctx = ctxFor({
+      sessions: [
+        sessionDoc({
+          _id: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          prompt: realConvexOpenUiHandoffPreview.title,
+          openuiReady: true,
+          preferredExportTarget: 'html',
+          userId: 'user_1',
+          previewVersion: realConvexOpenUiHandoffPreview.version,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          _id: realConvexOpenUiHandoffPreview.previewId as Id<'previews'>,
+          sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          html: realConvexOpenUiHandoffPreview.html,
+          openUiSource: realConvexOpenUiHandoffPreview.openUiSource,
+          version: realConvexOpenUiHandoffPreview.version,
+        }),
+      ],
+      generatedModules: [
+        {
+          _id: 'generated_module_handoff_home' as Id<'generatedModules'>,
+          _creationTime: 1,
+          sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          moduleKey: 'home',
+          source: realConvexOpenUiHandoffPreview.openUiSource,
+          status: 'succeeded',
+          createdAt: 100,
+          updatedAt: 110,
+        } as Doc<'generatedModules'>,
+      ],
+    }) as QueryCtx
+
+    const result = await prepareLakebedSessionDeployment(ctx, {
+      sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+    })
+
+    expect(result).toMatchObject({
+      source: realConvexOpenUiHandoffPreview.openUiSource,
+      sourceKind: 'openui',
+      previewVersion: realConvexOpenUiHandoffPreview.version,
+    })
+    expect(result.previewHtml).not.toContain('Generated OpenUI source is ready')
+    expect(result.previewHtml).not.toContain('ship-fast-openui-source')
+  })
+
   it('records Lakebed deployment metadata without using the local build folder', async () => {
     const { ctx, inserted } = mutationCtxFor({
       sessions: [sessionDoc({ userId: 'user_1' })],
@@ -773,6 +831,45 @@ describe('session deployment helpers', () => {
           row.table === 'deployments' &&
           row.value.status === 'ready' &&
           row.value.previewVersion === realConvexRendererErrorPreview.version,
+      ),
+    ).toBe(false)
+  })
+
+  it('rejects publishing DB-observed OpenUI handoff HTML as a ready public deployment', async () => {
+    const { ctx, inserted } = mutationCtxFor({
+      sessions: [
+        sessionDoc({
+          _id: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          userId: 'user_1',
+          prompt: realConvexOpenUiHandoffPreview.title,
+          previewVersion: realConvexOpenUiHandoffPreview.version,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          _id: realConvexOpenUiHandoffPreview.previewId as Id<'previews'>,
+          sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+          html: realConvexOpenUiHandoffPreview.html,
+          version: realConvexOpenUiHandoffPreview.version,
+        }),
+      ],
+    })
+
+    await expect(
+      publishSessionPreview(ctx, {
+        sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+        requestedSlug: 'handoff-placeholder-site',
+      }),
+    ).rejects.toMatchObject({
+      data: { code: 'PREVIEW_NOT_READY' },
+    })
+
+    expect(
+      inserted.some(
+        (row) =>
+          row.table === 'deployments' &&
+          row.value.status === 'ready' &&
+          row.value.previewVersion === realConvexOpenUiHandoffPreview.version,
       ),
     ).toBe(false)
   })

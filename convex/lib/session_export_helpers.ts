@@ -12,7 +12,7 @@ import {
   applyImageSwap,
   applyStyleEdit,
 } from './session_edit_helpers'
-import { isOpenUiErrorHtml } from './openui_error_html'
+import { isUnsafePublicPreviewHtml } from './openui_error_html'
 
 export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 export type ExportArtifactStatus = 'queued' | 'building' | 'ready' | 'failed'
@@ -792,7 +792,10 @@ export const createSessionExport = async (
       })
     })()
 
-  if (preview.html.trim().length === 0 || isOpenUiErrorHtml(preview.html)) {
+  if (
+    preview.html.trim().length === 0 ||
+    isUnsafePublicPreviewHtml(preview.html)
+  ) {
     throw new ConvexError({
       code: 'PREVIEW_NOT_READY',
       message: 'Preview is not ready to export',
@@ -989,7 +992,10 @@ export const ensureExportArtifactBuild = async (
       })
     })()
 
-  if (preview.html.trim().length === 0 || isOpenUiErrorHtml(preview.html)) {
+  if (
+    preview.html.trim().length === 0 ||
+    isUnsafePublicPreviewHtml(preview.html)
+  ) {
     throw new ConvexError({
       code: 'PREVIEW_NOT_READY',
       message: 'Preview is not ready to export',
@@ -1087,7 +1093,10 @@ export const prepareExportArtifactBuild = async (
   )
   const source = applyEditsToSource(canonicalSource, edits)
 
-  if (isOpenUiErrorHtml(source) || isOpenUiErrorHtml(preview.html)) {
+  if (
+    isUnsafePublicPreviewHtml(source) ||
+    isUnsafePublicPreviewHtml(preview.html)
+  ) {
     throw new ConvexError({
       code: 'ARTIFACT_NOT_READY',
       message: 'Generated source is not ready to export',
@@ -1331,7 +1340,10 @@ export const loadOwnedExportForGitHubPush = async (
     resolveExportOpenUISource(preview, homeModule, siteSpec),
     edits,
   )
-  if (isOpenUiErrorHtml(source) || isOpenUiErrorHtml(preview.html)) {
+  if (
+    isUnsafePublicPreviewHtml(source) ||
+    isUnsafePublicPreviewHtml(preview.html)
+  ) {
     throw new ConvexError({
       code: 'ARTIFACT_NOT_READY',
       message: 'Generated source is not ready to export',

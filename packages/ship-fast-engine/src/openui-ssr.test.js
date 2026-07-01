@@ -19,6 +19,19 @@ home = FitnessSchedule("Schedule", "Plan your week", ["Mon", "Tue"], [{time: "6:
     expect(html).toContain('Schedule')
     expect(html).toContain('6:00 AM')
   })
+
+  it('renders DB-observed brewery RestaurantMenu output with malformed generated category text into real content', async () => {
+    const html = await renderOpenUIToHTML(`$page = "Home"
+home_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"categories[Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"},{"name":"Chocolate Stout","description":"Rich cocoa and roasted malt","price":"$8","tag":"Seasonal"},{"name":"Year-Round Classics>Portland Pale Ale","description":"Balanced hop profile with citrus aroma","price":"$6","tag":"Core"},{"name":"Hoppy IPA","description":"Bold bitterness with pine and mango","price":"$7","tag":"Core]"}]}])
+root = PageSwitch(["Home"], [home_menu], "", {"Home":"home"})`)
+
+    expect(html).not.toContain('openui-error')
+    expect(html).not.toContain('Generated OpenUI source is ready')
+    expect(html).not.toContain('ship-fast-openui-source')
+    expect(html).toContain('Our Brew Selection')
+    expect(html).toContain('Pineapple Saison')
+    expect(html).toContain('Chocolate Stout')
+  })
 })
 
 // Behavioral guard: a model can emit an outer-array item that OMITS its nested

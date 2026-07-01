@@ -1,6 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import type {
   ExportTarget,
@@ -25,6 +26,7 @@ type ArtifactDownloadPayload = {
     status: string
     filename?: string
     contentType?: string
+    errorMessage?: string
     previewVersion?: number
   } | null
   storageUrl?: string | null
@@ -103,6 +105,8 @@ const isArtifactDownloadPayload = (
           typeof artifact.filename === 'string') &&
         (artifact.contentType === undefined ||
           typeof artifact.contentType === 'string') &&
+        (artifact.errorMessage === undefined ||
+          typeof artifact.errorMessage === 'string') &&
         (artifact.previewVersion === undefined ||
           typeof artifact.previewVersion === 'number'))) &&
     (value.storageUrl === undefined ||
@@ -198,6 +202,19 @@ const buildExportOnDemand = async (
 
   if (!isExportBuildInputPayload(buildInputResult)) return null
 
+  if (
+    isUnsafePublicPreviewHtml(buildInputResult.html) ||
+    isUnsafePublicPreviewHtml(buildInputResult.source)
+  ) {
+    return new Response(
+      'Export preview is not available. Regenerate the preview before exporting.',
+      {
+        status: 422,
+        headers: { 'content-type': 'text/plain' },
+      },
+    )
+  }
+
   const input: OpenUIExportInput = {
     source: buildInputResult.source,
     siteSpecJson: buildInputResult.siteSpecJson,
@@ -291,6 +308,16 @@ export const createExportResponse = async (
       })
     }
 
+    if (download.artifact?.status === 'failed') {
+      return new Response(
+        download.artifact.errorMessage ?? 'Export artifact failed.',
+        {
+          status: 409,
+          headers: { 'content-type': 'text/plain' },
+        },
+      )
+    }
+
     if (download.artifact?.status !== 'ready' || !download.storageUrl) {
       const fallback = await buildExportOnDemand(
         client,
@@ -301,7 +328,25 @@ export const createExportResponse = async (
       return fallback ?? buildingResponse(download.artifact?.status)
     }
 
-    const artifactResponse = await fetch(download.storageUrl)
+    let artifactResponse: Response
+    try {
+      artifactResponse = await fetch(download.storageUrl)
+    } catch {
+      const fallback = await buildExportOnDemand(
+        client,
+        sessionId,
+        normalizedTarget,
+        getOwnerSecret(request),
+      )
+      if (fallback) return fallback
+      return new Response(
+        'Export artifact is unavailable and could not be rebuilt.',
+        {
+          status: 502,
+          headers: { 'content-type': 'text/plain' },
+        },
+      )
+    }
     if (!artifactResponse.ok || artifactResponse.body === null) {
       const fallback = await buildExportOnDemand(
         client,
@@ -309,7 +354,14 @@ export const createExportResponse = async (
         normalizedTarget,
         getOwnerSecret(request),
       )
-      return fallback ?? buildingResponse('queued')
+      if (fallback) return fallback
+      return new Response(
+        'Export artifact is unavailable and could not be rebuilt.',
+        {
+          status: 502,
+          headers: { 'content-type': 'text/plain' },
+        },
+      )
     }
 
     return new Response(artifactResponse.body, {

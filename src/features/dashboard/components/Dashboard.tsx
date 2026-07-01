@@ -297,8 +297,16 @@ const readSiteThemeName = (specJson: string | undefined): string | null => {
   }
 }
 
+const isFullHtmlDocument = (html: string | undefined): boolean =>
+  typeof html === 'string' &&
+  (/^\s*<!doctype\s+html/i.test(html) || /^\s*<html[\s>]/i.test(html))
+
 const isOpenUIHandoffHtml = (html: string | undefined): boolean =>
-  typeof html === 'string' && html.includes('ship-fast-openui-source')
+  typeof html === 'string' &&
+  isFullHtmlDocument(html) &&
+  (/id=["']ship-fast-openui-source["']/i.test(html) ||
+    /Generated OpenUI source is ready/i.test(html)) &&
+  /data-openui-ready=["']source["']/i.test(html)
 
 const ToolPopoverFallback = () => (
   <div className="grid gap-3" aria-hidden="true">
@@ -459,17 +467,25 @@ export function Dashboard({
   const homeModule = generationView?.homeModule
   const cmsPreviewHtml = generationView?.latestPreview?.html
   const cmsPreviewSource =
-    cmsPreviewHtml?.includes('ship-fast-cms:') &&
-    !isOpenUIHandoffHtml(cmsPreviewHtml)
+    typeof cmsPreviewHtml === 'string' &&
+    cmsPreviewHtml.length > 0 &&
+    !isOpenUIHandoffHtml(cmsPreviewHtml) &&
+    (cmsPreviewHtml.includes('ship-fast-cms:') ||
+      isFullHtmlDocument(cmsPreviewHtml))
       ? cmsPreviewHtml
       : undefined
   const hasRenderableClonePage = Boolean(
     clonePageNav.currentHtml || clonePageNav.currentUrl,
   )
+  const hasEmptyPreviewHtml =
+    generationView?.latestPreview !== null &&
+    generationView?.latestPreview !== undefined &&
+    (generationView?.latestPreview?.html ?? '') === ''
   const hasRenderableHomeSource =
-    Boolean(homeModule?.source) ||
-    Boolean(cmsPreviewSource) ||
-    hasRenderableClonePage
+    !hasEmptyPreviewHtml &&
+    (Boolean(homeModule?.source) ||
+      Boolean(cmsPreviewSource) ||
+      hasRenderableClonePage)
   const isPreviewReady =
     !isMissingSession &&
     generationView?.session.status === 'preview_ready' &&
@@ -1319,7 +1335,7 @@ export function Dashboard({
 
       <audio id="launch-sfx" preload="auto" src="/assets/launch.mp3"></audio>
 
-      {startedFromGenerationFlow && !isPreviewRenderable && !isAdminActive ? (
+      {!isPreviewRenderable && !isMissingSession && !isAdminActive ? (
         <IntroLoader
           progress={Math.min(0.94, progress / 100)}
           playSound={startedFromGenerationFlow}
