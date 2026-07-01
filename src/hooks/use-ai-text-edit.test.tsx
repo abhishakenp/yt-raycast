@@ -158,4 +158,25 @@ describe('useAITextEdit', () => {
     expect(window.getSelection()?.rangeCount).toBe(0)
     expect(onSelect).toHaveBeenCalledWith(null)
   })
+
+  it('clears the active selection when the user clicks outside the editable container', () => {
+    const onSelect = vi.fn()
+    render(<Probe aiEditMode onSelect={onSelect} />)
+
+    const node = screen.getByTestId('editable-copy').firstChild
+    expect(node).toBeTruthy()
+    selectNodeText(node!, 0, node!.textContent!.length)
+    dispatchSelectionChange()
+    expect(onSelect).toHaveBeenCalledWith({
+      text: 'Editable headline text',
+      rect,
+    })
+
+    act(() => {
+      fireEvent.click(screen.getByTestId('outside-copy'))
+    })
+
+    expect(window.getSelection()?.rangeCount).toBe(0)
+    expect(onSelect).toHaveBeenLastCalledWith(null)
+  })
 })
