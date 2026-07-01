@@ -101,6 +101,17 @@ const languageEntryForLocale = (code: string): LanguageEntry => {
   }
 }
 
+const REGION_CODES = [
+  'MX', 'ES', 'US', 'GB', 'BR', 'PT', 'CA', 'AT', 'CH', 'BE', 'AU', 'DE',
+  'FR', 'IT', 'NL', 'RU', 'IN', 'ID', 'AR', 'CO', 'CL', 'PE', 'VE', 'EC',
+  'GT', 'CU', 'DO', 'HN', 'NI', 'PA', 'PY', 'UY', 'BO', 'CR', 'SV', 'GQ',
+  'PH', 'IE', 'NZ', 'ZA', 'SG', 'MY', 'TH', 'VN', 'KR', 'JP', 'CN', 'TW',
+  'HK', 'EG', 'MA', 'DZ', 'TN', 'NG', 'KE', 'ET', 'GH', 'TZ', 'UG', 'SA',
+  'AE', 'IQ', 'JO', 'LB', 'OM', 'KW', 'QA', 'BH', 'TR', 'GR', 'SE', 'NO',
+  'DK', 'FI', 'PL', 'CZ', 'SK', 'HU', 'RO', 'BG', 'RS', 'HR', 'SI', 'EE',
+  'LV', 'LT', 'UA', 'KZ', 'UZ',
+].filter((value, index, array) => array.indexOf(value) === index)
+
 const buildLanguageNameIndex = (): Map<string, string[]> => {
   const index = new Map<string, string[]>()
   const add = (label: string, code: string) => {
@@ -122,6 +133,28 @@ const buildLanguageNameIndex = (): Map<string, string[]> => {
     add(code, code)
     add(english, code)
     add(native, code)
+
+    // Regional variants (e.g. es-MX, pt-BR, fr-CA). The browser translator
+    // availability check is the real filter; here we only broaden the candidate
+    // set so a user typing "Mexican" or "Brazilian Portuguese" can reach the
+    // matching regional locale without an AI round-trip.
+    for (const region of REGION_CODES) {
+      const locale = canonicalLocale(`${code}-${region}`)
+      if (!locale || locale === 'en') continue
+      const regionalEnglish = displayName(locale, 'en', code)
+      if (!regionalEnglish || regionalEnglish === english) continue
+      add(regionalEnglish, locale)
+
+      // Adjective form "<Adjective> <BaseLanguage>" (e.g. "Mexican Spanish"):
+      // also index the bare adjective so a short query like "Mexican" resolves
+      // to the regional locale. Only do this for genuine adjective forms where
+      // the trailing token is the base language name, so we don't pollute the
+      // index with stray words from "<Base> (<Country>)" labels.
+      const match = regionalEnglish.match(/^(\S+)\s+(.+)$/)
+      if (match && match[2].toLowerCase() === english.toLowerCase()) {
+        add(match[1], locale)
+      }
+    }
   }
 
   return index
