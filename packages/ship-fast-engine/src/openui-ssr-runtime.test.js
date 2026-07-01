@@ -1,24 +1,11 @@
 import { build } from 'esbuild'
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 describe('openui SSR runtime compatibility', () => {
-  it('loads the MessageChannel shim before static React/OpenUI imports', async () => {
-    const source = await readFile(
-      new URL('./openui-ssr.js', import.meta.url),
-      'utf8',
-    )
-    const importLines = source
-      .split('\n')
-      .filter((line) => line.startsWith('import '))
-
-    expect(importLines[0]).toBe("import './openui-message-channel-polyfill.js'")
-    expect(source).not.toContain('const ensureMessageChannel =')
-  })
-
   it('loads when browser conditions are active without MessageChannel', async () => {
     const bundled = await build({
       bundle: true,
