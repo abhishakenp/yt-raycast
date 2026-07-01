@@ -397,7 +397,7 @@ describe('Gallery Thumbnail Response', () => {
       expect(body).not.toContain('ship-fast-openui-source')
     })
 
-    it('does not capture or return a PNG for a DB-observed OpenUI gallery session', async () => {
+    it('renders a DB-observed OpenUI gallery session to static HTML with edits, theme, and locale applied', async () => {
       thumbnailCaptureMocks.captureGalleryThumb.mockResolvedValue(
         Buffer.from([0x89, 0x50, 0x4e, 0x47]),
       )
@@ -406,7 +406,9 @@ describe('Gallery Thumbnail Response', () => {
           categories: ['service'],
           cost: 0,
           elapsed: 6424,
-          html: '<!doctype html><html lang="lt"><body><main data-sf-export-page="Pradzia"><h1>Redaguotas aludario meniu</h1><p>Ananasų sezoninis elis</p></main></body></html>',
+          html: '<!doctype html><html lang="en"><body><main><h1>Our Brew Selection</h1><p>Stale English preview before edits</p><img src="https://cdn.example.test/stale-brewery.png" alt="stale screenshot"></main></body></html>',
+          moduleSource:
+            'home_menu = RestaurantMenu("Redaguotas aludario meniu", "Lietuviskai isverstas sezoniniu alaus sarasas.", [{"name":"Sezoniniai leidimai","items":[{"name":"Ananasų sezoninis elis","description":"Tropines natos ir gaivi pabaiga","price":"7 €","tag":"Ribotas"}]}])\nroot = PageSwitch(["Pradzia"], [home_menu], "", {"Pradzia":"home"})',
           openuiReady: true,
           preferredLanguage: 'lt',
           previewVersion: 1,
@@ -426,6 +428,12 @@ describe('Gallery Thumbnail Response', () => {
             name: 'The Beer Store',
           },
           sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+          siteSpecJson: JSON.stringify({
+            brand: 'Craft Beer Brewery',
+            locale: 'en',
+            projectName: 'Craft Beer Brewery',
+            theme: 't3-chat',
+          }),
           status: 'preview_ready',
           themeMode: 'dark',
           themeOverride: 'darkmatter',
@@ -444,8 +452,24 @@ describe('Gallery Thumbnail Response', () => {
         thumbnailCaptureMocks.readCachedGalleryThumb,
       ).not.toHaveBeenCalled()
       expect(thumbnailCaptureMocks.captureGalleryThumb).not.toHaveBeenCalled()
-      expect(response.headers.get('content-type')).not.toContain('image/png')
-      expect(await response.text()).not.toBe('\uFFFDPNG')
+      expect(response.headers.get('content-type')).toBe(
+        'text/html; charset=utf-8',
+      )
+      const html = await response.text()
+      expect(html).toContain('data-sf-export-page="Pradzia"')
+      expect(html).toContain('lang="lt"')
+      expect(html).toContain('color-scheme: dark')
+      expect(html).toContain('"themeName":"darkmatter"')
+      expect(html).toContain('Redaguotas aludario meniu')
+      expect(html).toContain('Ananasų sezoninis elis')
+      expect(html).toContain('7 €')
+      expect(html).not.toContain('Our Brew Selection')
+      expect(html).not.toContain('Stale English preview before edits')
+      expect(html).not.toContain('stale-brewery.png')
+      expect(html).not.toContain('RestaurantMenu("')
+      expect(html).not.toContain('Generated OpenUI source is ready')
+      expect(html).not.toContain('ship-fast-openui-source')
+      expect(html).not.toContain('�PNG')
     })
 
     it('returns a stable unavailable thumbnail when the gallery lookup fails', async () => {

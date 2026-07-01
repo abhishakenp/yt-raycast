@@ -2,10 +2,7 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
-import {
-  captureGalleryThumb,
-  readCachedGalleryThumb,
-} from './gallery-thumbnail-capture'
+import { buildOpenUIHtmlExport } from '../../exports/services/openui-html-export-builder'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type GalleryConvexClient = Pick<ConvexHttpClient, 'query'>
@@ -20,6 +17,12 @@ type GalleryThumbnailSession = {
   siteSpecReady?: boolean | null
   openuiReady?: boolean | null
   html?: string | null
+  moduleSource?: string | null
+  siteSpecJson?: string | null
+  preferredLanguage?: string | null
+  themeOverride?: string | null
+  genuiTheme?: string | null
+  themeMode?: string | null
   readiness?: {
     homepageReady?: boolean | null
     siteSpecReady?: boolean | null
@@ -114,6 +117,55 @@ const formatCost = (cost?: number | null): string | null => {
     return null
   if (cost === 0) return '$0.00'
   return `$${cost.toFixed(cost < 1 ? 4 : 2)}`
+}
+
+const readString = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : undefined
+
+const htmlResponse = (html: string): Response =>
+  new Response(html, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=20, stale-while-revalidate=120',
+    },
+  })
+
+const readGalleryThemeName = (
+  session: GalleryThumbnailSession,
+): string | undefined =>
+  readString(session.themeOverride) ?? readString(session.genuiTheme)
+
+const readGalleryIsDark = (session: GalleryThumbnailSession): boolean =>
+  session.themeMode !== 'light'
+
+const renderOpenUiGalleryHtml = async (
+  sessionId: string,
+  session: GalleryThumbnailSession,
+  source: string,
+): Promise<string | null> => {
+  try {
+    const rendered = await buildOpenUIHtmlExport({
+      source,
+      previewHtml: undefined,
+      siteSpecJson: readString(session.siteSpecJson),
+      sessionId,
+      target: 'html',
+      themeName: readGalleryThemeName(session),
+      isDark: readGalleryIsDark(session),
+      locale: readString(session.preferredLanguage) ?? 'en',
+      includeBadge: false,
+    })
+    const html =
+      typeof rendered.body === 'string'
+        ? rendered.body
+        : new TextDecoder().decode(rendered.body)
+    return isUnsafePublicPreviewHtml(html) ? null : html
+  } catch {
+    return null
+  }
 }
 
 const buildMetadataLabel = (session: GalleryThumbnailSession): string => {
@@ -219,18 +271,9 @@ export const generateDeterministicThumbnailSvg = (
 </svg>`
 }
 
-const pngResponse = (buffer: Buffer): Response =>
-  new Response(new Uint8Array(buffer), {
-    status: 200,
-    headers: {
-      'Content-Type': 'image/png',
-      'Cache-Control': 'public, max-age=86400, immutable',
-    },
-  })
-
 export const createGalleryThumbnailResponse = async (
   sessionId: string,
-  request?: Request,
+  _request?: Request,
   clientOverride?: GalleryConvexClient,
 ): Promise<Response> => {
   try {
@@ -243,44 +286,31 @@ export const createGalleryThumbnailResponse = async (
       return new Response('Session not found or not public', { status: 404 })
     }
 
+    const moduleSource = readString(session.moduleSource)
+    const storedHtml = readString(session.html)
+    const storedHtmlUnsafe = isUnsafePublicPreviewHtml(storedHtml)
+
+    if (moduleSource !== undefined) {
+      const renderedHtml = await renderOpenUiGalleryHtml(
+        sessionId,
+        session,
+        moduleSource,
+      )
+      if (renderedHtml === null) {
+        return new Response('Session not found or not public', { status: 404 })
+      }
+      return htmlResponse(renderedHtml)
+    }
+
     // A session whose preview was suppressed as renderer-error HTML (html set
     // to null, or still containing the error marker) must not be exposed as a
     // public thumbnail.
-    if (session.html === null || isUnsafePublicPreviewHtml(session.html)) {
+    if (session.html === null || storedHtmlUnsafe) {
       return new Response('Session not found or not public', { status: 404 })
     }
 
-    // OpenUI sessions render an interactive client-side app that cannot be
-    // meaningfully screenshotted as a static PNG (the canvas is empty until
-    // hydration). Skip capture/cache entirely and serve the deterministic SVG
-    // placeholder so the gallery never shows a blank or misleading thumbnail.
-    const isOpenUiSession = Boolean(
-      session.readiness?.openuiReady ?? session.openuiReady,
-    )
-
-    if (!isOpenUiSession) {
-      // Prefer a real screenshot of the generated site (captured once and
-      // saved). Only fall back to the deterministic SVG when capture is
-      // unavailable or fails; that SVG is the explicit error/placeholder state.
-      const version =
-        (session as { previewVersion?: number }).previewVersion ?? 0
-      const cached = readCachedGalleryThumb(sessionId, version)
-      if (cached) return pngResponse(cached)
-
-      const shouldCapture =
-        request !== undefined &&
-        new URL(request.url).searchParams.get('fallback') !== '1'
-
-      if (shouldCapture) {
-        const origin = new URL(request.url).origin
-        const previewUrl = `${origin}/api/sessions/${encodeURIComponent(sessionId)}/preview-raw`
-        const captured = await captureGalleryThumb(
-          sessionId,
-          version,
-          previewUrl,
-        )
-        if (captured) return pngResponse(captured)
-      }
+    if (storedHtml !== undefined) {
+      return htmlResponse(storedHtml)
     }
 
     const categories = session.categories?.length
