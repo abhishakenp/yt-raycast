@@ -20,4 +20,6 @@ export const shouldUseAuthenticatedProviders = (pathname: string): boolean =>
   pathname.startsWith('/generate/')
 
 export const shouldUseConvexProviders = (pathname: string): boolean =>
-  pathname.startsWith('/generate/')
+  pathname.startsWith('/generate/') ||
+  pathname.startsWith('/gallery') ||
+  pathname.startsWith('/mine')

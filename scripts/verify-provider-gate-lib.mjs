@@ -47,6 +47,7 @@ export const normalizeProviderResult = (name, payload) => ({
   evidence: sanitizeEvidence(payload),
 })
 
+/** @param {{ name: string, script: string, args?: string[], env?: Record<string, string | undefined>, timeoutMs?: number }} opts */
 export const runNodeScript = ({
   name,
   script,

@@ -134,18 +134,29 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
     )
   }
 
-  return shouldLoadConvex ? (
-    <Suspense fallback={<ProviderFallback />}>
-      <LazyConvexAnonymousProvider convexUrl={configuredConvexUrl}>
-        <WithSignInHost
-          showLaunchBackdrop={showLaunchBackdrop}
-          signInRequestId={signInRequestId}
-        >
-          {children}
-        </WithSignInHost>
-      </LazyConvexAnonymousProvider>
-    </Suspense>
-  ) : (
+  if (shouldLoadConvex) {
+    return (
+      <Suspense fallback={<ProviderFallback />}>
+        <LazyConvexAnonymousProvider convexUrl={configuredConvexUrl}>
+          <WithSignInHost
+            showLaunchBackdrop={showLaunchBackdrop}
+            signInRequestId={signInRequestId}
+          >
+            {children}
+          </WithSignInHost>
+        </LazyConvexAnonymousProvider>
+      </Suspense>
+    )
+  }
+
+  // Routes that render Convex hook consumers must not mount their children
+  // outside a Convex provider. When Convex is required but not configured,
+  // render the loading fallback instead of mounting children unprotected.
+  if (shouldUseConvexProviders(pathname)) {
+    return <ProviderFallback />
+  }
+
+  return (
     <WithSignInHost
       showLaunchBackdrop={showLaunchBackdrop}
       signInRequestId={signInRequestId}
