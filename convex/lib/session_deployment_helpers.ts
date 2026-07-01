@@ -634,6 +634,13 @@ export const publishSessionPreview = async (
       })
     })()
 
+  if (preview.html.trim().length === 0 || isOpenUiErrorHtml(preview.html)) {
+    throw new ConvexError({
+      code: 'PREVIEW_NOT_READY',
+      message: 'Preview is not ready to publish',
+    })
+  }
+
   const slug =
     existingDeployment !== null && args.requestedSlug === undefined
       ? existingDeployment.slug

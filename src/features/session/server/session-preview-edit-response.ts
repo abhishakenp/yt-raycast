@@ -2,6 +2,7 @@ import type { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
+import { isOpenUiErrorHtml } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type PreviewEditClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
@@ -17,11 +18,26 @@ const json = (body: unknown, init?: ResponseInit) =>
     },
   })
 
+class MalformedJsonError extends Error {
+  constructor() {
+    super('Request body must be valid JSON.')
+    this.name = 'MalformedJsonError'
+  }
+}
+
+const isMalformedJsonError = (error: unknown): error is MalformedJsonError =>
+  error instanceof MalformedJsonError
+
 const readJsonBody = async (request: Request): Promise<JsonBody> => {
   const text = await request.text()
   if (!text.trim()) return {}
 
-  const parsed = JSON.parse(text) as unknown
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(text)
+  } catch {
+    throw new MalformedJsonError()
+  }
   return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
     ? (parsed as JsonBody)
     : {}
@@ -93,6 +109,10 @@ const isTextNotFoundError = (error: unknown): boolean => {
 }
 
 const errorResponse = (error: unknown) => {
+  if (isMalformedJsonError(error)) {
+    return json({ error: error.message }, { status: 400 })
+  }
+
   const message = getErrorMessage(error)
   const convexPayload = getConvexErrorPayload(message)
   const responseMessage =
@@ -167,6 +187,15 @@ export const createPreviewHtmlSaveResponse = async (
     const html = getString(body, ['html', 'previewHtml', 'homepageHtml'])
     if (html === undefined || !html.trim()) {
       return json({ error: 'Preview HTML is required' }, { status: 400 })
+    }
+
+    if (isOpenUiErrorHtml(html)) {
+      return json(
+        {
+          error: 'Preview HTML is not available. Regenerate the preview first.',
+        },
+        { status: 422 },
+      )
     }
 
     const result = await createClient(clientOverride).mutation(

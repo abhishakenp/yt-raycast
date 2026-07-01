@@ -35,7 +35,7 @@ var u = class {
         <rect x="7" y="7" width="10" height="10" rx="2"/>
       </svg>
     `),
-      this.toggleButton.addEventListener('click', () => this.close()),
+      this.toggleButton.addEventListener('click', () => this.toggle()),
       document.body.appendChild(this.toggleButton))
   }
   createOverlay() {

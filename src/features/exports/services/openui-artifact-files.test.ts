@@ -1,5 +1,10 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
+import { build } from 'esbuild'
+import { JSDOM } from 'jsdom'
 import { describe, expect, it } from 'vitest'
-import ts from 'typescript'
 
 import { buildOpenUIArtifactFiles } from './openui-artifact-files'
 
@@ -93,58 +98,112 @@ const siteSpecJsonWithSoftwareGenUI = JSON.stringify({
   },
 })
 
-const parseTsx = (fileName: string, moduleSource: string): ts.SourceFile =>
-  ts.createSourceFile(
-    fileName,
-    moduleSource,
-    ts.ScriptTarget.Latest,
-    true,
-    fileName.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
-  )
-
-const importSpecifiers = (sourceFile: ts.SourceFile): string[] =>
-  sourceFile.statements
-    .filter(ts.isImportDeclaration)
-    .flatMap((statement) =>
-      ts.isStringLiteral(statement.moduleSpecifier)
-        ? [statement.moduleSpecifier.text]
-        : [],
-    )
-
-const hasJsxElementNamed = (
-  sourceFile: ts.SourceFile,
-  elementName: string,
-): boolean => {
-  let found = false
-
-  const visit = (node: ts.Node) => {
-    if (
-      (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
-      ts.isIdentifier(node.tagName) &&
-      node.tagName.text === elementName
-    ) {
-      found = true
-      return
-    }
-    ts.forEachChild(node, visit)
-  }
-
-  visit(sourceFile)
-  return found
-}
-
-const expectRouteWrapperRenders = (
+const renderGeneratedRouteText = async (
   files: Record<string, string>,
   routeComponent: string,
-  sectionComponent: string,
-) => {
-  const sourceFile = parseTsx(
-    `src/components/${routeComponent}.tsx`,
-    files[`src/components/${routeComponent}.tsx`] ?? '',
-  )
+): Promise<string> => {
+  const directory = mkdtempSync(join(tmpdir(), 'openui-artifact-route-'))
 
-  expect(importSpecifiers(sourceFile)).toContain(`./${sectionComponent}`)
-  expect(hasJsxElementNamed(sourceFile, sectionComponent)).toBe(true)
+  try {
+    for (const [path, fileSource] of Object.entries(files)) {
+      const absolutePath = join(directory, path)
+      mkdirSync(join(absolutePath, '..'), { recursive: true })
+      writeFileSync(absolutePath, fileSource)
+    }
+    const entryPath = join(directory, 'render-route.tsx')
+    writeFileSync(
+      entryPath,
+      `import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { flushSync } from "react-dom";
+import { createRoot } from "react-dom/client";
+import { ${routeComponent} } from "./src/components/${routeComponent}";
+
+const root = createRoot(document.getElementById("root"));
+const queryClient = new QueryClient();
+flushSync(() => root.render(
+  React.createElement(
+    QueryClientProvider,
+    { client: queryClient },
+    React.createElement(${routeComponent}, {}),
+  ),
+));
+`,
+    )
+    const bundled = await build({
+      bundle: true,
+      entryPoints: [entryPath],
+      format: 'iife',
+      jsx: 'automatic',
+      logLevel: 'silent',
+      nodePaths: [join(process.cwd(), 'node_modules')],
+      platform: 'browser',
+      plugins: [
+        {
+          name: 'react-router-dom-runtime-stub',
+          setup(pluginBuild) {
+            pluginBuild.onResolve({ filter: /^react-router-dom$/ }, () => ({
+              namespace: 'react-router-dom-runtime-stub',
+              path: 'react-router-dom',
+            }))
+            pluginBuild.onLoad(
+              {
+                filter: /^react-router-dom$/,
+                namespace: 'react-router-dom-runtime-stub',
+              },
+              () => ({
+                contents: `export const Link = ({ children }) => children;
+export const NavLink = ({ children }) => children;
+export function useLocation() { return { pathname: "/" }; }
+export function useNavigate() { return () => {}; }
+`,
+                loader: 'tsx',
+              }),
+            )
+            pluginBuild.onResolve({ filter: /^next\/navigation$/ }, () => ({
+              namespace: 'next-navigation-runtime-stub',
+              path: 'next/navigation',
+            }))
+            pluginBuild.onLoad(
+              {
+                filter: /^next\/navigation$/,
+                namespace: 'next-navigation-runtime-stub',
+              },
+              () => ({
+                contents: `export function usePathname() { return "/"; }
+export function useRouter() {
+  return { back() {}, forward() {}, push() {}, refresh() {}, replace() {} };
+}
+export function useSearchParams() {
+  return new URLSearchParams();
+}
+`,
+                loader: 'tsx',
+              }),
+            )
+          },
+        },
+      ],
+      write: false,
+    })
+    const dom = new JSDOM('<div id="root"></div>', {
+      runScripts: 'outside-only',
+    })
+    ;(
+      dom.window as unknown as { process?: { env: Record<string, string> } }
+    ).process = { env: {} }
+
+    try {
+      dom.window.eval(bundled.outputFiles[0]?.text ?? '')
+    } catch (error) {
+      const detail =
+        error instanceof Error ? (error.stack ?? error.message) : String(error)
+      throw new Error(`Generated route ${routeComponent} crashed: ${detail}`)
+    }
+    return dom.window.document.querySelector('#root')?.textContent ?? ''
+  } finally {
+    rmSync(directory, { force: true, recursive: true })
+  }
 }
 
 describe('openui artifact files', () => {
@@ -157,9 +216,10 @@ describe('openui artifact files', () => {
     })
 
     expect(download?.filename).toBe('artifact-demo-react.zip')
-    expect(files['src/components/SaasHero.tsx']).toContain('SaasHero')
     expect(files['src/data/pages.ts']).toContain('Hello artifact')
-    expectRouteWrapperRenders(files, 'RoutePage1Home', 'SaasHero')
+    await expect(
+      renderGeneratedRouteText(files, 'RoutePage1Home'),
+    ).resolves.toContain('Hello artifact')
     expect(files['vite.config.js']).toBeUndefined()
   })
 
@@ -211,9 +271,10 @@ describe('openui artifact files', () => {
     })
 
     expect(download?.filename).toBe('artifact-demo-next.zip')
-    expect(files['src/components/SaasHero.tsx']).toContain('SaasHero')
     expect(files['src/data/pages.ts']).toContain('Hello artifact')
-    expectRouteWrapperRenders(files, 'RoutePage1Home', 'SaasHero')
+    await expect(
+      renderGeneratedRouteText(files, 'RoutePage1Home'),
+    ).resolves.toContain('Hello artifact')
     expect(files['next.config.js']).toBeUndefined()
   })
 
@@ -378,7 +439,9 @@ describe('openui artifact files', () => {
       target: 'next',
     })
     expect(next.files['app/admin/page.tsx']).toContain('ShipFastAdminGate')
-    expectRouteWrapperRenders(next.files, 'RoutePage2Shop', 'ShopOverview')
+    await expect(
+      renderGeneratedRouteText(next.files, 'RoutePage2Shop'),
+    ).resolves.toEqual(expect.any(String))
     expect(next.files['src/ship-fast-admin.ts']).toContain('store@example.com')
 
     const lakebed = await buildOpenUIArtifactFiles({
@@ -415,8 +478,12 @@ describe('openui artifact files', () => {
       sessionId: 'software-demo',
       target: 'next',
     })
-    expectRouteWrapperRenders(next.files, 'RoutePage2Docs', 'DocsHero')
-    expectRouteWrapperRenders(next.files, 'RoutePage3Contact', 'ContactHero')
+    await expect(
+      renderGeneratedRouteText(next.files, 'RoutePage2Docs'),
+    ).resolves.toContain('Artifact SaaS Docs')
+    await expect(
+      renderGeneratedRouteText(next.files, 'RoutePage3Contact'),
+    ).resolves.toContain('Talk to Artifact SaaS')
     expect(next.files['app/admin/page.tsx']).toContain('ShipFastAdminGate')
     expect(next.files['src/ship-fast-admin.ts']).toContain('saas@example.com')
   })

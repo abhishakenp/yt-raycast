@@ -130,6 +130,22 @@ describe('GeneratedModulePreview (real component)', () => {
     expect(screen.queryByTitle('Generated website preview')).toBeNull()
   })
 
+  it('does not render a blank OpenUI preview when the session has no source yet', async () => {
+    render(
+      <GeneratedModulePreview
+        source=""
+        sessionId="k574ms14ma9f94keq30r7dq24x89n1k2"
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('openui-viewer')).toBeNull()
+      expect(screen.getByRole('status').textContent).toMatch(
+        /generating|loading|preview/i,
+      )
+    })
+  })
+
   it('applies theme styles as CSS custom properties on the preview container', () => {
     const themeStyles = defaultPresets['modern-minimal'].styles
 

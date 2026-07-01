@@ -18,6 +18,15 @@ type UsageMetricRecord = Doc<'usageMetrics'>
 
 const sessionId = 'session_artifacts' as Id<'sessions'>
 
+const realConvexPreviewWithRendererError = {
+  previewId: 'ns70q8624bp2dk2qvehc0dc8jd89mdvb',
+  sessionId: 'k57fkjjt99avgnxyzq7w3xy46589nmy3',
+  status: 'preview_ready',
+  previewVersion: 1,
+  title: 'Nyx',
+  html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
+} as const
+
 const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
   ({
     _id: 'site_spec_existing' as Id<'siteSpecs'>,
@@ -617,5 +626,65 @@ describe('session artifact helpers', () => {
         updatedAt: 900,
       }),
     ])
+  })
+
+  it('does not promote cached OpenUI renderer-error HTML into a ready cloned preview', async () => {
+    const cachedSession = sessionDoc({
+      _id: realConvexPreviewWithRendererError.sessionId as Id<'sessions'>,
+      status: realConvexPreviewWithRendererError.status,
+      previewVersion: realConvexPreviewWithRendererError.previewVersion,
+    })
+    const targetSession = sessionDoc({
+      _id: 'session_target' as Id<'sessions'>,
+      status: 'queued',
+      previewVersion: 0,
+    })
+    const { ctx, previews, sessions, generationEvents, usageMetrics } =
+      cloneCtxFor({
+        sessions: [cachedSession, targetSession],
+        previews: [
+          previewDoc({
+            _id: realConvexPreviewWithRendererError.previewId as Id<'previews'>,
+            sessionId: cachedSession._id,
+            version: realConvexPreviewWithRendererError.previewVersion,
+            html: realConvexPreviewWithRendererError.html,
+          }),
+        ],
+        generatedModules: [
+          generatedModuleDoc({
+            sessionId: cachedSession._id,
+            source: '<main>Cached module source</main>',
+          }),
+        ],
+      })
+
+    await expect(
+      cloneCachedGeneratedArtifacts(ctx, {
+        cachedSession,
+        targetSessionId: targetSession._id,
+        now: 1000,
+        sendOperationalNotification:
+          'sendOperationalNotification' as unknown as Parameters<
+            MutationCtx['scheduler']['runAfter']
+          >[1],
+      }),
+    ).resolves.toBe(false)
+
+    expect(
+      previews.some(
+        (preview) =>
+          preview.sessionId === targetSession._id &&
+          preview.html === realConvexPreviewWithRendererError.html,
+      ),
+    ).toBe(false)
+    expect(generationEvents).toEqual([])
+    expect(usageMetrics).toEqual([])
+    expect(sessions).toContainEqual(
+      expect.objectContaining({
+        _id: targetSession._id,
+        status: 'queued',
+        previewVersion: 0,
+      }),
+    )
   })
 })

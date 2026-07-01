@@ -7,6 +7,7 @@ import {
   upsertSiteSpec,
 } from './session_artifact_helpers'
 import { assertCanMutateSession } from './session_access_helpers'
+import { isOpenUiErrorHtml } from './openui_error_html'
 
 export const serializePreviewHistoryItem = (preview: Doc<'previews'>) => ({
   previewId: preview._id,
@@ -71,6 +72,13 @@ export const restorePreviewHistoryVersion = async (
 ) => {
   const nextPreviewVersion =
     (args.session.previewVersion ?? args.preview.version) + 1
+
+  if (isOpenUiErrorHtml(args.preview.html)) {
+    throw new ConvexError({
+      code: 'PREVIEW_NOT_READY',
+      message: 'Preview is not ready to restore',
+    })
+  }
 
   if (args.preview.openUiSource !== undefined) {
     await upsertHomeGeneratedModule(

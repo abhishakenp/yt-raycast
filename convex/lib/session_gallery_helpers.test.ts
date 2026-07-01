@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
 import {
+  listOwnedGallerySessions,
   listPublicGallerySessions,
   loadPublicGalleryArtifacts,
   loadPublicGallerySession,
@@ -98,6 +99,7 @@ const ctxFor = (input: {
   previews?: PreviewRecord[]
   generatedModules?: GeneratedModuleRecord[]
   siteSpecs?: SiteSpecRecord[]
+  userId?: string | null
 }) => {
   const sessions = [...(input.sessions ?? [])]
   const previews = [...(input.previews ?? [])]
@@ -121,7 +123,7 @@ const ctxFor = (input: {
 
   const db = {
     normalizeId: (table: string, value: string) =>
-      table === 'sessions' && value.startsWith('session_')
+      table === 'sessions' && sessions.some((row) => row._id === value)
         ? (value as Id<'sessions'>)
         : null,
     get: async (id: string) =>
@@ -175,6 +177,7 @@ const ctxFor = (input: {
             order: (_direction: 'asc' | 'desc') => queryResult,
             first: async () => rows()[0] ?? null,
             take: async (limit: number) => rows().slice(0, limit),
+            collect: async () => rows(),
           }
 
           return queryResult
@@ -184,7 +187,18 @@ const ctxFor = (input: {
     },
   } as unknown as Pick<QueryCtx, 'db'>['db']
 
-  return { db }
+  return {
+    auth: {
+      getUserIdentity: async () =>
+        input.userId === undefined || input.userId === null
+          ? null
+          : {
+              tokenIdentifier: input.userId,
+              subject: input.userId,
+            },
+    },
+    db,
+  }
 }
 
 describe('loadPublicGalleryArtifacts', () => {
@@ -378,6 +392,8 @@ describe('listPublicGallerySessions', () => {
     })
 
     expect(result.items).toEqual([])
+    expect(result.total).toBe(0)
+    expect(result.totalPages).toBe(1)
     expect(JSON.stringify(result).toLowerCase()).not.toContain('openui-error')
     expect(JSON.stringify(result).toLowerCase()).not.toContain(
       'failed to render',
@@ -431,6 +447,93 @@ describe('loadPublicGallerySession', () => {
     await expect(
       loadPublicGallerySession(ctx, invisibleSessionId),
     ).resolves.toBe(null)
+  })
+
+  it('returns null for a direct public gallery detail lookup backed by renderer-error preview HTML', async () => {
+    const brokenSessionId =
+      realConvexRendererErrorGalleryPreview.sessionId as Id<'sessions'>
+    const ctx = ctxFor({
+      sessions: [
+        sessionDoc({
+          _id: brokenSessionId,
+          prompt: realConvexRendererErrorGalleryPreview.prompt,
+          status: 'preview_ready',
+          previewVersion: realConvexRendererErrorGalleryPreview.previewVersion,
+          isPrivate: false,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          _id: realConvexRendererErrorGalleryPreview.previewId as Id<'previews'>,
+          sessionId: brokenSessionId,
+          version: realConvexRendererErrorGalleryPreview.previewVersion,
+          html: realConvexRendererErrorGalleryPreview.html,
+        }),
+      ],
+    })
+
+    await expect(
+      loadPublicGallerySession(
+        ctx,
+        realConvexRendererErrorGalleryPreview.sessionId,
+      ),
+    ).resolves.toBe(null)
+  })
+})
+
+describe('listOwnedGallerySessions', () => {
+  it('does not count or expose owned sessions whose preview was suppressed as renderer-error HTML', async () => {
+    const brokenSessionId =
+      realConvexRendererErrorGalleryPreview.sessionId as Id<'sessions'>
+    const goodSessionId = 'session_owned_good' as Id<'sessions'>
+    const ctx = ctxFor({
+      userId: 'user_gallery',
+      sessions: [
+        sessionDoc({
+          _id: brokenSessionId,
+          userId: 'user_gallery',
+          prompt: realConvexRendererErrorGalleryPreview.prompt,
+          status: 'preview_ready',
+          previewVersion: realConvexRendererErrorGalleryPreview.previewVersion,
+          createdAt: 300,
+        }),
+        sessionDoc({
+          _id: goodSessionId,
+          userId: 'user_gallery',
+          prompt: 'A cozy coffee shop with online ordering',
+          status: 'preview_ready',
+          previewVersion: 1,
+          createdAt: 200,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          _id: realConvexRendererErrorGalleryPreview.previewId as Id<'previews'>,
+          sessionId: brokenSessionId,
+          version: realConvexRendererErrorGalleryPreview.previewVersion,
+          html: realConvexRendererErrorGalleryPreview.html,
+        }),
+        previewDoc({
+          _id: 'preview_owned_good' as Id<'previews'>,
+          sessionId: goodSessionId,
+          version: 1,
+          html: '<main>Coffee shop</main>',
+        }),
+      ],
+    }) as QueryCtx
+
+    const result = await listOwnedGallerySessions(ctx, {
+      limit: 12,
+      page: 1,
+    })
+
+    expect(result.items.map((item) => item.sessionId)).toEqual([goodSessionId])
+    expect(result.total).toBe(1)
+    expect(result.totalPages).toBe(1)
+    expect(JSON.stringify(result).toLowerCase()).not.toContain('openui-error')
+    expect(JSON.stringify(result).toLowerCase()).not.toContain(
+      'failed to render',
+    )
   })
 })
 

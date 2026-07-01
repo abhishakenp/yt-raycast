@@ -1,5 +1,6 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
+import { isOpenUiErrorHtml } from './openui_error_html'
 import { recordOperationalGenerationEvent } from './session_operational_notifications'
 
 type OperationalNotificationReference = Parameters<
@@ -95,6 +96,10 @@ export const cloneCachedGeneratedArtifacts = async (
     .first()
 
   if (latestPreview === null || homeModule?.source === undefined) {
+    return false
+  }
+
+  if (isOpenUiErrorHtml(latestPreview.html)) {
     return false
   }
 

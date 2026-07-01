@@ -77,6 +77,19 @@ describe('public metadata responses', () => {
     ).toBeUndefined()
   })
 
+  it('infers deployment slugs from forwarded hosts behind a proxy', () => {
+    expect(
+      getDeploymentSlugFromRequest(
+        new Request('https://internal.vercel.app/robots.txt', {
+          headers: {
+            'x-forwarded-host':
+              'a-craft-beer-brewery.ship-fast.io, internal.vercel.app',
+          },
+        }),
+      ),
+    ).toBe('a-craft-beer-brewery')
+  })
+
   it('serves deployment llms.txt from the published preview', async () => {
     const calls: unknown[] = []
     const client = {
@@ -197,6 +210,90 @@ describe('public metadata responses', () => {
     expect(body).not.toContain('No matching export')
     expect(body).not.toContain('useAuth')
     expect(response.headers.get('x-ship-fast-deployment')).toBeNull()
+  })
+
+  it('does not publish metadata for a ready deployment whose preview HTML is empty', async () => {
+    const client = {
+      query: async (_ref: unknown, args: any) => {
+        if ('slug' in args) return realReadyLakebedDeployment
+        return {
+          previewVersion: 1,
+          sessionId: realReadyLakebedDeployment.sessionId,
+          slug: realReadyLakebedDeployment.slug,
+          status: 'preview_ready',
+          html: '',
+        }
+      },
+    }
+
+    const response = await createPublicMetadataResponse(
+      'llms',
+      new Request('https://a-craft-beer-brewery.ship-fast.io/llms.txt'),
+      { client },
+    )
+
+    expect(response.status).toBe(202)
+    expect(await response.text()).toBe('Deployment metadata is not ready yet')
+    expect(response.headers.get('x-ship-fast-deployment')).toBeNull()
+  })
+
+  it('does not publish metadata generated from OpenUI renderer-error HTML', async () => {
+    const client = {
+      query: async (_ref: unknown, args: any) => {
+        if ('slug' in args) return realReadyLakebedDeployment
+        return {
+          previewVersion: 1,
+          sessionId: realReadyLakebedDeployment.sessionId,
+          slug: realReadyLakebedDeployment.slug,
+          status: 'preview_ready',
+          html: '<!doctype html><html><head><title>Broken</title></head><body><div class="openui-error">Failed to render: te is not a function</div></body></html>',
+        }
+      },
+    }
+
+    const response = await createPublicMetadataResponse(
+      'llms',
+      new Request('https://a-craft-beer-brewery.ship-fast.io/llms.txt'),
+      { client },
+    )
+    const body = await response.text()
+
+    expect(response.status).toBeGreaterThanOrEqual(400)
+    expect(body.toLowerCase()).not.toContain('openui-error')
+    expect(body.toLowerCase()).not.toContain('failed to render')
+    expect(response.headers.get('x-ship-fast-deployment')).toBeNull()
+  })
+
+  it('does not publish metadata from a preview newer than the deployment version', async () => {
+    const client = {
+      query: async (_ref: unknown, args: any) => {
+        if ('slug' in args) {
+          return {
+            ...realReadyLakebedDeployment,
+            previewVersion: 1,
+          }
+        }
+        return {
+          previewVersion: 2,
+          sessionId: realReadyLakebedDeployment.sessionId,
+          slug: realReadyLakebedDeployment.slug,
+          status: 'preview_ready',
+          html: '<!doctype html><html><head><title>Unpublished</title><meta name="description" content="Unpublished edit"></head><body><h1>Unpublished edit</h1></body></html>',
+        }
+      },
+    }
+
+    const response = await createPublicMetadataResponse(
+      'llms',
+      new Request('https://a-craft-beer-brewery.ship-fast.io/llms.txt'),
+      { client },
+    )
+    const body = await response.text()
+
+    expect(response.status).toBe(202)
+    expect(body).toBe('Deployment metadata is not ready yet')
+    expect(body).not.toContain('Unpublished edit')
+    expect(response.headers.get('x-ship-fast-preview-version')).toBeNull()
   })
 
   it('does not fall back to app metadata for unknown deployment subdomains', async () => {

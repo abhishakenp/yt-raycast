@@ -866,12 +866,6 @@ const transformComponentImports = (
         `React export does not support private helper import in ${componentName}: ${moduleName}`,
       )
     }
-    if (
-      moduleName.startsWith('.') &&
-      /(?:^|\/)[\w-]+-lakebed(?:\.[cm]?[jt]sx?)?$/.test(moduleName)
-    ) {
-      continue
-    }
     if (moduleName.startsWith('.') && sourcePath) {
       const relativeSourcePath = resolveRelativeBlockSourcePath(
         sourcePath,
@@ -1367,14 +1361,22 @@ const lakebedDataImport = `import {
   useLakebedAdapter,
 } from '../lib/site-data'`
 
-const renderTranslatedQuery = (variableName: string, queryName: string) =>
-  `const { data: ${variableName} = defaultSiteQueryValue(${queryName}) as any } = useQuery({
+const renderTranslatedQuery = (
+  variableName: string,
+  queryName: string,
+  fallback?: string,
+) => {
+  const defaultValue = fallback
+    ? `(${fallback.trim()}) as any`
+    : `defaultSiteQueryValue(${queryName}) as any`
+  return `const { data: ${variableName} = ${defaultValue} } = useQuery({
     queryKey: siteQueryKey(${queryName}),
     queryFn: () => readSiteData(${queryName}),
     initialData: () => readSiteDataSnapshot(${queryName}),
     staleTime: Infinity,
     gcTime: Infinity,
   });`
+}
 
 const renderTranslatedMutation = (variableName: string, mutationName: string) =>
   `const ${variableName}Mutation = useMutation({
@@ -1410,10 +1412,14 @@ const translateLakebedRuntimeCalls = (body: string) => {
   const usesSignOut = /\blakebed\.signOut\(\)/.test(body)
 
   let nextBody = body.replace(
-    /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*lakebed\.useQuery\(([^;\n]+)\);?/g,
-    (_match, variableName: string, queryName: string) => {
+    /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*lakebed\.useQuery\(([^;\n]+)\)(\s*\?\?\s*[^;\n]+)?;?/g,
+    (_match, variableName: string, queryName: string, fallback?: string) => {
       usesQuery = true
-      return renderTranslatedQuery(variableName, queryName.trim())
+      return renderTranslatedQuery(
+        variableName,
+        queryName.trim(),
+        fallback?.replace(/^\s*\?\?\s*/, ''),
+      )
     },
   )
 
@@ -1663,6 +1669,7 @@ const collectBlockSourceFiles = (
 const buildRoutes = (parsed: ParsedOpenUIProgram): ExportRoute[] => {
   const used = new Set<string>()
   return parsed.pages.map((page, index) => {
+    unwrapSingleObjectArgProps(page)
     const label = parsed.routes[index] ?? `Page ${index + 1}`
     if (!page.typeName || page.typeName === 'PageSwitch') {
       throw new Error(
@@ -1699,6 +1706,88 @@ const isOpenUIElementNode = (value: unknown): value is ElementNode =>
   value.type === 'element' &&
   'typeName' in value &&
   typeof value.typeName === 'string'
+
+type ComponentSchemaDef = {
+  properties?: Record<
+    string,
+    { type?: string; properties?: unknown; items?: unknown; $ref?: unknown }
+  >
+}
+
+let componentSchemaDefs: Record<string, ComponentSchemaDef> | null = null
+
+const getComponentSchemaDefs = (): Record<string, ComponentSchemaDef> => {
+  if (componentSchemaDefs) return componentSchemaDefs
+  try {
+    const schema = library.toJSONSchema() as Record<string, unknown>
+    const defs = (schema.$defs ?? schema.properties ?? {}) as Record<
+      string,
+      ComponentSchemaDef
+    >
+    componentSchemaDefs = defs
+    return defs
+  } catch {
+    componentSchemaDefs = {}
+    return componentSchemaDefs
+  }
+}
+
+const isObjectLikeSchema = (def: {
+  type?: string
+  properties?: unknown
+  items?: unknown
+  $ref?: unknown
+}): boolean =>
+  def.type === 'object' ||
+  def.type === 'array' ||
+  Boolean(def.properties) ||
+  Boolean(def.items) ||
+  Boolean(def.$ref)
+
+// The OpenUI parser maps positional arguments to a component's declared prop
+// slots in order. When a component is called with a single object literal
+// argument (e.g. `ProductDetailHero({"title":"Aurora Pro"})`), the parser
+// assigns that object to the first positional slot instead of spreading it
+// as the props bag. Detect that mis-assignment — the sole prop slot expects a
+// scalar but received a non-array object whose keys are all valid prop names
+// of the component — and unwrap it so the object becomes the component props.
+const unwrapSingleObjectArgProps = (node: unknown): void => {
+  if (!isOpenUIElementNode(node)) return
+  const props = node.props
+  if (props && typeof props === 'object' && !Array.isArray(props)) {
+    const keys = Object.keys(props)
+    if (
+      keys.length === 1 &&
+      !routeRenderPrimitives.has(node.typeName) &&
+      node.typeName !== 'PageSwitch'
+    ) {
+      const onlyKey = keys[0]
+      const wrapped = props[onlyKey] as unknown
+      if (wrapped && typeof wrapped === 'object' && !Array.isArray(wrapped)) {
+        const def = getComponentSchemaDefs()[node.typeName]
+        const propNames = def?.properties
+          ? new Set(Object.keys(def.properties))
+          : null
+        const onlyKeyDef = def?.properties?.[onlyKey]
+        const wrappedKeys = Object.keys(wrapped as Record<string, unknown>)
+        if (
+          propNames &&
+          wrappedKeys.length >= 1 &&
+          (!onlyKeyDef || !isObjectLikeSchema(onlyKeyDef)) &&
+          wrappedKeys.every((key) => propNames.has(key))
+        ) {
+          for (const key of keys) delete props[key]
+          Object.assign(props, wrapped as Record<string, unknown>)
+        }
+      }
+    }
+  }
+  for (const value of Object.values(node.props ?? {})) {
+    if (Array.isArray(value))
+      value.forEach((item) => unwrapSingleObjectArgProps(item))
+    else unwrapSingleObjectArgProps(value)
+  }
+}
 
 const collectNodeComponentNames = (
   value: unknown,
@@ -2571,6 +2660,17 @@ export async function signInWithGoogle(): Promise<AuthState> {
 
 export async function signOut(): Promise<AuthState> {
   return (await writeRemote('auth:signOut', [])) as AuthState
+}
+
+export function useAuth(): AuthState {
+  const { data = guestAuth } = useQuery({
+    queryKey: siteAuthQueryKey,
+    queryFn: readSiteAuth,
+    initialData: guestAuth,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  })
+  return data
 }
 
 export async function readSiteData<T = any>(name: string): Promise<T> {
