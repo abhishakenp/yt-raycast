@@ -223,6 +223,65 @@ describe('medusa product sync', () => {
     )
   })
 
+  it('returns a stable warning when Medusa auth responds with malformed HTML', async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce(
+      new Response('<!doctype html><title>auth unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+
+    const result = await syncGeneratedProductsToMedusa({
+      adminEmail: 'admin@test.com',
+      adminPassword: 'supersecret',
+      backendUrl: 'http://localhost:9000',
+      fetch: fetchImpl,
+      products: [{ handle: 'truffle-box', price: 79, title: 'Truffle Box' }],
+      sessionId: 'session_abc123456789',
+    })
+
+    expect(result).toEqual({
+      synced: 0,
+      warning: 'Medusa product sync failed.',
+    })
+    expect(result.warning).not.toMatch(
+      /unexpected token|valid json|doctype|auth unavailable/i,
+    )
+  })
+
+  it('returns a stable warning when Medusa defaults respond with malformed HTML', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response('<!doctype html><title>profiles unavailable</title>', {
+          headers: { 'Content-Type': 'text/html' },
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ sales_channels: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ api_keys: [] }), { status: 200 }),
+      )
+
+    const result = await syncGeneratedProductsToMedusa({
+      adminApiToken: 'admin-token',
+      backendUrl: 'http://localhost:9000',
+      fetch: fetchImpl,
+      products: [{ handle: 'truffle-box', price: 79, title: 'Truffle Box' }],
+      sessionId: 'session_abc123456789',
+    })
+
+    expect(result).toEqual({
+      synced: 0,
+      warning: 'Medusa product sync failed.',
+    })
+    expect(result.warning).not.toMatch(
+      /unexpected token|valid json|doctype|profiles unavailable/i,
+    )
+  })
+
   it('replaces an existing session-scoped Medusa product so prices refresh without duplicates', async () => {
     const fetchImpl = vi
       .fn()

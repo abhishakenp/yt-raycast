@@ -327,6 +327,23 @@ describe('BillingPanel: behavioral', () => {
     await waitFor(() => expect(scope.getByText('Network down')).not.toBeNull())
   })
 
+  it('shows a stable billing error when the overview API returns malformed JSON', async () => {
+    fetchMock.mockResolvedValue(
+      new Response('<html>bad gateway</html>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 502,
+      }),
+    )
+
+    const { container } = render(<BillingPanel sessionId="sess-bad-json" />)
+    const scope = within(container)
+
+    await waitFor(() =>
+      expect(scope.getByText('Unable to load billing')).not.toBeNull(),
+    )
+    expect(container.textContent).not.toContain('Unexpected token')
+  })
+
   it('loading state disables action buttons while overview is fetching', async () => {
     let resolveOverview!: (r: Response) => void
     fetchMock.mockReturnValue(
@@ -460,5 +477,35 @@ describe('BillingPanel: behavioral', () => {
     await waitFor(() => {
       expect(window.location.href).toBe('https://checkout.example.com/pay')
     })
+  })
+
+  it('shows a stable checkout error when checkout returns malformed JSON', async () => {
+    fetchMock.mockResolvedValue(
+      overviewResponse({
+        subscription: { active: false },
+        credits: { remaining: 0 },
+        exportAccess: { unlocked: false },
+      }),
+    )
+
+    const { container } = render(<BillingPanel sessionId="sess-bad-checkout" />)
+    const scope = within(container)
+    const upgrade = await scope.findByRole('button', {
+      name: /upgrade to pro/i,
+    })
+
+    fetchMock.mockResolvedValueOnce(
+      new Response('<html>checkout unavailable</html>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 503,
+      }),
+    )
+
+    fireEvent.click(upgrade)
+
+    await waitFor(() =>
+      expect(scope.getByText('Checkout failed')).not.toBeNull(),
+    )
+    expect(container.textContent).not.toContain('Unexpected token')
   })
 })

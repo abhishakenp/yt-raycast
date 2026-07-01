@@ -230,4 +230,33 @@ describe('user image upload helpers', () => {
     expect(imagesA[0].filename).toBe('a.png')
     expect(imagesB).toEqual([])
   })
+
+  it('does not expose uploaded images for private anonymous sessions through an unauthenticated list query', async () => {
+    const t = userImageTest()
+    const storageId = await createStorageId(t)
+    const { sessionId } = await t.mutation(api.sessions.create, {
+      prompt: 'Private product launch page',
+      preferredLanguage: 'en',
+      preferredExportTarget: 'html',
+      isPrivate: true,
+      workspace: 'workspace_private_image_upload_test',
+      anonymousClientId: 'anon_private_image_upload_test',
+      anonymousOwnerSecret: 'owner-secret',
+    })
+
+    await t.mutation(api.sessions.saveUserImage, {
+      sessionId: sessionId as Id<'sessions'>,
+      anonymousOwnerSecret: 'owner-secret',
+      storageId,
+      filename: 'private-hero.png',
+      contentType: 'image/png',
+      size: 128,
+    })
+
+    await expect(
+      t.query(api.sessions.listUserImages, {
+        sessionId: sessionId as Id<'sessions'>,
+      }),
+    ).resolves.toEqual([])
+  })
 })

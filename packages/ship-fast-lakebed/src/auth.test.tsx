@@ -181,6 +181,48 @@ describe('lakebed browser auth', () => {
     })
   })
 
+  it('falls back to guest auth and clears callback state when token exchange returns malformed JSON', async () => {
+    vi.setSystemTime(new Date('2026-06-17T12:00:00Z'))
+    const { localStorage, replace, replaceState, sessionStorage } =
+      installBrowser('https://app.example.com/auth/callback?code=abc&state=s1')
+    sessionStorage.setItem(
+      'lakebed_google_pkce',
+      JSON.stringify({
+        createdAt: Date.now(),
+        state: 's1',
+        verifier: 'verifier-123',
+      }),
+    )
+    sessionStorage.setItem('lakebed_google_return_to', '/dashboard?ok=1')
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        json: async () => {
+          throw new SyntaxError('Unexpected token < in JSON')
+        },
+        ok: true,
+      })),
+    )
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const auth = await importAuth()
+    await expect(auth.ensureAuthInitialized()).resolves.toBeUndefined()
+
+    expect(localStorage.getItem(AUTH_STORAGE_KEY)).toBeNull()
+    expect(sessionStorage.getItem('lakebed_google_pkce')).toBeNull()
+    expect(sessionStorage.getItem('lakebed_google_return_to')).toBeNull()
+    expect(replaceState).toHaveBeenCalled()
+    expect(replace).not.toHaveBeenCalled()
+    expect(auth.getAuth()).toMatchObject({
+      isAuthenticated: false,
+      isLoading: false,
+      provider: 'guest',
+    })
+    expect(auth.getIdentity()).toMatchObject({ userId: null })
+
+    errorSpy.mockRestore()
+  })
+
   it('starts Google sign-in with PKCE and rejects unsafe return routes', async () => {
     vi.setSystemTime(new Date('2026-06-17T12:00:00Z'))
     const { assign, sessionStorage } = installBrowser()

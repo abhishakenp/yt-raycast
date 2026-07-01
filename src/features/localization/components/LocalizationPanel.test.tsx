@@ -123,4 +123,28 @@ describe('LocalizationPanel', () => {
     )
     expect(view.queryByText('Hola')).toBeNull()
   })
+
+  it('shows a stable translation error when the endpoint returns malformed HTML', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response('<!doctype html><h1>Gateway failure</h1>', {
+        headers: { 'content-type': 'text/html' },
+        status: 502,
+      }),
+    )
+    const view = render(
+      <LocalizationPanel
+        preferredLanguage={realLithuanianCustomLanguage.code}
+        prompt={realCraftBeerPrompt}
+      />,
+    )
+
+    fireEvent.click(view.getByRole('button', { name: /translate/i }))
+
+    await waitFor(() =>
+      expect(view.getByText(/translation failed/i)).toBeTruthy(),
+    )
+    expect(view.container.textContent).not.toMatch(
+      /unexpected token|valid json|doctype|gateway failure/i,
+    )
+  })
 })

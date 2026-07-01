@@ -484,6 +484,65 @@ describe('GitHubPanel (behavioral)', () => {
     )
   })
 
+  it('shows a stable GitHub push error when the push endpoint returns malformed HTML', async () => {
+    setExportTargets([
+      readyTarget({ target: 'html', label: 'HTML', githubUrl: null }),
+    ])
+    const fetchMock = pushFlowFetch({
+      push: () =>
+        new Response('<!doctype html><h1>Gateway failure</h1>', {
+          headers: { 'content-type': 'text/html' },
+          status: 502,
+        }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { getByText, container } = render(
+      <GitHubPanel sessionId="session_1" />,
+    )
+    await waitFor(() => expect(getByText('HTML')).toBeTruthy())
+
+    fireEvent.click(getByText('HTML').closest('button')!)
+
+    await waitFor(() => expect(getByText(/github push failed/i)).toBeTruthy())
+    expect(container.textContent).not.toMatch(
+      /unexpected token|valid json|doctype|gateway failure/i,
+    )
+  })
+
+  it('shows a stable export error when GitHub push has to create an export and the export endpoint returns malformed HTML', async () => {
+    setExportTargets([
+      readyTarget({
+        target: 'react',
+        label: 'React',
+        ready: false,
+        artifactReady: true,
+        artifactStatus: 'ready',
+        githubUrl: null,
+      }),
+    ])
+    const fetchMock = pushFlowFetch({
+      export: () =>
+        new Response('<!doctype html><h1>Gateway failure</h1>', {
+          headers: { 'content-type': 'text/html' },
+          status: 502,
+        }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { getByText, container } = render(
+      <GitHubPanel sessionId="session_1" />,
+    )
+    await waitFor(() => expect(getByText('React')).toBeTruthy())
+
+    fireEvent.click(getByText('React').closest('button')!)
+
+    await waitFor(() => expect(getByText(/export failed/i)).toBeTruthy())
+    expect(container.textContent).not.toMatch(
+      /unexpected token|valid json|doctype|gateway failure/i,
+    )
+  })
+
   it('10. loading state (query pending) renders all four target placeholders', () => {
     setLoading()
     render(<GitHubPanel sessionId="session_1" />)

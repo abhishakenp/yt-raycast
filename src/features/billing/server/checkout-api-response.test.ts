@@ -91,4 +91,58 @@ describe('createCheckoutApiResponse', () => {
       amount: 19900,
     })
   })
+
+  it('returns JSON when Stripe checkout returns a malformed upstream body', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('<html>stripe unavailable</html>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 502,
+      }),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({ mode: 'subscription', gateway: 'stripe' }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(502)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    await expect(response.json()).resolves.toEqual({
+      error: 'Stripe checkout failed.',
+    })
+  })
+
+  it('returns JSON when Razorpay checkout returns a malformed upstream body', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('<html>razorpay unavailable</html>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 503,
+      }),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'credit_pack',
+          gateway: 'razorpay',
+          packId: '3_credits',
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(503)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    await expect(response.json()).resolves.toEqual({
+      error: 'Razorpay order failed.',
+    })
+  })
 })

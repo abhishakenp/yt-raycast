@@ -212,6 +212,35 @@ describe('usePromptHomeController submit guard', () => {
     })
   })
 
+  it('falls back to Convex instead of navigating when the public create route returns malformed success JSON', async () => {
+    const state = getTestState()
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response('<!doctype html><title>create unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a product website after malformed create')
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId',
+      params: { sessionId: 'session_double_submit_guard' },
+    })
+    expect(state.navigate).not.toHaveBeenCalledWith({
+      to: '/generate/$sessionId',
+      params: { sessionId: undefined },
+    })
+  })
+
   it('keeps launch feedback visible briefly when session creation fails immediately', async () => {
     vi.useFakeTimers()
     const state = getTestState()

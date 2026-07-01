@@ -93,4 +93,19 @@ describe('normalizeGalleryMeta', () => {
 
     await expect(fetchPublicGalleryPage(1)).rejects.toThrow('recent-sessions')
   })
+
+  it('throws the stable homepage gallery load error when the API returns malformed JSON', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response('<!doctype html><title>Gallery unavailable</title>', {
+            headers: { 'Content-Type': 'text/html' },
+            status: 200,
+          }),
+      ),
+    )
+
+    await expect(fetchPublicGalleryPage(1)).rejects.toThrow('recent-sessions')
+  })
 })
