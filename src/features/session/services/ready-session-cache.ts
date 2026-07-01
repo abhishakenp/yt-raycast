@@ -1,5 +1,5 @@
 import { normalizePromptDraft } from '@/features/home/services/home-prompts'
-import { isOpenUiErrorHtml } from '../../../../convex/lib/openui_error_html'
+import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 
 const READY_SESSION_CACHE_PREFIX = 'ship-fast:ready-session:v1:'
 const READY_SESSION_PREVIEW_CACHE_PREFIX = 'ship-fast:ready-session-preview:v1:'
@@ -206,7 +206,10 @@ export const rememberReadySessionPreview = (
   // Reject snapshots whose home module source or preview HTML is real OpenUI
   // renderer-error output — these are broken artifacts that must never be
   // cached for reuse.
-  if (isOpenUiErrorHtml(source) || isOpenUiErrorHtml(input.preview?.html)) {
+  if (
+    isUnsafePublicPreviewHtml(source) ||
+    isUnsafePublicPreviewHtml(input.preview?.html)
+  ) {
     return
   }
 
@@ -344,7 +347,10 @@ export const verifyReadySession = async (
     const homeModuleSource =
       typeof data.homeModule?.source === 'string' ? data.homeModule.source : ''
 
-    if (isOpenUiErrorHtml(previewHtml) || isOpenUiErrorHtml(homeModuleSource)) {
+    if (
+      isUnsafePublicPreviewHtml(previewHtml) ||
+      isUnsafePublicPreviewHtml(homeModuleSource)
+    ) {
       return null
     }
 

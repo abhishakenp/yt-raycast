@@ -32,6 +32,16 @@ const realRendererErrorReadyPreview = {
   preferredLanguage: 'en',
 } as const
 
+const realOpenUiHandoffReadyPreview = {
+  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+  prompt:
+    'a boutique coffee roastery with subscription delivery and tasting events',
+  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+  preferredLanguage: 'english',
+  source:
+    'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})',
+} as const
+
 describe('ready session cache', () => {
   afterEach(() => {
     vi.useRealTimers()
@@ -192,6 +202,34 @@ describe('ready session cache', () => {
     ).toBeNull()
   })
 
+  it('does not store ready preview snapshots that contain DB-observed OpenUI handoff HTML', () => {
+    const storage = createStorage()
+
+    rememberReadySessionPreview(storage, {
+      sessionId: realOpenUiHandoffReadyPreview.sessionId,
+      status: 'preview_ready',
+      prompt: realOpenUiHandoffReadyPreview.prompt,
+      preferredLanguage: realOpenUiHandoffReadyPreview.preferredLanguage,
+      homeModule: {
+        moduleKey: 'home',
+        source: realOpenUiHandoffReadyPreview.source,
+        status: 'succeeded',
+      },
+      preview: {
+        html: realOpenUiHandoffReadyPreview.html,
+        version: 1,
+      },
+      createdAt: 1000,
+    })
+
+    expect(
+      readReadySessionPreview(storage, {
+        sessionId: realOpenUiHandoffReadyPreview.sessionId,
+        now: 2000,
+      }),
+    ).toBeNull()
+  })
+
   it('verifies a ready session against the session API before reuse', async () => {
     const fetchSession = vi.fn().mockResolvedValue({
       ok: true,
@@ -286,6 +324,38 @@ describe('ready session cache', () => {
           sessionId: realRendererErrorReadyPreview.sessionId,
           prompt: realRendererErrorReadyPreview.prompt,
           preferredLanguage: realRendererErrorReadyPreview.preferredLanguage,
+        },
+        fetchSession,
+      ),
+    ).resolves.toBeNull()
+  })
+
+  it('rejects a verified ready session when the session API exposes DB-observed OpenUI handoff preview HTML', async () => {
+    const fetchSession = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        sessionId: realOpenUiHandoffReadyPreview.sessionId,
+        prompt: realOpenUiHandoffReadyPreview.prompt,
+        preferredLanguage: realOpenUiHandoffReadyPreview.preferredLanguage,
+        status: 'preview_ready',
+        homeModule: {
+          moduleKey: 'home',
+          source: realOpenUiHandoffReadyPreview.source,
+          status: 'succeeded',
+        },
+        preview: {
+          html: realOpenUiHandoffReadyPreview.html,
+          version: 1,
+        },
+      }),
+    })
+
+    await expect(
+      verifyReadySession(
+        {
+          sessionId: realOpenUiHandoffReadyPreview.sessionId,
+          prompt: realOpenUiHandoffReadyPreview.prompt,
+          preferredLanguage: realOpenUiHandoffReadyPreview.preferredLanguage,
         },
         fetchSession,
       ),
