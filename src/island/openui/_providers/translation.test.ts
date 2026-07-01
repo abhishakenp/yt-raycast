@@ -1,5 +1,12 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from 'vitest'
+import { cleanup, render, waitFor } from '@testing-library/react'
+import { createElement } from 'react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+const translationMocks = vi.hoisted(() => ({
+  canUseChromeTranslator: vi.fn().mockReturnValue(false),
+  translateOnDevice: vi.fn().mockResolvedValue(null),
+}))
 
 // Stub the heavy runtime + on-device translator so importing the provider
 // module stays lightweight; only the pure shimmer-removal helper is exercised.
@@ -10,13 +17,30 @@ vi.mock('@ship-fast/blocks/runtime', () => ({
     children,
 }))
 vi.mock('./chrome-translator', () => ({
-  translateOnDevice: vi.fn().mockResolvedValue(null),
-  canUseChromeTranslator: vi.fn().mockReturnValue(false),
+  translateOnDevice: translationMocks.translateOnDevice,
+  canUseChromeTranslator: translationMocks.canUseChromeTranslator,
 }))
 
-import { applyTranslationResult } from './translation'
+import { I18nProvider, T, applyTranslationResult } from './translation'
 
 describe('translation shimmer removal', () => {
+  let originalFetch: typeof globalThis.fetch
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch
+    translationMocks.translateOnDevice.mockReset()
+    translationMocks.translateOnDevice.mockResolvedValue(null)
+    translationMocks.canUseChromeTranslator.mockReset()
+    translationMocks.canUseChromeTranslator.mockReturnValue(false)
+    window.localStorage.clear()
+  })
+
+  afterEach(() => {
+    cleanup()
+    document.body.innerHTML = ''
+    globalThis.fetch = originalFetch
+  })
+
   it('removes the shimmer class even when the translation equals the original text', () => {
     const parent = document.createElement('span')
     parent.classList.add('sf-shimmer-loading')
@@ -67,5 +91,41 @@ describe('translation shimmer removal', () => {
     expect(() =>
       applyTranslationResult(null, node, 'Hello', 'Hello'),
     ).not.toThrow()
+  })
+
+  it('translates collected text nodes with one positional array request', async () => {
+    const requests: string[][] = []
+    globalThis.fetch = vi.fn(async (_input, init) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as {
+        texts?: string[]
+      }
+      requests.push(body.texts ?? [])
+      return {
+        ok: true,
+        json: async () => ({
+          translations: ['Commencer', 'Reserver'],
+        }),
+      } as Response
+    }) as unknown as typeof fetch
+
+    const { getByText } = render(
+      createElement(
+        I18nProvider,
+        { locale: 'fr' },
+        createElement(
+          T,
+          null,
+          createElement('span', null, 'Start now'),
+          createElement('span', null, 'Book'),
+        ),
+      ),
+    )
+
+    await waitFor(() => {
+      expect(getByText('Commencer')).toBeTruthy()
+      expect(getByText('Reserver')).toBeTruthy()
+    })
+    expect(requests).toEqual([['Start now', 'Book']])
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1)
   })
 })
