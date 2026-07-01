@@ -59,7 +59,7 @@ export function CtaBand(props: {
               isCenter ? 'justify-center' : 'justify-start',
             )}
           >
-            {props.actions.map((a) => {
+            {props.actions.filter(Boolean).map((a) => {
               const isInvert =
                 tone === 'primary' && (a.variant ?? 'primary') === 'primary'
               return (
