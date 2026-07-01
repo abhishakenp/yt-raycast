@@ -4,9 +4,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const createExportResponseMock = vi.hoisted(() => vi.fn())
 const createDeploymentPreviewResponseMock = vi.hoisted(() => vi.fn())
+const routeParamMocks = vi.hoisted(() => ({
+  paramsByPath: {
+    '/generate/$sessionId': {
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+    },
+    '/generate/$sessionId/admin': {
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+    },
+  } as Record<string, Record<string, string>>,
+}))
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: (path: string) => (options: unknown) => ({ options, path }),
+  getRouteApi: (path: string) => ({
+    useParams: () => routeParamMocks.paramsByPath[path] ?? {},
+  }),
   lazyRouteComponent: (_importer: unknown, exportName: string) => {
     const LazyRouteComponent = () => (
       <div data-testid="lazy-route">{exportName}</div>
@@ -41,6 +54,23 @@ vi.mock('@/features/gallery/components/MinePage', () => ({
 
 vi.mock('@/features/referrals/components/ReferralDashboard', () => ({
   ReferralDashboard: () => <section>Referral dashboard route</section>,
+}))
+
+vi.mock('@/features/dashboard/components/Dashboard', () => ({
+  Dashboard: ({
+    initialAdminView,
+    sessionId,
+  }: {
+    initialAdminView?: boolean
+    sessionId: string
+  }) => (
+    <section
+      data-admin={initialAdminView === true ? 'true' : 'false'}
+      data-testid="dashboard-route"
+    >
+      {sessionId}
+    </section>
+  ),
 }))
 
 vi.mock('@/features/exports/server/create-export-response', () => ({
@@ -133,6 +163,26 @@ describe('top-level route behavior', () => {
       expect(screen.getByTestId('lazy-route').textContent).toBe(exportName)
     },
   )
+
+  it('passes generate route params into the dashboard workspace', async () => {
+    const { GenerateRoute } = await import('./-generate-dashboard-route')
+
+    render(<GenerateRoute />)
+
+    const dashboard = screen.getByTestId('dashboard-route')
+    expect(dashboard.textContent).toBe('k574ms14ma9f94keq30r7dq24x89n1k2')
+    expect(dashboard.getAttribute('data-admin')).toBe('false')
+  })
+
+  it('passes generate admin route params and initial admin mode into the dashboard workspace', async () => {
+    const { GenerateAdminRoute } = await import('./-generate-dashboard-route')
+
+    render(<GenerateAdminRoute />)
+
+    const dashboard = screen.getByTestId('dashboard-route')
+    expect(dashboard.textContent).toBe('k574ms14ma9f94keq30r7dq24x89n1k2')
+    expect(dashboard.getAttribute('data-admin')).toBe('true')
+  })
 
   it('delegates the export route with real session and target params from Convex', async () => {
     createExportResponseMock.mockResolvedValue(new Response('export body'))

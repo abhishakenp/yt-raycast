@@ -1,21 +1,44 @@
 // @vitest-environment jsdom
 
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import type { ComponentRenderProps } from '@openuidev/react-lang'
 import type { ReactElement } from 'react'
 
 vi.mock('#/lib/use-navigate.tsx', () => ({
+  RoutesContext: ({ children }: { children: React.ReactNode }) => children,
   useNavigate: () => vi.fn(),
 }))
 
+const guestAuth = {
+  isAuthenticated: false,
+  isGuest: true,
+  isLoading: false,
+  user: null,
+}
+
+const inertLakebedMutation = Object.assign(vi.fn().mockResolvedValue(null), {
+  lastError: null,
+  reset: vi.fn(),
+})
+
+const inertLakebed = {
+  useAuth: () => guestAuth,
+  useMutation: () => inertLakebedMutation,
+  useQuery: () => undefined,
+}
+
 vi.mock('@ship-fast/lakebed/react', () => ({
-  createLakebedClient: () => ({}),
-  useAuth: () => ({
-    isAuthenticated: false,
-    isGuest: true,
-    isLoading: false,
-    user: null,
+  createLakebedClient: () => inertLakebed,
+  useAuth: () => guestAuth,
+  useKeyedLakebedMutation: () => ({
+    hasPending: false,
+    isPending: () => false,
+    lastError: null,
+    pendingKey: null,
+    pendingKeys: [],
+    reset: vi.fn(),
+    run: vi.fn().mockResolvedValue(null),
   }),
   signInWithGoogle: vi.fn(),
   signOut: vi.fn(),
@@ -29,6 +52,7 @@ import {
   type ShipFastCapsule,
 } from '#/capsules/openui.ts'
 import { library, componentNames } from '#/library.ts'
+import { capsuleCategories } from '#/generated/capsule-categories.ts'
 import { Button } from '#/registry/primitives/button.tsx'
 import { GovernmentPortalNavbar } from '#/registry/sections/government-portal/GovernmentPortalNavbar.tsx'
 import { GovernmentPortalFaq } from '#/registry/sections/government-portal/GovernmentPortalFaq.tsx'
@@ -44,6 +68,22 @@ afterEach(() => {
 })
 
 describe('registry capsule invariants', () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      'ResizeObserver',
+      class ResizeObserver {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    )
+    Element.prototype.scrollIntoView = vi.fn()
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('every registry capsule is a defineCapsule product (runtime marker)', () => {
     const capsules = Object.values(registry).filter(
       (value): value is ShipFastCapsule => isCapsule(value),
@@ -114,5 +154,76 @@ describe('registry capsule invariants', () => {
       expect(component).toBeDefined()
       expect(isDefinedComponent(component)).toBe(true)
     }
+  })
+
+  it('renders every section capsule with default props without throwing', () => {
+    const capsules = Object.values(registry).filter(
+      (value): value is ShipFastCapsule =>
+        isCapsule(value) &&
+        capsuleCategories[value.client.name]?.category !== 'primitives',
+    )
+    const failures: Array<{ name: string; error: string }> = []
+
+    for (const capsule of capsules) {
+      try {
+        const view = renderCapsule(capsule.client.component, {})
+        expect(view.container.firstElementChild).toBeTruthy()
+        view.unmount()
+      } catch (error) {
+        failures.push({
+          name: capsule.client.name,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      } finally {
+        cleanup()
+      }
+    }
+
+    expect(failures).toEqual([])
+  })
+
+  it('renders every section capsule when common generated collection props have malformed shapes', () => {
+    const capsules = Object.values(registry).filter(
+      (value): value is ShipFastCapsule =>
+        isCapsule(value) &&
+        capsuleCategories[value.client.name]?.category !== 'primitives',
+    )
+    const malformedGeneratedProps = {
+      actions: { label: 'Act now' },
+      cards: { title: 'Card' },
+      categories: { label: 'Category' },
+      columns: { title: 'Column' },
+      features: { title: 'Feature' },
+      images: { alt: 'Image' },
+      items: { title: 'Item' },
+      links: { label: 'Link' },
+      nav: { label: 'Home' },
+      products: { title: 'Product' },
+      stats: { label: '42' },
+      steps: { title: 'Step' },
+      testimonials: { quote: 'Great' },
+      tiers: { name: 'Pro' },
+    }
+    const failures: Array<{ name: string; error: string }> = []
+
+    for (const capsule of capsules) {
+      try {
+        const view = renderCapsule(
+          capsule.client.component,
+          malformedGeneratedProps,
+        )
+        expect(view.container.firstElementChild).toBeTruthy()
+        view.unmount()
+      } catch (error) {
+        failures.push({
+          name: capsule.client.name,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      } finally {
+        cleanup()
+      }
+    }
+
+    expect(failures).toEqual([])
   })
 })

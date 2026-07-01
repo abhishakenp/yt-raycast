@@ -235,6 +235,47 @@ describe('GitHubPanel (behavioral)', () => {
     expect(exportTargetsState.ensureExportArtifact).not.toHaveBeenCalled()
   })
 
+  it('sends the persisted anonymous owner secret in the final GitHub push request', async () => {
+    setExportTargets([
+      readyTarget({
+        target: 'html',
+        label: 'HTML',
+        githubUrl: null,
+      }),
+    ])
+    persistAnonymousOwnerSecret(
+      window.localStorage,
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+      'owner-secret',
+    )
+    const fetchMock = pushFlowFetch()
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { getByText } = render(
+      <GitHubPanel sessionId="k574ms14ma9f94keq30r7dq24x89n1k2" />,
+    )
+    await waitFor(() => expect(getByText('HTML')).toBeTruthy())
+
+    fireEvent.click(getByText('HTML').closest('button')!)
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/github/push',
+        expect.objectContaining({
+          body: JSON.stringify({
+            target: 'html',
+            anonymousOwnerSecret: 'owner-secret',
+          }),
+          headers: {
+            Authorization: 'Bearer app-token',
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+        }),
+      ),
+    )
+  })
+
   it('4. after a successful push, shows the GitHub repo URL as a clickable action', async () => {
     setExportTargets([
       readyTarget({ target: 'html', label: 'HTML', githubUrl: null }),

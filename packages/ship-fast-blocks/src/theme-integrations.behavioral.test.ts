@@ -326,5 +326,30 @@ describe('theme + integrations behavioral', () => {
       expect(value.config).toEqual({})
       expect(value.backendUrl).toBeNull()
     })
+
+    it('treats malformed top-level integration payloads as disabled instead of crashing children', () => {
+      for (const malformed of [
+        null,
+        'enabled=true',
+        ['https://api.example.com'],
+      ]) {
+        const { container, unmount } = render(
+          React.createElement(
+            IntegrationProvider,
+            { medusa: malformed as never, sessionId: null },
+            React.createElement(MedusaProbe),
+          ),
+        )
+
+        const value = JSON.parse(container.textContent ?? '{}')
+        expect(value.enabled).toBe(false)
+        expect(value.ready).toBe(false)
+        expect(value.status).toBe('disabled')
+        expect(value.config).toEqual({})
+        expect(value.backendUrl).toBeNull()
+        expect(value.storefrontUrl).toBeNull()
+        unmount()
+      }
+    })
   })
 })

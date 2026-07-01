@@ -263,6 +263,56 @@ describe('LanguagePicker — search behavior', () => {
     }
   })
 
+  it('repairs a real stale browser-native custom row before showing it in search results', async () => {
+    ;(globalThis as Record<string, unknown>).Translator = {
+      availability: vi.fn(async ({ targetLanguage }) =>
+        targetLanguage === 'zh' ? 'available' : 'unavailable',
+      ),
+      create: vi.fn(),
+    }
+    convexState.customLanguages = [
+      {
+        code: 'chinese',
+        name: 'Chinese',
+        nativeName: 'Chinese',
+        fontFamily: 'Noto Sans CJK SC, sans-serif',
+        keywords: ['chinese', 'chinese'],
+      },
+    ]
+    try {
+      const onSelect = vi.fn()
+      render(
+        <LanguagePicker
+          value={null}
+          onSelect={onSelect}
+          trigger={<button type="button">Pick language</button>}
+        />,
+      )
+
+      const input = await openPicker(screen.getByText('Pick language'))
+      fireEvent.change(input, { target: { value: 'chinese' } })
+
+      const nativeName = await screen.findByText('中文')
+      expect((nativeName as HTMLElement).style.fontFamily).toContain(
+        'Noto Sans SC',
+      )
+      expect(screen.getAllByText('Chinese')).toHaveLength(1)
+
+      const chineseItem = screen
+        .getByText('Chinese')
+        .closest('[role="option"]')!
+      fireEvent.pointerUp(chineseItem)
+      fireEvent.click(chineseItem)
+
+      await waitFor(() => {
+        expect(onSelect).toHaveBeenCalledWith('zh')
+      })
+    } finally {
+      convexState.customLanguages = []
+      delete (globalThis as Record<string, unknown>).Translator
+    }
+  })
+
   it('renders custom native names with the stored script font', async () => {
     convexState.customLanguages = [
       {
@@ -427,6 +477,35 @@ describe('LanguagePicker — custom language submission', () => {
 
     await waitFor(() => {
       expect(onSelect).toHaveBeenCalledWith('lt')
+    })
+    expect(convexState.resolveCalls).toHaveLength(0)
+  })
+
+  it('selects Mexican Spanish as browser-native es-MX without calling the AI action', async () => {
+    ;(globalThis as Record<string, unknown>).Translator = {
+      availability: vi.fn(async ({ targetLanguage }) =>
+        targetLanguage === 'es-MX' ? 'available' : 'unavailable',
+      ),
+      create: vi.fn(),
+    }
+    const onSelect = vi.fn()
+    render(
+      <LanguagePicker
+        value={null}
+        onSelect={onSelect}
+        trigger={<button type="button">Pick language</button>}
+      />,
+    )
+
+    await openPicker(screen.getByText('Pick language'))
+
+    const customInput = screen.getByPlaceholderText('Custom language…')
+    fireEvent.change(customInput, { target: { value: 'Mexican' } })
+    const form = customInput.closest('form')!
+    fireEvent.submit(form)
+
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalledWith('es-MX')
     })
     expect(convexState.resolveCalls).toHaveLength(0)
   })

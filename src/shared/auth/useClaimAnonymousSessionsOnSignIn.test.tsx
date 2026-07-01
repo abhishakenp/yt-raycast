@@ -62,6 +62,17 @@ describe('useClaimAnonymousSessionsOnSignIn', () => {
     })
   })
 
+  it('does not claim while auth is still loading even if signed-in state is truthy', async () => {
+    claimMocks.isLoaded = false
+    claimMocks.isSignedIn = true
+
+    render(<Probe />)
+
+    await waitFor(() => {
+      expect(claimMocks.claimAnonymousSessions).not.toHaveBeenCalled()
+    })
+  })
+
   it('claims all anonymous sessions when isSignedIn flips to true', async () => {
     claimMocks.isSignedIn = false
     const { rerender } = render(<Probe />)

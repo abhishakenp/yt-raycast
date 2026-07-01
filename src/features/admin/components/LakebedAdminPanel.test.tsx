@@ -88,6 +88,16 @@ const realCraftBeerSessionDataDocs: TestSessionDataDoc[] = [
       ],
     },
   },
+  {
+    capsule: 'RestaurantGallery:gallery_gallery',
+    createdAt: 1782814177686,
+    updatedAt: 1782814177686,
+    data: {
+      description: 'Snapshots of our space and gatherings.',
+      heading: 'Taproom & Events',
+      images: [{ alt: 'images[alt]Taproom bar area' }],
+    },
+  },
 ]
 
 const mocks = vi.hoisted(() => ({
@@ -199,6 +209,11 @@ describe('LakebedAdminPanel', () => {
 
     expect(screen.getByRole('button', { name: 'reviews' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'alt' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'images' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'images' }))
+
+    expect(screen.getByText('images[alt]Taproom bar area')).toBeTruthy()
+
     fireEvent.click(screen.getByRole('button', { name: 'reviews' }))
 
     expect(screen.getAllByText('Javier Lopez')).not.toHaveLength(0)

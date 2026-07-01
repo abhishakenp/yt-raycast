@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ExportPanel } from './ExportPanel'
+import { persistAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 type ExportTargetTuple = {
   target: 'html' | 'react' | 'next' | 'lakebed'
@@ -341,6 +342,85 @@ describe('ExportPanel behavioral', () => {
     expect(createObjectUrl).toHaveBeenCalled()
     expect(clickMock).toHaveBeenCalled()
     expect(revokeObjectUrl).toHaveBeenCalledWith('blob:export')
+  })
+
+  it('sends the persisted anonymous owner secret on ready downloads and new export creation', async () => {
+    persistAnonymousOwnerSecret(
+      window.localStorage,
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+      'owner-secret',
+    )
+    setExportTargets([
+      target({
+        target: 'html',
+        ready: true,
+        status: 'ready',
+        artifactReady: true,
+        artifactStatus: 'ready',
+        downloadUrl:
+          '/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/download/html',
+      }),
+      target({
+        target: 'react',
+        ready: false,
+        status: 'available',
+        artifactReady: false,
+        artifactStatus: 'not_ready',
+        downloadUrl: null,
+      }),
+    ])
+    silenceAnchorClick()
+    installUrlMocks()
+    const fetchMock = vi.fn(async (url: string | URL, _init?: RequestInit) => {
+      const path = String(url)
+      if (path.endsWith('/download/html')) {
+        return new Response('zip-bytes', {
+          headers: {
+            'content-disposition': 'attachment; filename="brewery.zip"',
+          },
+        })
+      }
+      if (path.endsWith('/export')) {
+        return Response.json({ ok: true })
+      }
+      return Response.json({ error: 'unexpected' }, { status: 500 })
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const view = render(
+      <ExportPanel sessionId="k574ms14ma9f94keq30r7dq24x89n1k2" />,
+    )
+    fireEvent.click(view.getByText('HTML').closest('button')!)
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/download/html',
+        {
+          headers: {
+            Authorization: 'Bearer app-token',
+            'x-ship-fast-owner-secret': 'owner-secret',
+          },
+        },
+      ),
+    )
+
+    fireEvent.click(view.getByText('React').closest('button')!)
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/export',
+        expect.objectContaining({
+          body: JSON.stringify({
+            target: 'react',
+            anonymousOwnerSecret: 'owner-secret',
+          }),
+          headers: {
+            Authorization: 'Bearer app-token',
+            'Content-Type': 'application/json',
+            'x-ship-fast-owner-secret': 'owner-secret',
+          },
+          method: 'POST',
+        }),
+      ),
+    )
   })
 
   it('payment required shows the pay/upgrade action instead of download', async () => {

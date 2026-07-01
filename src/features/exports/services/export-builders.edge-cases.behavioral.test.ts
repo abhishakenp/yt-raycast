@@ -1,6 +1,7 @@
 import { parseHTML } from 'linkedom'
 import { describe, expect, it } from 'vitest'
 import { strFromU8, unzipSync } from 'fflate'
+import { JSDOM } from 'jsdom'
 
 import {
   buildHtmlExport,
@@ -28,6 +29,19 @@ import { createZipBuffer } from './zip-builder'
 // ---------------------------------------------------------------------------
 
 const parseHtmlDocument = (html: string) => parseHTML(html).document
+
+const createRuntimeDocument = (html: string) => {
+  const dom = new JSDOM(html, {
+    pretendToBeVisual: true,
+    runScripts: 'dangerously',
+    url: 'https://export.test/',
+  })
+  dom.window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+    callback(0)
+    return 1
+  }
+  return dom
+}
 
 const parseBadge = (html: string) =>
   parseHtmlDocument(html).querySelector('[data-ship-fast-export-badge]')
@@ -122,17 +136,6 @@ const extractImportSpecifiers = (source: string): string[] => {
     if (match?.[1]) specifiers.push(match[1])
   }
   return specifiers
-}
-
-const extractRouteScriptText = (html: string): string => {
-  const document = parseHtmlDocument(html)
-  for (const script of document.querySelectorAll('script')) {
-    const text = script.textContent ?? ''
-    if (text.includes('targetMap') || text.includes('__SHIP_FAST_EXPORT__')) {
-      return text
-    }
-  }
-  return ''
 }
 
 /** Parse a CSS declarations string (e.g. `--a: 1; --b: 2`) into a map. */
@@ -543,18 +546,27 @@ describe('OpenUI HTML export navigation & rendering', () => {
     })
     const html = decodeExportBody(result.body)
     const document = parseHtmlDocument(html)
-    const scriptText = extractRouteScriptText(html)
-
-    // route script embeds page-switching logic
-    expect(scriptText).toContain('function show(index)')
-    expect(scriptText).toContain('function navigate(label)')
-    expect(scriptText).toContain('function findRoute(label)')
 
     // pages render as data-sf-export-page sections (first visible, rest hidden)
     const pages = document.querySelectorAll('[data-sf-export-page]')
     expect(pages).toHaveLength(2)
     expect(pages[0]?.getAttribute('hidden')).toBeNull()
     expect(pages[1]?.getAttribute('hidden')).not.toBeNull()
+
+    const runtime = createRuntimeDocument(html)
+    const runtimePages = (
+      runtime.window.document as Document
+    ).querySelectorAll<HTMLElement>('[data-sf-export-page]')
+    runtimePages[1]?.setAttribute('id', 'pricing_pricing')
+    const button = runtime.window.document.createElement('button')
+    button.type = 'button'
+    button.textContent = 'Get Started'
+    runtime.window.document.body.append(button)
+    button.click()
+
+    expect(runtimePages[0]?.hidden).toBe(true)
+    expect(runtimePages[1]?.hidden).toBe(false)
+    expect(runtime.window.location.hash).toBe('#pricing_pricing')
   })
 
   it('24. mobile menu drawer generated', async () => {
@@ -565,13 +577,24 @@ describe('OpenUI HTML export navigation & rendering', () => {
       target: 'html',
     })
     const html = decodeExportBody(result.body)
-    const scriptText = extractRouteScriptText(html)
+    const runtime = createRuntimeDocument(html)
+    const header = runtime.window.document.createElement('header')
+    header.innerHTML = `
+      <a href="/">Home</a>
+      <a href="/pricing">Pricing</a>
+      <button type="button" aria-label="Open menu">Menu</button>
+    `
+    runtime.window.document.body.append(header)
+    const trigger = (header as HTMLElement).querySelector<HTMLButtonElement>(
+      '[aria-label="Open menu"]',
+    )
 
-    // The route script includes static drawer (mobile menu) generation logic
-    expect(scriptText).toContain('function createStaticDrawer(trigger)')
-    expect(scriptText).toContain('function openStaticDrawer(overlay, trigger)')
-    expect(scriptText).toContain('function closeStaticDrawer(overlay, trigger)')
-    expect(scriptText).toContain('function handleStaticDrawerTrigger(target)')
+    trigger?.click()
+
+    const drawer = runtime.window.document.querySelector('[role="dialog"]')
+    expect(trigger?.getAttribute('aria-expanded')).toBe('true')
+    expect(drawer?.textContent).toContain('Home')
+    expect(drawer?.textContent).toContain('Pricing')
   })
 
   it('25. Google Fonts link from theme', async () => {

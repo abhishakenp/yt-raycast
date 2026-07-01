@@ -88,6 +88,7 @@ describe('remaining API route behavior', () => {
   })
 
   afterEach(() => {
+    vi.unstubAllGlobals()
     process.env = { ...originalEnv }
   })
 
@@ -395,5 +396,86 @@ describe('remaining API route behavior', () => {
       'https://picsum.photos/seed/a-craft-beer-brewery/2400/100',
     )
     expect(response.headers.get('Cache-Control')).toContain('max-age=3600')
+  })
+
+  it('redirects to the selected Pexels image when provider search succeeds', async () => {
+    process.env.PEXELS_API_KEY = 'pexels-key'
+    delete process.env.UNSPLASH_ACCESS_KEY
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          photos: [
+            {
+              src: {
+                large: 'https://images.pexels.test/large.jpg',
+                large2x: 'https://images.pexels.test/large2x.jpg',
+                medium: 'https://images.pexels.test/medium.jpg',
+                original: 'https://images.pexels.test/original.jpg',
+              },
+            },
+          ],
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    const Route = await importRoute('./pexels')
+    const request = new Request(
+      'https://ship-fast.io/api/pexels?q=taproom%20tour&w=1600&h=900&seed=hero',
+    )
+
+    const response = await Route.options.server.handlers.GET({ request })
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('Location')).toBe(
+      'https://images.pexels.test/original.jpg',
+    )
+    const [searchUrl, searchInit] = fetchMock.mock.calls[0]
+    expect(searchUrl.toString()).toBe(
+      'https://api.pexels.com/v1/search?query=taproom+tour&per_page=15&orientation=landscape',
+    )
+    expect(searchInit).toEqual({ headers: { Authorization: 'pexels-key' } })
+  })
+
+  it('falls back from an unavailable Pexels provider to Unsplash before Picsum', async () => {
+    process.env.PEXELS_API_KEY = 'pexels-key'
+    process.env.UNSPLASH_ACCESS_KEY = 'unsplash-key'
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response('{}', { status: 503 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            results: [
+              {
+                urls: {
+                  regular: 'https://images.unsplash.test/photo.jpg?auto=format',
+                },
+              },
+            ],
+          }),
+          { headers: { 'Content-Type': 'application/json' } },
+        ),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    const Route = await importRoute('./pexels')
+    const request = new Request(
+      'https://ship-fast.io/api/pexels?query=seasonal%20beer%20release&w=1200&h=700&seed=release',
+    )
+
+    const response = await Route.options.server.handlers.GET({ request })
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('Location')).toBe(
+      'https://images.unsplash.test/photo.jpg?auto=format&w=1200&h=700&fit=crop',
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    const [unsplashUrl, unsplashInit] = fetchMock.mock.calls[1]
+    expect(unsplashUrl.toString()).toBe(
+      'https://api.unsplash.com/search/photos?query=seasonal+beer+release&per_page=15&orientation=landscape',
+    )
+    expect(unsplashInit).toEqual({
+      headers: { Authorization: 'Client-ID unsplash-key' },
+    })
   })
 })

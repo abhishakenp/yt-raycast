@@ -5,6 +5,11 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { shouldUseAuthenticatedProviders } from '@/app/providers/provider-config'
 
 const appProviderMocks = vi.hoisted(() => ({
+  clerkPublishableKey: 'pk_test_dummy' as string | undefined,
+  claimAnonymousSessionsOnSignIn: vi.fn(),
+  clerkProviderProps: [] as Array<Record<string, unknown>>,
+  convexClients: [] as Array<{ options: unknown; url: string }>,
+  convexWithClerkProps: [] as Array<{ client: unknown; useAuth: unknown }>,
   pathname: '/generate/abc',
 }))
 
@@ -15,9 +20,16 @@ const appProviderMocks = vi.hoisted(() => ({
 // ClerkProvider). The lazy-loaded ClerkConvexProvider module is mocked to a
 // marker so AppProviders' lazy() import resolves synchronously in jsdom.
 vi.mock('@clerk/tanstack-react-start', () => ({
-  ClerkProvider: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="clerk-provider">{children}</div>
-  ),
+  ClerkProvider: ({
+    children,
+    ...props
+  }: {
+    children: React.ReactNode
+    [key: string]: unknown
+  }) => {
+    appProviderMocks.clerkProviderProps.push(props)
+    return <div data-testid="clerk-provider">{children}</div>
+  },
   useAuth: () => ({
     getToken: async () => 'token',
     isLoaded: true,
@@ -28,24 +40,31 @@ vi.mock('@clerk/tanstack-react-start', () => ({
 vi.mock('convex/react-clerk', () => ({
   ConvexProviderWithClerk: ({
     children,
+    client,
+    useAuth,
   }: {
     children: React.ReactNode
     client: unknown
     useAuth: unknown
-  }) => <div data-testid="convex-with-clerk">{children}</div>,
+  }) => {
+    appProviderMocks.convexWithClerkProps.push({ client, useAuth })
+    return <div data-testid="convex-with-clerk">{children}</div>
+  },
 }))
 
 vi.mock('convex/react', () => ({
   ConvexProvider: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
+    <div data-testid="convex-anonymous">{children}</div>
   ),
   ConvexReactClient: class {
-    constructor() {}
+    constructor(url: string, options: unknown) {
+      appProviderMocks.convexClients.push({ url, options })
+    }
   },
 }))
 
 vi.mock('@/shared/auth/clerk-runtime', () => ({
-  getClerkPublishableKey: () => 'pk_test_dummy',
+  getClerkPublishableKey: () => appProviderMocks.clerkPublishableKey,
   isClerkClientEnabled: () => true,
 }))
 
@@ -72,7 +91,8 @@ vi.mock('@/lib/chunk-load-recovery', () => ({
 }))
 
 vi.mock('@/shared/auth/useClaimAnonymousSessionsOnSignIn', () => ({
-  useClaimAnonymousSessionsOnSignIn: () => {},
+  useClaimAnonymousSessionsOnSignIn:
+    appProviderMocks.claimAnonymousSessionsOnSignIn,
 }))
 
 vi.mock('sonner', () => ({
@@ -112,6 +132,11 @@ describe('app provider loading', () => {
 
   afterEach(() => {
     cleanup()
+    appProviderMocks.clerkPublishableKey = 'pk_test_dummy'
+    appProviderMocks.claimAnonymousSessionsOnSignIn.mockClear()
+    appProviderMocks.clerkProviderProps.length = 0
+    appProviderMocks.convexClients.length = 0
+    appProviderMocks.convexWithClerkProps.length = 0
     appProviderMocks.pathname = '/generate/abc'
     vi.resetModules()
     vi.unstubAllEnvs()
@@ -147,6 +172,43 @@ describe('app provider loading', () => {
       expect(screen.getByTestId('child')).toBeTruthy()
       expect(screen.getByTestId('clerk-provider')).toBeTruthy()
     })
+
+    it('passes runtime auth, Convex, and anonymous-claiming contracts to the provider tree', async () => {
+      const { ClerkConvexProvider } =
+        await import('@/app/providers/ClerkConvexProvider')
+
+      render(
+        <ClerkConvexProvider
+          clerkPublishableKey="pk_live_real"
+          convexUrl="https://convex-live.example.test"
+        >
+          <div data-testid="child">child</div>
+        </ClerkConvexProvider>,
+      )
+
+      expect(appProviderMocks.clerkProviderProps).toHaveLength(1)
+      expect(appProviderMocks.clerkProviderProps[0]).toMatchObject({
+        afterSignOutUrl: '/',
+        appearance: {},
+        publishableKey: 'pk_live_real',
+      })
+      expect(appProviderMocks.convexClients).toEqual([
+        {
+          options: { logger: false },
+          url: 'https://convex-live.example.test',
+        },
+      ])
+      expect(appProviderMocks.convexWithClerkProps).toEqual([
+        {
+          client: expect.any(Object),
+          useAuth: expect.any(Function),
+        },
+      ])
+      expect(
+        appProviderMocks.claimAnonymousSessionsOnSignIn,
+      ).toHaveBeenCalledTimes(1)
+      expect(screen.getByTestId('child')).toBeTruthy()
+    })
   })
 
   describe('AppProviders', () => {
@@ -178,6 +240,25 @@ describe('app provider loading', () => {
       expect(await screen.findByTestId('launch-backdrop')).toBeTruthy()
       expect(screen.getByText('Public home')).toBeTruthy()
       expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
+      expect(screen.queryByTestId('convex-anonymous')).toBeNull()
+    })
+
+    it('loads anonymous Convex on generate routes when Clerk is not configured', async () => {
+      appProviderMocks.clerkPublishableKey = undefined
+      appProviderMocks.pathname = '/generate/anonymous-session'
+      vi.stubEnv('VITE_CONVEX_URL', 'http://localhost:3001')
+      const { AppProviders } = await import('@/app/providers/AppProviders')
+
+      render(
+        <AppProviders>
+          <main>Anonymous generation</main>
+        </AppProviders>,
+      )
+
+      expect(await screen.findByTestId('convex-anonymous')).toBeTruthy()
+      expect(screen.getByText('Anonymous generation')).toBeTruthy()
+      expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
+      expect(screen.queryByTestId('clerk-provider')).toBeNull()
     })
 
     it('mounts the sign-in host only after the global sign-in event fires', async () => {

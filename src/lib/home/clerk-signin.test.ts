@@ -4,12 +4,16 @@ import { bindHomepageClerkSignIn } from './clerk-signin'
 
 class FakeElement {
   private readonly listeners = new Map<string, EventListener[]>()
+  readonly attributes = new Map<string, string>()
+  focusCount = 0
   readonly style = {
     display: '',
   }
   readonly classList = {
     add: () => undefined,
-    remove: () => undefined,
+    remove: (className: string) => {
+      this.attributes.set(`class-removed:${className}`, 'true')
+    },
   }
 
   addEventListener = (type: string, listener: EventListener): void => {
@@ -23,7 +27,13 @@ class FakeElement {
     )
   }
 
-  setAttribute = (_name: string, _value: string) => undefined
+  setAttribute = (name: string, value: string) => {
+    this.attributes.set(name, value)
+  }
+
+  focus = () => {
+    this.focusCount += 1
+  }
 
   click = (): void => {
     for (const listener of this.listeners.get('click') ?? []) {
@@ -55,6 +65,33 @@ describe('bindHomepageClerkSignIn', () => {
     cleanup()
 
     expect(openCount).toBe(1)
+  })
+
+  test('shows and focuses the fallback overlay when Clerk sign-in is unavailable', () => {
+    const signInButton = new FakeElement()
+    const overlay = new FakeElement()
+    const googleButton = new FakeElement()
+    const cleanup = bindHomepageClerkSignIn({
+      win: {
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      },
+      doc: {
+        getElementById: (id) => {
+          if (id === 'signin-btn') return signInButton
+          if (id === 'auth-overlay') return overlay
+          if (id === 'google-signin-btn') return googleButton
+          return null
+        },
+      },
+    })
+
+    signInButton.click()
+    cleanup()
+
+    expect(overlay.attributes.get('class-removed:hidden')).toBe('true')
+    expect(overlay.attributes.get('aria-hidden')).toBe('false')
+    expect(googleButton.focusCount).toBe(1)
   })
 
   test('opens sign-in when a child inside the sign-in button receives the click', () => {
@@ -361,5 +398,53 @@ describe('bindHomepageClerkSignIn', () => {
     expect(signOutCount).toBe(1)
     expect(signInButton.style.display).toBe('inline-flex')
     expect(signOutButton.style.display).toBe('none')
+  })
+
+  test('removes delegated window, document, and Clerk listeners during cleanup', () => {
+    let windowListener: EventListener | undefined
+    let documentListener: EventListener | undefined
+    let clerkListener: (() => void) | undefined
+    let clerkListenerRemoved = 0
+    const removedWindow: Array<{ listener: EventListener; type: string }> = []
+    const removedDocument: Array<{ listener: EventListener; type: string }> = []
+
+    const cleanup = bindHomepageClerkSignIn({
+      win: {
+        Clerk: {
+          addListener: (listener) => {
+            clerkListener = listener
+            return () => {
+              clerkListenerRemoved += 1
+            }
+          },
+        },
+        addEventListener: (type, listener) => {
+          if (type === 'sf-request-auth-overlay') windowListener = listener
+        },
+        removeEventListener: (type, listener) => {
+          removedWindow.push({ listener, type })
+        },
+      },
+      doc: {
+        getElementById: () => null,
+        addEventListener: (type, listener) => {
+          if (type === 'click') documentListener = listener
+        },
+        removeEventListener: (type, listener) => {
+          removedDocument.push({ listener, type })
+        },
+      },
+    })
+
+    cleanup()
+
+    expect(clerkListener).toBeTypeOf('function')
+    expect(clerkListenerRemoved).toBe(1)
+    expect(removedWindow).toEqual([
+      { type: 'sf-request-auth-overlay', listener: windowListener },
+    ])
+    expect(removedDocument).toEqual([
+      { type: 'click', listener: documentListener },
+    ])
   })
 })

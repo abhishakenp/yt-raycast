@@ -9,6 +9,12 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 const mockCreateEdit = vi.fn()
 const mockForkSession = vi.fn()
 const mockRestorePreviewVersion = vi.fn()
+const mockNavigate = vi.fn()
+
+vi.mock('@tanstack/react-router', () => ({
+  useNavigate: () => mockNavigate,
+}))
+
 vi.mock('convex/react', () => ({
   useMutation: (fn: unknown) => {
     const fnName = (fn as Record<string, unknown>).__name as string

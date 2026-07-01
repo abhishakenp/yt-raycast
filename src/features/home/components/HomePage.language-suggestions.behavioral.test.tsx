@@ -2,7 +2,10 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { PROMPT_LANG_DETECT_MIN_CHARS } from '@/lib/home/constants'
+import {
+  PROMPT_LANG_DETECT_DEBOUNCE_MS,
+  PROMPT_LANG_DETECT_MIN_CHARS,
+} from '@/lib/home/constants'
 
 import { HomePage } from './HomePage'
 
@@ -134,6 +137,9 @@ const getActiveSuggestionIndex = () => {
 
 const getSubmitButton = () =>
   document.getElementById('submit-btn') as HTMLButtonElement
+
+const getPromptForm = () =>
+  document.getElementById('prompt-form') as HTMLFormElement
 
 /**
  * A prompt long enough to cross PROMPT_LANG_DETECT_MIN_CHARS so the language
@@ -409,6 +415,59 @@ describe('HomePage — language dropdown + prompt suggestions', () => {
 
     fireEvent.keyDown(input, { key: 'Enter' })
     expect(submitSpy).toHaveBeenCalled()
+  })
+
+  it('submits the rendered form with language, engine, and filtered design references', async () => {
+    mocks.detectSnippetLanguageBcp47.mockResolvedValue('es')
+    render(<HomePage />)
+
+    const input = getPromptInput()
+    fireEvent.focus(input)
+    fireEvent.change(input, {
+      target: {
+        value:
+          'Build a Mexican restaurant website with online ordering and event catering',
+      },
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(PROMPT_LANG_DETECT_DEBOUNCE_MS + 50)
+    })
+
+    const select = document.getElementById(
+      'prompt-language',
+    ) as HTMLSelectElement
+    expect(select.value).toBe('es')
+
+    const engineGroup = document.querySelector(
+      '[role="group"][aria-label="Engine version"]',
+    ) as HTMLElement
+    fireEvent.click(engineGroup.querySelectorAll('button')[2])
+
+    fireEvent.click(document.getElementById('design-ref-toggle')!)
+    fireEvent.change(document.getElementById('design-ref-search')!, {
+      target: { value: 'https://example.com/menu' },
+    })
+    ;(document.getElementById('design-ref-url-1') as HTMLInputElement).value =
+      'http://insecure.example.com'
+    ;(document.getElementById('design-ref-url-2') as HTMLInputElement).value =
+      'https://example.com/menu'
+    ;(document.getElementById('design-ref-notes') as HTMLInputElement).value =
+      ' Use the menu density, not the branding. '
+
+    fireEvent.submit(getPromptForm())
+
+    expect(mocks.submitPrompt).toHaveBeenCalledTimes(1)
+    expect(mocks.submitPrompt).toHaveBeenCalledWith({
+      prompt:
+        'Build a Mexican restaurant website with online ordering and event catering',
+      preferredLanguage: 'es',
+      isPrivate: false,
+      designReferenceUrls: ['https://example.com/menu'],
+      designReferenceNotes: 'Use the menu density, not the branding.',
+      cloneUrl: 'https://example.com/menu',
+      engineVersion: 'v3',
+    })
   })
 
   it('fetches remote prompt suggestions after the debounce window', async () => {

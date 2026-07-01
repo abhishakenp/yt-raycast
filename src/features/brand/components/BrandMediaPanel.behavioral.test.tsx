@@ -78,12 +78,12 @@ const linearLogo = {
 }
 
 const realCraftBeerSelectedBrandLogo = {
-  id: 'idGPw_2fQs',
-  name: 'Khalti Official',
-  domain: 'khalti.com',
-  brandId: 'idGPw_2fQs',
-  icon: 'https://cdn.brandfetch.io/idGPw_2fQs/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782916993928bfumLaCV7mU0GSSwHb',
-  logo: 'https://cdn.brandfetch.io/idGPw_2fQs/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782916993928bfumLaCV7mU0GSSwHb',
+  id: 'idwTkaYgXe',
+  name: 'The Beer Store',
+  domain: 'thebeerstore.ca',
+  brandId: 'idwTkaYgXe',
+  icon: 'https://cdn.brandfetch.io/idwTkaYgXe/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782982741853bfumLaCV7mbdS0jiIv',
+  logo: 'https://cdn.brandfetch.io/idwTkaYgXe/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782982741853bfumLaCV7mbdS0jiIv',
   verified: false,
 }
 
@@ -197,15 +197,15 @@ describe('BrandMediaPanel', () => {
       />,
     )
 
-    await waitFor(() => expect(view.getByText('Khalti Official')).toBeTruthy())
-    fireEvent.click(view.getByText('Khalti Official'))
+    await waitFor(() => expect(view.getByText('The Beer Store')).toBeTruthy())
+    fireEvent.click(view.getByText('The Beer Store'))
 
     expect(onSelectBrand).toHaveBeenCalledWith({
-      brandId: 'idGPw_2fQs',
-      domain: 'khalti.com',
+      brandId: 'idwTkaYgXe',
+      domain: 'thebeerstore.ca',
       icon: realCraftBeerSelectedBrandLogo.icon,
       logo: realCraftBeerSelectedBrandLogo.logo,
-      name: 'Khalti Official',
+      name: 'The Beer Store',
     })
     expect(
       view.container.querySelector(

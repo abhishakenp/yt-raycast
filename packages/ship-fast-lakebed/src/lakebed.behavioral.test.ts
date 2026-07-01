@@ -312,6 +312,70 @@ describe('lakebed behavioral', () => {
       expect(row.priority).toBe(3)
     })
 
+    it('updates and deletes rows inside writable mutation contexts', async () => {
+      const def = createLakebedDefinition({
+        todos: table({
+          done: boolean().default(false),
+          text: string(),
+        }),
+      })
+      const handler = def.mutation(async (ctx, id: string) => {
+        ctx.db.todos.update(id, { done: true })
+        const updated = ctx.db.todos.get(id)
+        ctx.db.todos.delete(id)
+        return {
+          remaining: ctx.db.todos.all(),
+          updated,
+        }
+      })
+      const { context } = createLakebedHandlerContext({
+        data: {
+          todos: [
+            {
+              createdAt: '2026-06-01T00:00:00.000Z',
+              done: false,
+              id: 'todo_1',
+              text: 'publish',
+              updatedAt: '2026-06-01T00:00:00.000Z',
+            },
+          ],
+        },
+        props: {},
+        schema: def.schema,
+        writable: true,
+      })
+
+      const result = await handler(context, 'todo_1')
+
+      expect(result.updated).toMatchObject({
+        done: true,
+        id: 'todo_1',
+        text: 'publish',
+      })
+      expect(result.updated?.updatedAt).not.toBe('2026-06-01T00:00:00.000Z')
+      expect(result.remaining).toEqual([])
+    })
+
+    it('rejects table writes from read-only query contexts', () => {
+      const def = createLakebedDefinition({
+        todos: table({
+          text: string(),
+        }),
+      })
+      const handler = def.query((ctx) => {
+        ctx.db.todos.insert({ text: 'mutated from query' })
+      })
+      const { context } = createLakebedHandlerContext({
+        data: { todos: [] },
+        props: {},
+        schema: def.schema,
+      })
+
+      expect(() => handler(context)).toThrow(
+        'Lakebed table "todos" cannot be changed from a query.',
+      )
+    })
+
     it('rejects unknown fields on insert', async () => {
       const def = createLakebedDefinition({
         todos: table({ text: string() }),

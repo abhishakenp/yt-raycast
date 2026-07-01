@@ -1007,6 +1007,49 @@ describe('Thumbnail capture', () => {
     // Let the background job finish so it releases its capture slot.
     await flushMicrotasks()
   })
+
+  it('accepts JSON base64 image payloads from screenshot workers', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      Response.json({
+        imageBase64: Buffer.from(PNG_BYTES).toString('base64'),
+      }),
+    )
+    globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch
+
+    const sid = uniqueSid('json-b64')
+    const previewUrl = `http://localhost/api/sessions/${sid}/preview-raw`
+
+    const buffer = await captureGalleryThumb(sid, 1, previewUrl)
+
+    expect(buffer).toEqual(Buffer.from(PNG_BYTES))
+    expect(readCachedGalleryThumb(sid, 1)).toEqual(Buffer.from(PNG_BYTES))
+  })
+
+  it('does not start worker captures when disabled or missing required inputs', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(pngResponse())
+    globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch
+
+    process.env.GALLERY_THUMB_DISABLE = '1'
+    await expect(
+      captureGalleryThumb(uniqueSid('disabled'), 1, 'http://localhost/preview'),
+    ).resolves.toBeNull()
+    queueGalleryThumbCapture(
+      uniqueSid('disabled-queue'),
+      1,
+      'http://localhost/preview',
+    )
+
+    delete process.env.GALLERY_THUMB_DISABLE
+    await expect(
+      captureGalleryThumb('', 1, 'http://localhost/preview'),
+    ).resolves.toBeNull()
+    await expect(
+      captureGalleryThumb(uniqueSid('missing-url'), 1, ''),
+    ).resolves.toBeNull()
+
+    await flushMicrotasks()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
 })
 
 /* -------------------------------------------------------------------------- */

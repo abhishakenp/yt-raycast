@@ -576,6 +576,40 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
     expect(screen.queryByTestId('generated-module-preview')).toBeNull()
   })
 
+  it('keeps the intro loader up for a ready-marked real session when no preview content exists', () => {
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: realConvexStreamingSession.sessionId,
+        status: 'preview_ready',
+        prompt: realConvexStreamingSession.prompt,
+        preferredLanguage: realConvexStreamingSession.preferredLanguage,
+        previewVersion: 1,
+      },
+      tasks: [
+        {
+          status: 'succeeded',
+          title: realConvexStreamingSession.task.title,
+          taskKey: realConvexStreamingSession.task.taskKey,
+        },
+      ],
+      homeModule: {
+        moduleKey: 'home',
+        source: '',
+        status: 'succeeded',
+        updatedAt: 1782761944253,
+      },
+      latestPreview: {
+        html: '',
+        version: 1,
+      },
+    })
+
+    render(<Dashboard sessionId={realConvexStreamingSession.sessionId} />)
+
+    expect(screen.getByTestId('intro-loader')).toBeTruthy()
+    expect(screen.queryByTestId('generated-module-preview')).toBeNull()
+  })
+
   // 2. Live Convex query → preview renders
   it('renders the generated preview from the live Convex generation view', () => {
     setupReady()

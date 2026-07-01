@@ -4,6 +4,8 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 const rootMocks = vi.hoisted(() => ({
   claimOnSignIn: vi.fn(),
+  installDynamicImportRecovery: vi.fn(() => vi.fn()),
+  useReferralCapture: vi.fn(),
 }))
 
 // Stub the root's heavy dependencies so we can render the root component and
@@ -27,11 +29,11 @@ vi.mock('@/app/providers/clerk-appearance', () => ({
 }))
 
 vi.mock('@/features/referrals/hooks/useReferralCapture', () => ({
-  useReferralCapture: () => {},
+  useReferralCapture: rootMocks.useReferralCapture,
 }))
 
 vi.mock('@/lib/chunk-load-recovery', () => ({
-  installDynamicImportRecovery: () => () => {},
+  installDynamicImportRecovery: rootMocks.installDynamicImportRecovery,
 }))
 
 vi.mock('@/shared/auth/useClaimAnonymousSessionsOnSignIn', () => ({
@@ -80,6 +82,10 @@ describe('root document hydration hardening', () => {
   afterEach(() => {
     cleanup()
     rootMocks.claimOnSignIn.mockReset()
+    rootMocks.useReferralCapture.mockReset()
+    rootMocks.installDynamicImportRecovery.mockClear()
+    document.documentElement.className = ''
+    window.localStorage.clear()
     vi.resetModules()
     vi.unstubAllEnvs()
   })
@@ -167,6 +173,39 @@ describe('root document hydration hardening', () => {
     // Claim-on-sign-in lives inside ClerkConvexProvider, not the root, so it
     // is not invoked from the root shell.
     expect(rootMocks.claimOnSignIn).not.toHaveBeenCalled()
+    // Referral attribution capture is app-wide and must mount before route
+    // content so ?ref= links are handled from any entry route.
+    expect(rootMocks.useReferralCapture).toHaveBeenCalled()
+  })
+
+  it('hydrates the document theme from localStorage and installs dynamic import recovery', async () => {
+    window.localStorage.setItem('theme', 'dark')
+    const { Route } = await import('@/routes/__root')
+    const RootComponent = Route.options.component as React.ComponentType
+
+    render(<RootComponent />)
+
+    expect(document.documentElement.classList.contains('dark')).toBe(true)
+    expect(rootMocks.installDynamicImportRecovery).toHaveBeenCalledWith(window)
+  })
+
+  it('falls back to the system color scheme when no saved theme exists', async () => {
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: query === '(prefers-color-scheme: dark)',
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }))
+    const { Route } = await import('@/routes/__root')
+    const RootComponent = Route.options.component as React.ComponentType
+
+    render(<RootComponent />)
+
+    expect(document.documentElement.classList.contains('dark')).toBe(true)
   })
 
   it('does not mount anonymous session claiming from the root even when Clerk and VITE_CONVEX_URL are configured', async () => {
