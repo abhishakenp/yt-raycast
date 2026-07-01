@@ -91,6 +91,28 @@ describe('useReferralCapture', () => {
     expect(window.localStorage.getItem(REFERRAL_DONE_KEY)).toBeNull()
   })
 
+  it('keeps a pending referral when attribution returns malformed JSON so a later retry can record it', async () => {
+    window.localStorage.setItem(REFERRAL_PENDING_KEY, 'BREWERY50')
+    setClerk({
+      user: { primaryEmailAddress: { emailAddress: 'new-user@example.com' } },
+      session: {
+        getToken: vi.fn(async () => 'convex-token'),
+      },
+    })
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response('<!doctype html><title>referral unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+
+    renderHook(() => useReferralCapture())
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+    expect(window.localStorage.getItem(REFERRAL_PENDING_KEY)).toBe('BREWERY50')
+    expect(window.localStorage.getItem(REFERRAL_DONE_KEY)).toBeNull()
+  })
+
   it('does not overwrite an already recorded attribution with a new query code', () => {
     window.localStorage.setItem(REFERRAL_DONE_KEY, '1')
     window.history.pushState(null, '', '/?ref=NEWCODE1')

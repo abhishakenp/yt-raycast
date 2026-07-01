@@ -10,6 +10,9 @@ const createTempRoot = (): string =>
   mkdtempSync(join(tmpdir(), 'ship-fast-v2-runner-'))
 
 describe('generation runner', () => {
+  const dbObservedPrompt =
+    'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.'
+
   it('persists completed engine artifacts', async () => {
     const completedInputs: unknown[] = []
     const failedInputs: unknown[] = []
@@ -153,6 +156,66 @@ describe('generation runner', () => {
         sessionId: 'session-missing-artifacts',
         anonymousOwnerSecret: 'secret',
         message: 'Ship Fast engine did not write index.html',
+      },
+    ])
+  })
+
+  it('fails the session when completed artifacts cannot be persisted', async () => {
+    const completedInputs: unknown[] = []
+    const failedInputs: unknown[] = []
+    const persistence: GenerationPersistence = {
+      completeGeneration: async (input) => {
+        completedInputs.push(input)
+        throw new Error('Convex completion rejected preview payload')
+      },
+      failGeneration: async (input) => {
+        failedInputs.push(input)
+      },
+    }
+
+    await expect(
+      runEngineGeneration({
+        sessionId: 'session-persist-failure',
+        prompt: dbObservedPrompt,
+        anonymousOwnerSecret: 'secret',
+        workspaceRoot: createTempRoot(),
+        runAll: async ({ workspace }) => {
+          mkdirSync(workspace, { recursive: true })
+          writeFileSync(
+            join(workspace, 'index.html'),
+            '<!doctype html><h1>Pet food conversion site</h1>',
+          )
+          writeFileSync(
+            join(workspace, 'site-spec.json'),
+            JSON.stringify({ brand: 'Pet Food Site' }),
+          )
+          writeFileSync(
+            join(workspace, 'home.openui'),
+            'root = Text("Pet food conversion site")',
+          )
+        },
+        persistence,
+      }),
+    ).resolves.toEqual({
+      status: 'failed',
+      message: 'Convex completion rejected preview payload',
+    })
+
+    expect(completedInputs).toEqual([
+      {
+        sessionId: 'session-persist-failure',
+        anonymousOwnerSecret: 'secret',
+        html: '<!doctype html><h1>Pet food conversion site</h1>',
+        siteSpecJson: '{"brand":"Pet Food Site"}',
+        openUiSource: 'root = Text("Pet food conversion site")',
+        tasks: [],
+      },
+    ])
+    expect(failedInputs).toEqual([
+      {
+        sessionId: 'session-persist-failure',
+        anonymousOwnerSecret: 'secret',
+        message: 'Convex completion rejected preview payload',
       },
     ])
   })
