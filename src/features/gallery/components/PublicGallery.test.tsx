@@ -402,7 +402,7 @@ describe('GalleryGrid', () => {
     expect(globalThis.fetch).not.toHaveBeenCalled()
   })
 
-  it('falls back to the generated thumbnail instead of rendering placeholder HTML or live modules', async () => {
+  it('uses a local placeholder instead of fetching a PNG when static HTML is missing', async () => {
     const gallery: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -419,16 +419,19 @@ describe('GalleryGrid', () => {
 
     const { container } = render(<GalleryGrid gallery={gallery} />)
 
-    await waitFor(() => {
-      expect(globalThis.fetch).toHaveBeenCalledWith(
-        '/api/sessions/module-session/gallery-thumb?v=1',
-      )
-    })
+    await Promise.resolve()
+
+    expect(globalThis.fetch).not.toHaveBeenCalled()
     expect(container.querySelector('h1')).toBeNull()
     expect(container.querySelector('img')).toBeNull()
     expect(
       container.querySelector('[data-testid="generated-module-preview"]'),
     ).toBeNull()
+    expect(
+      container.querySelector(
+        '[aria-hidden="true"] [aria-label="AI image studio"]',
+      ),
+    ).not.toBeNull()
   })
 
   it('deletes the hovered gallery session when the physical D key is pressed', async () => {

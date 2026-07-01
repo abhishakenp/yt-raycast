@@ -14,8 +14,7 @@ describe('gallery thumbnail helpers', () => {
     originalFetch = globalThis.fetch
     originalCreateObjectURL = URL.createObjectURL
     originalRevokeObjectURL = URL.revokeObjectURL
-    vi.spyOn(Date, 'now').mockReturnValue(1_000_000)
-    URL.createObjectURL = vi.fn((blob: Blob) => `blob:${blob.size}`)
+    URL.createObjectURL = vi.fn(() => 'blob:forbidden-gallery-thumbnail')
     URL.revokeObjectURL = vi.fn()
   })
 
@@ -26,7 +25,7 @@ describe('gallery thumbnail helpers', () => {
     vi.restoreAllMocks()
   })
 
-  it('builds encoded gallery thumbnail URLs from session id and preview version', async () => {
+  it('does not build a PNG thumbnail URL for gallery cards', async () => {
     const { getGalleryThumbnailUrl } = await loadModule()
 
     expect(
@@ -34,68 +33,23 @@ describe('gallery thumbnail helpers', () => {
         sessionId: 'session with/slash?',
         previewVersion: 12,
       }),
-    ).toBe('/api/sessions/session%20with%2Fslash%3F/gallery-thumb?v=12')
-    expect(
-      getGalleryThumbnailUrl({
-        sessionId: 'session-no-version',
+    ).toBe('')
+  })
+
+  it('does not fetch thumbnail blobs or create object URLs', async () => {
+    const { resolveGalleryThumbnail } = await loadModule()
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(new Blob(['thumbnail']), {
+        headers: { 'content-type': 'image/png' },
+        status: 200,
       }),
-    ).toBe('/api/sessions/session-no-version/gallery-thumb?v=0')
-  })
-
-  it('coalesces concurrent thumbnail fetches and reuses the cached object URL', async () => {
-    const { resolveGalleryThumbnail } = await loadModule()
-    const response = new Response(new Blob(['thumbnail']), { status: 200 })
-    globalThis.fetch = vi.fn().mockResolvedValue(response)
-
-    const [first, second] = await Promise.all([
-      resolveGalleryThumbnail('/api/sessions/one/gallery-thumb?v=1'),
-      resolveGalleryThumbnail('/api/sessions/one/gallery-thumb?v=1'),
-    ])
-    const cached = await resolveGalleryThumbnail(
-      '/api/sessions/one/gallery-thumb?v=1',
     )
-
-    expect(first).toBe('blob:9')
-    expect(second).toBe('blob:9')
-    expect(cached).toBe('blob:9')
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1)
-    expect(URL.createObjectURL).toHaveBeenCalledTimes(1)
-  })
-
-  it('expires cached object URLs, revokes the stale URL, and fetches a fresh blob', async () => {
-    const { resolveGalleryThumbnail } = await loadModule()
-    globalThis.fetch = vi
-      .fn()
-      .mockResolvedValueOnce(new Response(new Blob(['old']), { status: 200 }))
-      .mockResolvedValueOnce(new Response(new Blob(['newer']), { status: 200 }))
-
-    const first = await resolveGalleryThumbnail(
-      '/api/sessions/expiring/gallery-thumb?v=1',
-    )
-    vi.mocked(Date.now).mockReturnValue(1_000_000 + 5 * 60_000 + 1)
-    const second = await resolveGalleryThumbnail(
-      '/api/sessions/expiring/gallery-thumb?v=1',
-    )
-
-    expect(first).toBe('blob:3')
-    expect(second).toBe('blob:5')
-    expect(globalThis.fetch).toHaveBeenCalledTimes(2)
-    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:3')
-  })
-
-  it('returns undefined for failed thumbnail responses and retries later calls', async () => {
-    const { resolveGalleryThumbnail } = await loadModule()
-    globalThis.fetch = vi
-      .fn()
-      .mockResolvedValueOnce(new Response('missing', { status: 404 }))
-      .mockResolvedValueOnce(new Response(new Blob(['ok']), { status: 200 }))
 
     await expect(
-      resolveGalleryThumbnail('/api/sessions/retry/gallery-thumb?v=1'),
+      resolveGalleryThumbnail('/api/sessions/one/gallery-thumb?v=1'),
     ).resolves.toBeUndefined()
-    await expect(
-      resolveGalleryThumbnail('/api/sessions/retry/gallery-thumb?v=1'),
-    ).resolves.toBe('blob:2')
-    expect(globalThis.fetch).toHaveBeenCalledTimes(2)
+
+    expect(globalThis.fetch).not.toHaveBeenCalled()
+    expect(URL.createObjectURL).not.toHaveBeenCalled()
   })
 })

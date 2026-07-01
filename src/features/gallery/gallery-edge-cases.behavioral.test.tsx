@@ -632,7 +632,7 @@ describe('PublicGallery edge cases', () => {
     expect(placeholder?.className).toContain('radial-gradient')
   })
 
-  it('13. blob URL resolution: /api/sessions thumb is fetched → blob: URL displayed', async () => {
+  it('13. missing server-rendered HTML uses the local fallback and never fetches a PNG thumbnail', async () => {
     const createObjectURLSpy = vi
       .spyOn(URL, 'createObjectURL')
       .mockReturnValue('blob:resolved-thumbnail')
@@ -657,15 +657,21 @@ describe('PublicGallery edge cases', () => {
 
     const { container } = render(<GalleryGrid gallery={gallery} />)
 
-    await waitFor(() => {
-      expect(container.querySelector('img')?.getAttribute('src')).toBe(
-        'blob:resolved-thumbnail',
-      )
-    })
+    await Promise.resolve()
 
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      '/api/sessions/blob-session/gallery-thumb?v=3',
-    )
+    expect(globalThis.fetch).not.toHaveBeenCalled()
+    expect(URL.createObjectURL).not.toHaveBeenCalled()
+    expect(container.querySelector('img')).toBeNull()
+    expect(
+      container.querySelector(
+        '[aria-hidden="true"] [aria-label="Blob resolve project"]',
+      ),
+    ).not.toBeNull()
+    expect(
+      container.querySelector(
+        '[aria-hidden="true"] [aria-label="Blob resolve project"]',
+      )?.className,
+    ).toContain('radial-gradient')
 
     createObjectURLSpy.mockRestore()
   })

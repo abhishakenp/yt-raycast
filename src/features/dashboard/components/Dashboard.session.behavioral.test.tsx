@@ -32,6 +32,8 @@ type SessionState = {
   previewVersion?: number
   prompt?: string
   preferredLanguage?: string
+  errorCode?: string
+  errorMessage?: string
   isPrivate?: boolean
   themeOverride?: string | null
   themeMode?: 'light' | 'dark' | null
@@ -463,6 +465,8 @@ const generatingGenerationView = (
 const realConvexStreamingSession = {
   sessionId: 'k5739j2a2meyfe8ah0fe5g9jx189jndy',
   status: 'streaming',
+  errorCode: 'GENERATION_FAILED',
+  errorMessage: 'Ship Fast engine did not write index.html',
   prompt:
     'dog food saas with a premium responsive layout, strong visuals, useful content blocks, FAQs, and a simple contact flow. with a modern SaaS layout, dashboard preview, benefits, use cases, testimonials, and conversion-focused pricing.',
   preferredLanguage: 'en',
@@ -475,6 +479,8 @@ const realConvexStreamingSession = {
 } satisfies {
   sessionId: string
   status: string
+  errorCode: string
+  errorMessage: string
   prompt: string
   preferredLanguage: string
   previewVersion: number
@@ -596,6 +602,32 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
 
     expect(screen.getByTestId('intro-loader')).toBeTruthy()
     expect(screen.queryByTestId('generated-module-preview')).toBeNull()
+  })
+
+  it('does not hide a DB-observed generation failure behind the intro loader', () => {
+    getConvexState().generationView = generatingGenerationView({
+      session: {
+        sessionId: realConvexStreamingSession.sessionId,
+        status: realConvexStreamingSession.status,
+        errorCode: realConvexStreamingSession.errorCode,
+        errorMessage: realConvexStreamingSession.errorMessage,
+        prompt: realConvexStreamingSession.prompt,
+        preferredLanguage: realConvexStreamingSession.preferredLanguage,
+        previewVersion: realConvexStreamingSession.previewVersion,
+      },
+      tasks: [realConvexStreamingSession.task],
+      homeModule: undefined,
+      latestPreview: null,
+    })
+
+    render(<Dashboard sessionId={realConvexStreamingSession.sessionId} />)
+
+    expect(screen.queryByTestId('intro-loader')).toBeNull()
+    expect(screen.queryByTestId('generated-module-preview')).toBeNull()
+    expect(
+      screen.getByText('Ship Fast engine did not write index.html'),
+    ).toBeTruthy()
+    expect(screen.queryByText('Generating')).toBeNull()
   })
 
   it('keeps the intro loader up for a ready-marked real session when no preview content exists', () => {

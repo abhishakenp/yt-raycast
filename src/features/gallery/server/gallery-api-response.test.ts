@@ -358,6 +358,88 @@ describe('Gallery API Response', () => {
       )
     })
 
+    it('renders DB-shaped edited, translated, themed OpenUI as the only public gallery preview artifact', async () => {
+      const staleHtml =
+        '<!doctype html><html lang="en"><body><main><h1>Our Brew Selection</h1><p>Stale English preview before edits</p><img src="https://cdn.example.test/stale-brewery.png" alt="stale screenshot"></main></body></html>'
+      const editedTranslatedOpenUiSource =
+        'home_menu = RestaurantMenu("Redaguotas aludario meniu", "Lietuviskai isverstas sezoniniu alaus sarasas.", [{"name":"Sezoniniai leidimai","items":[{"name":"Ananasų sezoninis elis","description":"Tropines natos ir gaivi pabaiga","price":"7 €","tag":"Ribotas"}]}])\nroot = PageSwitch(["Pradzia"], [home_menu], "", {"Pradzia":"home"})'
+      const mockClient = {
+        query: async () => ({
+          availableCategories: ['service'],
+          hasNext: false,
+          hasPrev: false,
+          items: [
+            {
+              categories: ['service'],
+              elapsed: 6424,
+              html: staleHtml,
+              imageUrl: 'https://cdn.example.test/k574-gallery.png',
+              moduleSource: editedTranslatedOpenUiSource,
+              preferredLanguage: 'lt',
+              previewVersion: 1,
+              prompt:
+                'a craft beer brewery with taproom tours and seasonal releases in portland',
+              readiness: {
+                homepageReady: null,
+                openuiReady: true,
+                previewReady: true,
+                siteSpecReady: null,
+              },
+              selectedBrandLogo: {
+                brandId: 'idwTkaYgXe',
+                domain: 'thebeerstore.ca',
+                icon: 'https://cdn.brandfetch.io/idwTkaYgXe/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782982741853bfumLaCV7mbdS0jiIv',
+                logo: 'https://cdn.brandfetch.io/idwTkaYgXe/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782982741853bfumLaCV7mbdS0jiIv',
+                name: 'The Beer Store',
+              },
+              sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+              siteSpecJson: JSON.stringify({
+                brand: 'Craft Beer Brewery',
+                locale: 'en',
+                projectName: 'Craft Beer Brewery',
+                theme: 't3-chat',
+              }),
+              themeMode: 'dark',
+              themeOverride: 'darkmatter',
+            },
+          ],
+          limit: 12,
+          page: 1,
+          total: 1,
+          totalPages: 1,
+        }),
+      }
+      const request = new Request('http://localhost/api/gallery')
+
+      const response = await createGalleryApiResponse(request, mockClient)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.items).toHaveLength(1)
+      const item = data.items[0]
+      const renderedHtml = item.html as string
+      expect(item.sessionId).toBe('k574ms14ma9f94keq30r7dq24x89n1k2')
+      expect(renderedHtml).toContain('data-sf-export-page="Pradzia"')
+      expect(renderedHtml).toContain('lang="lt"')
+      expect(renderedHtml).toContain('color-scheme: dark')
+      expect(renderedHtml).toContain('"themeName":"darkmatter"')
+      expect(renderedHtml).toContain('Redaguotas aludario meniu')
+      expect(renderedHtml).toContain('Ananasų sezoninis elis')
+      expect(renderedHtml).toContain('7 €')
+      expect(renderedHtml).not.toContain('Our Brew Selection')
+      expect(renderedHtml).not.toContain('Stale English preview before edits')
+      expect(renderedHtml).not.toContain('stale-brewery.png')
+      expect(renderedHtml).not.toContain('k574-gallery.png')
+      expect(renderedHtml).not.toContain('RestaurantMenu("')
+      expect('imageUrl' in item).toBe(false)
+      expect('moduleSource' in item).toBe(false)
+      expect(JSON.stringify(item)).not.toContain('k574-gallery.png')
+      expect(JSON.stringify(item)).not.toContain(
+        'Stale English preview before edits',
+      )
+      expect(JSON.stringify(item)).not.toContain('RestaurantMenu("')
+    })
+
     it('does not serialize stale HTML or PNG fallback when an OpenUI gallery row cannot be rendered to static HTML', async () => {
       const mockClient = {
         query: async () => ({
