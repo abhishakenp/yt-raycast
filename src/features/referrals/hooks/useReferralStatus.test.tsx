@@ -33,6 +33,7 @@ describe('useReferralStatus', () => {
 
   afterEach(() => {
     cleanup()
+    vi.useRealTimers()
     globalThis.fetch = originalFetch
     delete (window as Window & { Clerk?: unknown }).Clerk
   })
@@ -60,6 +61,36 @@ describe('useReferralStatus', () => {
     )
 
     const { result } = renderHook(() => useReferralStatus())
+
+    await waitFor(() => {
+      expect(result.current.status).toEqual(realEmptyReferralStatus)
+    })
+    expect(result.current.error).toBeNull()
+    expect(result.current.isLoading).toBe(false)
+    expect(getToken).toHaveBeenCalledWith({ template: 'convex' })
+    expect(fetch).toHaveBeenCalledWith('/api/referrals/status', {
+      headers: { Authorization: 'Bearer convex-token' },
+    })
+  })
+
+  it('keeps the dashboard loading while Clerk hydrates before fetching status', async () => {
+    const getToken = vi.fn(async () => 'convex-token')
+    setClerk({ loaded: false, user: null, session: null })
+    vi.mocked(fetch).mockResolvedValueOnce(
+      Response.json(realEmptyReferralStatus),
+    )
+
+    const { result } = renderHook(() => useReferralStatus())
+
+    expect(result.current.isLoading).toBe(true)
+    expect(result.current.error).toBeNull()
+    expect(fetch).not.toHaveBeenCalled()
+
+    setClerk({
+      loaded: true,
+      user: { id: 'user_123' },
+      session: { getToken },
+    })
 
     await waitFor(() => {
       expect(result.current.status).toEqual(realEmptyReferralStatus)
