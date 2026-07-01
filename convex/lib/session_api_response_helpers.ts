@@ -1,5 +1,6 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
+import { isOpenUiErrorHtml } from './openui_error_html'
 
 type SessionApiResponseCtx = Pick<QueryCtx, 'db'>
 
@@ -67,7 +68,9 @@ export const serializeSessionApiResponse = (
         ? null
         : {
             version: artifacts.latestPreview.version,
-            html: artifacts.latestPreview.html,
+            html: isOpenUiErrorHtml(artifacts.latestPreview.html)
+              ? ''
+              : artifacts.latestPreview.html,
             openUiSource: artifacts.latestPreview.openUiSource,
             siteSpecJson: artifacts.latestPreview.siteSpecJson,
             createdAt: artifacts.latestPreview.createdAt,

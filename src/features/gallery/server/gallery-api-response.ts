@@ -1,6 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import { isOpenUiErrorHtml } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type GalleryConvexClient = Pick<ConvexHttpClient, 'query'>
@@ -94,7 +95,14 @@ export const createGalleryApiResponse = async (
       category,
     })
 
-    return new Response(JSON.stringify(data), {
+    const sanitized = {
+      ...data,
+      items: (data?.items ?? []).filter(
+        (item) => !isOpenUiErrorHtml(item?.html),
+      ),
+    }
+
+    return new Response(JSON.stringify(sanitized), {
       status: 200,
       headers: galleryHeaders,
     })

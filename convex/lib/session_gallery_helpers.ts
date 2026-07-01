@@ -1,5 +1,6 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
+import { isOpenUiErrorHtml } from './openui_error_html'
 import {
   getGalleryCategories,
   getGalleryCategoryOptions,
@@ -82,7 +83,10 @@ export const serializePublicGallerySession = (
     previewVersion: artifacts.preview?.version ?? session.previewVersion ?? 0,
     createdAt: session.createdAt,
     updatedAt: session.updatedAt ?? session.createdAt,
-    html: artifacts.preview?.html ?? null,
+    html:
+      artifacts.preview !== null && isOpenUiErrorHtml(artifacts.preview.html)
+        ? null
+        : (artifacts.preview?.html ?? null),
     moduleSource: artifacts.homeModule?.source ?? null,
     siteSpecJson,
     categories: getGalleryCategories(session.prompt),
@@ -125,14 +129,23 @@ export const listPublicGallerySessions = async (
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const page = Math.min(requestedPage, totalPages)
   const sessions = filteredSessions.slice((page - 1) * limit, page * limit)
-  const items = await Promise.all(
+  const serializedItems = await Promise.all(
     sessions.map(async (session) => {
       const artifacts = await loadPublicGalleryArtifacts(ctx, session._id)
+      if (
+        artifacts.preview !== null &&
+        isOpenUiErrorHtml(artifacts.preview.html)
+      ) {
+        return null
+      }
       return serializePublicGallerySession(session, artifacts, {
         legacySiteSpecFallback: true,
         previewReadyFromStoredPreview: true,
       })
     }),
+  )
+  const items = serializedItems.filter(
+    (item): item is NonNullable<typeof item> => item !== null,
   )
 
   return {
@@ -232,14 +245,23 @@ export const listOwnedGallerySessions = async (
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const page = Math.min(requestedPage, totalPages)
   const sessions = filteredSessions.slice((page - 1) * limit, page * limit)
-  const items = await Promise.all(
+  const serializedItems = await Promise.all(
     sessions.map(async (session) => {
       const artifacts = await loadPublicGalleryArtifacts(ctx, session._id)
+      if (
+        artifacts.preview !== null &&
+        isOpenUiErrorHtml(artifacts.preview.html)
+      ) {
+        return null
+      }
       return serializePublicGallerySession(session, artifacts, {
         legacySiteSpecFallback: true,
         previewReadyFromStoredPreview: true,
       })
     }),
+  )
+  const items = serializedItems.filter(
+    (item): item is NonNullable<typeof item> => item !== null,
   )
 
   return {
