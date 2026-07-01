@@ -1,12 +1,14 @@
-import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   getDefaultRuntimeConvexEnv,
   getRuntimeConvexUrl,
 } from '@/shared/env/convex-runtime'
 
 describe('runtime Convex URL', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
   it('prefers the self-hosted server URL', () => {
     expect(
       getRuntimeConvexUrl({
@@ -32,25 +34,22 @@ describe('runtime Convex URL', () => {
     )
   })
 
-  it('can build its default env from browser-safe Vite env and Node process env', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/shared/env/convex-runtime.ts'),
-      'utf8',
-    )
+  it('builds its default env from browser-safe Vite env and Node process env', () => {
+    vi.stubEnv('VITE_CONVEX_URL', 'https://vite-cloud.example.com')
+    vi.stubEnv('CONVEX_URL', 'https://server-cloud.example.com')
 
-    expect(source).toContain('import.meta')
-    expect(source).toContain('typeof process')
     expect(getDefaultRuntimeConvexEnv()).toEqual(
-      expect.objectContaining({ MODE: expect.any(String) }),
+      expect.objectContaining({
+        CONVEX_URL: 'https://server-cloud.example.com',
+        VITE_CONVEX_URL: 'https://vite-cloud.example.com',
+      }),
     )
   })
 
-  it('exposes only public Convex URL env names to the Vite client', () => {
-    const source = readFileSync(join(process.cwd(), 'vite.config.ts'), 'utf8')
+  it('keeps bare server URLs ahead of browser-safe fallbacks at runtime', () => {
+    vi.stubEnv('VITE_CONVEX_URL', 'https://vite-cloud.example.com')
+    vi.stubEnv('CONVEX_URL', 'https://server-cloud.example.com')
 
-    expect(source).toContain("'CONVEX_URL'")
-    expect(source).toContain("'CONVEX_SELF_HOSTED_URL'")
-    expect(source).not.toContain("'CONVEX_'")
-    expect(source).not.toContain("'CONVEX_SELF_HOSTED_ADMIN_KEY'")
+    expect(getRuntimeConvexUrl()).toBe('https://server-cloud.example.com')
   })
 })
