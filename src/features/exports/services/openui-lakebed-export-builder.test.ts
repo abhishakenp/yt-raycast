@@ -66,6 +66,27 @@ const hasPropertyNamed = (
   return found
 }
 
+const collectWindowRuntimeErrors = (dom: JSDOM) => {
+  const errors: unknown[] = []
+
+  dom.window.addEventListener('error', (event: ErrorEvent) => {
+    errors.push(event.error ?? event.message)
+  })
+  dom.window.addEventListener(
+    'unhandledrejection',
+    (event: Event & { reason?: unknown }) => {
+      errors.push(event.reason ?? event)
+    },
+  )
+
+  return errors
+}
+
+const flushWindowPromises = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  await new Promise((resolve) => setTimeout(resolve, 0))
+}
+
 const schemaFieldDefaultValue = ({
   fieldName,
   schemaName,
@@ -536,6 +557,668 @@ export function signOut() {}
       expect(dom.window.document.querySelector('#app')?.textContent).toContain(
         'Shop now',
       )
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
+  it('renders generated commerce navigation when Lakebed product catalog and cart summaries are DB-shaped records', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        'root = EcommerceNavbar({"brand":"CocoaCraft","nav":["Shop","Deals"],"cartCount":"0"})',
+      siteSpecJson: JSON.stringify({ projectName: 'CocoaCraft' }),
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+      target: 'lakebed',
+    })
+    const directory = mkdtempSync(
+      join(tmpdir(), 'lakebed-commerce-nav-records-'),
+    )
+
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-commerce-nav.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
+import { App } from "./client/index";
+
+render(h(App, {}), document.getElementById("app"));
+`,
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-client-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
+                  namespace: 'lakebed-client-stub',
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { displayName: "Guest", isAuthenticated: false, isGuest: true, isLoading: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery(name) {
+  if (name === "productCatalog") {
+    return {
+      product_1: {
+        id: "product_1",
+        label: "Truffle Box",
+        price: "$12.50",
+        subtitle: "Gift set",
+      },
+    };
+  }
+  if (name === "cartSummary") {
+    return {
+      count: 1,
+      subtotal: "$12.50",
+      items: {
+        line_1: {
+          id: "line_1",
+          label: "Truffle Box",
+          price: "$12.50",
+          quantity: "1",
+        },
+      },
+    };
+  }
+  if (name === "commerceSearchState") return { query: "", selectedLabel: "" };
+  return undefined;
+}
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                  loader: 'tsx',
+                }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+      const dom = new JSDOM('<div id="app"></div>', {
+        runScripts: 'outside-only',
+        url: 'https://silver-river-766492ba9a.lakebed.app/',
+      })
+      const runtimeErrors = collectWindowRuntimeErrors(dom)
+
+      let renderError: unknown
+      try {
+        dom.window.eval(bundled.outputFiles[0].text)
+      } catch (error) {
+        renderError = error
+      }
+      await flushWindowPromises()
+
+      expect(renderError).toBeUndefined()
+      expect(runtimeErrors).toEqual([])
+      expect(dom.window.document.querySelector('#app')?.textContent).toContain(
+        'CocoaCraft',
+      )
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
+  it('opens generated commerce cart drawers when Lakebed cart items are DB-shaped records', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        'root = EcommerceNavbar({"brand":"CocoaCraft","nav":["Shop","Deals"],"cartCount":"0"})',
+      siteSpecJson: JSON.stringify({ projectName: 'CocoaCraft' }),
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+      target: 'lakebed',
+    })
+    const directory = mkdtempSync(join(tmpdir(), 'lakebed-commerce-cart-'))
+
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-commerce-cart.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
+import { App } from "./client/index";
+
+render(h(App, {}), document.getElementById("app"));
+`,
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-client-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
+                  namespace: 'lakebed-client-stub',
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { displayName: "Guest", isAuthenticated: false, isGuest: true, isLoading: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery(name) {
+  if (name === "productCatalog") return [];
+  if (name === "cartSummary") {
+    return {
+      count: 2,
+      subtotal: "$25.00",
+      items: {
+        line_1: {
+          id: "line_1",
+          label: "Truffle Box",
+          price: "$12.50",
+          quantity: "2",
+        },
+      },
+    };
+  }
+  if (name === "commerceSearchState") return { query: "", selectedLabel: "" };
+  return undefined;
+}
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                  loader: 'tsx',
+                }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+      const dom = new JSDOM('<div id="app"></div>', {
+        runScripts: 'outside-only',
+        url: 'https://silver-river-766492ba9a.lakebed.app/',
+      })
+      const runtimeErrors = collectWindowRuntimeErrors(dom)
+
+      let renderError: unknown
+      try {
+        dom.window.eval(bundled.outputFiles[0].text)
+        const cartButton = dom.window.document.querySelector(
+          'button[aria-label="Cart"]',
+        )
+        expect(cartButton).toBeTruthy()
+        cartButton?.dispatchEvent(
+          new dom.window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        )
+      } catch (error) {
+        renderError = error
+      }
+      await flushWindowPromises()
+
+      expect(renderError).toBeUndefined()
+      expect(runtimeErrors).toEqual([])
+      expect(dom.window.document.body.textContent).toContain('Your cart')
+      expect(dom.window.document.body.textContent).toContain('Truffle Box')
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
+  it('renders generated commerce cart drawers when Lakebed cart summaries omit items', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        'root = EcommerceNavbar({"brand":"CocoaCraft","nav":["Shop","Deals"],"cartCount":"0"})',
+      siteSpecJson: JSON.stringify({ projectName: 'CocoaCraft' }),
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+      target: 'lakebed',
+    })
+    const directory = mkdtempSync(
+      join(tmpdir(), 'lakebed-commerce-cart-missing-items-'),
+    )
+
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-commerce-cart-missing.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
+import { App } from "./client/index";
+
+render(h(App, {}), document.getElementById("app"));
+`,
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-client-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
+                  namespace: 'lakebed-client-stub',
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { displayName: "Guest", isAuthenticated: false, isGuest: true, isLoading: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery(name) {
+  if (name === "productCatalog") return [];
+  if (name === "cartSummary") return { count: 1, subtotal: "$12.50" };
+  if (name === "commerceSearchState") return { query: "", selectedLabel: "" };
+  return undefined;
+}
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                  loader: 'tsx',
+                }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+      const dom = new JSDOM('<div id="app"></div>', {
+        runScripts: 'outside-only',
+        url: 'https://silver-river-766492ba9a.lakebed.app/',
+      })
+      const runtimeErrors = collectWindowRuntimeErrors(dom)
+
+      let renderError: unknown
+      try {
+        dom.window.eval(bundled.outputFiles[0].text)
+        dom.window.document
+          .querySelector('button[aria-label="Cart"]')
+          ?.dispatchEvent(
+            new dom.window.MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          )
+      } catch (error) {
+        renderError = error
+      }
+      await flushWindowPromises()
+
+      expect(renderError).toBeUndefined()
+      expect(runtimeErrors).toEqual([])
+      expect(dom.window.document.body.textContent).toContain('Your cart')
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
+  it('renders generated food-delivery navigation when Lakebed restaurant catalogs are DB-shaped records', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        'root = FoodDeliveryNavbar({"brand":"Nosh","nav":["Restaurants","Deals"]})',
+      siteSpecJson: JSON.stringify({
+        projectName: 'Craft Beer Brewery Delivery',
+      }),
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+      target: 'lakebed',
+    })
+    const directory = mkdtempSync(
+      join(tmpdir(), 'lakebed-food-delivery-nav-records-'),
+    )
+
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-food-delivery-nav.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
+import { App } from "./client/index";
+
+render(h(App, {}), document.getElementById("app"));
+`,
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-client-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
+                  namespace: 'lakebed-client-stub',
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { displayName: "Guest", isAuthenticated: false, isGuest: true, isLoading: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery(name) {
+  if (name === "restaurantCatalog") {
+    return {
+      restaurant_1: {
+        id: "restaurant_1",
+        name: "Portland Taproom Kitchen",
+        cuisine: "Brewpub",
+        category: "Burgers, Bowls, Beer Snacks",
+      },
+    };
+  }
+  if (name === "foodDeliverySearchState") {
+    return { address: "", query: "", selectedRestaurant: "", selectionCount: 0 };
+  }
+  return undefined;
+}
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                  loader: 'tsx',
+                }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+      const dom = new JSDOM('<div id="app"></div>', {
+        runScripts: 'outside-only',
+        url: 'https://silver-river-766492ba9a.lakebed.app/',
+      })
+      const runtimeErrors = collectWindowRuntimeErrors(dom)
+
+      let renderError: unknown
+      try {
+        dom.window.eval(bundled.outputFiles[0].text)
+      } catch (error) {
+        renderError = error
+      }
+      await flushWindowPromises()
+
+      expect(renderError).toBeUndefined()
+      expect(runtimeErrors).toEqual([])
+      expect(dom.window.document.querySelector('#app')?.textContent).toContain(
+        'Nosh',
+      )
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
+  it('renders generated restaurant Lakebed apps when order queries return missing or object-shaped item collections', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        'root = RestaurantMenu("Taproom Menu", "Seasonal plates for brewery guests")',
+      siteSpecJson: JSON.stringify({ projectName: 'Craft Beer Brewery' }),
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+      target: 'lakebed',
+    })
+    const directory = mkdtempSync(join(tmpdir(), 'lakebed-restaurant-app-'))
+
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-restaurant.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
+import { App } from "./client/index";
+
+render(h(App, {}), document.getElementById("app"));
+`,
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-client-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
+                  namespace: 'lakebed-client-stub',
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { isAuthenticated: false, isLoading: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery(name) {
+  return globalThis.__lakebedQueryResults?.[name];
+}
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                  loader: 'tsx',
+                }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+
+      for (const queryResults of [
+        {
+          restaurantExperience: {},
+          restaurantOrder: { count: 1, lastSelection: null },
+        },
+        {
+          restaurantExperience: {},
+          restaurantOrder: {
+            count: 1,
+            items: {
+              line_1: {
+                name: 'Burrata & Heirloom Tomato',
+                price: '$16',
+                quantity: '2',
+              },
+            },
+            lastSelection: null,
+          },
+        },
+      ]) {
+        const dom = new JSDOM('<div id="app"></div>', {
+          runScripts: 'outside-only',
+          url: 'https://silver-river-766492ba9a.lakebed.app/',
+        })
+        const runtimeErrors = collectWindowRuntimeErrors(dom)
+        Reflect.set(dom.window, '__lakebedQueryResults', queryResults)
+
+        let renderError: unknown
+        try {
+          dom.window.eval(bundled.outputFiles[0].text)
+        } catch (error) {
+          renderError = error
+        }
+        await flushWindowPromises()
+
+        expect(renderError).toBeUndefined()
+        expect(runtimeErrors).toEqual([])
+        expect(
+          dom.window.document.querySelector('#app')?.textContent,
+        ).toContain('Taproom Menu')
+      }
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
+  it('exports Lakebed auth adapter helpers required by section-kit sign-in controls', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        'root = EcommerceHero("Gov Site In Hindi", ["Home"], {"brand":"Gov Site In Hindi"})',
+      siteSpecJson: JSON.stringify({ projectName: 'Gov Site In Hindi' }),
+      sessionId: 'k572nbkrw902ef81nn4ha1yq7989njsg',
+      target: 'lakebed',
+    })
+    const directory = mkdtempSync(join(tmpdir(), 'lakebed-auth-export-'))
+
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-auth-adapter.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
+import { useAuth, signInWithGoogle, signOut } from "./client/lib/lakebed";
+
+function Probe() {
+  const auth = useAuth();
+  return h("button", {
+    onClick: () => auth.isAuthenticated ? signOut() : signInWithGoogle(),
+  }, auth.isAuthenticated ? "Sign out" : "Sign in");
+}
+
+render(h(Probe, {}), document.getElementById("app"));
+`,
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-client-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
+                  namespace: 'lakebed-client-stub',
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { isAuthenticated: false, isLoading: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery() { return undefined; }
+export function signInWithGoogle() { globalThis.__lakebedSignedIn = true; }
+export function signOut() { globalThis.__lakebedSignedOut = true; }
+`,
+                  loader: 'tsx',
+                }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+      const dom = new JSDOM('<div id="app"></div>', {
+        runScripts: 'outside-only',
+        url: 'https://example.test/',
+      })
+
+      expect(() => dom.window.eval(bundled.outputFiles[0].text)).not.toThrow()
+      const button = dom.window.document.querySelector('button')
+      expect(button?.textContent).toBe('Sign in')
+      button?.dispatchEvent(
+        new dom.window.MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+      expect(Reflect.get(dom.window, '__lakebedSignedIn')).toBe(true)
     } finally {
       rmSync(directory, { force: true, recursive: true })
     }
