@@ -56,4 +56,33 @@ describe('generation state machine', () => {
       false,
     )
   })
+
+  it('fails closed instead of crashing when persisted generation status is unknown', () => {
+    expect(() =>
+      canTransitionGenerationStatus('migrating_from_legacy' as never, 'queued'),
+    ).not.toThrow()
+    expect(
+      canTransitionGenerationStatus('migrating_from_legacy' as never, 'queued'),
+    ).toBe(false)
+
+    const state = applyGenerationEvent(
+      {
+        ...createInitialGenerationState(),
+        status: 'migrating_from_legacy' as never,
+      },
+      { type: 'queued' },
+    )
+
+    expect(state.status).toBe('failed')
+    expect(state.error?.message).toContain('Invalid generation transition')
+  })
+
+  it('fails closed instead of crashing when an event type is unknown', () => {
+    const state = applyGenerationEvent(createInitialGenerationState(), {
+      type: 'provider_retrying',
+    } as never)
+
+    expect(state.status).toBe('failed')
+    expect(state.error?.message).toContain('Invalid generation transition')
+  })
 })
