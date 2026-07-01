@@ -36,6 +36,17 @@ type CloneHookState = {
   >
 }
 
+const realTvnlStorageBackedHomePage = {
+  pathname: '/',
+  title: 'TVNL - Tenughat Vidyut Nigam Limited',
+  storageId: 'kg25mwjnzgn17b1x42xbf6cbkn89a6hq',
+  isHome: true,
+  failed: false,
+  order: 0,
+  byteLength: 1_367_123,
+  truncated: false,
+}
+
 const getState = (): CloneHookState => {
   const testGlobal = globalThis as typeof globalThis & {
     __shipFastCloneHookState?: CloneHookState
@@ -121,6 +132,37 @@ describe('useClonePageNav', () => {
       storageId: 'stored_tvnl_home',
       byteLength: 1_367_703,
     })
+  })
+
+  it('keeps a real storage-backed TVNL clone home page inside the clone shell', () => {
+    getState().rows = [realTvnlStorageBackedHomePage]
+    getState().previews['/'] = {
+      html: null,
+      url: 'https://storage.test/kg25mwjnzgn17b1x42xbf6cbkn89a6hq',
+      version: 1,
+    }
+
+    const { result } = renderHook(() =>
+      useClonePageNav('k572681p1rzad6rekf97pkqrhn89b6zt'),
+    )
+
+    expect(result.current).toMatchObject({
+      currentHtml: null,
+      currentPath: '/',
+      currentUrl: 'https://storage.test/kg25mwjnzgn17b1x42xbf6cbkn89a6hq',
+      isClone: true,
+    })
+    expect(result.current.pages).toEqual([
+      {
+        byteLength: 1_367_123,
+        failed: false,
+        isHome: true,
+        pathname: '/',
+        storageId: 'kg25mwjnzgn17b1x42xbf6cbkn89a6hq',
+        title: 'TVNL - Tenughat Vidyut Nigam Limited',
+        truncated: false,
+      },
+    ])
   })
 
   it('navigates captured clone paths without opening the source site', () => {
