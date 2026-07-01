@@ -460,6 +460,27 @@ const generatingGenerationView = (
   latestPreview: overrides.latestPreview ?? null,
 })
 
+const realConvexStreamingSession = {
+  sessionId: 'k5739j2a2meyfe8ah0fe5g9jx189jndy',
+  status: 'streaming',
+  prompt:
+    'dog food saas with a premium responsive layout, strong visuals, useful content blocks, FAQs, and a simple contact flow. with a modern SaaS layout, dashboard preview, benefits, use cases, testimonials, and conversion-focused pricing.',
+  preferredLanguage: 'en',
+  previewVersion: 0,
+  task: {
+    status: 'failed',
+    title: 'Generate homepage',
+    taskKey: 'homepage',
+  },
+} satisfies {
+  sessionId: string
+  status: string
+  prompt: string
+  preferredLanguage: string
+  previewVersion: number
+  task: { status: string; title: string; taskKey: string }
+}
+
 const setHandoffFlag = (sessionId: string) => {
   // takeGenerationLaunchHandoff reads `ship-fast:generation-launch:<id>` == '1'.
   window.sessionStorage.setItem(`ship-fast:generation-launch:${sessionId}`, '1')
@@ -529,6 +550,30 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
     // Expected: a generation-flow handoff drives the dashboard to render the
     // IntroLoader overlay until the preview becomes renderable.
     expect(screen.getByTestId('intro-loader')).toBeTruthy()
+  })
+
+  it('shows the intro loader for a real non-ready session with no renderable preview even without launch handoff', () => {
+    getConvexState().generationView = generatingGenerationView({
+      session: {
+        sessionId: realConvexStreamingSession.sessionId,
+        status: realConvexStreamingSession.status,
+        prompt: realConvexStreamingSession.prompt,
+        preferredLanguage: realConvexStreamingSession.preferredLanguage,
+        previewVersion: realConvexStreamingSession.previewVersion,
+      },
+      tasks: [realConvexStreamingSession.task],
+      homeModule: {
+        moduleKey: 'home',
+        source: '',
+        status: 'running',
+        updatedAt: 1782761944253,
+      },
+    })
+
+    render(<Dashboard sessionId={realConvexStreamingSession.sessionId} />)
+
+    expect(screen.getByTestId('intro-loader')).toBeTruthy()
+    expect(screen.queryByTestId('generated-module-preview')).toBeNull()
   })
 
   // 2. Live Convex query → preview renders

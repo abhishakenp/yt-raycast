@@ -1319,7 +1319,7 @@ export function Dashboard({
 
       <audio id="launch-sfx" preload="auto" src="/assets/launch.mp3"></audio>
 
-      {startedFromGenerationFlow && !isPreviewRenderable && !isAdminActive ? (
+      {!isPreviewRenderable && !isMissingSession && !isAdminActive ? (
         <IntroLoader
           progress={Math.min(0.94, progress / 100)}
           playSound={startedFromGenerationFlow}

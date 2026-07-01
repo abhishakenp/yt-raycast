@@ -4,17 +4,22 @@ import { useQuery } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
 import { createAnonymousClientId } from '@/features/session/services/session-create-payload'
 import type { GalleryPayload } from '@/features/gallery/components/PublicGallery'
+import {
+  getGalleryThumbnailUrl,
+  resolveGalleryThumbnail,
+} from './gallery-thumbnail'
+
+export type { GalleryThumbnailSession } from './gallery-thumbnail'
+export {
+  getGalleryThumbnailUrl,
+  resolveGalleryThumbnail,
+} from './gallery-thumbnail'
 
 export type GalleryQueryOptions = {
   category?: string
   limit?: number
   page?: number
   search?: string
-}
-
-export type GalleryThumbnailSession = {
-  sessionId: string
-  previewVersion?: number
 }
 
 const normalizeGalleryParam = (value: string | number | undefined): string =>
@@ -32,18 +37,12 @@ const emptyGalleryPayload = (page: number, limit: number): GalleryPayload => ({
 })
 
 const GALLERY_PAYLOAD_CACHE_TTL_MS = 30_000
-const GALLERY_THUMBNAIL_CACHE_TTL_MS = 5 * 60_000
 
 const galleryPayloadCache = new Map<
   string,
   { payload: GalleryPayload; createdAt: number }
 >()
 const galleryPayloadRequests = new Map<string, Promise<GalleryPayload>>()
-const galleryThumbnailCache = new Map<
-  string,
-  { objectUrl: string; createdAt: number }
->()
-const galleryThumbnailRequests = new Map<string, Promise<string | undefined>>()
 
 const fetchGalleryPayload = async (
   requestUrl: string,
@@ -92,53 +91,6 @@ const buildGalleryRequestUrl = ({
   if (normalizedCategory) params.set('category', normalizedCategory)
   if (normalizedSearch) params.set('search', normalizedSearch)
   return `/api/sessions/recent?${params.toString()}`
-}
-
-export const getGalleryThumbnailUrl = ({
-  previewVersion,
-  sessionId,
-}: GalleryThumbnailSession): string => {
-  const version = encodeURIComponent(String(previewVersion ?? 0))
-  return `/api/sessions/${encodeURIComponent(sessionId)}/gallery-thumb?v=${version}`
-}
-
-export const resolveGalleryThumbnail = async (
-  thumbnailUrl: string,
-): Promise<string | undefined> => {
-  const cached = galleryThumbnailCache.get(thumbnailUrl)
-  if (
-    cached &&
-    Date.now() - cached.createdAt < GALLERY_THUMBNAIL_CACHE_TTL_MS
-  ) {
-    return cached.objectUrl
-  }
-
-  if (cached) {
-    URL.revokeObjectURL(cached.objectUrl)
-    galleryThumbnailCache.delete(thumbnailUrl)
-  }
-
-  const pending = galleryThumbnailRequests.get(thumbnailUrl)
-  if (pending) return pending
-
-  const request = fetch(thumbnailUrl)
-    .then(async (response) => {
-      if (!response.ok) throw new Error(`thumbnail ${response.status}`)
-      const blob = await response.blob()
-      const objectUrl = URL.createObjectURL(blob)
-      galleryThumbnailCache.set(thumbnailUrl, {
-        objectUrl,
-        createdAt: Date.now(),
-      })
-      return objectUrl
-    })
-    .catch(() => undefined)
-    .finally(() => {
-      galleryThumbnailRequests.delete(thumbnailUrl)
-    })
-
-  galleryThumbnailRequests.set(thumbnailUrl, request)
-  return request
 }
 
 export const prewarmGalleryPayload = (

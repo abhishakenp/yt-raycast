@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useMutation } from 'convex/react'
 import {
   ArrowRight,
   ChevronLeft,
@@ -11,12 +12,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { createAnonymousClientId } from '@/features/session/services/session-create-payload'
 import { cn } from '@/lib/utils'
+import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 
 import {
   getGalleryThumbnailUrl,
   resolveGalleryThumbnail,
-  useGalleryController,
-} from '../hooks/useGalleryController'
+} from '../hooks/gallery-thumbnail'
+import { useGalleryController } from '../hooks/useGalleryController'
 
 export type GalleryCategory = string
 
@@ -101,7 +104,9 @@ const formatGenerationTime = (elapsed?: number | null) => {
 const getGalleryCardAriaLabel = (session: GallerySession): string => {
   const title = getPromptTitle(session.prompt)
   const generationTime = formatGenerationTime(session.elapsed)
-  return generationTime ? `${title}, generated in ${generationTime}` : title
+  return generationTime
+    ? `${title}, generated in ${generationTime}`
+    : `Open ${title}`
 }
 
 export const getGalleryImageUrl = (session: GallerySession): string => {
@@ -400,6 +405,7 @@ export const GalleryGrid = ({
   gallery?: GalleryPayload
   skeletonCount?: number
 }) => {
+  const deleteMine = useMutation(api.sessions.deleteMine)
   const hoveredSessionIdRef = useRef<string | null>(null)
   const [deletedSessionIds, setDeletedSessionIds] = useState<Set<string>>(
     () => new Set(),
@@ -415,28 +421,28 @@ export const GalleryGrid = ({
     }
   }, [])
 
-  const deleteHoveredSession = useCallback((sessionId: string) => {
-    const anonymousClientId = createAnonymousClientId(window.localStorage)
-    void import('@/features/gallery/services/delete-gallery-session')
-      .then(({ deleteGallerySession }) =>
-        deleteGallerySession({
-          anonymousClientId,
-          sessionId,
-        }),
-      )
-      .then((result) => {
-        if (result.deleted <= 0) return
-        if (hoveredSessionIdRef.current === sessionId) {
-          hoveredSessionIdRef.current = null
-        }
-        setDeletedSessionIds((current) => {
-          const next = new Set(current)
-          next.add(sessionId)
-          return next
-        })
+  const deleteHoveredSession = useCallback(
+    (sessionId: string) => {
+      const anonymousClientId = createAnonymousClientId(window.localStorage)
+      void deleteMine({
+        anonymousClientId,
+        sessionId: sessionId as Id<'sessions'>,
       })
-      .catch(() => undefined)
-  }, [])
+        .then((result) => {
+          if (result.deleted <= 0) return
+          if (hoveredSessionIdRef.current === sessionId) {
+            hoveredSessionIdRef.current = null
+          }
+          setDeletedSessionIds((current) => {
+            const next = new Set(current)
+            next.add(sessionId)
+            return next
+          })
+        })
+        .catch(() => undefined)
+    },
+    [deleteMine],
+  )
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
