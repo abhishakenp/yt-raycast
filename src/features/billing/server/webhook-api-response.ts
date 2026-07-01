@@ -210,10 +210,15 @@ export const createWebhookApiResponse = async (
   if (mutationPayload === null) return json({ received: true, ignored: true })
 
   const client = clientOverride ?? createRuntimeConvexHttpClient()
-  const result = (await client.mutation(api.billing.applyBillingWebhook, {
-    secret: mutationSecret,
-    ...mutationPayload,
-  })) as { referralUnlock?: { referrerUserId: string } | null }
+  let result: { referralUnlock?: { referrerUserId: string } | null }
+  try {
+    result = (await client.mutation(api.billing.applyBillingWebhook, {
+      secret: mutationSecret,
+      ...mutationPayload,
+    })) as { referralUnlock?: { referrerUserId: string } | null }
+  } catch {
+    return json({ error: 'Webhook processing failed.' }, { status: 502 })
+  }
 
   // Apply the lifetime referral discount to anyone whose eligibility may have
   // changed: the referrer who just hit the threshold, and the payer themselves
