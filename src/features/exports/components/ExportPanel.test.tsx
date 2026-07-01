@@ -45,6 +45,19 @@ const setExportTargets = (targets: MockExportTarget[]) => {
   exportTargetsState.value = { targets }
 }
 
+const realCraftBeerLakebedExportTarget: MockExportTarget = {
+  target: 'lakebed',
+  label: 'Lakebed',
+  ready: true,
+  status: 'ready',
+  requiresPayment: false,
+  fileCount: 12,
+  artifactReady: true,
+  artifactStatus: 'ready',
+  downloadUrl:
+    '/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/download/lakebed',
+}
+
 const installLocalStorage = () => {
   const values = new Map<string, string>()
   const storage = {
@@ -280,5 +293,55 @@ describe('ExportPanel', () => {
     expect(createObjectUrl).toHaveBeenCalled()
     expect(clickMock).toHaveBeenCalled()
     expect(revokeObjectUrl).toHaveBeenCalledWith('blob:export')
+  })
+
+  it('downloads a real Convex-shaped Lakebed export target through the session API', async () => {
+    setExportTargets([realCraftBeerLakebedExportTarget])
+    const clickMock = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {})
+    const createObjectUrl = vi.fn((_blob: Blob) => 'blob:craft-beer-lakebed')
+    const revokeObjectUrl = vi.fn()
+    Object.defineProperty(window.URL, 'createObjectURL', {
+      configurable: true,
+      value: createObjectUrl,
+    })
+    Object.defineProperty(window.URL, 'revokeObjectURL', {
+      configurable: true,
+      value: revokeObjectUrl,
+    })
+    const fetchMock = vi.fn(
+      async () =>
+        new Response('real-lakebed-zip-bytes', {
+          headers: {
+            'content-disposition':
+              'attachment; filename="ship-fast-k574ms14ma9f94keq30r7dq24x89n1k2-lakebed.zip"',
+          },
+        }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const view = render(
+      <ExportPanel sessionId="k574ms14ma9f94keq30r7dq24x89n1k2" />,
+    )
+    const button = view.getByText('Lakebed').closest('button')
+    expect(button).toBeTruthy()
+    expect(
+      view.container.querySelector('[data-export-action="lakebed"]'),
+    ).toBeTruthy()
+    if (button) fireEvent.click(button)
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/download/lakebed',
+        { headers: { Authorization: 'Bearer app-token' } },
+      ),
+    )
+    expect(clickMock).toHaveBeenCalled()
+    expect(createObjectUrl.mock.calls[0]?.[0]).toMatchObject({
+      size: 'real-lakebed-zip-bytes'.length,
+      type: 'text/plain;charset=utf-8',
+    })
+    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:craft-beer-lakebed')
   })
 })
