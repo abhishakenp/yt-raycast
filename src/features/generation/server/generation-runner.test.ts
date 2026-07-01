@@ -104,4 +104,56 @@ describe('generation runner', () => {
       },
     ])
   })
+
+  it('fails the session when an engine returns without generated homepage artifacts', async () => {
+    const completedInputs: unknown[] = []
+    const failedInputs: unknown[] = []
+    const persistence: GenerationPersistence = {
+      completeGeneration: async (input) => {
+        completedInputs.push(input)
+
+        return { previewVersion: 1 }
+      },
+      failGeneration: async (input) => {
+        failedInputs.push(input)
+      },
+    }
+
+    await expect(
+      runEngineGeneration({
+        sessionId: 'session-missing-artifacts',
+        prompt: 'Generate a SaaS homepage',
+        anonymousOwnerSecret: 'secret',
+        workspaceRoot: createTempRoot(),
+        runAll: async ({ workspace }) => {
+          mkdirSync(workspace, { recursive: true })
+          writeFileSync(
+            join(workspace, 'tasks.json'),
+            JSON.stringify({
+              tasks: [
+                {
+                  id: 'home.openui',
+                  label: 'Generate Home page',
+                  status: 'DONE',
+                },
+              ],
+            }),
+          )
+        },
+        persistence,
+      }),
+    ).resolves.toEqual({
+      status: 'failed',
+      message: 'Ship Fast engine did not write index.html',
+    })
+
+    expect(completedInputs).toEqual([])
+    expect(failedInputs).toEqual([
+      {
+        sessionId: 'session-missing-artifacts',
+        anonymousOwnerSecret: 'secret',
+        message: 'Ship Fast engine did not write index.html',
+      },
+    ])
+  })
 })

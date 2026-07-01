@@ -199,6 +199,36 @@ describe('GalleryGrid', () => {
     expect(getByText('Start from home')).toBeTruthy()
   })
 
+  it('ignores malformed gallery rows instead of crashing the preview grid', () => {
+    const gallery = {
+      ...emptyGallery,
+      items: [
+        null,
+        { prompt: 'Missing session id', previewVersion: 1 },
+        {
+          categories: { primary: 'saas' },
+          elapsed: Number.NaN,
+          html: '<main><h1>Valid preview</h1></main>',
+          previewVersion: 2,
+          prompt: 'Valid public project',
+          sessionId: 'valid_public_project',
+        },
+      ],
+      total: 3,
+    } as unknown as GalleryPayload
+
+    expect(() => render(<GalleryGrid gallery={gallery} />)).not.toThrow()
+    expect(document.querySelectorAll('[data-gallery-session-id]')).toHaveLength(
+      1,
+    )
+    expect(
+      document.querySelector(
+        '[data-gallery-session-id="valid_public_project"]',
+      ),
+    ).not.toBeNull()
+    expect(document.body.textContent).not.toContain('Missing session id')
+  })
+
   it('uses homepage-specific empty copy without linking back to the current page', () => {
     const { container, getByText, queryByText } = render(
       <GalleryGrid

@@ -705,6 +705,30 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
     }
   })
 
+  it('keeps the intro loader visible when Convex and fallback polling have no renderable preview yet', async () => {
+    vi.useFakeTimers()
+    try {
+      getConvexState().generationView = undefined
+      const fetchMock = vi.fn().mockResolvedValue({ ok: false })
+      vi.stubGlobal('fetch', fetchMock)
+
+      render(<Dashboard sessionId="loading-session" />)
+
+      expect(screen.getByTestId('intro-loader')).toBeTruthy()
+      expect(screen.queryByTestId('generated-module-preview')).toBeNull()
+
+      await vi.advanceTimersByTimeAsync(3000)
+
+      expect(fetchMock).toHaveBeenCalledWith('/api/sessions/loading-session', {
+        headers: { accept: 'application/json' },
+      })
+      expect(screen.getByTestId('intro-loader')).toBeTruthy()
+      expect(screen.queryByTestId('generated-module-preview')).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   // 4. Ready session → cached in localStorage
   it('caches a ready session in localStorage', () => {
     setupReady()
