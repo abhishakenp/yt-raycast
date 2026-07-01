@@ -3117,6 +3117,8 @@ const renderClientLakebed = (): string => `import {
 } from "lakebed/client";
 import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 
+export { signInWithGoogle, signOut, useAuth };
+
 export type LakebedAdapter = ReturnType<typeof useLakebedAdapter>;
 
 type LakebedMutationFunction<Args extends unknown[], Result> = ((
@@ -3149,6 +3151,45 @@ function normalizeQueryValue(name: string, value: unknown) {
   if (value && typeof value === "object") return new Set(Object.values(value));
   if (value == null) return new Set<string>();
   return value;
+}
+
+function isDbRecordCollection(value: unknown): boolean {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const entries = Object.entries(value);
+  if (!entries.length) return false;
+  return entries.every(
+    ([, v]) => v && typeof v === "object" && !Array.isArray(v),
+  );
+}
+
+function normalizeDbShapedQueryResult(name: string, value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const collectionKeys = ["items", "rows", "data", "result"];
+  const hasScalarField = Object.values(value).some(
+    (v) => v == null || typeof v !== "object" || Array.isArray(v),
+  );
+  if (!hasScalarField && !collectionKeys.some((key) => key in value)) {
+    if (isDbRecordCollection(value)) return Object.values(value);
+    return value;
+  }
+  let normalized = value as Record<string, unknown>;
+  for (const key of collectionKeys) {
+    if (!(key in normalized)) continue;
+    const nested = normalized[key];
+    if (Array.isArray(nested)) continue;
+    if (isDbRecordCollection(nested)) {
+      if (normalized === value) normalized = { ...normalized };
+      normalized[key] = Object.values(nested as Record<string, unknown>);
+    } else if (nested == null) {
+      if (normalized === value) normalized = { ...normalized };
+      normalized[key] = [];
+    }
+  }
+  if ("count" in normalized && !("items" in normalized)) {
+    if (normalized === value) normalized = { ...normalized };
+    normalized.items = [];
+  }
+  return normalized;
 }
 
 function collectionValues(value: unknown) {
@@ -3278,7 +3319,11 @@ export function useLakebedAdapter() {
   return {
     useQuery<T = unknown>(name: string): T {
       const value = useQuery<unknown>(name);
-      return normalizeQueryValue(name, normalizeEntityListValue(name, value)) as T;
+      const dbNormalized = normalizeDbShapedQueryResult(name, value);
+      return normalizeQueryValue(
+        name,
+        normalizeEntityListValue(name, dbNormalized),
+      ) as T;
     },
     useMutation<Args extends unknown[] = unknown[], Result = unknown>(
       name: string,
