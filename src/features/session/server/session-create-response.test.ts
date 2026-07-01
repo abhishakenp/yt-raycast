@@ -6,6 +6,15 @@ import {
   hashClientIp,
 } from './session-create-response'
 
+const realConvexCraftBeerSession = {
+  isPrivate: false,
+  preferredExportTarget: 'html',
+  preferredLanguage: 'lt',
+  prompt:
+    'a craft beer brewery with taproom tours and seasonal releases in portland',
+  workspace: 'workspace_1783a35ebbd03fe0460e5f33b489cf88',
+} as const
+
 describe('createSessionCreateResponse', () => {
   afterEach(() => {
     delete process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE
@@ -66,6 +75,62 @@ describe('createSessionCreateResponse', () => {
     )
   })
 
+  it('forwards real DB-shaped session creation fields without dropping language, export target, privacy, or workspace', async () => {
+    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
+    process.env.SHIP_FAST_IP_HASH_SALT = 'test-salt'
+    const mutation = vi.fn().mockResolvedValue({
+      cached: true,
+      remaining: 0,
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+    })
+    const request = new Request('http://ship-fast.test/api/sessions/create', {
+      body: JSON.stringify(realConvexCraftBeerSession),
+      headers: {
+        'cf-connecting-ip': '198.51.100.44',
+        'content-type': 'application/json',
+      },
+      method: 'POST',
+    })
+
+    const response = await createSessionCreateResponse(request, { mutation })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      cached: true,
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+    })
+    expect(mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        ...realConvexCraftBeerSession,
+        clientIpHash: hashClientIp('198.51.100.44', 'test-salt'),
+      }),
+    )
+  })
+
+  it.each([
+    ['not-json', 'Request body must be valid JSON.'],
+    [
+      JSON.stringify(['not', 'an', 'object']),
+      'Request body must be a JSON object.',
+    ],
+  ])('rejects invalid public preview request bodies', async (body, message) => {
+    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
+    const mutation = vi.fn()
+
+    const response = await createSessionCreateResponse(
+      new Request('http://ship-fast.test/api/sessions/create', {
+        body,
+        method: 'POST',
+      }),
+      { mutation },
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({ error: message })
+    expect(mutation).not.toHaveBeenCalled()
+  })
+
   it('maps Convex quota failures to a public preview 429 response', async () => {
     process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
     const mutation = vi
@@ -85,5 +150,26 @@ describe('createSessionCreateResponse', () => {
         'Free preview quota exhausted for this IP address. Try again tomorrow.',
     })
     expect(response.status).toBe(429)
+  })
+
+  it('maps Convex rate-limit failures to a distinct public preview 429 response', async () => {
+    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
+    const mutation = vi
+      .fn()
+      .mockRejectedValue(new Error('ConvexError: RATE_LIMITED'))
+    const response = await createSessionCreateResponse(
+      new Request('http://ship-fast.test/api/sessions/create', {
+        method: 'POST',
+        body: JSON.stringify(realConvexCraftBeerSession),
+      }),
+      { mutation },
+    )
+
+    expect(response.status).toBe(429)
+    await expect(response.json()).resolves.toEqual({
+      code: 'RATE_LIMITED',
+      error:
+        'Too many generation requests. Please wait a few minutes and try again.',
+    })
   })
 })
