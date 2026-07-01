@@ -10,6 +10,86 @@ type TestSessionDataDoc = {
   updatedAt: number
 }
 
+const realCraftBeerSessionDataDocs: TestSessionDataDoc[] = [
+  {
+    capsule: 'RestaurantStory:story_story',
+    createdAt: 1782820944968,
+    updatedAt: 1782820944968,
+    data: {
+      alt: [
+        {
+          description: 'Gold medal at Oregon Beer Fest 2022',
+          title: 'Award-Winning',
+        },
+        {
+          description: 'Weekly open mic and board game nights',
+          title: 'Community Hub',
+        },
+      ],
+      body: 'Founded in 2015 by brothers Alex and Jamie, Riverbend Brewing started in a garage and grew into a beloved taproom where locals gather for fresh brews and live music.',
+      cta: null,
+      eyebrow: 'Our Journey',
+      heading: 'From Homebrew to Community Hub',
+    },
+  },
+  {
+    capsule: 'RestaurantTestimonials:testimonials_testimonials',
+    createdAt: 1782820942727,
+    updatedAt: 1782820942727,
+    data: {
+      heading: 'What Our Patrons Say',
+      reviews: [
+        {
+          name: 'name',
+          quote: 'reviews[quote',
+          rating: 'rating]“The Pineapple Saison is a summer must‑try!”',
+          role: 'role',
+        },
+        {
+          name: 'Javier Lopez',
+          quote: '“Loved the tour – the staff are so knowledgeable.”',
+          rating: '5',
+          role: 'Software Engineer',
+        },
+        {
+          name: 'Samantha Reed',
+          quote: '“Great vibe, amazing beers, and friendly people.”',
+          rating: '4',
+          role: 'Graphic Designer',
+        },
+      ],
+    },
+  },
+  {
+    capsule: 'RestaurantTestimonials:home_testimonials',
+    createdAt: 1782814096628,
+    updatedAt: 1782814096628,
+    data: {
+      heading: 'What Our Patrons Say',
+      reviews: [
+        {
+          name: 'name',
+          quote: 'reviews[quote',
+          rating: 'rating]“The Pineapple Saison is a summer must‑try!”',
+          role: 'role',
+        },
+        {
+          name: 'Javier Lopez',
+          quote: '“Loved the tour – the staff are so knowledgeable.”',
+          rating: '5',
+          role: 'Software Engineer',
+        },
+        {
+          name: 'Samantha Reed',
+          quote: '“Great vibe, amazing beers, and friendly people.”',
+          rating: '4',
+          role: 'Graphic Designer',
+        },
+      ],
+    },
+  },
+]
+
 const mocks = vi.hoisted(() => ({
   docs: [] as TestSessionDataDoc[],
   pendingMutation: undefined as Promise<unknown> | undefined,
@@ -111,5 +191,36 @@ describe('LakebedAdminPanel', () => {
       expect(screen.getByRole('button', { name: 'Save' })).toBeTruthy()
     })
     expect(JSON.stringify(mocks.replaceCalls[0])).toContain('Retinol Serum')
+  })
+
+  it('renders and filters real Convex sessionData-shaped Lakebed docs without enabling add on merged tables', async () => {
+    mocks.docs = realCraftBeerSessionDataDocs
+    renderAdminPanel()
+
+    expect(screen.getByRole('button', { name: 'reviews' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'alt' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'reviews' }))
+
+    expect(screen.getAllByText('Javier Lopez')).not.toHaveLength(0)
+    expect(
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Add' }).disabled,
+    ).toBe(true)
+
+    fireEvent.click(screen.getByRole('button', { name: /Filter & Sort/ }))
+    fireEvent.change(screen.getByPlaceholderText('Filter documents'), {
+      target: { value: 'Samantha' },
+    })
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Samantha Reed')).toHaveLength(2)
+    })
+    expect(screen.queryAllByText('Javier Lopez')).toHaveLength(0)
+
+    const rowCheckbox = screen.getAllByRole<HTMLInputElement>('checkbox').at(1)
+    expect(rowCheckbox).toBeDefined()
+    fireEvent.click(rowCheckbox!)
+
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeTruthy()
   })
 })
