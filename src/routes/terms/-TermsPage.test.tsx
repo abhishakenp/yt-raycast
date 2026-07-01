@@ -1,21 +1,62 @@
-// @vitest-environment node
+// @vitest-environment jsdom
+import { cleanup, render } from '@testing-library/react'
+import type { ReactNode } from 'react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({
+    children,
+    to,
+    ...props
+  }: {
+    children: ReactNode
+    to: string
+    [key: string]: unknown
+  }) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
+}))
 
-import { describe, expect, it } from 'vitest'
+vi.mock('../pricing/-MarketingShell', () => ({
+  MarketingShell: ({
+    children,
+    footer,
+  }: {
+    children: ReactNode
+    footer?: boolean
+  }) => (
+    <div data-footer={footer ? 'true' : 'false'} data-testid="marketing-shell">
+      {children}
+    </div>
+  ),
+}))
 
-const readTermsPageSource = () =>
-  readFileSync(join(process.cwd(), 'src/routes/terms/-TermsPage.tsx'), 'utf8')
+import { TermsPage } from './-TermsPage'
 
 describe('TermsPage legal placeholders', () => {
-  it('does not render unresolved incorporation placeholders', () => {
-    const source = readTermsPageSource()
+  afterEach(() => {
+    cleanup()
+  })
 
-    expect(source).not.toContain('Pending incorporation data')
-    expect(source).not.toContain('pending final incorporation data')
-    expect(source).toContain('LEGAL_INCORPORATION_JURISDICTION ? (')
-    expect(source).toContain('LEGAL_COMPANY_REGISTRATION_NUMBER ? (')
-    expect(source).toContain('legalAddressLines.length > 0 ? (')
+  it('renders resolved legal copy without unresolved incorporation placeholders', () => {
+    const view = render(<TermsPage />)
+    const shell = view.getByTestId('marketing-shell')
+
+    expect(shell.getAttribute('data-footer')).toBe('true')
+    expect(view.getByRole('heading', { name: 'Terms of service' })).toBeTruthy()
+    expect(view.getByText(/Livio Gama/)).toBeTruthy()
+    expect(
+      view
+        .getByRole('link', { name: 'privacy@ship-fast.devliv.io' })
+        .getAttribute('href'),
+    ).toBe('mailto:privacy%40ship-fast.devliv.io')
+    expect(
+      view.getByRole('link', { name: 'Privacy policy' }).getAttribute('href'),
+    ).toBe('/privacy')
+    expect(view.queryByText(/pending incorporation/i)).toBeNull()
+    expect(view.queryByText(/Incorporation jurisdiction:/)).toBeNull()
+    expect(view.queryByText(/Company registration number:/)).toBeNull()
   })
 })
