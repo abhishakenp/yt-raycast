@@ -4,6 +4,7 @@ import {
   getReferralAuthToken,
   waitForClerkReady,
 } from '@/features/referrals/lib/referral-client'
+import { readJsonOrThrow } from '@/lib/safe-fetch'
 
 export type ReferralListItem = {
   status: 'pending' | 'qualified' | 'disqualified'
@@ -55,7 +56,10 @@ export const useReferralStatus = (): UseReferralStatus => {
       const response = await fetch('/api/referrals/status', {
         headers: { Authorization: `Bearer ${token}` },
       })
-      const data = await response.json()
+      const data = await readJsonOrThrow<ReferralStatus & { error?: string }>(
+        response,
+        'Unable to load referrals.',
+      )
       if (!response.ok) {
         throw new Error(data?.error ?? 'Unable to load referrals.')
       }

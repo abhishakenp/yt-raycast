@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils'
 import { ToggleGroup, ToggleGroupItem } from '#/components/ui/toggle-group'
 import { Slider } from '#/components/ui/slider'
 import { searchStockImages, type StockImageResult } from '@/lib/stock-image'
+import { readJsonOrThrow } from '@/lib/safe-fetch'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
@@ -317,9 +318,9 @@ export function BackgroundPanel({
           body: file,
         })
         if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
-        const { storageId } = (await res.json()) as {
+        const { storageId } = await readJsonOrThrow<{
           storageId: Id<'_storage'>
-        }
+        }>(res, 'Upload failed')
         await saveUserImage({
           sessionId: sessionId as Id<'sessions'>,
           anonymousOwnerSecret,

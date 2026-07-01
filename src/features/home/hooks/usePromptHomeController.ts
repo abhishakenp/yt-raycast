@@ -102,18 +102,28 @@ const createSessionFromHttp = async (
   }).catch(() => null)
 
   if (response !== null) {
-    const data = (await response.json().catch(() => ({}))) as
-      | CreateSessionResult
-      | { error?: string }
+    const contentType = response.headers?.get('content-type') ?? ''
+    const isHtml = contentType.includes('text/html')
+    const data = isHtml
+      ? null
+      : ((await response.json().catch(() => null)) as
+          | CreateSessionResult
+          | { error?: string }
+          | null)
     const disabled =
       response.status === 404 &&
+      data !== null &&
       'error' in data &&
       data.error === 'Public preview session creation is disabled.'
 
-    if (response.ok) return data as CreateSessionResult
-    if (!disabled) {
+    // A 200 response with a non-JSON/HTML body is a malformed success — fall
+    // back to the Convex mutation instead of navigating with an undefined id.
+    const malformedSuccess = response.ok && data === null
+
+    if (response.ok && data !== null) return data as CreateSessionResult
+    if (!disabled && !malformedSuccess) {
       throw new Error(
-        'error' in data && data.error
+        data !== null && 'error' in data && data.error
           ? data.error
           : 'Generation could not start.',
       )

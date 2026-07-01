@@ -78,7 +78,12 @@ export const fetchPublicGalleryPage = async (
 ): Promise<PublicGalleryFetchResult> => {
   const r = await fetch(`/api/gallery?page=${page}&limit=${GALLERY_PAGE_SIZE}`)
   if (!r.ok) throw new Error('recent-sessions')
-  const data = (await r.json()) as PublicGalleryPayload
+  let data: PublicGalleryPayload
+  try {
+    data = (await r.json()) as PublicGalleryPayload
+  } catch {
+    throw new Error('recent-sessions')
+  }
   const items = Array.isArray(data.items)
     ? (data.items as PublicGallerySessionSummary[])
     : []
