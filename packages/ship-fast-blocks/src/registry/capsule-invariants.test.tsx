@@ -226,4 +226,100 @@ describe('registry capsule invariants', () => {
 
     expect(failures).toEqual([])
   })
+
+  it('renders every section capsule when generated collection rows and nested rows are malformed', () => {
+    const capsules = Object.values(registry).filter(
+      (value): value is ShipFastCapsule =>
+        isCapsule(value) &&
+        capsuleCategories[value.client.name]?.category !== 'primitives',
+    )
+    const malformedGeneratedProps = {
+      actions: [null, false, { label: 'Act now', href: 123 }],
+      badges: [null, { label: 42 }],
+      cards: [null, { title: 42, description: false }],
+      categories: [
+        null,
+        {
+          label: 'Category',
+          items: [null, { title: 'Nested item', description: 123 }],
+        },
+      ],
+      columns: [
+        null,
+        {
+          title: 'Column',
+          links: [null, { label: 'Nested link', href: 123 }],
+        },
+      ],
+      enterpriseItems: [null, { label: 42, value: false }],
+      features: [
+        null,
+        { title: 'Feature', description: 123, features: [null, false] },
+      ],
+      firmLinks: [null, { label: 'Firm', href: 123 }],
+      groups: [
+        null,
+        { title: 'Group', links: [null, { label: 'Link', href: 123 }] },
+      ],
+      images: [null, { alt: 42, src: false }],
+      infoLinks: [null, { label: 'Info', href: 123 }],
+      items: [
+        null,
+        {
+          title: 'Item',
+          description: 123,
+          links: [null, { label: 'Nested', href: 123 }],
+        },
+      ],
+      legal: [null, 'Privacy', 42],
+      legalLinks: [null, { label: 'Legal', href: 123 }],
+      links: [null, { label: 'Link', href: 123 }],
+      meta: [null, { label: 'Meta', value: 42 }],
+      mini: [null, { quote: 'Tiny testimonial', author: 42 }],
+      names: [null, 'Northwind', 42],
+      nav: [null, 'Home', 42],
+      navLinks: [null, { label: 'Nav', href: 123 }],
+      perks: [null, { label: 42 }],
+      practiceLinks: [null, { label: 'Practice', href: 123 }],
+      products: [
+        null,
+        {
+          title: 'Product',
+          price: 19,
+          images: [null, { src: false, alt: 42 }],
+        },
+      ],
+      social: [null, { label: 'Twitter', href: 123 }],
+      socials: [null, { label: 'LinkedIn', href: 123 }],
+      stats: [null, { label: 'Active users', value: 42 }],
+      steps: [null, { title: 'Step', description: 123 }],
+      testimonials: [null, { quote: 'Great', author: 42 }],
+      tiers: [
+        null,
+        { name: 'Pro', price: 29, features: [null, 'Unlimited', 42] },
+      ],
+      trust: [null, { label: 'Trusted', value: 42 }],
+    }
+    const failures: Array<{ name: string; error: string }> = []
+
+    for (const capsule of capsules) {
+      try {
+        const view = renderCapsule(
+          capsule.client.component,
+          malformedGeneratedProps,
+        )
+        expect(view.container.firstElementChild).toBeTruthy()
+        view.unmount()
+      } catch (error) {
+        failures.push({
+          name: capsule.client.name,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      } finally {
+        cleanup()
+      }
+    }
+
+    expect(failures).toEqual([])
+  })
 })
