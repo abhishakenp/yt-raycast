@@ -7,7 +7,53 @@ import {
   Timer,
   UserIcon,
 } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  Component,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react'
+
+type DeleteMineFn = (args: {
+  anonymousClientId: string
+  sessionId: Id<'sessions'>
+}) => Promise<{ deleted: number }>
+
+class SilentErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  componentDidCatch() {
+    // Swallow errors silently — delete functionality is optional.
+  }
+
+  render() {
+    if (this.state.hasError) return null
+    return this.props.children
+  }
+}
+
+const DeleteMineProvider = ({
+  mutationRef,
+}: {
+  mutationRef: RefObject<DeleteMineFn | null>
+}) => {
+  const deleteMine = useMutation(api.sessions.deleteMine)
+  mutationRef.current = deleteMine as DeleteMineFn
+  return null
+}
 
 import { Button } from '@/components/ui/button'
 import { createAnonymousClientId } from '@/features/session/services/session-create-payload'
@@ -405,7 +451,37 @@ export const GalleryGrid = ({
   gallery?: GalleryPayload
   skeletonCount?: number
 }) => {
-  const deleteMine = useMutation(api.sessions.deleteMine)
+  const deleteMineRef = useRef<DeleteMineFn | null>(null)
+
+  return (
+    <>
+      <SilentErrorBoundary>
+        <DeleteMineProvider mutationRef={deleteMineRef} />
+      </SilentErrorBoundary>
+      <GalleryGridInner
+        className={className}
+        emptyStateVariant={emptyStateVariant}
+        gallery={gallery}
+        skeletonCount={skeletonCount}
+        deleteMineRef={deleteMineRef}
+      />
+    </>
+  )
+}
+
+const GalleryGridInner = ({
+  className,
+  emptyStateVariant = 'gallery',
+  gallery,
+  skeletonCount = 6,
+  deleteMineRef,
+}: {
+  className?: string
+  emptyStateVariant?: GalleryEmptyStateVariant
+  gallery?: GalleryPayload
+  skeletonCount?: number
+  deleteMineRef: RefObject<DeleteMineFn | null>
+}) => {
   const hoveredSessionIdRef = useRef<string | null>(null)
   const [deletedSessionIds, setDeletedSessionIds] = useState<Set<string>>(
     () => new Set(),
@@ -423,6 +499,8 @@ export const GalleryGrid = ({
 
   const deleteHoveredSession = useCallback(
     (sessionId: string) => {
+      const deleteMine = deleteMineRef.current
+      if (!deleteMine) return
       const anonymousClientId = createAnonymousClientId(window.localStorage)
       void deleteMine({
         anonymousClientId,
@@ -441,7 +519,7 @@ export const GalleryGrid = ({
         })
         .catch(() => undefined)
     },
-    [deleteMine],
+    [deleteMineRef],
   )
 
   useEffect(() => {
