@@ -168,6 +168,38 @@ describe('createDeploymentPreviewResponse', () => {
     expect(response.headers.get('x-ship-fast-deployment')).toBeNull()
   })
 
+  it('returns a stable not-ready response instead of crashing when a real ready deployment has malformed preview HTML shape', async () => {
+    const client = {
+      query: async (_ref: any, args: any) => {
+        if ('slug' in args) return realReadyLakebedDeployment
+        return {
+          previewVersion: 1,
+          sessionId: realReadyLakebedDeployment.sessionId,
+          slug: realReadyLakebedDeployment.slug,
+          status: 'preview_ready',
+          html: {
+            body: realReadyLakebedPreview.html,
+            source: 'DB-observed preview row was not serialized as a string',
+          },
+        }
+      },
+    }
+
+    const response = await createDeploymentPreviewResponse(
+      'a-craft-beer-brewery',
+      new Request('https://ship-fast.io/preview/a-craft-beer-brewery'),
+      client as any,
+    )
+    const body = await response.text()
+
+    expect(response.status).toBe(202)
+    expect(body).toBe('Deployment preview is not ready yet')
+    expect(body).not.toContain('Craft Beer Brewery')
+    expect(body).not.toContain('object is not iterable')
+    expect(body).not.toContain('trim is not a function')
+    expect(response.headers.get('x-ship-fast-deployment')).toBeNull()
+  })
+
   it('does not serve a ready deployment when its public preview HTML is empty', async () => {
     const client = {
       query: async (_ref: any, args: any) => {

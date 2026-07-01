@@ -160,6 +160,10 @@ const fetchStripeCheckout = async (
     return json({ error: 'Stripe checkout failed.' }, { status: 502 })
   }
 
+  if (!data.id || !data.url) {
+    return json({ error: 'Stripe checkout failed.' }, { status: 502 })
+  }
+
   return json({
     provider: 'stripe',
     checkoutSessionId: data.id,
@@ -198,21 +202,26 @@ const fetchRazorpayCheckout = async (
       )
     }
 
-    const response = await fetch('https://api.razorpay.com/v1/subscriptions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${auth}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        plan_id: planId,
-        total_count: 120,
-        customer_notify: 1,
-        // Lifetime referral reward → apply the pre-configured Razorpay offer.
-        ...(referralOfferId ? { offer_id: referralOfferId } : {}),
-        notes: { userId, tier },
-      }),
-    })
+    let response: Response
+    try {
+      response = await fetch('https://api.razorpay.com/v1/subscriptions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${auth}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          plan_id: planId,
+          total_count: 120,
+          customer_notify: 1,
+          // Lifetime referral reward → apply the pre-configured Razorpay offer.
+          ...(referralOfferId ? { offer_id: referralOfferId } : {}),
+          notes: { userId, tier },
+        }),
+      })
+    } catch {
+      return json({ error: 'Razorpay subscription failed.' }, { status: 502 })
+    }
     let data: {
       id?: string
       error?: { description?: string }
@@ -231,6 +240,9 @@ const fetchRazorpayCheckout = async (
       )
     }
     if (parseFailed) {
+      return json({ error: 'Razorpay subscription failed.' }, { status: 502 })
+    }
+    if (!data.id) {
       return json({ error: 'Razorpay subscription failed.' }, { status: 502 })
     }
     return json({
@@ -291,6 +303,9 @@ const fetchRazorpayCheckout = async (
   if (parseFailed) {
     return json({ error: 'Razorpay order failed.' }, { status: 502 })
   }
+  if (!data.id || data.amount === undefined) {
+    return json({ error: 'Razorpay order failed.' }, { status: 502 })
+  }
   return json({
     provider: 'razorpay',
     keyId: env.RAZORPAY_KEY_ID,
@@ -324,8 +339,13 @@ export const createCheckoutApiResponse = async (
 
   const client = clientOverride ?? createRuntimeConvexHttpClient()
   client.setAuth(token)
-  const overview = (await client.query(api.billing.getBillingOverview, {})) as {
-    userId?: string
+  let overview: { userId?: string }
+  try {
+    overview = (await client.query(api.billing.getBillingOverview, {})) as {
+      userId?: string
+    }
+  } catch {
+    return json({ error: 'Unable to start checkout.' }, { status: 503 })
   }
   if (!overview.userId) {
     return json({ error: 'Sign in before checkout.' }, { status: 401 })
