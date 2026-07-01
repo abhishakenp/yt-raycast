@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { readJsonOrThrow } from '@/lib/safe-fetch'
 import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
 
 type CommerceHandoff = {
@@ -60,7 +61,10 @@ export const useCommerceController = (
         throw new Error(payload.error ?? 'Commerce provisioning failed')
       }
 
-      const payload = (await response.json()) as { handoff?: CommerceHandoff }
+      const payload = await readJsonOrThrow<{ handoff?: CommerceHandoff }>(
+        response,
+        'Commerce provisioning failed',
+      )
       setCommerceHandoff(payload.handoff)
       return payload
     } catch (error) {

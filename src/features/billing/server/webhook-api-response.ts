@@ -197,7 +197,7 @@ export const createWebhookApiResponse = async (
     return json({ error: 'Invalid webhook signature.' }, { status: 400 })
   }
 
-  let event
+  let event: unknown
   try {
     event = JSON.parse(rawBody)
   } catch {

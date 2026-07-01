@@ -13,6 +13,7 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { readJsonOrThrow } from '@/lib/safe-fetch'
 import { cn } from '@/lib/utils'
 
 type BrandMediaPanelProps = {
@@ -227,9 +228,9 @@ export const BrandMediaPanel = ({
           body: file,
         })
         if (!response.ok) throw new Error(`Upload failed: ${response.status}`)
-        const { storageId } = (await response.json()) as {
+        const { storageId } = await readJsonOrThrow<{
           storageId: Id<'_storage'>
-        }
+        }>(response, 'Upload failed')
         await saveUserImage({
           sessionId: sessionId as Id<'sessions'>,
           anonymousOwnerSecret,
