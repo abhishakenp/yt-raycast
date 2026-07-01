@@ -76,7 +76,7 @@ const logoContainer = (): HTMLElement => {
 }
 
 const overlayEl = (): HTMLElement => {
-  const el = document.querySelector('[class~="z-[200]"]')
+  const el = screen.getByRole('status')
   if (!el) throw new Error('intro overlay not found')
   return el as HTMLElement
 }
