@@ -17,6 +17,15 @@ const client = {
   setAuth: vi.fn(),
 }
 
+// Observed via:
+// npx convex data sessions --limit 10 --format jsonLines
+// npx convex data customerCredits --limit 10 --format jsonLines
+// npx convex data creditLedger --limit 10 --format jsonLines
+// npx convex data subscriptions --limit 10 --format jsonLines
+// The billing tables were empty in this deployment; use a real ready session id
+// for checkout return URLs and error-leak guards.
+const dbObservedReadySessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
+
 describe('createCheckoutApiResponse', () => {
   beforeEach(() => {
     client.query.mockReset().mockResolvedValue({ userId: 'user_123' })
@@ -212,6 +221,66 @@ describe('createCheckoutApiResponse', () => {
     })
   })
 
+  it('returns stable JSON when Convex billing overview lookup fails before checkout starts', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    client.query.mockRejectedValueOnce(
+      new Error(
+        `Convex billing overview failed for ${dbObservedReadySessionId}`,
+      ),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'subscription',
+          gateway: 'stripe',
+          sessionId: dbObservedReadySessionId,
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(503)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    const body = await response.json()
+    expect(body).toEqual({ error: 'Unable to start checkout.' })
+    expect(JSON.stringify(body)).not.toContain(dbObservedReadySessionId)
+    expect(client.setAuth).toHaveBeenCalledWith('token_123')
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('does not treat a Stripe 200 response without a checkout URL or session id as successful checkout', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ object: 'checkout.session' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 200,
+      }),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'subscription',
+          gateway: 'stripe',
+          sessionId: dbObservedReadySessionId,
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(502)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    await expect(response.json()).resolves.toEqual({
+      error: 'Stripe checkout failed.',
+    })
+  })
+
   it('returns JSON when Razorpay checkout returns a malformed upstream body', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response('<html>razorpay unavailable</html>', {
@@ -257,6 +326,36 @@ describe('createCheckoutApiResponse', () => {
           mode: 'credit_pack',
           gateway: 'razorpay',
           packId: '3_credits',
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(502)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    await expect(response.json()).resolves.toEqual({
+      error: 'Razorpay order failed.',
+    })
+  })
+
+  it('does not treat a Razorpay order 200 response without an order id and amount as successful checkout', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ status: 'created' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 200,
+      }),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'credit_pack',
+          gateway: 'razorpay',
+          packId: '3_credits',
+          sessionId: dbObservedReadySessionId,
         }),
       }),
       env,
@@ -342,6 +441,63 @@ describe('createCheckoutApiResponse', () => {
         body: JSON.stringify({
           mode: 'subscription',
           gateway: 'razorpay',
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(502)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    await expect(response.json()).resolves.toEqual({
+      error: 'Razorpay subscription failed.',
+    })
+  })
+
+  it('returns stable JSON when Razorpay subscription network request rejects', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(
+      new Error(
+        `razorpay subscription network unavailable for ${dbObservedReadySessionId}`,
+      ),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'subscription',
+          gateway: 'razorpay',
+          sessionId: dbObservedReadySessionId,
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(502)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    const body = await response.json()
+    expect(body).toEqual({ error: 'Razorpay subscription failed.' })
+    expect(JSON.stringify(body)).not.toContain(dbObservedReadySessionId)
+  })
+
+  it('does not treat a Razorpay subscription 200 response without a subscription id as successful checkout', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ status: 'created' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 200,
+      }),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'subscription',
+          gateway: 'razorpay',
+          sessionId: dbObservedReadySessionId,
         }),
       }),
       env,

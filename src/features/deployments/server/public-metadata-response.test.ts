@@ -263,6 +263,38 @@ describe('public metadata responses', () => {
     expect(response.headers.get('x-ship-fast-deployment')).toBeNull()
   })
 
+  it('returns stable not-ready metadata instead of crashing when a real ready deployment has malformed preview HTML shape', async () => {
+    const client = {
+      query: async (_ref: unknown, args: any) => {
+        if ('slug' in args) return realReadyLakebedDeployment
+        return {
+          previewVersion: 1,
+          sessionId: realReadyLakebedDeployment.sessionId,
+          slug: realReadyLakebedDeployment.slug,
+          status: 'preview_ready',
+          html: {
+            body: realReadyLakebedPreview.html,
+            source: 'DB-observed preview row was not serialized as a string',
+          },
+        }
+      },
+    }
+
+    const response = await createPublicMetadataResponse(
+      'llms',
+      new Request('https://a-craft-beer-brewery.ship-fast.io/llms.txt'),
+      { client: client as any },
+    )
+    const body = await response.text()
+
+    expect(response.status).toBe(202)
+    expect(body).toBe('Deployment metadata is not ready yet')
+    expect(body).not.toContain('Craft Beer Brewery')
+    expect(body).not.toContain('object is not iterable')
+    expect(body).not.toContain('trim is not a function')
+    expect(response.headers.get('x-ship-fast-deployment')).toBeNull()
+  })
+
   it('does not publish metadata generated from OpenUI renderer-error HTML', async () => {
     const client = {
       query: async (_ref: unknown, args: any) => {

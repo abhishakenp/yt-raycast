@@ -64,18 +64,21 @@ export const createDeploymentPreviewResponse = async (
     })
   }
 
+  const previewHtml =
+    preview !== null && typeof preview?.html === 'string' ? preview.html : ''
+
   if (
     preview === null ||
-    preview.html === undefined ||
-    preview.html.trim() === '' ||
-    isUnsafePublicPreviewHtml(preview.html)
+    typeof preview?.html !== 'string' ||
+    previewHtml.trim() === '' ||
+    isUnsafePublicPreviewHtml(previewHtml)
   ) {
     return new Response(
-      isUnsafePublicPreviewHtml(preview?.html)
+      isUnsafePublicPreviewHtml(previewHtml)
         ? 'Deployment preview is not available'
         : 'Deployment preview is not ready yet',
       {
-        status: isUnsafePublicPreviewHtml(preview?.html) ? 422 : 202,
+        status: isUnsafePublicPreviewHtml(previewHtml) ? 422 : 202,
         headers: { 'content-type': 'text/plain' },
       },
     )
@@ -103,7 +106,7 @@ export const createDeploymentPreviewResponse = async (
     })
   }
 
-  const html = buildHtmlExport(preview.html, {
+  const html = buildHtmlExport(previewHtml, {
     includeBadge: false,
     canonicalUrl: getRequestCanonicalUrl(request, deployment.url),
   })

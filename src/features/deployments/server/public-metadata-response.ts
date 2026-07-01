@@ -146,18 +146,21 @@ export const createPublicMetadataResponse = async (
     })
   }
 
+  const previewHtml = typeof preview?.html === 'string' ? preview.html : ''
+
   if (
     preview === null ||
     preview.html === undefined ||
-    preview.html.trim() === '' ||
-    isUnsafePublicPreviewHtml(preview.html)
+    typeof preview.html !== 'string' ||
+    previewHtml.trim() === '' ||
+    isUnsafePublicPreviewHtml(previewHtml)
   ) {
     return new Response(
-      isUnsafePublicPreviewHtml(preview?.html)
+      isUnsafePublicPreviewHtml(previewHtml)
         ? 'Deployment metadata is not available'
         : 'Deployment metadata is not ready yet',
       {
-        status: isUnsafePublicPreviewHtml(preview?.html) ? 422 : 202,
+        status: isUnsafePublicPreviewHtml(previewHtml) ? 422 : 202,
         headers: { 'content-type': 'text/plain; charset=utf-8' },
       },
     )
@@ -189,7 +192,7 @@ export const createPublicMetadataResponse = async (
     normalizeSiteUrl(deployment.url) ??
     `https://${deployment.slug}.${BASE_DOMAIN}`
 
-  return new Response(deploymentMetadataBody(kind, siteUrl, preview.html), {
+  return new Response(deploymentMetadataBody(kind, siteUrl, previewHtml), {
     headers: {
       ...responseHeaders(kind),
       'x-ship-fast-deployment': deployment.slug,
