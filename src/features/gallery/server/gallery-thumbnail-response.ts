@@ -1,7 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
-import { isOpenUiErrorHtml } from '../../../../convex/lib/openui_error_html'
+import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import {
   captureGalleryThumb,
   readCachedGalleryThumb,
@@ -246,7 +246,7 @@ export const createGalleryThumbnailResponse = async (
     // A session whose preview was suppressed as renderer-error HTML (html set
     // to null, or still containing the error marker) must not be exposed as a
     // public thumbnail.
-    if (session.html === null || isOpenUiErrorHtml(session.html)) {
+    if (session.html === null || isUnsafePublicPreviewHtml(session.html)) {
       return new Response('Session not found or not public', { status: 404 })
     }
 

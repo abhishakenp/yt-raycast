@@ -66,6 +66,16 @@ const realConvexPreviewWithRendererError = {
   html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
 } as const
 
+const realConvexPreviewWithOpenUiHandoff = {
+  previewId: 'ns79pp36cdnxp2znd343t2tjw589n4yq',
+  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+  prompt:
+    'a boutique coffee roastery with subscription delivery and tasting events',
+  status: 'preview_ready',
+  previewVersion: 1,
+  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+} as const
+
 const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
   const tables: Record<TableName, Row[]> = {
     sessions: [...(input.sessions ?? [])],
@@ -227,5 +237,39 @@ describe('session public preview helpers', () => {
     expect(result?.status).toBe('preview_ready')
     expect(result?.html?.toLowerCase()).not.toContain('openui-error')
     expect(result?.html?.toLowerCase()).not.toContain('failed to render')
+  })
+
+  it('never exposes a preview_ready stored preview that contains DB-observed OpenUI handoff HTML', async () => {
+    const result = await loadPublicPreview(
+      ctxFor({
+        sessions: [
+          sessionDoc({
+            _id: realConvexPreviewWithOpenUiHandoff.sessionId as Id<'sessions'>,
+            prompt: realConvexPreviewWithOpenUiHandoff.prompt,
+            status: realConvexPreviewWithOpenUiHandoff.status,
+            previewVersion: realConvexPreviewWithOpenUiHandoff.previewVersion,
+          }),
+        ],
+        previews: [
+          previewDoc(
+            realConvexPreviewWithOpenUiHandoff.previewId,
+            realConvexPreviewWithOpenUiHandoff.previewVersion,
+            {
+              sessionId:
+                realConvexPreviewWithOpenUiHandoff.sessionId as Id<'sessions'>,
+              html: realConvexPreviewWithOpenUiHandoff.html,
+            },
+          ),
+        ],
+      }),
+      realConvexPreviewWithOpenUiHandoff.sessionId,
+    )
+
+    expect(result).not.toBeNull()
+    expect(result?.status).toBe('preview_ready')
+    const html = result?.html ?? ''
+    expect(html).not.toContain('Generated OpenUI source is ready')
+    expect(html).not.toContain('ship-fast-openui-source')
+    expect(html).not.toContain('Boutique Coffee Roastery')
   })
 })

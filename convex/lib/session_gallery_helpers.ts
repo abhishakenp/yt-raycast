@@ -1,6 +1,6 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
-import { isOpenUiErrorHtml } from './openui_error_html'
+import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import {
   getGalleryCategories,
   getGalleryCategoryOptions,
@@ -84,7 +84,8 @@ export const serializePublicGallerySession = (
     createdAt: session.createdAt,
     updatedAt: session.updatedAt ?? session.createdAt,
     html:
-      artifacts.preview !== null && isOpenUiErrorHtml(artifacts.preview.html)
+      artifacts.preview !== null &&
+      isUnsafePublicPreviewHtml(artifacts.preview.html)
         ? null
         : (artifacts.preview?.html ?? null),
     moduleSource: artifacts.homeModule?.source ?? null,
@@ -134,7 +135,8 @@ export const listPublicGallerySessions = async (
   const validSessions = filteredWithArtifacts.filter(
     ({ artifacts }) =>
       !(
-        artifacts.preview !== null && isOpenUiErrorHtml(artifacts.preview.html)
+        artifacts.preview !== null &&
+        isUnsafePublicPreviewHtml(artifacts.preview.html)
       ),
   )
 
@@ -178,7 +180,10 @@ export const loadPublicGallerySession = async (
   }
 
   const artifacts = await loadPublicGalleryArtifacts(ctx, session._id)
-  if (artifacts.preview !== null && isOpenUiErrorHtml(artifacts.preview.html)) {
+  if (
+    artifacts.preview !== null &&
+    isUnsafePublicPreviewHtml(artifacts.preview.html)
+  ) {
     return null
   }
   return serializePublicGallerySession(session, artifacts)
@@ -255,7 +260,8 @@ export const listOwnedGallerySessions = async (
   const validSessions = filteredWithArtifacts.filter(
     ({ artifacts }) =>
       !(
-        artifacts.preview !== null && isOpenUiErrorHtml(artifacts.preview.html)
+        artifacts.preview !== null &&
+        isUnsafePublicPreviewHtml(artifacts.preview.html)
       ),
   )
 

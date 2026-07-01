@@ -481,6 +481,28 @@ const realConvexStreamingSession = {
   task: { status: string; title: string; taskKey: string }
 }
 
+const dbObservedBreweryOpenUiSource =
+  'home_hero = RestaurantHero("Brewery", "Portland\\\'s Craft Brew Haven", "Taproom tours, seasonal releases, and community events", null, null, null, null, "Exterior of Riverbend Brewing taproom")\n' +
+  'home_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"categories[Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"},{"name":"Chocolate Stout","description":"Rich cocoa and roasted malt","price":"$8","tag":"Seasonal"}]}])\n' +
+  'home = Stack([home_hero, home_menu])\n' +
+  'root = PageSwitch(["Home"], [home], "", {"Home":"home"})'
+
+const dbObservedBreweryRenderedHtml = `<!doctype html>
+<html lang="en">
+<body>
+  <div id="openui-root" class="genui-preview dark" style="--background: 240 10% 3.9%; color-scheme: dark">
+    <section data-sf-export-page="Home">
+      <main>
+        <h1 class="hero-title" style="color: rgb(255, 255, 255);">Portland's Craft Brew Haven</h1>
+        <p>Taproom tours, seasonal releases, and community events</p>
+        <h2>Our Brew Selection</h2>
+        <article>Pineapple Saison</article>
+      </main>
+    </section>
+  </div>
+</body>
+</html>`
+
 const setHandoffFlag = (sessionId: string) => {
   // takeGenerationLaunchHandoff reads `ship-fast:generation-launch:<id>` == '1'.
   window.sessionStorage.setItem(`ship-fast:generation-launch:${sessionId}`, '1')
@@ -621,6 +643,52 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
     expect(screen.getByTestId('gmp-source').textContent).toContain(
       '<h1>Ready</h1>',
     )
+  })
+
+  it('renders ready DB-observed OpenUI sessions from the static rendered HTML artifact instead of live OpenUI source', () => {
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+        status: 'preview_ready',
+        prompt:
+          'a craft beer brewery with taproom tours and seasonal releases in portland',
+        preferredLanguage: 'lt',
+        engineVersion: 'v3',
+        previewVersion: 1,
+        themeMode: 'dark',
+        themeOverride: 'darkmatter',
+      },
+      tasks: [
+        {
+          status: 'succeeded',
+          title: 'Generate v3 homepage',
+          taskKey: 'homepage',
+        },
+      ],
+      homeModule: {
+        moduleKey: 'home',
+        source: dbObservedBreweryOpenUiSource,
+        status: 'succeeded',
+        updatedAt: 1782814095839,
+      },
+      latestPreview: {
+        html: dbObservedBreweryRenderedHtml,
+        siteSpecJson: JSON.stringify({
+          brand: 'Craft Beer Brewery',
+          theme: 'darkmatter',
+        }),
+        version: 1,
+      },
+    })
+
+    render(<Dashboard sessionId="k574ms14ma9f94keq30r7dq24x89n1k2" />)
+
+    const source = screen.getByTestId('gmp-source').textContent ?? ''
+    expect(source).toContain('data-sf-export-page="Home"')
+    expect(source).toContain('Pineapple Saison')
+    expect(source).toContain('style="color: rgb(255, 255, 255);"')
+    expect(source).not.toContain('RestaurantMenu(')
+    expect(source).not.toContain('PageSwitch(')
   })
 
   it('passes the persisted selected brand logo into the generated preview', () => {

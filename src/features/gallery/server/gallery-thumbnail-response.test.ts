@@ -356,6 +356,35 @@ describe('Gallery Thumbnail Response', () => {
       expect(await response.text()).toBe('Session not found or not public')
     })
 
+    it('does not generate a successful public thumbnail from DB-observed OpenUI handoff placeholder HTML', async () => {
+      const mockClient = {
+        query: async () => ({
+          prompt:
+            'a boutique coffee roastery with subscription delivery and tasting events',
+          status: 'preview_ready',
+          categories: ['commerce'],
+          elapsed: 5580,
+          cost: 0,
+          html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+          previewVersion: 1,
+        }),
+      }
+
+      const response = await createGalleryThumbnailResponse(
+        'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+        new Request(
+          'http://localhost/api/sessions/k57eyt2na1n9pzn5x7rh4sdbah89mh9e/gallery-thumb?fallback=1',
+        ),
+        mockClient,
+      )
+
+      expect(response.status).toBe(404)
+      const body = await response.text()
+      expect(body).not.toContain('Generated OpenUI source is ready')
+      expect(body).not.toContain('Boutique Coffee Roastery')
+      expect(body).not.toContain('ship-fast-openui-source')
+    })
+
     it('returns a stable unavailable thumbnail when the gallery lookup fails', async () => {
       const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
       const mockClient = {

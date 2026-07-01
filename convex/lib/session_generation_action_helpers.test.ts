@@ -46,6 +46,33 @@ const actionInput = (
   ...overrides,
 })
 
+const dbObservedBreweryGeneration = {
+  brand: 'Craft Beer Brewery',
+  menuItem: 'Pineapple Saison',
+  preferredLanguage: 'lt',
+  prompt:
+    'a craft beer brewery with taproom tours and seasonal releases in portland',
+  siteSpecJson: JSON.stringify({
+    brand: 'Craft Beer Brewery',
+    theme: 'darkmatter',
+  }),
+  source:
+    'home_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"categories[Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"}]}])\nroot = PageSwitch(["Home"], [home_menu], "", {"Home":"home"})',
+}
+
+const dbObservedOpenUiHandoffHtml = `<!doctype html>
+<html lang="en">
+<body>
+  <main id="openui-root" data-openui-ready="source">
+    <section>
+      <p>Generated OpenUI source is ready.</p>
+      <h1>Craft Beer Brewery</h1>
+      <p>The interactive source is available for export and deployment.</p>
+    </section>
+  </main>
+</body>
+</html>`
+
 const ctxFor = (session: SessionRecord | null) => {
   const queryCalls: Array<{ ref: unknown; args: unknown }> = []
   const mutationCalls: Array<{ ref: unknown; args: Record<string, unknown> }> =
@@ -132,21 +159,75 @@ describe('completeGenerationAction', () => {
     ])
   })
 
-  it('falls back to handoff HTML when OpenUI rendering fails', async () => {
+  it('renders DB-observed OpenUI output with the session language and resolved theme before completing generation', async () => {
+    const renderCalls: unknown[][] = []
+    const { ctx, mutationCalls } = ctxFor(
+      sessionDoc({
+        preferredLanguage: dbObservedBreweryGeneration.preferredLanguage,
+        previewVersion: 0,
+      }),
+    )
+
+    await expect(
+      completeGenerationAction(
+        ctx,
+        actionInput({
+          html: dbObservedOpenUiHandoffHtml,
+          siteSpecJson: dbObservedBreweryGeneration.siteSpecJson,
+          openUiSource: dbObservedBreweryGeneration.source,
+          provider: 'ship-fast-engine-v3',
+        }),
+        referencesFor({
+          loadOpenUISSR: async () => ({
+            renderOpenUIToHTMLWithTheme: (...args) => {
+              renderCalls.push(args)
+              return {
+                html: `<main data-lang="${args[2]}"><h1>${dbObservedBreweryGeneration.brand}</h1><p>${dbObservedBreweryGeneration.menuItem}</p></main>`,
+              }
+            },
+          }),
+        }),
+      ),
+    ).resolves.toEqual({ sessionId, previewVersion: 1 })
+
+    expect(renderCalls).toHaveLength(1)
+    const [sourceArg, themeArg, languageArg, integrationsArg] =
+      renderCalls[0] ?? []
+    expect(sourceArg).toBe(dbObservedBreweryGeneration.source)
+    expect(themeArg).toEqual(expect.objectContaining({}))
+    expect(languageArg).toBe(dbObservedBreweryGeneration.preferredLanguage)
+    expect(integrationsArg).toBeUndefined()
+    expect(mutationCalls[0].args).toMatchObject({
+      html: expect.stringContaining(dbObservedBreweryGeneration.menuItem),
+      openUiSource: dbObservedBreweryGeneration.source,
+      provider: 'ship-fast-engine-v3',
+      siteSpecJson: dbObservedBreweryGeneration.siteSpecJson,
+    })
+    expect(String(mutationCalls[0].args.html)).not.toContain(
+      'Generated OpenUI source is ready',
+    )
+  })
+
+  it('does not complete generation with handoff HTML when OpenUI rendering fails', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const { ctx, mutationCalls } = ctxFor(sessionDoc())
 
-    await completeGenerationAction(
-      ctx,
-      actionInput({ html: '<main>fallback</main>' }),
-      referencesFor({
-        loadOpenUISSR: async () => ({
-          renderOpenUIToHTMLWithTheme: () => {
-            throw new Error('render_failed')
-          },
+    await expect(
+      completeGenerationAction(
+        ctx,
+        actionInput({
+          html: dbObservedOpenUiHandoffHtml,
+          openUiSource: dbObservedBreweryGeneration.source,
         }),
-      }),
-    )
+        referencesFor({
+          loadOpenUISSR: async () => ({
+            renderOpenUIToHTMLWithTheme: () => {
+              throw new Error('render_failed')
+            },
+          }),
+        }),
+      ),
+    ).rejects.toThrow(/render_failed|OpenUI/)
 
     expect(consoleError).toHaveBeenCalledWith(
       '[completeGeneration] Failed to render OpenUI to HTML',
@@ -155,26 +236,29 @@ describe('completeGenerationAction', () => {
         error: 'render_failed',
       }),
     )
-    expect(mutationCalls[0].args).toMatchObject({
-      html: '<main>fallback</main>',
-    })
+    expect(mutationCalls).toEqual([])
   })
 
-  it('falls back to handoff HTML when OpenUI rendering returns an error shell', async () => {
+  it('does not complete generation with handoff HTML when OpenUI rendering returns an error shell', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const { ctx, mutationCalls } = ctxFor(sessionDoc())
 
-    await completeGenerationAction(
-      ctx,
-      actionInput({ html: '<main>handoff preview</main>' }),
-      referencesFor({
-        loadOpenUISSR: async () => ({
-          renderOpenUIToHTMLWithTheme: () => ({
-            html: '<div class="openui-error">Failed to render</div>',
+    await expect(
+      completeGenerationAction(
+        ctx,
+        actionInput({
+          html: dbObservedOpenUiHandoffHtml,
+          openUiSource: dbObservedBreweryGeneration.source,
+        }),
+        referencesFor({
+          loadOpenUISSR: async () => ({
+            renderOpenUIToHTMLWithTheme: () => ({
+              html: '<div class="openui-error">Failed to render</div>',
+            }),
           }),
         }),
-      }),
-    )
+      ),
+    ).rejects.toThrow(/OpenUI renderer returned error HTML/)
 
     expect(consoleError).toHaveBeenCalledWith(
       '[completeGeneration] Failed to render OpenUI to HTML',
@@ -183,8 +267,6 @@ describe('completeGenerationAction', () => {
         error: 'OpenUI renderer returned error HTML',
       }),
     )
-    expect(mutationCalls[0].args).toMatchObject({
-      html: '<main>handoff preview</main>',
-    })
+    expect(mutationCalls).toEqual([])
   })
 })

@@ -38,6 +38,17 @@ const realConvexRendererErrorGalleryPreview = {
   previewVersion: 1,
 } as const
 
+const realConvexOpenUiHandoffGalleryPreview = {
+  previewId: 'ns79pp36cdnxp2znd343t2tjw589n4yq',
+  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+  prompt:
+    'a boutique coffee roastery with subscription delivery and tasting events',
+  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+  moduleSource:
+    'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})',
+  previewVersion: 1,
+} as const
+
 const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
   ({
     _id: sessionId,
@@ -399,6 +410,50 @@ describe('listPublicGallerySessions', () => {
       'failed to render',
     )
   })
+
+  it('does not expose DB-observed OpenUI handoff preview HTML in public gallery lists', async () => {
+    const handoffSessionId =
+      realConvexOpenUiHandoffGalleryPreview.sessionId as Id<'sessions'>
+    const ctx = ctxFor({
+      sessions: [
+        sessionDoc({
+          _id: handoffSessionId,
+          prompt: realConvexOpenUiHandoffGalleryPreview.prompt,
+          status: 'preview_ready',
+          previewVersion: realConvexOpenUiHandoffGalleryPreview.previewVersion,
+          isPrivate: false,
+          createdAt: 1782812237869,
+          updatedAt: 1782812244731,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          _id: realConvexOpenUiHandoffGalleryPreview.previewId as Id<'previews'>,
+          sessionId: handoffSessionId,
+          version: realConvexOpenUiHandoffGalleryPreview.previewVersion,
+          html: realConvexOpenUiHandoffGalleryPreview.html,
+        }),
+      ],
+      generatedModules: [
+        generatedModuleDoc({
+          sessionId: handoffSessionId,
+          source: realConvexOpenUiHandoffGalleryPreview.moduleSource,
+        }),
+      ],
+    })
+
+    const result = await listPublicGallerySessions(ctx, {
+      limit: 12,
+      page: 1,
+    })
+
+    expect(result.items).toEqual([])
+    expect(result.total).toBe(0)
+    const serialized = JSON.stringify(result)
+    expect(serialized).not.toContain('Generated OpenUI source is ready')
+    expect(serialized).not.toContain('ship-fast-openui-source')
+    expect(serialized).not.toContain('Boutique Coffee Roastery - Preview')
+  })
 })
 
 describe('loadPublicGallerySession', () => {
@@ -661,5 +716,44 @@ describe('serializePublicGallerySession', () => {
         previewReady: false,
       },
     })
+  })
+
+  it('does not serialize DB-observed OpenUI handoff HTML as gallery preview content', () => {
+    const result = serializePublicGallerySession(
+      sessionDoc({
+        _id: realConvexOpenUiHandoffGalleryPreview.sessionId as Id<'sessions'>,
+        prompt: realConvexOpenUiHandoffGalleryPreview.prompt,
+        status: 'preview_ready',
+        previewVersion: realConvexOpenUiHandoffGalleryPreview.previewVersion,
+      }),
+      {
+        preview: previewDoc({
+          _id: realConvexOpenUiHandoffGalleryPreview.previewId as Id<'previews'>,
+          sessionId:
+            realConvexOpenUiHandoffGalleryPreview.sessionId as Id<'sessions'>,
+          version: realConvexOpenUiHandoffGalleryPreview.previewVersion,
+          html: realConvexOpenUiHandoffGalleryPreview.html,
+        }),
+        homeModule: generatedModuleDoc({
+          sessionId:
+            realConvexOpenUiHandoffGalleryPreview.sessionId as Id<'sessions'>,
+          source: realConvexOpenUiHandoffGalleryPreview.moduleSource,
+        }),
+        siteSpec: siteSpecDoc({
+          sessionId:
+            realConvexOpenUiHandoffGalleryPreview.sessionId as Id<'sessions'>,
+          specJson: '{"brand":"Boutique Coffee Roastery"}',
+        }),
+      },
+    )
+
+    expect(result.html).toBeNull()
+    expect(result.moduleSource).toBe(
+      realConvexOpenUiHandoffGalleryPreview.moduleSource,
+    )
+    expect(JSON.stringify(result)).not.toContain(
+      'Generated OpenUI source is ready',
+    )
+    expect(JSON.stringify(result)).not.toContain('ship-fast-openui-source')
   })
 })
