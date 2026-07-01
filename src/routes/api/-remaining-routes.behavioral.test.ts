@@ -478,4 +478,36 @@ describe('remaining API route behavior', () => {
       headers: { Authorization: 'Client-ID unsplash-key' },
     })
   })
+
+  it('falls back to Picsum when image providers return malformed HTML bodies', async () => {
+    process.env.PEXELS_API_KEY = 'pexels-key'
+    process.env.UNSPLASH_ACCESS_KEY = 'unsplash-key'
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response('<!doctype html><title>Pexels down</title>', {
+          headers: { 'Content-Type': 'text/html' },
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response('<!doctype html><title>Unsplash down</title>', {
+          headers: { 'Content-Type': 'text/html' },
+          status: 200,
+        }),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    const Route = await importRoute('./pexels')
+    const request = new Request(
+      'https://ship-fast.io/api/pexels?query=taproom%20tour&w=640&h=480&seed=hero',
+    )
+
+    const response = await Route.options.server.handlers.GET({ request })
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('Location')).toBe(
+      'https://picsum.photos/seed/hero/640/480',
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
 })

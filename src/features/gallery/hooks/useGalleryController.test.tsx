@@ -56,6 +56,28 @@ describe('useGalleryController cache prewarm', () => {
     expect(globalThis.fetch).toHaveBeenCalledTimes(1)
   })
 
+  it('falls back to an empty gallery when the public gallery API returns malformed JSON', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => {
+        throw new SyntaxError('Unexpected token < in JSON')
+      },
+    })
+
+    const { result } = renderHook(() =>
+      useGalleryController({ search: 'malformed-public-gallery-payload' }),
+    )
+
+    await waitFor(() => {
+      expect(result.current.gallery).toEqual(emptyGallery)
+      expect(result.current.sessions).toEqual([])
+    })
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      '/api/sessions/recent?limit=12&page=1&search=malformed-public-gallery-payload',
+      { headers: { accept: 'application/json' } },
+    )
+  })
+
   it('reuses prewarmed thumbnail object URLs when cards later resolve images', async () => {
     const gallery: GalleryPayload = {
       ...emptyGallery,
