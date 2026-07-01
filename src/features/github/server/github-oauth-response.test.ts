@@ -258,4 +258,68 @@ describe('GitHub OAuth response handlers', () => {
       expect.objectContaining({ accessToken: expect.any(String) }),
     )
   })
+
+  it('redirects malformed provider token responses without storing a GitHub token', async () => {
+    const fetchMock = vi.fn(async (url: string | URL) => {
+      if (String(url) === 'https://github.test/login/oauth/access_token') {
+        return new Response('<!doctype html><title>bad gateway</title>', {
+          headers: { 'Content-Type': 'text/html' },
+          status: 502,
+        })
+      }
+      return Response.json({ error: `Unexpected ${String(url)}` })
+    })
+
+    const response = await createGitHubConnectCallbackResponse(
+      new Request(
+        'https://ship-fast.test/api/github/connect/callback?code=callback-code&state=state_123',
+      ),
+      env,
+      client,
+      fetchMock as typeof fetch,
+    )
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('Location')).toBe('/?github=error')
+    expect(client.mutation).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ accessToken: expect.any(String) }),
+    )
+  })
+
+  it('redirects malformed GitHub user responses without storing the exchanged token', async () => {
+    const fetchMock = vi.fn(async (url: string | URL) => {
+      const path = String(url)
+      if (path === 'https://github.test/login/oauth/access_token') {
+        return Response.json({
+          access_token: 'gho_connected',
+          scope: 'repo',
+          token_type: 'bearer',
+        })
+      }
+      if (path === 'https://github-api.test/user') {
+        return new Response('<!doctype html><title>bad gateway</title>', {
+          headers: { 'Content-Type': 'text/html' },
+          status: 502,
+        })
+      }
+      return Response.json({ error: `Unexpected ${path}` })
+    })
+
+    const response = await createGitHubConnectCallbackResponse(
+      new Request(
+        'https://ship-fast.test/api/github/connect/callback?code=callback-code&state=state_123',
+      ),
+      env,
+      client,
+      fetchMock as typeof fetch,
+    )
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('Location')).toBe('/?github=error')
+    expect(client.mutation).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ accessToken: 'gho_connected' }),
+    )
+  })
 })

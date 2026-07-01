@@ -356,6 +356,27 @@ describe('OpenUIViewer behavioral', () => {
     })
   })
 
+  it('keeps the preview usable when Medusa products returns malformed JSON', async () => {
+    state.loadOpenUIRuntimeLibrary.mockResolvedValue({} as never)
+    state.useQuery.mockReturnValue(undefined)
+    state.extractGeneratedCommerceProducts.mockReturnValue([
+      { handle: 'truffle-box', name: 'Truffle Box', price: '$79' },
+    ])
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response('<!doctype html><title>Medusa unavailable</title>', {
+        headers: { 'Content-Type': 'text/html' },
+        status: 200,
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(<OpenUIViewer response="root = StorePage()" sessionId="s1" />)
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+    expect(screen.getByText('root = StorePage()')).toBeTruthy()
+    expect(state.applyMedusaProductsToPreviewDom).not.toHaveBeenCalled()
+  })
+
   // 7. Medusa sync polling (fake timers)
   it('polls Medusa sync at a 5s interval', async () => {
     vi.useFakeTimers()
