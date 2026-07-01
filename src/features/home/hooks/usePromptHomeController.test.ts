@@ -1,7 +1,5 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import {
   type Mock,
   afterEach,
@@ -14,6 +12,7 @@ import {
 
 type PromptHomeControllerTestState = {
   createSession: Mock<(...args: any[]) => Promise<unknown>>
+  mutationRefs: unknown[]
   navigate: Mock<(...args: any[]) => unknown>
 }
 
@@ -25,6 +24,7 @@ const getTestState = (): PromptHomeControllerTestState => {
   }
   testGlobal.__shipFastPromptHomeControllerState ??= {
     createSession: vi.fn(),
+    mutationRefs: [],
     navigate: vi.fn(),
   }
   return testGlobal.__shipFastPromptHomeControllerState
@@ -49,12 +49,15 @@ vi.mock('../../../../convex/_generated/api', () => ({
 
 vi.mock('@/shared/convex/http-client', () => ({
   createRuntimeConvexHttpClient: () => ({
-    mutation: async (_ref: unknown, payload: unknown) =>
-      await (
+    mutation: async (ref: unknown, payload: unknown) => {
+      const state = (
         globalThis as typeof globalThis & {
           __shipFastPromptHomeControllerState?: PromptHomeControllerTestState
         }
-      ).__shipFastPromptHomeControllerState?.createSession(payload),
+      ).__shipFastPromptHomeControllerState
+      state?.mutationRefs.push(ref)
+      return await state?.createSession(payload)
+    },
   }),
 }))
 
@@ -68,6 +71,7 @@ describe('usePromptHomeController submit guard', () => {
       sessionId: 'session_double_submit_guard',
       cached: false,
     })
+    state.mutationRefs = []
     state.navigate.mockReset()
     state.navigate.mockResolvedValue(undefined)
     originalFetch = globalThis.fetch
@@ -389,29 +393,55 @@ describe('usePromptHomeController submit guard', () => {
     expect(result.current.shareBonusClaimed).toBe(true)
   })
 
-  it('keeps generation deletion out of the prompt form controller', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/features/home/hooks/usePromptHomeController.ts'),
-      'utf8',
-    )
+  it('uses the public HTTP create endpoint without hydrating the Convex mutation client', async () => {
+    const state = getTestState()
+    const fetchMock = vi.mocked(fetch)
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        sessionId: 'session_created_by_http',
+        cached: false,
+      }),
+    } as Response)
+    const { result } = renderHook(() => usePromptHomeController())
 
-    expect(source).not.toContain('sessions.deleteMine')
-    expect(source).not.toContain('ship-fast:generations-deleted')
+    act(() => {
+      result.current.setPrompt('Build a public product website')
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/sessions/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: expect.any(String),
+    })
+    expect(state.createSession).not.toHaveBeenCalled()
+    expect(state.mutationRefs).toEqual([])
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId',
+      params: { sessionId: 'session_created_by_http' },
+    })
   })
 
-  it('keeps Convex React off the homepage render path and loads mutation client at submit time', () => {
-    const source = readFileSync(
-      join(process.cwd(), 'src/features/home/hooks/usePromptHomeController.ts'),
-      'utf8',
-    )
+  it('falls back to the runtime Convex mutation only when the public HTTP create endpoint is disabled', async () => {
+    const state = getTestState()
+    const { result } = renderHook(() => usePromptHomeController())
 
-    expect(source).not.toContain("from 'convex/react'")
-    expect(source).not.toContain('useMutation(')
-    expect(source).not.toContain(
-      "import { api } from '../../../../convex/_generated/api'",
-    )
-    expect(source).toContain("import('../../../../convex/_generated/api')")
-    expect(source).toContain("import('@/shared/convex/http-client')")
-    expect(source).toContain('createSessionFromHttp')
+    act(() => {
+      result.current.setPrompt('Build a fallback product website')
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.mutationRefs).toEqual(['sessions.create'])
   })
 })
