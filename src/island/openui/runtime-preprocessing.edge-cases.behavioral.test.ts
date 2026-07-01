@@ -5,8 +5,8 @@
  *
  * PHILOSOPHY: These tests assert EXPECTED / CORRECT behavior. If production
  * code is buggy, the test MUST fail — current behavior is never pinned. Only
- * OBSERVABLE behavior is asserted (function return values, DOM state); no
- * source-code structural assertions.
+ * OBSERVABLE behavior is asserted: function return values, DOM state, and
+ * translated output.
  *
  * Preprocessing functions are exercised directly with real inputs. The
  * translation provider is rendered via @testing-library/react (using
