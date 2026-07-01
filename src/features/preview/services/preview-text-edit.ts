@@ -19,6 +19,15 @@ const restoreBlocks = (html: string, blocks: ProtectedBlock[]) =>
     html,
   )
 
+// An occurrence is "inside a tag" (i.e. within an attribute value or tag name)
+// when the nearest `<` before it comes after the nearest `>`. Visible text lives
+// between a closing `>` and the next opening `<`, so lastClose > lastOpen there.
+const isInsideTag = (html: string, index: number): boolean => {
+  const lastOpen = html.lastIndexOf('<', index)
+  const lastClose = html.lastIndexOf('>', index)
+  return lastOpen > lastClose
+}
+
 export const applyPreviewTextEdit = (
   html: string,
   { oldText, newText }: { oldText?: string; newText?: string },
@@ -29,7 +38,13 @@ export const applyPreviewTextEdit = (
   if (!source.trim() || !from.trim()) return { html: source, replaced: false }
 
   const { protectedHtml, blocks } = protectBlocks(source)
-  const index = protectedHtml.indexOf(from)
+
+  let searchFrom = 0
+  let index = -1
+  while ((index = protectedHtml.indexOf(from, searchFrom)) >= 0) {
+    if (!isInsideTag(protectedHtml, index)) break
+    searchFrom = index + from.length
+  }
   if (index < 0) return { html: source, replaced: false }
 
   const edited = `${protectedHtml.slice(0, index)}${to}${protectedHtml.slice(index + from.length)}`

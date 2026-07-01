@@ -27,6 +27,18 @@ describe('applyPreviewTextEdit', () => {
     expect(result.html).toContain('<p>Visible headline</p>')
   })
 
+  it('replaces visible text without mutating matching attribute values first', () => {
+    const result = applyPreviewTextEdit(
+      '<main><a href="/Old headline" aria-label="Old headline">Old headline</a></main>',
+      { oldText: 'Old headline', newText: 'New headline' },
+    )
+
+    expect(result.replaced).toBe(true)
+    expect(result.html).toBe(
+      '<main><a href="/Old headline" aria-label="Old headline">New headline</a></main>',
+    )
+  })
+
   it('does not report a replacement when the only match is inside protected template content', () => {
     const result = applyPreviewTextEdit(
       '<main><template><p>Draft headline</p></template><noscript>Draft headline</noscript><p>Live headline</p></main>',

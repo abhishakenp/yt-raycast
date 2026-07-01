@@ -21,11 +21,22 @@ const RootDocument = ({ children }: { children: ReactNode }) => {
   useReferralCapture()
 
   useEffect(() => {
-    const isDark =
-      localStorage.getItem('theme') === 'dark' ||
-      (!localStorage.getItem('theme') &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-    document.documentElement.classList.toggle('dark', isDark)
+    try {
+      const storedTheme =
+        typeof localStorage !== 'undefined'
+          ? localStorage.getItem('theme')
+          : null
+      const isDark =
+        storedTheme === 'dark' ||
+        (!storedTheme &&
+          typeof window !== 'undefined' &&
+          typeof window.matchMedia === 'function' &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches)
+      document.documentElement.classList.toggle('dark', isDark)
+    } catch {
+      // Theme detection is best-effort; ignore errors when storage/media
+      // APIs are unavailable so the app shell stays mounted.
+    }
   }, [])
 
   useEffect(() => installDynamicImportRecovery(window), [])
