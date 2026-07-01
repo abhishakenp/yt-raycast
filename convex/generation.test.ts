@@ -1,17 +1,22 @@
 import { convexTest } from 'convex-test'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { api } from './_generated/api'
 import { startGeneration } from './generation'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 const generationMocks = vi.hoisted(() => {
+  const selectedV2Engine = vi.fn()
   const selectedV3Engine = vi.fn()
   return {
-    getSelectedEngine: vi.fn((version: string) =>
-      version === 'v3' ? selectedV3Engine : vi.fn(),
-    ),
+    getSelectedEngine: vi.fn((version: string) => {
+      if (version === 'v2') return selectedV2Engine
+      if (version === 'v3') return selectedV3Engine
+      return vi.fn()
+    }),
     runEngineGeneration: vi.fn(),
+    runHomepageOrchestrator: vi.fn(),
+    selectedV2Engine,
     selectedV3Engine,
   }
 })
@@ -24,22 +29,55 @@ vi.mock('../src/features/generation/server/generation-runner', () => ({
   runEngineGeneration: generationMocks.runEngineGeneration,
 }))
 
+vi.mock('../packages/ship-fast-engine/src/genui/run.ts', () => ({
+  runHomepageOrchestrator: generationMocks.runHomepageOrchestrator,
+}))
+
+const DB_OBSERVED_GENERATION = {
+  brand: 'Craft Beer Brewery',
+  menuItem: 'Pineapple Saison',
+  preferredLanguage: 'lt',
+  prompt:
+    'a craft beer brewery with taproom tours and seasonal releases in portland',
+  source:
+    'home_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"}]}])\nroot = PageSwitch(["Home"], [home_menu], "", {"Home":"home"})',
+}
+
+const withGroqApiKey = async (run: () => Promise<void>) => {
+  const originalGroqApiKey = process.env.GROQ_API_KEY
+  process.env.GROQ_API_KEY = 'test-groq-key'
+
+  try {
+    await run()
+  } finally {
+    if (originalGroqApiKey === undefined) {
+      delete process.env.GROQ_API_KEY
+    } else {
+      process.env.GROQ_API_KEY = originalGroqApiKey
+    }
+  }
+}
+
 describe('convex generation action', () => {
-  it('runs v3 sessions through the v3 engine and records the v3 provider', async () => {
-    const originalGroqApiKey = process.env.GROQ_API_KEY
-    process.env.GROQ_API_KEY = 'test-groq-key'
+  afterEach(() => {
+    generationMocks.getSelectedEngine.mockClear()
+    generationMocks.runEngineGeneration.mockReset()
+    generationMocks.runHomepageOrchestrator.mockReset()
+  })
+
+  it('runs v2 sessions through the v2 engine and records the v2 provider', async () => {
     const session = {
-      _id: 'session-v3',
+      _id: 'session-v2',
       _creationTime: 1,
       status: 'queued',
-      prompt: 'Build with the v3 engine',
-      preferredLanguage: 'en',
-      engineVersion: 'v3',
+      prompt: DB_OBSERVED_GENERATION.prompt,
+      preferredLanguage: DB_OBSERVED_GENERATION.preferredLanguage,
+      engineVersion: 'v2',
       previewVersion: 0,
     }
     const mutations: Array<{ args: Record<string, unknown> }> = []
     const queries: Array<Record<string, unknown>> = []
-    generationMocks.getSelectedEngine.mockClear()
+
     generationMocks.runEngineGeneration.mockImplementationOnce(
       async (input: {
         runAll: unknown
@@ -52,11 +90,13 @@ describe('convex generation action', () => {
           }) => Promise<unknown>
         }
       }) => {
-        expect(input.runAll).toBe(generationMocks.selectedV3Engine)
+        expect(input.runAll).toBe(generationMocks.selectedV2Engine)
         await input.persistence.completeGeneration({
-          html: '<!doctype html><h1>V3</h1>',
-          siteSpecJson: '{"brand":"V3"}',
-          openUiSource: 'root = Page("V3")',
+          html: `<!doctype html><h1>${DB_OBSERVED_GENERATION.brand}</h1>`,
+          siteSpecJson: JSON.stringify({
+            brand: DB_OBSERVED_GENERATION.brand,
+          }),
+          openUiSource: DB_OBSERVED_GENERATION.source,
           tasks: [{ id: 'home', label: 'Home', status: 'DONE' }],
         })
         return { status: 'completed', previewVersion: 1 }
@@ -78,7 +118,115 @@ describe('convex generation action', () => {
       ),
     }
 
-    try {
+    await withGroqApiKey(async () => {
+      await expect(
+        (
+          startGeneration as unknown as {
+            _handler: (
+              ctx: Record<string, unknown>,
+              args: { sessionId: string; anonymousOwnerSecret?: string },
+            ) => Promise<unknown>
+          }
+        )._handler(ctx, {
+          sessionId: 'session-v2',
+          anonymousOwnerSecret: 'owner-secret',
+        }),
+      ).resolves.toEqual({ status: 'completed' })
+    })
+
+    expect(generationMocks.getSelectedEngine).toHaveBeenCalledWith('v2')
+    expect(generationMocks.runEngineGeneration).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionId: 'session-v2',
+        prompt: DB_OBSERVED_GENERATION.prompt,
+        preferredLanguage: DB_OBSERVED_GENERATION.preferredLanguage,
+        anonymousOwnerSecret: 'owner-secret',
+        runAll: generationMocks.selectedV2Engine,
+      }),
+    )
+    expect(mutations.map((call) => call.args)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          eventType: 'status',
+          message: 'Running Ship Fast engine v2',
+        }),
+        expect.objectContaining({
+          html: `<!doctype html><h1>${DB_OBSERVED_GENERATION.brand}</h1>`,
+          siteSpecJson: JSON.stringify({
+            brand: DB_OBSERVED_GENERATION.brand,
+          }),
+          openUiSource: DB_OBSERVED_GENERATION.source,
+          provider: 'ship-fast-engine-v2',
+          anonymousOwnerSecret: 'owner-secret',
+        }),
+        expect.objectContaining({
+          eventType: 'completed',
+          message: 'Generation complete',
+        }),
+      ]),
+    )
+    expect(queries).toEqual(
+      expect.arrayContaining([
+        { sessionId: 'session-v2' },
+        { sessionId: 'session-v2' },
+      ]),
+    )
+  })
+
+  it('runs v3 sessions through the v3 engine and records the v3 provider', async () => {
+    const session = {
+      _id: 'session-v3',
+      _creationTime: 1,
+      status: 'queued',
+      prompt: DB_OBSERVED_GENERATION.prompt,
+      preferredLanguage: DB_OBSERVED_GENERATION.preferredLanguage,
+      engineVersion: 'v3',
+      previewVersion: 0,
+    }
+    const mutations: Array<{ args: Record<string, unknown> }> = []
+    const queries: Array<Record<string, unknown>> = []
+
+    generationMocks.runEngineGeneration.mockImplementationOnce(
+      async (input: {
+        runAll: unknown
+        persistence: {
+          completeGeneration: (value: {
+            html: string
+            siteSpecJson: string
+            openUiSource: string
+            tasks: unknown[]
+          }) => Promise<unknown>
+        }
+      }) => {
+        expect(input.runAll).toBe(generationMocks.selectedV3Engine)
+        await input.persistence.completeGeneration({
+          html: `<!doctype html><h1>${DB_OBSERVED_GENERATION.brand}</h1>`,
+          siteSpecJson: JSON.stringify({
+            brand: DB_OBSERVED_GENERATION.brand,
+          }),
+          openUiSource: DB_OBSERVED_GENERATION.source,
+          tasks: [{ id: 'home', label: 'Home', status: 'DONE' }],
+        })
+        return { status: 'completed', previewVersion: 1 }
+      },
+    )
+
+    const ctx = {
+      runQuery: vi.fn(async (_ref: unknown, args: Record<string, unknown>) => {
+        queries.push(args)
+        return session
+      }),
+      runMutation: vi.fn(
+        async (_ref: unknown, args: Record<string, unknown>) => {
+          mutations.push({ args })
+          if ('eventType' in args) return null
+          if ('html' in args) return null
+          return { started: true }
+        },
+      ),
+    }
+
+    await withGroqApiKey(async () => {
       await expect(
         (
           startGeneration as unknown as {
@@ -92,20 +240,14 @@ describe('convex generation action', () => {
           anonymousOwnerSecret: 'owner-secret',
         }),
       ).resolves.toEqual({ status: 'completed' })
-    } finally {
-      if (originalGroqApiKey === undefined) {
-        delete process.env.GROQ_API_KEY
-      } else {
-        process.env.GROQ_API_KEY = originalGroqApiKey
-      }
-    }
+    })
 
     expect(generationMocks.getSelectedEngine).toHaveBeenCalledWith('v3')
     expect(generationMocks.runEngineGeneration).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionId: 'session-v3',
-        prompt: 'Build with the v3 engine',
-        preferredLanguage: 'en',
+        prompt: DB_OBSERVED_GENERATION.prompt,
+        preferredLanguage: DB_OBSERVED_GENERATION.preferredLanguage,
         anonymousOwnerSecret: 'owner-secret',
         runAll: generationMocks.selectedV3Engine,
       }),
@@ -117,9 +259,11 @@ describe('convex generation action', () => {
           message: 'Running Ship Fast engine v3',
         }),
         expect.objectContaining({
-          html: '<!doctype html><h1>V3</h1>',
-          siteSpecJson: '{"brand":"V3"}',
-          openUiSource: 'root = Page("V3")',
+          html: `<!doctype html><h1>${DB_OBSERVED_GENERATION.brand}</h1>`,
+          siteSpecJson: JSON.stringify({
+            brand: DB_OBSERVED_GENERATION.brand,
+          }),
+          openUiSource: DB_OBSERVED_GENERATION.source,
           provider: 'ship-fast-engine-v3',
           anonymousOwnerSecret: 'owner-secret',
         }),
@@ -133,6 +277,112 @@ describe('convex generation action', () => {
       expect.arrayContaining([
         { sessionId: 'session-v3' },
         { sessionId: 'session-v3' },
+      ]),
+    )
+  })
+
+  it('runs legacy sessions through the OpenUI orchestrator and persists DB-shaped generated content', async () => {
+    const session = {
+      _id: 'session-v1',
+      _creationTime: 1,
+      status: 'queued',
+      prompt: DB_OBSERVED_GENERATION.prompt,
+      preferredLanguage: DB_OBSERVED_GENERATION.preferredLanguage,
+      engineVersion: 'v1',
+      previewVersion: 0,
+    }
+    const mutations: Array<{ args: Record<string, unknown> }> = []
+
+    generationMocks.runHomepageOrchestrator.mockImplementationOnce(
+      async (input: {
+        prompt: string
+        preferredLanguage?: string
+        onSource?: (source: string) => void
+        onEvent?: (event: { type: 'status'; message: string }) => void
+      }) => {
+        expect(input.prompt).toBe(DB_OBSERVED_GENERATION.prompt)
+        expect(input.preferredLanguage).toBe(
+          DB_OBSERVED_GENERATION.preferredLanguage,
+        )
+        input.onEvent?.({
+          type: 'status',
+          message: `Drafting ${DB_OBSERVED_GENERATION.brand}`,
+        })
+        input.onSource?.(DB_OBSERVED_GENERATION.source)
+
+        return {
+          artifacts: [
+            {
+              key: 'openui-manifest',
+              contentJson: JSON.stringify({
+                pages: ['home'],
+                brand: DB_OBSERVED_GENERATION.brand,
+              }),
+            },
+          ],
+          brand: DB_OBSERVED_GENERATION.brand,
+          category: 'restaurant',
+          locale: DB_OBSERVED_GENERATION.preferredLanguage,
+          source: DB_OBSERVED_GENERATION.source,
+          theme: 't3-chat',
+        }
+      },
+    )
+
+    const ctx = {
+      runQuery: vi.fn(async () => session),
+      runMutation: vi.fn(
+        async (_ref: unknown, args: Record<string, unknown>) => {
+          mutations.push({ args })
+          if ('eventType' in args) return null
+          if ('html' in args) return null
+          return { started: true }
+        },
+      ),
+    }
+
+    await withGroqApiKey(async () => {
+      await expect(
+        (
+          startGeneration as unknown as {
+            _handler: (
+              ctx: Record<string, unknown>,
+              args: { sessionId: string; anonymousOwnerSecret?: string },
+            ) => Promise<unknown>
+          }
+        )._handler(ctx, {
+          sessionId: 'session-v1',
+          anonymousOwnerSecret: 'owner-secret',
+        }),
+      ).resolves.toEqual({ status: 'completed' })
+    })
+
+    expect(generationMocks.runHomepageOrchestrator).toHaveBeenCalledTimes(1)
+    expect(mutations.map((call) => call.args)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          task: expect.objectContaining({
+            id: 'homepage',
+            status: 'IN_PROGRESS',
+          }),
+        }),
+        expect.objectContaining({
+          moduleKey: 'home',
+          source: DB_OBSERVED_GENERATION.source,
+          status: 'running',
+        }),
+        expect.objectContaining({
+          html: expect.stringContaining(DB_OBSERVED_GENERATION.brand),
+          openUiSource: DB_OBSERVED_GENERATION.source,
+          provider: 'genui-orchestrator',
+          siteSpecJson: expect.stringContaining(
+            DB_OBSERVED_GENERATION.menuItem,
+          ),
+        }),
+        expect.objectContaining({
+          eventType: 'completed',
+          message: 'Generation complete',
+        }),
       ]),
     )
   })
