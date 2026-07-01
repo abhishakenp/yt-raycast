@@ -1,68 +1,62 @@
-// @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-describe('browser native language resolver', () => {
-  beforeEach(() => {
-    vi.resetModules()
-  })
+const chromeTranslatorMocks = vi.hoisted(() => ({
+  availableLocales: new Set<string>(),
+  isAvailable: vi.fn(async (locale: string) =>
+    chromeTranslatorMocks.availableLocales.has(locale),
+  ),
+}))
 
-  afterEach(() => {
-    delete (globalThis as Record<string, unknown>).Translator
-  })
+vi.mock('../../island/openui/_providers/chrome-translator', () => ({
+  isChromeTranslatorLocaleAvailable: chromeTranslatorMocks.isAvailable,
+}))
 
-  it('resolves a typed language name to a browser-supported locale generically', async () => {
-    const availability = vi.fn(async ({ targetLanguage }) =>
-      targetLanguage === 'lt' ? 'available' : 'unavailable',
-    )
-    ;(globalThis as Record<string, unknown>).Translator = {
-      availability,
-      create: vi.fn(),
-    }
+const { findBrowserNativeLocaleCandidates, resolveBrowserNativeLanguage } =
+  await import('./browser-native-language')
 
-    const { resolveBrowserNativeLanguage } =
-      await import('./browser-native-language')
+describe('browser-native language resolver', () => {
+  it('resolves any browser-supported native locale without requiring static picker entries', async () => {
+    chromeTranslatorMocks.availableLocales = new Set(['lt', 'ja'])
 
-    await expect(
-      resolveBrowserNativeLanguage('Lithuanian'),
-    ).resolves.toMatchObject({
+    const lithuanian = await resolveBrowserNativeLanguage('Lithuanian')
+    const japanese = await resolveBrowserNativeLanguage('Japanese')
+
+    expect(lithuanian).toMatchObject({
       code: 'lt',
       name: 'Lithuanian',
-      nativeName: 'lietuvių',
+      fontFamily: 'Inter, system-ui, sans-serif',
     })
-    expect(availability).toHaveBeenCalledWith({
-      sourceLanguage: 'en',
-      targetLanguage: 'lt',
+    expect(lithuanian?.nativeName.toLowerCase()).toContain('lietu')
+    expect(japanese).toMatchObject({
+      code: 'ja',
+      name: 'Japanese',
+      fontFamily: 'Noto Sans JP, sans-serif',
+    })
+    expect(japanese?.nativeName).not.toBe('Japanese')
+    expect(chromeTranslatorMocks.isAvailable).toHaveBeenCalledWith('lt')
+    expect(chromeTranslatorMocks.isAvailable).toHaveBeenCalledWith('ja')
+  })
+
+  it('maps regional language hints to browser locales and lets availability choose the supported one', async () => {
+    chromeTranslatorMocks.availableLocales = new Set(['es-MX'])
+
+    expect(findBrowserNativeLocaleCandidates('Mexican')).toContain('es-MX')
+    expect(findBrowserNativeLocaleCandidates('Mexican Spanish')).toContain(
+      'es-MX',
+    )
+
+    const language = await resolveBrowserNativeLanguage('Mexican')
+
+    expect(language).toMatchObject({
+      code: 'es-MX',
+      name: 'Mexican Spanish',
+      nativeName: 'español de México',
+      fontFamily: 'Inter, system-ui, sans-serif',
     })
   })
 
-  it('derives native display names and script fonts without per-language metadata', async () => {
-    ;(globalThis as Record<string, unknown>).Translator = {
-      availability: vi.fn(async ({ targetLanguage }) =>
-        targetLanguage === 'zh' ? 'available' : 'unavailable',
-      ),
-      create: vi.fn(),
-    }
-
-    const { resolveBrowserNativeLanguage } =
-      await import('./browser-native-language')
-
-    await expect(
-      resolveBrowserNativeLanguage('Chinese'),
-    ).resolves.toMatchObject({
-      code: 'zh',
-      nativeName: '中文',
-      fontFamily: 'Noto Sans SC, sans-serif',
-    })
-  })
-
-  it('returns null when the browser translator does not support the matched locale', async () => {
-    ;(globalThis as Record<string, unknown>).Translator = {
-      availability: vi.fn(async () => 'unavailable'),
-      create: vi.fn(),
-    }
-
-    const { resolveBrowserNativeLanguage } =
-      await import('./browser-native-language')
+  it('returns null when the browser translator rejects every candidate', async () => {
+    chromeTranslatorMocks.availableLocales = new Set(['fr'])
 
     await expect(resolveBrowserNativeLanguage('Lithuanian')).resolves.toBeNull()
   })

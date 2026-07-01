@@ -26,4 +26,33 @@ describe('applyPreviewTextEdit', () => {
     expect(result.html).toContain('content:"Old headline"')
     expect(result.html).toContain('<p>Visible headline</p>')
   })
+
+  it('does not report a replacement when the only match is inside protected template content', () => {
+    const result = applyPreviewTextEdit(
+      '<main><template><p>Draft headline</p></template><noscript>Draft headline</noscript><p>Live headline</p></main>',
+      { oldText: 'Draft headline', newText: 'Published headline' },
+    )
+
+    expect(result.replaced).toBe(false)
+    expect(result.html).toBe(
+      '<main><template><p>Draft headline</p></template><noscript>Draft headline</noscript><p>Live headline</p></main>',
+    )
+  })
+
+  it('preserves the original HTML for blank edit requests and missing visible matches', () => {
+    const html = '<main><h1>Original headline</h1></main>'
+
+    expect(
+      applyPreviewTextEdit(html, {
+        oldText: '   ',
+        newText: 'Replacement headline',
+      }),
+    ).toEqual({ html, replaced: false })
+    expect(
+      applyPreviewTextEdit(html, {
+        oldText: 'Missing headline',
+        newText: 'Replacement headline',
+      }),
+    ).toEqual({ html, replaced: false })
+  })
 })

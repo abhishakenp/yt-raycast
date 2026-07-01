@@ -1,15 +1,23 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
-import type { ReactNode } from 'react'
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  waitFor,
+} from '@testing-library/react'
+import type { PointerEventHandler, ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const galleryMocks = {
+const galleryMocks = vi.hoisted(() => ({
   deleteMine: vi.fn(),
-}
+}))
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
     children,
+    onPointerEnter,
+    onPointerLeave,
     params,
     preload,
     to,
@@ -18,6 +26,8 @@ vi.mock('@tanstack/react-router', () => ({
     children: ReactNode
     params?: { sessionId?: string }
     preload?: false | 'intent'
+    onPointerEnter?: PointerEventHandler<HTMLAnchorElement>
+    onPointerLeave?: PointerEventHandler<HTMLAnchorElement>
     to: string
     [key: string]: unknown
   }) => {
@@ -28,15 +38,21 @@ vi.mock('@tanstack/react-router', () => ({
         : to
 
     return (
-      <a href={href} data-preload={String(preload)} {...anchorProps}>
+      <a
+        href={href}
+        data-preload={String(preload)}
+        {...anchorProps}
+        onPointerOver={onPointerEnter}
+        onPointerOut={onPointerLeave}
+      >
         {children}
       </a>
     )
   },
 }))
 
-vi.mock('@/features/gallery/services/delete-gallery-session', () => ({
-  deleteGallerySession: galleryMocks.deleteMine,
+vi.mock('convex/react', () => ({
+  useMutation: () => galleryMocks.deleteMine,
 }))
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
@@ -130,7 +146,7 @@ describe('GalleryGrid', () => {
     }
 
     const view = render(<GalleryGrid gallery={gallery} />)
-    const card = view.getByRole('link', { name: 'Public project link' })
+    const card = view.getByRole('link', { name: 'Open Public project link' })
 
     expect(card.getAttribute('href')).toBe('/generate/session_public_link')
     expect(card.getAttribute('data-preload')).toBe('false')
@@ -406,10 +422,15 @@ describe('GalleryGrid', () => {
     }
 
     const { getByText, queryByText } = render(<GalleryGrid gallery={gallery} />)
+    await act(async () => {
+      await Promise.resolve()
+    })
     const hoveredCard = getByText('Hovered project').closest('a')
     expect(hoveredCard).not.toBeNull()
 
-    fireEvent.pointerEnter(hoveredCard as HTMLAnchorElement)
+    hoveredCard?.dispatchEvent(
+      new window.Event('pointerover', { bubbles: true, cancelable: true }),
+    )
     window.addEventListener('keydown', laterKeyListener)
     try {
       fireEvent.keyDown(window, { key: 'd' })
@@ -448,10 +469,15 @@ describe('GalleryGrid', () => {
     document.body.append(input)
     input.focus()
     const { getByText } = render(<GalleryGrid gallery={gallery} />)
+    await act(async () => {
+      await Promise.resolve()
+    })
     const hoveredCard = getByText('Hovered project').closest('a')
     expect(hoveredCard).not.toBeNull()
 
-    fireEvent.pointerEnter(hoveredCard as HTMLAnchorElement)
+    hoveredCard?.dispatchEvent(
+      new window.Event('pointerover', { bubbles: true, cancelable: true }),
+    )
     fireEvent.keyDown(window, { key: 'd' })
 
     await Promise.resolve()

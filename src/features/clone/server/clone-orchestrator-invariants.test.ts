@@ -250,6 +250,66 @@ describe('targeted edit pass behavior', () => {
     expect(cloneMocks.generateText).not.toHaveBeenCalled()
     expect(mutation).not.toHaveBeenCalled()
   })
+
+  it('treats model failures as a no-op instead of failing the clone job', async () => {
+    const mutation = vi.fn()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    cloneMocks.generateText.mockRejectedValueOnce(new Error('model down'))
+
+    await expect(
+      runTargetedEdits({
+        client: { mutation },
+        sessionId: 'clone-session',
+        brief: 'Rename the cloned brand',
+        homeHtml: '<html><body><h1>Original Brand</h1></body></html>',
+      }),
+    ).resolves.toBeUndefined()
+
+    expect(mutation).not.toHaveBeenCalled()
+    expect(warn).toHaveBeenCalledWith(
+      '[clone] targeted-edit generation failed for clone-session:',
+      'model down',
+    )
+  })
+
+  it('continues applying later text edits when one edit mutation fails', async () => {
+    const mutation = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('first edit failed'))
+      .mockResolvedValueOnce(null)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    cloneMocks.generateText.mockResolvedValueOnce(
+      JSON.stringify([
+        { before: 'Original Brand', after: 'New Brand' },
+        { before: 'Buy now', after: 'Start today' },
+      ]),
+    )
+
+    await runTargetedEdits({
+      client: { mutation },
+      sessionId: 'clone-session',
+      anonymousOwnerSecret: 'owner-secret',
+      brief: 'Rename brand and CTA',
+      homeHtml:
+        '<html><body><h1>Original Brand</h1><button>Buy now</button></body></html>',
+    })
+
+    expect(mutation).toHaveBeenCalledTimes(2)
+    expect(mutation.mock.calls.map(([, args]) => args)).toEqual([
+      expect.objectContaining({
+        beforeText: 'Original Brand',
+        afterText: 'New Brand',
+      }),
+      expect.objectContaining({
+        beforeText: 'Buy now',
+        afterText: 'Start today',
+      }),
+    ])
+    expect(warn).toHaveBeenCalledWith(
+      '[clone] targeted-edit apply failed for clone-session:',
+      'first edit failed',
+    )
+  })
 })
 
 describe('self-containment behavior', () => {

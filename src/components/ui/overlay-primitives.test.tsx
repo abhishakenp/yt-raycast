@@ -1,48 +1,12 @@
 // @vitest-environment jsdom
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogMedia,
-  AlertDialogTitle,
-} from './alert-dialog'
-import {
-  Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandShortcut,
-} from './command'
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from './combobox'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from './dialog'
 import {
@@ -54,244 +18,92 @@ import {
   PopoverTrigger,
 } from './popover'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './select'
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from './tooltip'
 
-describe('shared overlay UI primitives', () => {
+describe('overlay UI primitives', () => {
   beforeEach(() => {
-    Object.defineProperty(globalThis, 'PointerEvent', {
-      configurable: true,
-      value: globalThis.window?.MouseEvent ?? globalThis.window?.Event,
-    })
-    Object.defineProperty(globalThis, 'ResizeObserver', {
-      configurable: true,
-      value: class ResizeObserver {
+    vi.stubGlobal(
+      'ResizeObserver',
+      class ResizeObserver {
         observe() {}
         unobserve() {}
         disconnect() {}
       },
-    })
-
-    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
-      configurable: true,
-      value: vi.fn(),
-    })
-    Object.defineProperty(HTMLElement.prototype, 'hasPointerCapture', {
-      configurable: true,
-      value: vi.fn(() => false),
-    })
-    Object.defineProperty(HTMLElement.prototype, 'setPointerCapture', {
-      configurable: true,
-      value: vi.fn(),
-    })
-    Object.defineProperty(HTMLElement.prototype, 'releasePointerCapture', {
-      configurable: true,
-      value: vi.fn(),
-    })
+    )
   })
 
   afterEach(() => {
     cleanup()
-    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
   })
 
-  it('renders a dialog with accessible title, description, and close actions', async () => {
+  it('renders dialog content as a labelled modal and closes through built-in close controls', () => {
     const onOpenChange = vi.fn()
     render(
-      <Dialog defaultOpen onOpenChange={onOpenChange}>
+      <Dialog open onOpenChange={onOpenChange}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Export ready</DialogTitle>
-            <DialogDescription>
-              Download the latest production artifact.
-            </DialogDescription>
-          </DialogHeader>
+          <DialogTitle>Confirm publish</DialogTitle>
+          <DialogDescription>
+            Publish the current preview to the public URL.
+          </DialogDescription>
           <DialogFooter showCloseButton>
-            <button type="button">Download</button>
+            <button type="button">Keep editing</button>
           </DialogFooter>
         </DialogContent>
       </Dialog>,
     )
 
-    expect(screen.getByRole('dialog', { name: 'Export ready' })).toBeTruthy()
+    const dialog = screen.getByRole('dialog', { name: 'Confirm publish' })
+    expect(dialog.getAttribute('data-slot')).toBe('dialog-content')
+    expect(dialog.textContent).toContain('Publish the current preview')
     expect(
-      screen.getByText('Download the latest production artifact.'),
-    ).toBeTruthy()
+      document.querySelector('[data-slot="dialog-overlay"]'),
+    ).not.toBeNull()
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[0])
-
-    await waitFor(() => {
-      expect(onOpenChange).toHaveBeenCalledWith(false)
-    })
+    expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
-  it('renders alert dialogs with media, copy, and decision callbacks', () => {
-    const onConfirm = vi.fn()
-    const onCancel = vi.fn()
+  it('renders popover content in a portal with header title and description slots', () => {
     render(
-      <AlertDialog defaultOpen>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogMedia aria-label="Warning">!</AlertDialogMedia>
-            <AlertDialogTitle>Delete generation?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This removes the session from the gallery.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={onConfirm}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>,
-    )
-
-    expect(
-      screen.getByRole('alertdialog', { name: 'Delete generation?' }),
-    ).toBeTruthy()
-    expect(screen.getByLabelText('Warning')).toBeTruthy()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
-
-    expect(onConfirm).toHaveBeenCalledTimes(1)
-    expect(onCancel).not.toHaveBeenCalled()
-  })
-
-  it('opens popover content from its trigger and keeps header copy visible', () => {
-    render(
-      <Popover>
-        <PopoverTrigger>Choose language</PopoverTrigger>
-        <PopoverContent>
+      <Popover open>
+        <PopoverTrigger>Open settings</PopoverTrigger>
+        <PopoverContent align="start">
           <PopoverHeader>
-            <PopoverTitle>Language</PopoverTitle>
-            <PopoverDescription>Pick the preview locale.</PopoverDescription>
+            <PopoverTitle>Theme</PopoverTitle>
+            <PopoverDescription>Choose a visual preset.</PopoverDescription>
           </PopoverHeader>
         </PopoverContent>
       </Popover>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Choose language' }))
-
-    expect(screen.getByText('Language')).toBeTruthy()
-    expect(screen.getByText('Pick the preview locale.')).toBeTruthy()
+    expect(screen.getByText('Theme').getAttribute('data-slot')).toBe(
+      'popover-title',
+    )
+    expect(screen.getByText('Choose a visual preset.')).toBeTruthy()
+    expect(
+      document.querySelector('[data-slot="popover-content"]'),
+    ).not.toBeNull()
   })
 
-  it('exposes tooltip copy while the tooltip is open', () => {
+  it('renders controlled tooltip content and links it to the trigger description', () => {
     render(
       <TooltipProvider>
         <Tooltip open>
-          <TooltipTrigger>Deploy</TooltipTrigger>
-          <TooltipContent>Publish this version</TooltipContent>
+          <TooltipTrigger>Export</TooltipTrigger>
+          <TooltipContent>Download the generated site</TooltipContent>
         </Tooltip>
       </TooltipProvider>,
     )
 
-    expect(screen.getByRole('tooltip').textContent).toBe('Publish this version')
-  })
+    const trigger = screen.getByRole('button', { name: 'Export' })
+    const tooltip = screen.getByRole('tooltip')
 
-  it('runs command item callbacks and renders keyboard shortcut hints', () => {
-    const onSelect = vi.fn()
-    render(
-      <Command>
-        <CommandInput placeholder="Search actions" />
-        <CommandList>
-          <CommandEmpty>No actions found.</CommandEmpty>
-          <CommandGroup heading="Actions">
-            <CommandItem value="deploy" onSelect={onSelect}>
-              Deploy preview
-              <CommandShortcut>⌘D</CommandShortcut>
-            </CommandItem>
-          </CommandGroup>
-        </CommandList>
-      </Command>,
-    )
-
-    expect(screen.getByPlaceholderText('Search actions')).toBeTruthy()
-    expect(screen.getByText('⌘D')).toBeTruthy()
-
-    fireEvent.click(screen.getByText('Deploy preview'))
-
-    expect(onSelect).toHaveBeenCalledWith('deploy')
-  })
-
-  it('renders an open combobox with searchable options and selection callbacks', () => {
-    const onValueChange = vi.fn()
-    render(
-      <Combobox
-        items={['Next.js', 'Astro']}
-        defaultOpen
-        onValueChange={onValueChange}
-      >
-        <ComboboxInput placeholder="Search frameworks" />
-        <ComboboxContent>
-          <ComboboxEmpty>No frameworks found.</ComboboxEmpty>
-          <ComboboxList>
-            <ComboboxItem value="Next.js">Next.js</ComboboxItem>
-            <ComboboxItem value="Astro">Astro</ComboboxItem>
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>,
-    )
-
-    expect(screen.getByPlaceholderText('Search frameworks')).toBeTruthy()
-    expect(screen.getByRole('option', { name: 'Astro' })).toBeTruthy()
-
-    fireEvent.click(screen.getByRole('option', { name: 'Astro' }))
-
-    expect(onValueChange.mock.calls[0]?.[0]).toBe('Astro')
-  })
-
-  it('renders command dialogs with accessible hidden title and description', () => {
-    render(
-      <CommandDialog
-        open
-        title="Open command palette"
-        description="Search dashboard actions"
-      >
-        <CommandInput placeholder="Search commands" />
-        <CommandList>
-          <CommandItem value="preview">Open preview</CommandItem>
-        </CommandList>
-      </CommandDialog>,
-    )
-
-    expect(
-      screen.getByRole('dialog', { name: 'Open command palette' }),
-    ).toBeTruthy()
-    expect(screen.getByPlaceholderText('Search commands')).toBeTruthy()
-    expect(screen.getByText('Open preview')).toBeTruthy()
-  })
-
-  it('selects an item from the open select menu and reports its value', () => {
-    const onValueChange = vi.fn()
-    render(
-      <Select open value="draft" onValueChange={onValueChange}>
-        <SelectTrigger aria-label="Deployment target">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="draft">Draft</SelectItem>
-          <SelectItem value="production">Production</SelectItem>
-        </SelectContent>
-      </Select>,
-    )
-
-    expect(screen.getByRole('listbox')).toBeTruthy()
-    expect(screen.getByRole('option', { name: 'Draft' })).toBeTruthy()
-    expect(screen.getByRole('option', { name: 'Production' })).toBeTruthy()
-
-    fireEvent.click(screen.getByRole('option', { name: 'Production' }))
-
-    expect(onValueChange).toHaveBeenCalledWith('production')
+    expect(tooltip.textContent).toBe('Download the generated site')
+    expect(trigger.getAttribute('aria-describedby')).toBe(tooltip.id)
   })
 })

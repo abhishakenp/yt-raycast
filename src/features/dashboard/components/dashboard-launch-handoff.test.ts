@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest'
+// @vitest-environment jsdom
+import { cleanup, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createElement } from 'react'
 
 import {
   generationLaunchStoragePrefix,
@@ -30,6 +33,12 @@ const makeStorage = (): Map<string, string> & {
 }
 
 describe('dashboard launch handoff', () => {
+  afterEach(() => {
+    cleanup()
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
   it('remembers and takes the generation launch handoff flag per session', () => {
     const storage = makeStorage()
     const sessionId = 'session-abc'
@@ -62,10 +71,22 @@ describe('dashboard launch handoff', () => {
     expect(takeGenerationLaunchHandoff(storage, 'session-one')).toBe(false)
   })
 
-  it('exposes IntroLoader as a component that accepts a playSound prop', () => {
-    // IntroLoader is a function component taking a single props argument; the
-    // playSound prop defaults to true inside the component (see IntroLoader.tsx).
-    expect(typeof IntroLoader).toBe('function')
-    expect(IntroLoader.length).toBe(1)
+  it('renders the intro loader without starting launch audio when playSound is disabled', () => {
+    const audioPlay = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal(
+      'Audio',
+      vi.fn().mockImplementation(() => ({
+        play: audioPlay,
+        volume: 0,
+      })),
+    )
+
+    render(createElement(IntroLoader, { playSound: false, progress: 0.4 }))
+
+    const loader = screen.getByRole('status')
+    expect(loader.getAttribute('aria-busy')).toBe('true')
+    expect(loader.style.getPropertyValue('--intro-progress')).toBe('0.4')
+    expect(screen.getByAltText('Ship Fast Logo')).toBeTruthy()
+    expect(audioPlay).not.toHaveBeenCalled()
   })
 })

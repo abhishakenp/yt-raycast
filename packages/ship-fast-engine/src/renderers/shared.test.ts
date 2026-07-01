@@ -1,4 +1,9 @@
-import { beforeAll, describe, expect, it } from 'vitest'
+import React from 'react'
+import * as ReactJsxRuntime from 'react/jsx-runtime'
+import { act, cleanup, fireEvent, render } from '@testing-library/react'
+import { build } from 'esbuild'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { JSDOM } from 'jsdom'
 
 type SharedModule = {
   buildGlobalCss: (theme?: any, layout?: any) => string
@@ -36,6 +41,182 @@ let routeToNextSegments: SharedModule['routeToNextSegments']
 let serializeModule: SharedModule['serializeModule']
 let slimSiteSpecForBundle: SharedModule['slimSiteSpecForBundle']
 
+const evaluateCloneRuntime = (source: string) => {
+  const dom = new JSDOM(
+    '<!doctype html><html data-before="yes"><head><title>Before</title></head><body></body></html>',
+  )
+  const exports = {} as Record<string, unknown>
+  const transformed = source.replace(
+    /export function ([A-Za-z0-9_]+)/g,
+    'exports.$1 = function $1',
+  )
+  new Function('document', 'Node', 'exports', transformed)(
+    dom.window.document,
+    dom.window.Node,
+    exports,
+  )
+  return { dom, exports }
+}
+
+const installDomGlobals = (dom: JSDOM) => {
+  const previous = {
+    document: globalThis.document,
+    Element: globalThis.Element,
+    HTMLElement: globalThis.HTMLElement,
+    Node: globalThis.Node,
+    window: globalThis.window,
+  }
+
+  Object.assign(globalThis, {
+    document: dom.window.document,
+    Element: dom.window.Element,
+    HTMLElement: dom.window.HTMLElement,
+    Node: dom.window.Node,
+    window: dom.window,
+  })
+
+  return () => {
+    Object.assign(globalThis, previous)
+  }
+}
+
+const compileExactCloneComponent = async (
+  source: string,
+  mode: 'react' | 'nextjs',
+) => {
+  const runtimeId = '../lib/clone-runtime'
+  const routerId = mode === 'react' ? 'react-router-dom' : 'next/navigation'
+  const result = await build({
+    bundle: true,
+    external: ['react', 'react/jsx-runtime'],
+    format: 'cjs',
+    logLevel: 'silent',
+    platform: 'browser',
+    plugins: [
+      {
+        name: 'exact-clone-component-test-stubs',
+        setup(pluginBuild) {
+          pluginBuild.onResolve(
+            {
+              filter:
+                /^(react-router-dom|next\/navigation|\.\.\/lib\/clone-runtime)$/,
+            },
+            (args) => ({ path: args.path, namespace: 'exact-clone-test' }),
+          )
+          pluginBuild.onLoad(
+            { filter: /.*/, namespace: 'exact-clone-test' },
+            (args) => {
+              if (args.path === runtimeId) {
+                return {
+                  contents:
+                    'export const installExactCloneBlueprint = () => () => {}',
+                  loader: 'js',
+                }
+              }
+              if (args.path === routerId && mode === 'react') {
+                return {
+                  contents:
+                    'export const useNavigate = () => globalThis.__exactCloneNavigate',
+                  loader: 'js',
+                }
+              }
+              if (args.path === routerId && mode === 'nextjs') {
+                return {
+                  contents:
+                    'export const useRouter = () => ({ push: globalThis.__exactClonePush })',
+                  loader: 'js',
+                }
+              }
+              return { contents: 'export {}', loader: 'js' }
+            },
+          )
+        },
+      },
+    ],
+    stdin: {
+      contents: source,
+      loader: 'jsx',
+      resolveDir: process.cwd(),
+    },
+    write: false,
+    jsx: 'automatic',
+  })
+  const module = { exports: {} as Record<string, unknown> }
+  const output = result.outputFiles[0]
+  if (!output) throw new Error('esbuild did not return component output')
+
+  new Function('module', 'exports', 'require', output.text)(
+    module,
+    // eslint-disable-next-line import/no-commonjs
+    module.exports,
+    (specifier: string) => {
+      if (specifier === 'react') return React
+      if (specifier === 'react/jsx-runtime') return ReactJsxRuntime
+      throw new Error(`Unexpected import: ${specifier}`)
+    },
+  )
+
+  // eslint-disable-next-line import/no-commonjs
+  const Component = module.exports.default
+  if (typeof Component !== 'function') {
+    throw new Error(
+      'Generated exact-clone component did not export a component',
+    )
+  }
+  return Component as React.ComponentType<{ page: Record<string, unknown> }>
+}
+
+const renderExactCloneAndClickLinks = async (
+  mode: 'react' | 'nextjs',
+  navigate: ReturnType<typeof vi.fn>,
+) => {
+  const dom = new JSDOM(
+    '<!doctype html><html><head><title>Before</title></head><body><div data-sf-clone-ssr>SSR fallback</div></body></html>',
+    { url: 'https://ship-fast.test/' },
+  )
+  const restoreDom = installDomGlobals(dom)
+  const navigateKey =
+    mode === 'react' ? '__exactCloneNavigate' : '__exactClonePush'
+  ;(globalThis as Record<string, unknown>)[navigateKey] = navigate
+  const Component = await compileExactCloneComponent(
+    renderExactClonePageComponent({ mode }),
+    mode,
+  )
+
+  try {
+    await act(async () => {
+      render(
+        React.createElement(Component, {
+          page: {
+            renderBlueprint: {
+              bodyHtml:
+                '<main><a id="internal" href="/pricing?plan=pro#faq">Pricing</a><a id="hash" href="#top">Hash</a><a id="mail" href="mailto:team@example.com">Mail</a><a id="external" href="https://example.com/">External</a></main>',
+            },
+          },
+        }),
+      )
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+
+    for (const id of ['hash', 'mail', 'external']) {
+      dom.window.document
+        .getElementById(id)
+        ?.addEventListener('click', (event: Event) => event.preventDefault())
+    }
+
+    fireEvent.click(dom.window.document.getElementById('internal')!)
+    fireEvent.click(dom.window.document.getElementById('hash')!)
+    fireEvent.click(dom.window.document.getElementById('mail')!)
+    fireEvent.click(dom.window.document.getElementById('external')!)
+  } finally {
+    cleanup()
+    delete (globalThis as Record<string, unknown>)[navigateKey]
+    restoreDom()
+  }
+}
+
 beforeAll(async () => {
   ;({
     buildGlobalCss,
@@ -57,6 +238,10 @@ beforeAll(async () => {
 })
 
 describe('renderer shared utilities', () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   it('escapes HTML and normalizes generated routes', () => {
     expect(escapeHtml(`Tom & "Sue" <script>'`)).toBe(
       'Tom &amp; &quot;Sue&quot; &lt;script&gt;&#39;',
@@ -333,28 +518,59 @@ describe('renderer shared section HTML', () => {
 })
 
 describe('renderer shared runtime modules', () => {
-  it('builds exact-clone runtime and framework components with navigation behavior', () => {
+  it('builds exact-clone runtime and framework components with navigation behavior', async () => {
     const cloneRuntime = renderCloneRuntimeModule()
-    expect(cloneRuntime).toContain('function createManagedNode')
-    expect(cloneRuntime).toContain('export function applyDocumentAttributes')
-    expect(cloneRuntime).toContain('node.dataset.sfCloneManaged')
+    const { dom, exports } = evaluateCloneRuntime(cloneRuntime)
+    const applyDocumentAttributes = exports.applyDocumentAttributes as (
+      node: Element,
+      nextAttributes: Record<string, unknown>,
+    ) => () => void
+    const installBlueprintHead = exports.installBlueprintHead as (blueprint: {
+      links?: Array<Record<string, unknown>>
+      meta?: Array<Record<string, unknown>>
+      styles?: string[]
+      title?: string
+    }) => () => void
 
-    const reactComponent = renderExactClonePageComponent({ mode: 'react' })
-    expect(reactComponent).toContain(
-      "import { useNavigate } from 'react-router-dom'",
+    const restoreAttributes = applyDocumentAttributes(
+      dom.window.document.documentElement,
+      { lang: 'fr', hidden: true },
     )
-    expect(reactComponent).toContain(
-      'navigate(url.pathname + url.search + url.hash)',
+    expect(dom.window.document.documentElement.getAttribute('lang')).toBe('fr')
+    expect(dom.window.document.documentElement.hasAttribute('hidden')).toBe(
+      true,
     )
+    restoreAttributes()
+    expect(
+      dom.window.document.documentElement.getAttribute('data-before'),
+    ).toBe('yes')
+    expect(dom.window.document.documentElement.hasAttribute('lang')).toBe(false)
 
-    const nextComponent = renderExactClonePageComponent({ mode: 'nextjs' })
-    expect(nextComponent).toContain(
-      "import { useRouter } from 'next/navigation'",
-    )
-    expect(nextComponent).toContain(
-      'router.push(url.pathname + url.search + url.hash)',
-    )
-    expect(nextComponent).toContain('suppressHydrationWarning')
+    const cleanupHead = installBlueprintHead({
+      links: [{ href: '/feed.xml', rel: 'alternate' }],
+      meta: [{ content: 'Exact clone', name: 'description' }],
+      styles: ['body { color: red; }'],
+      title: 'After',
+    })
+    expect(dom.window.document.title).toBe('After')
+    expect(
+      dom.window.document.querySelectorAll('[data-sf-clone-managed]'),
+    ).toHaveLength(3)
+    cleanupHead()
+    expect(dom.window.document.title).toBe('Before')
+    expect(
+      dom.window.document.querySelectorAll('[data-sf-clone-managed]'),
+    ).toHaveLength(0)
+
+    const reactNavigate = vi.fn()
+    await renderExactCloneAndClickLinks('react', reactNavigate)
+    expect(reactNavigate).toHaveBeenCalledTimes(1)
+    expect(reactNavigate).toHaveBeenCalledWith('/pricing?plan=pro#faq')
+
+    const nextPush = vi.fn()
+    await renderExactCloneAndClickLinks('nextjs', nextPush)
+    expect(nextPush).toHaveBeenCalledTimes(1)
+    expect(nextPush).toHaveBeenCalledWith('/pricing?plan=pro#faq')
   })
 
   it('builds HTML runtime scripts with optional carousel vendor initialization', () => {

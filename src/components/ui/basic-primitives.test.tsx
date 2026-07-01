@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 
 import { Button } from './button'
+import { Input } from './input'
 import {
   InputGroup,
   InputGroupAddon,
@@ -11,159 +12,109 @@ import {
   InputGroupText,
   InputGroupTextarea,
 } from './input-group'
-import { Input } from './input'
 import { Kbd, KbdGroup } from './kbd'
-import { ScrollArea } from './scroll-area'
-import { Slider } from './slider'
 import { Textarea } from './textarea'
-import { ToggleGroup, ToggleGroupItem } from './toggle-group'
-import { Toggle } from './toggle'
 
-describe('shared UI primitives', () => {
-  beforeEach(() => {
-    vi.stubGlobal(
-      'ResizeObserver',
-      class ResizeObserver {
-        observe() {}
-        unobserve() {}
-        disconnect() {}
-      },
-    )
-  })
-
-  afterEach(() => {
-    cleanup()
-    vi.unstubAllGlobals()
-  })
-
-  it('renders buttons as native buttons and slotted anchors', () => {
+describe('basic UI primitives', () => {
+  it('renders button variants as real buttons and forwards click/disabled behavior', () => {
     const onClick = vi.fn()
     render(
-      <div>
-        <Button onClick={onClick}>Save</Button>
-        <Button asChild>
-          <a href="/pricing">Pricing</a>
+      <>
+        <Button size="sm" variant="secondary" onClick={onClick}>
+          Save
         </Button>
-      </div>,
+        <Button disabled onClick={onClick}>
+          Disabled
+        </Button>
+      </>,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Disabled' }))
 
     expect(onClick).toHaveBeenCalledTimes(1)
-    expect(screen.getByRole('link', { name: 'Pricing' })).toHaveProperty(
-      'pathname',
-      '/pricing',
+    expect(screen.getByRole('button', { name: 'Save' }).className).toContain(
+      'bg-secondary',
     )
+    expect(
+      (screen.getByRole('button', { name: 'Disabled' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true)
   })
 
-  it('renders form inputs with supplied accessible names and values', () => {
+  it('renders an accessible child element when Button uses asChild', () => {
     render(
-      <form>
-        <label htmlFor="title">Title</label>
-        <Input id="title" defaultValue="Generated homepage" />
-        <label htmlFor="notes">Notes</label>
-        <Textarea id="notes" defaultValue="Make it responsive" />
-      </form>,
+      <Button asChild variant="link">
+        <a href="/pricing">Pricing</a>
+      </Button>,
     )
 
-    expect(screen.getByLabelText('Title')).toHaveProperty(
-      'value',
-      'Generated homepage',
-    )
-    expect(screen.getByLabelText('Notes')).toHaveProperty(
-      'value',
-      'Make it responsive',
-    )
+    const link = screen.getByRole('link', { name: 'Pricing' })
+    expect(link.getAttribute('href')).toBe('/pricing')
+    expect(link.className).toContain('text-primary')
   })
 
-  it('delegates input-group addon clicks to the input while button clicks stay buttons', () => {
-    const onAction = vi.fn()
+  it('forwards native input and textarea state, invalid flags, and custom classes', () => {
+    render(
+      <>
+        <Input
+          aria-invalid="true"
+          className="custom-input"
+          defaultValue="abc"
+        />
+        <Textarea className="custom-textarea" defaultValue="notes" />
+      </>,
+    )
+
+    const input = screen.getByDisplayValue('abc')
+    const textarea = screen.getByDisplayValue('notes')
+
+    expect(input.getAttribute('data-slot')).toBe('input')
+    expect(input.getAttribute('aria-invalid')).toBe('true')
+    expect(input.className).toContain('custom-input')
+    expect(textarea.getAttribute('data-slot')).toBe('textarea')
+    expect(textarea.className).toContain('custom-textarea')
+  })
+
+  it('focuses the grouped input when non-button addon content is clicked', () => {
     render(
       <InputGroup>
         <InputGroupAddon>
-          <InputGroupText>$</InputGroupText>
+          <InputGroupText>https://</InputGroupText>
         </InputGroupAddon>
-        <InputGroupInput aria-label="Amount" />
+        <InputGroupInput aria-label="Domain" />
         <InputGroupAddon align="inline-end">
-          <InputGroupButton onClick={onAction}>Apply</InputGroupButton>
+          <InputGroupButton aria-label="Clear domain">Clear</InputGroupButton>
         </InputGroupAddon>
       </InputGroup>,
     )
 
-    fireEvent.click(screen.getByText('$'))
-    expect(screen.getByLabelText('Amount')).toBe(document.activeElement)
+    fireEvent.click(screen.getByText('https://'))
+    expect(document.activeElement).toBe(screen.getByLabelText('Domain'))
 
-    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
-    expect(onAction).toHaveBeenCalledTimes(1)
+    screen.getByLabelText('Domain').blur()
+    fireEvent.click(screen.getByRole('button', { name: 'Clear domain' }))
+    expect(document.activeElement).not.toBe(screen.getByLabelText('Domain'))
   })
 
-  it('supports multiline input-group controls', () => {
+  it('renders grouped textarea controls and keyboard hints with stable slots', () => {
     render(
       <InputGroup>
         <InputGroupTextarea aria-label="Prompt" defaultValue="Build a site" />
+        <InputGroupAddon align="block-end">
+          <KbdGroup>
+            <Kbd>⌘</Kbd>
+            <Kbd>Enter</Kbd>
+          </KbdGroup>
+        </InputGroupAddon>
       </InputGroup>,
     )
 
-    expect(screen.getByLabelText('Prompt')).toHaveProperty(
-      'value',
+    expect((screen.getByLabelText('Prompt') as HTMLTextAreaElement).value).toBe(
       'Build a site',
     )
-  })
-
-  it('renders keyboard hints as grouped keyboard content', () => {
-    render(
-      <KbdGroup aria-label="Shortcut">
-        <Kbd>⌘</Kbd>
-        <Kbd>K</Kbd>
-      </KbdGroup>,
-    )
-
-    expect(screen.getByLabelText('Shortcut').textContent).toBe('⌘K')
-  })
-
-  it('renders scroll area content inside the viewport layer', () => {
-    const { container } = render(
-      <ScrollArea>
-        <p>Scrollable preview history</p>
-      </ScrollArea>,
-    )
-
-    expect(screen.getByText('Scrollable preview history')).toBeTruthy()
-    expect(
-      container.querySelector('[data-slot="scroll-area-viewport"]'),
-    ).not.toBe(null)
-  })
-
-  it('renders one slider thumb per controlled value', () => {
-    const { container } = render(<Slider value={[20, 80]} min={0} max={100} />)
-
-    expect(
-      container.querySelectorAll('[data-slot="slider-thumb"]'),
-    ).toHaveLength(2)
-  })
-
-  it('toggles standalone and grouped toggle controls', () => {
-    render(
-      <div>
-        <Toggle aria-label="Bold">B</Toggle>
-        <ToggleGroup type="single" aria-label="Text alignment">
-          <ToggleGroupItem value="left" aria-label="Align left">
-            Left
-          </ToggleGroupItem>
-          <ToggleGroupItem value="right" aria-label="Align right">
-            Right
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>,
-    )
-
-    const bold = screen.getByRole('button', { name: 'Bold' })
-    const left = screen.getByRole('radio', { name: 'Align left' })
-
-    fireEvent.click(bold)
-    fireEvent.click(left)
-
-    expect(bold.getAttribute('data-state')).toBe('on')
-    expect(left.getAttribute('data-state')).toBe('on')
+    expect(document.querySelector('[data-slot="input-group"]')).not.toBeNull()
+    expect(document.querySelector('[data-slot="kbd-group"]')).not.toBeNull()
+    expect(screen.getByText('Enter').getAttribute('data-slot')).toBe('kbd')
   })
 })

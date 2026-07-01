@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const medusaEnvMock = vi.hoisted(() => ({
+  adminUrl: '',
   backendUrl: 'https://backend.medusa.test',
   publishableKey: '',
 }))
@@ -10,6 +11,7 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 
 vi.mock('@/features/commerce/server/medusa-store-env', () => ({
+  getMedusaAdminUrl: () => medusaEnvMock.adminUrl,
   getMedusaBackendUrl: () => medusaEnvMock.backendUrl,
   getMedusaPublishableKey: () => medusaEnvMock.publishableKey,
 }))
@@ -40,11 +42,83 @@ const jsonResponse = (body: unknown, init?: ResponseInit) =>
 afterEach(() => {
   vi.unstubAllGlobals()
   vi.clearAllMocks()
+  medusaEnvMock.adminUrl = ''
   medusaEnvMock.backendUrl = 'https://backend.medusa.test'
   medusaEnvMock.publishableKey = ''
 })
 
 describe('Medusa Store API route contracts', () => {
+  it('reports disabled Store API config without exposing a publishable key', async () => {
+    const { Route } = await import('./medusa-store.config')
+
+    const response = await (
+      Route as unknown as RouteWithHandlers
+    ).options.server.handlers.GET({})
+
+    expect(await readJson(response)).toMatchObject({
+      body: {
+        backendUrl: 'https://backend.medusa.test',
+        enabled: false,
+      },
+      contentType: expect.stringContaining('application/json'),
+      status: 200,
+    })
+  })
+
+  it('reports enabled Store API config when a publishable key exists but still omits the key value', async () => {
+    medusaEnvMock.publishableKey = 'pk_medusa'
+    const { Route } = await import('./medusa-store.config')
+
+    const response = await (
+      Route as unknown as RouteWithHandlers
+    ).options.server.handlers.GET({})
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body).toEqual({
+      backendUrl: 'https://backend.medusa.test',
+      enabled: true,
+    })
+    expect(JSON.stringify(body)).not.toContain('pk_medusa')
+  })
+
+  it('reports disabled admin config until an admin URL is configured', async () => {
+    const { Route } = await import('./medusa-admin.config')
+
+    const response = await (
+      Route as unknown as RouteWithHandlers
+    ).options.server.handlers.GET({})
+
+    expect(await readJson(response)).toMatchObject({
+      body: {
+        adminUrl: '',
+        backendUrl: 'https://backend.medusa.test',
+        enabled: false,
+      },
+      contentType: expect.stringContaining('application/json'),
+      status: 200,
+    })
+  })
+
+  it('reports enabled admin config with the admin and backend URLs', async () => {
+    medusaEnvMock.adminUrl = 'https://admin.medusa.test'
+    const { Route } = await import('./medusa-admin.config')
+
+    const response = await (
+      Route as unknown as RouteWithHandlers
+    ).options.server.handlers.GET({})
+
+    expect(await readJson(response)).toMatchObject({
+      body: {
+        adminUrl: 'https://admin.medusa.test',
+        backendUrl: 'https://backend.medusa.test',
+        enabled: true,
+      },
+      contentType: expect.stringContaining('application/json'),
+      status: 200,
+    })
+  })
+
   it('returns a stable JSON error when cart creation is not configured', async () => {
     const { Route } = await import('./medusa-store.cart')
     const fetchMock = vi.fn()
@@ -238,5 +312,83 @@ describe('Medusa Store API route contracts', () => {
         body: JSON.stringify({ cart_id: 'cart_123' }),
       },
     )
+  })
+
+  it('returns a stable checkout error without calling Medusa when Store API auth is missing', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const { Route } = await import('./medusa-checkout')
+
+    const response = await (
+      Route as unknown as RouteWithHandlers
+    ).options.server.handlers.POST({
+      request: new Request('https://ship-fast.test/api/medusa-checkout', {
+        method: 'POST',
+        body: JSON.stringify({ cart_id: 'cart_123' }),
+      }),
+    })
+
+    expect(await readJson(response)).toMatchObject({
+      body: { error: 'Medusa Store API not configured' },
+      contentType: expect.stringContaining('application/json'),
+      status: 503,
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('preserves upstream checkout failure status while hiding upstream internals', async () => {
+    medusaEnvMock.publishableKey = 'pk_medusa'
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        jsonResponse({ error: 'cart expired' }, { status: 409 }),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    const { Route } = await import('./medusa-checkout')
+
+    const response = await (
+      Route as unknown as RouteWithHandlers
+    ).options.server.handlers.POST({
+      request: new Request('https://ship-fast.test/api/medusa-checkout', {
+        method: 'POST',
+        body: JSON.stringify({ cart_id: 'cart_expired' }),
+      }),
+    })
+
+    expect(await readJson(response)).toMatchObject({
+      body: { error: 'checkout failed' },
+      contentType: expect.stringContaining('application/json'),
+      status: 409,
+    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://backend.medusa.test/store/checkout',
+      expect.objectContaining({
+        body: JSON.stringify({ cart_id: 'cart_expired' }),
+        method: 'POST',
+      }),
+    )
+  })
+
+  it('returns JSON instead of throwing when checkout receives malformed JSON', async () => {
+    medusaEnvMock.publishableKey = 'pk_medusa'
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const { Route } = await import('./medusa-checkout')
+
+    const response = await (
+      Route as unknown as RouteWithHandlers
+    ).options.server.handlers.POST({
+      request: new Request('https://ship-fast.test/api/medusa-checkout', {
+        method: 'POST',
+        body: '{not-json',
+      }),
+    })
+
+    expect(await readJson(response)).toMatchObject({
+      body: { error: 'Invalid checkout request body' },
+      contentType: expect.stringContaining('application/json'),
+      status: 400,
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

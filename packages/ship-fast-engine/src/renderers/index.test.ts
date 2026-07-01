@@ -1,9 +1,9 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { build } from 'esbuild'
 import { describe, expect, it } from 'vitest'
 import { parseHTML } from 'linkedom'
-import ts from 'typescript'
 
 import type { SiteSpecProject } from '../spec/index.ts'
 import {
@@ -208,83 +208,107 @@ describe('renderer Tailwind preview CSS', () => {
   })
 })
 
-/**
- * Behavioral + AST test: call the Next.js project generator with an ecommerce
- * spec, then parse the generated lib/medusa.js with a TypeScript AST to verify
- * createPaymentSessions retrieves the cart object and passes IT (not cartId)
- * to initiatePaymentSession — the regression that broke Medusa checkout.
- */
 describe('Next.js Medusa export', () => {
-  it('initializes payment sessions from the retrieved cart object', () => {
+  it('initializes payment sessions from the retrieved cart object', async () => {
     const files: Record<string, string> = renderNextProject(
       { ...siteSpec, siteType: 'ecommerce' },
       {},
     ).files
     const medusaSource = files['lib/medusa.js']
     expect(medusaSource).toBeTruthy()
+    const workspace = mkdtempSync(join(tmpdir(), 'next-medusa-runtime-'))
 
-    const sourceFile = ts.createSourceFile(
-      'medusa.js',
-      medusaSource,
-      ts.ScriptTarget.Latest,
-      true,
-      ts.ScriptKind.JS,
-    )
+    try {
+      const modulePath = join(workspace, 'medusa.js')
+      writeFileSync(modulePath, medusaSource)
+      const entryPath = join(workspace, 'run-medusa.js')
+      writeFileSync(
+        entryPath,
+        `import { createPaymentSessions } from "./medusa.js";
 
-    let foundRetrieve = false
-    let initiateFirstArg: string | null = null
-
-    const walkFunction = (fn: ts.FunctionDeclaration) => {
-      const walk = (node: ts.Node) => {
-        // Detect: const { cart } = await client.store.cart.retrieve(cartId)
-        if (
-          ts.isVariableStatement(node) &&
-          node.declarationList.declarations.some((decl) => {
-            if (!decl.initializer || !ts.isAwaitExpression(decl.initializer))
-              return false
-            const call = decl.initializer.expression
-            return (
-              ts.isCallExpression(call) &&
-              ts.isPropertyAccessExpression(call.expression) &&
-              call.expression.getText(sourceFile).includes('cart.retrieve')
-            )
-          })
-        ) {
-          foundRetrieve = true
-        }
-        // Detect: await client.store.payment.initiatePaymentSession(<firstArg>, ...)
-        if (ts.isAwaitExpression(node)) {
-          const call = node.expression
-          if (
-            ts.isCallExpression(call) &&
-            ts.isPropertyAccessExpression(call.expression) &&
-            call.expression
-              .getText(sourceFile)
-              .includes('initiatePaymentSession') &&
-            call.arguments.length > 0
-          ) {
-            const firstArg = call.arguments[0]
-            if (ts.isIdentifier(firstArg)) initiateFirstArg = firstArg.text
-          }
-        }
-        ts.forEachChild(node, walk)
+globalThis.__paymentResult = await createPaymentSessions("cart_123", "stripe");
+`,
+      )
+      const bundled = await build({
+        bundle: true,
+        define: {
+          'process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY':
+            JSON.stringify('pk_test'),
+          'process.env.MEDUSA_BACKEND_URL': JSON.stringify(
+            'http://localhost:9000',
+          ),
+        },
+        entryPoints: [entryPath],
+        format: 'esm',
+        logLevel: 'silent',
+        platform: 'node',
+        plugins: [
+          {
+            name: 'medusa-sdk-runtime-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^@medusajs\/js-sdk$/ }, () => ({
+                namespace: 'medusa-sdk-runtime-stub',
+                path: '@medusajs/js-sdk',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^@medusajs\/js-sdk$/,
+                  namespace: 'medusa-sdk-runtime-stub',
+                },
+                () => ({
+                  contents: `export default class Medusa {
+  constructor() {
+    return globalThis.__medusaClient;
+  }
+}`,
+                  loader: 'js',
+                }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+      const bundlePath = join(workspace, 'run-medusa.mjs')
+      writeFileSync(bundlePath, bundled.outputFiles[0]?.text ?? '')
+      const retrievedCart = { id: 'cart_123', total: 4200 }
+      const g = globalThis as Record<string, unknown>
+      g.__medusaClient = {
+        store: {
+          cart: {
+            retrieve: async (cartId: string) => {
+              g.__retrievedCartId = cartId
+              return { cart: retrievedCart }
+            },
+          },
+          payment: {
+            initiatePaymentSession: async (cart: unknown, options: unknown) => {
+              g.__initiatedPaymentCart = cart
+              g.__initiatedPaymentOptions = options
+              return {
+                payment_collection: { id: 'paycol_123' },
+              }
+            },
+          },
+        },
       }
-      ts.forEachChild(fn, walk)
-    }
 
-    const visit = (node: ts.Node) => {
-      if (
-        ts.isFunctionDeclaration(node) &&
-        node.name?.text === 'createPaymentSessions'
-      ) {
-        walkFunction(node)
-      }
-      ts.forEachChild(node, visit)
-    }
-    visit(sourceFile)
+      await import(`${bundlePath}?t=${Date.now()}`)
 
-    expect(foundRetrieve).toBe(true)
-    expect(initiateFirstArg).toBe('cart')
-    expect(initiateFirstArg).not.toBe('cartId')
+      expect(g.__retrievedCartId).toBe('cart_123')
+      expect(g.__initiatedPaymentCart).toBe(retrievedCart)
+      expect(g.__initiatedPaymentOptions).toEqual({
+        provider_id: 'stripe',
+      })
+      expect(g.__paymentResult).toEqual({ id: 'paycol_123' })
+    } finally {
+      const g = globalThis as Record<string, unknown>
+      delete g.__medusaClient
+      delete g.__retrievedCartId
+      delete g.__initiatedPaymentCart
+      delete g.__initiatedPaymentOptions
+      delete g.__paymentResult
+      rmSync(workspace, { recursive: true, force: true })
+    }
   })
 })

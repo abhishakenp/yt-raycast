@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { DeploymentPanel } from './DeploymentPanel'
+import { persistAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 type MockDeploymentTarget = {
   target: 'html' | 'react' | 'next' | 'lakebed'
@@ -221,6 +222,26 @@ describe('DeploymentPanel (behavioral)', () => {
         ),
       )
     })
+
+    it('sends the persisted anonymous owner secret when publishing ShipFast', async () => {
+      persistAnonymousOwnerSecret(
+        window.localStorage,
+        'k574ms14ma9f94keq30r7dq24x89n1k2',
+        'owner-secret',
+      )
+      const view = render(
+        <DeploymentPanel sessionId="k574ms14ma9f94keq30r7dq24x89n1k2" />,
+      )
+
+      fireEvent.click(view.getByText('Publish ShipFast').closest('button')!)
+
+      await waitFor(() =>
+        expect(convexState.publishPreview).toHaveBeenCalledWith({
+          lookup: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+          anonymousOwnerSecret: 'owner-secret',
+        }),
+      )
+    })
   })
 
   describe('4. publish Lakebed flow', () => {
@@ -264,6 +285,53 @@ describe('DeploymentPanel (behavioral)', () => {
           'https://lakebed-launch.lakebed.app',
           '_blank',
           'noopener,noreferrer',
+        ),
+      )
+    })
+
+    it('sends the persisted anonymous owner secret through Lakebed preparation and deploy', async () => {
+      persistAnonymousOwnerSecret(
+        window.localStorage,
+        'k574ms14ma9f94keq30r7dq24x89n1k2',
+        'owner-secret',
+      )
+      setExportTargets([
+        {
+          target: 'lakebed',
+          artifactReady: false,
+          artifactStatus: 'building',
+        },
+      ])
+      convexState.ensureExportArtifact.mockResolvedValueOnce({
+        target: 'lakebed',
+        status: 'ready',
+        previewVersion: 2,
+      })
+      const fetchMock = lakebedJsonResponse(
+        'https://lakebed-launch.lakebed.app',
+      )
+      vi.stubGlobal('fetch', fetchMock)
+
+      const view = render(
+        <DeploymentPanel sessionId="k574ms14ma9f94keq30r7dq24x89n1k2" />,
+      )
+      fireEvent.click(view.getByText('Publish Lakebed').closest('button')!)
+
+      await waitFor(() =>
+        expect(convexState.ensureExportArtifact).toHaveBeenCalledWith({
+          lookup: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+          target: 'lakebed',
+          anonymousOwnerSecret: 'owner-secret',
+        }),
+      )
+      await waitFor(() =>
+        expect(fetchMock).toHaveBeenCalledWith(
+          '/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/deploy/lakebed',
+          expect.objectContaining({
+            body: JSON.stringify({ anonymousOwnerSecret: 'owner-secret' }),
+            headers: { 'content-type': 'application/json' },
+            method: 'POST',
+          }),
         ),
       )
     })
