@@ -159,4 +159,45 @@ export default capsule({
       buildLakebedAnonymousDeployRequest(asyncFiles),
     ).rejects.toThrow(/Async server handlers/)
   })
+
+  it('rejects generated Lakebed clients that import auth helpers missing from the generated adapter', async () => {
+    const lakebedRoot = join(process.cwd(), '.lakebed')
+    await rm(lakebedRoot, { recursive: true, force: true })
+
+    const realConvexMissingAuthExportFiles = {
+      'server/index.ts': `import { capsule } from "lakebed/server";
+
+export default capsule({
+  name: "gov-site-in-hindi",
+  schema: {},
+  queries: {},
+  mutations: {},
+  endpoints: {},
+});
+`,
+      'client/index.tsx': `import { SignInButton } from "./section-kit/SignInButton";
+
+export function App() {
+  return <main><h1>Gov Site In Hindi</h1><SignInButton /></main>;
+}
+`,
+      'client/lib/lakebed.ts': `export function useQuery() {
+  return undefined;
+}
+`,
+      'client/section-kit/SignInButton.tsx': `import { useAuth, signInWithGoogle, signOut } from "../lib/lakebed";
+
+export function SignInButton() {
+  const auth = useAuth();
+  return auth?.isAuthenticated
+    ? <button onClick={() => signOut()}>Sign out</button>
+    : <button onClick={() => signInWithGoogle()}>Sign in</button>;
+}
+`,
+    }
+
+    await expect(
+      buildLakebedAnonymousDeployRequest(realConvexMissingAuthExportFiles),
+    ).rejects.toThrow(/No matching export.*useAuth|useAuth.*No matching export/)
+  })
 })
