@@ -22,35 +22,6 @@ const isOpenUIErrorHtml = (html: string): boolean =>
   /class=["'][^"']*\bopenui-error\b/i.test(html) ||
   /Failed to render:/i.test(html)
 
-const renderOpenUIHandoffHtml = ({
-  brand,
-  previewSeoHead,
-  source,
-  themeHead,
-}: {
-  brand: string
-  previewSeoHead: string
-  source: string
-  themeHead: string
-}): string => `<!DOCTYPE html>
-<html lang="en">
-<head>
-  ${previewSeoHead}
-  <script src="/scripts/tailwind-browser.js"></script>
-${themeHead}
-</head>
-<body class="min-h-screen bg-background text-foreground">
-  <main id="openui-root" data-openui-ready="source" class="min-h-screen p-6">
-    <section class="mx-auto max-w-4xl rounded-lg border border-border bg-card p-6 text-card-foreground">
-      <p class="text-sm font-semibold text-muted-foreground">Generated OpenUI source is ready.</p>
-      <h1 class="mt-3 text-3xl font-bold">${escapeHtml(brand || 'Generated Site')}</h1>
-      <p class="mt-3 text-base text-muted-foreground">The interactive source is available for export and deployment.</p>
-    </section>
-  </main>
-  <script type="application/json" id="ship-fast-openui-source">${escapeHtml(JSON.stringify(source))}</script>
-</body>
-</html>`
-
 function readTailwindBrowserScript(): string {
   const candidatePaths = [
     join(process.cwd(), 'public', TAILWIND_BROWSER_SCRIPT_RELATIVE),
@@ -509,12 +480,7 @@ async function renderOpenUIHomeHtml(
     String(siteSpec?.tagline || ''),
   )
   if (isOpenUIErrorHtml(html)) {
-    return renderOpenUIHandoffHtml({
-      brand,
-      previewSeoHead,
-      source,
-      themeHead,
-    })
+    return null
   }
   return `<!DOCTYPE html>
 <html lang="en">
@@ -529,7 +495,7 @@ ${themeHead}
   </style>
 </head>
 <body class="min-h-screen bg-background text-foreground">
-  <div id="openui-root">${html}</div>
+  <div id="openui-root"><section data-sf-export-page="Home">${html}</section></div>
 </body>
 </html>`
 }

@@ -1,5 +1,6 @@
-import type { Id } from '../_generated/dataModel'
+import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
+import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import { serializeSession } from './session_serialization_helpers'
 
 type SessionWorkspaceCtx = Pick<QueryCtx, 'db'>
@@ -41,7 +42,14 @@ export const loadSessionWorkspace = async (
         tasks: [...tasks].sort(
           (left, right) => (left.order ?? 0) - (right.order ?? 0),
         ),
-        preview,
+        preview: preview
+          ? {
+              ...(preview as Doc<'previews'>),
+              html: isUnsafePublicPreviewHtml((preview as Doc<'previews'>).html)
+                ? ''
+                : (preview as Doc<'previews'>).html,
+            }
+          : null,
         deployment,
         events: [...events].reverse(),
       }

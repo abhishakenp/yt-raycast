@@ -5,9 +5,6 @@ import {
   getMedusaPublishableKey,
 } from '@/features/commerce/server/medusa-store-env'
 
-const errorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback
-
 export const Route = createFileRoute('/api/medusa-store/cart/line-items')({
   server: {
     handlers: {
@@ -21,7 +18,15 @@ export const Route = createFileRoute('/api/medusa-store/cart/line-items')({
           )
         }
 
-        const body = await request.json()
+        let body: Record<string, unknown>
+        try {
+          body = (await request.json()) as Record<string, unknown>
+        } catch {
+          return Response.json(
+            { error: 'Invalid line item request body' },
+            { status: 400 },
+          )
+        }
         const cartId = String(body?.cart_id || '').trim()
         const variantId = String(body?.variant_id || '').trim()
         const quantity = Math.max(
@@ -60,11 +65,8 @@ export const Route = createFileRoute('/api/medusa-store/cart/line-items')({
 
           const data = await response.json()
           return Response.json({ cart: data.cart })
-        } catch (error) {
-          return Response.json(
-            { error: errorMessage(error, 'line item failed') },
-            { status: 500 },
-          )
+        } catch {
+          return Response.json({ error: 'line item failed' }, { status: 500 })
         }
       },
     },

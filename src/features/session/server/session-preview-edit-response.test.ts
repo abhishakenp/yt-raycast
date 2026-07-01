@@ -27,6 +27,11 @@ const realConvexRendererErrorPreviewHtml = {
   html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
 } as const
 
+const realConvexOpenUiHandoffPreviewHtml = {
+  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+} as const
+
 describe('session preview edit responses', () => {
   it('lists preview history from Convex', async () => {
     const calls: unknown[] = []
@@ -164,6 +169,31 @@ describe('session preview edit responses', () => {
     expect(response.status).toBeGreaterThanOrEqual(400)
     expect(JSON.stringify(body).toLowerCase()).not.toContain('openui-error')
     expect(JSON.stringify(body).toLowerCase()).not.toContain('failed to render')
+    expect(mutation).not.toHaveBeenCalled()
+  })
+
+  it('does not save DB-observed OpenUI handoff HTML as a durable preview edit', async () => {
+    const mutation = vi.fn(async () => ({ saved: true, previewVersion: 2 }))
+
+    const response = await createPreviewHtmlSaveResponse(
+      realConvexOpenUiHandoffPreviewHtml.sessionId,
+      jsonRequest({
+        html: realConvexOpenUiHandoffPreviewHtml.html,
+        instruction: 'manual save',
+      }),
+      {
+        query: async () => null,
+        mutation,
+      },
+    )
+    const body = await response.json()
+
+    expect(response.status).toBeGreaterThanOrEqual(400)
+    expect(JSON.stringify(body)).not.toContain(
+      'Generated OpenUI source is ready',
+    )
+    expect(JSON.stringify(body)).not.toContain('ship-fast-openui-source')
+    expect(JSON.stringify(body)).not.toContain('Boutique Coffee Roastery')
     expect(mutation).not.toHaveBeenCalled()
   })
 

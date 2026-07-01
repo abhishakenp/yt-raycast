@@ -533,9 +533,10 @@ describe('PublicGallery edge cases', () => {
     expect(getByText('Someone else project')).not.toBeNull()
   })
 
-  it('12. thumbnail priority: imageUrl > html > generated thumbnail > gradient', () => {
-    // EXPECTED: imageUrl wins over stored html + generated source.
-    // If generated source or html is rendered when imageUrl is present, that is a BUG.
+  it('12. preview priority: static html > imageUrl > generated fallback > gradient', () => {
+    // EXPECTED: server-rendered static HTML is the preview source of truth.
+    // If an image thumbnail or live generated source wins when final HTML exists,
+    // the gallery can show stale screenshots or expensive live OpenUI previews.
     const allSources: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -553,12 +554,10 @@ describe('PublicGallery edge cases', () => {
     const { queryByTestId, queryByText, rerender } = render(
       <GalleryGrid gallery={allSources} />,
     )
-    // imageUrl must take priority → <img> rendered, not module/html.
-    expect(document.querySelector('img')?.getAttribute('src')).toBe(
-      'https://cdn.example.test/img.png',
-    )
+    // html must take priority -> static markup rendered, not image/module.
+    expect(queryByText('HTML preview')).not.toBeNull()
+    expect(document.querySelector('img')).toBeNull()
     expect(queryByTestId('generated-module-preview')).toBeNull()
-    expect(queryByText('HTML preview')).toBeNull()
 
     // html wins over moduleSource (no imageUrl).
     const moduleAndHtml: GalleryPayload = {
@@ -594,6 +593,24 @@ describe('PublicGallery edge cases', () => {
     rerender(<GalleryGrid gallery={htmlOnly} />)
     expect(queryByText('HTML wins')).not.toBeNull()
     expect(queryByTestId('generated-module-preview')).toBeNull()
+
+    // imageUrl is only a fallback when no static HTML is present.
+    const imageOnly: GalleryPayload = {
+      ...emptyGallery,
+      items: [
+        {
+          sessionId: 'image-only',
+          prompt: 'Image fallback project',
+          imageUrl: 'https://cdn.example.test/img.png',
+          previewVersion: 1,
+        },
+      ],
+      total: 1,
+    }
+    rerender(<GalleryGrid gallery={imageOnly} />)
+    expect(document.querySelector('img')?.getAttribute('src')).toBe(
+      'https://cdn.example.test/img.png',
+    )
 
     // nothing → gradient fallback placeholder.
     const none: GalleryPayload = {

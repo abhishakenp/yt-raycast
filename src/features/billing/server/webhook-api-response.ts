@@ -197,7 +197,12 @@ export const createWebhookApiResponse = async (
     return json({ error: 'Invalid webhook signature.' }, { status: 400 })
   }
 
-  const event = JSON.parse(rawBody)
+  let event: unknown
+  try {
+    event = JSON.parse(rawBody)
+  } catch {
+    return json({ error: 'Invalid webhook body.' }, { status: 400 })
+  }
   const mutationPayload =
     provider === 'stripe'
       ? stripePayloadToMutation(event)
@@ -205,10 +210,15 @@ export const createWebhookApiResponse = async (
   if (mutationPayload === null) return json({ received: true, ignored: true })
 
   const client = clientOverride ?? createRuntimeConvexHttpClient()
-  const result = (await client.mutation(api.billing.applyBillingWebhook, {
-    secret: mutationSecret,
-    ...mutationPayload,
-  })) as { referralUnlock?: { referrerUserId: string } | null }
+  let result: { referralUnlock?: { referrerUserId: string } | null }
+  try {
+    result = (await client.mutation(api.billing.applyBillingWebhook, {
+      secret: mutationSecret,
+      ...mutationPayload,
+    })) as { referralUnlock?: { referrerUserId: string } | null }
+  } catch {
+    return json({ error: 'Webhook processing failed.' }, { status: 502 })
+  }
 
   // Apply the lifetime referral discount to anyone whose eligibility may have
   // changed: the referrer who just hit the threshold, and the payer themselves

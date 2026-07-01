@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { defineComponent } from '@openuidev/react-lang'
+import { readJsonOrThrow } from '../../../src/lib/safe-fetch'
 
 export type OpenUIIntegrationConfig = Record<string, string | null>
 
@@ -160,7 +161,11 @@ export async function provisionMedusaIntegration(
       }
     }
 
-    const payload = (await r.json()) as OpenUIProvisionPayload & {
+    const payload = (await readJsonOrThrow<
+      OpenUIProvisionPayload & {
+        config?: OpenUIIntegrationConfig | null
+      }
+    >(r, 'Medusa config check failed')) as OpenUIProvisionPayload & {
       config?: OpenUIIntegrationConfig | null
     }
     const nextConfig = sanitizeOpenUIIntegrationConfig(payload.config)

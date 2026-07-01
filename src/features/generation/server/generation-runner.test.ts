@@ -12,6 +12,10 @@ const createTempRoot = (): string =>
 describe('generation runner', () => {
   const dbObservedPrompt =
     'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.'
+  const dbObservedOpenUiHandoffHtml =
+    '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>'
+  const dbObservedOpenUiSource =
+    'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})'
 
   it('persists completed engine artifacts', async () => {
     const completedInputs: unknown[] = []
@@ -191,6 +195,113 @@ describe('generation runner', () => {
         sessionId: 'session-missing-artifacts',
         anonymousOwnerSecret: 'secret',
         message: 'Ship Fast engine did not write index.html',
+      },
+    ])
+  })
+
+  it('fails the session when the engine writes the DB-observed blank preview artifact with OpenUI source only', async () => {
+    const completedInputs: unknown[] = []
+    const failedInputs: unknown[] = []
+    const persistence: GenerationPersistence = {
+      completeGeneration: async (input) => {
+        completedInputs.push(input)
+
+        return { previewVersion: 1 }
+      },
+      failGeneration: async (input) => {
+        failedInputs.push(input)
+      },
+    }
+
+    await expect(
+      runEngineGeneration({
+        sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+        prompt:
+          'a craft beer brewery with taproom tours and seasonal releases in portland',
+        preferredLanguage: 'lt',
+        anonymousOwnerSecret: 'secret',
+        workspaceRoot: createTempRoot(),
+        runAll: async ({ workspace }) => {
+          mkdirSync(workspace, { recursive: true })
+          writeFileSync(join(workspace, 'index.html'), '')
+          writeFileSync(
+            join(workspace, 'site-spec.json'),
+            JSON.stringify({
+              brand: 'Craft Beer Brewery',
+              locale: 'lt',
+              theme: 'darkmatter',
+            }),
+          )
+          writeFileSync(
+            join(workspace, 'home.openui'),
+            'home_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"}]}])\nroot = PageSwitch(["Home"], [home_menu], "", {"Home":"home"})',
+          )
+        },
+        persistence,
+      }),
+    ).resolves.toEqual({
+      status: 'failed',
+      message: 'Ship Fast engine did not write index.html',
+    })
+
+    expect(completedInputs).toEqual([])
+    expect(failedInputs).toEqual([
+      {
+        sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+        anonymousOwnerSecret: 'secret',
+        message: 'Ship Fast engine did not write index.html',
+      },
+    ])
+  })
+
+  it('fails the session when the engine writes DB-observed OpenUI handoff HTML instead of a rendered preview', async () => {
+    const completedInputs: unknown[] = []
+    const failedInputs: unknown[] = []
+    const persistence: GenerationPersistence = {
+      completeGeneration: async (input) => {
+        completedInputs.push(input)
+
+        return { previewVersion: 1 }
+      },
+      failGeneration: async (input) => {
+        failedInputs.push(input)
+      },
+    }
+
+    await expect(
+      runEngineGeneration({
+        sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+        prompt:
+          'a boutique coffee roastery with subscription delivery and tasting events',
+        anonymousOwnerSecret: 'secret',
+        workspaceRoot: createTempRoot(),
+        runAll: async ({ workspace }) => {
+          mkdirSync(workspace, { recursive: true })
+          writeFileSync(
+            join(workspace, 'index.html'),
+            dbObservedOpenUiHandoffHtml,
+          )
+          writeFileSync(
+            join(workspace, 'site-spec.json'),
+            JSON.stringify({ brand: 'Boutique Coffee Roastery' }),
+          )
+          writeFileSync(join(workspace, 'home.openui'), dbObservedOpenUiSource)
+        },
+        persistence,
+      }),
+    ).resolves.toEqual({
+      status: 'failed',
+      message:
+        'Ship Fast engine wrote OpenUI handoff HTML instead of a rendered preview',
+    })
+
+    expect(completedInputs).toEqual([])
+    expect(failedInputs).toEqual([
+      {
+        sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+        anonymousOwnerSecret: 'secret',
+        message:
+          'Ship Fast engine wrote OpenUI handoff HTML instead of a rendered preview',
       },
     ])
   })

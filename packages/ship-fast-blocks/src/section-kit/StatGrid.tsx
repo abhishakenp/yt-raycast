@@ -11,6 +11,7 @@ export function StatGrid(props: {
   className?: string
 }) {
   const columns = props.columns ?? 4
+  const stats = Array.isArray(props.stats) ? props.stats : []
   const colClass =
     columns === 2
       ? 'grid-cols-2'
@@ -20,7 +21,7 @@ export function StatGrid(props: {
 
   return (
     <div className={cn('grid gap-8', colClass, props.className)}>
-      {props.stats.map((s, i) => (
+      {stats.filter(Boolean).map((s, i) => (
         <div key={i} className="flex flex-col gap-1 text-center">
           <span className="text-3xl font-bold text-foreground md:text-4xl">
             {s.value}

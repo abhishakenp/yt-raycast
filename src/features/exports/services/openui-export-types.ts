@@ -8,6 +8,7 @@ export type OpenUIExportInput = {
   target: ExportTarget
   themeName?: string
   isDark?: boolean
+  locale?: string
   includeBadge?: boolean
 }
 

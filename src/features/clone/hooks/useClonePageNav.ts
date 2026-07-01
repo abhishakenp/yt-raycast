@@ -37,7 +37,18 @@ export function useClonePageNav(
     api.sessions.listClonePages,
     sessionId ? { lookup: sessionId } : 'skip',
   )
-  const rows = Array.isArray(queriedRows) ? queriedRows : []
+  // Filter out malformed rows (null entries or rows missing a usable pathname)
+  // so a single bad captured page can't crash the clone shell or hide valid pages.
+  const rows = useMemo(
+    () =>
+      (Array.isArray(queriedRows) ? queriedRows : []).filter(
+        (row): row is NonNullable<typeof row> =>
+          row != null &&
+          typeof row.pathname === 'string' &&
+          row.pathname.length > 0,
+      ),
+    [queriedRows],
+  )
   const homePath = useMemo(() => {
     if (rows.length === 0) return ''
     const home = rows.find((row) => row.isHome)

@@ -1,4 +1,5 @@
 import { api } from '../../../../convex/_generated/api'
+import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 /**
@@ -19,6 +20,10 @@ export const createSessionPreviewRawResponse = async (
       return new Response('Preview not found or not public', { status: 404 })
     }
 
+    if (isUnsafePublicPreviewHtml(html)) {
+      return new Response('Preview not found or not public', { status: 404 })
+    }
+
     return new Response(html, {
       status: 200,
       headers: {
@@ -27,10 +32,7 @@ export const createSessionPreviewRawResponse = async (
         'X-Robots-Tag': 'noindex',
       },
     })
-  } catch (error) {
-    return new Response(
-      error instanceof Error ? error.message : 'Unable to load preview',
-      { status: 500 },
-    )
+  } catch {
+    return new Response('Preview temporarily unavailable', { status: 503 })
   }
 }

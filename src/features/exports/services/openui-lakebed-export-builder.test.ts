@@ -1308,6 +1308,140 @@ export function signOut() {}
     }
   })
 
+  it('renders the DB-observed brewery Lakebed app when menu and order queries return missing or object-shaped collections', async () => {
+    const dbObservedBrewerySource =
+      'home_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"categories[Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"},{"name":"Chocolate Stout","description":"Rich cocoa and roasted malt","price":"$8","tag":"Seasonal"},{"name":"Year-Round Classics>Portland Pale Ale","description":"Balanced hop profile with citrus aroma","price":"$6","tag":"Core"},{"name":"Hoppy IPA","description":"Bold bitterness with pine and mango","price":"$7","tag":"Core]"}]}])\nroot = PageSwitch(["Home"], [home_menu], "", {"Home":"home"})'
+    const built = await buildOpenUILakebedProjectFiles({
+      source: dbObservedBrewerySource,
+      siteSpecJson: JSON.stringify({
+        projectName: 'Craft Beer Brewery',
+        theme: 'darkmatter',
+        locale: 'lt',
+      }),
+      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+      target: 'lakebed',
+    })
+    const directory = mkdtempSync(
+      join(tmpdir(), 'lakebed-db-observed-restaurant-app-'),
+    )
+
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-db-observed-restaurant.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
+import { App } from "./client/index";
+
+render(h(App, {}), document.getElementById("app"));
+`,
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-client-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
+                  namespace: 'lakebed-client-stub',
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { isAuthenticated: false, isLoading: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery(name) {
+  return globalThis.__lakebedQueryResults?.[name];
+}
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                  loader: 'tsx',
+                }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+
+      for (const queryResults of [
+        {
+          menuCatalog: undefined,
+          restaurantExperience: undefined,
+          restaurantOrder: undefined,
+        },
+        {
+          menuCatalog: {
+            row_1: {
+              name: 'Pineapple Saison',
+              description: 'Tropical notes with a crisp finish',
+              price: '$7',
+              tag: 'Limited',
+            },
+          },
+          restaurantExperience: {},
+          restaurantOrder: {
+            count: 1,
+            items: {
+              line_1: {
+                name: 'Pineapple Saison',
+                price: '$7',
+                quantity: '2',
+              },
+            },
+          },
+        },
+      ]) {
+        const dom = new JSDOM('<div id="app"></div>', {
+          runScripts: 'outside-only',
+          url: 'https://silver-river-766492ba9a.lakebed.app/',
+        })
+        const runtimeErrors = collectWindowRuntimeErrors(dom)
+        Reflect.set(dom.window, '__lakebedQueryResults', queryResults)
+
+        let renderError: unknown
+        try {
+          dom.window.eval(bundled.outputFiles[0].text)
+        } catch (error) {
+          renderError = error
+        }
+        await flushWindowPromises()
+
+        expect(renderError).toBeUndefined()
+        expect(runtimeErrors).toEqual([])
+        expect(
+          dom.window.document.querySelector('#app')?.textContent,
+        ).toContain('Our Brew Selection')
+        expect(
+          dom.window.document.querySelector('#app')?.textContent,
+        ).toContain('Pineapple Saison')
+      }
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
   it('exports Lakebed auth adapter helpers required by section-kit sign-in controls', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source:

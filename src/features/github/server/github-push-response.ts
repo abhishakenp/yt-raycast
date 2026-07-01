@@ -1,6 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type GitHubPushConvexClient = Pick<
@@ -128,7 +129,12 @@ const loadPrebuiltFiles = async (
   if (!url) return null
   const response = await fetch(url)
   if (!response.ok) return null
-  const parsed = await readUnknownJson(response)
+  let parsed: unknown
+  try {
+    parsed = await readUnknownJson(response)
+  } catch {
+    return null
+  }
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
     return null
   }
@@ -138,6 +144,35 @@ const loadPrebuiltFiles = async (
     files[path] = contents
   }
   return files
+}
+
+const LAKEBED_REQUIRED_ENTRYPOINTS = ['client/index.tsx', 'server/index.ts']
+
+const validateExportFiles = (
+  target: GitHubExportTarget,
+  files: Record<string, string>,
+): string | null => {
+  if (target === 'lakebed') {
+    const missingEntry = LAKEBED_REQUIRED_ENTRYPOINTS.find(
+      (entrypoint) => !files[entrypoint],
+    )
+    if (missingEntry) {
+      return 'Lakebed export artifact is missing required project files.'
+    }
+    return null
+  }
+
+  const indexHtml = files['index.html']
+  if (indexHtml === undefined) {
+    return 'Export artifact is missing index.html.'
+  }
+  if (normalizeString(indexHtml) === '') {
+    return 'Export artifact is missing rendered HTML.'
+  }
+  if (isUnsafePublicPreviewHtml(indexHtml)) {
+    return 'Export artifact is not a rendered static site.'
+  }
+  return null
 }
 
 const defaultGitHubTokenResolver: GitHubTokenResolver = async (
@@ -201,28 +236,45 @@ async function githubRequest<T>(
     expectedStatus?: number[]
   },
 ): Promise<T | null> {
-  const response = await fetchFn(`${getGithubApiBase(env)}${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'ship-fast',
-      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
-    },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  })
+  let response: Response
+  try {
+    response = await fetchFn(`${getGithubApiBase(env)}${path}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'ship-fast',
+        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+  } catch {
+    const error = new Error('GitHub request failed.')
+    ;(error as Error & { status?: number }).status = 502
+    throw error
+  }
 
   const raw = await response.text()
-  const data = raw ? JSON.parse(raw) : null
+  let data: Record<string, unknown> | null = null
+  if (raw) {
+    try {
+      data = JSON.parse(raw) as Record<string, unknown>
+    } catch {
+      data = null
+    }
+  }
 
   if (!expectedStatus.includes(response.status)) {
+    const errors = Array.isArray(data?.errors)
+      ? (data?.errors as { message?: string }[])
+      : undefined
     const message =
-      data?.errors
-        ?.map((entry: { message?: string }) => entry.message)
+      errors
+        ?.map((entry) => entry.message)
         .filter(Boolean)
         .join(', ') ||
-      data?.message ||
+      (typeof data?.message === 'string' ? data.message : undefined) ||
       response.statusText ||
       'GitHub request failed.'
     const error = new Error(message)
@@ -474,6 +526,11 @@ export async function createGitHubPushResponse(
       )
     }
 
+    const validationError = validateExportFiles(exportTarget, files)
+    if (validationError) {
+      return json({ error: validationError }, { status: 409 })
+    }
+
     const fetchFn = fetchOverride ?? fetch
     const githubAccessToken = await resolveGitHubAccessToken(
       authToken,
@@ -584,13 +641,15 @@ export async function createGitHubPushResponse(
       error instanceof Error && 'status' in error
         ? ((error as Error & { status?: number }).status ?? 400)
         : convexStatus(error)
+    const isForbidden = status === 403
     return json(
       {
-        error:
-          error instanceof Error
+        error: isForbidden
+          ? 'You do not have access to this export.'
+          : error instanceof Error
             ? error.message
             : 'Unable to push export to GitHub.',
-        ...(code ? { code } : {}),
+        ...(code && !isForbidden ? { code } : {}),
       },
       { status },
     )

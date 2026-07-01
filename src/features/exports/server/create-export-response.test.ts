@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+const artifactFileMocks = vi.hoisted(() => ({
+  buildOpenUIArtifactFiles: vi.fn(),
+  buildDownloadFromArtifactFiles: vi.fn(),
+}))
+
+vi.mock('../services/openui-artifact-files', () => artifactFileMocks)
+
 import { createExportResponse } from './create-export-response'
 
 const queryMock = vi.fn()
@@ -48,10 +55,33 @@ const realConvexRendererErrorPreview = {
   html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
 } as const
 
+const realConvexOpenUiHandoffPreview = {
+  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+  target: 'html',
+  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+  source:
+    'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})',
+} as const
+
 describe('createExportResponse', () => {
   beforeEach(() => {
     queryMock.mockReset()
     setAuthMock.mockReset()
+    artifactFileMocks.buildOpenUIArtifactFiles.mockReset()
+    artifactFileMocks.buildDownloadFromArtifactFiles.mockReset()
+    artifactFileMocks.buildOpenUIArtifactFiles.mockResolvedValue({
+      files: { 'index.html': '<main>Generated fallback</main>' },
+      download: {
+        body: '<!doctype html><html><body>Generated fallback</body></html>',
+        contentType: 'text/html; charset=utf-8',
+        filename: 'index.html',
+      },
+    })
+    artifactFileMocks.buildDownloadFromArtifactFiles.mockResolvedValue({
+      body: '<!doctype html><html><body>Generated fallback</body></html>',
+      contentType: 'text/html; charset=utf-8',
+      filename: 'index.html',
+    })
     vi.unstubAllGlobals()
   })
 
@@ -229,6 +259,46 @@ describe('createExportResponse', () => {
     expect(response.headers.get('content-disposition')).toBeNull()
     expect(body.toLowerCase()).not.toContain('openui-error')
     expect(body.toLowerCase()).not.toContain('failed to render')
+  })
+
+  it('does not build an on-demand download from DB-observed OpenUI handoff HTML', async () => {
+    queryMock
+      .mockResolvedValueOnce({
+        export: {
+          status: 'ready',
+          requiresPayment: false,
+          previewVersion: 1,
+        },
+        artifact: {
+          status: 'building',
+          previewVersion: 1,
+        },
+        storageUrl: null,
+        latestPreviewVersion: 1,
+      })
+      .mockResolvedValueOnce({
+        sessionId: realConvexOpenUiHandoffPreview.sessionId,
+        target: realConvexOpenUiHandoffPreview.target,
+        source: realConvexOpenUiHandoffPreview.source,
+        html: realConvexOpenUiHandoffPreview.html,
+      })
+
+    const response = await createExportResponse(
+      realConvexOpenUiHandoffPreview.sessionId,
+      realConvexOpenUiHandoffPreview.target,
+      fakeClient,
+    )
+    const body = await response.text()
+
+    expect(response.status).toBeGreaterThanOrEqual(400)
+    expect(response.headers.get('content-disposition')).toBeNull()
+    expect(body).not.toContain('Generated OpenUI source is ready')
+    expect(body).not.toContain('ship-fast-openui-source')
+    expect(body).not.toContain('Boutique Coffee Roastery')
+    expect(artifactFileMocks.buildOpenUIArtifactFiles).not.toHaveBeenCalled()
+    expect(
+      artifactFileMocks.buildDownloadFromArtifactFiles,
+    ).not.toHaveBeenCalled()
   })
 
   it('streams Lakebed artifacts through the same prebuilt artifact path', async () => {

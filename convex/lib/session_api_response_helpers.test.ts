@@ -35,6 +35,15 @@ const realConvexRendererErrorSessionApiPreview = {
   previewVersion: 1,
 } as const
 
+const realConvexOpenUiHandoffSessionApiPreview = {
+  previewId: 'ns79pp36cdnxp2znd343t2tjw589n4yq',
+  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
+  prompt:
+    'a boutique coffee roastery with subscription delivery and tasting events',
+  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+  previewVersion: 1,
+} as const
+
 const sessionDoc = (overrides: Partial<Doc<'sessions'>> = {}) =>
   ({
     _id: sessionId,
@@ -467,6 +476,42 @@ describe('session API response helpers', () => {
     expect(response?.preview?.html?.toLowerCase()).not.toContain(
       'failed to render',
     )
+  })
+
+  it('does not expose DB-observed OpenUI handoff HTML through the session API response', async () => {
+    const handoffSessionId =
+      realConvexOpenUiHandoffSessionApiPreview.sessionId as Id<'sessions'>
+
+    const response = await loadSessionApiResponse(
+      ctxFor({
+        sessions: [
+          sessionDoc({
+            _id: handoffSessionId,
+            prompt: realConvexOpenUiHandoffSessionApiPreview.prompt,
+            status: 'preview_ready',
+            previewVersion:
+              realConvexOpenUiHandoffSessionApiPreview.previewVersion,
+            openuiReady: true,
+            updatedAt: 1782812244731,
+          }),
+        ],
+        previews: [
+          previewDoc({
+            _id: realConvexOpenUiHandoffSessionApiPreview.previewId as Id<'previews'>,
+            sessionId: handoffSessionId,
+            version: realConvexOpenUiHandoffSessionApiPreview.previewVersion,
+            html: realConvexOpenUiHandoffSessionApiPreview.html,
+          }),
+        ],
+      }),
+      realConvexOpenUiHandoffSessionApiPreview.sessionId,
+    )
+
+    expect(response).not.toBeNull()
+    const serialized = JSON.stringify(response)
+    expect(serialized).not.toContain('Generated OpenUI source is ready')
+    expect(serialized).not.toContain('ship-fast-openui-source')
+    expect(serialized).not.toContain('Boutique Coffee Roastery')
   })
 
   it('returns null for invalid lookups and deleted sessions', async () => {

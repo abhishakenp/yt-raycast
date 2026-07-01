@@ -7,6 +7,7 @@ import {
   upsertSiteSpec,
 } from './session_artifact_helpers'
 import { queueSessionExportArtifactBuilds } from './session_export_helpers'
+import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import { scheduleOperationalNotification } from './session_operational_notifications'
 import { type EngineTaskInput, upsertTask } from './session_task_helpers'
 
@@ -51,6 +52,13 @@ export const completeGeneratedSession = async (
   const session = assertSessionExists(await ctx.db.get(args.sessionId))
   const cost = args.cost ?? 0
   const provider = args.provider ?? 'ship-fast-engine'
+
+  if (isUnsafePublicPreviewHtml(args.html)) {
+    throw new ConvexError({
+      code: 'PREVIEW_NOT_READY',
+      message: 'Preview HTML is not renderable',
+    })
+  }
 
   await Promise.all(
     args.tasks.map((task, index) =>

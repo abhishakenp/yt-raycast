@@ -632,6 +632,49 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
     expect(screen.queryByTestId('generated-module-preview')).toBeNull()
   })
 
+  it('keeps the intro loader up for a DB-observed v3 session whose rendered preview HTML is empty even when OpenUI source exists', () => {
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+        status: 'preview_ready',
+        prompt:
+          'a craft beer brewery with taproom tours and seasonal releases in portland',
+        preferredLanguage: 'lt',
+        engineVersion: 'v3',
+        previewVersion: 1,
+        themeMode: 'dark',
+        themeOverride: 'darkmatter',
+      },
+      tasks: [
+        {
+          status: 'succeeded',
+          title: 'Generate v3 homepage',
+          taskKey: 'homepage',
+        },
+      ],
+      homeModule: {
+        moduleKey: 'home',
+        source: dbObservedBreweryOpenUiSource,
+        status: 'succeeded',
+        updatedAt: 1782814095839,
+      },
+      latestPreview: {
+        html: '',
+        siteSpecJson: JSON.stringify({
+          brand: 'Craft Beer Brewery',
+          theme: 't3-chat',
+          locale: 'en',
+        }),
+        version: 1,
+      },
+    })
+
+    render(<Dashboard sessionId="k574ms14ma9f94keq30r7dq24x89n1k2" />)
+
+    expect(screen.getByTestId('intro-loader')).toBeTruthy()
+    expect(screen.queryByTestId('generated-module-preview')).toBeNull()
+  })
+
   // 2. Live Convex query → preview renders
   it('renders the generated preview from the live Convex generation view', () => {
     setupReady()

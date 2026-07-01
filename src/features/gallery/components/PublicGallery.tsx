@@ -156,6 +156,8 @@ const getGalleryCardAriaLabel = (session: GallerySession): string => {
 }
 
 export const getGalleryImageUrl = (session: GallerySession): string => {
+  if (getPreviewDocument(session.html) !== undefined) return ''
+
   const imageUrl = session.imageUrl?.trim()
   if (imageUrl) return imageUrl
 
@@ -238,16 +240,9 @@ export const GalleryCategoryTabs = ({
 const GalleryPreview = ({ session }: { session: GallerySession }) => {
   const title = getPromptTitle(session.prompt)
   const imageUrl = session.imageUrl?.trim()
-  // Priority: imageUrl > html > gradient. When imageUrl is present,
-  // previewDocument/html are skipped entirely.
-  const previewDocument = imageUrl
-    ? undefined
-    : getPreviewDocument(session.html)
-  const imageSrc = imageUrl
-    ? imageUrl
-    : previewDocument === undefined
-      ? getGalleryImageUrl(session)
-      : ''
+  const previewDocument = getPreviewDocument(session.html)
+  const imageSrc =
+    previewDocument === undefined ? imageUrl || getGalleryImageUrl(session) : ''
   const [resolvedImageSrc, setResolvedImageSrc] = useState(() =>
     imageSrc.startsWith('/api/sessions/') ? '' : imageSrc,
   )

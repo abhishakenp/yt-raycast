@@ -1,5 +1,6 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
+import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import { serializeSession } from './session_serialization_helpers'
 
 type GenerationViewCtx = Pick<QueryCtx, 'db'>
@@ -87,6 +88,15 @@ export const loadGenerationView = async (
     events: [...events].reverse(),
     homeModule: homeModule as Doc<'generatedModules'> | null,
     siteSpec: siteSpec as Doc<'siteSpecs'> | null,
-    latestPreview: latestPreview as Doc<'previews'> | null,
+    latestPreview: latestPreview
+      ? {
+          ...(latestPreview as Doc<'previews'>),
+          html: isUnsafePublicPreviewHtml(
+            (latestPreview as Doc<'previews'>).html,
+          )
+            ? ''
+            : (latestPreview as Doc<'previews'>).html,
+        }
+      : null,
   }
 }

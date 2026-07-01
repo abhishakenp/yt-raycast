@@ -255,4 +255,34 @@ describe('createSessionEventStreamResponse', () => {
     expect(text).not.toContain('TypeError')
     expect(response.status).toBe(502)
   })
+
+  it('returns a stable SSE error without leaking internal Convex lookup failures', async () => {
+    const response = await createSessionEventStreamResponse(
+      'k571fbfbggczv4pfz2evtrxdzx89qqbb',
+      new Request(
+        'http://localhost/api/sessions/k571fbfbggczv4pfz2evtrxdzx89qqbb/stream',
+        {
+          headers: {
+            'x-ship-fast-owner-secret': 'stale-owner-secret',
+          },
+        },
+      ),
+      {
+        query: async () => {
+          throw new Error(
+            'ConvexError: private session owner secret mismatch for k571fbfbggczv4pfz2evtrxdzx89qqbb',
+          )
+        },
+      },
+    )
+
+    const text = await response.text()
+
+    expect(response.status).toBe(500)
+    expect(text).toContain('event: error')
+    expect(text).toContain('Unable to load session events.')
+    expect(text).not.toContain('ConvexError')
+    expect(text).not.toContain('owner secret')
+    expect(text).not.toContain('k571fbfbggczv4pfz2evtrxdzx89qqbb')
+  })
 })

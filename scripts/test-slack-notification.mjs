@@ -31,8 +31,10 @@ try {
         2,
       ),
     )
+    process.exit(1)
   }
 } catch (error) {
   console.log('❌ Slack notification error:', error.message)
   console.log(JSON.stringify({ ok: false, error: error.message }, null, 2))
+  process.exit(1)
 }

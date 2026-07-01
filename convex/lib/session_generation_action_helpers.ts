@@ -2,6 +2,7 @@ import { ConvexError } from 'convex/values'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { ActionCtx } from '../_generated/server'
+import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import type { EngineTaskInput } from './session_task_helpers'
 
 type RunQueryReference = Parameters<ActionCtx['runQuery']>[0]
@@ -91,6 +92,12 @@ export const completeGenerationAction = async (
         sessionId: args.sessionId,
         error: error instanceof Error ? error.message : String(error),
       })
+      // When rendering fails, do not fall back to DB-observed OpenUI handoff
+      // placeholder HTML — that is not real preview content and must never be
+      // stored as a completed generation. Re-throw so the action rejects.
+      if (isUnsafePublicPreviewHtml(args.html)) {
+        throw error
+      }
     }
   }
 

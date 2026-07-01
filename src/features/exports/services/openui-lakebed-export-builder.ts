@@ -5,6 +5,7 @@ import { zipSync, strToU8 } from 'fflate'
 import { format } from 'prettier'
 import ts from 'typescript'
 import type { ElementNode } from '@openuidev/lang-core'
+import { library } from '@ship-fast/blocks'
 import {
   reactExportSourcesBase64,
   reactExportSourcesEncoding,
@@ -1449,6 +1450,7 @@ const buildRoutes = (
 ): LakebedRoute[] => {
   const used = new Set<string>()
   return parsed.pages.map((page, index) => {
+    unwrapSingleObjectArgProps(page)
     const label = parsed.routes[index] ?? `Page ${index + 1}`
     return {
       label,
@@ -1458,6 +1460,89 @@ const buildRoutes = (
       props: (page.props ?? {}) as Record<string, unknown>,
     }
   })
+}
+
+type ComponentSchemaDef = {
+  properties?: Record<
+    string,
+    { type?: string; properties?: unknown; items?: unknown; $ref?: unknown }
+  >
+}
+
+let componentSchemaDefs: Record<string, ComponentSchemaDef> | null = null
+
+const getComponentSchemaDefs = (): Record<string, ComponentSchemaDef> => {
+  if (componentSchemaDefs) return componentSchemaDefs
+  try {
+    const schema = library.toJSONSchema() as Record<string, unknown>
+    const defs = (schema.$defs ?? schema.properties ?? {}) as Record<
+      string,
+      ComponentSchemaDef
+    >
+    componentSchemaDefs = defs
+    return defs
+  } catch {
+    componentSchemaDefs = {}
+    return componentSchemaDefs
+  }
+}
+
+const isObjectLikeSchema = (def: {
+  type?: string
+  properties?: unknown
+  items?: unknown
+  $ref?: unknown
+}): boolean =>
+  def.type === 'object' ||
+  def.type === 'array' ||
+  Boolean(def.properties) ||
+  Boolean(def.items) ||
+  Boolean(def.$ref)
+
+// The OpenUI parser maps positional arguments to a component's declared prop
+// slots in order. When a component is called with a single object literal
+// argument (e.g. `EcommerceNavbar({"brand":"CocoaCraft","nav":["Shop"]})`),
+// the parser assigns that object to the first positional slot (`brand`)
+// instead of spreading it as the props bag. Detect that mis-assignment — the
+// sole prop slot expects a scalar but received a non-array object whose keys
+// are all valid prop names of the component — and unwrap it so the object
+// becomes the component props.
+const unwrapSingleObjectArgProps = (node: unknown): void => {
+  if (!isOpenUIElementNode(node)) return
+  const props = node.props
+  if (props && typeof props === 'object' && !Array.isArray(props)) {
+    const keys = Object.keys(props)
+    if (
+      keys.length === 1 &&
+      !routeRenderPrimitives.has(node.typeName) &&
+      node.typeName !== 'PageSwitch'
+    ) {
+      const onlyKey = keys[0]
+      const wrapped = props[onlyKey] as unknown
+      if (wrapped && typeof wrapped === 'object' && !Array.isArray(wrapped)) {
+        const def = getComponentSchemaDefs()[node.typeName]
+        const propNames = def?.properties
+          ? new Set(Object.keys(def.properties))
+          : null
+        const onlyKeyDef = def?.properties?.[onlyKey]
+        const wrappedKeys = Object.keys(wrapped as Record<string, unknown>)
+        if (
+          propNames &&
+          wrappedKeys.length >= 2 &&
+          (!onlyKeyDef || !isObjectLikeSchema(onlyKeyDef)) &&
+          wrappedKeys.every((key) => propNames.has(key))
+        ) {
+          for (const key of keys) delete props[key]
+          Object.assign(props, wrapped as Record<string, unknown>)
+        }
+      }
+    }
+  }
+  for (const value of Object.values(node.props ?? {})) {
+    if (Array.isArray(value))
+      value.forEach((item) => unwrapSingleObjectArgProps(item))
+    else unwrapSingleObjectArgProps(value)
+  }
 }
 
 const routeRenderPrimitives = new Set([
@@ -2504,6 +2589,12 @@ function rewriteLakebedClientImports(
     if (allowed) return allowed
 
     if (moduleName.startsWith('#/lib/utils')) {
+      copyBlocksClientSourceForLakebed(
+        'src/lib/utils',
+        context.files,
+        context.seenVendorFiles,
+        context.seenBlockFiles,
+      )
       return relativeImportPath(context.outPath, 'client/lib/cn.ts')
     }
     if (moduleName.startsWith('#/lib/use-navigate')) {
@@ -3117,6 +3208,8 @@ const renderClientLakebed = (): string => `import {
 } from "lakebed/client";
 import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 
+export { signInWithGoogle, signOut, useAuth };
+
 export type LakebedAdapter = ReturnType<typeof useLakebedAdapter>;
 
 type LakebedMutationFunction<Args extends unknown[], Result> = ((
@@ -3149,6 +3242,72 @@ function normalizeQueryValue(name: string, value: unknown) {
   if (value && typeof value === "object") return new Set(Object.values(value));
   if (value == null) return new Set<string>();
   return value;
+}
+
+function isDbRecordCollection(value: unknown): boolean {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const entries = Object.entries(value);
+  if (!entries.length) return false;
+  // A DB-shaped record collection maps record IDs to record objects. Tolerate
+  // malformed rows (null / undefined / non-object entries) by ignoring them,
+  // but reject values that contain genuine scalar primitive fields (strings,
+  // numbers, booleans) or arrays — those indicate a scalar record, not a
+  // collection. At least one entry must be a record object.
+  let hasRecord = false;
+  for (const [, v] of entries) {
+    if (v == null) continue;
+    if (typeof v === "object" && !Array.isArray(v)) {
+      hasRecord = true;
+      continue;
+    }
+    return false;
+  }
+  return hasRecord;
+}
+
+function recordCollectionValues(
+  value: Record<string, unknown>,
+): Record<string, unknown>[] {
+  return Object.values(value).filter(
+    (v): v is Record<string, unknown> =>
+      Boolean(v) && typeof v === "object" && !Array.isArray(v),
+  );
+}
+
+function normalizeDbShapedQueryResult(name: string, value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const collectionKeys = ["items", "rows", "data", "result"];
+  // Null / undefined entries are malformed rows, not scalar fields — exclude
+  // them so a DB record collection with missing rows is still detected.
+  const hasScalarField = Object.values(value).some(
+    (v) => v != null && (typeof v !== "object" || Array.isArray(v)),
+  );
+  if (!hasScalarField && !collectionKeys.some((key) => key in value)) {
+    if (isDbRecordCollection(value)) {
+      return recordCollectionValues(value as Record<string, unknown>);
+    }
+    return value;
+  }
+  let normalized = value as Record<string, unknown>;
+  for (const key of collectionKeys) {
+    if (!(key in normalized)) continue;
+    const nested = normalized[key];
+    if (Array.isArray(nested)) continue;
+    if (isDbRecordCollection(nested)) {
+      if (normalized === value) normalized = { ...normalized };
+      normalized[key] = recordCollectionValues(
+        nested as Record<string, unknown>,
+      );
+    } else if (nested == null) {
+      if (normalized === value) normalized = { ...normalized };
+      normalized[key] = [];
+    }
+  }
+  if ("count" in normalized && !("items" in normalized)) {
+    if (normalized === value) normalized = { ...normalized };
+    normalized.items = [];
+  }
+  return normalized;
 }
 
 function collectionValues(value: unknown) {
@@ -3278,7 +3437,11 @@ export function useLakebedAdapter() {
   return {
     useQuery<T = unknown>(name: string): T {
       const value = useQuery<unknown>(name);
-      return normalizeQueryValue(name, normalizeEntityListValue(name, value)) as T;
+      const dbNormalized = normalizeDbShapedQueryResult(name, value);
+      return normalizeQueryValue(
+        name,
+        normalizeEntityListValue(name, dbNormalized),
+      ) as T;
     },
     useMutation<Args extends unknown[] = unknown[], Result = unknown>(
       name: string,

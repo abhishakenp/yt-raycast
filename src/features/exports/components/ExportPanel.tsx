@@ -6,6 +6,7 @@ import { api } from '../../../../convex/_generated/api'
 import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { readJsonOrThrow } from '@/lib/safe-fetch'
 import { HtmlIcon, ReactIcon, NextIcon, LakebedIcon } from './ExportIcons'
 
 type ExportTarget = {
@@ -136,6 +137,10 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
         headers: await createAuthHeaders(),
       })
       if (!response.ok) {
+        const contentType = response.headers.get('content-type') ?? ''
+        if (contentType.includes('text/html')) {
+          throw new Error('Download failed')
+        }
         const message = await response.text()
         throw new Error(message || 'Download failed')
       }
@@ -172,8 +177,14 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
           anonymousOwnerSecret: readOwnerSecret(sessionId),
         }),
       })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data?.error ?? 'Export failed')
+      const data = await readJsonOrThrow<Record<string, unknown>>(
+        response,
+        'Export failed',
+      )
+      if (!response.ok)
+        throw new Error(
+          typeof data?.error === 'string' ? data.error : 'Export failed',
+        )
       return isDownloadResult(data) ? data : {}
     } catch (exportError) {
       setError(

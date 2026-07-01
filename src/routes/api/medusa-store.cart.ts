@@ -5,9 +5,6 @@ import {
   getMedusaPublishableKey,
 } from '@/features/commerce/server/medusa-store-env'
 
-const errorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback
-
 export const Route = createFileRoute('/api/medusa-store/cart')({
   server: {
     handlers: {
@@ -68,11 +65,8 @@ export const Route = createFileRoute('/api/medusa-store/cart')({
 
           const cartData = await cartResponse.json()
           return Response.json({ cart: cartData.cart })
-        } catch (error) {
-          return Response.json(
-            { error: errorMessage(error, 'cart create failed') },
-            { status: 500 },
-          )
+        } catch {
+          return Response.json({ error: 'cart create failed' }, { status: 500 })
         }
       },
     },
