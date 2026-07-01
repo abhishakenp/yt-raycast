@@ -283,7 +283,17 @@ export const createSessionMedusaProductsResponse = async (
     }
 
     const payload = (await response.json()) as { products?: unknown }
-    const products = (Array.isArray(payload.products) ? payload.products : [])
+    if (!Array.isArray(payload.products)) {
+      return json(
+        {
+          products: [],
+          sessionId,
+          warning: 'Medusa Store API product read failed.',
+        },
+        { status: 200 },
+      )
+    }
+    const products = payload.products
       .map((product) => normalizeProduct(sessionId, product))
       .filter((product) => product !== undefined)
 

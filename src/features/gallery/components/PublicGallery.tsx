@@ -158,9 +158,8 @@ const getGalleryCardAriaLabel = (session: GallerySession): string => {
 export const getGalleryImageUrl = (session: GallerySession): string => {
   if (getPreviewDocument(session.html) !== undefined) return ''
 
-  const imageUrl = session.imageUrl?.trim()
-  if (imageUrl) return imageUrl
-
+  // PNG `imageUrl` is intentionally never used as a gallery preview source.
+  // Previews must be server-rendered static HTML or a generated thumbnail.
   return getGalleryThumbnailUrl(session)
 }
 
@@ -239,10 +238,9 @@ export const GalleryCategoryTabs = ({
 
 const GalleryPreview = ({ session }: { session: GallerySession }) => {
   const title = getPromptTitle(session.prompt)
-  const imageUrl = session.imageUrl?.trim()
   const previewDocument = getPreviewDocument(session.html)
   const imageSrc =
-    previewDocument === undefined ? imageUrl || getGalleryImageUrl(session) : ''
+    previewDocument === undefined ? getGalleryImageUrl(session) : ''
   const [resolvedImageSrc, setResolvedImageSrc] = useState(() =>
     imageSrc.startsWith('/api/sessions/') ? '' : imageSrc,
   )

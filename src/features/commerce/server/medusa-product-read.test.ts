@@ -128,6 +128,84 @@ describe('createSessionMedusaProductsResponse', () => {
     )
   })
 
+  it('falls back from DB-observed malformed tenant config JSON without leaking parse details', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ regions: [{ id: 'reg_123' }] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            products: [
+              {
+                handle:
+                  'ship-fast-k574ms14ma9f94keq30r7dq24x89n1k2-pineapple-saison',
+                metadata: {
+                  ship_fast_generated_handle: 'pineapple-saison',
+                  ship_fast_generated_product: true,
+                  ship_fast_session_id: realSessionId,
+                },
+                title: 'Pineapple Saison',
+                variants: [
+                  {
+                    calculated_price: {
+                      calculated_amount: 7,
+                      currency_code: 'usd',
+                    },
+                  },
+                ],
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+    const query = vi.fn().mockResolvedValue({
+      configJson:
+        '{"provider":"medusa","tenantMode":"session","tenantId":"k577jbx9tbkcc3bhs1fvqepf9989fm0w","warning":"Medusa Store API is unavailable: fetch failed"',
+      status: 'ready',
+    })
+
+    const response = await createSessionMedusaProductsResponse(
+      realSessionId,
+      {
+        env: {
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+          MEDUSA_PUBLISHABLE_API_KEY: 'pk_global',
+        },
+        fetch: fetchImpl,
+        metaEnv: {},
+      },
+      { mutation: vi.fn(), query },
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body).toEqual({
+      products: [
+        {
+          currencyCode: 'usd',
+          handle: 'ship-fast-k574ms14ma9f94keq30r7dq24x89n1k2-pineapple-saison',
+          price: 7,
+          sourceHandle: 'pineapple-saison',
+          title: 'Pineapple Saison',
+        },
+      ],
+      sessionId: realSessionId,
+    })
+    expect(JSON.stringify(body)).not.toContain('Unexpected end')
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      1,
+      'https://backend.medusa.test/store/regions',
+      {
+        headers: { 'x-publishable-api-key': 'pk_global' },
+      },
+    )
+  })
+
   it('returns session-scoped Medusa products with generated handles and prices', async () => {
     const fetchImpl = vi
       .fn()
@@ -281,6 +359,50 @@ describe('createSessionMedusaProductsResponse', () => {
     expect(await response.json()).toEqual({
       products: [],
       sessionId: 'session_123',
+      warning: 'Medusa Store API product read failed.',
+    })
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+
+  it('treats malformed JSON product payloads as Store API failures instead of a valid empty catalog', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ regions: [{ id: 'reg_123' }] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            products: {
+              handle:
+                'ship-fast-k574ms14ma9f94keq30r7dq24x89n1k2-pineapple-saison',
+              metadata: {
+                ship_fast_generated_handle: 'pineapple-saison',
+                ship_fast_generated_product: true,
+                ship_fast_session_id: realSessionId,
+              },
+              title: 'Pineapple Saison',
+            },
+          }),
+          { status: 200 },
+        ),
+      )
+
+    const response = await createSessionMedusaProductsResponse(realSessionId, {
+      env: {
+        MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+      },
+      fetch: fetchImpl,
+      metaEnv: {},
+    })
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      products: [],
+      sessionId: realSessionId,
       warning: 'Medusa Store API product read failed.',
     })
     expect(fetchImpl).toHaveBeenCalledTimes(2)
