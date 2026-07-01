@@ -5,6 +5,7 @@ import { zipSync, strToU8 } from 'fflate'
 import { format } from 'prettier'
 import ts from 'typescript'
 import type { ElementNode } from '@openuidev/lang-core'
+import { library } from '@ship-fast/blocks'
 import {
   reactExportSourcesBase64,
   reactExportSourcesEncoding,
@@ -1449,6 +1450,7 @@ const buildRoutes = (
 ): LakebedRoute[] => {
   const used = new Set<string>()
   return parsed.pages.map((page, index) => {
+    unwrapSingleObjectArgProps(page)
     const label = parsed.routes[index] ?? `Page ${index + 1}`
     return {
       label,
@@ -1458,6 +1460,89 @@ const buildRoutes = (
       props: (page.props ?? {}) as Record<string, unknown>,
     }
   })
+}
+
+type ComponentSchemaDef = {
+  properties?: Record<
+    string,
+    { type?: string; properties?: unknown; items?: unknown; $ref?: unknown }
+  >
+}
+
+let componentSchemaDefs: Record<string, ComponentSchemaDef> | null = null
+
+const getComponentSchemaDefs = (): Record<string, ComponentSchemaDef> => {
+  if (componentSchemaDefs) return componentSchemaDefs
+  try {
+    const schema = library.toJSONSchema() as Record<string, unknown>
+    const defs = (schema.$defs ?? schema.properties ?? {}) as Record<
+      string,
+      ComponentSchemaDef
+    >
+    componentSchemaDefs = defs
+    return defs
+  } catch {
+    componentSchemaDefs = {}
+    return componentSchemaDefs
+  }
+}
+
+const isObjectLikeSchema = (def: {
+  type?: string
+  properties?: unknown
+  items?: unknown
+  $ref?: unknown
+}): boolean =>
+  def.type === 'object' ||
+  def.type === 'array' ||
+  Boolean(def.properties) ||
+  Boolean(def.items) ||
+  Boolean(def.$ref)
+
+// The OpenUI parser maps positional arguments to a component's declared prop
+// slots in order. When a component is called with a single object literal
+// argument (e.g. `EcommerceNavbar({"brand":"CocoaCraft","nav":["Shop"]})`),
+// the parser assigns that object to the first positional slot (`brand`)
+// instead of spreading it as the props bag. Detect that mis-assignment — the
+// sole prop slot expects a scalar but received a non-array object whose keys
+// are all valid prop names of the component — and unwrap it so the object
+// becomes the component props.
+const unwrapSingleObjectArgProps = (node: unknown): void => {
+  if (!isOpenUIElementNode(node)) return
+  const props = node.props
+  if (props && typeof props === 'object' && !Array.isArray(props)) {
+    const keys = Object.keys(props)
+    if (
+      keys.length === 1 &&
+      !routeRenderPrimitives.has(node.typeName) &&
+      node.typeName !== 'PageSwitch'
+    ) {
+      const onlyKey = keys[0]
+      const wrapped = props[onlyKey] as unknown
+      if (wrapped && typeof wrapped === 'object' && !Array.isArray(wrapped)) {
+        const def = getComponentSchemaDefs()[node.typeName]
+        const propNames = def?.properties
+          ? new Set(Object.keys(def.properties))
+          : null
+        const onlyKeyDef = def?.properties?.[onlyKey]
+        const wrappedKeys = Object.keys(wrapped as Record<string, unknown>)
+        if (
+          propNames &&
+          wrappedKeys.length >= 2 &&
+          (!onlyKeyDef || !isObjectLikeSchema(onlyKeyDef)) &&
+          wrappedKeys.every((key) => propNames.has(key))
+        ) {
+          for (const key of keys) delete props[key]
+          Object.assign(props, wrapped as Record<string, unknown>)
+        }
+      }
+    }
+  }
+  for (const value of Object.values(node.props ?? {})) {
+    if (Array.isArray(value))
+      value.forEach((item) => unwrapSingleObjectArgProps(item))
+    else unwrapSingleObjectArgProps(value)
+  }
 }
 
 const routeRenderPrimitives = new Set([
