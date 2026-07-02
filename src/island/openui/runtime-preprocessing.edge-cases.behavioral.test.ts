@@ -440,11 +440,17 @@ describe('translation provider', () => {
       create: vi.fn(async () => ({ translate })),
     }
     const requests: string[][] = []
+    const persistedEntries: unknown[] = []
     globalThis.fetch = vi.fn(async (_input, init) => {
       const body = JSON.parse(String(init?.body ?? '{}')) as {
         texts?: string[]
+        entries?: unknown
       }
-      requests.push(body.texts ?? [])
+      if (body.texts) {
+        requests.push(body.texts)
+      } else {
+        persistedEntries.push(body.entries)
+      }
       return {
         ok: true,
         json: async () => ({ translations: ['Dos'] }),
@@ -455,6 +461,7 @@ describe('translation provider', () => {
 
     expect(translations).toEqual(['Uno', 'Dos'])
     expect(requests).toEqual([['Two']])
+    expect(persistedEntries).toEqual([[{ text: 'One', translation: 'Uno' }]])
   })
 
   it('uses regional browser locale tags before the API and only sends misses', async () => {
@@ -467,11 +474,17 @@ describe('translation provider', () => {
       create: vi.fn(async () => ({ translate })),
     }
     const requests: string[][] = []
+    const persistedEntries: unknown[] = []
     globalThis.fetch = vi.fn(async (_input, init) => {
       const body = JSON.parse(String(init?.body ?? '{}')) as {
         texts?: string[]
+        entries?: unknown
       }
-      requests.push(body.texts ?? [])
+      if (body.texts) {
+        requests.push(body.texts)
+      } else {
+        persistedEntries.push(body.entries)
+      }
       return {
         ok: true,
         json: async () => ({ translations: ['Reservar'] }),
@@ -485,6 +498,9 @@ describe('translation provider', () => {
 
     expect(translations).toEqual(['Iniciar', 'Reservar'])
     expect(requests).toEqual([['Book']])
+    expect(persistedEntries).toEqual([
+      [{ text: 'Start now', translation: 'Iniciar' }],
+    ])
   })
 })
 

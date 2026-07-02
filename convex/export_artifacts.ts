@@ -23,6 +23,14 @@ type PreparedExportArtifact = {
   previewHtml?: string
   themeName?: string
   isDark?: boolean
+  locale?: string
+  selectedBrandLogo?: {
+    name: string
+    domain: string | null
+    brandId: string | null
+    icon: string | null
+    logo: string | null
+  } | null
   isPrivate: boolean
 }
 
@@ -68,6 +76,8 @@ const buildGitHubFiles = async (
       includeBadge: false,
       themeName: prepared.themeName,
       isDark: prepared.isDark,
+      locale: prepared.locale,
+      selectedBrandLogo: prepared.selectedBrandLogo,
     })
   } catch (error) {
     console.error('[export_artifacts:buildGitHubFiles] failed', {
@@ -103,6 +113,8 @@ const buildDownload = async (
       includeBadge: false,
       themeName: prepared.themeName,
       isDark: prepared.isDark,
+      locale: prepared.locale,
+      selectedBrandLogo: prepared.selectedBrandLogo,
     },
     artifact.files,
     artifact.download,

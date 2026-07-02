@@ -20,6 +20,9 @@ type TableName =
   | 'previews'
   | 'generationEvents'
   | 'generatedModules'
+  | 'siteSpecs'
+  | 'edits'
+  | 'translationCache'
 type Row =
   | Doc<'sessions'>
   | Doc<'deployments'>
@@ -27,6 +30,9 @@ type Row =
   | Doc<'previews'>
   | Doc<'generationEvents'>
   | Doc<'generatedModules'>
+  | Doc<'siteSpecs'>
+  | Doc<'edits'>
+  | Doc<'translationCache'>
 
 const sessionId = 'session_deployment' as Id<'sessions'>
 const realConvexRendererErrorPreview = {
@@ -100,6 +106,9 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
     previews: [...(input.previews ?? [])],
     generationEvents: [...(input.generationEvents ?? [])],
     generatedModules: [...(input.generatedModules ?? [])],
+    siteSpecs: [...(input.siteSpecs ?? [])],
+    edits: [...(input.edits ?? [])],
+    translationCache: [...(input.translationCache ?? [])],
   }
 
   const rowsFor = (table: TableName) => tables[table]
@@ -154,6 +163,8 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
           return builder
         },
         first: async () => rows[0] ?? null,
+        take: async (limit: number) => rows.slice(0, limit),
+        collect: async () => rows,
       }
 
       return builder
@@ -179,6 +190,9 @@ const mutationCtxFor = (input: Partial<Record<TableName, Row[]>>) => {
     previews: [...(input.previews ?? [])],
     generationEvents: [...(input.generationEvents ?? [])],
     generatedModules: [...(input.generatedModules ?? [])],
+    siteSpecs: [...(input.siteSpecs ?? [])],
+    edits: [...(input.edits ?? [])],
+    translationCache: [...(input.translationCache ?? [])],
   }
   const patches: Array<{ id: string; patch: Record<string, unknown> }> = []
   const inserted: Array<{ table: TableName; value: Record<string, unknown> }> =
@@ -233,6 +247,7 @@ const mutationCtxFor = (input: Partial<Record<TableName, Row[]>>) => {
           return builder
         },
         first: async () => rows[0] ?? null,
+        collect: async () => rows,
       }
 
       return builder
@@ -446,6 +461,104 @@ describe('session deployment helpers', () => {
         '<!doctype html><html><body><h1>Rendered Preview</h1></body></html>',
       previewVersion: 10,
     })
+  })
+
+  it('prepares Lakebed deployments with edited source, site spec theme fallback, language, and selected brand logo', async () => {
+    const selectedBrandLogo = {
+      name: 'The Beer Store',
+      domain: 'thebeerstore.ca',
+      brandId: 'idwTkaYgXe',
+      icon: 'https://cdn.brandfetch.io/idwTkaYgXe/icon.webp',
+      logo: 'https://cdn.brandfetch.io/idwTkaYgXe/logo.svg',
+    }
+    const ctx = ctxFor({
+      sessions: [
+        sessionDoc({
+          preferredLanguage: 'lt',
+          openuiReady: true,
+          preferredExportTarget: 'html',
+          themeMode: 'light',
+          selectedBrandLogo,
+          userId: 'user_1',
+        }),
+      ],
+      previews: [
+        previewDoc({
+          html: '<!doctype html><html><body><h1>Stale English brewery preview</h1></body></html>',
+          openUiSource: '$page = "Home"\nroot = Text("Original brewery copy")',
+          siteSpecJson: undefined,
+          version: 10,
+        }),
+      ],
+      generatedModules: [
+        {
+          _id: 'generated_module_home' as Id<'generatedModules'>,
+          _creationTime: 1,
+          sessionId,
+          moduleKey: 'home',
+          source: '$page = "Home"\nroot = Text("Ignored module copy")',
+          status: 'succeeded',
+          createdAt: 100,
+          updatedAt: 110,
+        } as Doc<'generatedModules'>,
+      ],
+      siteSpecs: [
+        {
+          _id: 'site_spec_deployment' as Id<'siteSpecs'>,
+          _creationTime: 1,
+          sessionId,
+          specJson: JSON.stringify({
+            projectName: 'Craft Beer Brewery',
+            theme: 'darkmatter',
+          }),
+          createdAt: 100,
+          updatedAt: 110,
+        } as Doc<'siteSpecs'>,
+      ],
+      edits: [
+        {
+          _id: 'edit_deployment' as Id<'edits'>,
+          _creationTime: 1,
+          sessionId,
+          previewVersion: 10,
+          editType: 'text',
+          beforeText: 'Original brewery copy',
+          afterText: 'Redaguotas aludario meniu',
+          createdAt: 120,
+        } as Doc<'edits'>,
+      ],
+      translationCache: [
+        {
+          _id: 'translation_cache_deployment' as Id<'translationCache'>,
+          _creationTime: 1,
+          cacheKey: 'lt\nRedaguotas aludario meniu',
+          locale: 'lt',
+          sourceText: 'Redaguotas aludario meniu',
+          translation: 'Redaguotas lietuviškas alaus meniu',
+          createdAt: 120,
+          updatedAt: 120,
+        } as Doc<'translationCache'>,
+      ],
+    }) as QueryCtx
+
+    const result = await prepareLakebedSessionDeployment(ctx, { sessionId })
+
+    expect(result).toMatchObject({
+      source:
+        '$page = "Home"\nroot = Text("Redaguotas lietuviškas alaus meniu")',
+      sourceKind: 'openui',
+      siteSpecJson: JSON.stringify({
+        projectName: 'Craft Beer Brewery',
+        theme: 'darkmatter',
+      }),
+      previewVersion: 10,
+      themeName: 'darkmatter',
+      isDark: false,
+      locale: 'lt',
+      selectedBrandLogo,
+    })
+    expect(result.source).not.toContain('Original brewery copy')
+    expect(result.source).not.toContain('Ignored module copy')
   })
 
   it('never prepares Lakebed deployment payloads with stored OpenUI renderer error HTML', async () => {

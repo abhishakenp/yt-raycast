@@ -98,6 +98,14 @@ const siteSpecJsonWithSoftwareGenUI = JSON.stringify({
   },
 })
 
+const selectedBrandLogo = {
+  name: 'The Beer Store',
+  domain: 'thebeerstore.ca',
+  brandId: 'idwTkaYgXe',
+  icon: 'https://cdn.brandfetch.io/idwTkaYgXe/icon.webp',
+  logo: 'https://cdn.brandfetch.io/idwTkaYgXe/logo.svg',
+}
+
 const renderGeneratedRouteText = async (
   files: Record<string, string>,
   routeComponent: string,
@@ -276,6 +284,41 @@ describe('openui artifact files', () => {
       renderGeneratedRouteText(files, 'RoutePage1Home'),
     ).resolves.toContain('Hello artifact')
     expect(files['next.config.js']).toBeUndefined()
+  })
+
+  it('wraps React, Next, and Lakebed OpenUI exports with the selected brand logo provider', async () => {
+    const [react, next, lakebed] = await Promise.all(
+      (['react', 'next', 'lakebed'] as const).map((target) =>
+        buildOpenUIArtifactFiles({
+          source:
+            'home_nav = WineryBreweryNavbar("Craft Beer Brewery", ["Home"], "(503) 555-0148", "Home", "Book", "Home", "0")\nroot = PageSwitch(["Home"], [home_nav], "", {"Home":"home"})',
+          siteSpecJson,
+          sessionId: 'demo',
+          target,
+          selectedBrandLogo,
+        }),
+      ),
+    )
+
+    expect(react.files['src/App.tsx']).toContain('BrandLogoProvider')
+    expect(react.files['src/App.tsx']).toContain(selectedBrandLogo.icon)
+    expect(react.files['src/section-kit/Logo.tsx']).toContain(
+      'data-brand-logo-selected',
+    )
+
+    expect(next.files['app/layout.tsx']).toContain('ExportBrandLogoProvider')
+    expect(next.files['src/lib/brand-logo-provider.tsx']).toContain(
+      selectedBrandLogo.icon,
+    )
+    expect(next.files['src/section-kit/Logo.tsx']).toContain(
+      'data-brand-logo-selected',
+    )
+
+    expect(lakebed.files['client/index.tsx']).toContain('BrandLogoProvider')
+    expect(lakebed.files['client/index.tsx']).toContain(selectedBrandLogo.icon)
+    expect(lakebed.files['client/section-kit/Logo.tsx']).toContain(
+      'data-brand-logo-selected',
+    )
   })
 
   it('builds HTML artifact files from OpenUI source instead of debug fallback preview HTML', async () => {

@@ -162,12 +162,65 @@ describe('translation shimmer removal', () => {
     expect(globalThis.fetch).toHaveBeenCalledTimes(1)
   })
 
+  it('retranslates existing preview text from the original copy when locale changes at runtime', async () => {
+    const requests: Array<{ locale: string; texts: string[] }> = []
+    globalThis.fetch = vi.fn(async (_input, init) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as {
+        locale?: string
+        texts?: string[]
+      }
+      requests.push({
+        locale: body.locale ?? '',
+        texts: body.texts ?? [],
+      })
+      return {
+        ok: true,
+        json: async () => ({
+          translations:
+            body.locale === 'fr'
+              ? ['Apercu pret']
+              : body.locale === 'es'
+                ? ['Vista lista']
+                : body.texts,
+        }),
+      } as Response
+    }) as unknown as typeof fetch
+
+    const renderPreview = (locale: string) =>
+      createElement(
+        I18nProvider,
+        { locale },
+        createElement(T, null, createElement('span', null, 'Runtime preview')),
+      )
+
+    const view = render(renderPreview('fr'))
+
+    await waitFor(() => expect(view.getByText('Apercu pret')).toBeTruthy())
+
+    view.rerender(renderPreview('es'))
+    await waitFor(() => expect(view.getByText('Vista lista')).toBeTruthy())
+
+    view.rerender(renderPreview('en'))
+    await waitFor(() => expect(view.getByText('Runtime preview')).toBeTruthy())
+
+    expect(requests).toEqual([
+      { locale: 'fr', texts: ['Runtime preview'] },
+      { locale: 'es', texts: ['Runtime preview'] },
+    ])
+    expect(view.queryByText('Apercu pret')).toBeNull()
+  })
+
   it('uses on-device browser translations without calling the model-backed API', async () => {
     translationMocks.translateOnDevice.mockImplementation(async (text) =>
       text === 'Explore menu' ? 'Naršyti meniu' : 'Rezervuoti',
     )
-    globalThis.fetch = vi.fn(async () => {
-      throw new Error('network translator should not run')
+    const bodies: unknown[] = []
+    globalThis.fetch = vi.fn(async (_input, init) => {
+      bodies.push(JSON.parse(String(init?.body ?? '{}')))
+      return {
+        ok: true,
+        json: async () => ({ stored: 2 }),
+      } as Response
     }) as unknown as typeof fetch
 
     const { getByText } = render(
@@ -188,19 +241,33 @@ describe('translation shimmer removal', () => {
       expect(getByText('Rezervuoti')).toBeTruthy()
     })
     expect(translationMocks.translateOnDevice).toHaveBeenCalledTimes(2)
-    expect(globalThis.fetch).not.toHaveBeenCalled()
+    expect(bodies).toEqual([
+      {
+        locale: 'lt',
+        entries: [
+          { text: 'Explore menu', translation: 'Naršyti meniu' },
+          { text: 'Reserve', translation: 'Rezervuoti' },
+        ],
+      },
+    ])
   })
 
   it('sends only on-device misses to the API and preserves positional output', async () => {
     const requests: string[][] = []
+    const storedEntries: unknown[] = []
     translationMocks.translateOnDevice.mockImplementation(async (text) =>
       text === 'Browser local' ? 'Naršyklės vertimas' : null,
     )
     globalThis.fetch = vi.fn(async (_input, init) => {
       const body = JSON.parse(String(init?.body ?? '{}')) as {
         texts?: string[]
+        entries?: unknown
       }
-      requests.push(body.texts ?? [])
+      if (body.texts) {
+        requests.push(body.texts)
+      } else {
+        storedEntries.push(body.entries)
+      }
       return {
         ok: true,
         json: async () => ({
@@ -227,7 +294,10 @@ describe('translation shimmer removal', () => {
       expect(getByText('Modelio vertimas')).toBeTruthy()
     })
     expect(requests).toEqual([['Model miss']])
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+    expect(storedEntries).toEqual([
+      [{ text: 'Browser local', translation: 'Naršyklės vertimas' }],
+    ])
+    expect(globalThis.fetch).toHaveBeenCalledTimes(2)
   })
 
   it('sends a single collected text node as a one-element positional array', async () => {

@@ -66,6 +66,24 @@ const setCachedTranslation = (
   }
 }
 
+const persistTranslationEntries = async (
+  locale: string,
+  entries: Array<{ text: string; translation: string }>,
+): Promise<void> => {
+  const changedEntries = entries.filter(
+    (entry) =>
+      entry.text.trim() &&
+      entry.translation.trim() &&
+      entry.text !== entry.translation,
+  )
+  if (changedEntries.length === 0) return
+  await fetch('/api/translate', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ locale, entries: changedEntries }),
+  }).catch(() => undefined)
+}
+
 export async function fetchTranslationBatch(
   texts: string[],
   locale: string,
@@ -73,6 +91,10 @@ export async function fetchTranslationBatch(
   const translations = [...texts]
   const networkTexts: string[] = []
   const networkIndexes: number[] = []
+  const browserTranslationEntries: Array<{
+    text: string
+    translation: string
+  }> = []
 
   for (let index = 0; index < texts.length; index += 1) {
     const text = texts[index]
@@ -88,6 +110,7 @@ export async function fetchTranslationBatch(
     if (onDevice) {
       translations[index] = onDevice
       setCachedTranslation(locale, text, onDevice)
+      browserTranslationEntries.push({ text, translation: onDevice })
       continue
     }
 
@@ -95,7 +118,10 @@ export async function fetchTranslationBatch(
     networkTexts.push(text)
   }
 
-  if (networkTexts.length === 0) return translations
+  if (networkTexts.length === 0) {
+    await persistTranslationEntries(locale, browserTranslationEntries)
+    return translations
+  }
 
   // Tier 2: one batched Groq-backed request. The server checks Convex cache
   // first and only calls the model once for uncached misses.
@@ -115,6 +141,7 @@ export async function fetchTranslationBatch(
       setCachedTranslation(locale, texts[originalIndex], translated)
     }
   })
+  await persistTranslationEntries(locale, browserTranslationEntries)
   return translations
 }
 
@@ -172,21 +199,71 @@ const addTranslationShimmer = (node: Text, text: string): void => {
   parent.style.backgroundImage = `linear-gradient(90deg, #0000 calc(50% - ${text.length * 2}px), currentColor 50%, #0000 calc(50% + ${text.length * 2}px)), linear-gradient(currentColor, currentColor)`
 }
 
+type TextTranslationState = {
+  originalText: string
+  translatedLocale?: string
+  translatedText?: string
+}
+
 // T uses MutationObserver to find text nodes, then translates them in one
 // serialized batch per collection window.
 export function T({ children }: React.PropsWithChildren) {
   const ref = useRef<HTMLDivElement>(null)
   const { locale } = useI18n()
   const processedRef = useRef(new WeakSet<Node>())
+  const textStateRef = useRef(new WeakMap<Text, TextTranslationState>())
   const queueRef = useRef<Array<{ node: Text; text: string }>>([])
   const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inFlightRef = useRef(false)
 
   useEffect(() => {
     const el = ref.current
-    if (!el || locale === 'en') return
+    if (!el) return
+
+    processedRef.current = new WeakSet<Node>()
+    queueRef.current = []
 
     let cancelled = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+
+    const sourceTextForNode = (node: Text): string => {
+      const current = node.textContent?.trim() ?? ''
+      const state = textStateRef.current.get(node)
+      if (state?.translatedText && current === state.translatedText) {
+        return state.originalText
+      }
+      if (current) {
+        textStateRef.current.set(node, { originalText: current })
+      }
+      return current
+    }
+
+    const restoreOriginalTextNodes = () => {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+      while (walker.nextNode()) {
+        const node = walker.currentNode as Text
+        const sourceText = sourceTextForNode(node)
+        const parent = node.parentElement
+        if (parent) {
+          parent.classList.remove('sf-shimmer-loading')
+          parent.style.backgroundImage = ''
+          parent.style.backgroundClip = ''
+          parent.style.webkitBackgroundClip = ''
+          parent.style.color = ''
+        }
+        if (sourceText && node.textContent?.trim() !== sourceText) {
+          node.textContent = sourceText
+        }
+        if (sourceText) {
+          textStateRef.current.set(node, { originalText: sourceText })
+        }
+      }
+    }
+
+    if (locale === 'en') {
+      restoreOriginalTextNodes()
+      return
+    }
 
     const scheduleFlush = () => {
       if (flushTimerRef.current !== null) return
@@ -215,6 +292,11 @@ export function T({ children }: React.PropsWithChildren) {
               translations[index] ?? item.text,
               item.text,
             )
+            textStateRef.current.set(item.node, {
+              originalText: item.text,
+              translatedLocale: locale,
+              translatedText: translations[index] ?? item.text,
+            })
           })
         }
       } finally {
@@ -229,7 +311,7 @@ export function T({ children }: React.PropsWithChildren) {
 
       while (walker.nextNode()) {
         const node = walker.currentNode as Text
-        const text = node.textContent?.trim()
+        const text = sourceTextForNode(node)
         if (!text || processedRef.current.has(node)) continue
         processedRef.current.add(node)
         addTranslationShimmer(node, text)
@@ -244,16 +326,15 @@ export function T({ children }: React.PropsWithChildren) {
 
     collectTextNodes()
 
-    let timer: ReturnType<typeof setTimeout>
     const obs = new MutationObserver(() => {
-      clearTimeout(timer)
+      if (timer !== undefined) clearTimeout(timer)
       timer = setTimeout(collectTextNodes, 50)
     })
     obs.observe(el, { childList: true, subtree: true })
 
     return () => {
       cancelled = true
-      clearTimeout(timer)
+      if (timer !== undefined) clearTimeout(timer)
       if (flushTimerRef.current !== null) {
         clearTimeout(flushTimerRef.current)
         flushTimerRef.current = null

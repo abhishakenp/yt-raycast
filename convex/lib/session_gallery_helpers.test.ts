@@ -28,6 +28,7 @@ type EditRecord = Doc<'edits'>
 type PreviewRecord = Doc<'previews'>
 type SessionRecord = Doc<'sessions'>
 type SiteSpecRecord = Doc<'siteSpecs'>
+type TranslationCacheRecord = Doc<'translationCache'>
 
 const sessionId = 'session_gallery_helpers' as Id<'sessions'>
 const realConvexRendererErrorGalleryPreview = {
@@ -125,6 +126,7 @@ const ctxFor = (input: {
   generatedModules?: GeneratedModuleRecord[]
   siteSpecs?: SiteSpecRecord[]
   edits?: EditRecord[]
+  translationCache?: TranslationCacheRecord[]
   userId?: string | null
 }) => {
   const sessions = [...(input.sessions ?? [])]
@@ -132,6 +134,9 @@ const ctxFor = (input: {
   const generatedModules = [...(input.generatedModules ?? [])]
   const siteSpecs = [...(input.siteSpecs ?? [])]
   const edits = [...(input.edits ?? [])]
+  const translationCache = [...(input.translationCache ?? [])]
+  const queriedTables: string[] = []
+  const takeLimits: number[] = []
 
   const rowsFor = (table: string): Array<Record<string, unknown>> => {
     switch (table) {
@@ -145,6 +150,8 @@ const ctxFor = (input: {
         return siteSpecs as unknown as Array<Record<string, unknown>>
       case 'edits':
         return edits as unknown as Array<Record<string, unknown>>
+      case 'translationCache':
+        return translationCache as unknown as Array<Record<string, unknown>>
       default:
         throw new Error(`Unhandled table ${table}`)
     }
@@ -165,15 +172,19 @@ const ctxFor = (input: {
         | 'previews'
         | 'generatedModules'
         | 'siteSpecs'
-        | 'edits',
+        | 'edits'
+        | 'translationCache',
     ) => {
+      queriedTables.push(table)
       const query = {
         withIndex: (
           _indexName:
             | 'by_public_createdAt'
             | 'by_sessionId_version'
             | 'by_sessionId_moduleKey'
-            | 'by_sessionId',
+            | 'by_sessionId'
+            | 'by_cacheKey'
+            | 'by_locale',
           applyIndex: (index: {
             eq: (field: string, value: unknown) => typeof index
           }) => unknown,
@@ -210,7 +221,10 @@ const ctxFor = (input: {
           const queryResult = {
             order: (_direction: 'asc' | 'desc') => queryResult,
             first: async () => rows()[0] ?? null,
-            take: async (limit: number) => rows().slice(0, limit),
+            take: async (limit: number) => {
+              takeLimits.push(limit)
+              return rows().slice(0, limit)
+            },
             collect: async () => rows(),
           }
 
@@ -232,11 +246,13 @@ const ctxFor = (input: {
             },
     },
     db,
+    queriedTables,
+    takeLimits,
   }
 }
 
 describe('loadPublicGalleryArtifacts', () => {
-  it('loads the latest preview, home module, and site spec for a session', async () => {
+  it('loads source artifacts without reading preview HTML when OpenUI source is available', async () => {
     const ctx = ctxFor({
       previews: [previewDoc()],
       generatedModules: [generatedModuleDoc()],
@@ -244,12 +260,79 @@ describe('loadPublicGalleryArtifacts', () => {
     })
 
     await expect(loadPublicGalleryArtifacts(ctx, sessionId)).resolves.toEqual({
-      preview: expect.objectContaining({
-        html: '<main>Gallery preview</main>',
-      }),
+      preview: null,
       homeModule: expect.objectContaining({ source: '$page = "Home"' }),
       siteSpec: expect.objectContaining({ specJson: '{"brand":"Gallery"}' }),
     })
+    expect(ctx.queriedTables).not.toContain('previews')
+  })
+
+  it('loads preview HTML when no OpenUI source artifact exists', async () => {
+    const ctx = ctxFor({
+      previews: [previewDoc()],
+      siteSpecs: [siteSpecDoc()],
+    })
+
+    await expect(loadPublicGalleryArtifacts(ctx, sessionId)).resolves.toEqual({
+      preview: expect.objectContaining({
+        html: '<main>Gallery preview</main>',
+      }),
+      homeModule: null,
+      siteSpec: expect.objectContaining({ specJson: '{"brand":"Gallery"}' }),
+    })
+  })
+})
+
+describe('serializePublicGallerySession', () => {
+  it('serializes edited OpenUI source with language, theme, and selected brand logo metadata', () => {
+    const selectedBrandLogo = {
+      name: 'The Beer Store',
+      domain: 'thebeerstore.ca',
+      brandId: 'idwTkaYgXe',
+      icon: 'https://cdn.brandfetch.io/idwTkaYgXe/icon.webp',
+      logo: 'https://cdn.brandfetch.io/idwTkaYgXe/logo.svg',
+    }
+
+    const result = serializePublicGallerySession(
+      sessionDoc({
+        preferredLanguage: 'lt',
+        themeOverride: 'darkmatter',
+        themeMode: 'dark',
+        selectedBrandLogo,
+      }),
+      {
+        preview: previewDoc({
+          html: '<main><h1>Stale brewery preview</h1></main>',
+          openUiSource: 'root = Text("Original brewery headline")',
+        }),
+        homeModule: generatedModuleDoc({
+          source: 'root = Text("Ignored module headline")',
+        }),
+        siteSpec: siteSpecDoc(),
+        edits: [
+          editDoc({
+            beforeText: 'Original brewery headline',
+            afterText: 'Redaguotas aludario meniu',
+          }),
+        ],
+        translations: [
+          {
+            sourceText: 'Redaguotas aludario meniu',
+            translation: 'సవరించిన బ్రూవరీ మెనూ',
+          },
+        ],
+      },
+    )
+
+    expect(result).toMatchObject({
+      preferredLanguage: 'lt',
+      themeOverride: 'darkmatter',
+      themeMode: 'dark',
+      selectedBrandLogo,
+      moduleSource: 'root = Text("సవరించిన బ్రూవరీ మెనూ")',
+    })
+    expect(result.moduleSource).not.toContain('Original brewery headline')
+    expect(result.moduleSource).not.toContain('Redaguotas aludario meniu')
   })
 })
 
@@ -395,6 +478,107 @@ describe('listPublicGallerySessions', () => {
     ).toEqual(['saas'])
   })
 
+  it('applies cached translations only after pagination so large translated galleries stay within query limits', async () => {
+    const sessions = Array.from({ length: 13 }, (_, index) => {
+      const id = `session_translated_${index}` as Id<'sessions'>
+      return sessionDoc({
+        _id: id,
+        prompt: `Translated launch ${index}`,
+        preferredLanguage: 'lt',
+        createdAt: 1_000 - index,
+      })
+    })
+    const previews = sessions.map((session, index) =>
+      previewDoc({
+        _id: `preview_translated_${index}` as Id<'previews'>,
+        sessionId: session._id,
+        html: '<main>Stale English preview</main>',
+        openUiSource: 'root = Text("Launch headline")',
+      }),
+    )
+    const ctx = ctxFor({
+      sessions,
+      previews,
+      translationCache: [
+        {
+          _id: 'translation_cache_gallery' as Id<'translationCache'>,
+          _creationTime: 1,
+          cacheKey: 'lt\nLaunch headline',
+          locale: 'lt',
+          sourceText: 'Launch headline',
+          translation: 'Paleidimo antraštė',
+          createdAt: 100,
+          updatedAt: 100,
+        } as TranslationCacheRecord,
+      ],
+    })
+
+    const result = await listPublicGallerySessions(ctx, {
+      limit: 12,
+      page: 1,
+    })
+
+    expect(ctx.takeLimits[0]).toBe(24)
+    expect(result.total).toBe(13)
+    expect(result.items).toHaveLength(12)
+    expect(result.items[0]).toMatchObject({
+      sessionId: sessions[0]._id,
+      moduleSource: 'root = Text("Paleidimo antraštė")',
+    })
+    expect(
+      ctx.queriedTables.filter((table) => table === 'translationCache'),
+    ).toHaveLength(12)
+  })
+
+  it('keeps a gallery row renderable when OpenUI source only exists in the site spec', async () => {
+    const siteSpecOnlySessionId = 'session_site_spec_source' as Id<'sessions'>
+    const ctx = ctxFor({
+      sessions: [
+        sessionDoc({
+          _id: siteSpecOnlySessionId,
+          preferredLanguage: 'lt',
+          prompt: 'Launch page with source stored in site spec',
+        }),
+      ],
+      siteSpecs: [
+        siteSpecDoc({
+          sessionId: siteSpecOnlySessionId,
+          specJson: JSON.stringify({
+            pages: {
+              home: 'root = Text("Launch headline")',
+            },
+          }),
+        }),
+      ],
+      translationCache: [
+        {
+          _id: 'translation_cache_site_spec_gallery' as Id<'translationCache'>,
+          _creationTime: 1,
+          cacheKey: 'lt\nLaunch headline',
+          locale: 'lt',
+          sourceText: 'Launch headline',
+          translation: 'Paleidimo antraštė',
+          createdAt: 100,
+          updatedAt: 100,
+        } as TranslationCacheRecord,
+      ],
+    })
+
+    const result = await listPublicGallerySessions(ctx, {
+      limit: 12,
+      page: 1,
+    })
+
+    expect(result.items).toHaveLength(1)
+    expect(result.total).toBe(1)
+    expect(result.items[0]).toMatchObject({
+      sessionId: siteSpecOnlySessionId,
+      html: null,
+      moduleSource: 'root = Text("Paleidimo antraštė")',
+    })
+    expect(ctx.queriedTables).not.toContain('previews')
+  })
+
   it('does not expose real renderer-error preview HTML in public gallery lists', async () => {
     const brokenSessionId =
       realConvexRendererErrorGalleryPreview.sessionId as Id<'sessions'>
@@ -470,6 +654,7 @@ describe('listPublicGallerySessions', () => {
       page: 1,
     })
 
+    expect(ctx.takeLimits).toEqual([24])
     expect(result.items).toHaveLength(1)
     expect(result.total).toBe(1)
     expect(result.items[0]).toMatchObject({
@@ -501,7 +686,7 @@ describe('loadPublicGallerySession', () => {
       loadPublicGallerySession(ctx, sessionId),
     ).resolves.toMatchObject({
       sessionId,
-      html: '<main>Gallery preview</main>',
+      html: null,
       moduleSource: '$page = "Home"',
       siteSpecJson: '{"brand":"Gallery"}',
     })
@@ -607,7 +792,7 @@ describe('listOwnedGallerySessions', () => {
           html: '<main>Coffee shop</main>',
         }),
       ],
-    }) as QueryCtx
+    }) as unknown as QueryCtx
 
     const result = await listOwnedGallerySessions(ctx, {
       limit: 12,

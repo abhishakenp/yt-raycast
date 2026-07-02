@@ -63,6 +63,55 @@ describe('createTranslateResponse', () => {
     })
   })
 
+  it('stores browser-native translation entries without calling the model', async () => {
+    const stored: Array<{
+      locale: string
+      entries: Array<{ text: string; translation: string }>
+    }> = []
+    const response = await createTranslateResponse(
+      new Request('https://ship-fast.test/api/translate', {
+        method: 'POST',
+        body: JSON.stringify({
+          locale: 'lt',
+          entries: [
+            {
+              text: DB_OBSERVED_TEXT.brand,
+              translation: 'Amatinio alaus darykla',
+            },
+          ],
+        }),
+      }),
+      async () => {
+        throw new Error('model should not run')
+      },
+      {
+        getBatch: async () => [],
+        setBatch: async (input) => {
+          stored.push(input)
+        },
+      },
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      locale: 'lt',
+      stored: 1,
+      translated: true,
+      cached: true,
+    })
+    expect(stored).toEqual([
+      {
+        locale: 'lt',
+        entries: [
+          {
+            text: DB_OBSERVED_TEXT.brand,
+            translation: 'Amatinio alaus darykla',
+          },
+        ],
+      },
+    ])
+  })
+
   it('translates a browser-compatible locale through one positional model response when cache misses', async () => {
     const calls: Array<{ user: string }> = []
     const response = await createTranslateResponse(
