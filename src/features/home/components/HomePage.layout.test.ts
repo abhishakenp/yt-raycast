@@ -17,8 +17,19 @@ const controller = vi.hoisted(() => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to }: { children: ReactNode; to: string }) =>
-    createElement('a', { href: to }, children),
+  Link: ({
+    children,
+    preload: _preload,
+    params: _params,
+    to,
+    ...props
+  }: {
+    children: ReactNode
+    params?: unknown
+    preload?: false | 'intent'
+    to: string
+    [key: string]: unknown
+  }) => createElement('a', { href: to, ...props }, children),
   useNavigate: () => vi.fn(),
 }))
 
@@ -34,6 +45,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
   api: {
     sessions: {
       create: 'sessions.create',
+      deleteMine: 'sessions.deleteMine',
     },
   },
 }))
@@ -56,6 +68,35 @@ vi.mock('@/lib/home/prompt-language-core', () => ({
 
 vi.mock('@/features/home/hooks/usePromptHomeController', () => ({
   usePromptHomeController: () => ({ ...controller }),
+}))
+
+vi.mock('@/features/gallery/hooks/useGalleryController', () => ({
+  getGalleryThumbnailUrl: () => '',
+  resolveGalleryThumbnail: async () => undefined,
+  useGalleryController: () => ({
+    gallery: {
+      items: [
+        {
+          sessionId: 'home_static_gallery_session',
+          prompt: 'Static home gallery preview',
+          categories: ['website'],
+          elapsed: 1200,
+          previewVersion: 7,
+          html: '<main><h1>Rendered home gallery artifact</h1></main>',
+          imageUrl: 'https://cdn.example.test/stale-gallery.png',
+          moduleSource: '$page = "Home"',
+        },
+      ],
+      page: 1,
+      limit: 12,
+      total: 1,
+      totalPages: 1,
+      hasNext: false,
+      hasPrev: false,
+      availableCategories: [{ value: 'website', label: 'website', count: 1 }],
+    },
+    sessions: [],
+  }),
 }))
 
 import { HomePage } from './HomePage'
@@ -126,5 +167,19 @@ describe('HomePage rendered entry surface', () => {
     expect(controller.selectExamplePrompt).toHaveBeenCalledWith(
       'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
     )
+  })
+
+  it('renders the static gallery section immediately on the homepage', () => {
+    const { container, getByText } = render(createElement(HomePage))
+
+    expect(getByText('See what other speedsters generated')).toBeTruthy()
+    expect(getByText('Static home gallery preview')).toBeTruthy()
+    expect(container.querySelector('.sf-gallery-grid')).not.toBeNull()
+    expect(
+      container.querySelector(
+        '[data-gallery-session-id="home_static_gallery_session"]',
+      ),
+    ).not.toBeNull()
+    expect(container.textContent).toContain('Rendered home gallery artifact')
   })
 })

@@ -35,8 +35,8 @@ vi.mock('@/features/gallery/hooks/useGalleryController', () => ({
   }),
 }))
 
-describe('homepage gallery deferral', () => {
-  it('renders the deferred home gallery surface with loading cards and navigation links', async () => {
+describe('homepage gallery section', () => {
+  it('renders the home gallery surface with loading cards and navigation links', async () => {
     const { HomeGallerySection } =
       await import('@/features/gallery/components/PublicGallery')
 

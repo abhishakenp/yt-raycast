@@ -11,6 +11,7 @@ import {
 } from 'react'
 
 import { LaunchBackdrop } from '@/components/launch-backdrop'
+import { HomeGallerySection } from '@/features/gallery/components/PublicGallery'
 import { usePromptHomeController } from '@/features/home/hooks/usePromptHomeController'
 import {
   buildLocalPromptSuggestions,
@@ -86,22 +87,6 @@ const SAMPLE_PLACEHOLDERS = [
 ] as const
 
 const isClerkConfigured = isClerkClientEnabled()
-const HOME_GALLERY_IDLE_DELAY_MS = 1800
-const HOME_GALLERY_IDLE_TIMEOUT_MS = 2500
-
-type IdleWindow = Window & {
-  requestIdleCallback?: (
-    callback: () => void,
-    options?: { timeout?: number },
-  ) => number
-  cancelIdleCallback?: (handle: number) => void
-}
-
-const LazyHomeGallerySection = lazy(() =>
-  import('@/features/gallery/components/PublicGallery').then((module) => ({
-    default: module.HomeGallerySection,
-  })),
-)
 const LazyHomepageAuthControls = lazy(() =>
   import('@/components/HomepageAuthControls').then((module) => ({
     default: module.HomepageAuthControls,
@@ -183,126 +168,6 @@ const collectDesignReferenceUrls = (formData: FormData): string[] => {
     ),
   ).slice(0, 4)
 }
-
-const DeferredHomeGallerySection = () => {
-  const [isGalleryReady, setIsGalleryReady] = useState(false)
-  const sentinelRef = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    if (isGalleryReady || typeof window === 'undefined') return
-
-    const idleWindow = window as IdleWindow
-    let cancelled = false
-    let observer: IntersectionObserver | undefined
-    let delayHandle: number | undefined
-    let idleHandle: number | undefined
-    let idleHandleUsesIdleCallback = false
-
-    const activateGallery = () => {
-      if (cancelled) return
-      setIsGalleryReady(true)
-    }
-
-    const isPromptActive = () =>
-      document.activeElement instanceof HTMLElement &&
-      document.activeElement.id === 'prompt-input'
-
-    const scheduleDelayedIdleActivation = () => {
-      if (cancelled) return
-      delayHandle = window.setTimeout(
-        scheduleIdleActivation,
-        HOME_GALLERY_IDLE_DELAY_MS,
-      )
-    }
-
-    const activateGalleryFromIdle = () => {
-      if (isPromptActive()) {
-        scheduleDelayedIdleActivation()
-        return
-      }
-
-      activateGallery()
-    }
-
-    const scheduleIdleActivation = () => {
-      if (cancelled) return
-      if (idleWindow.requestIdleCallback) {
-        idleHandleUsesIdleCallback = true
-        idleHandle = idleWindow.requestIdleCallback(activateGalleryFromIdle, {
-          timeout: HOME_GALLERY_IDLE_TIMEOUT_MS,
-        })
-        return
-      }
-
-      idleHandleUsesIdleCallback = false
-      idleHandle = window.setTimeout(
-        activateGalleryFromIdle,
-        HOME_GALLERY_IDLE_TIMEOUT_MS,
-      )
-    }
-
-    const activateIfNearGallery = () => {
-      if (!sentinelRef.current) return
-      const top = sentinelRef.current.getBoundingClientRect().top
-      if (top <= window.innerHeight + 320) activateGallery()
-    }
-
-    const handleScroll = () => {
-      activateIfNearGallery()
-    }
-
-    scheduleDelayedIdleActivation()
-    activateIfNearGallery()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-
-    if ('IntersectionObserver' in window && sentinelRef.current) {
-      observer = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((entry) => entry.isIntersecting)) {
-            activateGallery()
-          }
-        },
-        { rootMargin: '320px 0px' },
-      )
-      observer.observe(sentinelRef.current)
-    }
-
-    return () => {
-      cancelled = true
-      observer?.disconnect()
-      window.removeEventListener('scroll', handleScroll)
-      if (delayHandle !== undefined) window.clearTimeout(delayHandle)
-      if (idleHandle === undefined) return
-      if (idleHandleUsesIdleCallback && idleWindow.cancelIdleCallback) {
-        idleWindow.cancelIdleCallback(idleHandle)
-      } else {
-        window.clearTimeout(idleHandle)
-      }
-    }
-  }, [isGalleryReady])
-
-  return (
-    <div id="home-gallery-mount" ref={sentinelRef} className="min-h-[280px]">
-      <style>
-        {'#home-gallery-mount .sf-home-gallery-section{margin-top:1rem}'}
-      </style>
-      {isGalleryReady ? (
-        <Suspense fallback={<HomeGalleryPlaceholder />}>
-          <LazyHomeGallerySection />
-        </Suspense>
-      ) : (
-        <HomeGalleryPlaceholder />
-      )}
-    </div>
-  )
-}
-
-const HomeGalleryPlaceholder = () => (
-  <div
-    className="mb-10 mt-4 min-h-[280px] rounded-[20px] border border-white/6 bg-white/[0.025]"
-    aria-hidden="true"
-  />
-)
 
 export const HomePage = () => {
   const {
@@ -1094,7 +959,7 @@ export const HomePage = () => {
             </div>
           </section>
 
-          <DeferredHomeGallerySection />
+          <HomeGallerySection />
         </div>
       </div>
 
