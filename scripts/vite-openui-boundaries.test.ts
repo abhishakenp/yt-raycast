@@ -49,7 +49,7 @@ describe('Vite OpenUI chunk boundaries', () => {
     expect(runtimeTest(generatedModule)).toBe(false)
   })
 
-  it('splits OpenUI runtime components by primitive, section, capsule, and core groups', () => {
+  it('splits OpenUI runtime components by primitive, section, capsule, catalog, and core groups', () => {
     expect(runtimeGroup).toBeDefined()
     expect(runtimeGroup?.priority).toBe(10)
 
@@ -63,11 +63,39 @@ describe('Vite OpenUI chunk boundaries', () => {
     expect(runtimeTest(sectionModule)).toBe(true)
     expect(runtimeChunkName(sectionModule)).toBe('openui-section-blog')
 
+    const generatedLoaderSectionModule =
+      '/packages/ship-fast-blocks/src/generated/../registry/sections/blog/Hero.tsx'
+    expect(runtimeTest(generatedLoaderSectionModule)).toBe(true)
+    expect(runtimeChunkName(generatedLoaderSectionModule)).toBe(
+      'openui-section-blog',
+    )
+
     const capsuleModule = '/packages/ship-fast-blocks/src/capsules/Card.tsx'
     expect(runtimeTest(capsuleModule)).toBe(true)
     expect(runtimeChunkName(capsuleModule)).toBe('openui-capsule-card')
 
-    const coreModule = '/packages/ship-fast-blocks/src/index.ts'
+    const catalogRootModule = '/packages/ship-fast-blocks/src/index.ts'
+    expect(runtimeTest(catalogRootModule)).toBe(false)
+    expect(runtimeChunkName(catalogRootModule)).toBeNull()
+
+    const catalogLibraryModule = '/packages/ship-fast-blocks/src/library.ts'
+    expect(runtimeTest(catalogLibraryModule)).toBe(false)
+    expect(runtimeChunkName(catalogLibraryModule)).toBeNull()
+
+    const catalogRegistryModule =
+      '/packages/ship-fast-blocks/src/registry/all.ts'
+    expect(runtimeTest(catalogRegistryModule)).toBe(false)
+    expect(runtimeChunkName(catalogRegistryModule)).toBeNull()
+
+    const themeModule = '/packages/ship-fast-blocks/src/theme-presets.ts'
+    expect(runtimeTest(themeModule)).toBe(true)
+    expect(runtimeChunkName(themeModule)).toBe('openui-theme')
+
+    const supportModule = '/packages/ship-fast-blocks/src/section-kit/Logo.tsx'
+    expect(runtimeTest(supportModule)).toBe(true)
+    expect(runtimeChunkName(supportModule)).toBe('openui-runtime-support')
+
+    const coreModule = '/packages/ship-fast-blocks/src/runtime-library.ts'
     expect(runtimeTest(coreModule)).toBe(true)
     expect(runtimeChunkName(coreModule)).toBe('openui-runtime-core')
   })

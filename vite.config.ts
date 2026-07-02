@@ -190,7 +190,29 @@ const resolvePexelsUrl = async (requestUrl: string) => {
   )
 }
 
-const normalizeModuleId = (moduleId: string) => moduleId.replaceAll('\\', '/')
+const normalizeModuleId = (moduleId: string) => {
+  const normalized = moduleId.replaceAll('\\', '/')
+  const queryIndex = normalized.indexOf('?')
+  const path = queryIndex === -1 ? normalized : normalized.slice(0, queryIndex)
+  const query = queryIndex === -1 ? '' : normalized.slice(queryIndex)
+  const isAbsolute = path.startsWith('/')
+  const parts: string[] = []
+
+  for (const part of path.split('/')) {
+    if (!part || part === '.') continue
+    if (part === '..') {
+      if (parts.length > 0 && parts.at(-1) !== '..') {
+        parts.pop()
+      } else if (!isAbsolute) {
+        parts.push(part)
+      }
+      continue
+    }
+    parts.push(part)
+  }
+
+  return `${isAbsolute ? '/' : ''}${parts.join('/')}${query}`
+}
 
 const isOpenUIBlocksSourceModule = (moduleId: string) =>
   normalizeModuleId(moduleId).includes('/packages/ship-fast-blocks/src/')
@@ -203,6 +225,41 @@ const isOpenUIGeneratedMetadataModule = (moduleId: string) =>
 const isOpenUIRuntimeModule = (moduleId: string) =>
   isOpenUIBlocksSourceModule(moduleId) &&
   !isOpenUIGeneratedMetadataModule(moduleId)
+
+const getOpenUIBlocksSourcePath = (moduleId: string) => {
+  const normalized = normalizeModuleId(moduleId)
+  const marker = '/packages/ship-fast-blocks/src/'
+  const markerIndex = normalized.indexOf(marker)
+  if (markerIndex < 0) return null
+  return normalized.slice(markerIndex + marker.length)
+}
+
+const isOpenUICatalogIndexModule = (moduleId: string) => {
+  const sourcePath = getOpenUIBlocksSourcePath(moduleId)
+  return (
+    sourcePath === 'index.ts' ||
+    sourcePath === 'library.ts' ||
+    sourcePath === 'registry/all.ts'
+  )
+}
+
+const isOpenUIThemeModule = (moduleId: string) => {
+  const sourcePath = getOpenUIBlocksSourcePath(moduleId)
+  return (
+    sourcePath === 'theme.ts' ||
+    sourcePath === 'theme-presets.ts' ||
+    sourcePath === 'theme-apply.ts'
+  )
+}
+
+const isOpenUISupportModule = (moduleId: string) => {
+  const sourcePath = getOpenUIBlocksSourcePath(moduleId)
+  return Boolean(
+    sourcePath?.startsWith('section-kit/') ||
+    sourcePath?.startsWith('lib/') ||
+    sourcePath === 'integrations.tsx',
+  )
+}
 
 const isOpenUIPrimitiveModule = (moduleId: string) =>
   normalizeModuleId(moduleId).includes(
@@ -241,12 +298,18 @@ const getOpenUICapsuleFileName = (moduleId: string) => {
 
 const isOpenUIRuntimeCoreModule = (moduleId: string) =>
   isOpenUIRuntimeModule(moduleId) &&
+  !isOpenUICatalogIndexModule(moduleId) &&
+  !isOpenUIThemeModule(moduleId) &&
+  !isOpenUISupportModule(moduleId) &&
   !isOpenUIPrimitiveModule(moduleId) &&
   !isOpenUISectionModule(moduleId) &&
   getOpenUICapsuleFileName(moduleId) === null
 
 const getOpenUIRuntimeChunkName = (moduleId: string) => {
   if (!isOpenUIRuntimeModule(moduleId)) return null
+  if (isOpenUICatalogIndexModule(moduleId)) return null
+  if (isOpenUIThemeModule(moduleId)) return 'openui-theme'
+  if (isOpenUISupportModule(moduleId)) return 'openui-runtime-support'
   if (isOpenUIPrimitiveModule(moduleId)) {
     return `openui-primitive-${getOpenUIFileBaseName(moduleId)}`
   }
