@@ -6,6 +6,7 @@ const originalPexelsKey = process.env.PEXELS_API_KEY
 const originalVitePexelsKey = process.env.VITE_PEXELS_API_KEY
 const originalUnsplashKey = process.env.UNSPLASH_ACCESS_KEY
 const originalViteUnsplashKey = process.env.VITE_UNSPLASH_ACCESS_KEY
+const originalAppBaseUrl = process.env.APP_BASE_URL
 const originalFetch = globalThis.fetch
 
 const restoreEnv = () => {
@@ -29,6 +30,11 @@ const restoreEnv = () => {
   } else {
     process.env.VITE_UNSPLASH_ACCESS_KEY = originalViteUnsplashKey
   }
+  if (originalAppBaseUrl === undefined) {
+    delete process.env.APP_BASE_URL
+  } else {
+    process.env.APP_BASE_URL = originalAppBaseUrl
+  }
 }
 
 describe('preview image URL resolution', () => {
@@ -36,12 +42,52 @@ describe('preview image URL resolution', () => {
     restoreEnv()
     delete process.env.UNSPLASH_ACCESS_KEY
     delete process.env.VITE_UNSPLASH_ACCESS_KEY
+    delete process.env.APP_BASE_URL
     globalThis.fetch = originalFetch
   })
 
   afterEach(() => {
     globalThis.fetch = originalFetch
     restoreEnv()
+  })
+
+  it('reuses the dashboard preview route resolved image instead of re-searching Pexels', async () => {
+    process.env.APP_BASE_URL = 'https://ship-fast.test'
+    process.env.PEXELS_API_KEY = 'pexels-key'
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = new URL(String(input))
+      if (url.origin === 'https://ship-fast.test') {
+        return new Response(null, {
+          status: 302,
+          headers: {
+            Location:
+              'https://images.pexels.test/photos/exact-dashboard-image.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+          },
+        })
+      }
+      throw new Error(`unexpected provider lookup ${String(input)}`)
+    })
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    const rewritten = await rewritePreviewImageUrls(
+      '<img alt="Hero" src="/api/pexels?query=glass+installations&w=800&h=600&seed=dashboard-seed">',
+    )
+
+    const calls = fetchMock.mock.calls as unknown as Array<
+      [RequestInfo | URL, RequestInit | undefined]
+    >
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(String(calls[0]?.[0])).toBe(
+      'https://ship-fast.test/api/pexels?query=glass+installations&w=800&h=600&seed=dashboard-seed',
+    )
+    expect(calls[0]?.[1]).toMatchObject({
+      redirect: 'manual',
+    })
+    expect(rewritten).toContain(
+      'https://images.pexels.test/photos/exact-dashboard-image.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+    )
+    expect(rewritten).not.toContain('/api/pexels')
+    expect(rewritten).not.toContain('picsum.photos')
   })
 
   it('uses the same seed-specific Pexels selection as the dashboard direct preview route', async () => {
