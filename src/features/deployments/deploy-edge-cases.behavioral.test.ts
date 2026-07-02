@@ -34,7 +34,8 @@ import {
   buildLakebedAnonymousDeployRequest,
   deployLakebedProjectFiles,
 } from './server/lakebed-deploy-service'
-import { build } from 'esbuild'
+import { build, transform } from 'esbuild'
+import { buildOpenUILakebedProjectFiles } from '../exports/services/openui-lakebed-export-builder'
 import { buildStaticLakebedProjectFiles } from './server/lakebed-static-project-builder'
 import { createLakebedPublishResponse } from './server/lakebed-publish-response'
 import * as github from '../../../convex/github'
@@ -130,6 +131,68 @@ const loadAnonymousDeployServerCapsule = async (
     }
   }
   return mod.default
+}
+
+const executeAnonymousDeployClientBundle = async (
+  files: Record<string, string>,
+  path = '/',
+) => {
+  const deployRequest = await buildLakebedAnonymousDeployRequest(files)
+  const clientBundle = Buffer.from(
+    deployRequest.clientBundle,
+    'base64',
+  ).toString('utf8')
+  const executable = await transform(clientBundle, {
+    format: 'iife',
+    globalName: '__LakebedAnonymousClient',
+    logLevel: 'silent',
+  })
+  const dom = new JSDOM('<div id="app"></div>', {
+    runScripts: 'outside-only',
+    url: `https://deploy-smoke.lakebed.app${path}`,
+  })
+  const errors: unknown[] = []
+  const originalConsoleError = dom.window.console.error
+  dom.window.console.error = (...args: unknown[]) => {
+    errors.push(args.map(String).join(' '))
+    originalConsoleError(...args)
+  }
+  dom.window.addEventListener('error', (event: ErrorEvent) => {
+    errors.push(event.error ?? event.message)
+  })
+  dom.window.addEventListener(
+    'unhandledrejection',
+    (event: Event & { reason?: unknown }) => {
+      errors.push(event.reason ?? event)
+    },
+  )
+  Object.defineProperty(dom.window, 'fetch', {
+    configurable: true,
+    value: async () =>
+      new Response(JSON.stringify(null), {
+        headers: { 'content-type': 'application/json' },
+      }),
+  })
+
+  let evalError: unknown
+  try {
+    dom.window.eval(executable.code)
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 25))
+  } catch (error) {
+    evalError = error
+  }
+
+  const app = dom.window.document.querySelector('#app')
+  const text = app?.textContent ?? ''
+  const html = app?.innerHTML ?? ''
+  dom.window.close()
+
+  return {
+    errors,
+    evalError,
+    html,
+    text,
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -513,6 +576,33 @@ export default capsule({
       expect(validated.artifact.deployTarget).toBe('anonymous-source')
       expect(validated.clientBundleHash).toBe(built.clientBundleHash)
       expect(validated.artifactHash).toBe(built.artifactHash)
+    })
+
+    it('boots the deployed browser bundle for generated Lakebed auth and fullstack sections', async () => {
+      const project = await buildOpenUILakebedProjectFiles({
+        source:
+          'root = PageSwitch(["Home","Auth"], [SaasNavbar(), SignIn("Sign in")])',
+        siteSpecJson: JSON.stringify({ projectName: 'Lakebed Runtime Smoke' }),
+        sessionId: 'lakebed-runtime-smoke',
+        target: 'lakebed',
+      })
+      const home = await executeAnonymousDeployClientBundle(project.files, '/')
+      const auth = await executeAnonymousDeployClientBundle(
+        project.files,
+        '/auth',
+      )
+
+      expect(home.evalError).toBeUndefined()
+      expect(home.errors).toEqual([])
+      expect(home.text).toContain('Chronos AI')
+      expect(home.text).not.toBe('')
+      expect(home.html).not.toContain('Generated page')
+
+      expect(auth.evalError).toBeUndefined()
+      expect(auth.errors).toEqual([])
+      expect(auth.text).toContain('Sign in')
+      expect(auth.text).not.toBe('')
+      expect(auth.html).not.toContain('Not found')
     })
 
     it('rejects a null payload', () => {
