@@ -160,6 +160,7 @@ describe('root document hydration hardening', () => {
   })
 
   it('renders a single document shell with Clerk deferred out of the root', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', '')
     vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_dummy')
     const { Route } = await import('@/routes/__root')
     const RootComponent = Route.options.component as React.ComponentType
@@ -209,6 +210,7 @@ describe('root document hydration hardening', () => {
   })
 
   it('does not mount anonymous session claiming from the root even when Clerk and VITE_CONVEX_URL are configured', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', '')
     vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_dummy')
     vi.stubEnv('VITE_CONVEX_SELF_HOSTED_URL', '')
     vi.stubEnv('VITE_CONVEX_URL', 'https://convex.example.test')

@@ -32,6 +32,7 @@ type TestClerk = {
 const importControls = async (publishableKey: string | undefined) => {
   vi.resetModules()
   vi.unstubAllEnvs()
+  vi.stubEnv('VITE_DISABLE_CLERK', '')
   if (publishableKey !== undefined) {
     vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', publishableKey)
     vi.stubEnv('CLERK_PUBLISHABLE_KEY', '')
