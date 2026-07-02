@@ -2,7 +2,6 @@ import { chat } from '@tanstack/ai'
 import { getProvider, supportsReasoningEffort } from './model-list.ts'
 import { getAdapter } from './model.ts'
 import { talaasChat } from './talaas.ts'
-import { windsurfChat } from './windsurf.ts'
 
 // Resilient single-shot text generation over @tanstack/ai. Critically, it detects
 // RUN_ERROR chunks (which streamToText silently swallows -> "") and retries
@@ -54,21 +53,19 @@ async function once(
     const stream =
       provider === 'talaas'
         ? talaasChat(modelId, system, user, ac.signal)
-        : provider === 'windsurf'
-          ? windsurfChat(modelId, system, user, ac.signal)
-          : chat({
-              adapter: getAdapter(modelId),
-              systemPrompts: [system],
-              messages: [{ role: 'user', content: user }],
-              modelOptions: {
-                ...(supportsReasoningEffort(modelId)
-                  ? { reasoning_effort: 'low', include_reasoning: false }
-                  : {}),
-                citation_options: 'disabled',
-                top_p: 1,
-              },
-              abortController: ac,
-            })
+        : chat({
+            adapter: getAdapter(modelId),
+            systemPrompts: [system],
+            messages: [{ role: 'user', content: user }],
+            modelOptions: {
+              ...(supportsReasoningEffort(modelId)
+                ? { reasoning_effort: 'low', include_reasoning: false }
+                : {}),
+              citation_options: 'disabled',
+              top_p: 1,
+            },
+            abortController: ac,
+          })
     let text = ''
     let runError: string | null = null
     for await (const chunk of stream) {

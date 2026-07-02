@@ -22,7 +22,7 @@ const ADAPTERS: Record<
 }
 
 // Adapter fallback used when the requested id (or the configured DEFAULT_MODEL)
-// is not backed by a groq/gemini SDK adapter — e.g. windsurf/talaas ids that are
+// is not backed by a groq/gemini SDK adapter — e.g. talaas ids that are
 // selectable in the picker but routed through a different backend. Falling back to
 // a known-good groq adapter keeps getAdapter total and always returns a valid
 // groq|gemini provider.
