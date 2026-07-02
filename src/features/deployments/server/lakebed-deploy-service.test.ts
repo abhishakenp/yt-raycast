@@ -117,6 +117,67 @@ describe('lakebed deploy service', () => {
     })
   })
 
+  it('updates the saved anonymous Lakebed deploy instead of creating a new URL', async () => {
+    const requests: Array<{
+      authorization?: string
+      body: string
+      method?: string
+      url: string
+    }> = []
+    const fetchImpl = (async (url: RequestInfo | URL, init?: RequestInit) => {
+      requests.push({
+        authorization:
+          init?.headers instanceof Headers
+            ? (init.headers.get('authorization') ?? undefined)
+            : ((init?.headers as Record<string, string> | undefined)
+                ?.Authorization ??
+              (init?.headers as Record<string, string> | undefined)
+                ?.authorization),
+        body: String(init?.body ?? ''),
+        method: init?.method,
+        url: String(url),
+      })
+      return new Response(
+        JSON.stringify({
+          deployId: 'dep_existing',
+          url: 'https://memory-deploy.lakebed.app',
+          updatedAt: '2026-06-18T00:05:00.000Z',
+          claimUrl: 'http://localhost:4321/claim/dep_existing/token_existing',
+          limits: { artifactBytes: 1_048_576 },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      )
+    }) as typeof fetch
+
+    const result = await deployLakebedProjectFiles({
+      api: 'http://localhost:4321',
+      existingDeployment: {
+        deployId: 'dep_existing',
+        url: 'https://memory-deploy.lakebed.app',
+        claimUrl: 'http://localhost:4321/claim/dep_existing/token_existing',
+      },
+      fetchImpl,
+      files,
+    })
+
+    expect(requests).toHaveLength(1)
+    expect(requests[0]).toMatchObject({
+      authorization: 'Bearer token_existing',
+      method: 'PUT',
+      url: 'http://localhost:4321/v1/deploys/dep_existing',
+    })
+    expect(requests[0]?.body).not.toContain('sourceMappingURL')
+    expect(JSON.parse(requests[0]?.body ?? '{}')).toMatchObject({
+      artifact: { deployTarget: 'anonymous-source' },
+      clientVersion: expect.any(String),
+    })
+    expect(result).toMatchObject({
+      deployId: 'dep_existing',
+      url: 'https://memory-deploy.lakebed.app',
+      requestBodyBytes: requests[0]?.body.length,
+    })
+  })
+
   it('isReservedEndpointPath rejects /admin', () => {
     expect(isReservedEndpointPath('/admin')).toBe(true)
   })

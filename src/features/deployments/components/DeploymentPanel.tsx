@@ -125,6 +125,12 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
   const lakebedTarget = visibleExportTargets.find(
     (target) => target.target === 'lakebed',
   )
+  const shipfastRefreshing =
+    deploymentStatus?.status === 'updating' &&
+    deploymentStatus.provider === 'ship-fast'
+  const lakebedRefreshing =
+    deploymentStatus?.status === 'updating' &&
+    deploymentStatus.provider === 'lakebed'
   const isPrivate = exportTargets?.isPrivate === true
   const lakebedDeploymentUrl =
     lakebedTarget?.deployedUrl ??
@@ -302,7 +308,7 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
 
       <button
         className="grid min-h-16 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-left transition-colors hover:border-cyan-300/30 hover:bg-cyan-300/10 disabled:cursor-wait disabled:opacity-60"
-        disabled={activeTarget !== undefined}
+        disabled={activeTarget !== undefined || shipfastRefreshing}
         onClick={() => startPublish('shipfast')}
         type="button"
       >
@@ -316,7 +322,9 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
           <span className="truncate text-xs text-white/48">
             {activeTarget === 'shipfast'
               ? 'Publishing...'
-              : targetDetails.shipfast.description}
+              : shipfastRefreshing
+                ? 'Updating deployment...'
+                : targetDetails.shipfast.description}
           </span>
         </span>
         <span
@@ -324,7 +332,7 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
           className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.06] text-white/48"
           data-deployment-action="shipfast"
         >
-          {activeTarget === 'shipfast' ? (
+          {activeTarget === 'shipfast' || shipfastRefreshing ? (
             <LoaderCircle className="size-4 animate-spin" strokeWidth={1.8} />
           ) : (
             <ExternalLink className="size-4" strokeWidth={1.8} />
@@ -334,7 +342,7 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
 
       <button
         className="grid min-h-16 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-left transition-colors hover:border-cyan-300/30 hover:bg-cyan-300/10 disabled:cursor-wait disabled:opacity-60"
-        disabled={activeTarget !== undefined}
+        disabled={activeTarget !== undefined || lakebedRefreshing}
         onClick={() => startPublish('lakebed')}
         style={{ backgroundImage: lakebedProgressBackground }}
         type="button"
@@ -351,9 +359,11 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
           <span className="truncate text-xs text-white/48">
             {activeTarget === 'lakebed'
               ? 'Publishing...'
-              : showLakebedProgress && lakebedProgressPercent > 0
-                ? `${lakebedProgressPercent}%`
-                : targetDetails.lakebed.description}
+              : lakebedRefreshing
+                ? 'Updating deployment...'
+                : showLakebedProgress && lakebedProgressPercent > 0
+                  ? `${lakebedProgressPercent}%`
+                  : targetDetails.lakebed.description}
           </span>
         </span>
         <span
@@ -361,7 +371,9 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
           className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.06] text-white/48"
           data-deployment-action="lakebed"
         >
-          {activeTarget === 'lakebed' || waitingTarget === 'lakebed' ? (
+          {activeTarget === 'lakebed' ||
+          waitingTarget === 'lakebed' ||
+          lakebedRefreshing ? (
             <LoaderCircle className="size-4 animate-spin" strokeWidth={1.8} />
           ) : (
             <ExternalLink className="size-4" strokeWidth={1.8} />

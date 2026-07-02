@@ -14,8 +14,10 @@ type MockDeploymentTarget = {
 }
 
 type MockDeploymentStatus = {
-  provider: 'lakebed'
+  provider: 'lakebed' | 'ship-fast'
+  status?: 'ready' | 'failed' | 'updating'
   url: string
+  pendingPreviewVersion?: number
 }
 
 type MockExportTargets = {
@@ -440,6 +442,29 @@ describe('DeploymentPanel (behavioral)', () => {
       const view = render(<DeploymentPanel sessionId="session_123" />)
 
       expect(view.getByText('Open Lakebed')).toBeTruthy()
+    })
+
+    it('shows deployment refresh progress from realtime deployment status', () => {
+      setDeploymentStatus({
+        provider: 'ship-fast',
+        status: 'updating',
+        url: 'https://session-123.ship-fast.io',
+        pendingPreviewVersion: 2,
+      })
+
+      const view = render(<DeploymentPanel sessionId="session_123" />)
+      const button = view.getByText('Publish ShipFast').closest('button')!
+
+      expect(button.disabled).toBe(true)
+      expect(view.getByText('Updating deployment...')).toBeTruthy()
+      expect(
+        view.container.querySelector(
+          '[data-deployment-action="shipfast"] .animate-spin',
+        ),
+      ).toBeTruthy()
+
+      fireEvent.click(button)
+      expect(convexState.publishPreview).not.toHaveBeenCalled()
     })
   })
 

@@ -29,6 +29,7 @@ import type {
   OpenUIExportInput,
   BrandLogoSelection,
 } from './openui-export-types'
+import { rewritePreviewImageUrls } from './preview-image-url-resolution'
 
 type ParsedOpenUIProgram = {
   root: ElementNode
@@ -508,9 +509,6 @@ const buildRouteScript = (
   show(0);
 })();`
 
-const absolutizeHtmlAssetUrls = (html: string): string =>
-  html.replaceAll('="/api/pexels?', '="https://ship-fast.io/api/pexels?')
-
 export async function parseOpenUIForHtmlExport(
   source: string,
   siteSpecJson?: string,
@@ -650,11 +648,11 @@ const buildStandaloneHtmlDocument = async (
     input.selectedBrandLogo,
   )) as RenderResult
   const css = readPreviewCss()
-  const pagesMarkup = absolutizeHtmlAssetUrls(
+  const pagesMarkup = await rewritePreviewImageUrls(
     await buildPagesMarkup(parsed, locale, input.selectedBrandLogo),
   )
   const bodyMarkup = isUsablePreviewHtml(input.previewHtml)
-    ? extractBodyMarkup(input.previewHtml)
+    ? await rewritePreviewImageUrls(extractBodyMarkup(input.previewHtml))
     : pagesMarkup
   const genui = readGenUIExportMetadata(siteSpec)
 

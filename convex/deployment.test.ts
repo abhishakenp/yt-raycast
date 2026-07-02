@@ -48,12 +48,16 @@ const deploymentTest = () => {
   return t
 }
 
+const drainScheduledFunctions = async (t: ReturnType<typeof convexTest>) => {
+  for (let i = 0; i < 5; i++) {
+    await new Promise((r) => setTimeout(r, 10))
+    await t.finishInProgressScheduledFunctions()
+  }
+}
+
 afterEach(async () => {
   if (activeTest) {
-    for (let i = 0; i < 5; i++) {
-      await new Promise((r) => setTimeout(r, 10))
-      await activeTest.finishInProgressScheduledFunctions()
-    }
+    await drainScheduledFunctions(activeTest)
     activeTest = null
   }
 })
@@ -195,7 +199,7 @@ test('publishPreview repoints an existing deployment to the latest preview versi
   expect(status?.previewVersion).toBe(2)
 })
 
-test('public preview by deployment slug serves the published preview version until republished', async () => {
+test('public preview by deployment slug auto-refreshes after an edited preview rebuild', async () => {
   const t = deploymentTest()
 
   const { sessionId } = await createTestSession(t)
@@ -212,30 +216,136 @@ test('public preview by deployment slug serves the published preview version unt
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     editType: 'text',
-    afterHtml: '<html><body><h1>Unpublished edit</h1></body></html>',
+    afterHtml: '<html><body><h1>Auto-published edit</h1></body></html>',
   })
 
-  const publicBeforeRepublish = await t.query(api.sessions.getPublicPreview, {
+  const queuedStatus = await t.query(api.sessions.getDeploymentStatus, {
+    sessionId,
+  })
+  const publicBeforeRebuild = await t.query(api.sessions.getPublicPreview, {
     lookup: 'versioned-site',
   })
   const directLatestPreview = await t.query(api.sessions.getPublicPreview, {
     lookup: sessionId,
   })
 
-  expect(publicBeforeRepublish?.previewVersion).toBe(1)
-  expect(publicBeforeRepublish?.html).not.toContain('Unpublished edit')
+  expect(queuedStatus).toMatchObject({
+    status: 'updating',
+    previewVersion: 1,
+    pendingPreviewVersion: 2,
+  })
+  expect(publicBeforeRebuild?.previewVersion).toBe(1)
+  expect(publicBeforeRebuild?.html).not.toContain('Auto-published edit')
   expect(directLatestPreview?.previewVersion).toBe(2)
-  expect(directLatestPreview?.html).toContain('Unpublished edit')
+  expect(directLatestPreview?.html).toContain('Auto-published edit')
 
-  await t.mutation(api.sessions.publishPreview, {
+  await t.mutation(internal.sessions.rebuildEditedSessionExports, {
     sessionId,
-    anonymousOwnerSecret: 'owner-secret',
+    previewVersion: 2,
   })
 
-  const publicAfterRepublish = await t.query(api.sessions.getPublicPreview, {
+  const statusAfterRebuild = await t.query(api.sessions.getDeploymentStatus, {
+    sessionId,
+  })
+  const publicAfterRebuild = await t.query(api.sessions.getPublicPreview, {
     lookup: 'versioned-site',
   })
 
-  expect(publicAfterRepublish?.previewVersion).toBe(2)
-  expect(publicAfterRepublish?.html).toContain('Unpublished edit')
+  expect(statusAfterRebuild).toMatchObject({
+    status: 'ready',
+    previewVersion: 2,
+  })
+  expect(statusAfterRebuild).not.toHaveProperty('pendingPreviewVersion')
+  expect(publicAfterRebuild?.previewVersion).toBe(2)
+  expect(publicAfterRebuild?.html).toContain('Auto-published edit')
 })
+
+test.each([
+  [
+    'theme',
+    async (t: ReturnType<typeof convexTest>, sessionId: Id<'sessions'>) =>
+      await t.mutation(api.sessions.setThemeOverride, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        themeOverride: 'nordic-dawn',
+        themeMode: 'light',
+      }),
+  ],
+  [
+    'language',
+    async (t: ReturnType<typeof convexTest>, sessionId: Id<'sessions'>) =>
+      await t.mutation(api.sessions.setPreferredLanguage, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        preferredLanguage: 'lt',
+      }),
+  ],
+  [
+    'brand',
+    async (t: ReturnType<typeof convexTest>, sessionId: Id<'sessions'>) =>
+      await t.mutation(api.sessions.setBrandLogo, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        brandLogo: {
+          name: 'Acme Glass',
+          domain: 'acme.test',
+          brandId: 'brand_acme',
+          icon: 'https://cdn.test/acme-icon.png',
+          logo: 'https://cdn.test/acme-logo.png',
+        },
+      }),
+  ],
+])(
+  '%s changes mark an existing deployment as updating and queue rebuilt artifacts',
+  async (name, mutate) => {
+    const t = deploymentTest()
+    const prompt = `Refresh ${name} preferences`
+    const { sessionId } = await createTestSession(t, prompt)
+
+    await persistGeneratedPreview(t, sessionId, prompt)
+
+    await t.mutation(api.sessions.publishPreview, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      requestedSlug: `refresh-${name}-preferences`,
+    })
+
+    await mutate(t, sessionId)
+
+    const updatingStatus = await t.query(api.sessions.getDeploymentStatus, {
+      sessionId,
+    })
+
+    expect(updatingStatus).toMatchObject({
+      status: 'updating',
+      previewVersion: 1,
+      pendingPreviewVersion: 1,
+    })
+
+    await t.mutation(internal.sessions.rebuildEditedSessionExports, {
+      sessionId,
+      previewVersion: 1,
+    })
+
+    const targets = await t.query(api.sessions.getExportTargets, {
+      lookup: sessionId,
+    })
+    expect(targets.targets).toHaveLength(4)
+    expect(
+      targets.targets.every(
+        (target) =>
+          target.currentPreviewVersion === 1 &&
+          ['queued', 'building', 'ready'].includes(target.artifactStatus),
+      ),
+    ).toBe(true)
+
+    const readyStatus = await t.query(api.sessions.getDeploymentStatus, {
+      sessionId,
+    })
+    expect(readyStatus).toMatchObject({
+      status: 'ready',
+      previewVersion: 1,
+    })
+    expect(readyStatus).not.toHaveProperty('pendingPreviewVersion')
+  },
+)

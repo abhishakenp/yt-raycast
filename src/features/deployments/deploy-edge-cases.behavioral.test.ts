@@ -45,6 +45,38 @@ const esbuildCalls = () =>
     .__esbuildBuildCalls ?? []
 
 const lakebedRoot = () => join(process.cwd(), '.lakebed')
+const originalFetch = globalThis.fetch
+const originalStockEnv = {
+  PEXELS_API_KEY: process.env.PEXELS_API_KEY,
+  VITE_PEXELS_API_KEY: process.env.VITE_PEXELS_API_KEY,
+  UNSPLASH_ACCESS_KEY: process.env.UNSPLASH_ACCESS_KEY,
+  VITE_UNSPLASH_ACCESS_KEY: process.env.VITE_UNSPLASH_ACCESS_KEY,
+}
+
+const clearStockImageEnv = () => {
+  delete process.env.PEXELS_API_KEY
+  delete process.env.VITE_PEXELS_API_KEY
+  delete process.env.UNSPLASH_ACCESS_KEY
+  delete process.env.VITE_UNSPLASH_ACCESS_KEY
+}
+
+const restoreStockImageEnv = () => {
+  for (const [key, value] of Object.entries(originalStockEnv)) {
+    if (value === undefined) {
+      delete process.env[key]
+    } else {
+      process.env[key] = value
+    }
+  }
+}
+
+const expectNoStockProviderCredentialsOrProxy = (artifact: string) => {
+  expect(artifact).not.toContain('PEXELS_API_KEY')
+  expect(artifact).not.toContain('VITE_PEXELS_API_KEY')
+  expect(artifact).not.toContain('api.pexels.com')
+  expect(artifact).not.toContain('/api/pexels')
+  expect(artifact).not.toContain('ship-fast.io/api/pexels')
+}
 
 const writeProjectFiles = async (
   directory: string,
@@ -686,15 +718,50 @@ export default capsule({
 // ---------------------------------------------------------------------------
 
 describe('Lakebed static project builder', () => {
+  beforeEach(() => {
+    clearStockImageEnv()
+    globalThis.fetch = originalFetch
+  })
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+    restoreStockImageEnv()
+  })
+
   describe('preview image rewrite', () => {
-    it('rewrites a Pexels preview image API URL to a Picsum fallback URL', async () => {
+    it('rewrites a Pexels preview image API URL to the resolved provider URL', async () => {
+      process.env.PEXELS_API_KEY = 'pexels-key'
+      const resolvedPexelsUrl =
+        'https://images.pexels.com/photos/29224184/pexels-photo-29224184.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+      const fetchMock = vi.fn(async () =>
+        Response.json({
+          photos: [
+            {
+              src: {
+                medium: `${resolvedPexelsUrl}&size=medium`,
+                large: resolvedPexelsUrl,
+                large2x: `${resolvedPexelsUrl}&size=large2x`,
+                original: `${resolvedPexelsUrl}&size=original`,
+              },
+            },
+          ],
+        }),
+      )
+      vi.stubGlobal('fetch', fetchMock)
+
       const project = await buildStaticLakebedProjectFiles({
         source:
           '<!doctype html><html><head><title>Images</title></head><body><img alt="Max the dog" src="/api/pexels?query=max-the-dog&w=800&h=600"></body></html>',
       })
       const preview = project.files['client/preview.ts']
-      expect(preview).toContain('https://picsum.photos/seed/')
-      expect(preview).not.toContain('/api/pexels')
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.pexels.com/v1/search?query=max-the-dog&per_page=15&orientation=landscape',
+        { headers: { Authorization: 'pexels-key' } },
+      )
+      expect(preview).toContain(resolvedPexelsUrl)
+      expectNoStockProviderCredentialsOrProxy(preview)
+      expect(preview).not.toContain('picsum.photos')
     })
 
     it('preserves width and height from the original URL', async () => {
