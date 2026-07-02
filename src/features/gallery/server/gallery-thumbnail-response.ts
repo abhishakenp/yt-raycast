@@ -3,6 +3,7 @@ import { ConvexHttpClient } from 'convex/browser'
 import { api } from '../../../../convex/_generated/api'
 import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import { buildOpenUIHtmlExport } from '../../exports/services/openui-html-export-builder'
+import type { BrandLogoSelection } from '../../exports/services/openui-export-types'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type GalleryConvexClient = Pick<ConvexHttpClient, 'query'>
@@ -29,6 +30,7 @@ type GalleryThumbnailSession = {
     openuiReady?: boolean | null
     previewReady?: boolean | null
   }
+  selectedBrandLogo?: BrandLogoSelection | null
 }
 
 const escapeHtml = (value: string): string =>
@@ -157,6 +159,7 @@ const renderOpenUiGalleryHtml = async (
       isDark: readGalleryIsDark(session),
       locale: readString(session.preferredLanguage) ?? 'en',
       includeBadge: false,
+      selectedBrandLogo: session.selectedBrandLogo ?? null,
     })
     const html =
       typeof rendered.body === 'string'

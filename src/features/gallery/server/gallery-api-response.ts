@@ -3,6 +3,7 @@ import { ConvexHttpClient } from 'convex/browser'
 import { api } from '../../../../convex/_generated/api'
 import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import { buildOpenUIHtmlExport } from '../../exports/services/openui-html-export-builder'
+import type { BrandLogoSelection } from '../../exports/services/openui-export-types'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type GalleryConvexClient = Pick<ConvexHttpClient, 'query'>
@@ -87,6 +88,25 @@ const readGalleryThemeName = (item: GalleryApiItem): string | undefined =>
 const readGalleryIsDark = (item: GalleryApiItem): boolean =>
   item.themeMode !== 'light'
 
+const readSelectedBrandLogo = (
+  item: GalleryApiItem,
+): BrandLogoSelection | null => {
+  const logo = item.selectedBrandLogo
+  if (logo === null || typeof logo !== 'object') return null
+  const name = readString((logo as Record<string, unknown>).name)
+  if (!name) return null
+  const icon = readString((logo as Record<string, unknown>).icon)
+  const logoUrl = readString((logo as Record<string, unknown>).logo)
+  if (!icon && !logoUrl) return null
+  return {
+    name,
+    domain: readString((logo as Record<string, unknown>).domain) ?? null,
+    brandId: readString((logo as Record<string, unknown>).brandId) ?? null,
+    icon: icon ?? null,
+    logo: logoUrl ?? null,
+  }
+}
+
 const renderGalleryItemStaticHtml = async (
   item: GalleryApiItem,
 ): Promise<GalleryApiItem | null> => {
@@ -110,6 +130,7 @@ const renderGalleryItemStaticHtml = async (
       isDark: readGalleryIsDark(item),
       locale: readString(item.preferredLanguage) ?? 'en',
       includeBadge: false,
+      selectedBrandLogo: readSelectedBrandLogo(item),
     })
     const body =
       typeof rendered.body === 'string'

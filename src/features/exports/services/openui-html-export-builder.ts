@@ -6,13 +6,29 @@ import {
   type ElementNode,
 } from '@openuidev/lang-core'
 import { loadOpenUIRuntimeLibrary } from '@ship-fast/blocks/runtime'
-import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
+import { renderOpenUIToHTMLWithTheme as _renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
+
+type RenderResult = { html: string; cssVars: string }
+type BrandLogoAwareRenderer = (
+  source: string,
+  theme?: object | null,
+  locale?: string,
+  integrations?: object | null,
+  imageContext?: object | null,
+  brandLogo?: BrandLogoSelection | null,
+) => Promise<RenderResult>
+const renderOpenUIToHTMLWithTheme =
+  _renderOpenUIToHTMLWithTheme as unknown as BrandLogoAwareRenderer
 
 import { preprocessOpenUIResponse } from '@ship-fast/engine'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { buildHtmlExport } from './html-export-builder'
-import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
+import type {
+  BuiltExport,
+  OpenUIExportInput,
+  BrandLogoSelection,
+} from './openui-export-types'
 
 type ParsedOpenUIProgram = {
   root: ElementNode
@@ -585,6 +601,7 @@ const renderPageHtml = async (
   page: ElementNode,
   library: ParsedOpenUIProgram['library'],
   locale: string,
+  brandLogo?: BrandLogoSelection | null,
 ): Promise<string> => {
   const pageSource = jsonToOpenUI(page, library)
   const { html } = (await renderOpenUIToHTMLWithTheme(
@@ -592,22 +609,22 @@ const renderPageHtml = async (
     undefined,
     locale,
     undefined,
-  )) as {
-    html: string
-    cssVars: string
-  }
+    undefined,
+    brandLogo,
+  )) as RenderResult
   return html
 }
 
 const buildPagesMarkup = async (
   parsed: ParsedOpenUIProgram,
   locale: string,
+  brandLogo?: BrandLogoSelection | null,
 ): Promise<string> =>
   (
     await Promise.all(
       parsed.pages.map(async (page, index) => {
         const label = parsed.routes[index] ?? `Page ${index + 1}`
-        return `<section data-sf-export-page="${escapeHtml(label)}"${index === 0 ? '' : ' hidden'}>${await renderPageHtml(page, parsed.library, locale)}</section>`
+        return `<section data-sf-export-page="${escapeHtml(label)}"${index === 0 ? '' : ' hidden'}>${await renderPageHtml(page, parsed.library, locale, brandLogo)}</section>`
       }),
     )
   ).join('\n')
@@ -629,13 +646,12 @@ const buildStandaloneHtmlDocument = async (
     undefined,
     locale,
     undefined,
-  )) as {
-    html: string
-    cssVars: string
-  }
+    undefined,
+    input.selectedBrandLogo,
+  )) as RenderResult
   const css = readPreviewCss()
   const pagesMarkup = absolutizeHtmlAssetUrls(
-    await buildPagesMarkup(parsed, locale),
+    await buildPagesMarkup(parsed, locale, input.selectedBrandLogo),
   )
   const bodyMarkup = isUsablePreviewHtml(input.previewHtml)
     ? extractBodyMarkup(input.previewHtml)

@@ -9,6 +9,7 @@ import { createElement } from 'react'
 import {
   Renderer,
   ImageContextProvider,
+  BrandLogoProvider,
   extractOpenUIRuntimeComponentNames,
   loadOpenUIRuntimeLibrary,
 } from '@ship-fast/blocks/runtime'
@@ -51,14 +52,23 @@ const ssrConvexStub = {
  * Wrap a render tree with the SSR-safe providers (image context + inert
  * lakebed/convex stubs) so any capsule renders without throwing on the server.
  */
-function withSSRProviders(tree, imageContext) {
+function withSSRProviders(tree, imageContext, brandLogo) {
+  const withImage = createElement(
+    ImageContextProvider,
+    { value: imageContext },
+    tree,
+  )
+  const withBrandLogo =
+    brandLogo && typeof brandLogo === 'object'
+      ? createElement(BrandLogoProvider, { value: brandLogo }, withImage)
+      : withImage
   return createElement(
     ConvexProvider,
     { client: ssrConvexStub },
     createElement(
       LakebedSessionProvider,
       { sessionId: 'ssr-preview' },
-      createElement(ImageContextProvider, { value: imageContext }, tree),
+      withBrandLogo,
     ),
   )
 }
@@ -98,6 +108,7 @@ const openUiRenderDiagnostics = (source, preprocessed) => {
  * @param {string} locale - Locale code for translations
  * @param {object} integrations - Integration configs (medusa)
  * @param {object} imageContext - Page-level prompt/brand context for relevant stock images
+ * @param {any} brandLogo - Selected brand logo selection for SSR
  * @returns {string} Rendered HTML
  */
 export async function renderOpenUIToHTML(
@@ -106,6 +117,7 @@ export async function renderOpenUIToHTML(
   locale = 'en',
   integrations = null,
   imageContext = null,
+  brandLogo = null,
 ) {
   let preprocessed = null
   try {
@@ -122,6 +134,7 @@ export async function renderOpenUIToHTML(
           isStreaming: false,
         }),
         imageContext,
+        brandLogo,
       ),
     )
 
@@ -151,6 +164,7 @@ export async function renderOpenUIToHTMLWithTheme(
   locale = 'en',
   integrations = null,
   imageContext = null,
+  brandLogo = null,
 ) {
   const html = await renderOpenUIToHTML(
     source,
@@ -158,6 +172,7 @@ export async function renderOpenUIToHTMLWithTheme(
     locale,
     integrations,
     imageContext,
+    brandLogo,
   )
 
   // Convert theme tokens to CSS variables

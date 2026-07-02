@@ -440,6 +440,76 @@ describe('Gallery API Response', () => {
       expect(JSON.stringify(item)).not.toContain('RestaurantMenu("')
     })
 
+    it('renders selected brand logos into static OpenUI gallery HTML', async () => {
+      const selectedBrandLogo = {
+        brandId: 'idwTkaYgXe',
+        domain: 'thebeerstore.ca',
+        icon: 'https://cdn.brandfetch.io/idwTkaYgXe/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782982741853bfumLaCV7mbdS0jiIv',
+        logo: 'https://cdn.brandfetch.io/idwTkaYgXe/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782982741853bfumLaCV7mbdS0jiIv',
+        name: 'The Beer Store',
+      }
+      const mockClient = {
+        query: async () => ({
+          availableCategories: ['service'],
+          hasNext: false,
+          hasPrev: false,
+          items: [
+            {
+              categories: ['service'],
+              elapsed: 6424,
+              html: '<!doctype html><html lang="en"><body><main><h1>Stale brewery preview</h1><img src="https://cdn.example.test/stale-brewery.png" alt="stale screenshot"></main></body></html>',
+              imageUrl: 'https://cdn.example.test/k574-gallery.png',
+              moduleSource:
+                'home_nav = WineryBreweryNavbar("Craft Beer Brewery", ["Pradzia","Degustacijos"], "(503) 555-0148", "Pradzia", "Planuoti apsilankyma", "Pradzia", "0")\nhome_menu = RestaurantMenu("Redaguotas aludario meniu", "Lietuviskai isverstas sezoniniu alaus sarasas.", [{"name":"Sezoniniai leidimai","items":[{"name":"Ananasų sezoninis elis","description":"Tropines natos ir gaivi pabaiga","price":"7 €","tag":"Ribotas"}]}])\nhome = Stack([home_nav, home_menu])\nroot = PageSwitch(["Pradzia"], [home], "", {"Pradzia":"home"})',
+              preferredLanguage: 'lt',
+              previewVersion: 1,
+              prompt:
+                'a craft beer brewery with taproom tours and seasonal releases in portland',
+              readiness: {
+                homepageReady: null,
+                openuiReady: true,
+                previewReady: true,
+                siteSpecReady: null,
+              },
+              selectedBrandLogo,
+              sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+              siteSpecJson: JSON.stringify({
+                brand: 'Craft Beer Brewery',
+                projectName: 'Craft Beer Brewery',
+                theme: 't3-chat',
+              }),
+              themeMode: 'dark',
+              themeOverride: 'darkmatter',
+            },
+          ],
+          limit: 12,
+          page: 1,
+          total: 1,
+          totalPages: 1,
+        }),
+      }
+      const request = new Request('http://localhost/api/gallery')
+
+      const response = await createGalleryApiResponse(request, mockClient)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.items).toHaveLength(1)
+      const item = data.items[0]
+      const renderedHtml = item.html as string
+      expect(renderedHtml).toContain(selectedBrandLogo.icon)
+      expect(renderedHtml).toContain('data-brand-logo-selected="true"')
+      expect(renderedHtml).toContain('Craft Beer Brewery')
+      expect(renderedHtml).toContain('Redaguotas aludario meniu')
+      expect(renderedHtml).not.toContain('Stale brewery preview')
+      expect(renderedHtml).not.toContain('stale-brewery.png')
+      expect(renderedHtml).not.toContain('k574-gallery.png')
+      expect(renderedHtml).not.toContain('WineryBreweryNavbar("')
+      expect('imageUrl' in item).toBe(false)
+      expect('moduleSource' in item).toBe(false)
+      expect(JSON.stringify(item)).not.toContain('k574-gallery.png')
+    })
+
     it('does not serialize stale HTML or PNG fallback when an OpenUI gallery row cannot be rendered to static HTML', async () => {
       const mockClient = {
         query: async () => ({

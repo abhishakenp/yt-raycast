@@ -472,6 +472,68 @@ describe('Gallery Thumbnail Response', () => {
       expect(html).not.toContain('�PNG')
     })
 
+    it('renders the persisted selected brand logo into static OpenUI gallery HTML', async () => {
+      const selectedBrandLogo = {
+        brandId: 'idwTkaYgXe',
+        domain: 'thebeerstore.ca',
+        icon: 'https://cdn.brandfetch.io/idwTkaYgXe/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782982741853bfumLaCV7mbdS0jiIv',
+        logo: 'https://cdn.brandfetch.io/idwTkaYgXe/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782982741853bfumLaCV7mbdS0jiIv',
+        name: 'The Beer Store',
+      }
+      const mockClient = {
+        query: async () => ({
+          categories: ['service'],
+          cost: 0,
+          elapsed: 6424,
+          html: '<!doctype html><html lang="en"><body><main><h1>Stale brewery preview</h1><img src="https://cdn.example.test/stale-brewery.png" alt="stale screenshot"></main></body></html>',
+          moduleSource:
+            'home_nav = WineryBreweryNavbar("Craft Beer Brewery", ["Pradzia","Degustacijos"], "(503) 555-0148", "Pradzia", "Planuoti apsilankyma", "Pradzia", "0")\nhome_menu = RestaurantMenu("Redaguotas aludario meniu", "Lietuviskai isverstas sezoniniu alaus sarasas.", [{"name":"Sezoniniai leidimai","items":[{"name":"Ananasų sezoninis elis","description":"Tropines natos ir gaivi pabaiga","price":"7 €","tag":"Ribotas"}]}])\nhome = Stack([home_nav, home_menu])\nroot = PageSwitch(["Pradzia"], [home], "", {"Pradzia":"home"})',
+          openuiReady: true,
+          preferredLanguage: 'lt',
+          previewVersion: 1,
+          prompt:
+            'a craft beer brewery with taproom tours and seasonal releases in portland',
+          readiness: {
+            homepageReady: null,
+            openuiReady: true,
+            previewReady: true,
+            siteSpecReady: null,
+          },
+          selectedBrandLogo,
+          sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+          siteSpecJson: JSON.stringify({
+            brand: 'Craft Beer Brewery',
+            projectName: 'Craft Beer Brewery',
+            theme: 't3-chat',
+          }),
+          status: 'preview_ready',
+          themeMode: 'dark',
+          themeOverride: 'darkmatter',
+        }),
+      }
+
+      const response = await createGalleryThumbnailResponse(
+        'k574ms14ma9f94keq30r7dq24x89n1k2',
+        new Request(
+          'http://localhost/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/gallery-thumb',
+        ),
+        mockClient,
+      )
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get('content-type')).toBe(
+        'text/html; charset=utf-8',
+      )
+      const html = await response.text()
+      expect(html).toContain(selectedBrandLogo.icon)
+      expect(html).toContain('data-brand-logo-selected="true"')
+      expect(html).toContain('Craft Beer Brewery')
+      expect(html).toContain('Redaguotas aludario meniu')
+      expect(html).not.toContain('Stale brewery preview')
+      expect(html).not.toContain('stale-brewery.png')
+      expect(html).not.toContain('WineryBreweryNavbar("')
+    })
+
     it('returns a stable unavailable thumbnail when the gallery lookup fails', async () => {
       const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
       const mockClient = {
