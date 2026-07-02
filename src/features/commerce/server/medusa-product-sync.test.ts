@@ -282,7 +282,7 @@ describe('medusa product sync', () => {
     )
   })
 
-  it('replaces an existing session-scoped Medusa product so prices refresh without duplicates', async () => {
+  it('skips existing products so admin edits survive re-provisions', async () => {
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(
@@ -329,14 +329,6 @@ describe('medusa product sync', () => {
           status: 200,
         }),
       )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ deleted: true }), { status: 200 }),
-      )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ product: { id: 'prod_recreated' } }), {
-          status: 200,
-        }),
-      )
 
     const result = await syncGeneratedProductsToMedusa({
       adminEmail: 'admin@test.com',
@@ -356,18 +348,112 @@ describe('medusa product sync', () => {
         salesChannelId: 'sc_tenant',
       },
     })
-    expect(fetchImpl).toHaveBeenCalledWith(
-      'http://localhost:9000/admin/products/prod_existing',
-      expect.objectContaining({
-        method: 'DELETE',
-      }),
+    // Must NOT delete the existing product — admin edits must survive.
+    const deleteCall = fetchImpl.mock.calls.find(
+      ([url, init]) =>
+        typeof url === 'string' &&
+        url.includes('/admin/products/prod_existing') &&
+        (init as RequestInit)?.method === 'DELETE',
     )
-    expect(fetchImpl).toHaveBeenCalledWith(
-      'http://localhost:9000/admin/products',
-      expect.objectContaining({
-        body: expect.stringContaining('Dark Bar'),
-        method: 'POST',
-      }),
+    expect(deleteCall).toBeUndefined()
+    // Must NOT create a new product — the existing one is preserved as-is.
+    const createCall = fetchImpl.mock.calls.find(
+      ([url, init]) =>
+        url === 'http://localhost:9000/admin/products' &&
+        (init as RequestInit)?.method === 'POST',
     )
+    expect(createCall).toBeUndefined()
+  })
+
+  it('creates new products and skips existing ones in the same batch', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ token: 'admin-token' }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            sales_channels: [
+              { id: 'sc_tenant', name: 'Ship Fast session_abc123456789' },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_keys: [
+              {
+                id: 'apk_tenant',
+                sales_channels: [{ id: 'sc_tenant' }],
+                title: 'Ship Fast session_abc123456789',
+                token: 'pk_tenant_session',
+                type: 'publishable',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      // First product lookup: exists → skip
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ products: [{ id: 'prod_existing' }] }), {
+          status: 200,
+        }),
+      )
+      // Second product lookup: does not exist → create
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ products: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ product: { id: 'prod_new' } }), {
+          status: 200,
+        }),
+      )
+
+    const result = await syncGeneratedProductsToMedusa({
+      adminEmail: 'admin@test.com',
+      adminPassword: 'supersecret',
+      backendUrl: 'http://localhost:9000',
+      currencyCode: 'usd',
+      fetch: fetchImpl,
+      products: [
+        { handle: 'dark-bar', price: 12, title: 'Dark Bar' },
+        { handle: 'new-mug', price: 25, title: 'New Mug' },
+      ],
+      sessionId: 'session_abc123456789',
+    })
+
+    expect(result.synced).toBe(2)
+    // Only one POST /admin/products call (for the new product).
+    const createCalls = fetchImpl.mock.calls.filter(
+      ([url, init]) =>
+        url === 'http://localhost:9000/admin/products' &&
+        (init as RequestInit)?.method === 'POST' &&
+        (init as RequestInit)?.body &&
+        JSON.parse(String((init as RequestInit).body)).handle !== undefined,
+    )
+    expect(createCalls).toHaveLength(1)
+    expect(
+      JSON.parse(String((createCalls[0]?.[1] as RequestInit)?.body)),
+    ).toMatchObject({
+      handle: 'ship-fast-session-abc123456789-new-mug',
+      title: 'New Mug',
+    })
+    // No DELETE calls at all.
+    const deleteCalls = fetchImpl.mock.calls.filter(
+      ([, init]) => (init as RequestInit)?.method === 'DELETE',
+    )
+    expect(deleteCalls).toHaveLength(0)
   })
 })

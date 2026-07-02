@@ -2,27 +2,44 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import {
-  getConfiguredMedusaAdminUrl,
-  getConfiguredMedusaBackendUrl,
-  getConfiguredMedusaStorefrontUrl,
   getMedusaAdminApiToken,
   getMedusaAdminEmail,
   getMedusaAdminPassword,
-  getMedusaBackendUrl,
   getMedusaPublishableKey,
   hasConfiguredMedusaBackendUrl,
   type MedusaEnv,
 } from './medusa-store-env'
 import { syncGeneratedProductsToMedusa } from './medusa-product-sync'
+import {
+  findRunningSessionContainer,
+  provisionSessionMedusaContainer,
+} from './medusa-container-provisioner'
 import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type CommerceApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
 type FetchLike = typeof fetch
+type MedusaContainerInfo = {
+  backendUrl: string
+  adminUrl: string
+  storefrontUrl: string
+}
+type MedusaContainerProvider = {
+  findRunning: (sessionId: string) => Promise<MedusaContainerInfo | undefined>
+  provision: (
+    sessionId: string,
+    options: {
+      adminEmail?: string
+      adminPassword?: string
+      fetch?: FetchLike
+    },
+  ) => Promise<MedusaContainerInfo>
+}
 type MedusaProvisionOptions = {
   env?: MedusaEnv
   fetch?: FetchLike
   metaEnv?: MedusaEnv
+  containerProvider?: MedusaContainerProvider
 }
 type MedusaStoreApiAvailability = {
   currencyCode?: string
@@ -295,29 +312,43 @@ export const createSessionMedusaProvisionResponse = async (
   try {
     const body = await readJsonBody(request)
     const generatedProducts = getGeneratedProducts(body)
-    const configuredBackendUrl = getConfiguredMedusaBackendUrl(
-      options.env,
-      options.metaEnv,
-    )
-    const configuredAdminUrl = getConfiguredMedusaAdminUrl(
-      options.env,
-      options.metaEnv,
-    )
-    const configuredStorefrontUrl = getConfiguredMedusaStorefrontUrl(
-      options.env,
-      options.metaEnv,
-    )
-    const backendUrl = getMedusaBackendUrl(options.env, options.metaEnv)
+    const fetchImpl = options.fetch ?? fetch
+    const adminEmail = getMedusaAdminEmail(options.env, options.metaEnv)
+    const adminPassword = getMedusaAdminPassword(options.env, options.metaEnv)
+
+    // Container-per-tenant: each session gets its own isolated Medusa
+    // instance with its own database, admin UI, and products. Reuse an
+    // already-running container if the session re-provisions. Tests can
+    // inject a mock containerProvider to bypass Docker.
+    const containerProvider = options.containerProvider ?? {
+      findRunning: findRunningSessionContainer,
+      provision: (sid, opts) =>
+        provisionSessionMedusaContainer(
+          sid,
+          opts,
+        ) as Promise<MedusaContainerInfo>,
+    }
+    let container = await containerProvider.findRunning(sessionId)
+    if (container === undefined) {
+      container = await containerProvider.provision(sessionId, {
+        adminEmail,
+        adminPassword,
+        fetch: fetchImpl,
+      })
+    }
+
+    const backendUrl = container.backendUrl
+    const adminUrl = container.adminUrl
+    const storefrontUrl = container.storefrontUrl
     const publishableKey = getMedusaPublishableKey(options.env, options.metaEnv)
     const handoff = createMedusaHandoff(
       sessionId,
-      configuredBackendUrl,
-      configuredAdminUrl,
-      configuredStorefrontUrl,
+      backendUrl,
+      adminUrl,
+      storefrontUrl,
       options.env,
       options.metaEnv,
     )
-    const fetchImpl = options.fetch ?? fetch
     let availability = await validateMedusaStoreApi(
       backendUrl,
       publishableKey,
@@ -327,8 +358,8 @@ export const createSessionMedusaProvisionResponse = async (
       generatedProducts.length > 0
         ? await syncGeneratedProductsToMedusa({
             adminApiToken: getMedusaAdminApiToken(options.env, options.metaEnv),
-            adminEmail: getMedusaAdminEmail(options.env, options.metaEnv),
-            adminPassword: getMedusaAdminPassword(options.env, options.metaEnv),
+            adminEmail,
+            adminPassword,
             backendUrl,
             currencyCode: availability.currencyCode,
             fetch: fetchImpl,
@@ -351,9 +382,9 @@ export const createSessionMedusaProvisionResponse = async (
     const mutationArgs = {
       sessionId: sessionId as any,
       anonymousOwnerSecret: getOwnerSecret(request, body),
-      backendUrl: configuredBackendUrl,
-      adminUrl: configuredAdminUrl,
-      storefrontUrl: configuredStorefrontUrl,
+      backendUrl,
+      adminUrl,
+      storefrontUrl,
       errorMessage: warning,
       productCount: generatedProducts.length,
       configJson:

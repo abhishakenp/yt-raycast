@@ -10,6 +10,18 @@ describe('createSessionMedusaProvisionResponse', () => {
   const realPrompt =
     'a craft beer brewery with taproom tours and seasonal releases in portland'
 
+  // Mock container provider that bypasses Docker and returns env-configured
+  // URLs. This lets tests verify the provision flow without spawning real
+  // Medusa containers.
+  const mockContainerProvider = (env: Record<string, string | undefined>) => ({
+    findRunning: vi.fn().mockResolvedValue(undefined),
+    provision: vi.fn().mockResolvedValue({
+      backendUrl: env.MEDUSA_BACKEND_URL,
+      adminUrl: env.MEDUSA_ADMIN_URL,
+      storefrontUrl: env.MEDUSA_STOREFRONT_URL,
+    }),
+  })
+
   it('returns a stable unavailable config response when Convex lookup fails', async () => {
     const response = await createSessionMedusaConfigResponse(realSessionId, {
       mutation: vi.fn(),
@@ -54,6 +66,11 @@ describe('createSessionMedusaProvisionResponse', () => {
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
           MEDUSA_STOREFRONT_URL: 'https://store.medusa.test',
         },
+        containerProvider: mockContainerProvider({
+          MEDUSA_ADMIN_URL: 'https://admin.medusa.test',
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+          MEDUSA_STOREFRONT_URL: 'https://store.medusa.test',
+        }),
         fetch: fetchImpl,
         metaEnv: {},
       },
@@ -95,6 +112,9 @@ describe('createSessionMedusaProvisionResponse', () => {
       { mutation, query: vi.fn() },
       {
         env: { MEDUSA_BACKEND_URL: 'https://backend.medusa.test' },
+        containerProvider: mockContainerProvider({
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        }),
         fetch: vi.fn(),
         metaEnv: {},
       },
@@ -130,6 +150,7 @@ describe('createSessionMedusaProvisionResponse', () => {
       { mutation, query: vi.fn() },
       {
         env: {},
+        containerProvider: mockContainerProvider({}),
         fetch: vi.fn(),
         metaEnv: {},
       },
@@ -159,6 +180,9 @@ describe('createSessionMedusaProvisionResponse', () => {
           MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
         },
+        containerProvider: mockContainerProvider({
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        }),
         fetch: vi.fn().mockResolvedValue(new Response(null, { status: 503 })),
         metaEnv: {},
       },
@@ -196,6 +220,9 @@ describe('createSessionMedusaProvisionResponse', () => {
           MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
         },
+        containerProvider: mockContainerProvider({
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        }),
         fetch: vi.fn().mockRejectedValue(new Error('fetch failed')),
         metaEnv: {},
       },
@@ -247,6 +274,11 @@ describe('createSessionMedusaProvisionResponse', () => {
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
           MEDUSA_STOREFRONT_URL: 'https://store.medusa.test',
         },
+        containerProvider: mockContainerProvider({
+          MEDUSA_ADMIN_URL: 'https://admin.medusa.test',
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+          MEDUSA_STOREFRONT_URL: 'https://store.medusa.test',
+        }),
         fetch: vi.fn().mockResolvedValue(
           new Response(JSON.stringify({ regions: [{ id: 'reg_1' }] }), {
             status: 200,
@@ -354,6 +386,11 @@ describe('createSessionMedusaProvisionResponse', () => {
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
           MEDUSA_STOREFRONT_URL: 'http://localhost:8001',
         },
+        containerProvider: mockContainerProvider({
+          MEDUSA_ADMIN_URL: 'http://localhost:9000/app',
+          MEDUSA_BACKEND_URL: 'http://localhost:9000',
+          MEDUSA_STOREFRONT_URL: 'http://localhost:8001',
+        }),
         fetch: fetchImpl,
         metaEnv: {},
       },
@@ -470,6 +507,11 @@ describe('createSessionMedusaProvisionResponse', () => {
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
           MEDUSA_STOREFRONT_URL: 'http://localhost:8001',
         },
+        containerProvider: mockContainerProvider({
+          MEDUSA_ADMIN_URL: 'http://localhost:9000/app',
+          MEDUSA_BACKEND_URL: 'http://localhost:9000',
+          MEDUSA_STOREFRONT_URL: 'http://localhost:8001',
+        }),
         fetch: fetchImpl,
         metaEnv: {},
       },
@@ -572,6 +614,11 @@ describe('createSessionMedusaProvisionResponse', () => {
           MEDUSA_BACKEND_URL: 'http://localhost:9000',
           MEDUSA_STOREFRONT_URL: 'http://localhost:8001',
         },
+        containerProvider: mockContainerProvider({
+          MEDUSA_ADMIN_URL: 'http://localhost:9000/app',
+          MEDUSA_BACKEND_URL: 'http://localhost:9000',
+          MEDUSA_STOREFRONT_URL: 'http://localhost:8001',
+        }),
         fetch: fetchImpl,
         metaEnv: {},
       },
@@ -618,6 +665,9 @@ describe('createSessionMedusaProvisionResponse', () => {
           MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
         },
+        containerProvider: mockContainerProvider({
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        }),
         fetch: vi
           .fn()
           .mockResolvedValue(
@@ -666,6 +716,9 @@ describe('createSessionMedusaProvisionResponse', () => {
           MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
         },
+        containerProvider: mockContainerProvider({
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        }),
         fetch: vi
           .fn()
           .mockResolvedValue(

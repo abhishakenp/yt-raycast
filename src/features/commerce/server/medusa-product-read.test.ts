@@ -33,6 +33,7 @@ describe('createSessionMedusaProductsResponse', () => {
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_global',
         },
         fetch: fetchImpl,
+        containerFinder: () => Promise.resolve(undefined),
         metaEnv: {},
       },
       { mutation: vi.fn(), query },
@@ -99,6 +100,7 @@ describe('createSessionMedusaProductsResponse', () => {
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_global',
         },
         fetch: fetchImpl,
+        containerFinder: () => Promise.resolve(undefined),
         metaEnv: {},
       },
       { mutation: vi.fn(), query },
@@ -177,6 +179,7 @@ describe('createSessionMedusaProductsResponse', () => {
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_global',
         },
         fetch: fetchImpl,
+        containerFinder: () => Promise.resolve(undefined),
         metaEnv: {},
       },
       { mutation: vi.fn(), query },
@@ -257,6 +260,7 @@ describe('createSessionMedusaProductsResponse', () => {
         MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
       },
       fetch: fetchImpl,
+      containerFinder: () => Promise.resolve(undefined),
       metaEnv: {},
     })
 
@@ -294,6 +298,7 @@ describe('createSessionMedusaProductsResponse', () => {
     const response = await createSessionMedusaProductsResponse('session_123', {
       env: { MEDUSA_BACKEND_URL: 'https://backend.medusa.test' },
       fetch: vi.fn(),
+      containerFinder: () => Promise.resolve(undefined),
       metaEnv: {},
     })
 
@@ -319,6 +324,7 @@ describe('createSessionMedusaProductsResponse', () => {
         MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
       },
       fetch: fetchImpl,
+      containerFinder: () => Promise.resolve(undefined),
       metaEnv: {},
     })
 
@@ -352,6 +358,7 @@ describe('createSessionMedusaProductsResponse', () => {
         MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
       },
       fetch: fetchImpl,
+      containerFinder: () => Promise.resolve(undefined),
       metaEnv: {},
     })
 
@@ -396,6 +403,7 @@ describe('createSessionMedusaProductsResponse', () => {
         MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
       },
       fetch: fetchImpl,
+      containerFinder: () => Promise.resolve(undefined),
       metaEnv: {},
     })
 
@@ -426,6 +434,7 @@ describe('createSessionMedusaProductsResponse', () => {
           MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
         },
         fetch: fetchImpl,
+        containerFinder: () => Promise.resolve(undefined),
         metaEnv: {},
       },
       { mutation: vi.fn(), query },
@@ -468,6 +477,7 @@ describe('createSessionMedusaProductsResponse', () => {
           MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
         },
         fetch: fetchImpl,
+        containerFinder: () => Promise.resolve(undefined),
         metaEnv: {},
       },
       { mutation: vi.fn(), query },
@@ -563,6 +573,7 @@ describe('createSessionMedusaProductsResponse', () => {
         MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
       },
       fetch: fetchImpl,
+      containerFinder: () => Promise.resolve(undefined),
       metaEnv: {},
     })
 
@@ -637,6 +648,7 @@ describe('createSessionMedusaProductsResponse', () => {
         MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
       },
       fetch: fetchImpl,
+      containerFinder: () => Promise.resolve(undefined),
       metaEnv: {},
     })
 

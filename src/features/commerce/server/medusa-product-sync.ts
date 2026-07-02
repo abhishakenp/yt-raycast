@@ -445,20 +445,13 @@ export const syncGeneratedProductsToMedusa = async ({
       })
       const headers = createAdminHeaders(auth.token)
 
+      // Medusa admin is the source of truth once a product exists. Skip
+      // existing products so admin edits (title, price, description, images,
+      // variants) are preserved across re-provisions. Only create products
+      // that don't exist yet.
       if (existingProductId !== undefined) {
-        const deleteResponse = await fetchImpl(
-          `${normalizedBackendUrl}/admin/products/${existingProductId}`,
-          {
-            headers,
-            method: 'DELETE',
-          },
-        )
-
-        if (!deleteResponse.ok) {
-          throw new Error(
-            `Medusa product replacement failed (${deleteResponse.status}).`,
-          )
-        }
+        synced += 1
+        continue
       }
 
       const response = await fetchImpl(

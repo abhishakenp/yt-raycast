@@ -6,17 +6,22 @@ import {
   getMedusaPublishableKey,
   type MedusaEnv,
 } from './medusa-store-env'
+import { findRunningSessionContainer } from './medusa-container-provisioner'
 import type { ConvexHttpClient } from 'convex/browser'
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type FetchLike = typeof fetch
 type CommerceApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
+type ContainerInfo = { backendUrl: string }
 
 type MedusaProductReadOptions = {
   env?: MedusaEnv
   fetch?: FetchLike
   metaEnv?: MedusaEnv
+  // Injectable container finder for tests to bypass Docker. When omitted,
+  // the real findRunningSessionContainer is used.
+  containerFinder?: (sessionId: string) => Promise<ContainerInfo | undefined>
 }
 
 export type SessionMedusaProduct = {
@@ -54,10 +59,15 @@ const createClient = (clientOverride?: CommerceApiClient): CommerceApiClient =>
 
 const createTenantName = (sessionId: string): string => `Ship Fast ${sessionId}`
 
-const readTenantPublishableKey = async (
+type TenantConfig = {
+  backendUrl?: string
+  publishableKey?: string
+}
+
+const readTenantConfig = async (
   sessionId: string,
   clientOverride?: CommerceApiClient,
-): Promise<string | undefined> => {
+): Promise<TenantConfig> => {
   try {
     const config = await createClient(clientOverride).query(
       api.sessions.getCommerceConfig,
@@ -68,15 +78,24 @@ const readTenantPublishableKey = async (
       typeof config.configJson !== 'string' ||
       !config.configJson.trim()
     ) {
-      return undefined
+      return {}
     }
 
     const parsed = JSON.parse(config.configJson) as unknown
-    if (!isRecord(parsed) || !isRecord(parsed.medusaTenant)) return undefined
+    if (!isRecord(parsed)) return {}
 
-    return stringValue(parsed.medusaTenant.publishableKey)
+    const tenant = isRecord(parsed.medusaTenant) ? parsed.medusaTenant : {}
+    return {
+      ...(typeof config.backendUrl === 'string' && config.backendUrl.trim()
+        ? { backendUrl: config.backendUrl.trim() }
+        : {}),
+      ...(typeof tenant.publishableKey === 'string' &&
+      tenant.publishableKey.trim()
+        ? { publishableKey: tenant.publishableKey.trim() }
+        : {}),
+    }
   } catch {
-    return undefined
+    return {}
   }
 }
 
@@ -237,14 +256,25 @@ export const createSessionMedusaProductsResponse = async (
   options: MedusaProductReadOptions = {},
   clientOverride?: CommerceApiClient,
 ): Promise<Response> => {
-  const backendUrl = normalizeBackendUrl(
-    getMedusaBackendUrl(options.env, options.metaEnv),
-  )
   const fetchImpl = options.fetch ?? fetch
+
+  // Resolve the per-session container URL. Priority:
+  //   1. backendUrl stored in commerce config (set during provisioning)
+  //   2. running container discovered via docker inspect (or injected mock)
+  //   3. MEDUSA_BACKEND_URL from env (fallback, shared backend)
+  const tenantConfig = await readTenantConfig(sessionId, clientOverride)
+  const containerFinder = options.containerFinder ?? findRunningSessionContainer
+  const runningContainer = await containerFinder(sessionId)
+  const backendUrl = normalizeBackendUrl(
+    tenantConfig.backendUrl ??
+      runningContainer?.backendUrl ??
+      getMedusaBackendUrl(options.env, options.metaEnv),
+  )
+
   let publishableKey: string
   try {
     publishableKey =
-      (await readTenantPublishableKey(sessionId, clientOverride)) ??
+      tenantConfig.publishableKey ??
       (await discoverTenantPublishableKey({
         backendUrl,
         fetchImpl,
