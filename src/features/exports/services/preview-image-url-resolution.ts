@@ -45,6 +45,20 @@ const readServerEnv = (...keys: string[]): string => {
   return ''
 }
 
+const readAppBaseUrl = (): string => {
+  const raw = readServerEnv(
+    'APP_BASE_URL',
+    'SHIP_FAST_BASE_URL',
+    'NEXT_PUBLIC_SITE_URL',
+    'VITE_APP_BASE_URL',
+    'VITE_PUBLIC_APP_URL',
+    'SITE_URL',
+  )
+  if (raw) return raw
+  const vercelUrl = readServerEnv('VERCEL_URL')
+  return vercelUrl ? `https://${vercelUrl}` : ''
+}
+
 const readImageDimension = (
   value: string | null,
   fallback: number,
@@ -104,6 +118,59 @@ const resolvePexelsSearchQuery = (
   const trimmed = query.trim() || 'nature'
   if (seed?.trim()) return trimmed.slice(0, 96)
   return searchQueryFromAlt(trimmed)
+}
+
+const readRedirectLocation = (
+  response: Response,
+  requestUrl: URL,
+): string | null => {
+  const location =
+    response.headers.get('Location') ?? response.headers.get('location')
+  if (location) {
+    try {
+      return new URL(location, requestUrl).toString()
+    } catch {
+      return null
+    }
+  }
+  if (response.url && response.url !== requestUrl.toString()) {
+    try {
+      return new URL(response.url).toString()
+    } catch {
+      return null
+    }
+  }
+  return null
+}
+
+const resolveViaPreviewImageRoute = async (
+  parsed: URL,
+): Promise<string | null> => {
+  const appBaseUrl = readAppBaseUrl()
+  if (!appBaseUrl) return null
+
+  let requestUrl: URL
+  try {
+    requestUrl = new URL(`${parsed.pathname}${parsed.search}`, appBaseUrl)
+  } catch {
+    return null
+  }
+
+  try {
+    const response = await fetch(requestUrl, { redirect: 'manual' })
+    const location = readRedirectLocation(response, requestUrl)
+    if (!location) return null
+    const resolved = new URL(location)
+    if (
+      resolved.pathname === parsed.pathname &&
+      resolved.search === parsed.search
+    ) {
+      return null
+    }
+    return resolved.toString()
+  } catch {
+    return null
+  }
 }
 
 const searchPexels = async (
@@ -171,6 +238,9 @@ const searchUnsplash = async (
 }
 
 const resolvePexelsPreviewUrl = async (parsed: URL): Promise<string> => {
+  const routedImageUrl = await resolveViaPreviewImageRoute(parsed)
+  if (routedImageUrl) return routedImageUrl
+
   const query =
     parsed.searchParams.get('query') ?? parsed.searchParams.get('q') ?? ''
   const seed = parsed.searchParams.get('seed')
