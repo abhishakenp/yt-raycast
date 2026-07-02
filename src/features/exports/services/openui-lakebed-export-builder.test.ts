@@ -15,6 +15,7 @@ import {
 
 const originalFetch = globalThis.fetch
 const originalStockEnv = {
+  APP_BASE_URL: process.env.APP_BASE_URL,
   PEXELS_API_KEY: process.env.PEXELS_API_KEY,
   VITE_PEXELS_API_KEY: process.env.VITE_PEXELS_API_KEY,
   UNSPLASH_ACCESS_KEY: process.env.UNSPLASH_ACCESS_KEY,
@@ -1872,6 +1873,118 @@ export const WebhookHero = defineCapsule({
       'Golden retriever puppy playing with a ball',
       'Emily with her golden retriever',
     ])
+  })
+
+  it('keeps deployed route images identical to direct-preview resolved images when alts are translated', async () => {
+    process.env.APP_BASE_URL = 'https://ship-fast.test'
+    delete process.env.PEXELS_API_KEY
+    delete process.env.VITE_PEXELS_API_KEY
+    delete process.env.UNSPLASH_ACCESS_KEY
+    delete process.env.VITE_UNSPLASH_ACCESS_KEY
+
+    const resolvedBySeed = new Map([
+      [
+        'Showcase of polished glass installations',
+        'https://images.pexels.com/photos/7195588/pexels-photo-7195588.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+      ],
+      [
+        'Skyline Retail Hub Retail marketing case study',
+        'https://images.pexels.com/photos/1111111/pexels-photo-1111111.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+      ],
+      [
+        'Luxe Hotel Lobby Hospitality marketing case study',
+        'https://images.pexels.com/photos/2222222/pexels-photo-2222222.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+      ],
+      [
+        'Metro Corporate Campus Office marketing case study',
+        'https://images.pexels.com/photos/3333333/pexels-photo-3333333.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
+      ],
+    ])
+    const requests: Array<{ init?: RequestInit; url: string }> = []
+    globalThis.fetch = (async (url: RequestInfo | URL, init?: RequestInit) => {
+      requests.push({ init, url: String(url) })
+      const parsed = new URL(String(url))
+      if (parsed.origin !== 'https://ship-fast.test') {
+        throw new Error(
+          `deployed artifact re-searched provider: ${String(url)}`,
+        )
+      }
+      const seed = parsed.searchParams.get('seed')
+      const location = seed ? resolvedBySeed.get(seed) : undefined
+      if (!location) {
+        throw new Error(
+          `missing direct-preview image fixture for ${String(url)}`,
+        )
+      }
+      return new Response(null, {
+        headers: { Location: location },
+        status: 302,
+      })
+    }) as typeof fetch
+
+    const sources = await resolveLakebedImageSources(
+      [
+        {
+          componentName: 'GlassPolishedPage',
+          label: 'Home',
+          path: '/',
+          props: {
+            hero: {
+              imageAlt: 'पॉलिश ग्लास इंस्टॉलेशन का शोकेस',
+            },
+            caseStudies: [
+              {
+                imageAlt: 'स्काईलाइन रिटेल हब खुदरा marketing case study',
+              },
+              {
+                imageAlt: 'लक्से होटल लॉबी सत्कार marketing case study',
+              },
+              {
+                imageAlt: 'मेट्रो कॉरपोरेट कैंपस दफ्तर marketing case study',
+              },
+            ],
+          },
+        },
+      ],
+      [
+        '<main>',
+        '<img alt="Showcase of polished glass installations" src="/api/pexels?query=glass+polished+showcase+installations&w=800&h=600&seed=Showcase+of+polished+glass+installations">',
+        '<img alt="Skyline Retail Hub Retail marketing case study" src="/api/pexels?query=glass+polished+skyline+retail+hub&w=600&h=400&seed=Skyline+Retail+Hub+Retail+marketing+case+study">',
+        '<img alt="Luxe Hotel Lobby Hospitality marketing case study" src="/api/pexels?query=glass+polished+luxe+hotel+lobby+hospitality&w=600&h=400&seed=Luxe+Hotel+Lobby+Hospitality+marketing+case+study">',
+        '<img alt="Metro Corporate Campus Office marketing case study" src="/api/pexels?query=glass+polished+modern+office+workspace+metro+corporate+campus&w=600&h=400&seed=Metro+Corporate+Campus+Office+marketing+case+study">',
+        '</main>',
+      ].join(''),
+    )
+
+    expect(requests).toHaveLength(4)
+    expect(
+      requests.every((request) => request.init?.redirect === 'manual'),
+    ).toBe(true)
+    expect(sources).toEqual(
+      expect.arrayContaining([
+        {
+          alt: 'पॉलिश ग्लास इंस्टॉलेशन का शोकेस',
+          src: 'https://images.pexels.com/photos/7195588/pexels-photo-7195588.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
+        },
+        {
+          alt: 'स्काईलाइन रिटेल हब खुदरा marketing case study',
+          src: 'https://images.pexels.com/photos/1111111/pexels-photo-1111111.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
+        },
+        {
+          alt: 'लक्से होटल लॉबी सत्कार marketing case study',
+          src: 'https://images.pexels.com/photos/2222222/pexels-photo-2222222.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
+        },
+        {
+          alt: 'मेट्रो कॉरपोरेट कैंपस दफ्तर marketing case study',
+          src: 'https://images.pexels.com/photos/3333333/pexels-photo-3333333.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
+        },
+      ]),
+    )
+    expect(
+      sources
+        .filter((source) => source.alt.includes('marketing case study'))
+        .every((source) => !source.src.includes('picsum.photos')),
+    ).toBe(true)
   })
 
   it('resolves missing generated image alts through Pexels at build time', async () => {
