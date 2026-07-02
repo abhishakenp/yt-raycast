@@ -86,6 +86,10 @@ type ImageSource = {
   src: string
 }
 
+type ResolvedExtractedImageSource = ImageSource & {
+  originalSrc: string
+}
+
 type StyleOverride = {
   classAnchor: string
   occurrenceIndex: number
@@ -402,6 +406,44 @@ const normalizePreviewImageSource = async (
   return src
 }
 
+const isGeneratedPreviewImageSource = (src: string): boolean =>
+  src.startsWith('/api/') ||
+  /^https?:\/\/[^/]+\/api\//i.test(src) ||
+  /^https:\/\/images\.pexels\.com\//i.test(src) ||
+  /^https:\/\/images\.unsplash\.com\//i.test(src) ||
+  /source\.unsplash\.com/i.test(src)
+
+const asciiTokens = (value: string): string[] =>
+  value
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((token) => token.length >= 4)
+
+const hasMeaningfulTokenOverlap = (left: string, right: string): boolean => {
+  const rightTokens = new Set(asciiTokens(right))
+  return asciiTokens(left).some((token) => rightTokens.has(token))
+}
+
+const hasNonAscii = (value: string): boolean => {
+  for (const char of value) {
+    if (char.charCodeAt(0) > 127) return true
+  }
+  return false
+}
+
+const shouldPairGeneratedPreviewImagesByOrder = (
+  routeAlts: string[],
+  generatedPreviewSources: ResolvedExtractedImageSource[],
+): boolean => {
+  if (generatedPreviewSources.length < routeAlts.length) return false
+  if (routeAlts.some(hasNonAscii)) return true
+  return routeAlts.some((routeAlt) =>
+    generatedPreviewSources.some((source) =>
+      hasMeaningfulTokenOverlap(routeAlt, source.alt),
+    ),
+  )
+}
+
 const extractImageSources = (html: string | undefined): ImageSource[] => {
   if (!html) return []
   const byAlt = new Map<string, string>()
@@ -423,10 +465,11 @@ const extractImageSources = (html: string | undefined): ImageSource[] => {
 
 const resolveExtractedImageSources = async (
   html: string | undefined,
-): Promise<ImageSource[]> =>
+): Promise<ResolvedExtractedImageSource[]> =>
   await Promise.all(
     extractImageSources(html).map(async ({ alt, src }) => ({
       alt,
+      originalSrc: src,
       src: await normalizePreviewImageSource(alt, src),
     })),
   )
@@ -452,16 +495,36 @@ export const resolveLakebedImageSources = async (
   routes: LakebedRoute[],
   previewHtml: string | undefined,
 ): Promise<ImageSource[]> => {
+  const extractedSources = await resolveExtractedImageSources(previewHtml)
   const byAlt = new Map(
-    (await resolveExtractedImageSources(previewHtml)).map((source) => [
-      source.alt,
-      source.src,
-    ]),
+    extractedSources.map((source) => [source.alt, source.src]),
   )
 
-  const missingAlts = collectRouteImageAlts(routes).filter(
-    (alt) => !byAlt.has(alt),
+  const routeAlts = collectRouteImageAlts(routes)
+  const generatedPreviewSources = extractedSources.filter((source) =>
+    isGeneratedPreviewImageSource(source.originalSrc),
   )
+  const pairGeneratedPreviewImagesByOrder =
+    shouldPairGeneratedPreviewImagesByOrder(routeAlts, generatedPreviewSources)
+  let generatedPreviewIndex = 0
+  for (const alt of routeAlts) {
+    const exactGeneratedIndex = generatedPreviewSources.findIndex(
+      (source, index) => index >= generatedPreviewIndex && source.alt === alt,
+    )
+    if (byAlt.has(alt)) {
+      if (exactGeneratedIndex >= 0) {
+        generatedPreviewIndex = exactGeneratedIndex + 1
+      }
+      continue
+    }
+    if (!pairGeneratedPreviewImagesByOrder) continue
+    const orderedPreviewSource = generatedPreviewSources[generatedPreviewIndex]
+    if (!orderedPreviewSource) continue
+    byAlt.set(alt, orderedPreviewSource.src)
+    generatedPreviewIndex += 1
+  }
+
+  const missingAlts = routeAlts.filter((alt) => !byAlt.has(alt))
   const resolvedImages = await mapWithConcurrency(
     missingAlts,
     lakebedImageResolveConcurrency,
