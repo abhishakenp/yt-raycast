@@ -46,6 +46,12 @@ const flushWindowPromises = async () => {
   await new Promise((resolve) => setTimeout(resolve, 0))
 }
 
+const flushDomEffects = async (dom: JSDOM) => {
+  await flushWindowPromises()
+  await new Promise((resolve) => dom.window.setTimeout(resolve, 10))
+  await flushWindowPromises()
+}
+
 const writeProjectFiles = (
   directory: string,
   files: Record<string, string>,
@@ -197,6 +203,118 @@ export function mutation(handler) {
         __lakebedCapsuleDefinition?: Record<string, any>
       }
     ).__lakebedCapsuleDefinition
+  } finally {
+    rmSync(directory, { force: true, recursive: true })
+  }
+}
+
+const renderLakebedAppAtPath = async (
+  files: Record<string, string>,
+  path: string,
+) => {
+  const directory = mkdtempSync(join(tmpdir(), 'lakebed-app-runtime-'))
+
+  try {
+    writeProjectFiles(directory, files)
+    const entryPath = join(directory, 'render-app.tsx')
+    writeFileSync(
+      entryPath,
+      `import { h, render } from "preact";
+import { App } from "./client/index";
+
+render(h(App, {}), document.getElementById("app"));
+`,
+    )
+    const bundled = await build({
+      bundle: true,
+      entryPoints: [entryPath],
+      format: 'iife',
+      jsx: 'automatic',
+      jsxImportSource: 'preact',
+      logLevel: 'silent',
+      nodePaths: [join(process.cwd(), 'node_modules')],
+      platform: 'browser',
+      plugins: [
+        {
+          name: 'lakebed-full-app-runtime-stub',
+          setup(pluginBuild) {
+            pluginBuild.onResolve(
+              { filter: /^(@ship-fast\/|#\/)/ },
+              (args) => ({
+                errors: [
+                  {
+                    text: `Generated client bundle leaked workspace package import: ${args.path}`,
+                  },
+                ],
+              }),
+            )
+            pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+              namespace: 'lakebed-client-stub',
+              path: 'lakebed/client',
+            }))
+            pluginBuild.onLoad(
+              {
+                filter: /^lakebed\/client$/,
+                namespace: 'lakebed-client-stub',
+              },
+              () => ({
+                contents: `export function Link({ children }) {
+  return children;
+}
+export function Route() {
+  return null;
+}
+export function Router({ children }) {
+  return children;
+}
+export function Routes({ children }) {
+  const routes = (Array.isArray(children) ? children : [children]).flat();
+  const current = window.location.pathname || "/";
+  const route = routes.find((child) => child?.props?.path === current)
+    ?? routes.find((child) => child?.props?.path === "*")
+    ?? routes[0];
+  return route?.props?.element ?? null;
+}
+export function useNavigate() {
+  return (to) => {
+    window.history.pushState({}, "", to);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
+}
+export function useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery() { return undefined; }
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                loader: 'tsx',
+              }),
+            )
+          },
+        },
+      ],
+      write: false,
+    })
+    const dom = new JSDOM('<div id="app"></div>', {
+      runScripts: 'outside-only',
+      url: `https://example.test${path}`,
+    })
+    const errors = collectWindowRuntimeErrors(dom)
+
+    expect(() =>
+      dom.window.eval(bundled.outputFiles[0]?.text ?? ''),
+    ).not.toThrow()
+    await flushDomEffects(dom)
+
+    return {
+      errors,
+      html: dom.window.document.querySelector('#app')?.innerHTML ?? '',
+      text:
+        dom.window.document
+          .querySelector('#app')
+          ?.textContent?.replace(/\s+/g, ' ')
+          .trim() ?? '',
+    }
   } finally {
     rmSync(directory, { force: true, recursive: true })
   }
@@ -1648,7 +1766,7 @@ render(h(${componentName}Block, { props: {}, lakebed }), document.getElementById
     }
   })
 
-  it('exports a native Lakebed app without generated block registry traces', async () => {
+  it('runs a native Lakebed app with routed pages instead of fallback/status pages', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source:
         'root = PageSwitch(["Home","Shop","About","Contact"], [EcommerceHero("Lakebed Store", ["Home","Shop","About","Contact"], {"brand":"Lakebed Store"}), ShopOverview("Lakebed Store", ["Home","Shop","About","Contact"]), AboutHero("Lakebed Store", ["Home","Shop","About","Contact"]), ContactHero("Lakebed Store", ["Home","Shop","About","Contact"])])',
@@ -1658,97 +1776,27 @@ render(h(${componentName}Block, { props: {}, lakebed }), document.getElementById
       sessionId: 'demo',
       target: 'lakebed',
     })
-    const output = Object.entries(built.files)
-      .filter(([path]) => !path.startsWith('client/vendor/'))
-      .map(([, source]) => source)
-      .join('\n')
+    const serverCapsule = await evaluateLakebedServerCapsule(built.files)
+    const home = await renderLakebedAppAtPath(built.files, '/')
+    const shop = await renderLakebedAppAtPath(built.files, '/shop')
+    const about = await renderLakebedAppAtPath(built.files, '/about')
+    const contact = await renderLakebedAppAtPath(built.files, '/contact')
 
-    expect(built.files['client/index.tsx']).toContain('const pageComponents')
-    expect(built.files['client/index.tsx']).toContain('function PageView')
-    expect(built.files['client/index.tsx']).toContain(
-      'import { Link, Route, Router, Routes } from "lakebed/client"',
-    )
-    expect(built.files['client/index.tsx']).toContain('<Router>')
-    expect(built.files['client/index.tsx']).toContain('<Routes>')
-    expect(built.files['client/index.tsx']).toContain('<Route')
-    expect(built.files['client/index.tsx']).toContain('pages.map((page) =>')
-    expect(built.files['client/index.tsx']).not.toContain('FallbackPage')
-    expect(built.files['client/index.tsx']).not.toContain(
-      'function routeForPath',
-    )
-    expect(built.files['client/index.tsx']).not.toContain('StatusPage')
-    expect(built.files['client/index.tsx']).not.toContain('/status')
-    expect(built.files['client/index.tsx']).not.toContain('site:navigate')
-    expect(built.files['client/lib/navigation.tsx']).toContain(
-      'window.history.pushState',
-    )
-    expect(built.files['client/lib/navigation.tsx']).toContain(
-      'new PopStateEvent("popstate")',
-    )
-    expect(built.files['client/lib/navigation.tsx']).not.toContain(
-      'site:navigate',
-    )
-    expect(built.files['server/index.ts']).toContain('endpoints: {}')
-    expect(built.files['server/index.ts']).not.toContain('endpoint(')
-    expect(built.files['server/index.ts']).not.toContain('text(')
-    expect(output).not.toContain('/api/status')
-    expect(built.files['client/lib/lakebed.ts']).toContain(
-      'function normalizeQueryValue',
-    )
-    expect(built.files['client/lib/lakebed.ts']).toContain('new Set<string>()')
-    expect(built.files['client/lib/lakebed.ts']).toContain(
-      'new Set(Object.values(value))',
-    )
-    expect(built.files['client/lib/lakebed.ts']).toContain(
-      'function normalizeEntityListValue',
-    )
-    expect(built.files['client/lib/lakebed.ts']).toContain(
-      'Number(item.quantity)',
-    )
-    expect(built.files['client/routes.ts']).toContain('export const pages')
-    expect(built.files['client/routes.ts']).toContain(
-      'export const routeByLabel',
-    )
-    expect(built.files['client/routes.ts']).toContain(
-      'export const imageSources',
-    )
-    expect(built.files['client/lib/theme.tsx']).toContain('--background:')
-    expect(built.files['client/lib/theme.tsx']).toContain('color-scheme: dark;')
-    expect(built.files['client/lib/theme.tsx']).toContain('StyleRuntime')
-    expect(built.files['client/index.tsx']).toContain(
-      'import { StyleOverrides } from "./lib/style-overrides"',
-    )
-    expect(built.files['client/index.tsx']).toContain('<StyleOverrides />')
-    expect(built.files['client/lib/style-overrides.tsx']).toContain(
-      'lakebed-title text-4xl',
-    )
-    expect(built.files['client/lib/style-overrides.tsx']).toContain(
-      'color: rgb(255, 0, 0); text-align: center;',
-    )
-    expect(built.files['client/lib/style-overrides.tsx']).toContain(
-      'new MutationObserver',
-    )
-
-    for (const forbidden of [
-      'GeneratedBlock',
-      'generatedBlocks',
-      'GeneratedRoute',
-      'FallbackGeneratedPage',
-      'GeneratedPage',
-      'generatedPages',
-      'generatedRouteByLabel',
-      'generatedImageSources',
-      'generatedThemeCss',
-      'ship-fast-generated-theme',
-      '@openuidev',
-      'OpenUI',
-      'Generated page',
-      'root =',
-      'useLakebedNavigate',
-      'StatusPage',
-      'FallbackPage',
-    ]) {
-      expect(output).not.toContain(forbidden)
+    expect(serverCapsule?.endpoints).toEqual({})
+    expect(home.errors).toEqual([])
+    expect(shop.errors).toEqual([])
+    expect(about.errors).toEqual([])
+    expect(contact.errors).toEqual([])
+    expect(home.text).toContain('Lakebed Store')
+    expect(shop.text).toContain('Shop')
+    expect(about.text).toContain('About')
+    expect(contact.text).toContain('Contact')
+    for (const page of [home, shop, about, contact]) {
+      expect(page.text).not.toContain('Not found')
+      expect(page.text).not.toContain('Generated page')
+      expect(page.text).not.toContain('Status')
+      expect(page.html).not.toContain('openui-error')
+      expect(page.html).not.toContain('ship-fast-openui-source')
     }
   })
 
