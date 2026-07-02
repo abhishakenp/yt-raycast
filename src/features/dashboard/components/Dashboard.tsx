@@ -515,15 +515,11 @@ export function Dashboard({
   const hasRenderableClonePage = Boolean(
     clonePageNav.currentHtml || clonePageNav.currentUrl,
   )
-  const hasEmptyPreviewHtml =
-    generationView?.latestPreview !== null &&
-    generationView?.latestPreview !== undefined &&
-    (generationView?.latestPreview?.html ?? '') === ''
   const hasRenderableHomeSource =
-    !hasEmptyPreviewHtml &&
-    (Boolean(homeModule?.source) ||
-      Boolean(cmsPreviewSource) ||
-      hasRenderableClonePage)
+    (typeof homeModule?.source === 'string' &&
+      homeModule.source.trim().length > 0) ||
+    Boolean(cmsPreviewSource) ||
+    hasRenderableClonePage
   const isPreviewReady =
     !isMissingSession &&
     generationView?.session.status === 'preview_ready' &&
@@ -561,103 +557,15 @@ export function Dashboard({
   })
 
   useEffect(() => {
-    if (liveGenerationView !== undefined) return
-
-    const cached = readCachedGenerationView(sessionId)
-    if (cached === undefined) return
-
-    setFallbackGenerationView((current) => current ?? cached)
-  }, [liveGenerationView, sessionId])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
     if (liveGenerationView !== undefined) {
       setFallbackGenerationView(undefined)
       return
     }
 
-    let cancelled = false
-    const loadFallbackGenerationView = async () => {
-      try {
-        const response = await fetch(
-          `/api/sessions/${encodeURIComponent(sessionId)}`,
-          {
-            headers: { accept: 'application/json' },
-          },
-        )
-        if (!response.ok) return
+    const cached = readCachedGenerationView(sessionId)
+    if (cached === undefined) return
 
-        const data = await response.json()
-        if (
-          cancelled ||
-          data?.status !== 'preview_ready' ||
-          typeof data?.homeModule?.source !== 'string'
-        ) {
-          return
-        }
-
-        const snapshot: ReadySessionPreviewCacheEntry = {
-          sessionId: data.sessionId,
-          status: 'preview_ready',
-          prompt: data.prompt,
-          preferredLanguage: data.preferredLanguage ?? 'en',
-          preferredExportTarget: data.preferredExportTarget ?? 'html',
-          previewVersion: data.previewVersion ?? data.preview?.version ?? 1,
-          elapsed: data.elapsed ?? undefined,
-          themeOverride: data.themeOverride ?? null,
-          selectedBrandLogo: data.selectedBrandLogo ?? null,
-          homeModule: {
-            moduleKey: data.homeModule.moduleKey ?? 'home',
-            source: data.homeModule.source,
-            status: data.homeModule.status ?? 'succeeded',
-            updatedAt: data.homeModule.updatedAt ?? data.updatedAt,
-          },
-          preview:
-            data.preview === null || data.preview === undefined
-              ? undefined
-              : {
-                  html: data.preview.html,
-                  openUiSource: data.preview.openUiSource,
-                  siteSpecJson: data.preview.siteSpecJson,
-                  version: data.preview.version,
-                },
-          siteSpec:
-            data.siteSpec === null || data.siteSpec === undefined
-              ? undefined
-              : {
-                  specJson: data.siteSpec.specJson,
-                  updatedAt: data.siteSpec.updatedAt,
-                },
-          tasks: (data.tasks ?? []).map(
-            (task: {
-              id: string
-              title: string
-              status: string
-              order?: number
-            }) => ({
-              id: task.id,
-              title: task.title,
-              status: task.status,
-              order: task.order ?? 0,
-            }),
-          ),
-          createdAt: Date.now(),
-        }
-
-        rememberReadySessionPreview(window.localStorage, snapshot)
-        setFallbackGenerationView(toDashboardGenerationView(snapshot))
-      } catch {
-        // The live Convex subscription remains the primary path; polling is a
-        // best-effort fallback for local/dev WebSocket failures.
-      }
-    }
-
-    void loadFallbackGenerationView()
-    const interval = window.setInterval(loadFallbackGenerationView, 1500)
-    return () => {
-      cancelled = true
-      window.clearInterval(interval)
-    }
+    setFallbackGenerationView((current) => current ?? cached)
   }, [liveGenerationView, sessionId])
 
   useEffect(() => {

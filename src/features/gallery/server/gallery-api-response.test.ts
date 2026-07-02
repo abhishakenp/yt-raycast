@@ -229,6 +229,85 @@ describe('Gallery API Response', () => {
       expect(JSON.stringify(data.items[0])).not.toContain('RestaurantMenu("')
     })
 
+    it('renders the live public-gallery OpenUI shape with null html into static HTML before serialization', async () => {
+      const selectedBrandLogo = {
+        brandId: 'idwTkaYgXe',
+        domain: 'thebeerstore.ca',
+        icon: 'https://cdn.brandfetch.io/idwTkaYgXe/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782982741853bfumLaCV7mbdS0jiIv',
+        logo: 'https://cdn.brandfetch.io/idwTkaYgXe/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1782982741853bfumLaCV7mbdS0jiIv',
+        name: 'The Beer Store',
+      }
+      const livePublicSessionSource =
+        'home_navbar = RestaurantNavbar("Craft Beer Brewery", ["Home","Menu","Gallery","Story","Testimonials"])\n' +
+        'home_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"categories[Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"}]}])\n' +
+        'home = Stack([home_navbar, home_menu])\n' +
+        'root = PageSwitch(["Home"], [home], "", {"Home":"home"})'
+      const mockClient = {
+        query: async () => ({
+          availableCategories: [],
+          hasNext: false,
+          hasPrev: false,
+          items: [
+            {
+              categories: [],
+              elapsed: 6424,
+              html: null,
+              moduleSource: livePublicSessionSource,
+              openuiReady: true,
+              preferredLanguage: 'lt',
+              previewVersion: 1,
+              prompt:
+                'a craft beer brewery with taproom tours and seasonal releases in portland',
+              readiness: {
+                homepageReady: null,
+                openuiReady: true,
+                previewReady: true,
+                siteSpecReady: null,
+              },
+              selectedBrandLogo,
+              sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+              siteSpecJson: JSON.stringify({
+                brand: 'Craft Beer Brewery',
+                locale: 'en',
+                projectName: 'Craft Beer Brewery',
+                theme: 't3-chat',
+              }),
+              status: 'preview_ready',
+              themeMode: 'dark',
+              themeOverride: 'darkmatter',
+            },
+          ],
+          limit: 12,
+          page: 1,
+          total: 1,
+          totalPages: 1,
+        }),
+      }
+      const request = new Request(
+        'http://localhost/api/gallery?search=craft%20beer%20brewery',
+      )
+
+      const response = await createGalleryApiResponse(request, mockClient)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.items).toHaveLength(1)
+      const item = data.items[0]
+      const renderedHtml = item.html as string
+      expect(item.sessionId).toBe('k574ms14ma9f94keq30r7dq24x89n1k2')
+      expect(renderedHtml).toContain('data-sf-export-page')
+      expect(renderedHtml).toContain('lang="lt"')
+      expect(renderedHtml).toContain('color-scheme: dark')
+      expect(renderedHtml).toContain('"themeName":"darkmatter"')
+      expect(renderedHtml).toContain('Our Brew Selection')
+      expect(renderedHtml).toContain('Pineapple Saison')
+      expect(renderedHtml).toContain(selectedBrandLogo.icon)
+      expect(renderedHtml).toContain('data-brand-logo-selected="true"')
+      expect('imageUrl' in item).toBe(false)
+      expect('moduleSource' in item).toBe(false)
+      expect(JSON.stringify(item)).not.toContain('RestaurantMenu("')
+    })
+
     it('renders edited OpenUI source as static gallery HTML instead of reusing a PNG thumbnail or stale preview HTML', async () => {
       const stalePreviewHtml =
         '<main><h1>Craft Beer Brewery</h1><img alt="gallery screenshot" src="https://cdn.example.test/stale-preview.png"></main>'
