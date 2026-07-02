@@ -485,4 +485,173 @@ describe('createSessionMedusaProductsResponse', () => {
     expect(JSON.stringify(body)).not.toContain('admin-token')
     expect(fetchImpl).toHaveBeenCalledTimes(2)
   })
+
+  it('includes admin-created products without ship-fast metadata for bidirectional sync', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ regions: [{ id: 'reg_123' }] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            products: [
+              {
+                title: 'Edited Truffle Box',
+                handle: 'ship-fast-session-123-truffle-box',
+                description: 'Updated in Medusa',
+                metadata: {
+                  ship_fast_generated_handle: 'truffle-box',
+                  ship_fast_generated_product: true,
+                  ship_fast_session_id: 'session_123',
+                },
+                variants: [
+                  {
+                    calculated_price: {
+                      calculated_amount: 89,
+                      currency_code: 'eur',
+                    },
+                  },
+                ],
+              },
+              {
+                title: 'Admin-Created Mug',
+                handle: 'admin-created-mug',
+                description: 'Added directly in Medusa admin',
+                metadata: {},
+                variants: [
+                  {
+                    calculated_price: {
+                      calculated_amount: 15,
+                      currency_code: 'usd',
+                    },
+                  },
+                ],
+              },
+              {
+                title: 'Admin Product No Metadata',
+                handle: 'admin-no-metadata-product',
+                variants: [
+                  {
+                    calculated_price: {
+                      calculated_amount: 30,
+                      currency_code: 'usd',
+                    },
+                  },
+                ],
+              },
+              {
+                title: 'Other Session Product',
+                handle: 'ship-fast-other-product',
+                metadata: {
+                  ship_fast_generated_handle: 'other-product',
+                  ship_fast_generated_product: true,
+                  ship_fast_session_id: 'other_session',
+                },
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+
+    const response = await createSessionMedusaProductsResponse('session_123', {
+      env: {
+        MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+      },
+      fetch: fetchImpl,
+      metaEnv: {},
+    })
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      products: [
+        {
+          currencyCode: 'eur',
+          description: 'Updated in Medusa',
+          handle: 'ship-fast-session-123-truffle-box',
+          price: 89,
+          sourceHandle: 'truffle-box',
+          title: 'Edited Truffle Box',
+        },
+        {
+          currencyCode: 'usd',
+          description: 'Added directly in Medusa admin',
+          handle: 'admin-created-mug',
+          price: 15,
+          sourceHandle: 'admin-created-mug',
+          title: 'Admin-Created Mug',
+        },
+        {
+          currencyCode: 'usd',
+          handle: 'admin-no-metadata-product',
+          price: 30,
+          sourceHandle: 'admin-no-metadata-product',
+          title: 'Admin Product No Metadata',
+        },
+      ],
+      sessionId: 'session_123',
+    })
+  })
+
+  it('uses the product handle as sourceHandle when ship-fast metadata is missing the generated handle', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ regions: [{ id: 'reg_123' }] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            products: [
+              {
+                title: 'Partially Tagged Product',
+                handle: 'partial-tag-product',
+                metadata: {
+                  ship_fast_generated_product: true,
+                  ship_fast_session_id: 'session_123',
+                },
+                variants: [
+                  {
+                    calculated_price: {
+                      calculated_amount: 42,
+                      currency_code: 'usd',
+                    },
+                  },
+                ],
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+
+    const response = await createSessionMedusaProductsResponse('session_123', {
+      env: {
+        MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+      },
+      fetch: fetchImpl,
+      metaEnv: {},
+    })
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      products: [
+        {
+          currencyCode: 'usd',
+          handle: 'partial-tag-product',
+          price: 42,
+          sourceHandle: 'partial-tag-product',
+          title: 'Partially Tagged Product',
+        },
+      ],
+      sessionId: 'session_123',
+    })
+  })
 })

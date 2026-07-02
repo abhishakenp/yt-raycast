@@ -306,9 +306,10 @@ const isFullHtmlDocument = (html: string | undefined): boolean =>
 const isOpenUIHandoffHtml = (html: string | undefined): boolean =>
   typeof html === 'string' &&
   isFullHtmlDocument(html) &&
-  (/id=["']ship-fast-openui-source["']/i.test(html) ||
+  (((/id=["']ship-fast-openui-source["']/i.test(html) ||
     /Generated OpenUI source is ready/i.test(html)) &&
-  /data-openui-ready=["']source["']/i.test(html)
+    /data-openui-ready=["']source["']/i.test(html)) ||
+    /id=["']openui-client-source["']/i.test(html))
 
 const ToolPopoverFallback = () => (
   <div className="grid gap-3" aria-hidden="true">

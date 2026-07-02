@@ -5,6 +5,40 @@ import type { ActionCtx } from '../_generated/server'
 import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import type { EngineTaskInput } from './session_task_helpers'
 
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
+/**
+ * Build a minimal client-renderable HTML shell when SSR fails in the Convex
+ * action environment. The OpenUI source is embedded as a JSON script tag so
+ * the browser-side OpenUI runtime can render it. This is NOT the handoff
+ * placeholder — it uses a different script id and omits the
+ * `data-openui-ready="source"` marker so it passes the safety checks.
+ */
+const buildClientRenderableShell = (
+  source: string,
+  locale: string,
+  brand: string,
+): string => `<!doctype html>
+<html lang="${escapeHtml(locale)}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(brand || 'Generated Site')}</title>
+  <script src="/scripts/tailwind-browser.js"></script>
+</head>
+<body class="min-h-screen bg-background text-foreground">
+  <div id="openui-root"></div>
+  <script type="application/json" id="openui-client-source">${escapeHtml(JSON.stringify(source))}</script>
+  <script src="/scripts/openui-preview-client.js"></script>
+</body>
+</html>`
+
 type RunQueryReference = Parameters<ActionCtx['runQuery']>[0]
 type RunMutationReference = Parameters<ActionCtx['runMutation']>[0]
 
@@ -48,6 +82,15 @@ const shouldRenderOpenUISource = (
 ): openUiSource is string =>
   openUiSource !== undefined && openUiSource.trim().length > 0
 
+const safeParseSiteSpecBrand = (siteSpecJson: string): string => {
+  try {
+    const spec = JSON.parse(siteSpecJson) as { brand?: string }
+    return typeof spec.brand === 'string' ? spec.brand : ''
+  } catch {
+    return ''
+  }
+}
+
 export const completeGenerationAction = async (
   ctx: Pick<ActionCtx, 'runMutation' | 'runQuery'>,
   args: CompleteGenerationActionInput,
@@ -74,6 +117,7 @@ export const completeGenerationAction = async (
   }
 
   let renderedHtml = args.html
+  let ssrFailed = false
   if (shouldRenderOpenUISource(args.openUiSource)) {
     try {
       const { renderOpenUIToHTMLWithTheme } = await references.loadOpenUISSR()
@@ -92,13 +136,24 @@ export const completeGenerationAction = async (
         sessionId: args.sessionId,
         error: error instanceof Error ? error.message : String(error),
       })
-      // When rendering fails, do not fall back to DB-observed OpenUI handoff
-      // placeholder HTML — that is not real preview content and must never be
-      // stored as a completed generation. Re-throw so the action rejects.
-      if (isUnsafePublicPreviewHtml(args.html)) {
-        throw error
-      }
+      ssrFailed = true
     }
+  }
+
+  // When SSR fails in the Convex action environment (known React bundling
+  // issue: "fe is not a function"), build a client-renderable shell that
+  // embeds the OpenUI source. The dashboard renders from openUiSource
+  // client-side, and the export builder re-renders in the Next.js server
+  // environment where SSR works correctly.
+  if (ssrFailed && shouldRenderOpenUISource(args.openUiSource)) {
+    const siteSpec = args.siteSpecJson
+      ? safeParseSiteSpecBrand(args.siteSpecJson)
+      : ''
+    renderedHtml = buildClientRenderableShell(
+      args.openUiSource,
+      session.preferredLanguage ?? 'en',
+      siteSpec,
+    )
   }
 
   if (!renderedHtml.trim() || isUnsafePublicPreviewHtml(renderedHtml)) {

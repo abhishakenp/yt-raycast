@@ -196,13 +196,29 @@ const normalizeProduct = (
   if (!isRecord(value)) return undefined
 
   const metadata = isRecord(value.metadata) ? value.metadata : {}
-  if (metadata.ship_fast_session_id !== sessionId) return undefined
-  if (metadata.ship_fast_generated_product !== true) return undefined
+  const taggedSessionId = stringValue(metadata.ship_fast_session_id)
 
-  const sourceHandle = stringValue(metadata.ship_fast_generated_handle)
+  // Cross-tenant guard: exclude products explicitly tagged as belonging to a
+  // different session. Products with no session tag (created directly in the
+  // Medusa admin) are included — the publishable key already scopes the store
+  // API to the session's sales channel, so untagged products are admin-created
+  // items in this tenant that should flow back to the generated UI.
+  if (taggedSessionId !== undefined && taggedSessionId !== sessionId) {
+    return undefined
+  }
+
   const title = stringValue(value.title)
   const handle = stringValue(value.handle)
-  if (!sourceHandle || !title || !handle) return undefined
+  if (!title || !handle) return undefined
+
+  // For ship-fast generated products, sourceHandle maps back to the original
+  // generated product handle so the preview sync can find the DOM element.
+  // For admin-created products (no ship-fast metadata), the product is its own
+  // source — sourceHandle falls back to the Medusa product handle.
+  const isShipFastGenerated = metadata.ship_fast_generated_product === true
+  const sourceHandle = isShipFastGenerated
+    ? (stringValue(metadata.ship_fast_generated_handle) ?? handle)
+    : handle
 
   const description = stringValue(value.description)
   const price = readProductPrice(value)
