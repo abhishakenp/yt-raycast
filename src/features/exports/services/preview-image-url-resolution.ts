@@ -36,8 +36,14 @@ const decodeHtmlEntities = (value: string): string =>
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
 
-const readServerEnv = (key: string): string =>
-  typeof process !== 'undefined' ? (process.env?.[key]?.trim() ?? '') : ''
+const readServerEnv = (...keys: string[]): string => {
+  if (typeof process === 'undefined') return ''
+  for (const key of keys) {
+    const value = process.env?.[key]?.trim()
+    if (value) return value
+  }
+  return ''
+}
 
 const readImageDimension = (
   value: string | null,
@@ -106,7 +112,7 @@ const searchPexels = async (
   h: number,
   seed: string,
 ): Promise<string | null> => {
-  const pexelsApiKey = readServerEnv('PEXELS_API_KEY')
+  const pexelsApiKey = readServerEnv('PEXELS_API_KEY', 'VITE_PEXELS_API_KEY')
   if (!pexelsApiKey) return null
   const pexelsUrl = new URL('https://api.pexels.com/v1/search')
   pexelsUrl.searchParams.set('query', searchQuery.slice(0, 96))
@@ -132,7 +138,10 @@ const searchUnsplash = async (
   h: number,
   seed: string,
 ): Promise<string | null> => {
-  const unsplashAccessKey = readServerEnv('UNSPLASH_ACCESS_KEY')
+  const unsplashAccessKey = readServerEnv(
+    'UNSPLASH_ACCESS_KEY',
+    'VITE_UNSPLASH_ACCESS_KEY',
+  )
   if (!unsplashAccessKey) return null
   const unsplashUrl = new URL('https://api.unsplash.com/search/photos')
   unsplashUrl.searchParams.set('query', searchQuery.slice(0, 96))
