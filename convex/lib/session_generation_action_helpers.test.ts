@@ -208,7 +208,7 @@ describe('completeGenerationAction', () => {
     )
   })
 
-  it('does not complete generation with handoff HTML when OpenUI rendering fails', async () => {
+  it('falls back to client-renderable shell when SSR throws and source is available', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const { ctx, mutationCalls } = ctxFor(sessionDoc())
 
@@ -222,24 +222,28 @@ describe('completeGenerationAction', () => {
         referencesFor({
           loadOpenUISSR: async () => ({
             renderOpenUIToHTMLWithTheme: () => {
-              throw new Error('render_failed')
+              throw new Error('fe is not a function')
             },
           }),
         }),
       ),
-    ).rejects.toThrow(/render_failed|OpenUI/)
+    ).resolves.toEqual({ sessionId, previewVersion: 1 })
 
     expect(consoleError).toHaveBeenCalledWith(
       '[completeGeneration] Failed to render OpenUI to HTML',
       expect.objectContaining({
         sessionId,
-        error: 'render_failed',
+        error: 'fe is not a function',
       }),
     )
-    expect(mutationCalls).toEqual([])
+    expect(mutationCalls).toHaveLength(1)
+    expect(mutationCalls[0].args.html).toContain('openui-client-source')
+    expect(mutationCalls[0].args.html).not.toContain('data-openui-ready')
+    expect(mutationCalls[0].args.html).not.toContain('ship-fast-openui-source')
+    expect(mutationCalls[0].args.html).not.toContain('openui-error')
   })
 
-  it('does not complete generation with handoff HTML when OpenUI rendering returns an error shell', async () => {
+  it('falls back to client-renderable shell when SSR returns error HTML and source is available', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const { ctx, mutationCalls } = ctxFor(sessionDoc())
 
@@ -258,7 +262,7 @@ describe('completeGenerationAction', () => {
           }),
         }),
       ),
-    ).rejects.toThrow(/OpenUI renderer returned error HTML/)
+    ).resolves.toEqual({ sessionId, previewVersion: 1 })
 
     expect(consoleError).toHaveBeenCalledWith(
       '[completeGeneration] Failed to render OpenUI to HTML',
@@ -267,7 +271,9 @@ describe('completeGenerationAction', () => {
         error: 'OpenUI renderer returned error HTML',
       }),
     )
-    expect(mutationCalls).toEqual([])
+    expect(mutationCalls).toHaveLength(1)
+    expect(mutationCalls[0].args.html).toContain('openui-client-source')
+    expect(mutationCalls[0].args.html).not.toContain('openui-error')
   })
 
   it('rejects with PREVIEW_NOT_READY when openUiSource is empty and html is handoff placeholder', async () => {
@@ -292,7 +298,7 @@ describe('completeGenerationAction', () => {
     expect(mutationCalls).toEqual([])
   })
 
-  it('rejects with PREVIEW_NOT_READY when SSR fails and no valid fallback html exists', async () => {
+  it('rejects with PREVIEW_NOT_READY when SSR fails and no source is available', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     const { ctx, mutationCalls } = ctxFor(sessionDoc())
 
@@ -301,7 +307,7 @@ describe('completeGenerationAction', () => {
         ctx,
         actionInput({
           html: '',
-          openUiSource: dbObservedBreweryGeneration.source,
+          openUiSource: '',
         }),
         referencesFor({
           loadOpenUISSR: async () => ({
