@@ -8,6 +8,8 @@
 // implementation only when running in a DOM-like environment that is missing it,
 // so pure `node`-environment tests are left untouched.
 
+process.env.VITE_DISABLE_CLERK = 'false'
+
 type MemoryStorage = Pick<
   Storage,
   'clear' | 'getItem' | 'key' | 'length' | 'removeItem' | 'setItem'
