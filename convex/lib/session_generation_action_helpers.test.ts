@@ -269,4 +269,55 @@ describe('completeGenerationAction', () => {
     )
     expect(mutationCalls).toEqual([])
   })
+
+  it('rejects with PREVIEW_NOT_READY when openUiSource is empty and html is handoff placeholder', async () => {
+    const { ctx, mutationCalls } = ctxFor(sessionDoc())
+
+    await expect(
+      completeGenerationAction(
+        ctx,
+        actionInput({
+          html: dbObservedOpenUiHandoffHtml,
+          openUiSource: '',
+        }),
+        referencesFor(),
+      ),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'PREVIEW_NOT_READY',
+        message: 'Preview HTML is not renderable',
+      },
+    })
+
+    expect(mutationCalls).toEqual([])
+  })
+
+  it('rejects with PREVIEW_NOT_READY when SSR fails and no valid fallback html exists', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { ctx, mutationCalls } = ctxFor(sessionDoc())
+
+    await expect(
+      completeGenerationAction(
+        ctx,
+        actionInput({
+          html: '',
+          openUiSource: dbObservedBreweryGeneration.source,
+        }),
+        referencesFor({
+          loadOpenUISSR: async () => ({
+            renderOpenUIToHTMLWithTheme: () => {
+              throw new Error('render_failed')
+            },
+          }),
+        }),
+      ),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'PREVIEW_NOT_READY',
+        message: 'Preview HTML is not renderable',
+      },
+    })
+
+    expect(mutationCalls).toEqual([])
+  })
 })

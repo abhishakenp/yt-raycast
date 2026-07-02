@@ -9,7 +9,10 @@ import type { ActionCtx } from './_generated/server'
 import type { EngineWorkspaceTask } from '../src/features/generation/server/engine-workspace'
 import type { ComposedContent } from '../packages/ship-fast-engine/src/genui/run.ts'
 import { getModelConfigurationFailure } from './generationConfig'
-import { buildOpenUiHandoffHtml } from './lib/openui_handoff_html'
+import {
+  completeGenerationAction,
+  type CompleteGenerationActionResult,
+} from './lib/session_generation_action_helpers'
 
 const internalFunctions = internal as any
 
@@ -57,6 +60,12 @@ const loadGenerationRuntime = async () => {
   return { runHomepageOrchestrator }
 }
 
+const loadOpenUISSR = async () => {
+  const { renderOpenUIToHTMLWithTheme } =
+    await import('@ship-fast/engine/openui-ssr.js')
+  return { renderOpenUIToHTMLWithTheme }
+}
+
 export const createGenerationTimeoutController = () => {
   const controller = new AbortController()
   const timeoutMs = Math.max(
@@ -76,20 +85,6 @@ export const createGenerationTimeoutController = () => {
     controller,
     clear: () => clearTimeout(timeout),
   }
-}
-
-const buildRenderedOpenUiPreviewHtml = ({
-  source,
-  locale,
-  brand,
-  prompt,
-}: {
-  source: string
-  locale: string
-  brand: string
-  prompt: string
-}): string => {
-  return buildOpenUiHandoffHtml({ source, locale, brand, prompt })
 }
 
 const eventMessage = (event: GenUIEvent): string | undefined => {
@@ -244,42 +239,13 @@ const completeGenerationFromNode = async (
     cost?: number
     provider?: string
   },
-) => {
-  const session: Doc<'sessions'> | null = await ctx.runQuery(
-    internalFunctions.sessions.getGenerationSession,
-    {
-      sessionId: input.sessionId,
-    },
-  )
-
-  if (session === null) {
-    throw new Error('Session not found')
-  }
-
-  if ((session.previewVersion ?? 0) > 0) {
-    return {
-      sessionId: input.sessionId,
-      previewVersion: session.previewVersion ?? 0,
-      skipped: true,
-      reason: 'preview_already_exists',
-    }
-  }
-
-  await ctx.runMutation(internalFunctions.sessions.completeGenerationInternal, {
-    sessionId: input.sessionId,
-    anonymousOwnerSecret: input.anonymousOwnerSecret,
-    html: input.html,
-    siteSpecJson: input.siteSpecJson,
-    openUiSource: input.openUiSource,
-    tasks: input.tasks,
-    elapsed: input.elapsed,
-    cost: input.cost,
-    provider: input.provider,
+): Promise<CompleteGenerationActionResult> =>
+  await completeGenerationAction(ctx, input, {
+    getGenerationSession: internalFunctions.sessions.getGenerationSession,
+    completeGenerationInternal:
+      internalFunctions.sessions.completeGenerationInternal,
+    loadOpenUISSR,
   })
-
-  const previewVersion = (session.previewVersion ?? 0) + 1
-  return { sessionId: input.sessionId, previewVersion }
-}
 
 const recordGenerationFailure = async (
   ctx: ActionCtx,
@@ -623,22 +589,18 @@ export const startGeneration = internalAction({
         status: 'DONE',
       }
       const finalOpenUiSource = result.source || latestOpenUiSource || ''
+      if (!finalOpenUiSource.trim()) {
+        throw new Error('Generation produced no OpenUI source to render')
+      }
       const siteSpec = buildGenerationSiteSpecMetadata(session, {
         ...result,
         source: finalOpenUiSource,
-      })
-      const locale = result.locale
-      const staticPreviewHtml = await buildRenderedOpenUiPreviewHtml({
-        source: finalOpenUiSource,
-        locale,
-        brand: result.brand,
-        prompt: session.prompt,
       })
 
       await completeGenerationFromNode(ctx, {
         sessionId: args.sessionId,
         anonymousOwnerSecret: args.anonymousOwnerSecret,
-        html: staticPreviewHtml,
+        html: '',
         siteSpecJson: JSON.stringify(siteSpec),
         openUiSource: finalOpenUiSource,
         tasks: [completedTask],

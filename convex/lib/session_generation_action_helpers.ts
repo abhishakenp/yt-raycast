@@ -101,6 +101,13 @@ export const completeGenerationAction = async (
     }
   }
 
+  if (!renderedHtml.trim() || isUnsafePublicPreviewHtml(renderedHtml)) {
+    throw new ConvexError({
+      code: 'PREVIEW_NOT_READY',
+      message: 'Preview HTML is not renderable',
+    })
+  }
+
   await ctx.runMutation(references.completeGenerationInternal, {
     sessionId: args.sessionId,
     anonymousOwnerSecret: args.anonymousOwnerSecret,
