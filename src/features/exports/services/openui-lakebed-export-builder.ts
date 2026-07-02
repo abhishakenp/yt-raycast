@@ -5,7 +5,7 @@ import { zipSync, strToU8 } from 'fflate'
 import { format } from 'prettier'
 import ts from 'typescript'
 import type { ElementNode } from '@openuidev/lang-core'
-import { library } from '@ship-fast/blocks'
+import { buildImageSearchQuery, library } from '@ship-fast/blocks'
 import {
   reactExportSourcesBase64,
   reactExportSourcesEncoding,
@@ -32,6 +32,7 @@ import { parseOpenUIForExport } from './openui-export-builder'
 import {
   resolvePreviewImageUrl,
   rewritePreviewImageUrls,
+  type PreviewImageUrlResolutionOptions,
 } from './preview-image-url-resolution'
 
 type ReactExportSourceEntry = {
@@ -83,11 +84,17 @@ type ClientComponentDefinition = {
 
 type ImageSource = {
   alt: string
+  originalSrc?: string
   src: string
 }
 
 type ResolvedExtractedImageSource = ImageSource & {
   originalSrc: string
+}
+
+type RouteImageReference = {
+  alt: string
+  src?: string
 }
 
 type StyleOverride = {
@@ -357,6 +364,29 @@ const isLikelyImageAltKey = (key: string): boolean => {
   return false
 }
 
+const isLikelyImageSrcKey = (key: string): boolean => {
+  const normalized = key.toLowerCase().replace(/[^a-z0-9]/g, '')
+  if (normalized === 'src') return true
+  if (normalized.endsWith('imagesrc') || normalized.endsWith('imagesrcs'))
+    return true
+  if (normalized.endsWith('photosrc') || normalized.endsWith('photosrcs'))
+    return true
+  if (normalized.endsWith('avatarsrc') || normalized.endsWith('avatarsrcs'))
+    return true
+  if (normalized.endsWith('headshotsrc') || normalized.endsWith('headshotsrcs'))
+    return true
+  if (normalized.endsWith('coversrc') || normalized.endsWith('coversrcs'))
+    return true
+  if (normalized.endsWith('logosrc') || normalized.endsWith('logosrcs'))
+    return true
+  return false
+}
+
+const isResolvableImageSrc = (value: string): boolean =>
+  /^(https?:)?\/\//i.test(value) ||
+  value.startsWith('/') ||
+  value.startsWith('data:image/')
+
 const readStringField = (
   value: Record<string, unknown>,
   key: string,
@@ -383,41 +413,93 @@ const collectDerivedImageAltCandidates = (
   }
 }
 
-const collectImageAltCandidates = (
+const addRouteImageReference = (
+  references: Map<string, RouteImageReference>,
+  alt: string,
+  src?: string,
+): void => {
+  const normalizedAlt = alt.trim()
+  if (!normalizedAlt) return
+  const normalizedSrc =
+    typeof src === 'string' && isResolvableImageSrc(src.trim())
+      ? src.trim()
+      : undefined
+  const existing = references.get(normalizedAlt)
+  if (!existing || (!existing.src && normalizedSrc)) {
+    references.set(normalizedAlt, { alt: normalizedAlt, src: normalizedSrc })
+  }
+}
+
+const collectImageReferences = (
   value: unknown,
-  into: Set<string>,
+  into: Map<string, RouteImageReference>,
   key = '',
 ): void => {
   if (typeof value === 'string') {
     if (isLikelyImageAltKey(key) && !/^https?:\/\//i.test(value)) {
-      const normalized = value.trim()
-      if (normalized) into.add(normalized)
+      addRouteImageReference(into, value)
     }
     return
   }
   if (Array.isArray(value)) {
-    for (const item of value) collectImageAltCandidates(item, into, key)
+    for (const item of value) collectImageReferences(item, into, key)
     return
   }
   if (!isRecord(value)) return
-  collectDerivedImageAltCandidates(value, into)
+
+  const altCandidates = Object.entries(value)
+    .filter(
+      (entry): entry is [string, string] =>
+        isLikelyImageAltKey(entry[0]) &&
+        typeof entry[1] === 'string' &&
+        !/^https?:\/\//i.test(entry[1]),
+    )
+    .map(([, alt]) => alt.trim())
+    .filter(Boolean)
+  const srcCandidates = Object.entries(value)
+    .filter(
+      (entry): entry is [string, string] =>
+        isLikelyImageSrcKey(entry[0]) &&
+        typeof entry[1] === 'string' &&
+        isResolvableImageSrc(entry[1].trim()),
+    )
+    .map(([, src]) => src.trim())
+
+  for (const [index, alt] of altCandidates.entries()) {
+    addRouteImageReference(into, alt, srcCandidates[index] ?? srcCandidates[0])
+  }
+
+  const derivedAlts = new Set<string>()
+  collectDerivedImageAltCandidates(value, derivedAlts)
+  for (const alt of derivedAlts) addRouteImageReference(into, alt)
+
   for (const [childKey, childValue] of Object.entries(value)) {
-    collectImageAltCandidates(childValue, into, childKey)
+    collectImageReferences(childValue, into, childKey)
   }
 }
 
+const collectRouteImageReferences = (
+  routes: LakebedRoute[],
+): RouteImageReference[] => {
+  const references = new Map<string, RouteImageReference>()
+  for (const route of routes) collectImageReferences(route.props, references)
+  return [...references.values()].slice(0, 80)
+}
+
 export const collectRouteImageAlts = (routes: LakebedRoute[]): string[] => {
-  const alts = new Set<string>()
-  for (const route of routes) collectImageAltCandidates(route.props, alts)
-  return [...alts].slice(0, 80)
+  return collectRouteImageReferences(routes).map((reference) => reference.alt)
 }
 
 const normalizePreviewImageSource = async (
   alt: string,
   src: string,
+  options: PreviewImageUrlResolutionOptions = {},
 ): Promise<string> => {
   const dimensions = lakebedImageDimensionsForAlt(alt)
-  const resolved = await resolvePreviewImageUrl(src, alt)
+  const resolved = await resolvePreviewImageUrl(src, {
+    fallbackAlt: alt,
+    ...options,
+  })
   if (resolved) return normalizeRemoteImageUrlForLakebed(resolved, dimensions)
 
   if (/^https:\/\/images\.pexels\.com\//i.test(src)) {
@@ -439,6 +521,48 @@ const isGeneratedPreviewImageSource = (src: string): boolean =>
   /^https:\/\/images\.pexels\.com\//i.test(src) ||
   /^https:\/\/images\.unsplash\.com\//i.test(src) ||
   /source\.unsplash\.com/i.test(src)
+
+const parseSiteSpecBrandContext = (
+  siteSpecJson: string | undefined,
+): string | undefined => {
+  if (!siteSpecJson) return undefined
+  try {
+    const parsed = JSON.parse(siteSpecJson) as Record<string, unknown>
+    if (!parsed || typeof parsed !== 'object') return undefined
+    const parts = [parsed.brand, parsed.brandName, parsed.name, parsed.tagline]
+      .filter((value): value is string => typeof value === 'string')
+      .map((value) => value.trim())
+      .filter(Boolean)
+    const descriptor = [...new Set(parts)].join(' ').trim()
+    return descriptor || undefined
+  } catch {
+    return undefined
+  }
+}
+
+const buildRuntimeGeneratedImageSrc = (
+  alt: string,
+  src: string,
+  input: Pick<OpenUIExportInput, 'prompt' | 'siteSpecJson'> | undefined,
+): string | undefined => {
+  if (!isGeneratedPreviewImageSource(src)) return undefined
+  const existing = new URL(src, 'https://ship-fast.local')
+  if (existing.pathname !== '/api/pexels') return undefined
+
+  const baseQuery = searchQueryFromAlt(alt)
+  const brandContext = parseSiteSpecBrandContext(input?.siteSpecJson)
+  const query = buildImageSearchQuery(alt, baseQuery, {
+    prompt: input?.prompt,
+    brandContext,
+  })
+  const params = new URLSearchParams({
+    query,
+    w: existing.searchParams.get('w') ?? '800',
+    h: existing.searchParams.get('h') ?? '600',
+    seed: alt,
+  })
+  return `/api/pexels?${params.toString()}`
+}
 
 const asciiTokens = (value: string): string[] =>
   value
@@ -492,12 +616,15 @@ const extractImageSources = (html: string | undefined): ImageSource[] => {
 
 const resolveExtractedImageSources = async (
   html: string | undefined,
+  input?: Pick<OpenUIExportInput, 'prompt' | 'siteSpecJson'>,
 ): Promise<ResolvedExtractedImageSource[]> =>
   await Promise.all(
     extractImageSources(html).map(async ({ alt, src }) => ({
       alt,
       originalSrc: src,
-      src: await normalizePreviewImageSource(alt, src),
+      src: await normalizePreviewImageSource(alt, src, {
+        overrideGeneratedSrc: buildRuntimeGeneratedImageSrc(alt, src, input),
+      }),
     })),
   )
 
@@ -521,13 +648,30 @@ const extractStyleOverrides = (html: string | undefined): StyleOverride[] => {
 export const resolveLakebedImageSources = async (
   routes: LakebedRoute[],
   previewHtml: string | undefined,
+  input?: Pick<OpenUIExportInput, 'prompt' | 'siteSpecJson'>,
 ): Promise<ImageSource[]> => {
-  const extractedSources = await resolveExtractedImageSources(previewHtml)
-  const byAlt = new Map(
-    extractedSources.map((source) => [source.alt, source.src]),
+  const extractedSources = await resolveExtractedImageSources(
+    previewHtml,
+    input,
+  )
+  const byAlt = new Map<string, ImageSource>(
+    extractedSources.map((source) => [
+      source.alt,
+      { alt: source.alt, originalSrc: source.originalSrc, src: source.src },
+    ]),
   )
 
-  const routeAlts = collectRouteImageAlts(routes)
+  const routeReferences = collectRouteImageReferences(routes)
+  for (const reference of routeReferences) {
+    if (!reference.src) continue
+    byAlt.set(reference.alt, {
+      alt: reference.alt,
+      originalSrc: reference.src,
+      src: await normalizePreviewImageSource(reference.alt, reference.src),
+    })
+  }
+
+  const routeAlts = routeReferences.map((reference) => reference.alt)
   const generatedPreviewSources = extractedSources.filter((source) =>
     isGeneratedPreviewImageSource(source.originalSrc),
   )
@@ -547,7 +691,11 @@ export const resolveLakebedImageSources = async (
     if (!pairGeneratedPreviewImagesByOrder) continue
     const orderedPreviewSource = generatedPreviewSources[generatedPreviewIndex]
     if (!orderedPreviewSource) continue
-    byAlt.set(alt, orderedPreviewSource.src)
+    byAlt.set(alt, {
+      alt,
+      originalSrc: orderedPreviewSource.originalSrc,
+      src: orderedPreviewSource.src,
+    })
     generatedPreviewIndex += 1
   }
 
@@ -568,10 +716,10 @@ export const resolveLakebedImageSources = async (
   )
 
   for (const { alt, src } of resolvedImages) {
-    byAlt.set(alt, src)
+    byAlt.set(alt, { alt, src })
   }
 
-  return [...byAlt].map(([alt, src]) => ({ alt, src }))
+  return [...byAlt.values()]
 }
 
 const readHtmlTitle = (html: string): string | undefined => {
@@ -3150,7 +3298,7 @@ export const routeByLabel = new Map(
 
 export const routeTargets = ${JSON.stringify(targetMap, null, 2)} satisfies Record<string, string>
 
-export const imageSources = ${JSON.stringify(imageSources, null, 2)} satisfies Array<{ alt: string; src: string }>
+export const imageSources = ${JSON.stringify(imageSources, null, 2)} satisfies Array<{ alt: string; originalSrc?: string; src: string }>
 `
 }
 
@@ -3264,6 +3412,19 @@ const renderClientImage =
 const imageSourcesByAlt = new Map(
   imageSources.map((image) => [image.alt, image.src]),
 );
+const imageSourcesByOriginalSrc = new Map(
+  imageSources
+    .filter((image): image is typeof image & { originalSrc: string } => typeof image.originalSrc === "string" && image.originalSrc.trim().length > 0)
+    .map((image) => [image.originalSrc, image.src]),
+);
+
+function isGeneratedImageSrc(src: string): boolean {
+  return (
+    src.startsWith("/api/") ||
+    /^https?:\\/\\/[^/]+\\/api\\//i.test(src) ||
+    /source\\.unsplash\\.com/i.test(src)
+  );
+}
 
 function fallbackImageUrl(alt: unknown): string {
   const seed =
@@ -3276,8 +3437,13 @@ function fallbackImageUrl(alt: unknown): string {
 }
 
 function imageUrl(alt: unknown, src?: string): string {
-  if (typeof src === "string" && src.trim()) return src;
   const altText = String(alt || "").trim();
+  if (typeof src === "string" && src.trim()) {
+    const srcText = src.trim();
+    const resolvedSrc = imageSourcesByOriginalSrc.get(srcText);
+    if (resolvedSrc) return resolvedSrc;
+    if (!isGeneratedImageSrc(srcText)) return srcText;
+  }
   const generatedSrc = imageSourcesByAlt.get(altText);
   if (generatedSrc) return generatedSrc;
   return fallbackImageUrl(altText);
@@ -4089,6 +4255,7 @@ export async function buildOpenUILakebedProjectFiles(
   const imageSources = await resolveLakebedImageSources(
     routes,
     input.previewHtml,
+    input,
   )
   const targetMap = buildLakebedTargetMap(routes, parsed.targetMap)
   const styleOverrides = extractStyleOverrides(input.previewHtml)

@@ -13,6 +13,7 @@ export type OpenUIExportInput = {
   siteSpecJson?: string
   previewHtml?: string
   sessionId: string
+  prompt?: string
   target: ExportTarget
   themeName?: string
   isDark?: boolean

@@ -9,6 +9,7 @@ import { publishPreviewArgs } from './lib/session_validators'
 
 type PreparedLakebedDeployment = {
   sessionId: Id<'sessions'>
+  prompt?: string
   source: string
   sourceKind?: 'html' | 'openui'
   siteSpecJson?: string
@@ -206,6 +207,7 @@ export const deploy = action({
           siteSpecJson: prepared.siteSpecJson,
           previewHtml: prepared.previewHtml,
           sessionId: prepared.sessionId,
+          prompt: prepared.prompt,
           target: 'lakebed',
           themeName: prepared.themeName,
           isDark: prepared.isDark,

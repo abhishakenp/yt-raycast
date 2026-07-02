@@ -226,6 +226,7 @@ const buildExportOnDemand = async (
     siteSpecJson: buildInputResult.siteSpecJson,
     previewHtml: buildInputResult.html,
     sessionId: buildInputResult.sessionId,
+    prompt: buildInputResult.prompt,
     target,
     includeBadge: false,
     themeName: buildInputResult.themeName,
