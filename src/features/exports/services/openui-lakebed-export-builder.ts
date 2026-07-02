@@ -3203,6 +3203,8 @@ const renderClientLakebed = (): string => `import {
   signInWithGoogle,
   signOut,
   useAuth,
+  useMutation,
+  useQuery,
 } from "lakebed/client";
 import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 
@@ -3339,17 +3341,18 @@ function fallbackLakebedQueryValue(name: string): unknown {
 function useLakebedMutation<Args extends unknown[] = unknown[], Result = unknown>(
   name: string,
 ): LakebedMutationFunction<Args, Result> {
+  const mutation = useMutation<Args, Result>(name);
+  const mutationRef = useRef(mutation);
+  mutationRef.current = mutation;
   const [lastError, setLastError] = useState<unknown | null>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const reset = useCallback(() => setLastError(null), []);
   const callable = useMemo(() => {
     const run = (async (...args: Args) => {
-      void name;
-      void args;
       setPendingCount((count) => count + 1);
       setLastError(null);
       try {
-        return undefined as Result;
+        return await mutationRef.current(...args);
       } catch (error) {
         setLastError(error);
         throw error;
@@ -3438,7 +3441,7 @@ export function useLakebedAdapter() {
 
   return {
     useQuery<T = unknown>(name: string): T {
-      const value = fallbackLakebedQueryValue(name);
+      const value = useQuery<unknown>(name) ?? fallbackLakebedQueryValue(name);
       const dbNormalized = normalizeDbShapedQueryResult(name, value);
       return normalizeQueryValue(
         name,
