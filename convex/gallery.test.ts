@@ -82,8 +82,9 @@ test('listPublicSessions returns only public visible sessions with gallery metad
     },
   })
   expect(gallery.items[0].categories).toContain('saas')
-  expect(gallery.items[0].html).toContain('SaaS analytics dashboard')
+  expect(gallery.items[0].html).toBeNull()
   expect(gallery.items[0].moduleSource).toContain('$page = "Home"')
+  expect(gallery.items[0].moduleSource).toContain('SaaS analytics dashboard')
   expect(gallery.items[0].siteSpecJson).toContain('SaaS analytics dashboard')
   expect(gallery.availableCategories).toContainEqual({
     value: 'saas',
