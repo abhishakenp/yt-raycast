@@ -60,6 +60,7 @@ export const changeGroups: ChangeGroup[] = [
       /^\.codex\//,
       /^\.macp\//,
       /^\.mcp\.json$/,
+      /^\.windsurf\//,
       /^AGENTS\.md$/,
       /^CLAUDE\.md$/,
       /^skills-lock\.json$/,

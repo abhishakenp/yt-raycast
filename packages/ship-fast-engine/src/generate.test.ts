@@ -11,7 +11,6 @@ const llmMocks = vi.hoisted(() => ({
   chat: vi.fn(),
   getAdapter: vi.fn((modelId: string) => ({ modelId, provider: 'sdk' })),
   talaasChat: vi.fn(),
-  windsurfChat: vi.fn(),
 }))
 
 vi.mock('@tanstack/ai', () => ({
@@ -26,10 +25,6 @@ vi.mock('./talaas.ts', () => ({
   talaasChat: llmMocks.talaasChat,
 }))
 
-vi.mock('./windsurf.ts', () => ({
-  windsurfChat: llmMocks.windsurfChat,
-}))
-
 async function* textChunks(text: string) {
   yield { type: 'TEXT_MESSAGE_CONTENT' as const, delta: text }
 }
@@ -42,7 +37,6 @@ beforeEach(() => {
   llmMocks.chat.mockReset()
   llmMocks.getAdapter.mockReset()
   llmMocks.talaasChat.mockReset()
-  llmMocks.windsurfChat.mockReset()
   llmMocks.getAdapter.mockImplementation((modelId: string) => ({
     modelId,
     provider: 'sdk',
@@ -55,9 +49,6 @@ describe('generateText model dispatch', () => {
     async (modelId, provider) => {
       llmMocks.chat.mockImplementation(() => textChunks(DB_OBSERVED_OUTPUT))
       llmMocks.talaasChat.mockImplementation(() =>
-        textChunks(DB_OBSERVED_OUTPUT),
-      )
-      llmMocks.windsurfChat.mockImplementation(() =>
         textChunks(DB_OBSERVED_OUTPUT),
       )
 
@@ -80,16 +71,6 @@ describe('generateText model dispatch', () => {
           expect.any(AbortSignal),
         )
         expect(llmMocks.chat).not.toHaveBeenCalled()
-        expect(llmMocks.windsurfChat).not.toHaveBeenCalled()
-      } else if (provider === 'windsurf') {
-        expect(llmMocks.windsurfChat).toHaveBeenCalledWith(
-          modelId,
-          'Build the generated homepage.',
-          DB_OBSERVED_PROMPT,
-          expect.any(AbortSignal),
-        )
-        expect(llmMocks.chat).not.toHaveBeenCalled()
-        expect(llmMocks.talaasChat).not.toHaveBeenCalled()
       } else {
         expect(llmMocks.getAdapter).toHaveBeenCalledWith(modelId)
         expect(llmMocks.chat).toHaveBeenCalledWith(
@@ -100,7 +81,6 @@ describe('generateText model dispatch', () => {
           }),
         )
         expect(llmMocks.talaasChat).not.toHaveBeenCalled()
-        expect(llmMocks.windsurfChat).not.toHaveBeenCalled()
       }
     },
   )
@@ -152,12 +132,12 @@ describe('generateText model dispatch', () => {
   })
 
   it('throws after an empty provider stream so generation callers can fail the session', async () => {
-    llmMocks.windsurfChat.mockReturnValue((async function* () {})())
+    llmMocks.talaasChat.mockReturnValue((async function* () {})())
 
     const { generateText } = await import('./generate')
     await expect(
       generateText(
-        'glm-5-2-none',
+        'llama3.1-8B',
         'Build the generated homepage.',
         DB_OBSERVED_PROMPT,
         new AbortController().signal,
