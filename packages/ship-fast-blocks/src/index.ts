@@ -1,4 +1,5 @@
 export {
+  allCapsules,
   library,
   componentNames,
   openUIComponentOpenPatternSource,

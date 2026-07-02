@@ -22,6 +22,8 @@ export const library = createLibrary({
   root: 'Stack',
 })
 
+export const allCapsules = registryCapsules
+
 export const componentNames = Object.values(library.components).map(
   (c) => c.name,
 )
