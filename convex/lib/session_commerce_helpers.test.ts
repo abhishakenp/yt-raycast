@@ -4,7 +4,13 @@ import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { hashOwnerSecret } from './session_access_helpers'
 import {
+  authorizeDeploymentCommerceTenantProvision,
+  loadDeploymentCommerceTenantBySlugForWebhook,
+  loadDeploymentCommerceTenantBySlug,
+  loadOwnedDeploymentCommerceTenantBySlug,
   loadSessionCommerceConfig,
+  recordDeploymentCommerceTenantPull,
+  upsertDeploymentCommerceTenant,
   provisionSessionMedusaTenant,
   syncSessionMedusaProducts,
   upsertSessionCommerceConfig,
@@ -49,8 +55,12 @@ type SyncMedusaProductsArgs = {
 }
 
 type CommerceConfigDoc = Doc<'commerceConfigs'>
+type CommerceTenantDoc = Doc<'commerceTenants'>
+type DeploymentDoc = Doc<'deployments'>
 
 const sessionId = 'session_commerce' as Id<'sessions'>
+const deploymentId = 'deployment_commerce' as Id<'deployments'>
+const deploymentSlug = 'deployed-store'
 
 const sessionDoc = async (ownerSecret = 'owner-secret') =>
   ({
@@ -79,15 +89,84 @@ const commerceDoc = (
     ...overrides,
   }) as CommerceConfigDoc
 
+const deploymentDoc = (overrides: Partial<DeploymentDoc> = {}): DeploymentDoc =>
+  ({
+    _id: deploymentId,
+    _creationTime: 1,
+    sessionId,
+    slug: deploymentSlug,
+    url: 'https://deployed-store.ship-fast.io',
+    status: 'ready',
+    provider: 'lakebed',
+    previewVersion: 1,
+    createdAt: 100,
+    updatedAt: 100,
+    ...overrides,
+  }) as DeploymentDoc
+
+const commerceTenantDoc = (
+  overrides: Partial<CommerceTenantDoc> = {},
+): CommerceTenantDoc =>
+  ({
+    _id: 'commerce_tenant' as Id<'commerceTenants'>,
+    _creationTime: 1,
+    deploymentId,
+    sessionId,
+    deploymentSlug,
+    provider: 'manual',
+    status: 'ready',
+    syncStatus: 'idle',
+    backendUrl: 'https://backend.tenant.test',
+    adminUrl: 'https://admin.tenant.test',
+    storefrontUrl: 'https://storefront.tenant.test',
+    publishableKey: 'pk_tenant',
+    productCount: 0,
+    createdAt: 100,
+    updatedAt: 100,
+    ...overrides,
+  }) as CommerceTenantDoc
+
 const ctxFor = async (
   options: {
     session?: Doc<'sessions'> | null
     configs?: CommerceConfigDoc[]
+    deployments?: DeploymentDoc[]
+    tenants?: CommerceTenantDoc[]
   } = {},
 ) => {
   const session =
     options.session === undefined ? await sessionDoc() : options.session
   const configs = [...(options.configs ?? [])]
+  const deployments = [...(options.deployments ?? [])]
+  const tenants = [...(options.tenants ?? [])]
+
+  const queryFirst = async (table: string, field: string, value: unknown) => {
+    if (table === 'commerceConfigs') {
+      return configs.find((config) => config.sessionId === value) ?? null
+    }
+    if (table === 'deployments') {
+      if (field === 'slug') {
+        return (
+          deployments.find((deployment) => deployment.slug === value) ?? null
+        )
+      }
+      if (field === 'sessionId') {
+        return (
+          deployments.find((deployment) => deployment.sessionId === value) ??
+          null
+        )
+      }
+    }
+    if (table === 'commerceTenants') {
+      if (field === 'deploymentId') {
+        return tenants.find((tenant) => tenant.deploymentId === value) ?? null
+      }
+      if (field === 'deploymentSlug') {
+        return tenants.find((tenant) => tenant.deploymentSlug === value) ?? null
+      }
+    }
+    return null
+  }
 
   const ctx = {
     auth: {
@@ -96,10 +175,13 @@ const ctxFor = async (
     db: {
       get: async (id: string) => {
         if (id === sessionId) return session
+        const deployment = deployments.find((item) => item._id === id)
+        if (deployment !== undefined) return deployment
+        const tenant = tenants.find((item) => item._id === id)
+        if (tenant !== undefined) return tenant
         return configs.find((config) => config._id === id) ?? null
       },
       query: (table: string) => {
-        expect(table).toBe('commerceConfigs')
         return {
           withIndex: (
             indexName: string,
@@ -113,46 +195,61 @@ const ctxFor = async (
               }
             }) => { field: string; value: unknown },
           ) => {
-            expect(indexName).toBe('by_sessionId')
             const { field, value } = applyIndex({
               eq: (fieldName, fieldValue) => ({
                 field: fieldName,
                 value: fieldValue,
               }),
             })
-            expect(field).toBe('sessionId')
+            expect(indexName).toBe(`by_${field}`)
             return {
-              first: async () =>
-                configs.find((config) => config.sessionId === value) ?? null,
+              first: async () => await queryFirst(table, field, value),
             }
           },
         }
       },
       insert: async (table: string, value: Record<string, unknown>) => {
-        expect(table).toBe('commerceConfigs')
-        const config = {
-          _id: `commerce_config_${configs.length + 1}` as Id<'commerceConfigs'>,
+        if (table === 'commerceConfigs') {
+          const config = {
+            _id: `commerce_config_${configs.length + 1}` as Id<'commerceConfigs'>,
+            _creationTime: 1,
+            ...value,
+          } as CommerceConfigDoc
+          configs.push(config)
+          return config._id
+        }
+        expect(table).toBe('commerceTenants')
+        const tenant = {
+          _id: `commerce_tenant_${tenants.length + 1}` as Id<'commerceTenants'>,
           _creationTime: 1,
           ...value,
-        } as CommerceConfigDoc
-        configs.push(config)
-        return config._id
+        } as CommerceTenantDoc
+        tenants.push(tenant)
+        return tenant._id
       },
       patch: async (
-        id: Id<'commerceConfigs'>,
-        patch: Partial<CommerceConfigDoc>,
+        id: Id<'commerceConfigs'> | Id<'commerceTenants'>,
+        patch: Partial<CommerceConfigDoc> | Partial<CommerceTenantDoc>,
       ) => {
         const index = configs.findIndex((config) => config._id === id)
-        expect(index).toBeGreaterThanOrEqual(0)
-        configs[index] = {
-          ...configs[index],
+        if (index >= 0) {
+          configs[index] = {
+            ...configs[index],
+            ...patch,
+          } as CommerceConfigDoc
+          return
+        }
+        const tenantIndex = tenants.findIndex((tenant) => tenant._id === id)
+        expect(tenantIndex).toBeGreaterThanOrEqual(0)
+        tenants[tenantIndex] = {
+          ...tenants[tenantIndex],
           ...patch,
-        } as CommerceConfigDoc
+        } as CommerceTenantDoc
       },
     },
   } as unknown as MutationCtx
 
-  return { ctx, configs }
+  return { ctx, configs, deployments, tenants }
 }
 
 describe('session commerce helpers', () => {
@@ -310,6 +407,290 @@ describe('session commerce helpers', () => {
     })
   })
 
+  it('creates a deployment-scoped commerce tenant for an owned deployed store', async () => {
+    const { ctx, tenants } = await ctxFor({
+      deployments: [deploymentDoc()],
+    })
+
+    await expect(
+      upsertDeploymentCommerceTenant(ctx, {
+        deploymentSlug,
+        anonymousOwnerSecret: 'owner-secret',
+        provider: 'manual',
+        providerTenantId: 'medusa-store-1',
+        backendUrl: 'https://backend.tenant.test',
+        adminUrl: 'https://admin.tenant.test',
+        storefrontUrl: 'https://storefront.tenant.test',
+        publishableKey: 'pk_tenant',
+        databaseRef: 'db_tenant',
+        secretRef: 'secret_tenant',
+        webhookSecret: 'tenant-webhook-secret',
+      }),
+    ).resolves.toEqual({
+      deploymentId,
+      deploymentSlug,
+      sessionId,
+      status: 'ready',
+    })
+
+    expect(tenants).toHaveLength(1)
+    expect(tenants[0]).toMatchObject({
+      deploymentId,
+      deploymentSlug,
+      sessionId,
+      provider: 'manual',
+      providerTenantId: 'medusa-store-1',
+      status: 'ready',
+      syncStatus: 'idle',
+      backendUrl: 'https://backend.tenant.test',
+      adminUrl: 'https://admin.tenant.test',
+      storefrontUrl: 'https://storefront.tenant.test',
+      publishableKey: 'pk_tenant',
+      databaseRef: 'db_tenant',
+      secretRef: 'secret_tenant',
+      productCount: 0,
+    })
+    expect(tenants[0]?.webhookSecretHash).toBe(
+      await hashOwnerSecret('tenant-webhook-secret'),
+    )
+  })
+
+  it('authorizes deployment commerce tenant provisioning before provider side effects', async () => {
+    const { ctx } = await ctxFor({
+      deployments: [deploymentDoc()],
+    })
+
+    await expect(
+      authorizeDeploymentCommerceTenantProvision(ctx, {
+        deploymentSlug,
+        anonymousOwnerSecret: 'owner-secret',
+      }),
+    ).resolves.toEqual({
+      deploymentId,
+      deploymentSlug,
+      sessionId,
+    })
+
+    await expect(
+      authorizeDeploymentCommerceTenantProvision(ctx, {
+        deploymentSlug,
+        anonymousOwnerSecret: 'wrong-secret',
+      }),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'FORBIDDEN',
+      },
+    })
+  })
+
+  it('serializes a deployment-scoped commerce tenant for storefront config', async () => {
+    const tenant = commerceTenantDoc({
+      databaseRef: 'db_private',
+      lastPullAt: 120,
+      lastWebhookAt: 130,
+      productCount: 4,
+      secretRef: 'secret_private',
+      syncStatus: 'ready',
+      webhookSecretHash: await hashOwnerSecret('webhook-secret'),
+    })
+    const { ctx } = await ctxFor({
+      deployments: [deploymentDoc()],
+      tenants: [tenant],
+    })
+
+    await expect(
+      loadDeploymentCommerceTenantBySlug(ctx, deploymentSlug),
+    ).resolves.toEqual({
+      tenantId: 'commerce_tenant',
+      deploymentId,
+      deploymentSlug,
+      sessionId,
+      provider: 'manual',
+      providerTenantId: undefined,
+      status: 'ready',
+      syncStatus: 'ready',
+      backendUrl: 'https://backend.tenant.test',
+      adminUrl: 'https://admin.tenant.test',
+      storefrontUrl: 'https://storefront.tenant.test',
+      publishableKey: 'pk_tenant',
+      productCount: 4,
+      lastPullAt: 120,
+      lastWebhookAt: 130,
+      lastHealthCheckAt: undefined,
+      errorMessage: undefined,
+      createdAt: 100,
+      updatedAt: 100,
+    })
+    const serialized = await loadDeploymentCommerceTenantBySlug(
+      ctx,
+      deploymentSlug,
+    )
+    expect(serialized).not.toHaveProperty('databaseRef')
+    expect(serialized).not.toHaveProperty('secretRef')
+    expect(serialized).not.toHaveProperty('webhookSecretHash')
+  })
+
+  it('loads an owned deployment commerce tenant only for the deployment owner', async () => {
+    const { ctx } = await ctxFor({
+      deployments: [deploymentDoc()],
+      tenants: [commerceTenantDoc()],
+    })
+
+    await expect(
+      loadOwnedDeploymentCommerceTenantBySlug(ctx, {
+        deploymentSlug,
+        anonymousOwnerSecret: 'owner-secret',
+      }),
+    ).resolves.toMatchObject({
+      deploymentSlug,
+      publishableKey: 'pk_tenant',
+    })
+
+    await expect(
+      loadOwnedDeploymentCommerceTenantBySlug(ctx, {
+        deploymentSlug,
+        anonymousOwnerSecret: 'wrong-secret',
+      }),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'FORBIDDEN',
+      },
+    })
+  })
+
+  it('loads a deployment commerce tenant for webhooks only with the tenant webhook secret', async () => {
+    const { ctx } = await ctxFor({
+      deployments: [deploymentDoc()],
+      tenants: [
+        commerceTenantDoc({
+          webhookSecretHash: await hashOwnerSecret('tenant-webhook-secret'),
+        }),
+      ],
+    })
+
+    await expect(
+      loadDeploymentCommerceTenantBySlugForWebhook(ctx, {
+        deploymentSlug,
+        webhookSecret: 'tenant-webhook-secret',
+      }),
+    ).resolves.toMatchObject({
+      deploymentSlug,
+      publishableKey: 'pk_tenant',
+    })
+
+    await expect(
+      loadDeploymentCommerceTenantBySlugForWebhook(ctx, {
+        deploymentSlug,
+        webhookSecret: 'wrong-secret',
+      }),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'FORBIDDEN',
+      },
+    })
+  })
+
+  it('records a manual Medusa Admin pull for a deployed-store tenant', async () => {
+    const { ctx, tenants } = await ctxFor({
+      deployments: [deploymentDoc()],
+      tenants: [commerceTenantDoc({ syncStatus: 'idle' })],
+    })
+
+    await expect(
+      recordDeploymentCommerceTenantPull(ctx, {
+        deploymentSlug,
+        anonymousOwnerSecret: 'owner-secret',
+        source: 'manual',
+        productCount: 4,
+      }),
+    ).resolves.toEqual({
+      deploymentSlug,
+      productCount: 4,
+      source: 'manual',
+      status: 'ready',
+    })
+
+    expect(tenants[0]).toMatchObject({
+      productCount: 4,
+      syncStatus: 'ready',
+      errorMessage: undefined,
+    })
+    expect(tenants[0]?.lastPullAt).toEqual(expect.any(Number))
+    expect(tenants[0]?.lastWebhookAt).toBeUndefined()
+  })
+
+  it('rejects manual Medusa Admin pulls without deployment ownership', async () => {
+    const { ctx } = await ctxFor({
+      deployments: [deploymentDoc()],
+      tenants: [commerceTenantDoc({ syncStatus: 'idle' })],
+    })
+
+    await expect(
+      recordDeploymentCommerceTenantPull(ctx, {
+        deploymentSlug,
+        anonymousOwnerSecret: 'wrong-secret',
+        source: 'manual',
+        productCount: 4,
+      }),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'FORBIDDEN',
+      },
+    })
+  })
+
+  it('records webhook-driven Medusa Admin pulls separately from manual pulls', async () => {
+    const webhookSecret = 'webhook-secret'
+    const { ctx, tenants } = await ctxFor({
+      deployments: [deploymentDoc()],
+      tenants: [
+        commerceTenantDoc({
+          lastPullAt: 120,
+          syncStatus: 'idle',
+          webhookSecretHash: await hashOwnerSecret(webhookSecret),
+        }),
+      ],
+    })
+
+    await recordDeploymentCommerceTenantPull(ctx, {
+      deploymentSlug,
+      source: 'webhook',
+      webhookSecret,
+      productCount: 5,
+    })
+
+    expect(tenants[0]).toMatchObject({
+      lastPullAt: 120,
+      productCount: 5,
+      syncStatus: 'ready',
+    })
+    expect(tenants[0]?.lastWebhookAt).toEqual(expect.any(Number))
+  })
+
+  it('rejects webhook-driven Medusa pulls without the tenant webhook secret', async () => {
+    const { ctx } = await ctxFor({
+      deployments: [deploymentDoc()],
+      tenants: [
+        commerceTenantDoc({
+          webhookSecretHash: await hashOwnerSecret('webhook-secret'),
+        }),
+      ],
+    })
+
+    await expect(
+      recordDeploymentCommerceTenantPull(ctx, {
+        deploymentSlug,
+        source: 'webhook',
+        webhookSecret: 'wrong-secret',
+        productCount: 5,
+      }),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'FORBIDDEN',
+      },
+    })
+  })
+
   it('session commerce and Medusa handlers delegate to commerce helpers', async () => {
     vi.resetModules()
     vi.doMock('./session_commerce_helpers', () => ({
@@ -317,6 +698,12 @@ describe('session commerce helpers', () => {
       loadSessionCommerceConfig: vi.fn(async () => null),
       provisionSessionMedusaTenant: vi.fn(async () => null),
       syncSessionMedusaProducts: vi.fn(async () => null),
+      authorizeDeploymentCommerceTenantProvision: vi.fn(async () => null),
+      upsertDeploymentCommerceTenant: vi.fn(async () => null),
+      loadDeploymentCommerceTenantBySlug: vi.fn(async () => null),
+      loadOwnedDeploymentCommerceTenantBySlug: vi.fn(async () => null),
+      loadDeploymentCommerceTenantBySlugForWebhook: vi.fn(async () => null),
+      recordDeploymentCommerceTenantPull: vi.fn(async () => null),
     }))
     try {
       const {
@@ -324,6 +711,12 @@ describe('session commerce helpers', () => {
         getCommerceConfig,
         provisionMedusaTenant,
         syncMedusaProducts,
+        authorizeCommerceTenantProvision,
+        upsertCommerceTenant,
+        getCommerceTenantByDeploymentSlug,
+        getOwnedCommerceTenantByDeploymentSlug,
+        getCommerceTenantByDeploymentSlugForWebhook,
+        recordCommerceTenantPull,
       } = await import('../sessions')
       const mockedModule = await import('./session_commerce_helpers')
       const mockedUpsertSessionCommerceConfig = vi.mocked(
@@ -337,6 +730,24 @@ describe('session commerce helpers', () => {
       )
       const mockedSyncSessionMedusaProducts = vi.mocked(
         mockedModule.syncSessionMedusaProducts,
+      )
+      const mockedAuthorizeDeploymentCommerceTenantProvision = vi.mocked(
+        mockedModule.authorizeDeploymentCommerceTenantProvision,
+      )
+      const mockedUpsertDeploymentCommerceTenant = vi.mocked(
+        mockedModule.upsertDeploymentCommerceTenant,
+      )
+      const mockedLoadDeploymentCommerceTenantBySlug = vi.mocked(
+        mockedModule.loadDeploymentCommerceTenantBySlug,
+      )
+      const mockedLoadOwnedDeploymentCommerceTenantBySlug = vi.mocked(
+        mockedModule.loadOwnedDeploymentCommerceTenantBySlug,
+      )
+      const mockedLoadDeploymentCommerceTenantBySlugForWebhook = vi.mocked(
+        mockedModule.loadDeploymentCommerceTenantBySlugForWebhook,
+      )
+      const mockedRecordDeploymentCommerceTenantPull = vi.mocked(
+        mockedModule.recordDeploymentCommerceTenantPull,
       )
       const ctx = { db: {} } as unknown as MutationCtx
 
@@ -388,6 +799,87 @@ describe('session commerce helpers', () => {
       expect(mockedSyncSessionMedusaProducts).toHaveBeenCalledWith(
         ctx,
         syncArgs,
+      )
+
+      const authorizeArgs = {
+        deploymentSlug,
+        anonymousOwnerSecret: 'owner-secret',
+      }
+      const authorizeHandler =
+        authorizeCommerceTenantProvision as unknown as QueryHandler<
+          typeof authorizeArgs
+        >
+      await authorizeHandler(queryCtx, authorizeArgs)
+      expect(
+        mockedAuthorizeDeploymentCommerceTenantProvision,
+      ).toHaveBeenCalledWith(queryCtx, authorizeArgs)
+
+      const tenantArgs = {
+        deploymentSlug,
+        anonymousOwnerSecret: 'owner-secret',
+        provider: 'manual',
+        backendUrl: 'https://b.test',
+        adminUrl: 'https://a.test',
+        storefrontUrl: 'https://s.test',
+      }
+      const tenantHandler = upsertCommerceTenant as unknown as MutationHandler<
+        typeof tenantArgs
+      >
+      await tenantHandler(ctx, tenantArgs)
+      expect(mockedUpsertDeploymentCommerceTenant).toHaveBeenCalledWith(
+        ctx,
+        tenantArgs,
+      )
+
+      const tenantQueryHandler =
+        getCommerceTenantByDeploymentSlug as unknown as QueryHandler<{
+          deploymentSlug: string
+        }>
+      await tenantQueryHandler(queryCtx, { deploymentSlug })
+      expect(mockedLoadDeploymentCommerceTenantBySlug).toHaveBeenCalledWith(
+        queryCtx,
+        deploymentSlug,
+      )
+
+      const ownedTenantQueryHandler =
+        getOwnedCommerceTenantByDeploymentSlug as unknown as QueryHandler<{
+          deploymentSlug: string
+          anonymousOwnerSecret?: string
+        }>
+      const ownedTenantArgs = {
+        deploymentSlug,
+        anonymousOwnerSecret: 'owner-secret',
+      }
+      await ownedTenantQueryHandler(queryCtx, ownedTenantArgs)
+      expect(
+        mockedLoadOwnedDeploymentCommerceTenantBySlug,
+      ).toHaveBeenCalledWith(queryCtx, ownedTenantArgs)
+
+      const webhookTenantQueryHandler =
+        getCommerceTenantByDeploymentSlugForWebhook as unknown as QueryHandler<{
+          deploymentSlug: string
+          webhookSecret?: string
+        }>
+      const webhookTenantArgs = {
+        deploymentSlug,
+        webhookSecret: 'tenant-webhook-secret',
+      }
+      await webhookTenantQueryHandler(queryCtx, webhookTenantArgs)
+      expect(
+        mockedLoadDeploymentCommerceTenantBySlugForWebhook,
+      ).toHaveBeenCalledWith(queryCtx, webhookTenantArgs)
+
+      const pullArgs = {
+        deploymentSlug,
+        source: 'manual' as const,
+        productCount: 2,
+      }
+      const pullHandler =
+        recordCommerceTenantPull as unknown as MutationHandler<typeof pullArgs>
+      await pullHandler(ctx, pullArgs)
+      expect(mockedRecordDeploymentCommerceTenantPull).toHaveBeenCalledWith(
+        ctx,
+        pullArgs,
       )
     } finally {
       vi.doUnmock('./session_commerce_helpers')

@@ -59,18 +59,20 @@ describe('CommercePanel', () => {
     render(<CommercePanel sessionId="session_123" />)
 
     expect(screen.getByText('Visual ready')).toBeTruthy()
+    expect(screen.getByText('Medusa Store API is unavailable.')).toBeTruthy()
     expect(
-      screen.getByText('Medusa Store API is unavailable: fetch failed'),
-    ).toBeTruthy()
+      screen.queryByText('Medusa Store API is unavailable: fetch failed'),
+    ).toBeNull()
     expect(screen.queryByText('Automatic')).toBeNull()
   })
 
-  it('shows the concrete Store API failure instead of the generic setup warning', () => {
+  it('shows a sanitized Store API failure instead of raw network details', () => {
     render(<CommercePanel sessionId="session_123" />)
 
+    expect(screen.getByText('Medusa Store API is unavailable.')).toBeTruthy()
     expect(
-      screen.getByText('Medusa Store API is unavailable: fetch failed'),
-    ).toBeTruthy()
+      screen.queryByText('Medusa Store API is unavailable: fetch failed'),
+    ).toBeNull()
     expect(
       screen.queryByText(
         'Commerce enabled. Live checkout needs Medusa Store API configuration.',

@@ -16,6 +16,7 @@ type CommercePanelProps = {
 type CommerceConfig = {
   adminUrl?: string
   backendUrl?: string
+  configJson?: string
   errorMessage?: string
   status?: string
   storefrontUrl?: string
@@ -35,6 +36,18 @@ const minimumTransformMs = 1800
 const wait = (ms: number) =>
   new Promise((resolve) => window.setTimeout(resolve, ms))
 
+const medusaStoreApiUnavailableWarning = 'Medusa Store API is unavailable.'
+
+const normalizeCommerceWarning = (
+  warning: string | undefined,
+): string | undefined => {
+  const normalized = warning?.trim()
+  if (!normalized) return undefined
+  return /^Medusa Store API is unavailable:/i.test(normalized)
+    ? medusaStoreApiUnavailableWarning
+    : normalized
+}
+
 const readCommerceWarning = (
   configJson: string | undefined,
 ): string | undefined => {
@@ -44,8 +57,8 @@ const readCommerceWarning = (
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
       return undefined
     const warning = (parsed as { warning?: unknown }).warning
-    return typeof warning === 'string' && warning.trim()
-      ? warning.trim()
+    return typeof warning === 'string'
+      ? normalizeCommerceWarning(warning)
       : undefined
   } catch {
     return undefined
@@ -92,7 +105,8 @@ export const CommercePanel = ({
   const [isTransforming, setIsTransforming] = useState(false)
   const isReady = config?.status === 'ready'
   const liveCheckoutWarning =
-    config?.errorMessage ?? readCommerceWarning(config?.configJson)
+    normalizeCommerceWarning(config?.errorMessage) ??
+    readCommerceWarning(config?.configJson)
   const visibleCommerceHandoff =
     commerceHandoff ??
     createPersistedCommerceHandoff(sessionId, config, liveCheckoutWarning)

@@ -153,7 +153,14 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
   // outside a Convex provider. When Convex is required but not configured,
   // render the loading fallback instead of mounting children unprotected.
   if (shouldUseConvexProviders(pathname)) {
-    return <ProviderFallback />
+    return (
+      <WithSignInHost
+        showLaunchBackdrop={showLaunchBackdrop}
+        signInRequestId={signInRequestId}
+      >
+        <ProviderFallback />
+      </WithSignInHost>
+    )
   }
 
   return (

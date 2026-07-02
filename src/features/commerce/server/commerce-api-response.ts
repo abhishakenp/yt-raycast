@@ -40,6 +40,18 @@ type MedusaHandoff = {
   tenantId: string
 }
 
+const medusaStoreApiUnavailableWarning = 'Medusa Store API is unavailable.'
+
+const normalizeMedusaStoreApiWarning = (
+  warning: string | undefined,
+): string | undefined => {
+  const normalized = warning?.trim()
+  if (!normalized) return undefined
+  return /^Medusa Store API is unavailable:/i.test(normalized)
+    ? medusaStoreApiUnavailableWarning
+    : normalized
+}
+
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
     ...init,
@@ -158,7 +170,7 @@ const validateMedusaStoreApi = async (
         liveStoreApiReady: false,
         publishableKeyConfigured: true,
         status: response.status,
-        warning: 'Medusa Store API is unavailable.',
+        warning: medusaStoreApiUnavailableWarning,
       }
     }
 
@@ -178,10 +190,7 @@ const validateMedusaStoreApi = async (
     return {
       liveStoreApiReady: false,
       publishableKeyConfigured: true,
-      warning:
-        error instanceof Error
-          ? `Medusa Store API is unavailable: ${error.message}`
-          : 'Medusa Store API is unavailable.',
+      warning: medusaStoreApiUnavailableWarning,
     }
   }
 }
@@ -334,7 +343,9 @@ export const createSessionMedusaProvisionResponse = async (
         fetchImpl,
       )
     }
-    const warning = availability.warning ?? productSync.warning
+    const warning = normalizeMedusaStoreApiWarning(
+      availability.warning ?? productSync.warning,
+    )
 
     const client = createClient(clientOverride)
     const mutationArgs = {

@@ -66,10 +66,15 @@ import { Route as ApiMedusaStoreCartLineItemsRouteImport } from './routes/api/me
 import { Route as ApiMedusaStoreCartIdRouteImport } from './routes/api/medusa-store.cart.$id'
 import { Route as ApiGithubConnectStartRouteImport } from './routes/api/github.connect.start'
 import { Route as ApiGithubConnectCallbackRouteImport } from './routes/api/github.connect.callback'
+import { Route as ApiDeploymentsDeploymentSlugMedusaWebhookRouteImport } from './routes/api/deployments.$deploymentSlug.medusa-webhook'
+import { Route as ApiDeploymentsDeploymentSlugMedusaPullRouteImport } from './routes/api/deployments.$deploymentSlug.medusa-pull'
+import { Route as ApiDeploymentsDeploymentSlugMedusaProductsRouteImport } from './routes/api/deployments.$deploymentSlug.medusa-products'
+import { Route as ApiDeploymentsDeploymentSlugMedusaConfigRouteImport } from './routes/api/deployments.$deploymentSlug.medusa-config'
 import { Route as ApiSessionsSessionIdProvisionMedusaRouteImport } from './routes/api/sessions.$sessionId.provision.medusa'
 import { Route as ApiSessionsSessionIdGithubPushRouteImport } from './routes/api/sessions.$sessionId.github.push'
 import { Route as ApiSessionsSessionIdDownloadTargetRouteImport } from './routes/api/sessions.$sessionId.download.$target'
 import { Route as ApiSessionsSessionIdDeployLakebedRouteImport } from './routes/api/sessions.$sessionId.deploy.lakebed'
+import { Route as ApiDeploymentsDeploymentSlugProvisionMedusaRouteImport } from './routes/api/deployments.$deploymentSlug.provision.medusa'
 import { Route as ApiSessionsSessionIdHistoryVersionRestoreRouteImport } from './routes/api/sessions.$sessionId.history.$version.restore'
 
 const TermsRoute = TermsRouteImport.update({
@@ -373,6 +378,30 @@ const ApiGithubConnectCallbackRoute =
     path: '/api/github/connect/callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiDeploymentsDeploymentSlugMedusaWebhookRoute =
+  ApiDeploymentsDeploymentSlugMedusaWebhookRouteImport.update({
+    id: '/api/deployments/$deploymentSlug/medusa-webhook',
+    path: '/api/deployments/$deploymentSlug/medusa-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiDeploymentsDeploymentSlugMedusaPullRoute =
+  ApiDeploymentsDeploymentSlugMedusaPullRouteImport.update({
+    id: '/api/deployments/$deploymentSlug/medusa-pull',
+    path: '/api/deployments/$deploymentSlug/medusa-pull',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiDeploymentsDeploymentSlugMedusaProductsRoute =
+  ApiDeploymentsDeploymentSlugMedusaProductsRouteImport.update({
+    id: '/api/deployments/$deploymentSlug/medusa-products',
+    path: '/api/deployments/$deploymentSlug/medusa-products',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiDeploymentsDeploymentSlugMedusaConfigRoute =
+  ApiDeploymentsDeploymentSlugMedusaConfigRouteImport.update({
+    id: '/api/deployments/$deploymentSlug/medusa-config',
+    path: '/api/deployments/$deploymentSlug/medusa-config',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiSessionsSessionIdProvisionMedusaRoute =
   ApiSessionsSessionIdProvisionMedusaRouteImport.update({
     id: '/provision/medusa',
@@ -396,6 +425,12 @@ const ApiSessionsSessionIdDeployLakebedRoute =
     id: '/deploy/lakebed',
     path: '/deploy/lakebed',
     getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiDeploymentsDeploymentSlugProvisionMedusaRoute =
+  ApiDeploymentsDeploymentSlugProvisionMedusaRouteImport.update({
+    id: '/api/deployments/$deploymentSlug/provision/medusa',
+    path: '/api/deployments/$deploymentSlug/provision/medusa',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const ApiSessionsSessionIdHistoryVersionRestoreRoute =
   ApiSessionsSessionIdHistoryVersionRestoreRouteImport.update({
@@ -445,6 +480,10 @@ export interface FileRoutesByFullPath {
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
   '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
+  '/api/deployments/$deploymentSlug/medusa-config': typeof ApiDeploymentsDeploymentSlugMedusaConfigRoute
+  '/api/deployments/$deploymentSlug/medusa-products': typeof ApiDeploymentsDeploymentSlugMedusaProductsRoute
+  '/api/deployments/$deploymentSlug/medusa-pull': typeof ApiDeploymentsDeploymentSlugMedusaPullRoute
+  '/api/deployments/$deploymentSlug/medusa-webhook': typeof ApiDeploymentsDeploymentSlugMedusaWebhookRoute
   '/api/github/connect/callback': typeof ApiGithubConnectCallbackRoute
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
@@ -462,6 +501,7 @@ export interface FileRoutesByFullPath {
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/deployments/$deploymentSlug/provision/medusa': typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
   '/api/sessions/$sessionId/deploy/lakebed': typeof ApiSessionsSessionIdDeployLakebedRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
@@ -509,6 +549,10 @@ export interface FileRoutesByTo {
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
   '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
+  '/api/deployments/$deploymentSlug/medusa-config': typeof ApiDeploymentsDeploymentSlugMedusaConfigRoute
+  '/api/deployments/$deploymentSlug/medusa-products': typeof ApiDeploymentsDeploymentSlugMedusaProductsRoute
+  '/api/deployments/$deploymentSlug/medusa-pull': typeof ApiDeploymentsDeploymentSlugMedusaPullRoute
+  '/api/deployments/$deploymentSlug/medusa-webhook': typeof ApiDeploymentsDeploymentSlugMedusaWebhookRoute
   '/api/github/connect/callback': typeof ApiGithubConnectCallbackRoute
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
@@ -526,6 +570,7 @@ export interface FileRoutesByTo {
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/deployments/$deploymentSlug/provision/medusa': typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
   '/api/sessions/$sessionId/deploy/lakebed': typeof ApiSessionsSessionIdDeployLakebedRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
@@ -574,6 +619,10 @@ export interface FileRoutesById {
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
   '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
+  '/api/deployments/$deploymentSlug/medusa-config': typeof ApiDeploymentsDeploymentSlugMedusaConfigRoute
+  '/api/deployments/$deploymentSlug/medusa-products': typeof ApiDeploymentsDeploymentSlugMedusaProductsRoute
+  '/api/deployments/$deploymentSlug/medusa-pull': typeof ApiDeploymentsDeploymentSlugMedusaPullRoute
+  '/api/deployments/$deploymentSlug/medusa-webhook': typeof ApiDeploymentsDeploymentSlugMedusaWebhookRoute
   '/api/github/connect/callback': typeof ApiGithubConnectCallbackRoute
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
@@ -591,6 +640,7 @@ export interface FileRoutesById {
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/deployments/$deploymentSlug/provision/medusa': typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
   '/api/sessions/$sessionId/deploy/lakebed': typeof ApiSessionsSessionIdDeployLakebedRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
@@ -640,6 +690,10 @@ export interface FileRouteTypes {
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
     | '/preview/$slug/sitemap.xml'
+    | '/api/deployments/$deploymentSlug/medusa-config'
+    | '/api/deployments/$deploymentSlug/medusa-products'
+    | '/api/deployments/$deploymentSlug/medusa-pull'
+    | '/api/deployments/$deploymentSlug/medusa-webhook'
     | '/api/github/connect/callback'
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
@@ -657,6 +711,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
+    | '/api/deployments/$deploymentSlug/provision/medusa'
     | '/api/sessions/$sessionId/deploy/lakebed'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
@@ -704,6 +759,10 @@ export interface FileRouteTypes {
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
     | '/preview/$slug/sitemap.xml'
+    | '/api/deployments/$deploymentSlug/medusa-config'
+    | '/api/deployments/$deploymentSlug/medusa-products'
+    | '/api/deployments/$deploymentSlug/medusa-pull'
+    | '/api/deployments/$deploymentSlug/medusa-webhook'
     | '/api/github/connect/callback'
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
@@ -721,6 +780,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
+    | '/api/deployments/$deploymentSlug/provision/medusa'
     | '/api/sessions/$sessionId/deploy/lakebed'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
@@ -768,6 +828,10 @@ export interface FileRouteTypes {
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
     | '/preview/$slug/sitemap.xml'
+    | '/api/deployments/$deploymentSlug/medusa-config'
+    | '/api/deployments/$deploymentSlug/medusa-products'
+    | '/api/deployments/$deploymentSlug/medusa-pull'
+    | '/api/deployments/$deploymentSlug/medusa-webhook'
     | '/api/github/connect/callback'
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
@@ -785,6 +849,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
+    | '/api/deployments/$deploymentSlug/provision/medusa'
     | '/api/sessions/$sessionId/deploy/lakebed'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
@@ -829,10 +894,15 @@ export interface RootRouteChildren {
   ApiSessionsRecentRoute: typeof ApiSessionsRecentRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ExportSessionIdTargetRoute: typeof ExportSessionIdTargetRoute
+  ApiDeploymentsDeploymentSlugMedusaConfigRoute: typeof ApiDeploymentsDeploymentSlugMedusaConfigRoute
+  ApiDeploymentsDeploymentSlugMedusaProductsRoute: typeof ApiDeploymentsDeploymentSlugMedusaProductsRoute
+  ApiDeploymentsDeploymentSlugMedusaPullRoute: typeof ApiDeploymentsDeploymentSlugMedusaPullRoute
+  ApiDeploymentsDeploymentSlugMedusaWebhookRoute: typeof ApiDeploymentsDeploymentSlugMedusaWebhookRoute
   ApiGithubConnectCallbackRoute: typeof ApiGithubConnectCallbackRoute
   ApiGithubConnectStartRoute: typeof ApiGithubConnectStartRoute
   ApiPaymentsRazorpayWebhookRoute: typeof ApiPaymentsRazorpayWebhookRoute
   ApiPaymentsStripeWebhookRoute: typeof ApiPaymentsStripeWebhookRoute
+  ApiDeploymentsDeploymentSlugProvisionMedusaRoute: typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1236,6 +1306,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGithubConnectCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/deployments/$deploymentSlug/medusa-webhook': {
+      id: '/api/deployments/$deploymentSlug/medusa-webhook'
+      path: '/api/deployments/$deploymentSlug/medusa-webhook'
+      fullPath: '/api/deployments/$deploymentSlug/medusa-webhook'
+      preLoaderRoute: typeof ApiDeploymentsDeploymentSlugMedusaWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/deployments/$deploymentSlug/medusa-pull': {
+      id: '/api/deployments/$deploymentSlug/medusa-pull'
+      path: '/api/deployments/$deploymentSlug/medusa-pull'
+      fullPath: '/api/deployments/$deploymentSlug/medusa-pull'
+      preLoaderRoute: typeof ApiDeploymentsDeploymentSlugMedusaPullRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/deployments/$deploymentSlug/medusa-products': {
+      id: '/api/deployments/$deploymentSlug/medusa-products'
+      path: '/api/deployments/$deploymentSlug/medusa-products'
+      fullPath: '/api/deployments/$deploymentSlug/medusa-products'
+      preLoaderRoute: typeof ApiDeploymentsDeploymentSlugMedusaProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/deployments/$deploymentSlug/medusa-config': {
+      id: '/api/deployments/$deploymentSlug/medusa-config'
+      path: '/api/deployments/$deploymentSlug/medusa-config'
+      fullPath: '/api/deployments/$deploymentSlug/medusa-config'
+      preLoaderRoute: typeof ApiDeploymentsDeploymentSlugMedusaConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sessions/$sessionId/provision/medusa': {
       id: '/api/sessions/$sessionId/provision/medusa'
       path: '/provision/medusa'
@@ -1263,6 +1361,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/sessions/$sessionId/deploy/lakebed'
       preLoaderRoute: typeof ApiSessionsSessionIdDeployLakebedRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/deployments/$deploymentSlug/provision/medusa': {
+      id: '/api/deployments/$deploymentSlug/provision/medusa'
+      path: '/api/deployments/$deploymentSlug/provision/medusa'
+      fullPath: '/api/deployments/$deploymentSlug/provision/medusa'
+      preLoaderRoute: typeof ApiDeploymentsDeploymentSlugProvisionMedusaRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/sessions/$sessionId/history/$version/restore': {
       id: '/api/sessions/$sessionId/history/$version/restore'
@@ -1413,10 +1518,20 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSessionsRecentRoute: ApiSessionsRecentRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ExportSessionIdTargetRoute: ExportSessionIdTargetRoute,
+  ApiDeploymentsDeploymentSlugMedusaConfigRoute:
+    ApiDeploymentsDeploymentSlugMedusaConfigRoute,
+  ApiDeploymentsDeploymentSlugMedusaProductsRoute:
+    ApiDeploymentsDeploymentSlugMedusaProductsRoute,
+  ApiDeploymentsDeploymentSlugMedusaPullRoute:
+    ApiDeploymentsDeploymentSlugMedusaPullRoute,
+  ApiDeploymentsDeploymentSlugMedusaWebhookRoute:
+    ApiDeploymentsDeploymentSlugMedusaWebhookRoute,
   ApiGithubConnectCallbackRoute: ApiGithubConnectCallbackRoute,
   ApiGithubConnectStartRoute: ApiGithubConnectStartRoute,
   ApiPaymentsRazorpayWebhookRoute: ApiPaymentsRazorpayWebhookRoute,
   ApiPaymentsStripeWebhookRoute: ApiPaymentsStripeWebhookRoute,
+  ApiDeploymentsDeploymentSlugProvisionMedusaRoute:
+    ApiDeploymentsDeploymentSlugProvisionMedusaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

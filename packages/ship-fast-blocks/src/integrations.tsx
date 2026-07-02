@@ -38,6 +38,8 @@ export const OpenUIMedusaContext = createContext<OpenUIMedusaContextValue>({
   error: null,
 })
 
+const medusaStoreApiUnavailableWarning = 'Medusa Store API is unavailable.'
+
 function sanitizeOpenUIIntegrationConfig(
   raw: unknown,
 ): OpenUIIntegrationConfig {
@@ -79,12 +81,20 @@ function normalizeProvisionError(payload: unknown, fallback: string): string {
   return fallback
 }
 
+function normalizeMedusaWarning(warning: unknown): string | null {
+  if (typeof warning !== 'string') return null
+  const normalized = warning.trim()
+  if (!normalized) return null
+  return /^Medusa Store API is unavailable:/i.test(normalized)
+    ? medusaStoreApiUnavailableWarning
+    : normalized
+}
+
 function readMedusaWarning(
   config?: OpenUIIntegrationConfig | null,
 ): string | null {
-  const errorMessage = config?.errorMessage
-  if (typeof errorMessage === 'string' && errorMessage.trim())
-    return errorMessage.trim()
+  const errorMessage = normalizeMedusaWarning(config?.errorMessage)
+  if (errorMessage !== null) return errorMessage
   const configJson = config?.configJson
   if (typeof configJson !== 'string' || !configJson.trim()) return null
   try {
@@ -92,7 +102,7 @@ function readMedusaWarning(
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
       return null
     const warning = (parsed as { warning?: unknown }).warning
-    return typeof warning === 'string' && warning.trim() ? warning.trim() : null
+    return normalizeMedusaWarning(warning)
   } catch {
     return null
   }
@@ -120,6 +130,16 @@ export function pickMedusaStorefrontUrl(
     : null
 }
 
+function pickDeploymentSlug(
+  config?: OpenUIIntegrationConfig | null,
+): string | null {
+  if (!config) return null
+  const deploymentSlug = config.deploymentSlug
+  return typeof deploymentSlug === 'string' && deploymentSlug.trim().length > 0
+    ? deploymentSlug.trim()
+    : null
+}
+
 export type MedusaProvisionResult = {
   config: OpenUIIntegrationConfig
   backendUrl: string | null
@@ -140,12 +160,14 @@ export async function provisionMedusaIntegration(
   baseConfig: OpenUIIntegrationConfig,
 ): Promise<MedusaProvisionResult> {
   try {
-    const r = await fetch(
-      `/api/sessions/${encodeURIComponent(sessionId)}/medusa-config`,
-      {
-        headers: { Accept: 'application/json' },
-      },
-    )
+    const deploymentSlug = pickDeploymentSlug(baseConfig)
+    const configPath =
+      deploymentSlug === null
+        ? `/api/sessions/${encodeURIComponent(sessionId)}/medusa-config`
+        : `/api/deployments/${encodeURIComponent(deploymentSlug)}/medusa-config`
+    const r = await fetch(configPath, {
+      headers: { Accept: 'application/json' },
+    })
     if (!r.ok) {
       const body = await r.json().catch(() => null)
       return {
@@ -270,6 +292,7 @@ export function IntegrationProvider({
   }, [
     normalizedMedusa.config?.backendUrl,
     normalizedMedusa.config?.adminBaseUrl,
+    normalizedMedusa.config?.deploymentSlug,
     normalizedMedusa.config?.storefrontUrl,
   ])
 
@@ -310,6 +333,7 @@ export function IntegrationProvider({
     sessionId,
     normalizedMedusa.config?.adminBaseUrl,
     normalizedMedusa.config?.backendUrl,
+    normalizedMedusa.config?.deploymentSlug,
     normalizedMedusa.config?.storefrontUrl,
   ])
 

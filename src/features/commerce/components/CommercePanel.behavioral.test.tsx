@@ -174,9 +174,10 @@ describe('CommercePanel (behavioral)', () => {
 
     render(<CommercePanel sessionId="session_123" />)
 
+    expect(screen.getByText('Medusa Store API is unavailable.')).toBeTruthy()
     expect(
-      screen.getByText('Medusa Store API is unavailable: fetch failed'),
-    ).toBeTruthy()
+      screen.queryByText('Medusa Store API is unavailable: fetch failed'),
+    ).toBeNull()
     expect(screen.getByText('Visual ready')).toBeTruthy()
     expect(screen.queryByText('Live ready')).toBeNull()
   })

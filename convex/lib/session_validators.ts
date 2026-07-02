@@ -339,11 +339,49 @@ export const deploymentSlugArgs = {
   slug: v.string(),
 }
 
+export const commerceTenantDeploymentSlugArgs = {
+  deploymentSlug: v.string(),
+}
+
+export const ownedCommerceTenantDeploymentSlugArgs = {
+  deploymentSlug: v.string(),
+  anonymousOwnerSecret: v.optional(v.string()),
+}
+
+export const webhookCommerceTenantDeploymentSlugArgs = {
+  deploymentSlug: v.string(),
+  webhookSecret: v.optional(v.string()),
+}
+
 export const provisionMedusaTenantArgs = {
   sessionId: v.id('sessions'),
   backendUrl: v.string(),
   adminUrl: v.string(),
   storefrontUrl: v.string(),
+}
+
+export const upsertCommerceTenantArgs = {
+  deploymentSlug: v.string(),
+  anonymousOwnerSecret: v.optional(v.string()),
+  provider: v.string(),
+  providerTenantId: v.optional(v.string()),
+  backendUrl: v.string(),
+  adminUrl: v.string(),
+  storefrontUrl: v.string(),
+  publishableKey: v.optional(v.string()),
+  databaseRef: v.optional(v.string()),
+  secretRef: v.optional(v.string()),
+  webhookSecret: v.optional(v.string()),
+  productCount: v.optional(v.number()),
+}
+
+export const recordCommerceTenantPullArgs = {
+  deploymentSlug: v.string(),
+  anonymousOwnerSecret: v.optional(v.string()),
+  source: v.union(v.literal('manual'), v.literal('webhook')),
+  webhookSecret: v.optional(v.string()),
+  productCount: v.optional(v.number()),
+  errorMessage: v.optional(v.string()),
 }
 
 export const syncMedusaProductsArgs = {
