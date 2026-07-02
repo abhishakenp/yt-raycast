@@ -306,7 +306,50 @@ describe('createGitHubPushResponse', () => {
       code: 'GITHUB_NOT_CONNECTED',
       error: 'Connect GitHub before pushing.',
     })
-    expect(tokenResolver).toHaveBeenCalledWith(jwtFor(), env, client)
+    expect(tokenResolver).toHaveBeenCalledWith(jwtFor(), env, client, undefined)
+  })
+
+  it('pushes without a bearer token using anonymousClientId when VITE_DISABLE_CLERK is true', async () => {
+    const { fetchMock } = createGitHubFetch()
+    const authDisabledEnv = {
+      ...env,
+      VITE_DISABLE_CLERK: 'true',
+    }
+    client.query.mockImplementation(async (_ref, args) => {
+      if (args && 'lookup' in args) return exportData
+      // getConnectionForCurrentUser with anonymousClientId
+      return { accessToken: 'ghp_anon_connected', scopes: ['repo'] }
+    })
+    tokenResolver.mockResolvedValue([
+      { token: 'ghp_anon_connected', scopes: ['repo'] },
+    ])
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/github/push',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            target: 'html',
+            anonymousClientId: 'anon_test_client',
+          }),
+        },
+      ),
+      'session_123',
+      authDisabledEnv,
+      client,
+      fetchMock,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.setAuth).not.toHaveBeenCalled()
+    expect(tokenResolver).toHaveBeenCalledWith(
+      '',
+      authDisabledEnv,
+      client,
+      'anon_test_client',
+    )
   })
 
   it('requires GitHub repo scope before pushing', async () => {
@@ -376,7 +419,7 @@ describe('createGitHubPushResponse', () => {
       repoUrl:
         'https://github.com/shipfast-test-user/a-product-website-for-atlas-html',
     })
-    expect(tokenResolver).toHaveBeenCalledWith(jwtFor(), env, client)
+    expect(tokenResolver).toHaveBeenCalledWith(jwtFor(), env, client, undefined)
     expect(await response.json()).toMatchObject({
       ok: true,
       target: 'html',

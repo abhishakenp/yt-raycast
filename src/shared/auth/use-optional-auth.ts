@@ -1,20 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { isClerkClientEnabled } from './clerk-runtime'
+
 /**
- * Build-time constant: whether a Clerk publishable key was baked into this
- * bundle. Mirrors the `isClerkConfigured` checks in HomePage/TopActions so the
- * whole app agrees on whether Clerk is mounted.
- *
- * Vite only exposes `VITE_`-prefixed vars to `import.meta.env`; the bare
- * `CLERK_PUBLISHABLE_KEY` fallback exists for parity with server-side reads but
- * is normally undefined in the client bundle.
+ * Build-time constant: whether Clerk is actually enabled for this bundle.
+ * Delegates to `isClerkClientEnabled` so that `VITE_DISABLE_CLERK=true` is
+ * honoured even when a publishable key is still present in the environment.
+ * Mirrors the `isClerkConfigured` checks in HomePage/TopActions so the whole
+ * app agrees on whether Clerk is mounted.
  */
-const clerkPublishableKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
-  import.meta.env.CLERK_PUBLISHABLE_KEY
-const isClerkConfigured =
-  typeof clerkPublishableKey === 'string' &&
-  clerkPublishableKey.trim().length > 0
+const isClerkConfigured = isClerkClientEnabled()
 
 type ClerkTokenOptions = {
   template?: string

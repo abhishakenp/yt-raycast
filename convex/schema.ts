@@ -288,8 +288,9 @@ export default defineSchema({
     ]),
 
   githubConnections: defineTable({
-    clerkTokenIdentifier: v.string(),
-    clerkUserId: v.string(),
+    clerkTokenIdentifier: v.optional(v.string()),
+    clerkUserId: v.optional(v.string()),
+    anonymousClientIdHash: v.optional(v.string()),
     githubUserId: v.number(),
     githubLogin: v.string(),
     accessToken: v.string(),
@@ -298,12 +299,14 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index('by_clerkTokenIdentifier', ['clerkTokenIdentifier'])
+    .index('by_anonymousClientIdHash', ['anonymousClientIdHash'])
     .index('by_githubUserId', ['githubUserId']),
 
   githubOAuthStates: defineTable({
     state: v.string(),
-    clerkTokenIdentifier: v.string(),
-    clerkUserId: v.string(),
+    clerkTokenIdentifier: v.optional(v.string()),
+    clerkUserId: v.optional(v.string()),
+    anonymousClientIdHash: v.optional(v.string()),
     sessionId: v.optional(v.string()),
     target: v.optional(exportTarget),
     returnTo: v.string(),
@@ -311,7 +314,8 @@ export default defineSchema({
     expiresAt: v.number(),
   })
     .index('by_state', ['state'])
-    .index('by_clerkTokenIdentifier', ['clerkTokenIdentifier']),
+    .index('by_clerkTokenIdentifier', ['clerkTokenIdentifier'])
+    .index('by_anonymousClientIdHash', ['anonymousClientIdHash']),
 
   deployments: defineTable({
     sessionId: v.id('sessions'),

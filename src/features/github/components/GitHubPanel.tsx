@@ -13,7 +13,9 @@ import {
   useOptionalAuth,
   useOptionalClerk,
 } from '@/shared/auth/use-optional-auth'
+import { isClerkDisabled } from '@/shared/auth/clerk-runtime'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { createAnonymousClientId } from '@/features/session/services/session-create-payload'
 import { readJsonOrThrow } from '@/lib/safe-fetch'
 import {
   HtmlIcon,
@@ -117,6 +119,11 @@ const readOwnerSecret = (sessionId: string): string | undefined =>
     ? undefined
     : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
+const readAnonymousClientId = (): string | undefined =>
+  typeof window === 'undefined'
+    ? undefined
+    : createAnonymousClientId(window.localStorage)
+
 const isPendingPushRecord = (
   value: unknown,
 ): value is { sessionId?: unknown; target?: unknown } =>
@@ -203,24 +210,26 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
     target: GitHubTarget['target'],
     appToken?: string,
   ) => {
-    if (!auth.isSignedIn) {
+    if (!isClerkDisabled() && !auth.isSignedIn) {
       void clerk.openSignIn?.()
       return
     }
 
     const token = appToken ?? (await auth.getToken({ template: 'convex' }))
-    if (!token) throw new Error('Sign in before connecting GitHub.')
+    if (!token && !isClerkDisabled())
+      throw new Error('Sign in before connecting GitHub.')
 
     const response = await fetch('/api/github/connect/start', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${token}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         sessionId,
         target,
         returnTo: typeof window === 'undefined' ? '/' : window.location.href,
+        anonymousClientId: readAnonymousClientId(),
       }),
     })
     const data = await response.json()
@@ -243,7 +252,7 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
     const response = await fetch(`/api/sessions/${sessionId}/export`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${appToken}`,
+        ...(appToken ? { Authorization: `Bearer ${appToken}` } : {}),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ target, anonymousOwnerSecret }),
@@ -270,7 +279,7 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
       return
     }
 
-    if (!auth.isSignedIn) {
+    if (!isClerkDisabled() && !auth.isSignedIn) {
       void clerk.openSignIn?.()
       setError('Sign in before pushing to GitHub.')
       return
@@ -308,13 +317,14 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
     setActiveTarget(targetConfig.target)
     try {
       const appToken = await auth.getToken({ template: 'convex' })
-      if (!appToken) throw new Error('Sign in before pushing to GitHub.')
+      if (!appToken && !isClerkDisabled())
+        throw new Error('Sign in before pushing to GitHub.')
       const anonymousOwnerSecret = readOwnerSecret(sessionId)
 
       if (!targetConfig.ready) {
         await createExportForGitHub(
           targetConfig.target,
-          appToken,
+          appToken ?? '',
           anonymousOwnerSecret,
         )
       }
@@ -323,12 +333,13 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
         await fetch(`/api/sessions/${sessionId}/github/push`, {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${appToken}`,
+            ...(appToken ? { Authorization: `Bearer ${appToken}` } : {}),
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             target: targetConfig.target,
             anonymousOwnerSecret,
+            anonymousClientId: readAnonymousClientId(),
           }),
         })
 
@@ -343,7 +354,7 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
         (data?.code === 'GITHUB_NOT_CONNECTED' ||
           data?.code === 'GITHUB_REPO_SCOPE_REQUIRED')
       ) {
-        await startGitHubConnection(targetConfig.target, appToken)
+        await startGitHubConnection(targetConfig.target, appToken ?? undefined)
         return
       }
       if (!response.ok) {

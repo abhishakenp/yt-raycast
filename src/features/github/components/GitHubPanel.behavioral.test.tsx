@@ -66,6 +66,10 @@ vi.mock('@/shared/auth/use-optional-auth', () => ({
   }),
 }))
 
+vi.mock('@/features/session/services/session-create-payload', () => ({
+  createAnonymousClientId: () => 'anon_test_client',
+}))
+
 const setExportTargets = (targets: MockGitHubTarget[]) => {
   exportTargetsState.value = { targets }
 }
@@ -265,6 +269,7 @@ describe('GitHubPanel (behavioral)', () => {
           body: JSON.stringify({
             target: 'html',
             anonymousOwnerSecret: 'owner-secret',
+            anonymousClientId: 'anon_test_client',
           }),
           headers: {
             Authorization: 'Bearer app-token',

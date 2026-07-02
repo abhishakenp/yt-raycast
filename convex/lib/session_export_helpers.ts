@@ -58,6 +58,19 @@ export const areExportPaywallsDisabled = (
   env: ExportPaywallEnv = process.env,
 ): boolean => (env.DISABLE_PAYWALL ?? '').trim().toLowerCase() === 'true'
 
+type AuthDisabledEnv = {
+  VITE_DISABLE_CLERK?: string
+}
+
+/**
+ * When `VITE_DISABLE_CLERK=true` is set on the Convex deployment, all
+ * authenticated ownership checks are bypassed so anonymous users can use every
+ * feature (exports, GitHub push, session mutation) without signing in.
+ * Mirrors the client-side `isClerkDisabled` check in `clerk-runtime.ts`.
+ */
+export const isAuthDisabled = (env: AuthDisabledEnv = process.env): boolean =>
+  (env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
+
 export type CreateSessionExportInput = {
   sessionId: Id<'sessions'>
   anonymousOwnerSecret?: string
@@ -1264,15 +1277,17 @@ export const loadOwnedExportForGitHubPush = async (
   ctx: QueryCtx,
   args: OwnedExportForGitHubPushInput,
 ) => {
-  const userId = await getUserId(ctx)
+  if (!isAuthDisabled()) {
+    const userId = await getUserId(ctx)
 
-  userId !== undefined ||
-    (() => {
-      throw new ConvexError({
-        code: 'AUTH_REQUIRED',
-        message: 'Sign in before pushing to GitHub.',
-      })
-    })()
+    userId !== undefined ||
+      (() => {
+        throw new ConvexError({
+          code: 'AUTH_REQUIRED',
+          message: 'Sign in before pushing to GitHub.',
+        })
+      })()
+  }
 
   const session = await ctx.db.get(args.sessionId)
   session !== null ||
