@@ -23,11 +23,6 @@ const writeAsset = (root: string, relativePath: string, source: string) => {
 const writePassingAssets = (root: string) => {
   writeAsset(
     root,
-    '.output/public/assets/GeneratedModulePreview-test.js',
-    'export const preview = true',
-  )
-  writeAsset(
-    root,
     '.output/public/assets/-generate-dashboard-route-test.js',
     'export const dashboard = true',
   )
@@ -58,8 +53,8 @@ const writePassingAssets = (root: string) => {
   )
   writeAsset(
     root,
-    '.output/server/_ssr/GeneratedModulePreview-test.mjs',
-    'export const preview = true',
+    '.output/server/_ssr/-generate-dashboard-route-test.mjs',
+    'export const dashboard = true',
   )
   writeAsset(
     root,
@@ -112,12 +107,12 @@ describe('verifyBuildBundles', () => {
     expect(() => verifyBuildBundles(root)).not.toThrow()
   })
 
-  it('rejects generated preview chunks that contain OpenUI registry internals', () => {
+  it('rejects generated dashboard route chunks that contain OpenUI registry internals', () => {
     const root = createBuildRoot()
     writePassingAssets(root)
     writeAsset(
       root,
-      '.output/public/assets/GeneratedModulePreview-test.js',
+      '.output/public/assets/-generate-dashboard-route-test.js',
       'defineComponent({})',
     )
 

@@ -23,7 +23,7 @@ const mib = (value: number) => value * 1024 * 1024
 
 const publicRules: AssetRule[] = [
   {
-    pattern: /^GeneratedModulePreview-.+\.js$/,
+    pattern: /^-generate-dashboard-route-.+\.js$/,
     maxBytes: mib(0.25),
     requiredAbsentText: [
       'defineComponent',
@@ -32,7 +32,6 @@ const publicRules: AssetRule[] = [
       'react-export-sources',
     ],
   },
-  { pattern: /^-generate-dashboard-route-.+\.js$/, maxBytes: mib(0.25) },
   { pattern: /^index-.+\.js$/, maxBytes: mib(0.9) },
   { pattern: /^OpenUIViewer-.+\.js$/, maxBytes: mib(0.25) },
   { pattern: /^openui-runtime-core-.+\.js$/, maxBytes: mib(0.05) },
@@ -40,7 +39,16 @@ const publicRules: AssetRule[] = [
 ]
 
 const serverRules: AssetRule[] = [
-  { pattern: /^GeneratedModulePreview-.+\.mjs$/, maxBytes: mib(0.08) },
+  {
+    pattern: /^-generate-dashboard-route-.+\.mjs$/,
+    maxBytes: mib(0.25),
+    requiredAbsentText: [
+      'defineComponent',
+      'reactExportSources',
+      'component-spec',
+      'react-export-sources',
+    ],
+  },
   {
     pattern: /^router-.+\.mjs$/,
     maxBytes: mib(0.3),
