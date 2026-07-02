@@ -43,6 +43,22 @@ const integrationStatus = v.union(
   v.literal('failed'),
 )
 
+const commerceTenantStatus = v.union(
+  v.literal('not_enabled'),
+  v.literal('provisioning'),
+  v.literal('syncing_products'),
+  v.literal('ready'),
+  v.literal('degraded'),
+  v.literal('failed'),
+)
+
+const commerceTenantSyncStatus = v.union(
+  v.literal('idle'),
+  v.literal('pulling_updates'),
+  v.literal('ready'),
+  v.literal('failed'),
+)
+
 export default defineSchema({
   sessions: defineTable({
     userId: v.optional(v.string()),
@@ -344,6 +360,33 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index('by_sessionId', ['sessionId']),
+
+  commerceTenants: defineTable({
+    deploymentId: v.id('deployments'),
+    sessionId: v.id('sessions'),
+    deploymentSlug: v.string(),
+    provider: v.string(),
+    providerTenantId: v.optional(v.string()),
+    status: commerceTenantStatus,
+    syncStatus: commerceTenantSyncStatus,
+    backendUrl: v.string(),
+    adminUrl: v.string(),
+    storefrontUrl: v.string(),
+    publishableKey: v.optional(v.string()),
+    databaseRef: v.optional(v.string()),
+    secretRef: v.optional(v.string()),
+    webhookSecretHash: v.optional(v.string()),
+    productCount: v.optional(v.number()),
+    lastPullAt: v.optional(v.number()),
+    lastWebhookAt: v.optional(v.number()),
+    lastHealthCheckAt: v.optional(v.number()),
+    errorMessage: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_deploymentId', ['deploymentId'])
+    .index('by_deploymentSlug', ['deploymentSlug'])
+    .index('by_sessionId', ['sessionId']),
 
   genuiModules: defineTable({
     sessionId: v.id('sessions'),

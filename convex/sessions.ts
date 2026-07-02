@@ -23,9 +23,15 @@ import {
 } from './lib/session_access_helpers'
 import { loadSessionApiResponse } from './lib/session_api_response_helpers'
 import {
+  authorizeDeploymentCommerceTenantProvision,
+  loadDeploymentCommerceTenantBySlugForWebhook,
+  loadDeploymentCommerceTenantBySlug,
+  loadOwnedDeploymentCommerceTenantBySlug,
   loadSessionCommerceConfig,
+  recordDeploymentCommerceTenantPull,
   provisionSessionMedusaTenant,
   syncSessionMedusaProducts,
+  upsertDeploymentCommerceTenant,
   upsertSessionCommerceConfig,
 } from './lib/session_commerce_helpers'
 import {
@@ -120,6 +126,7 @@ import {
   claimAnonymousArgs,
   claimAnonymousByClientIdArgs,
   completeGenerationArgs,
+  commerceTenantDeploymentSlugArgs,
   createGenerationSessionArgs,
   createEditArgs,
   deleteMineArgs,
@@ -141,6 +148,7 @@ import {
   lookupArgs,
   operationalNotificationArgs,
   ownedExportArgs,
+  ownedCommerceTenantDeploymentSlugArgs,
   ownedGallerySessionsArgs,
   ownedExportLookupArgs,
   ownedSessionArgs,
@@ -149,6 +157,7 @@ import {
   publicGallerySessionsArgs,
   publishPreviewArgs,
   publishPreviewLookupArgs,
+  recordCommerceTenantPullArgs,
   recordOperationalEventArgs,
   recordUsageMetricArgs,
   restorePreviewVersionArgs,
@@ -161,10 +170,12 @@ import {
   telegramNotificationArgs,
   upsertAiCapsuleArgs,
   applySectionEditArgs,
+  upsertCommerceTenantArgs,
   upsertGeneratedModuleArgs,
   upsertGenerationTaskArgs,
   upsertCommerceConfigArgs,
   userUsageMetricsArgs,
+  webhookCommerceTenantDeploymentSlugArgs,
   writeClonePageArgs,
 } from './lib/session_validators'
 import { loadSessionWorkspace } from './lib/session_workspace_helpers'
@@ -706,6 +717,38 @@ export const upsertCommerceConfig = mutation({
 export const getCommerceConfig = query({
   args: sessionIdArgs,
   handler: (ctx, args) => loadSessionCommerceConfig(ctx, args.sessionId),
+})
+
+export const upsertCommerceTenant = mutation({
+  args: upsertCommerceTenantArgs,
+  handler: (ctx, args) => upsertDeploymentCommerceTenant(ctx, args),
+})
+
+export const getCommerceTenantByDeploymentSlug = query({
+  args: commerceTenantDeploymentSlugArgs,
+  handler: (ctx, args) =>
+    loadDeploymentCommerceTenantBySlug(ctx, args.deploymentSlug),
+})
+
+export const authorizeCommerceTenantProvision = query({
+  args: ownedCommerceTenantDeploymentSlugArgs,
+  handler: (ctx, args) => authorizeDeploymentCommerceTenantProvision(ctx, args),
+})
+
+export const getOwnedCommerceTenantByDeploymentSlug = query({
+  args: ownedCommerceTenantDeploymentSlugArgs,
+  handler: (ctx, args) => loadOwnedDeploymentCommerceTenantBySlug(ctx, args),
+})
+
+export const getCommerceTenantByDeploymentSlugForWebhook = query({
+  args: webhookCommerceTenantDeploymentSlugArgs,
+  handler: (ctx, args) =>
+    loadDeploymentCommerceTenantBySlugForWebhook(ctx, args),
+})
+
+export const recordCommerceTenantPull = mutation({
+  args: recordCommerceTenantPullArgs,
+  handler: (ctx, args) => recordDeploymentCommerceTenantPull(ctx, args),
 })
 
 export const listPublicSessions = query({

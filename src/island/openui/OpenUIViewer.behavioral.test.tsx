@@ -356,6 +356,54 @@ describe('OpenUIViewer behavioral', () => {
     })
   })
 
+  it('syncs Medusa products through deployment tenant endpoints when deploymentSlug is configured', async () => {
+    state.loadOpenUIRuntimeLibrary.mockResolvedValue({} as never)
+    state.useQuery.mockReturnValue(undefined)
+    state.extractGeneratedCommerceProducts.mockReturnValue([
+      { handle: 'truffle-box', name: 'Truffle Box', price: '$79' },
+    ])
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          products: [
+            {
+              handle: 'admin-truffle-box',
+              sourceHandle: 'truffle-box',
+              title: 'Admin Updated Truffle Box',
+              price: 9900,
+              currencyCode: 'usd',
+            },
+          ],
+        }),
+        { status: 200 },
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <OpenUIViewer
+        response="root = StorePage()"
+        sessionId="s1"
+        integrations={{
+          medusa: {
+            enabled: true,
+            config: { deploymentSlug: 'deployed-store' },
+          },
+        }}
+      />,
+    )
+
+    await waitFor(() =>
+      expect(state.applyMedusaProductsToPreviewDom).toHaveBeenCalled(),
+    )
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/deployments/deployed-store/medusa-products',
+      {
+        headers: { Accept: 'application/json' },
+      },
+    )
+  })
+
   it('keeps the preview usable when Medusa products returns malformed JSON', async () => {
     state.loadOpenUIRuntimeLibrary.mockResolvedValue({} as never)
     state.useQuery.mockReturnValue(undefined)

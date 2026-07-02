@@ -62,7 +62,7 @@ describe('OpenUI Medusa integration provider', () => {
       expect(state.ready).toBe(true)
       expect(state.status).toBe('ready')
       expect(state.backendUrl).toBe('https://backend.medusa.test')
-      expect(state.error).toBe('Medusa Store API is unavailable: fetch failed')
+      expect(state.error).toBe('Medusa Store API is unavailable.')
     })
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/sessions/session_123/medusa-config',

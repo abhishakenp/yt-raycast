@@ -16,6 +16,7 @@ import { defaultPresets, type ThemeStyles } from './theme-presets.ts'
 import {
   IntegrationProvider,
   OpenUIMedusaContext,
+  provisionMedusaIntegration,
   type OpenUIIntegrationConfig,
 } from './integrations.tsx'
 
@@ -230,6 +231,39 @@ describe('theme + integrations behavioral', () => {
       expect(value.status).toBe('ready')
       expect(value.ready).toBe(true)
       expect(value.error).toBeNull()
+    })
+
+    it('checks deployment-scoped Medusa config when deploymentSlug is present', async () => {
+      const fetchMock = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            enabled: true,
+            config: {
+              backendUrl: 'https://backend.deployed.test',
+              storefrontUrl: 'https://storefront.deployed.test',
+            },
+          }),
+          { status: 200 },
+        ),
+      )
+      vi.stubGlobal('fetch', fetchMock)
+
+      await expect(
+        provisionMedusaIntegration('session_123', {
+          deploymentSlug: 'deployed-store',
+        }),
+      ).resolves.toMatchObject({
+        backendUrl: 'https://backend.deployed.test',
+        ready: true,
+        storefrontUrl: 'https://storefront.deployed.test',
+        status: 'ready',
+      })
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/deployments/deployed-store/medusa-config',
+        {
+          headers: { Accept: 'application/json' },
+        },
+      )
     })
 
     it('prefers backendUrl over adminBaseUrl and trims whitespace', () => {

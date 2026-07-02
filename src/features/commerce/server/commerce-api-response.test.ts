@@ -205,7 +205,7 @@ describe('createSessionMedusaProvisionResponse', () => {
     expect(await response.json()).toMatchObject({
       status: 'ready',
       liveStoreApiReady: false,
-      warning: 'Medusa Store API is unavailable: fetch failed',
+      warning: 'Medusa Store API is unavailable.',
     })
     expect(mutation).toHaveBeenCalledWith(
       expect.anything(),
@@ -216,9 +216,7 @@ describe('createSessionMedusaProvisionResponse', () => {
       }),
     )
     const [, args] = mutation.mock.calls[0]
-    expect(args.errorMessage).toBe(
-      'Medusa Store API is unavailable: fetch failed',
-    )
+    expect(args.errorMessage).toBe('Medusa Store API is unavailable.')
     expect(JSON.parse(args.configJson)).toMatchObject({
       provider: 'medusa',
       tenantId: 'session_123',

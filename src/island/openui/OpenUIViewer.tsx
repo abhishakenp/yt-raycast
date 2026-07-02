@@ -335,9 +335,20 @@ export default function OpenUIViewer({
     runtimeLibraryState.key === runtimeLibraryKey
       ? runtimeLibraryState.library
       : null
+  const medusaDeploymentSlug = useMemo(() => {
+    const raw = integrations?.medusa?.config?.deploymentSlug
+    return typeof raw === 'string' && raw.trim() ? raw.trim() : undefined
+  }, [integrations?.medusa?.config?.deploymentSlug])
 
   useEffect(() => {
-    if (!sessionId || !runtimeLibrary || !renderHostRef.current) return
+    const productsPath =
+      medusaDeploymentSlug !== undefined
+        ? `/api/deployments/${encodeURIComponent(medusaDeploymentSlug)}/medusa-products`
+        : sessionId
+          ? `/api/sessions/${encodeURIComponent(sessionId)}/medusa-products`
+          : undefined
+
+    if (!productsPath || !runtimeLibrary || !renderHostRef.current) return
 
     const generatedProducts = extractGeneratedCommerceProducts({
       source: preparedResponse,
@@ -347,10 +358,9 @@ export default function OpenUIViewer({
     let cancelled = false
     const syncPreviewProducts = async () => {
       try {
-        const medusaProductsResponse = await fetch(
-          `/api/sessions/${encodeURIComponent(sessionId)}/medusa-products`,
-          { headers: { Accept: 'application/json' } },
-        )
+        const medusaProductsResponse = await fetch(productsPath, {
+          headers: { Accept: 'application/json' },
+        })
         if (!medusaProductsResponse.ok || cancelled) return
 
         const payload = (await medusaProductsResponse.json()) as {
@@ -377,7 +387,7 @@ export default function OpenUIViewer({
       cancelled = true
       window.clearInterval(interval)
     }
-  }, [preparedResponse, runtimeLibrary, sessionId])
+  }, [medusaDeploymentSlug, preparedResponse, runtimeLibrary, sessionId])
 
   useEffect(() => {
     if (!onFirstPaint) return

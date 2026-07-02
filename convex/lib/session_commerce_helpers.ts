@@ -2,10 +2,13 @@ import { ConvexError } from 'convex/values'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
-import { assertCanMutateSession } from './session_access_helpers'
+import {
+  assertCanMutateSession,
+  hashOwnerSecret,
+} from './session_access_helpers'
 
 type CommerceMutationCtx = MutationCtx
-type CommerceQueryCtx = Pick<QueryCtx, 'db'>
+type CommerceQueryCtx = Pick<QueryCtx, 'auth' | 'db'>
 
 export type UpsertSessionCommerceConfigInput = {
   sessionId: Id<'sessions'>
@@ -23,6 +26,46 @@ export type ProvisionMedusaTenantInput = {
   backendUrl: string
   adminUrl: string
   storefrontUrl: string
+}
+
+export type UpsertDeploymentCommerceTenantInput = {
+  deploymentSlug: string
+  anonymousOwnerSecret?: string
+  provider: string
+  providerTenantId?: string
+  backendUrl: string
+  adminUrl: string
+  storefrontUrl: string
+  publishableKey?: string
+  databaseRef?: string
+  secretRef?: string
+  webhookSecret?: string
+  productCount?: number
+}
+
+export type RecordDeploymentCommerceTenantPullInput = {
+  deploymentSlug: string
+  anonymousOwnerSecret?: string
+  source: 'manual' | 'webhook'
+  webhookSecret?: string
+  productCount?: number
+  errorMessage?: string
+}
+
+export type OwnedDeploymentCommerceTenantInput = {
+  deploymentSlug: string
+  anonymousOwnerSecret?: string
+}
+
+export type WebhookDeploymentCommerceTenantInput = {
+  deploymentSlug: string
+  webhookSecret?: string
+}
+
+export type AuthorizedDeploymentCommerceTenantProvision = {
+  deploymentId: Id<'deployments'>
+  deploymentSlug: string
+  sessionId: Id<'sessions'>
 }
 
 export type SyncMedusaProductsInput = {
@@ -49,6 +92,28 @@ export const serializeCommerceConfig = (config: Doc<'commerceConfigs'>) => ({
   updatedAt: config.updatedAt,
 })
 
+export const serializeCommerceTenant = (tenant: Doc<'commerceTenants'>) => ({
+  tenantId: tenant._id,
+  deploymentId: tenant.deploymentId,
+  deploymentSlug: tenant.deploymentSlug,
+  sessionId: tenant.sessionId,
+  provider: tenant.provider,
+  providerTenantId: tenant.providerTenantId,
+  status: tenant.status,
+  syncStatus: tenant.syncStatus,
+  backendUrl: tenant.backendUrl,
+  adminUrl: tenant.adminUrl,
+  storefrontUrl: tenant.storefrontUrl,
+  publishableKey: tenant.publishableKey,
+  productCount: tenant.productCount,
+  lastPullAt: tenant.lastPullAt,
+  lastWebhookAt: tenant.lastWebhookAt,
+  lastHealthCheckAt: tenant.lastHealthCheckAt,
+  errorMessage: tenant.errorMessage,
+  createdAt: tenant.createdAt,
+  updatedAt: tenant.updatedAt,
+})
+
 const loadCommerceConfigDoc = async (
   ctx: CommerceQueryCtx,
   sessionId: Id<'sessions'>,
@@ -57,6 +122,36 @@ const loadCommerceConfigDoc = async (
     .query('commerceConfigs')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
     .first()
+
+const loadDeploymentDocBySlug = async (
+  ctx: CommerceQueryCtx,
+  deploymentSlug: string,
+) =>
+  await ctx.db
+    .query('deployments')
+    .withIndex('by_slug', (index) => index.eq('slug', deploymentSlug))
+    .first()
+
+const loadCommerceTenantByDeploymentId = async (
+  ctx: CommerceQueryCtx,
+  deploymentId: Id<'deployments'>,
+) =>
+  await ctx.db
+    .query('commerceTenants')
+    .withIndex('by_deploymentId', (index) =>
+      index.eq('deploymentId', deploymentId),
+    )
+    .first()
+
+const loadDeploymentTenantPair = async (
+  ctx: CommerceQueryCtx,
+  deploymentSlug: string,
+) => {
+  const deployment = await loadDeploymentDocBySlug(ctx, deploymentSlug)
+  if (deployment === null) return { deployment: null, tenant: null }
+  const tenant = await loadCommerceTenantByDeploymentId(ctx, deployment._id)
+  return { deployment, tenant }
+}
 
 export const upsertSessionCommerceConfig = async (
   ctx: CommerceMutationCtx,
@@ -112,6 +207,236 @@ export const loadSessionCommerceConfig = async (
 ) => {
   const config = await loadCommerceConfigDoc(ctx, sessionId)
   return config === null ? null : serializeCommerceConfig(config)
+}
+
+export const loadDeploymentCommerceTenantBySlug = async (
+  ctx: CommerceQueryCtx,
+  deploymentSlug: string,
+) => {
+  const { tenant } = await loadDeploymentTenantPair(ctx, deploymentSlug)
+  return tenant === null ? null : serializeCommerceTenant(tenant)
+}
+
+export const authorizeDeploymentCommerceTenantProvision = async (
+  ctx: CommerceQueryCtx,
+  args: OwnedDeploymentCommerceTenantInput,
+): Promise<AuthorizedDeploymentCommerceTenantProvision> => {
+  const deployment = await loadDeploymentDocBySlug(ctx, args.deploymentSlug)
+  deployment !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Deployment not found',
+      })
+    })()
+
+  const session = await ctx.db.get(deployment.sessionId)
+  session !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    })()
+
+  await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
+
+  return {
+    deploymentId: deployment._id,
+    deploymentSlug: deployment.slug,
+    sessionId: deployment.sessionId,
+  }
+}
+
+const assertDeploymentCommerceTenantWebhookSecret = async (
+  tenant: Doc<'commerceTenants'>,
+  webhookSecret: string | undefined,
+) => {
+  const webhookSecretHash =
+    webhookSecret === undefined
+      ? undefined
+      : await hashOwnerSecret(webhookSecret)
+
+  if (
+    tenant.webhookSecretHash === undefined ||
+    webhookSecretHash !== tenant.webhookSecretHash
+  ) {
+    throw new ConvexError({
+      code: 'FORBIDDEN',
+      message: 'Invalid commerce webhook secret',
+    })
+  }
+}
+
+export const loadOwnedDeploymentCommerceTenantBySlug = async (
+  ctx: CommerceQueryCtx,
+  args: OwnedDeploymentCommerceTenantInput,
+) => {
+  const { deployment, tenant } = await loadDeploymentTenantPair(
+    ctx,
+    args.deploymentSlug,
+  )
+
+  if (deployment === null || tenant === null) return null
+
+  const session = await ctx.db.get(deployment.sessionId)
+  session !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    })()
+
+  await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
+
+  return serializeCommerceTenant(tenant)
+}
+
+export const loadDeploymentCommerceTenantBySlugForWebhook = async (
+  ctx: CommerceQueryCtx,
+  args: WebhookDeploymentCommerceTenantInput,
+) => {
+  const { deployment, tenant } = await loadDeploymentTenantPair(
+    ctx,
+    args.deploymentSlug,
+  )
+
+  if (deployment === null || tenant === null) return null
+
+  await assertDeploymentCommerceTenantWebhookSecret(tenant, args.webhookSecret)
+
+  return serializeCommerceTenant(tenant)
+}
+
+export const upsertDeploymentCommerceTenant = async (
+  ctx: CommerceMutationCtx,
+  args: UpsertDeploymentCommerceTenantInput,
+) => {
+  const deployment = await loadDeploymentDocBySlug(ctx, args.deploymentSlug)
+  const now = Date.now()
+
+  deployment !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Deployment not found',
+      })
+    })()
+
+  const session = await ctx.db.get(deployment.sessionId)
+  session !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    })()
+
+  await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
+
+  const existing = await loadCommerceTenantByDeploymentId(ctx, deployment._id)
+  const webhookSecretHash =
+    args.webhookSecret === undefined
+      ? existing?.webhookSecretHash
+      : await hashOwnerSecret(args.webhookSecret)
+  const patch = {
+    deploymentId: deployment._id,
+    sessionId: deployment.sessionId,
+    deploymentSlug: deployment.slug,
+    provider: args.provider,
+    providerTenantId: args.providerTenantId,
+    status: 'ready' as const,
+    syncStatus: existing?.syncStatus ?? ('idle' as const),
+    backendUrl: args.backendUrl,
+    adminUrl: args.adminUrl,
+    storefrontUrl: args.storefrontUrl,
+    publishableKey: args.publishableKey,
+    databaseRef: args.databaseRef,
+    secretRef: args.secretRef,
+    webhookSecretHash,
+    productCount: args.productCount ?? existing?.productCount ?? 0,
+    errorMessage: undefined,
+    updatedAt: now,
+  }
+
+  existing === null
+    ? await ctx.db.insert('commerceTenants', {
+        ...patch,
+        createdAt: now,
+      })
+    : await ctx.db.patch(existing._id, patch)
+
+  return {
+    deploymentId: deployment._id,
+    deploymentSlug: deployment.slug,
+    sessionId: deployment.sessionId,
+    status: 'ready' as const,
+  }
+}
+
+export const recordDeploymentCommerceTenantPull = async (
+  ctx: CommerceMutationCtx,
+  args: RecordDeploymentCommerceTenantPullInput,
+) => {
+  const { deployment, tenant } = await loadDeploymentTenantPair(
+    ctx,
+    args.deploymentSlug,
+  )
+  const now = Date.now()
+
+  deployment !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Deployment not found',
+      })
+    })()
+  tenant !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_CONFIGURED',
+        message: 'Deployment commerce tenant not found',
+      })
+    })()
+
+  if (args.source === 'manual') {
+    const session = await ctx.db.get(deployment.sessionId)
+    session !== null ||
+      (() => {
+        throw new ConvexError({
+          code: 'NOT_FOUND',
+          message: 'Session not found',
+        })
+      })()
+    await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
+  } else {
+    await assertDeploymentCommerceTenantWebhookSecret(
+      tenant,
+      args.webhookSecret,
+    )
+  }
+
+  const failed = args.errorMessage !== undefined
+  await ctx.db.patch(tenant._id, {
+    ...(args.productCount === undefined
+      ? {}
+      : { productCount: args.productCount }),
+    ...(args.source === 'manual'
+      ? { lastPullAt: now }
+      : { lastWebhookAt: now }),
+    errorMessage: args.errorMessage,
+    status: failed ? 'degraded' : 'ready',
+    syncStatus: failed ? 'failed' : 'ready',
+    updatedAt: now,
+  })
+
+  return {
+    deploymentSlug: deployment.slug,
+    productCount: args.productCount,
+    source: args.source,
+    status: failed ? ('degraded' as const) : ('ready' as const),
+  }
 }
 
 export const provisionSessionMedusaTenant = async (
