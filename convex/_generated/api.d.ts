@@ -55,6 +55,7 @@ import type * as lib_session_usage_metrics_helpers from "../lib/session_usage_me
 import type * as lib_session_user_image_helpers from "../lib/session_user_image_helpers.js";
 import type * as lib_session_validators from "../lib/session_validators.js";
 import type * as lib_session_workspace_helpers from "../lib/session_workspace_helpers.js";
+import type * as openui_ssr_health from "../openui_ssr_health.js";
 import type * as referrals from "../referrals.js";
 import type * as session_completion from "../session_completion.js";
 import type * as sessions from "../sessions.js";
@@ -114,6 +115,7 @@ declare const fullApi: ApiFromModules<{
   "lib/session_user_image_helpers": typeof lib_session_user_image_helpers;
   "lib/session_validators": typeof lib_session_validators;
   "lib/session_workspace_helpers": typeof lib_session_workspace_helpers;
+  openui_ssr_health: typeof openui_ssr_health;
   referrals: typeof referrals;
   session_completion: typeof session_completion;
   sessions: typeof sessions;

@@ -42,6 +42,7 @@
     "review:groups": "bun scripts/export-review-groups.ts",
     "verify:generated": "node packages/ship-fast-blocks/scripts/generate-react-export-sources.mjs --check",
     "verify:bundle": "bun scripts/verify-build-bundles.ts",
+    "verify:convex-openui-ssr": "node scripts/verify-convex-openui-ssr.mjs",
     "verify:precommit": "node scripts/git-hook-quality-gate.mjs pre-commit",
     "verify:prepush": "node scripts/git-hook-quality-gate.mjs pre-push",
     "verify:qa": "bun run lint && bun run typecheck && bun run test:coverage && bun run verify:change-groups && bun run verify:review-readiness && bun run verify:generated && bun run build && bun run verify:bundle",
