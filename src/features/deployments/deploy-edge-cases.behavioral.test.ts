@@ -1,6 +1,8 @@
-import { rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { JSDOM } from 'jsdom'
 
 import {
   AnonymousCompilerError,
@@ -32,6 +34,7 @@ import {
   buildLakebedAnonymousDeployRequest,
   deployLakebedProjectFiles,
 } from './server/lakebed-deploy-service'
+import { build } from 'esbuild'
 import { buildStaticLakebedProjectFiles } from './server/lakebed-static-project-builder'
 import { createLakebedPublishResponse } from './server/lakebed-publish-response'
 import * as github from '../../../convex/github'
@@ -41,6 +44,93 @@ const esbuildCalls = () =>
     .__esbuildBuildCalls ?? []
 
 const lakebedRoot = () => join(process.cwd(), '.lakebed')
+
+const writeProjectFiles = async (
+  directory: string,
+  files: Record<string, string>,
+) => {
+  for (const [path, source] of Object.entries(files)) {
+    const absolutePath = join(directory, path)
+    await mkdir(join(absolutePath, '..'), { recursive: true })
+    await writeFile(absolutePath, source)
+  }
+}
+
+const renderStaticProjectClient = async (files: Record<string, string>) => {
+  const directory = await mkdtemp(join(tmpdir(), 'static-lakebed-client-'))
+
+  try {
+    await writeProjectFiles(directory, files)
+    const entryPath = join(directory, 'render-static-client.tsx')
+    await writeFile(
+      entryPath,
+      `import { h, render } from "preact";
+import { App } from "./client/index";
+
+render(h(App, {}), document.getElementById("app"));
+`,
+    )
+    const bundled = await build({
+      bundle: true,
+      entryPoints: [entryPath],
+      format: 'iife',
+      jsx: 'automatic',
+      jsxImportSource: 'preact',
+      logLevel: 'silent',
+      nodePaths: [join(process.cwd(), 'node_modules')],
+      platform: 'browser',
+      write: false,
+    })
+    const dom = new JSDOM('<div id="app"></div>', {
+      runScripts: 'outside-only',
+      url: 'https://example.test/',
+    })
+    const errors: unknown[] = []
+    dom.window.addEventListener('error', (event: ErrorEvent) => {
+      errors.push(event.error ?? event.message)
+    })
+    dom.window.eval(bundled.outputFiles[0]?.text ?? '')
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 0))
+
+    return {
+      errors,
+      iframe: dom.window.document.querySelector('iframe'),
+    }
+  } finally {
+    await rm(directory, { force: true, recursive: true })
+  }
+}
+
+const loadAnonymousDeployServerCapsule = async (
+  files: Record<string, string>,
+) => {
+  const deployRequest = await buildLakebedAnonymousDeployRequest(files)
+  const payload = JSON.parse(deployRequest.requestBody) as {
+    artifact?: {
+      server?: {
+        source?: {
+          bundle?: string
+        }
+      }
+    }
+  }
+  const bundle = payload.artifact?.server?.source?.bundle
+  expect(typeof bundle).toBe('string')
+  const mod = (await import(`data:text/javascript;base64,${bundle}`)) as {
+    default?: {
+      name?: string
+      endpoints?: Record<
+        string,
+        {
+          handler?: () => unknown
+          method?: string
+          path?: string
+        }
+      >
+    }
+  }
+  return mod.default
+}
 
 // ---------------------------------------------------------------------------
 // Shared source fixtures
@@ -596,32 +686,44 @@ describe('Lakebed static project builder', () => {
   })
 
   describe('client index', () => {
-    it('generates an iframe wrapper driven by srcDoc', async () => {
+    it('renders the generated static preview in a full-viewport iframe', async () => {
       const project = await buildStaticLakebedProjectFiles({
         source:
           '<!doctype html><html><head><title>Wrap</title></head><body><h1>Wrap</h1></body></html>',
       })
-      const clientIndex = project.files['client/index.tsx']
-      expect(clientIndex).toContain('iframe')
-      expect(clientIndex).toContain('srcDoc={previewHtml}')
-      expect(clientIndex).toContain('height: "100vh"')
-      expect(clientIndex).toContain('width: "100vw"')
+      const rendered = await renderStaticProjectClient(project.files)
+
+      expect(rendered.errors).toEqual([])
+      expect(rendered.iframe).not.toBeNull()
+      expect(rendered.iframe?.title).toBe('Generated preview')
+      expect(rendered.iframe?.getAttribute('srcdoc')).toContain('<h1>Wrap</h1>')
+      expect(rendered.iframe?.getAttribute('style')).toContain('height: 100vh')
+      expect(rendered.iframe?.getAttribute('style')).toContain('width: 100vw')
     })
   })
 
   describe('server index', () => {
-    it('generates a GET /api/status endpoint', async () => {
+    it('serves a GET /api/status endpoint from the compiled anonymous deploy artifact', async () => {
       const project = await buildStaticLakebedProjectFiles({
         source:
           '<!doctype html><html><head><title>Status</title></head><body><h1>Status</h1></body></html>',
         siteSpecJson: '{"projectName":"Status App"}',
       })
-      const serverIndex = project.files['server/index.ts']
-      expect(serverIndex).toContain(
-        'endpoint({ method: "GET", path: "/api/status" }',
+      const serverCapsule = await loadAnonymousDeployServerCapsule(
+        project.files,
       )
-      expect(serverIndex).toContain('text("ok")')
-      expect(serverIndex).toContain('capsule({')
+      const response = serverCapsule?.endpoints?.status?.handler?.()
+
+      expect(serverCapsule?.name).toBe('status-app')
+      expect(serverCapsule?.endpoints?.status).toMatchObject({
+        method: 'GET',
+        path: '/api/status',
+      })
+      expect(response).toMatchObject({
+        body: 'ok',
+        kind: 'response',
+        status: 200,
+      })
     })
   })
 
