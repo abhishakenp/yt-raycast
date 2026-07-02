@@ -14,14 +14,21 @@ import {
 } from './openui-lakebed-export-builder'
 
 const originalFetch = globalThis.fetch
-const originalPexelsKey = process.env.PEXELS_API_KEY
+const originalStockEnv = {
+  PEXELS_API_KEY: process.env.PEXELS_API_KEY,
+  VITE_PEXELS_API_KEY: process.env.VITE_PEXELS_API_KEY,
+  UNSPLASH_ACCESS_KEY: process.env.UNSPLASH_ACCESS_KEY,
+  VITE_UNSPLASH_ACCESS_KEY: process.env.VITE_UNSPLASH_ACCESS_KEY,
+}
 
 afterEach(() => {
   globalThis.fetch = originalFetch
-  if (originalPexelsKey === undefined) {
-    delete process.env.PEXELS_API_KEY
-  } else {
-    process.env.PEXELS_API_KEY = originalPexelsKey
+  for (const [key, value] of Object.entries(originalStockEnv)) {
+    if (value === undefined) {
+      delete process.env[key]
+    } else {
+      process.env[key] = value
+    }
   }
 })
 
@@ -1973,6 +1980,9 @@ export const WebhookHero = defineCapsule({
 
   it('falls back to detached Picsum URLs when stock APIs are unavailable', async () => {
     delete process.env.PEXELS_API_KEY
+    delete process.env.VITE_PEXELS_API_KEY
+    delete process.env.UNSPLASH_ACCESS_KEY
+    delete process.env.VITE_UNSPLASH_ACCESS_KEY
     globalThis.fetch = (async () => {
       throw new Error('Pexels should not be called without a key')
     }) as typeof fetch
@@ -1995,7 +2005,7 @@ export const WebhookHero = defineCapsule({
       expect.arrayContaining([
         {
           alt: 'Existing avatar',
-          src: 'https://picsum.photos/seed/existing-avatar/400/400',
+          src: 'https://picsum.photos/seed/existing-avatar/64/64',
         },
         {
           alt: 'Golden retriever puppy playing with a ball',

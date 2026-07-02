@@ -1,5 +1,5 @@
 import type { LakebedProjectFiles } from '../../exports/services/openui-lakebed-export-builder'
-import { picsumUrl } from '../../../lib/image-query'
+import { resolveStockImage } from '../../../lib/stock-image'
 
 type StaticLakebedProjectInput = {
   source: string
@@ -66,7 +66,9 @@ const readImageDimension = (value: string | null, fallback: number): number => {
     : fallback
 }
 
-const detachedPreviewImageUrl = (value: string): string | null => {
+const detachedPreviewImageUrl = async (
+  value: string,
+): Promise<string | null> => {
   let parsed: URL
   try {
     parsed = new URL(value, 'https://ship-fast.local')
@@ -88,25 +90,48 @@ const detachedPreviewImageUrl = (value: string): string | null => {
   const width = readImageDimension(parsed.searchParams.get('w'), 800)
   const height = readImageDimension(parsed.searchParams.get('h'), 600)
 
-  return picsumUrl(query, width, height)
+  const resolved = await resolveStockImage({
+    alt: parsed.searchParams.get('seed') ?? query,
+    query,
+    w: width,
+    h: height,
+  })
+  return resolved.imageUrl
 }
 
-const rewriteDetachedPreviewImageUrls = (html: string): string =>
-  html
-    .replace(
-      /(\s(?:src|poster)\s*=\s*)(["'])([^"']+)\2/gi,
-      (match, prefix: string, quote: string, value: string) => {
-        const rewritten = detachedPreviewImageUrl(decodeHtmlEntities(value))
-        return rewritten ? `${prefix}${quote}${rewritten}${quote}` : match
-      },
-    )
-    .replace(
-      /url\((["']?)([^"')]+)\1\)/gi,
-      (match, quote: string, value: string) => {
-        const rewritten = detachedPreviewImageUrl(decodeHtmlEntities(value))
-        return rewritten ? `url(${quote}${rewritten}${quote})` : match
-      },
-    )
+const replaceAsync = async (
+  value: string,
+  pattern: RegExp,
+  replacer: (...args: string[]) => Promise<string>,
+): Promise<string> => {
+  const replacements = await Promise.all(
+    Array.from(value.matchAll(pattern), (match) => replacer(...match)),
+  )
+  let index = 0
+  return value.replace(pattern, () => replacements[index++] ?? '')
+}
+
+const rewriteDetachedPreviewImageUrls = async (
+  html: string,
+): Promise<string> => {
+  const withAttributes = await replaceAsync(
+    html,
+    /(\s(?:src|poster)\s*=\s*)(["'])([^"']+)\2/gi,
+    async (match: string, prefix: string, quote: string, value: string) => {
+      const rewritten = await detachedPreviewImageUrl(decodeHtmlEntities(value))
+      return rewritten ? `${prefix}${quote}${rewritten}${quote}` : match
+    },
+  )
+
+  return await replaceAsync(
+    withAttributes,
+    /url\((["']?)([^"')]+)\1\)/gi,
+    async (match: string, quote: string, value: string) => {
+      const rewritten = await detachedPreviewImageUrl(decodeHtmlEntities(value))
+      return rewritten ? `url(${quote}${rewritten}${quote})` : match
+    },
+  )
+}
 
 const tailwindCdnScript = '<script src="https://cdn.tailwindcss.com"></script>'
 
@@ -229,7 +254,7 @@ export async function buildStaticLakebedProjectFiles(
 ): Promise<LakebedProjectFiles> {
   const html = stripShipFastOpenUIMetadata(
     ensureDetachedTailwindRuntime(
-      rewriteDetachedPreviewImageUrls(
+      await rewriteDetachedPreviewImageUrls(
         input.previewHtml?.trim() || input.source.trim(),
       ),
     ),

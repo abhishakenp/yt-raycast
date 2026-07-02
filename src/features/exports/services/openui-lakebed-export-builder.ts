@@ -29,6 +29,10 @@ import {
 } from '../../../lib/image-query'
 import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
 import { parseOpenUIForExport } from './openui-export-builder'
+import {
+  resolvePreviewImageUrl,
+  rewritePreviewImageUrls,
+} from './preview-image-url-resolution'
 
 type ReactExportSourceEntry = {
   file: string
@@ -371,8 +375,14 @@ export const collectRouteImageAlts = (routes: LakebedRoute[]): string[] => {
   return [...alts].slice(0, 80)
 }
 
-const normalizePreviewImageSource = (alt: string, src: string): string => {
+const normalizePreviewImageSource = async (
+  alt: string,
+  src: string,
+): Promise<string> => {
   const dimensions = lakebedImageDimensionsForAlt(alt)
+  const resolved = await resolvePreviewImageUrl(src, alt)
+  if (resolved) return normalizeRemoteImageUrlForLakebed(resolved, dimensions)
+
   if (/^https:\/\/images\.pexels\.com\//i.test(src)) {
     return normalizeRemoteImageUrlForLakebed(src, dimensions)
   }
@@ -399,11 +409,21 @@ const extractImageSources = (html: string | undefined): ImageSource[] => {
       src.startsWith('/') ||
       src.startsWith('data:image/')
     ) {
-      byAlt.set(alt, normalizePreviewImageSource(alt, src))
+      byAlt.set(alt, src)
     }
   }
   return [...byAlt].map(([alt, src]) => ({ alt, src }))
 }
+
+const resolveExtractedImageSources = async (
+  html: string | undefined,
+): Promise<ImageSource[]> =>
+  await Promise.all(
+    extractImageSources(html).map(async ({ alt, src }) => ({
+      alt,
+      src: await normalizePreviewImageSource(alt, src),
+    })),
+  )
 
 const extractStyleOverrides = (html: string | undefined): StyleOverride[] => {
   if (!html) return []
@@ -427,7 +447,10 @@ export const resolveLakebedImageSources = async (
   previewHtml: string | undefined,
 ): Promise<ImageSource[]> => {
   const byAlt = new Map(
-    extractImageSources(previewHtml).map((source) => [source.alt, source.src]),
+    (await resolveExtractedImageSources(previewHtml)).map((source) => [
+      source.alt,
+      source.src,
+    ]),
   )
 
   const missingAlts = collectRouteImageAlts(routes).filter(
@@ -3895,7 +3918,9 @@ const buildStaticLakebedProjectFiles = async (
   input: OpenUIExportInput,
   projectName: string,
 ): Promise<LakebedProjectFiles> => {
-  const html = input.previewHtml?.trim() || input.source.trim()
+  const html = await rewritePreviewImageUrls(
+    input.previewHtml?.trim() || input.source.trim(),
+  )
   const routes = [
     {
       label: 'Home',

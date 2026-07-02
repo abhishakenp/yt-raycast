@@ -202,6 +202,30 @@ const lakebedDeploymentMetadata = (deployment: {
       ? {}
       : { provider: deployment.provider, errorMessage: deployment.errorMessage }
 
+export const loadLakebedDeploymentUpdateTarget = async (
+  ctx: DeploymentReadCtx,
+  sessionId: Id<'sessions'>,
+) => {
+  const deployment = await ctx.db
+    .query('deployments')
+    .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
+    .first()
+
+  if (
+    deployment?.provider !== 'lakebed' ||
+    !deployment.lakebedDeployId ||
+    !deployment.lakebedClaimUrl
+  ) {
+    return null
+  }
+
+  return {
+    deployId: deployment.lakebedDeployId,
+    claimUrl: deployment.lakebedClaimUrl,
+    url: deployment.url,
+  }
+}
+
 export const loadDeploymentBySlug = async (
   ctx: DeploymentReadCtx,
   slug: string,
@@ -249,6 +273,7 @@ export const loadDeploymentStatus = async (
         url: deployment.url,
         status: deployment.status,
         previewVersion: deployment.previewVersion,
+        pendingPreviewVersion: deployment.pendingPreviewVersion,
         createdAt: deployment.createdAt,
         updatedAt: deployment.updatedAt,
         ...lakebedDeploymentMetadata(deployment),
@@ -521,14 +546,19 @@ export const recordLakebedSessionDeploymentSuccess = async (
     session.prompt,
     args.requestedSlug,
   )
+  const stableUrl =
+    existingDeployment?.provider === 'lakebed' && existingDeployment.url
+      ? existingDeployment.url
+      : args.url
 
   const deploymentPatch = {
     sessionId: args.sessionId,
     slug,
-    url: args.url,
+    url: stableUrl,
     status: 'ready' as const,
     provider: 'lakebed' as const,
     previewVersion: args.previewVersion,
+    pendingPreviewVersion: undefined,
     lakebedDeployId: args.deployId,
     lakebedClaimUrl: args.claimUrl,
     lakebedArtifactHash: args.artifactHash,
@@ -559,7 +589,7 @@ export const recordLakebedSessionDeploymentSuccess = async (
   const exportPatch = {
     previewVersion: args.previewVersion,
     downloadUrl: exportDownloadUrl(args.sessionId, 'lakebed'),
-    deployedUrl: args.url,
+    deployedUrl: stableUrl,
     fileCount: exportTargetFileCount('lakebed'),
     errorMessage: undefined,
     updatedAt: now,
@@ -586,7 +616,7 @@ export const recordLakebedSessionDeploymentSuccess = async (
   await ctx.db.insert('generationEvents', {
     sessionId: args.sessionId,
     eventType: 'published',
-    message: `Published Lakebed app to ${args.url}`,
+    message: `Published Lakebed app to ${stableUrl}`,
     previewVersion: args.previewVersion,
     createdAt: now,
   })
@@ -594,7 +624,7 @@ export const recordLakebedSessionDeploymentSuccess = async (
   return {
     sessionId: args.sessionId,
     slug,
-    url: args.url,
+    url: stableUrl,
     status: 'ready' as const,
     provider: 'lakebed' as const,
     deployId: args.deployId,
@@ -625,6 +655,7 @@ export const recordLakebedSessionDeploymentFailure = async (
         url,
         status: 'failed',
         provider: 'lakebed',
+        pendingPreviewVersion: undefined,
         errorMessage: args.errorMessage,
         createdAt: now,
         updatedAt: now,
@@ -633,6 +664,7 @@ export const recordLakebedSessionDeploymentFailure = async (
         slug,
         status: 'failed',
         provider: 'lakebed',
+        pendingPreviewVersion: undefined,
         errorMessage: args.errorMessage,
         updatedAt: now,
       })
@@ -753,6 +785,7 @@ export const publishSessionPreview = async (
         status: 'ready',
         provider: 'ship-fast',
         previewVersion: preview.version,
+        pendingPreviewVersion: undefined,
         createdAt: now,
         updatedAt: now,
       })
@@ -762,6 +795,7 @@ export const publishSessionPreview = async (
         status: 'ready',
         provider: 'ship-fast',
         previewVersion: preview.version,
+        pendingPreviewVersion: undefined,
         errorMessage: undefined,
         lakebedDeployId: undefined,
         lakebedClaimUrl: undefined,
@@ -797,4 +831,90 @@ export const publishSessionPreview = async (
     url,
     status: 'ready' as const,
   }
+}
+
+export const markSessionDeploymentUpdating = async (
+  ctx: MutationCtx,
+  args: {
+    sessionId: Id<'sessions'>
+    previewVersion: number
+  },
+) => {
+  const deployment = await ctx.db
+    .query('deployments')
+    .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+    .first()
+
+  if (deployment === null) return { status: 'none' as const }
+
+  await ctx.db.patch(deployment._id, {
+    status: 'updating',
+    pendingPreviewVersion: args.previewVersion,
+    errorMessage: undefined,
+    updatedAt: Date.now(),
+  })
+
+  return { status: 'updating' as const }
+}
+
+export const refreshShipFastDeploymentIfPresent = async (
+  ctx: MutationCtx,
+  args: {
+    sessionId: Id<'sessions'>
+    previewVersion: number
+  },
+) => {
+  const [session, deployment, preview] = await Promise.all([
+    ctx.db.get(args.sessionId),
+    ctx.db
+      .query('deployments')
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
+      .first(),
+    ctx.db
+      .query('previews')
+      .withIndex('by_sessionId_version', (index) =>
+        index
+          .eq('sessionId', args.sessionId)
+          .eq('version', args.previewVersion),
+      )
+      .first(),
+  ])
+
+  if (
+    session === null ||
+    deployment === null ||
+    deployment.provider !== 'ship-fast' ||
+    preview === null ||
+    session.status !== 'preview_ready'
+  ) {
+    return { status: 'skipped' as const }
+  }
+
+  if (
+    preview.html.trim().length === 0 ||
+    isUnsafePublicPreviewHtml(preview.html)
+  ) {
+    return { status: 'skipped' as const }
+  }
+
+  const now = Date.now()
+  await ctx.db.patch(deployment._id, {
+    status: 'ready',
+    previewVersion: args.previewVersion,
+    pendingPreviewVersion: undefined,
+    errorMessage: undefined,
+    updatedAt: now,
+  })
+
+  await ctx.db.insert('generationEvents', {
+    sessionId: args.sessionId,
+    eventType: 'published',
+    message: `Updated deployed preview at ${deployment.url}`,
+    previewVersion: args.previewVersion,
+    createdAt: now,
+  })
+
+  return { status: 'ready' as const }
 }

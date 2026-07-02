@@ -113,6 +113,11 @@ type FetchLike = typeof fetch
 export type LakebedDeployInput = {
   files: Record<string, string>
   api?: string
+  existingDeployment?: {
+    claimUrl?: string
+    deployId?: string
+    url?: string
+  }
   fetchImpl?: FetchLike
   inspectPolicy?: 'public'
   log?: LakebedDeployLogger
@@ -196,6 +201,23 @@ const resolveDeployApiUrl = (api?: string): string =>
       process.env.SPAN_DEPLOY_API ??
       LAKEBED_DEPLOY_API_URL,
   )
+
+const claimTokenFromClaimUrl = (
+  claimUrl: string | undefined,
+  deployId: string | undefined,
+): string | null => {
+  if (!claimUrl || !deployId) return null
+  try {
+    const url = new URL(claimUrl)
+    const segments = url.pathname.split('/').filter(Boolean)
+    if (segments[0] === 'claim' && segments[1] === deployId) {
+      return segments[2] ?? null
+    }
+  } catch {
+    return null
+  }
+  return null
+}
 
 const createSourceStore = (files: Record<string, string>): MemorySourceStore =>
   new MemorySourceStore(new Map(Object.entries(files)))
@@ -880,6 +902,7 @@ const readResponseJson = async (response: Response): Promise<JsonRecord> => {
 
 export const deployLakebedProjectFiles = async ({
   api,
+  existingDeployment,
   fetchImpl = fetch,
   files,
   inspectPolicy,
@@ -899,15 +922,29 @@ export const deployLakebedProjectFiles = async ({
     elapsedMs: Date.now() - buildStartedAt,
   })
   const deployApi = resolveDeployApiUrl(api)
+  const existingDeployId = existingDeployment?.deployId
+  const claimToken = claimTokenFromClaimUrl(
+    existingDeployment?.claimUrl,
+    existingDeployId,
+  )
+  const updateUrl =
+    existingDeployId && claimToken
+      ? `${deployApi}/v1/deploys/${encodeURIComponent(existingDeployId)}`
+      : null
+  const requestUrl = updateUrl ?? `${deployApi}/v1/anonymous-deploys`
+  const requestMethod = updateUrl === null ? 'POST' : 'PUT'
   const postStartedAt = Date.now()
   log?.('post:start', {
     requestBodyBytes: built.requestBodyBytes,
-    url: `${deployApi}/v1/anonymous-deploys`,
+    url: requestUrl,
   })
-  const response = await fetchImpl(`${deployApi}/v1/anonymous-deploys`, {
+  const response = await fetchImpl(requestUrl, {
     body: built.requestBody,
-    headers: { 'Content-Type': 'application/json' },
-    method: 'POST',
+    headers: {
+      ...(claimToken ? { Authorization: `Bearer ${claimToken}` } : {}),
+      'Content-Type': 'application/json',
+    },
+    method: requestMethod,
   })
   log?.('post:response', {
     elapsedMs: Date.now() - postStartedAt,
@@ -924,20 +961,32 @@ export const deployLakebedProjectFiles = async ({
   })
   log?.('post:complete', {
     deployId: deployed.deployId,
+    mode: updateUrl === null ? 'created' : 'updated',
     status: response.status,
     url: deployed.url,
     elapsedMs: Date.now() - postStartedAt,
   })
 
+  const deployId =
+    typeof deployed.deployId === 'string' && deployed.deployId.length > 0
+      ? deployed.deployId
+      : (existingDeployment?.deployId ?? '')
+  const url =
+    updateUrl !== null && existingDeployment?.url
+      ? existingDeployment.url
+      : String(deployed.url ?? '')
+
   return {
-    deployId: String(deployed.deployId ?? ''),
-    url: String(deployed.url ?? ''),
+    deployId,
+    url,
     updatedAt:
       typeof deployed.updatedAt === 'string' ? deployed.updatedAt : undefined,
     expiresAt:
       typeof deployed.expiresAt === 'string' ? deployed.expiresAt : undefined,
     claimUrl:
-      typeof deployed.claimUrl === 'string' ? deployed.claimUrl : undefined,
+      typeof deployed.claimUrl === 'string'
+        ? deployed.claimUrl
+        : existingDeployment?.claimUrl,
     claimed:
       typeof deployed.claimed === 'boolean' ? deployed.claimed : undefined,
     inspectPolicy:

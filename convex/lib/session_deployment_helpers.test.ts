@@ -734,6 +734,89 @@ describe('session deployment helpers', () => {
     })
   })
 
+  it('keeps the original Lakebed URL when a refresh records updated deployment metadata', async () => {
+    const existingDeployment = deploymentDoc({
+      _id: 'deployment_lakebed_existing' as Id<'deployments'>,
+      provider: 'lakebed',
+      slug: 'lakebed-launch',
+      url: 'https://memory-deploy.lakebed.app',
+      previewVersion: 7,
+      lakebedDeployId: 'dep_existing',
+      lakebedClaimUrl: 'https://lakebed.app/claim/dep_existing/token_existing',
+    })
+    const existingExport = {
+      _id: 'export_lakebed_existing' as Id<'exports'>,
+      _creationTime: 1,
+      sessionId,
+      target: 'lakebed',
+      status: 'ready',
+      previewVersion: 7,
+      downloadUrl: '/api/sessions/session_deployment/download/lakebed',
+      deployedUrl: 'https://memory-deploy.lakebed.app',
+      fileCount: 12,
+      requiresPayment: false,
+      createdAt: 120,
+      updatedAt: 150,
+    } as Doc<'exports'>
+    const { ctx, inserted, patches } = mutationCtxFor({
+      sessions: [sessionDoc({ userId: 'user_1' })],
+      deployments: [existingDeployment],
+      exports: [existingExport],
+    })
+
+    await expect(
+      recordLakebedSessionDeploymentSuccess(ctx, {
+        sessionId,
+        previewVersion: 8,
+        url: 'https://new-anonymous-preview.lakebed.app',
+        deployId: 'dep_existing',
+        claimUrl: 'https://lakebed.app/claim/dep_existing/token_existing',
+        artifactHash: 'sha256:artifact-v2',
+        clientBundleHash: 'sha256:client-v2',
+        clientBundleBytes: 2345,
+        requestBodyBytes: 5678,
+        serverBundleBytes: 432,
+        sourceFileCount: 10,
+        expiresAt: '2026-06-25T00:05:00.000Z',
+      }),
+    ).resolves.toMatchObject({
+      provider: 'lakebed',
+      slug: 'lakebed-launch',
+      url: 'https://memory-deploy.lakebed.app',
+      deployId: 'dep_existing',
+    })
+
+    expect(inserted).toEqual([
+      {
+        table: 'generationEvents',
+        value: expect.objectContaining({
+          sessionId,
+          eventType: 'published',
+          message: 'Published Lakebed app to https://memory-deploy.lakebed.app',
+          previewVersion: 8,
+        }),
+      },
+    ])
+    expect(patches).toEqual([
+      {
+        id: existingDeployment._id,
+        patch: expect.objectContaining({
+          url: 'https://memory-deploy.lakebed.app',
+          previewVersion: 8,
+          lakebedArtifactHash: 'sha256:artifact-v2',
+          lakebedClientBundleHash: 'sha256:client-v2',
+        }),
+      },
+      {
+        id: existingExport._id,
+        patch: expect.objectContaining({
+          previewVersion: 8,
+          deployedUrl: 'https://memory-deploy.lakebed.app',
+        }),
+      },
+    ])
+  })
+
   it('publishes the latest ready public preview and records lifecycle events', async () => {
     const { ctx, inserted } = mutationCtxFor({
       sessions: [sessionDoc({ userId: 'user_1' })],

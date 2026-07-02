@@ -20,6 +20,7 @@ import {
   resolveRelativeBlockSourcePath,
 } from './block-source-manifest'
 import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
+import { resolvePreviewImageUrl } from './preview-image-url-resolution'
 
 type ParsedOpenUIProgram = {
   root: ElementNode
@@ -135,7 +136,13 @@ const readHtmlAttribute = (tag: string, name: string): string | null => {
   return unquoted?.[1]?.trim() || null
 }
 
-const normalizePreviewImageSource = (src: string): string => {
+const normalizePreviewImageSource = async (
+  src: string,
+  alt: string,
+): Promise<string> => {
+  const resolved = await resolvePreviewImageUrl(src, alt)
+  if (resolved) return resolved
+
   if (/^https?:\/\/[^/]+\/api\//i.test(src)) {
     try {
       const url = new URL(src)
@@ -147,7 +154,9 @@ const normalizePreviewImageSource = (src: string): string => {
   return src
 }
 
-const extractImageSources = (html: string | undefined): ImageSource[] => {
+const extractImageSources = async (
+  html: string | undefined,
+): Promise<ImageSource[]> => {
   if (!html) return []
   const byAlt = new Map<string, string>()
   for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
@@ -160,7 +169,7 @@ const extractImageSources = (html: string | undefined): ImageSource[] => {
       src.startsWith('/') ||
       src.startsWith('data:image/')
     ) {
-      byAlt.set(alt, normalizePreviewImageSource(src))
+      byAlt.set(alt, await normalizePreviewImageSource(src, alt))
     }
   }
   return [...byAlt].map(([alt, src]) => ({ alt, src }))
@@ -2099,17 +2108,9 @@ export function cn(...inputs: ClassValue[]) {
 }
 `
 
-const renderImageHelper = (
-  target: 'react' | 'next',
-  imageSources: ImageSource[],
-): string => {
-  const envName =
-    target === 'react'
-      ? 'import.meta.env.VITE_SERVER_URL'
-      : 'process.env.NEXT_PUBLIC_SERVER_URL'
+const renderImageHelper = (imageSources: ImageSource[]): string => {
   return `import type { ImgHTMLAttributes } from 'react'
 
-const serverUrl = (${envName} || 'https://ship-fast.io').replace(/\\/$/, '')
 const previewImageSources = ${JSON.stringify(imageSources, null, 2)} satisfies Array<{ alt: string; src: string }>
 const previewImageSourceByAlt = new Map(previewImageSources.map((image) => [image.alt, image.src]))
 
@@ -2133,6 +2134,10 @@ function slugify(alt: unknown): string {
     .slice(0, 48) || 'image'
 }
 
+function fallbackImageUrl(alt: unknown, w: number, h: number): string {
+  return \`https://picsum.photos/seed/\${slugify(alt)}/\${w}/\${h}\`
+}
+
 export function Image({
   alt,
   src,
@@ -2151,7 +2156,7 @@ export function Image({
   const previewSrc = previewImageSourceByAlt.get(normalizedAlt)
   const imageSrc = previewSrc || (typeof src === 'string' && src.trim()
     ? src
-    : \`\${serverUrl}/api/pexels?query=\${encodeURIComponent(slugify(normalizedAlt))}&w=\${w}&h=\${h}\`)
+    : fallbackImageUrl(normalizedAlt, w, h))
 
   return (
     <img
@@ -3907,10 +3912,10 @@ const collectNextEndpoints = (
   ...readSourceEndpointDefinitions(source),
 ]
 
-const buildReactExport = (
+const buildReactExport = async (
   input: OpenUIExportInput,
   parsed: ParsedOpenUIProgram,
-): BuiltExport => {
+): Promise<BuiltExport> => {
   const routes = buildRoutes(parsed)
   const routeTargets = buildRouteTargetMap(routes, parsed.targetMap)
   const components = collectExportComponents(routes, 'react', routeTargets)
@@ -3935,7 +3940,7 @@ const buildReactExport = (
   )
   const routeComponentNames = routeComponents.map((component) => component.name)
   const usesLakebed = components.some((component) => component.usesLakebed)
-  const imageSources = extractImageSources(input.previewHtml)
+  const imageSources = await extractImageSources(input.previewHtml)
   const styleOverrides = extractStyleOverrides(input.previewHtml)
   if (usesLakebed) {
     dependencies['@tanstack/react-query'] =
@@ -3957,7 +3962,7 @@ const buildReactExport = (
     'src/App.tsx': renderReactApp(routeComponentNames, input),
     'src/data/pages.ts': renderRouteData(routes, routeComponentNames),
     'src/lib/cn.ts': renderLibCn(),
-    'src/lib/image.tsx': renderImageHelper('react', imageSources),
+    'src/lib/image.tsx': renderImageHelper(imageSources),
     'src/lib/style-overrides.tsx': renderStyleOverridesRuntime(styleOverrides),
     'src/styles.css': renderThemeCss(input),
     'README.md': renderReadme(parsed.projectName, 'react'),
@@ -3981,10 +3986,10 @@ const buildReactExport = (
   }
 }
 
-const buildNextExport = (
+const buildNextExport = async (
   input: OpenUIExportInput,
   parsed: ParsedOpenUIProgram,
-): BuiltExport => {
+): Promise<BuiltExport> => {
   const routes = buildRoutes(parsed)
   const routeTargets = buildRouteTargetMap(routes, parsed.targetMap)
   const components = collectExportComponents(routes, 'next', routeTargets)
@@ -4010,7 +4015,7 @@ const buildNextExport = (
   const routeComponentNames = routeComponents.map((component) => component.name)
   const usesLakebed = components.some((component) => component.usesLakebed)
   const endpoints = collectNextEndpoints(nestedComponentNames, input.source)
-  const imageSources = extractImageSources(input.previewHtml)
+  const imageSources = await extractImageSources(input.previewHtml)
   const styleOverrides = extractStyleOverrides(input.previewHtml)
   if (usesLakebed) {
     dependencies['@tanstack/react-query'] =
@@ -4043,7 +4048,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     'app/globals.css': renderThemeCss(input),
     'src/data/pages.ts': renderRouteData(routes, routeComponentNames),
     'src/lib/cn.ts': renderLibCn(),
-    'src/lib/image.tsx': renderImageHelper('next', imageSources),
+    'src/lib/image.tsx': renderImageHelper(imageSources),
     'src/lib/style-overrides.tsx': renderStyleOverridesRuntime(styleOverrides),
     'README.md': renderReadme(parsed.projectName, 'next'),
   }
@@ -4173,8 +4178,8 @@ export async function buildOpenUIExport(
   const parsed = parseOpenUIForExport(input.source, input.siteSpecJson)
 
   return input.target === 'react'
-    ? buildReactExport(input, parsed)
-    : buildNextExport(input, parsed)
+    ? await buildReactExport(input, parsed)
+    : await buildNextExport(input, parsed)
 }
 
 export const decodeExportBody = (body: string | Uint8Array): string =>

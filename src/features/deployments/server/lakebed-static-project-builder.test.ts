@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   buildLakebedAnonymousDeployRequest,
@@ -21,6 +21,50 @@ const decodeClientBundle = (body: string): string => {
   expect(typeof parsed.clientBundle).toBe('string')
   return Buffer.from(String(parsed.clientBundle), 'base64').toString('utf8')
 }
+
+const expectNoStockProviderCredentialsOrProxy = (artifact: string) => {
+  expect(artifact).not.toContain('PEXELS_API_KEY')
+  expect(artifact).not.toContain('VITE_PEXELS_API_KEY')
+  expect(artifact).not.toContain('api.pexels.com')
+  expect(artifact).not.toContain('/api/pexels')
+  expect(artifact).not.toContain('ship-fast.io/api/pexels')
+}
+
+const originalPexelsKey = process.env.PEXELS_API_KEY
+const originalVitePexelsKey = process.env.VITE_PEXELS_API_KEY
+const originalUnsplashKey = process.env.UNSPLASH_ACCESS_KEY
+const originalViteUnsplashKey = process.env.VITE_UNSPLASH_ACCESS_KEY
+
+beforeEach(() => {
+  delete process.env.PEXELS_API_KEY
+  delete process.env.VITE_PEXELS_API_KEY
+  delete process.env.UNSPLASH_ACCESS_KEY
+  delete process.env.VITE_UNSPLASH_ACCESS_KEY
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+  if (originalPexelsKey === undefined) {
+    delete process.env.PEXELS_API_KEY
+  } else {
+    process.env.PEXELS_API_KEY = originalPexelsKey
+  }
+  if (originalVitePexelsKey === undefined) {
+    delete process.env.VITE_PEXELS_API_KEY
+  } else {
+    process.env.VITE_PEXELS_API_KEY = originalVitePexelsKey
+  }
+  if (originalUnsplashKey === undefined) {
+    delete process.env.UNSPLASH_ACCESS_KEY
+  } else {
+    process.env.UNSPLASH_ACCESS_KEY = originalUnsplashKey
+  }
+  if (originalViteUnsplashKey === undefined) {
+    delete process.env.VITE_UNSPLASH_ACCESS_KEY
+  } else {
+    process.env.VITE_UNSPLASH_ACCESS_KEY = originalViteUnsplashKey
+  }
+})
 
 describe('buildStaticLakebedProjectFiles', () => {
   const realBreweryDeployment = {
@@ -103,19 +147,41 @@ describe('buildStaticLakebedProjectFiles', () => {
   })
 
   it('rewrites generated preview image API URLs in the deployable payload', async () => {
+    process.env.PEXELS_API_KEY = 'pexels-key'
+    const resolvedPexelsUrl =
+      'https://images.pexels.com/photos/7195588/pexels-photo-7195588.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    const fetchMock = vi.fn(async () =>
+      Response.json({
+        photos: [
+          {
+            src: {
+              medium: `${resolvedPexelsUrl}&size=medium`,
+              large: resolvedPexelsUrl,
+              large2x: `${resolvedPexelsUrl}&size=large2x`,
+              original: `${resolvedPexelsUrl}&size=original`,
+            },
+          },
+        ],
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
     const project = await buildStaticLakebedProjectFiles({
       source:
-        '<!doctype html><html><head><title>Images</title></head><body><img alt="Max the dog" src="/api/pexels?query=max-the-dog&w=800&h=600"></body></html>',
+        '<!doctype html><html><head><title>Images</title><style>.hero{background-image:url("/api/pexels?query=glass+polished+showcase+installations&w=800&h=600&seed=Showcase+of+polished+glass+installations")}</style></head><body><img alt="Showcase of polished glass installations" src="/api/pexels?query=glass+polished+showcase+installations&w=800&h=600&seed=Showcase+of+polished+glass+installations"></body></html>',
     })
     const deployRequest = await buildLakebedAnonymousDeployRequest(
       project.files,
     )
     const clientBundle = decodeClientBundle(deployRequest.requestBody)
 
-    expect(clientBundle).toContain(
-      'https://picsum.photos/seed/max-the-dog/800/600',
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.pexels.com/v1/search?query=glass%20polished%20showcase%20installations&per_page=15&orientation=landscape',
+      { headers: { Authorization: 'pexels-key' } },
     )
-    expect(clientBundle).not.toContain('/api/pexels')
+    expect(clientBundle).toContain(resolvedPexelsUrl)
+    expectNoStockProviderCredentialsOrProxy(clientBundle)
+    expect(clientBundle).not.toContain('picsum.photos')
   })
 
   it('replaces ShipFast-local Tailwind runtime in the deployable payload', async () => {

@@ -4,7 +4,7 @@ import { join } from 'node:path'
 
 import { build } from 'esbuild'
 import { JSDOM } from 'jsdom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { buildOpenUIArtifactFiles } from './openui-artifact-files'
 
@@ -105,6 +105,39 @@ const selectedBrandLogo = {
   icon: 'https://cdn.brandfetch.io/idwTkaYgXe/icon.webp',
   logo: 'https://cdn.brandfetch.io/idwTkaYgXe/logo.svg',
 }
+
+const expectNoStockProviderCredentialsOrProxy = (artifact: string) => {
+  expect(artifact).not.toContain('PEXELS_API_KEY')
+  expect(artifact).not.toContain('VITE_PEXELS_API_KEY')
+  expect(artifact).not.toContain('api.pexels.com')
+  expect(artifact).not.toContain('/api/pexels')
+  expect(artifact).not.toContain('ship-fast.io/api/pexels')
+}
+
+const originalStockEnv = {
+  PEXELS_API_KEY: process.env.PEXELS_API_KEY,
+  VITE_PEXELS_API_KEY: process.env.VITE_PEXELS_API_KEY,
+  UNSPLASH_ACCESS_KEY: process.env.UNSPLASH_ACCESS_KEY,
+  VITE_UNSPLASH_ACCESS_KEY: process.env.VITE_UNSPLASH_ACCESS_KEY,
+}
+
+beforeEach(() => {
+  delete process.env.PEXELS_API_KEY
+  delete process.env.VITE_PEXELS_API_KEY
+  delete process.env.UNSPLASH_ACCESS_KEY
+  delete process.env.VITE_UNSPLASH_ACCESS_KEY
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+  for (const [key, value] of Object.entries(originalStockEnv)) {
+    if (value === undefined) {
+      delete process.env[key]
+    } else {
+      process.env[key] = value
+    }
+  }
+})
 
 const renderGeneratedRouteText = async (
   files: Record<string, string>,
@@ -268,6 +301,61 @@ describe('openui artifact files', () => {
     expect(files['src/ship-fast-admin.ts']).toContain(
       'shipFastAdminEmails = [\n  "founder@example.com"\n]',
     )
+  })
+
+  it('bakes resolved stock image URLs into HTML, React, and Next export artifacts', async () => {
+    process.env.PEXELS_API_KEY = 'pexels-key'
+    const resolvedPexelsUrl =
+      'https://images.pexels.com/photos/7195588/pexels-photo-7195588.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({
+          photos: [
+            {
+              src: {
+                medium: `${resolvedPexelsUrl}&size=medium`,
+                large: resolvedPexelsUrl,
+                large2x: `${resolvedPexelsUrl}&size=large2x`,
+                original: `${resolvedPexelsUrl}&size=original`,
+              },
+            },
+          ],
+        }),
+      ),
+    )
+    const previewHtml =
+      '<!doctype html><html><body><main><img alt="Showcase of polished glass installations" src="/api/pexels?query=glass+polished+showcase+installations&w=800&h=600&seed=Showcase+of+polished+glass+installations"></main></body></html>'
+
+    const html = await buildOpenUIArtifactFiles({
+      source,
+      siteSpecJson,
+      previewHtml,
+      sessionId: 'demo-html-images',
+      target: 'html',
+    })
+    const react = await buildOpenUIArtifactFiles({
+      source,
+      siteSpecJson,
+      previewHtml,
+      sessionId: 'demo-react-images',
+      target: 'react',
+    })
+    const next = await buildOpenUIArtifactFiles({
+      source,
+      siteSpecJson,
+      previewHtml,
+      sessionId: 'demo-next-images',
+      target: 'next',
+    })
+
+    expect(html.files['index.html']).toContain(resolvedPexelsUrl)
+    expect(react.files['src/lib/image.tsx']).toContain(resolvedPexelsUrl)
+    expect(next.files['src/lib/image.tsx']).toContain(resolvedPexelsUrl)
+    expectNoStockProviderCredentialsOrProxy(html.files['index.html'])
+    expectNoStockProviderCredentialsOrProxy(react.files['src/lib/image.tsx'])
+    expectNoStockProviderCredentialsOrProxy(next.files['src/lib/image.tsx'])
+    expect(html.files['index.html']).not.toContain('picsum.photos')
   })
 
   it('builds Next artifact files from OpenUI components instead of static preview HTML', async () => {

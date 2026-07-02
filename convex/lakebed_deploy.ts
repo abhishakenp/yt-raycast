@@ -141,7 +141,12 @@ export const deploy = action({
           })
           const { deployLakebedProjectFiles } =
             await import('../src/features/deployments/server/lakebed-deploy-service')
+          const existingDeployment = (await ctx.runQuery(
+            internal.sessions.getLakebedDeploymentUpdateTarget,
+            { sessionId: artifact.sessionId },
+          )) as { claimUrl: string; deployId: string; url: string } | null
           const deployed = await deployLakebedProjectFiles({
+            existingDeployment: existingDeployment ?? undefined,
             files,
             log: (message, details) =>
               logLakebedDeploy(
@@ -232,7 +237,12 @@ export const deploy = action({
       logLakebedDeploy(prepared.sessionId, 'lakebed-api:start', {
         fileCount: project.fileCount,
       })
+      const existingDeployment = (await ctx.runQuery(
+        internal.sessions.getLakebedDeploymentUpdateTarget,
+        { sessionId: prepared.sessionId },
+      )) as { claimUrl: string; deployId: string; url: string } | null
       const deployed = await deployLakebedProjectFiles({
+        existingDeployment: existingDeployment ?? undefined,
         files: project.files,
         log: (message, details) =>
           logLakebedDeploy(

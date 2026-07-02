@@ -67,11 +67,14 @@ import {
 import {
   loadDeploymentBySlug,
   loadDeploymentStatus,
+  loadLakebedDeploymentUpdateTarget,
   loadOwnedLakebedDeploymentArtifact,
+  markSessionDeploymentUpdating,
   prepareLakebedSessionDeployment,
   publishSessionPreview,
   recordLakebedSessionDeploymentFailure,
   recordLakebedSessionDeploymentSuccess,
+  refreshShipFastDeploymentIfPresent,
 } from './lib/session_deployment_helpers'
 import {
   createSessionExport,
@@ -194,7 +197,8 @@ const scheduleEditedSessionExportAutomation = async (
     sessionId: Id<'sessions'>
     previewVersion: number
   },
-) =>
+) => {
+  await markSessionDeploymentUpdating(ctx, args)
   await editedSessionExportDebouncer.schedule(
     ctx,
     'edited-session-export-rebuild',
@@ -202,6 +206,26 @@ const scheduleEditedSessionExportAutomation = async (
     internal.sessions.rebuildEditedSessionExports,
     args,
   )
+}
+
+const scheduleCurrentSessionExportAutomation = async (
+  ctx: MutationCtx,
+  sessionId: Id<'sessions'>,
+) => {
+  const session = await ctx.db.get(sessionId)
+  if (
+    session === null ||
+    session.status !== 'preview_ready' ||
+    typeof session.previewVersion !== 'number'
+  ) {
+    return
+  }
+
+  await scheduleEditedSessionExportAutomation(ctx, {
+    sessionId,
+    previewVersion: session.previewVersion,
+  })
+}
 
 // Gallery Easter egg: delete the hovered generation, scoped by authenticated
 // userId or stable anonymousClientId.
@@ -313,6 +337,12 @@ export const recordLakebedDeploymentSuccess = internalMutation({
 export const recordLakebedDeploymentFailure = internalMutation({
   args: lakebedDeploymentFailureArgs,
   handler: (ctx, args) => recordLakebedSessionDeploymentFailure(ctx, args),
+})
+
+export const getLakebedDeploymentUpdateTarget = internalQuery({
+  args: sessionIdArgs,
+  handler: (ctx, args) =>
+    loadLakebedDeploymentUpdateTarget(ctx, args.sessionId),
 })
 
 export const completeGeneration = internalAction({
@@ -569,6 +599,8 @@ export const rebuildEditedSessionExports = internalMutation({
       buildExportArtifact: sessionInternalReferences.buildExportArtifact,
     })
 
+    await refreshShipFastDeploymentIfPresent(ctx, args)
+
     return { status: 'queued' }
   },
 })
@@ -696,17 +728,26 @@ export const listClonePages = query({
 
 export const setThemeOverride = mutation({
   args: setThemeOverrideArgs,
-  handler: (ctx, args) => setSessionThemeOverride(ctx, args),
+  handler: async (ctx, args) => {
+    await setSessionThemeOverride(ctx, args)
+    await scheduleCurrentSessionExportAutomation(ctx, args.sessionId)
+  },
 })
 
 export const setPreferredLanguage = mutation({
   args: setPreferredLanguageArgs,
-  handler: (ctx, args) => setSessionPreferredLanguage(ctx, args),
+  handler: async (ctx, args) => {
+    await setSessionPreferredLanguage(ctx, args)
+    await scheduleCurrentSessionExportAutomation(ctx, args.sessionId)
+  },
 })
 
 export const setBrandLogo = mutation({
   args: setBrandLogoArgs,
-  handler: (ctx, args) => setSessionBrandLogo(ctx, args),
+  handler: async (ctx, args) => {
+    await setSessionBrandLogo(ctx, args)
+    await scheduleCurrentSessionExportAutomation(ctx, args.sessionId)
+  },
 })
 
 export const upsertCommerceConfig = mutation({

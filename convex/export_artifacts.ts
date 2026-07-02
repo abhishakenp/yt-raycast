@@ -133,7 +133,14 @@ const deployLakebedIfRequested = async (
   try {
     const { deployLakebedProjectFiles } =
       await import('../src/features/deployments/server/lakebed-deploy-service')
-    const deployed = await deployLakebedProjectFiles({ files })
+    const existingDeployment = (await ctx.runQuery(
+      internal.sessions.getLakebedDeploymentUpdateTarget,
+      { sessionId: prepared.sessionId },
+    )) as { claimUrl: string; deployId: string; url: string } | null
+    const deployed = await deployLakebedProjectFiles({
+      existingDeployment: existingDeployment ?? undefined,
+      files,
+    })
     await ctx.runMutation(internal.sessions.recordLakebedDeploymentSuccess, {
       sessionId: prepared.sessionId,
       previewVersion: prepared.previewVersion,
