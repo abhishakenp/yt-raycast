@@ -100,6 +100,7 @@ export const changeGroups: ChangeGroup[] = [
       /^src\/features\/exports\/services\/openui-html-export-builder\.ts$/,
       /^src\/features\/exports\/services\/openui-(?:capsule-invariants|static-fragment-export)\.test\.ts$/,
       /^src\/features\/exports\/services\/openui-lakebed-export-builder\.(?:test\.)?ts$/,
+      /^src\/features\/exports\/services\/preview-image-url-resolution\.(?:test\.)?ts$/,
       /^src\/features\/exports\/services\/(?:export-engine-contract|export-library-manifest-sync|export-artifact-build-contract|export-fixture-contract|export-localization-cms-commerce-contract|export-session-corpus)\.test\.ts$/,
       /^src\/features\/exports\/services\/section-kit-render\.(?:test\.)?ts$/,
       /^src\/features\/exports\/components\//,
