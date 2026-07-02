@@ -289,6 +289,8 @@ describe('session generation state helpers', () => {
       expect.objectContaining({
         _id: sessionId,
         status: 'preview_ready',
+        errorCode: undefined,
+        errorMessage: undefined,
         openuiReady: true,
         previewVersion: 3,
         elapsed: 1234,
@@ -364,6 +366,45 @@ describe('session generation state helpers', () => {
         }),
       }),
     ])
+  })
+
+  it('clears stale failure fields when a failed session is completed from renderable generated output', async () => {
+    const { ctx, sessions } = ctxFor({
+      sessions: [
+        sessionDoc({
+          status: 'failed',
+          errorCode: 'GENERATION_FAILED',
+          errorMessage: 'OpenUI renderer returned error HTML',
+          previewVersion: 0,
+        }),
+      ],
+    })
+
+    await expect(
+      completeGeneratedSession(ctx, {
+        sessionId,
+        html: '<main><h1>Recovered preview</h1></main>',
+        openUiSource: 'root = Text("Recovered preview")',
+        tasks: [{ id: 'home.openui', label: 'Render home', status: 'DONE' }],
+        now: 900,
+        sendOperationalNotification:
+          'sendOperationalNotification' as unknown as Parameters<
+            MutationCtx['scheduler']['runAfter']
+          >[1],
+        buildExportArtifact: 'buildExportArtifact' as unknown as Parameters<
+          MutationCtx['scheduler']['runAfter']
+        >[1],
+      }),
+    ).resolves.toEqual({ sessionId, previewVersion: 1 })
+
+    expect(sessions[0]).toEqual(
+      expect.objectContaining({
+        status: 'preview_ready',
+        errorCode: undefined,
+        errorMessage: undefined,
+        previewVersion: 1,
+      }),
+    )
   })
 
   it('does not complete a generation with DB-observed OpenUI handoff HTML', async () => {

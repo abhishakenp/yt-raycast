@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { renderOpenUIToHTML } from './openui-ssr.js'
+import {
+  renderOpenUIToHTML,
+  renderOpenUIToHTMLWithTheme,
+} from './openui-ssr.js'
 
 describe('renderOpenUIToHTML', () => {
   it('renders simple text OpenUI source without an error shell', async () => {
@@ -9,6 +12,18 @@ root = Text("Dashboard browser verifier")`)
 
     expect(html).not.toContain('openui-error')
     expect(html).toContain('Dashboard browser verifier')
+  })
+
+  it('renders simple text through the themed SSR entrypoint used by Convex completion', async () => {
+    const { html } = await renderOpenUIToHTMLWithTheme(
+      'root = Text("Convex OpenUI SSR smoke")',
+      undefined,
+      'en',
+      undefined,
+    )
+
+    expect(html).not.toContain('openui-error')
+    expect(html).toContain('Convex OpenUI SSR smoke')
   })
 
   it('renders a fitness schedule page when generated rows omit slots', async () => {

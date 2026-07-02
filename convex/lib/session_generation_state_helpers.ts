@@ -140,6 +140,8 @@ export const completeGeneratedSession = async (
 
   await ctx.db.patch(args.sessionId, {
     status: 'preview_ready',
+    errorCode: undefined,
+    errorMessage: undefined,
     openuiReady:
       typeof args.openUiSource === 'string' &&
       args.openUiSource.trim().length > 0,

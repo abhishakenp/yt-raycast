@@ -6,6 +6,7 @@
 
 import './openui-message-channel-polyfill.js'
 import { createElement } from 'react'
+import { renderToString } from 'react-dom/server'
 import {
   Renderer,
   ImageContextProvider,
@@ -72,8 +73,6 @@ function withSSRProviders(tree, imageContext, brandLogo) {
     ),
   )
 }
-
-const { renderToString } = await import('react-dom/server')
 
 const openUiErrorMessage = (error) =>
   error instanceof Error ? error.message : String(error)
