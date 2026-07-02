@@ -3338,10 +3338,17 @@ function fallbackLakebedQueryValue(name: string): unknown {
   return [];
 }
 
+function canUseLakebedRuntimeHooks(): boolean {
+  const source = Function.prototype.toString.call(useQuery);
+  return !source.includes("getQueryValue") && !source.includes("addQueryListener");
+}
+
 function useLakebedMutation<Args extends unknown[] = unknown[], Result = unknown>(
   name: string,
 ): LakebedMutationFunction<Args, Result> {
-  const mutation = useMutation<Args, Result>(name);
+  const mutation = canUseLakebedRuntimeHooks()
+    ? useMutation<Args, Result>(name)
+    : ((async () => undefined as Result) as (...args: Args) => Promise<Result>);
   const mutationRef = useRef(mutation);
   mutationRef.current = mutation;
   const [lastError, setLastError] = useState<unknown | null>(null);
@@ -3441,7 +3448,9 @@ export function useLakebedAdapter() {
 
   return {
     useQuery<T = unknown>(name: string): T {
-      const value = useQuery<unknown>(name) ?? fallbackLakebedQueryValue(name);
+      const value = canUseLakebedRuntimeHooks()
+        ? (useQuery<unknown>(name) ?? fallbackLakebedQueryValue(name))
+        : fallbackLakebedQueryValue(name);
       const dbNormalized = normalizeDbShapedQueryResult(name, value);
       return normalizeQueryValue(
         name,
