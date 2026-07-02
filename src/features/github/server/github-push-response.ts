@@ -8,17 +8,19 @@ type GitHubPushConvexClient = Pick<
   ConvexHttpClient,
   'mutation' | 'query' | 'setAuth'
 >
-type GitHubPushEnv = NodeJS.ProcessEnv
+type GitHubPushEnv = NodeJS.ProcessEnv & AuthDisabledEnv
 type FetchFn = typeof fetch
 type GitHubTokenResolver = (
   appToken: string,
   env: GitHubPushEnv,
   client: GitHubPushConvexClient,
+  anonymousClientId?: string,
 ) => Promise<GitHubOAuthToken[]>
 
 type GitHubPushBody = {
   target?: unknown
   anonymousOwnerSecret?: unknown
+  anonymousClientId?: unknown
 }
 
 type GitHubExportTarget = 'html' | 'react' | 'next' | 'lakebed'
@@ -55,6 +57,13 @@ const VALID_TARGETS = new Set<GitHubExportTarget>([
   'next',
   'lakebed',
 ])
+
+type AuthDisabledEnv = {
+  VITE_DISABLE_CLERK?: string
+}
+
+const isAuthDisabled = (env: AuthDisabledEnv = process.env): boolean =>
+  (env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
@@ -179,10 +188,11 @@ const defaultGitHubTokenResolver: GitHubTokenResolver = async (
   _appToken,
   _env,
   client,
+  anonymousClientId,
 ) => {
   const connection = await client.query(
     api.github.getConnectionForCurrentUser,
-    {},
+    anonymousClientId ? { anonymousClientId } : {},
   )
   return connection
     ? [{ token: connection.accessToken, scopes: connection.scopes }]
@@ -194,8 +204,9 @@ const resolveGitHubAccessToken = async (
   env: GitHubPushEnv,
   tokenResolver: GitHubTokenResolver,
   client: GitHubPushConvexClient,
+  anonymousClientId?: string,
 ): Promise<string> => {
-  const tokens = await tokenResolver(appToken, env, client)
+  const tokens = await tokenResolver(appToken, env, client, anonymousClientId)
   if (tokens.length === 0) {
     throw responseError(
       'GITHUB_NOT_CONNECTED',
@@ -462,8 +473,9 @@ export async function createGitHubPushResponse(
   fetchOverride?: FetchFn,
   tokenResolver: GitHubTokenResolver = defaultGitHubTokenResolver,
 ): Promise<Response> {
+  const authDisabled = isAuthDisabled(env)
   const authToken = getBearerToken(request)
-  if (authToken === null) {
+  if (authToken === null && !authDisabled) {
     return json({ error: 'Sign in before pushing to GitHub.' }, { status: 401 })
   }
 
@@ -486,10 +498,11 @@ export async function createGitHubPushResponse(
     )
   }
   const anonymousOwnerSecret = normalizeString(body.anonymousOwnerSecret)
+  const anonymousClientId = normalizeString(body.anonymousClientId)
 
   try {
     const client = clientOverride ?? createRuntimeConvexHttpClient()
-    client.setAuth(authToken)
+    if (authToken !== null) client.setAuth(authToken)
     const exportData = await client.query(
       api.sessions.getOwnedExportForGitHubPushByLookup,
       {
@@ -533,10 +546,11 @@ export async function createGitHubPushResponse(
 
     const fetchFn = fetchOverride ?? fetch
     const githubAccessToken = await resolveGitHubAccessToken(
-      authToken,
+      authToken ?? '',
       env,
       tokenResolver,
       client,
+      anonymousClientId || undefined,
     )
 
     await githubRequest('/user', {

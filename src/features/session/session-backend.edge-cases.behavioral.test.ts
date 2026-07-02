@@ -403,20 +403,30 @@ describe('event stream — edge cases', () => {
   })
 
   it('15. denies access to a private session without owner secret (FORBIDDEN)', async () => {
+    const originalDisableClerk = process.env.VITE_DISABLE_CLERK
+    process.env.VITE_DISABLE_CLERK = 'false'
     const ctx = createMockEventStreamCtx(
       [mockSession({ isPrivate: true, anonOwnerSecretHash: 'some-hash' })],
       [mockEvent('event_private', 10, 'Private')],
     )
 
-    // No anonymousOwnerSecret provided → FORBIDDEN
-    await expect(
-      loadSessionEventStream(
-        ctx as unknown as Parameters<typeof loadSessionEventStream>[0],
-        { lookup: 'session_test' },
-      ),
-    ).rejects.toMatchObject({
-      data: { code: 'FORBIDDEN', message: 'You do not own this session' },
-    })
+    try {
+      // No anonymousOwnerSecret provided → FORBIDDEN
+      await expect(
+        loadSessionEventStream(
+          ctx as unknown as Parameters<typeof loadSessionEventStream>[0],
+          { lookup: 'session_test' },
+        ),
+      ).rejects.toMatchObject({
+        data: { code: 'FORBIDDEN', message: 'You do not own this session' },
+      })
+    } finally {
+      if (originalDisableClerk === undefined) {
+        delete process.env.VITE_DISABLE_CLERK
+      } else {
+        process.env.VITE_DISABLE_CLERK = originalDisableClerk
+      }
+    }
   })
 
   it('16. sends a heartbeat keep-alive signal distinct from replay_complete', async () => {

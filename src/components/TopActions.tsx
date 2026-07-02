@@ -4,6 +4,7 @@ import {
   GlassPillAnchor,
   GlassPillButton,
 } from '@/features/home/components/HomePage'
+import { isClerkClientEnabled } from '@/shared/auth/clerk-runtime'
 
 const LazyHomepageAuthControls = lazy(() =>
   import('@/components/HomepageAuthControls').then((module) => ({
@@ -11,12 +12,7 @@ const LazyHomepageAuthControls = lazy(() =>
   })),
 )
 
-const clerkPublishableKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
-  import.meta.env.CLERK_PUBLISHABLE_KEY
-const isClerkConfigured =
-  typeof clerkPublishableKey === 'string' &&
-  clerkPublishableKey.trim().length > 0
+const isClerkConfigured = isClerkClientEnabled()
 
 export const TopActions = () => {
   const [authRequested, setAuthRequested] = useState(false)

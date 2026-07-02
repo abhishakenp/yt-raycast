@@ -10,6 +10,7 @@ type GitHubConnectBody = {
   sessionId?: unknown
   target?: unknown
   returnTo?: unknown
+  anonymousClientId?: unknown
 }
 type GitHubUser = {
   id: number
@@ -212,17 +213,28 @@ export async function createGitHubConnectStartResponse(
   }
 
   const authToken = getBearerToken(request)
-  if (!authToken) {
-    return json({ error: 'Sign in before connecting GitHub.' }, { status: 401 })
-  }
 
   const body = await readJsonBody(request)
+  const resolvedAnonymousClientId = normalizeString(body.anonymousClientId)
+  const authDisabled =
+    (env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
+
+  if (!authToken && !authDisabled) {
+    return json({ error: 'Sign in before connecting GitHub.' }, { status: 401 })
+  }
+  if (!authToken && authDisabled && !resolvedAnonymousClientId) {
+    return json(
+      { error: 'Unable to identify anonymous session for GitHub connection.' },
+      { status: 400 },
+    )
+  }
+
   const target = normalizeString(body.target)
   const state = createState()
   const callbackUrl = getCallbackUrl(request, env)
   const returnTo = safeReturnTo(body.returnTo, request.url)
   const client = clientOverride ?? createRuntimeConvexHttpClient()
-  client.setAuth(authToken)
+  if (authToken) client.setAuth(authToken)
   try {
     await client.mutation(api.github.createOAuthState, {
       state,
@@ -232,6 +244,7 @@ export async function createGitHubConnectStartResponse(
         ? (target as 'html' | 'react' | 'next' | 'lakebed')
         : undefined,
       expiresAt: Date.now() + OAUTH_STATE_TTL_MS,
+      anonymousClientId: resolvedAnonymousClientId || undefined,
     })
   } catch (error) {
     const message =

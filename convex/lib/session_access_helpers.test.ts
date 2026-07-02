@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
 import {
+  assertCanReadOwnedSession,
   assertCanReadPrivateSession,
   assertCanMutateSession,
   claimAnonymousSession,
@@ -16,8 +17,12 @@ import {
 
 vi.mock('./session_export_helpers', () => ({
   areExportPaywallsDisabled: vi.fn(),
+  isAuthDisabled: vi.fn(),
 }))
-import { areExportPaywallsDisabled } from './session_export_helpers'
+import {
+  areExportPaywallsDisabled,
+  isAuthDisabled,
+} from './session_export_helpers'
 
 type AccessCtx = Parameters<typeof getUserId>[0]
 type TestIdentity = NonNullable<
@@ -429,6 +434,30 @@ describe('session access helpers', () => {
 
     await expect(
       assertCanMutateSession(ctx, sessionDoc({ userId: 'token:owner' })),
+    ).resolves.toBeUndefined()
+  })
+
+  it('bypasses mutation ownership check when VITE_DISABLE_CLERK is true', async () => {
+    ;(areExportPaywallsDisabled as ReturnType<typeof vi.fn>).mockReturnValue(
+      false,
+    )
+    ;(isAuthDisabled as ReturnType<typeof vi.fn>).mockReturnValue(true)
+    const { ctx } = mutationCtxForSessions({
+      identity: identityFor({ tokenIdentifier: 'token:other' }),
+      sessions: [sessionDoc({ userId: 'token:owner' })],
+    })
+
+    await expect(
+      assertCanMutateSession(ctx, sessionDoc({ userId: 'token:owner' })),
+    ).resolves.toBeUndefined()
+  })
+
+  it('bypasses read ownership check when VITE_DISABLE_CLERK is true', async () => {
+    ;(isAuthDisabled as ReturnType<typeof vi.fn>).mockReturnValue(true)
+    const ctx = authCtx(identityFor({ tokenIdentifier: 'token:other' }))
+
+    await expect(
+      assertCanReadOwnedSession(ctx, { userId: 'token:owner' }, undefined),
     ).resolves.toBeUndefined()
   })
 })

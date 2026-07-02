@@ -52,6 +52,10 @@ vi.mock('@/shared/auth/use-optional-auth', () => ({
   }),
 }))
 
+vi.mock('@/features/session/services/session-create-payload', () => ({
+  createAnonymousClientId: () => 'anon_test_client',
+}))
+
 const setExportTargets = (targets: MockGitHubTarget[]) => {
   exportTargetsState.value = { targets }
 }
@@ -273,6 +277,7 @@ describe('GitHubPanel', () => {
       body: JSON.stringify({
         target: 'html',
         anonymousOwnerSecret: 'owner-secret',
+        anonymousClientId: 'anon_test_client',
       }),
     })
     expect(fetchMock.mock.calls[pushCallIndex]?.[1]).toMatchObject({
@@ -284,6 +289,7 @@ describe('GitHubPanel', () => {
       body: JSON.stringify({
         target: 'html',
         anonymousOwnerSecret: 'owner-secret',
+        anonymousClientId: 'anon_test_client',
       }),
     })
     expect(authState.getToken).toHaveBeenCalledWith({ template: 'convex' })
@@ -493,6 +499,7 @@ describe('GitHubPanel', () => {
             sessionId: 'session_456',
             target: 'next',
             returnTo: 'http://localhost:3000/generate/session_456',
+            anonymousClientId: 'anon_test_client',
           }),
         })
         return Response.json({

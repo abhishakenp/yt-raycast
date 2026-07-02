@@ -2,7 +2,10 @@ import { ConvexError } from 'convex/values'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
-import { areExportPaywallsDisabled } from './session_export_helpers'
+import {
+  areExportPaywallsDisabled,
+  isAuthDisabled,
+} from './session_export_helpers'
 
 const textEncoder = new TextEncoder()
 
@@ -104,6 +107,7 @@ export const assertCanReadOwnedSession = async (
   session: { userId?: string; anonOwnerSecretHash?: string },
   anonymousOwnerSecret?: string,
 ) => {
+  if (isAuthDisabled()) return
   ;(await isSessionOwner(ctx, session, anonymousOwnerSecret)) ||
     (() => {
       throw new ConvexError({
@@ -131,7 +135,7 @@ export const assertCanMutateSession = async (
   session: { userId?: string; anonOwnerSecretHash?: string },
   anonymousOwnerSecret?: string,
 ) => {
-  if (areExportPaywallsDisabled()) return
+  if (areExportPaywallsDisabled() || isAuthDisabled()) return
   ;(await isSessionOwner(ctx, session, anonymousOwnerSecret)) ||
     (() => {
       throw new ConvexError({

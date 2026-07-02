@@ -8,6 +8,7 @@ import {
   ensureExportArtifactBuild,
   exportTargetFileCount,
   getExportEntitlement,
+  isAuthDisabled,
   loadOwnedExportArtifactDownload,
   loadOwnedExportForGitHubPush,
   loadExportRecord,
@@ -792,6 +793,13 @@ describe('getExportEntitlement', () => {
     expect(areExportPaywallsDisabled({ DISABLE_PAYWALL: ' TRUE ' })).toBe(true)
     expect(areExportPaywallsDisabled({ DISABLE_PAYWALL: 'false' })).toBe(false)
     expect(areExportPaywallsDisabled({})).toBe(false)
+  })
+
+  it('detects the VITE_DISABLE_CLERK auth-disabled flag', () => {
+    expect(isAuthDisabled({ VITE_DISABLE_CLERK: 'true' })).toBe(true)
+    expect(isAuthDisabled({ VITE_DISABLE_CLERK: ' TRUE ' })).toBe(true)
+    expect(isAuthDisabled({ VITE_DISABLE_CLERK: 'false' })).toBe(false)
+    expect(isAuthDisabled({})).toBe(false)
   })
 
   it('unlocks exports for anonymous users when the paywall is disabled', async () => {
@@ -1714,7 +1722,24 @@ describe('loadOwnedExportForGitHubPush', () => {
     })
   })
 
+  it('allows anonymous GitHub push without identity when VITE_DISABLE_CLERK is true', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', 'true')
+    const { ctx } = workflowCtxFor({
+      identityUserId: undefined,
+      exports: [exportDoc()],
+    })
+
+    await expect(
+      loadOwnedExportForGitHubPush(ctx, { sessionId, target: 'html' }),
+    ).resolves.toMatchObject({
+      sessionId,
+      target: 'html',
+      prompt: 'Build a polished landing page',
+    })
+  })
+
   it('rejects unauthenticated, non-owner, payment-required, and stale exports', async () => {
+    process.env.VITE_DISABLE_CLERK = 'false'
     const anonymous = workflowCtxFor({
       identityUserId: undefined,
       exports: [exportDoc()],

@@ -92,6 +92,7 @@ describe('GitHub OAuth response handlers', () => {
       sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
       target: undefined,
       expiresAt: expect.any(Number),
+      anonymousClientId: undefined,
     })
     const body = await response.json()
     expect(new URL(body.url).searchParams.get('state')).toBe(
@@ -128,6 +129,49 @@ describe('GitHub OAuth response handlers', () => {
     await expect(unauthenticated.json()).resolves.toEqual({
       error: 'Sign in before connecting GitHub.',
     })
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
+  it('starts GitHub OAuth without a bearer token when VITE_DISABLE_CLERK is true', async () => {
+    client.mutation.mockResolvedValueOnce(null)
+    const authDisabledEnv = { ...env, VITE_DISABLE_CLERK: 'true' }
+
+    const response = await createGitHubConnectStartResponse(
+      new Request('https://ship-fast.test/api/github/connect/start', {
+        method: 'POST',
+        body: JSON.stringify({
+          sessionId: 'session_123',
+          target: 'html',
+          anonymousClientId: 'anon_test_client',
+        }),
+      }),
+      authDisabledEnv,
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.setAuth).not.toHaveBeenCalled()
+    const mutationArgs = client.mutation.mock.calls[0]?.[1]
+    expect(mutationArgs).toMatchObject({
+      anonymousClientId: 'anon_test_client',
+      sessionId: 'session_123',
+      target: 'html',
+    })
+  })
+
+  it('rejects anonymous OAuth start without anonymousClientId when VITE_DISABLE_CLERK is true', async () => {
+    const authDisabledEnv = { ...env, VITE_DISABLE_CLERK: 'true' }
+
+    const response = await createGitHubConnectStartResponse(
+      new Request('https://ship-fast.test/api/github/connect/start', {
+        method: 'POST',
+        body: JSON.stringify({ target: 'html' }),
+      }),
+      authDisabledEnv,
+      client,
+    )
+
+    expect(response.status).toBe(400)
     expect(client.mutation).not.toHaveBeenCalled()
   })
 

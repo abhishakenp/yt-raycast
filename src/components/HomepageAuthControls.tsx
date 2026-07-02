@@ -2,10 +2,9 @@ import { ClerkProvider } from '@clerk/tanstack-react-start'
 import { useEffect, useRef, useState } from 'react'
 
 import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
+import { getClerkPublishableKey } from '@/shared/auth/clerk-runtime'
 
-const clerkPublishableKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
-  import.meta.env.CLERK_PUBLISHABLE_KEY
+const clerkPublishableKey = getClerkPublishableKey()
 
 type HomepageAuthControlsProps = {
   autoOpen?: boolean
