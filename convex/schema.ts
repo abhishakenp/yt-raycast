@@ -588,5 +588,7 @@ export default defineSchema({
     translation: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index('by_cacheKey', ['cacheKey']),
+  })
+    .index('by_cacheKey', ['cacheKey'])
+    .index('by_locale', ['locale']),
 })

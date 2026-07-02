@@ -8,9 +8,14 @@ import {
   assertCanReadOwnedSession,
 } from './session_access_helpers'
 import {
+  applyEditsToSource,
   exportDownloadUrl,
   exportTargetFileCount,
 } from './session_export_helpers'
+import {
+  applyCachedTranslationsToSource,
+  loadCachedTranslationsForSource,
+} from './session_translation_cache_helpers'
 
 type DeploymentReadCtx = Pick<QueryCtx, 'db'>
 
@@ -101,9 +106,11 @@ export const createDeploymentUrl = (slug: string): string =>
 
 const readLakebedThemeName = (
   siteSpecJson: string | undefined,
-  fallback: string | undefined,
+  fallback: unknown,
 ): string | undefined => {
-  if (fallback !== undefined && fallback.trim().length > 0) return fallback
+  if (typeof fallback === 'string' && fallback.trim().length > 0) {
+    return fallback
+  }
   if (siteSpecJson === undefined) return undefined
   try {
     const parsed = JSON.parse(siteSpecJson) as {
@@ -118,6 +125,34 @@ const readLakebedThemeName = (
   } catch {
     return undefined
   }
+}
+
+const readLakebedIsDark = (session: { themeMode?: unknown }): boolean =>
+  session.themeMode !== 'light'
+
+const readOpenUiSourceFromSiteSpec = (
+  siteSpec: { specJson?: string; spec?: string } | null,
+): string | undefined => {
+  const candidates = [siteSpec?.specJson, siteSpec?.spec]
+  for (const candidate of candidates) {
+    if (typeof candidate !== 'string' || !candidate.trim()) continue
+    try {
+      const parsed = JSON.parse(candidate) as unknown
+      if (
+        parsed !== null &&
+        typeof parsed === 'object' &&
+        'pages' in parsed &&
+        parsed.pages !== null &&
+        typeof parsed.pages === 'object'
+      ) {
+        const home = (parsed.pages as Record<string, unknown>).home
+        if (typeof home === 'string' && isLikelyOpenUiSource(home)) return home
+      }
+    } catch {
+      if (isLikelyOpenUiSource(candidate)) return candidate
+    }
+  }
+  return undefined
 }
 
 const isLikelyOpenUiSource = (source: string | undefined): source is string => {
@@ -296,7 +331,7 @@ export const prepareLakebedSessionDeployment = async (
       })
     })()
 
-  const [preview, homeModule] = await Promise.all([
+  const [preview, homeModule, siteSpec, edits] = await Promise.all([
     ctx.db
       .query('previews')
       .withIndex('by_sessionId_version', (index) =>
@@ -310,6 +345,18 @@ export const prepareLakebedSessionDeployment = async (
         index.eq('sessionId', args.sessionId).eq('moduleKey', 'home'),
       )
       .first(),
+    ctx.db
+      .query('siteSpecs')
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
+      .first(),
+    ctx.db
+      .query('edits')
+      .withIndex('by_sessionId_createdAt', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
+      .collect(),
   ])
   console.log(
     '[lakebed_deploy:prepare] artifacts:loaded',
@@ -336,9 +383,13 @@ export const prepareLakebedSessionDeployment = async (
   const homeModuleOpenUiSource = isLikelyOpenUiSource(homeModule?.source)
     ? homeModule.source
     : undefined
+  const siteSpecOpenUiSource = readOpenUiSourceFromSiteSpec(siteSpec)
   const previewHasOpenUiError = containsOpenUiErrorMarker(preview.html)
   const openUiSource =
-    previewOpenUiSource ?? homeModuleOpenUiSource ?? homeModule?.source
+    previewOpenUiSource ??
+    siteSpecOpenUiSource ??
+    homeModuleOpenUiSource ??
+    homeModule?.source
   const shouldUseOpenUiSource =
     previewOpenUiSource !== undefined ||
     (previewHasOpenUiError && homeModuleOpenUiSource !== undefined) ||
@@ -360,7 +411,20 @@ export const prepareLakebedSessionDeployment = async (
   const sourceKind: LakebedPreparedSourceKind = shouldUseOpenUiSource
     ? 'openui'
     : 'html'
-  const source = shouldUseOpenUiSource ? openUiSource! : preview.html
+  const editedSource = applyEditsToSource(
+    shouldUseOpenUiSource ? openUiSource! : preview.html,
+    edits,
+  )
+  const source = applyCachedTranslationsToSource(
+    editedSource,
+    await loadCachedTranslationsForSource(
+      ctx,
+      session.preferredLanguage,
+      editedSource,
+    ),
+  )
+  const siteSpecJson =
+    preview.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec
 
   console.log(
     '[lakebed_deploy:prepare] return',
@@ -380,12 +444,17 @@ export const prepareLakebedSessionDeployment = async (
     sessionId: args.sessionId,
     source,
     sourceKind,
-    siteSpecJson: preview.siteSpecJson,
+    siteSpecJson,
     previewHtml: isUnsafePublicPreviewHtml(preview.html) ? '' : preview.html,
     previewVersion: preview.version,
     projectName: session.prompt,
-    themeName: readLakebedThemeName(preview.siteSpecJson, session.genuiTheme),
-    isDark: true,
+    themeName: readLakebedThemeName(
+      siteSpecJson,
+      session.themeOverride ?? session.genuiTheme,
+    ),
+    isDark: readLakebedIsDark(session),
+    locale: session.preferredLanguage || 'en',
+    selectedBrandLogo: session.selectedBrandLogo ?? null,
   }
 }
 

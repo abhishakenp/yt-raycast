@@ -1,6 +1,7 @@
 import type { ComponentType, Context } from 'react'
 
 declare module '@ship-fast/blocks' {
+  export const allCapsules: any[]
   export const library: any
   export const componentNames: string[]
   export const openUIComponentOpenPatternSource: string

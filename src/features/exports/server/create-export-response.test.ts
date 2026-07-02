@@ -188,6 +188,13 @@ describe('createExportResponse', () => {
   })
 
   it('builds the download on demand when the stored artifact is not ready', async () => {
+    const selectedBrandLogo = {
+      name: 'Linear',
+      domain: 'linear.app',
+      brandId: 'linear-id',
+      icon: 'https://cdn.brandfetch.io/linear/icon.webp',
+      logo: 'https://cdn.brandfetch.io/linear/logo.svg',
+    }
     queryMock
       .mockResolvedValueOnce({
         export: {
@@ -207,6 +214,10 @@ describe('createExportResponse', () => {
         target: 'html',
         source: '<main>Generated fallback</main>',
         html: '<!doctype html><html><head><title>Fallback Site</title></head><body><main>Generated fallback</main></body></html>',
+        themeName: 'darkmatter',
+        isDark: false,
+        locale: 'lt',
+        selectedBrandLogo,
       })
 
     const response = await createExportResponse(
@@ -224,6 +235,17 @@ describe('createExportResponse', () => {
     )
     expect(await response.text()).toContain('Generated fallback')
     expect(queryMock).toHaveBeenCalledTimes(2)
+    expect(artifactFileMocks.buildOpenUIArtifactFiles).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: '<main>Generated fallback</main>',
+        previewHtml:
+          '<!doctype html><html><head><title>Fallback Site</title></head><body><main>Generated fallback</main></body></html>',
+        themeName: 'darkmatter',
+        isDark: false,
+        locale: 'lt',
+        selectedBrandLogo,
+      }),
+    )
   })
 
   it('does not build an on-demand download from OpenUI renderer-error HTML', async () => {

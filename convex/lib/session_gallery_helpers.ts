@@ -7,6 +7,11 @@ import {
   applyStyleEdit,
 } from './session_edit_helpers'
 import {
+  applyCachedTranslationsToSource,
+  loadCachedTranslationsForSource,
+  type CachedSourceTranslation,
+} from './session_translation_cache_helpers'
+import {
   getGalleryCategories,
   getGalleryCategoryOptions,
   isGalleryVisibleSession,
@@ -19,6 +24,7 @@ export type PublicGalleryArtifacts = {
   homeModule: Doc<'generatedModules'> | null
   siteSpec: Doc<'siteSpecs'> | null
   edits?: Doc<'edits'>[] | null
+  translations?: CachedSourceTranslation[] | null
 }
 
 export type PublicGallerySessionOptions = {
@@ -37,18 +43,11 @@ export type OwnedGalleryListInput = PublicGalleryListInput & {
   anonymousClientId?: string
 }
 
-export const loadPublicGalleryArtifacts = async (
+const loadPublicGalleryBaseArtifacts = async (
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
 ): Promise<PublicGalleryArtifacts> => {
-  const [preview, homeModule, siteSpec] = await Promise.all([
-    ctx.db
-      .query('previews')
-      .withIndex('by_sessionId_version', (index) =>
-        index.eq('sessionId', sessionId),
-      )
-      .order('desc')
-      .first(),
+  const [homeModule, siteSpec] = await Promise.all([
     ctx.db
       .query('generatedModules')
       .withIndex('by_sessionId_moduleKey', (index) =>
@@ -60,6 +59,18 @@ export const loadPublicGalleryArtifacts = async (
       .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
       .first(),
   ])
+  const hasSourceWithoutPreview =
+    (homeModule?.source && isLikelyOpenUISource(homeModule.source)) ||
+    readOpenUISourceFromSiteSpec(siteSpec) !== undefined
+  const preview = hasSourceWithoutPreview
+    ? null
+    : await ctx.db
+        .query('previews')
+        .withIndex('by_sessionId_version', (index) =>
+          index.eq('sessionId', sessionId),
+        )
+        .order('desc')
+        .first()
   const edits = await ctx.db
     .query('edits')
     .withIndex('by_sessionId_createdAt', (index) =>
@@ -68,9 +79,32 @@ export const loadPublicGalleryArtifacts = async (
     .collect()
     .catch(() => [])
 
-  return edits.length > 0
-    ? { preview, homeModule, siteSpec, edits }
-    : { preview, homeModule, siteSpec }
+  const baseArtifacts =
+    edits.length > 0
+      ? { preview, homeModule, siteSpec, edits }
+      : { preview, homeModule, siteSpec }
+
+  return baseArtifacts
+}
+
+export const loadPublicGalleryArtifacts = async (
+  ctx: Pick<QueryCtx, 'db'>,
+  sessionId: Id<'sessions'>,
+  preferredLanguage?: string,
+): Promise<PublicGalleryArtifacts> => {
+  const baseArtifacts = await loadPublicGalleryBaseArtifacts(ctx, sessionId)
+  const translations = await loadCachedTranslationsForSource(
+    ctx,
+    preferredLanguage,
+    applyGalleryEditsToSource(
+      resolveGalleryOpenUISource(baseArtifacts),
+      baseArtifacts.edits,
+    ),
+  )
+
+  return translations.length > 0
+    ? { ...baseArtifacts, translations }
+    : baseArtifacts
 }
 
 const isLikelyOpenUISource = (source: string | undefined): boolean => {
@@ -162,6 +196,16 @@ const applyGalleryEditsToSource = (
   return result
 }
 
+const isRenderableGalleryArtifacts = (
+  artifacts: PublicGalleryArtifacts,
+): boolean => {
+  if (artifacts.preview === null) {
+    return resolveGalleryOpenUISource(artifacts).trim().length > 0
+  }
+  if (!isUnsafePublicPreviewHtml(artifacts.preview.html)) return true
+  return resolveGalleryOpenUISource(artifacts).trim().length > 0
+}
+
 export const serializePublicGallerySession = (
   session: Doc<'sessions'>,
   artifacts: PublicGalleryArtifacts,
@@ -177,9 +221,12 @@ export const serializePublicGallerySession = (
       ? artifacts.siteSpec?.spec
       : undefined) ??
     null
-  const moduleSource = applyGalleryEditsToSource(
-    resolveGalleryOpenUISource(artifacts),
-    artifacts.edits,
+  const moduleSource = applyCachedTranslationsToSource(
+    applyGalleryEditsToSource(
+      resolveGalleryOpenUISource(artifacts),
+      artifacts.edits,
+    ),
+    artifacts.translations,
   )
   const previewHtml = isUnsafePublicPreviewHtml(artifacts.preview?.html)
     ? null
@@ -193,6 +240,7 @@ export const serializePublicGallerySession = (
     themeOverride: session.themeOverride ?? null,
     themeMode: session.themeMode ?? null,
     genuiTheme: session.genuiTheme ?? null,
+    selectedBrandLogo: session.selectedBrandLogo ?? null,
     status: session.status ?? null,
     previewVersion: artifacts.preview?.version ?? session.previewVersion ?? 0,
     createdAt: session.createdAt,
@@ -221,7 +269,7 @@ export const listPublicGallerySessions = async (
 ) => {
   const limit = Math.min(Math.max(args.limit ?? 12, 1), 48)
   const requestedPage = Math.max(args.page ?? 1, 1)
-  const scanLimit = Math.min(Math.max((requestedPage + 1) * limit * 6, 96), 300)
+  const scanLimit = Math.min(Math.max(requestedPage * limit * 2, limit), 96)
   const publicSessions = await ctx.db
     .query('sessions')
     .withIndex('by_public_createdAt', (index) => index.eq('isPrivate', false))
@@ -236,23 +284,29 @@ export const listPublicGallerySessions = async (
     matchesGalleryFilters(session, undefined, args.category),
   )
 
-  const filteredWithArtifacts = await Promise.all(
-    filteredSessions.map(async (session) => ({
-      session,
-      artifacts: await loadPublicGalleryArtifacts(ctx, session._id),
-    })),
-  )
-  const validSessions = filteredWithArtifacts.filter(({ artifacts }) => {
-    if (artifacts.preview === null) return artifacts.homeModule?.source
-    if (!isUnsafePublicPreviewHtml(artifacts.preview.html)) return true
-    return resolveGalleryOpenUISource(artifacts).trim().length > 0
-  })
-
-  const total = validSessions.length
+  const total = filteredSessions.length
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const page = Math.min(requestedPage, totalPages)
-  const pageSessions = validSessions.slice((page - 1) * limit, page * limit)
-  const items = pageSessions.map(({ session, artifacts }) =>
+  const pageSessions = filteredSessions.slice((page - 1) * limit, page * limit)
+  const translatedPageSessions = await Promise.all(
+    pageSessions.map(async (session) => ({
+      session,
+      artifacts: await loadPublicGalleryArtifacts(
+        ctx,
+        session._id,
+        session.preferredLanguage,
+      ),
+    })),
+  )
+  const validPageSessions = translatedPageSessions.filter(({ artifacts }) =>
+    isRenderableGalleryArtifacts(artifacts),
+  )
+  const suppressedCount =
+    translatedPageSessions.length - validPageSessions.length
+  const visibleTotal =
+    suppressedCount > 0 ? Math.max(0, total - suppressedCount) : total
+  const visibleTotalPages = Math.max(1, Math.ceil(visibleTotal / limit))
+  const items = validPageSessions.map(({ session, artifacts }) =>
     serializePublicGallerySession(session, artifacts, {
       legacySiteSpecFallback: true,
       previewReadyFromStoredPreview: true,
@@ -263,9 +317,9 @@ export const listPublicGallerySessions = async (
     items,
     page,
     limit,
-    total,
-    totalPages,
-    hasNext: page < totalPages,
+    total: visibleTotal,
+    totalPages: visibleTotalPages,
+    hasNext: page < visibleTotalPages,
     hasPrev: page > 1,
     availableCategories,
   }
@@ -287,7 +341,11 @@ export const loadPublicGallerySession = async (
     return null
   }
 
-  const artifacts = await loadPublicGalleryArtifacts(ctx, session._id)
+  const artifacts = await loadPublicGalleryArtifacts(
+    ctx,
+    session._id,
+    session.preferredLanguage,
+  )
   if (
     artifacts.preview !== null &&
     isUnsafePublicPreviewHtml(artifacts.preview.html) &&
@@ -360,23 +418,29 @@ export const listOwnedGallerySessions = async (
   const limit = Math.min(Math.max(args.limit ?? 12, 1), 48)
   const requestedPage = Math.max(args.page ?? 1, 1)
 
-  const filteredWithArtifacts = await Promise.all(
-    filteredSessions.map(async (session) => ({
-      session,
-      artifacts: await loadPublicGalleryArtifacts(ctx, session._id),
-    })),
-  )
-  const validSessions = filteredWithArtifacts.filter(({ artifacts }) => {
-    if (artifacts.preview === null) return artifacts.homeModule?.source
-    if (!isUnsafePublicPreviewHtml(artifacts.preview.html)) return true
-    return resolveGalleryOpenUISource(artifacts).trim().length > 0
-  })
-
-  const total = validSessions.length
+  const total = filteredSessions.length
   const totalPages = Math.max(1, Math.ceil(total / limit))
   const page = Math.min(requestedPage, totalPages)
-  const pageSessions = validSessions.slice((page - 1) * limit, page * limit)
-  const items = pageSessions.map(({ session, artifacts }) =>
+  const pageSessions = filteredSessions.slice((page - 1) * limit, page * limit)
+  const translatedPageSessions = await Promise.all(
+    pageSessions.map(async (session) => ({
+      session,
+      artifacts: await loadPublicGalleryArtifacts(
+        ctx,
+        session._id,
+        session.preferredLanguage,
+      ),
+    })),
+  )
+  const validPageSessions = translatedPageSessions.filter(({ artifacts }) =>
+    isRenderableGalleryArtifacts(artifacts),
+  )
+  const suppressedCount =
+    translatedPageSessions.length - validPageSessions.length
+  const visibleTotal =
+    suppressedCount > 0 ? Math.max(0, total - suppressedCount) : total
+  const visibleTotalPages = Math.max(1, Math.ceil(visibleTotal / limit))
+  const items = validPageSessions.map(({ session, artifacts }) =>
     serializePublicGallerySession(session, artifacts, {
       legacySiteSpecFallback: true,
       previewReadyFromStoredPreview: true,
@@ -387,9 +451,9 @@ export const listOwnedGallerySessions = async (
     items,
     page,
     limit,
-    total,
-    totalPages,
-    hasNext: page < totalPages,
+    total: visibleTotal,
+    totalPages: visibleTotalPages,
+    hasNext: page < visibleTotalPages,
     hasPrev: page > 1,
     availableCategories,
   }

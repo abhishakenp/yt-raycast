@@ -3722,15 +3722,36 @@ export const routes = ${JSON.stringify(serializedRoutes, null, 2)} satisfies Sit
 `
 }
 
-const renderReactApp = (componentNames: string[]): string => {
+const brandLogoLiteral = (input: OpenUIExportInput): string =>
+  JSON.stringify(input.selectedBrandLogo ?? null, null, 2)
+
+const brandLogoBlockSourcePaths = (input: OpenUIExportInput): string[] =>
+  input.selectedBrandLogo ? ['src/section-kit/Logo.tsx'] : []
+
+const renderReactApp = (
+  componentNames: string[],
+  input: OpenUIExportInput,
+): string => {
   const imports = componentNames
     .map((name) => `import { ${name} } from './components/${name}'`)
     .join('\n')
   const mapEntries = componentNames.map((name) => `  ${name},`).join('\n')
+  const logoImport = input.selectedBrandLogo
+    ? "import { BrandLogoProvider } from './section-kit/Logo'\n"
+    : ''
+  const brandLogo = brandLogoLiteral(input)
+  const appTree = `<BrowserRouter>
+      <Routes>
+        {routes.map((route) => (
+          <Route key={route.path} path={route.path} element={<RoutePage route={route} />} />
+        ))}
+        <Route path="*" element={<Navigate to={routes[0]?.path ?? '/'} replace />} />
+      </Routes>
+    </BrowserRouter>`
   return `import type { ComponentType } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { routes } from './data/pages'
-${imports}
+${logoImport}${input.selectedBrandLogo ? `const selectedBrandLogo = ${brandLogo} as const\n` : ''}${imports}
 
 const components = {
 ${mapEntries}
@@ -3743,14 +3764,13 @@ function RoutePage({ route }: { route: (typeof routes)[number] }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {routes.map((route) => (
-          <Route key={route.path} path={route.path} element={<RoutePage route={route} />} />
-        ))}
-        <Route path="*" element={<Navigate to={routes[0]?.path ?? '/'} replace />} />
-      </Routes>
-    </BrowserRouter>
+    ${
+      input.selectedBrandLogo
+        ? `<BrandLogoProvider value={selectedBrandLogo}>
+      ${appTree}
+    </BrandLogoProvider>`
+        : appTree
+    }
   )
 }
 `
@@ -3826,6 +3846,20 @@ export default function Page() {
 }
 `
 
+const renderNextBrandLogoProvider = (
+  input: OpenUIExportInput,
+): string => `'use client'
+
+import type { ReactNode } from 'react'
+import { BrandLogoProvider } from '../section-kit/Logo'
+
+const selectedBrandLogo = ${brandLogoLiteral(input)} as const
+
+export function ExportBrandLogoProvider({ children }: { children: ReactNode }) {
+  return <BrandLogoProvider value={selectedBrandLogo}>{children}</BrandLogoProvider>
+}
+`
+
 const asClientComponent = (source: string): string => `'use client'
 
 ${source}`
@@ -3886,7 +3920,10 @@ const buildReactExport = (
     source: renderRouteComponentSource(route, nestedComponentNames),
   }))
   const blockSources = collectBlockSourceFiles(
-    components.flatMap((component) => [...component.blockSources]),
+    [
+      ...brandLogoBlockSourcePaths(input),
+      ...components.flatMap((component) => [...component.blockSources]),
+    ],
     'react',
   )
   const { dependencies, devDependencies } = resolveDependencyVersions(
@@ -3917,7 +3954,7 @@ const buildReactExport = (
     'src/vite-env.d.ts': renderViteEnv(),
     'vite.config.ts': renderViteConfig(),
     'src/main.tsx': renderReactMain(usesLakebed),
-    'src/App.tsx': renderReactApp(routeComponentNames),
+    'src/App.tsx': renderReactApp(routeComponentNames, input),
     'src/data/pages.ts': renderRouteData(routes, routeComponentNames),
     'src/lib/cn.ts': renderLibCn(),
     'src/lib/image.tsx': renderImageHelper('react', imageSources),
@@ -3957,7 +3994,10 @@ const buildNextExport = (
     source: renderRouteComponentSource(route, nestedComponentNames),
   }))
   const blockSources = collectBlockSourceFiles(
-    components.flatMap((component) => [...component.blockSources]),
+    [
+      ...brandLogoBlockSourcePaths(input),
+      ...components.flatMap((component) => [...component.blockSources]),
+    ],
     'next',
   )
   const { dependencies, devDependencies } = resolveDependencyVersions(
@@ -3976,12 +4016,8 @@ const buildNextExport = (
     dependencies['@tanstack/react-query'] =
       dependencyVersions['@tanstack/react-query']
   }
-  const layoutImport = usesLakebed
-    ? "import { SiteDataProvider } from '../src/lib/site-data-provider'\n"
-    : ''
-  const layoutChildren = usesLakebed
-    ? '<SiteDataProvider>{children}</SiteDataProvider>'
-    : '{children}'
+  const layoutImport = `${usesLakebed ? "import { SiteDataProvider } from '../src/lib/site-data-provider'\n" : ''}${input.selectedBrandLogo ? "import { ExportBrandLogoProvider } from '../src/lib/brand-logo-provider'\n" : ''}`
+  const layoutChildren = `${input.selectedBrandLogo ? '<ExportBrandLogoProvider>' : ''}${usesLakebed ? '<SiteDataProvider>{children}</SiteDataProvider>' : '{children}'}${input.selectedBrandLogo ? '</ExportBrandLogoProvider>' : ''}`
   const files: Record<string, string> = {
     'package.json': renderNextPackageJson(
       parsed.projectName,
@@ -4016,6 +4052,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     files['src/lib/site-data-actions.ts'] = renderNextDataActions()
     files['src/lib/site-data-provider.tsx'] = renderNextSiteDataProvider()
     files['app/api/data/route.ts'] = renderNextDataApiRoute()
+  }
+  if (input.selectedBrandLogo) {
+    files['src/lib/brand-logo-provider.tsx'] =
+      renderNextBrandLogoProvider(input)
   }
   if (usesLakebed || endpoints.length > 0) {
     files['src/lib/site-data-store.ts'] = renderNextDataStore()

@@ -41,6 +41,8 @@ type ExportBuildInputPayload = {
   siteSpecJson?: string
   themeName?: string
   isDark?: boolean
+  locale?: string
+  selectedBrandLogo?: OpenUIExportInput['selectedBrandLogo']
 }
 
 const normalizeTarget = (target: string): ExportTarget | null => {
@@ -129,7 +131,11 @@ const isExportBuildInputPayload = (
   (value.siteSpecJson === undefined ||
     typeof value.siteSpecJson === 'string') &&
   (value.themeName === undefined || typeof value.themeName === 'string') &&
-  (value.isDark === undefined || typeof value.isDark === 'boolean')
+  (value.isDark === undefined || typeof value.isDark === 'boolean') &&
+  (value.locale === undefined || typeof value.locale === 'string') &&
+  (value.selectedBrandLogo === undefined ||
+    value.selectedBrandLogo === null ||
+    isRecord(value.selectedBrandLogo))
 
 const setClientAuth = (client: ExportConvexClient, request?: Request) => {
   if (!request) return
@@ -224,6 +230,8 @@ const buildExportOnDemand = async (
     includeBadge: false,
     themeName: buildInputResult.themeName,
     isDark: buildInputResult.isDark,
+    locale: buildInputResult.locale,
+    selectedBrandLogo: buildInputResult.selectedBrandLogo,
   }
   const artifact = await buildOpenUIArtifactFiles(input)
   const download = await buildDownloadFromArtifactFiles(

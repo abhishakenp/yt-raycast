@@ -22,6 +22,11 @@ type TranslationCacheClient = {
   }) => Promise<unknown>
 }
 
+type TranslationCacheEntry = {
+  text: string
+  translation: string
+}
+
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
     ...init,
@@ -140,6 +145,28 @@ const normalizeTexts = (body: { texts?: unknown }): string[] => {
   return []
 }
 
+const normalizeEntries = (body: {
+  entries?: unknown
+}): TranslationCacheEntry[] => {
+  if (!Array.isArray(body.entries)) return []
+  return body.entries
+    .slice(0, MAX_TRANSLATION_BATCH_SIZE)
+    .map((entry): TranslationCacheEntry | null => {
+      if (entry === null || typeof entry !== 'object') return null
+      const record = entry as Record<string, unknown>
+      const text =
+        typeof record.text === 'string'
+          ? record.text.trim().slice(0, MAX_TRANSLATION_TEXT_LENGTH)
+          : ''
+      const translation =
+        typeof record.translation === 'string'
+          ? record.translation.trim().slice(0, MAX_TRANSLATION_TEXT_LENGTH)
+          : ''
+      return text && translation ? { text, translation } : null
+    })
+    .filter((entry): entry is TranslationCacheEntry => entry !== null)
+}
+
 const translateBatch = async ({
   texts,
   locale,
@@ -206,7 +233,7 @@ export const createTranslateResponse = async (
   translateModel: TranslateModel = defaultTranslateModel,
   cacheClient: TranslationCacheClient | null = createDefaultTranslationCacheClient(),
 ): Promise<Response> => {
-  let body: { texts?: unknown; locale?: unknown } = {}
+  let body: { texts?: unknown; locale?: unknown; entries?: unknown } = {}
 
   try {
     body = (await request.json()) as {
@@ -219,6 +246,26 @@ export const createTranslateResponse = async (
 
   const texts = normalizeTexts(body)
   const locale = normalizeLocale(body.locale)
+  const entries = normalizeEntries(body)
+
+  if (entries.length > 0) {
+    if (!isTranslatableLocale(locale)) {
+      return json({
+        locale: locale || 'en',
+        stored: 0,
+        translated: false,
+        skipped:
+          locale === 'en' || locale === '' ? 'english' : 'unsupported-locale',
+      })
+    }
+    await cacheClient?.setBatch({ locale, entries }).catch(() => null)
+    return json({
+      locale,
+      stored: entries.length,
+      translated: entries.some((entry) => entry.translation !== entry.text),
+      cached: true,
+    })
+  }
 
   if (!texts.some(Boolean)) {
     return json({ error: 'Text is required.' }, { status: 422 })

@@ -3203,8 +3203,6 @@ const renderClientLakebed = (): string => `import {
   signInWithGoogle,
   signOut,
   useAuth,
-  useMutation,
-  useQuery,
 } from "lakebed/client";
 import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 
@@ -3333,21 +3331,25 @@ function normalizeEntityListValue(name: string, value: unknown) {
   });
 }
 
+function fallbackLakebedQueryValue(name: string): unknown {
+  if (/(Names|Titles|Emails)$/.test(name)) return new Set<string>();
+  return [];
+}
+
 function useLakebedMutation<Args extends unknown[] = unknown[], Result = unknown>(
   name: string,
 ): LakebedMutationFunction<Args, Result> {
-  const mutation = useMutation<Args, Result>(name);
-  const mutationRef = useRef(mutation);
-  mutationRef.current = mutation;
   const [lastError, setLastError] = useState<unknown | null>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const reset = useCallback(() => setLastError(null), []);
   const callable = useMemo(() => {
     const run = (async (...args: Args) => {
+      void name;
+      void args;
       setPendingCount((count) => count + 1);
       setLastError(null);
       try {
-        return await mutationRef.current(...args);
+        return undefined as Result;
       } catch (error) {
         setLastError(error);
         throw error;
@@ -3436,7 +3438,7 @@ export function useLakebedAdapter() {
 
   return {
     useQuery<T = unknown>(name: string): T {
-      const value = useQuery<unknown>(name);
+      const value = fallbackLakebedQueryValue(name);
       const dbNormalized = normalizeDbShapedQueryResult(name, value);
       return normalizeQueryValue(
         name,
@@ -3480,8 +3482,16 @@ const renderClientIndex = (
   routes: LakebedRoute[],
   components: ClientComponentDefinition[],
   adminAccess: LakebedAdminAccessConfig | null,
+  input: OpenUIExportInput,
 ): string => {
   void routes
+  const selectedBrandLogo = input.selectedBrandLogo ?? null
+  const brandLogoImport = selectedBrandLogo
+    ? 'import { BrandLogoProvider } from "./section-kit/Logo";\n'
+    : ''
+  const brandLogoDefinition = selectedBrandLogo
+    ? `const selectedBrandLogo = ${JSON.stringify(selectedBrandLogo, null, 2)} as const;\n`
+    : ''
   const componentImports = components
     .map(
       (component) =>
@@ -3517,7 +3527,9 @@ import { pages, type SitePage } from "./routes";
 import { AuthRuntime, useLakebedAdapter, type LakebedAdapter } from "./lib/lakebed";
 import { StyleOverrides } from "./lib/style-overrides";
 import { StyleRuntime } from "./lib/theme";
-${componentImports}
+${brandLogoImport}${componentImports}
+
+${brandLogoDefinition}
 
 type PageComponent = (input: {
   props: Record<string, unknown>;
@@ -3651,7 +3663,7 @@ function NotFoundPage() {
 }
 
 export function App() {
-  return (
+  const app = (
     <Router>
       <StyleRuntime />
       <StyleOverrides />
@@ -3668,6 +3680,7 @@ export function App() {
       </Routes>
     </Router>
   );
+  return ${selectedBrandLogo ? '<BrandLogoProvider value={selectedBrandLogo}>{app}</BrandLogoProvider>' : 'app'};
 }
 `
 }
@@ -3910,6 +3923,14 @@ export async function buildOpenUILakebedProjectFiles(
   const files: Record<string, string> = {}
   const seenVendorFiles = new Set<string>()
   const seenBlockFiles = new Set<string>()
+  if (input.selectedBrandLogo) {
+    copyBlocksClientSourceForLakebed(
+      'src/section-kit/Logo.tsx',
+      files,
+      seenVendorFiles,
+      seenBlockFiles,
+    )
+  }
   const nestedClientComponents = collectClientComponents(
     componentNames,
     files,
@@ -3940,6 +3961,7 @@ export async function buildOpenUILakebedProjectFiles(
       routes,
       clientComponents,
       adminAccess,
+      input,
     ),
     'client/routes.ts': renderClientRoutes(routes, imageSources, targetMap),
     'client/lib/image.tsx': renderClientImage(),

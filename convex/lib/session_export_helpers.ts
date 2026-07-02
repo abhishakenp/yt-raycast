@@ -12,6 +12,10 @@ import {
   applyImageSwap,
   applyStyleEdit,
 } from './session_edit_helpers'
+import {
+  applyCachedTranslationsToSource,
+  loadCachedTranslationsForSource,
+} from './session_translation_cache_helpers'
 import { isUnsafePublicPreviewHtml } from './openui_error_html'
 
 export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
@@ -28,6 +32,9 @@ const readAppliedThemeName = (session: Doc<'sessions'>): string | undefined =>
 
 const readAppliedIsDark = (session: Doc<'sessions'>): boolean =>
   session.themeMode !== 'light'
+
+const readAppliedLocale = (session: Doc<'sessions'>): string =>
+  session.preferredLanguage || 'en'
 
 export type ExportEntitlement =
   | {
@@ -156,6 +163,11 @@ const isLikelyOpenUISource = (source: string | undefined): boolean => {
   return /(?:^|\n)\s*root\s*=/.test(trimmed)
 }
 
+const isHtmlDocumentSource = (source: string): boolean => {
+  const trimmed = source.trim()
+  return /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)
+}
+
 const readOpenUISourceFromSiteSpec = (
   siteSpec: Doc<'siteSpecs'> | null,
 ): string | undefined => {
@@ -201,7 +213,7 @@ const resolveExportOpenUISource = (
       '')
 
 /** Apply edit overrides to source before export. */
-const applyEditsToSource = (
+export const applyEditsToSource = (
   source: string,
   edits:
     | Array<{
@@ -1091,7 +1103,15 @@ export const prepareExportArtifactBuild = async (
     homeModule,
     siteSpec,
   )
-  const source = applyEditsToSource(canonicalSource, edits)
+  const editedSource = applyEditsToSource(canonicalSource, edits)
+  const source = applyCachedTranslationsToSource(
+    editedSource,
+    await loadCachedTranslationsForSource(
+      ctx,
+      session.preferredLanguage,
+      editedSource,
+    ),
+  )
 
   if (
     isUnsafePublicPreviewHtml(source) ||
@@ -1115,16 +1135,19 @@ export const prepareExportArtifactBuild = async (
     preview.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec
   const themeName = readAppliedThemeName(session)
   const isDark = readAppliedIsDark(session)
+  const html = isHtmlDocumentSource(source) ? source : ''
   const prepared = {
     sessionId: args.sessionId,
     prompt: session.prompt,
     target: args.target,
     previewVersion: preview.version,
     source,
-    html: preview.html,
+    html,
     ...(siteSpecJson === undefined ? {} : { siteSpecJson }),
     ...(themeName === undefined ? {} : { themeName }),
     isDark,
+    locale: readAppliedLocale(session),
+    selectedBrandLogo: session.selectedBrandLogo ?? null,
     isPrivate: session.isPrivate === true,
   }
 
@@ -1336,9 +1359,17 @@ export const loadOwnedExportForGitHubPush = async (
       index.eq('sessionId', args.sessionId),
     )
     .collect()
-  const source = applyEditsToSource(
+  const editedSource = applyEditsToSource(
     resolveExportOpenUISource(preview, homeModule, siteSpec),
     edits,
+  )
+  const source = applyCachedTranslationsToSource(
+    editedSource,
+    await loadCachedTranslationsForSource(
+      ctx,
+      session.preferredLanguage,
+      editedSource,
+    ),
   )
   if (
     isUnsafePublicPreviewHtml(source) ||
@@ -1351,6 +1382,7 @@ export const loadOwnedExportForGitHubPush = async (
   }
   const themeName = readAppliedThemeName(session)
   const isDark = readAppliedIsDark(session)
+  const html = isHtmlDocumentSource(source) ? source : ''
 
   const exportPreviewVersion = exportRecord.previewVersion
   if (
@@ -1379,12 +1411,14 @@ export const loadOwnedExportForGitHubPush = async (
     prompt: session.prompt,
     target: exportPayload.target,
     previewVersion: preview.version,
-    html: preview.html,
+    html,
     source,
     siteSpecJson: preview.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec,
-    previewHtml: preview.html,
+    previewHtml: html,
     themeName,
     isDark,
+    locale: readAppliedLocale(session),
+    selectedBrandLogo: session.selectedBrandLogo ?? null,
     includeBadge: exportRecord.requiresPayment !== false,
     artifact: toArtifactPayload(artifact),
     filesUrl,

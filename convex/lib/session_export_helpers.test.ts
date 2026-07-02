@@ -370,6 +370,12 @@ const workflowCtxFor = (input: {
   edits?: EditRecord[]
   exports?: ExportRecord[]
   exportArtifacts?: ExportArtifactRecord[]
+  translationCache?: Array<{
+    cacheKey: string
+    locale: string
+    sourceText: string
+    translation: string
+  }>
   subscriptions?: SubscriptionRecord[]
   customerCredits?: CustomerCreditsRecord[]
 }) => {
@@ -382,6 +388,7 @@ const workflowCtxFor = (input: {
   const edits = [...(input.edits ?? [])]
   const exportRows = [...(input.exports ?? [])]
   const exportArtifacts = [...(input.exportArtifacts ?? [])]
+  const translationCache = [...(input.translationCache ?? [])]
   const subscriptions = [...(input.subscriptions ?? [])]
   const customerCredits = [...(input.customerCredits ?? [])]
   const creditLedger: CreditLedgerRecord[] = []
@@ -415,6 +422,8 @@ const workflowCtxFor = (input: {
         return exportRows
       case 'exportArtifacts':
         return exportArtifacts
+      case 'translationCache':
+        return translationCache
       case 'subscriptions':
         return subscriptions
       case 'customerCredits':
@@ -431,6 +440,12 @@ const workflowCtxFor = (input: {
     Array.from(filters.entries()).every(
       ([field, value]) => row[field] === value,
     )
+  const orderValue = (row: Record<string, unknown>) =>
+    typeof row.version === 'number'
+      ? row.version
+      : typeof row._creationTime === 'number'
+        ? row._creationTime
+        : 0
 
   const db = {
     get: async (id: Id<'sessions'>) =>
@@ -464,14 +479,12 @@ const workflowCtxFor = (input: {
             first: async () => {
               const rows = [...matchingRows()]
               rows.sort((left, right) => {
-                const leftVersion =
-                  'version' in left && typeof left.version === 'number'
-                    ? left.version
-                    : left._creationTime
-                const rightVersion =
-                  'version' in right && typeof right.version === 'number'
-                    ? right.version
-                    : right._creationTime
+                const leftVersion = orderValue(
+                  left as unknown as Record<string, unknown>,
+                )
+                const rightVersion = orderValue(
+                  right as unknown as Record<string, unknown>,
+                )
                 return direction === 'desc'
                   ? rightVersion - leftVersion
                   : leftVersion - rightVersion
@@ -1386,26 +1399,54 @@ describe('prepareExportArtifactBuild', () => {
       target: 'lakebed',
       previewVersion: 2,
       source: openUiSource,
+      html: '',
       isDark: true,
+      locale: 'en',
       isPrivate: false,
     })
     expect(result).toMatchObject({
-      html: '<main>Preview</main>',
       siteSpecJson: '{"title":"Preview"}',
     })
     expect(result).not.toHaveProperty('previewHtml')
   })
 
-  it('prepares exports with applied theme, mode, and inline edits', async () => {
+  it('prepares exports with applied language, theme, brand logo, and inline edits without stale preview HTML', async () => {
+    const selectedBrandLogo = {
+      name: 'Linear',
+      domain: 'linear.app',
+      brandId: 'linear-id',
+      icon: 'https://cdn.brandfetch.io/linear/icon.webp',
+      logo: 'https://cdn.brandfetch.io/linear/logo.svg',
+    }
     const { ctx } = workflowCtxFor({
       sessions: [
         sessionDoc({
+          preferredLanguage: 'lt',
           genuiTheme: 'modern-minimal',
           themeOverride: 'noir',
           themeMode: 'light',
+          selectedBrandLogo,
         }),
       ],
-      edits: [editDoc()],
+      previews: [
+        previewDoc({
+          html: '<main><h1>Preview</h1><p>Stale English preview</p></main>',
+        }),
+      ],
+      edits: [
+        editDoc({
+          beforeText: 'Preview',
+          afterText: 'Redaguota peržiūra',
+        }),
+      ],
+      translationCache: [
+        {
+          cacheKey: 'lt\nRedaguota peržiūra',
+          locale: 'lt',
+          sourceText: 'Redaguota peržiūra',
+          translation: 'Redaguota lietuviška peržiūra',
+        },
+      ],
     })
 
     const result = await prepareExportArtifactBuild(ctx, {
@@ -1417,8 +1458,14 @@ describe('prepareExportArtifactBuild', () => {
     expect(result).toMatchObject({
       themeName: 'noir',
       isDark: false,
-      source: 'root = SaasHero("Launch", ["Home"], {"heading":"Preview"})',
+      locale: 'lt',
+      selectedBrandLogo,
+      source:
+        'root = SaasHero("Redaguota lietuviška peržiūra", ["Home"], {"heading":"Preview"})',
+      html: '',
     })
+    expect(JSON.stringify(result)).not.toContain('Stale English preview')
+    expect(JSON.stringify(result)).not.toContain('Redaguota peržiūra"')
   })
 
   it('rejects renderer-error preview HTML instead of using it as export source fallback', async () => {
@@ -1563,17 +1610,36 @@ describe('loadOwnedExportArtifactDownload', () => {
 
 describe('loadOwnedExportForGitHubPush', () => {
   it('returns the latest ready export payload for the owning signed-in user', async () => {
+    const selectedBrandLogo = {
+      name: 'Linear',
+      domain: 'linear.app',
+      brandId: 'linear-id',
+      icon: 'https://cdn.brandfetch.io/linear/icon.webp',
+      logo: 'https://cdn.brandfetch.io/linear/logo.svg',
+    }
     const { ctx } = workflowCtxFor({
       identityUserId: userId,
       sessions: [
         sessionDoc({
+          preferredLanguage: 'lt',
           genuiTheme: 'modern-minimal',
           themeOverride: 'noir',
           themeMode: 'light',
+          selectedBrandLogo,
         }),
       ],
       exports: [exportDoc()],
-      edits: [editDoc()],
+      previews: [
+        previewDoc({
+          html: '<main><h1>Preview</h1><p>Stale English preview</p></main>',
+        }),
+      ],
+      edits: [
+        editDoc({
+          beforeText: 'Preview',
+          afterText: 'Redaguota peržiūra',
+        }),
+      ],
     })
 
     await expect(
@@ -1583,12 +1649,15 @@ describe('loadOwnedExportForGitHubPush', () => {
       prompt: 'Build a polished landing page',
       target: 'html',
       previewVersion: 2,
-      html: '<main>Preview</main>',
-      source: 'root = SaasHero("Launch", ["Home"], {"heading":"Preview"})',
+      html: '',
+      source:
+        'root = SaasHero("Redaguota peržiūra", ["Home"], {"heading":"Preview"})',
       siteSpecJson: '{"title":"Preview"}',
-      previewHtml: '<main>Preview</main>',
+      previewHtml: '',
       themeName: 'noir',
       isDark: false,
+      locale: 'lt',
+      selectedBrandLogo,
       includeBadge: false,
       artifact: null,
       filesUrl: null,
@@ -1639,7 +1708,8 @@ describe('loadOwnedExportForGitHubPush', () => {
     ).resolves.toMatchObject({
       sessionId,
       target: 'html',
-      html: '<main>Preview</main>',
+      html: '',
+      previewHtml: '',
       includeBadge: true,
     })
   })

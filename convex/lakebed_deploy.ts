@@ -16,6 +16,14 @@ type PreparedLakebedDeployment = {
   previewVersion: number
   themeName?: string
   isDark?: boolean
+  locale?: string
+  selectedBrandLogo?: {
+    name: string
+    domain: string | null
+    brandId: string | null
+    icon: string | null
+    logo: string | null
+  } | null
 }
 
 type LakebedProjectFiles = {
@@ -196,6 +204,8 @@ export const deploy = action({
           target: 'lakebed',
           themeName: prepared.themeName,
           isDark: prepared.isDark,
+          locale: prepared.locale,
+          selectedBrandLogo: prepared.selectedBrandLogo,
         })
       }
       logLakebedDeploy(prepared.sessionId, 'project-build:complete', {
