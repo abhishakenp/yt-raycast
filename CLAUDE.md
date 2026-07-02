@@ -261,7 +261,7 @@ The following code generation engines are deprecated and no longer used:
 
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **ship-fast** (39520 symbols, 66702 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **ship-fast** (39872 symbols, 65200 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
