@@ -146,6 +146,89 @@ export function signOut() {}
   }
 }
 
+const renderLakebedClientEntryHtml = async (
+  files: Record<string, string>,
+  entrySource: string,
+): Promise<{ errors: unknown[]; html: string; text: string }> => {
+  const directory = mkdtempSync(join(tmpdir(), 'lakebed-client-html-'))
+
+  try {
+    writeProjectFiles(directory, files)
+    const entryPath = join(directory, 'render-client.tsx')
+    writeFileSync(entryPath, entrySource)
+    const bundled = await build({
+      bundle: true,
+      entryPoints: [entryPath],
+      format: 'iife',
+      jsx: 'automatic',
+      jsxImportSource: 'preact',
+      logLevel: 'silent',
+      nodePaths: [join(process.cwd(), 'node_modules')],
+      platform: 'browser',
+      plugins: [
+        {
+          name: 'lakebed-client-html-stub',
+          setup(pluginBuild) {
+            pluginBuild.onResolve(
+              { filter: /^(@ship-fast\/|#\/)/ },
+              (args) => ({
+                errors: [
+                  {
+                    text: `Generated client bundle leaked workspace package import: ${args.path}`,
+                  },
+                ],
+              }),
+            )
+            pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+              namespace: 'lakebed-client-stub',
+              path: 'lakebed/client',
+            }))
+            pluginBuild.onLoad(
+              {
+                filter: /^lakebed\/client$/,
+                namespace: 'lakebed-client-stub',
+              },
+              () => ({
+                contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery() { return undefined; }
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                loader: 'tsx',
+              }),
+            )
+          },
+        },
+      ],
+      write: false,
+    })
+    const dom = new JSDOM('<div id="app"></div>', {
+      runScripts: 'outside-only',
+    })
+    const errors = collectWindowRuntimeErrors(dom)
+
+    expect(() =>
+      dom.window.eval(bundled.outputFiles[0]?.text ?? ''),
+    ).not.toThrow()
+    await flushDomEffects(dom)
+
+    const app = dom.window.document.querySelector('#app')
+    return {
+      errors,
+      html: app?.innerHTML ?? '',
+      text: app?.textContent ?? '',
+    }
+  } finally {
+    rmSync(directory, { force: true, recursive: true })
+  }
+}
+
 const evaluateLakebedServerCapsule = async (files: Record<string, string>) => {
   const directory = mkdtempSync(join(tmpdir(), 'lakebed-server-runtime-'))
 
@@ -1909,6 +1992,10 @@ export const WebhookHero = defineCapsule({
           `deployed artifact re-searched provider: ${String(url)}`,
         )
       }
+      const query = parsed.searchParams.get('query') ?? ''
+      if (!query.startsWith('glass polished ')) {
+        throw new Error(`deployed artifact used stale preview query: ${query}`)
+      }
       const seed = parsed.searchParams.get('seed')
       const location = seed ? resolvedBySeed.get(seed) : undefined
       if (!location) {
@@ -1969,12 +2056,17 @@ export const WebhookHero = defineCapsule({
       ],
       [
         '<main>',
-        '<img alt="Showcase of polished glass installations" src="/api/pexels?query=glass+polished+showcase+installations&w=800&h=600&seed=Showcase+of+polished+glass+installations">',
-        '<img alt="Skyline Retail Hub Retail marketing case study" src="/api/pexels?query=glass+polished+skyline+retail+hub&w=600&h=400&seed=Skyline+Retail+Hub+Retail+marketing+case+study">',
-        '<img alt="Luxe Hotel Lobby Hospitality marketing case study" src="/api/pexels?query=glass+polished+luxe+hotel+lobby+hospitality&w=600&h=400&seed=Luxe+Hotel+Lobby+Hospitality+marketing+case+study">',
-        '<img alt="Metro Corporate Campus Office marketing case study" src="/api/pexels?query=glass+polished+modern+office+workspace+metro+corporate+campus&w=600&h=400&seed=Metro+Corporate+Campus+Office+marketing+case+study">',
+        '<img alt="Showcase of polished glass installations" src="/api/pexels?query=showcase+polished+glass+installations&w=800&h=600&seed=Showcase+of+polished+glass+installations">',
+        '<img alt="Skyline Retail Hub Retail marketing case study" src="/api/pexels?query=skyline+retail+hub+retail&w=600&h=400&seed=Skyline+Retail+Hub+Retail+marketing+case+study">',
+        '<img alt="Luxe Hotel Lobby Hospitality marketing case study" src="/api/pexels?query=luxe+hotel+lobby+hospitality&w=600&h=400&seed=Luxe+Hotel+Lobby+Hospitality+marketing+case+study">',
+        '<img alt="Metro Corporate Campus Office marketing case study" src="/api/pexels?query=modern+office+workspace+metro+corporate+campus+marketing&w=600&h=400&seed=Metro+Corporate+Campus+Office+marketing+case+study">',
         '</main>',
       ].join(''),
+      {
+        prompt:
+          'glass with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.',
+        siteSpecJson: JSON.stringify({ brand: 'Glass Polished' }),
+      },
     )
 
     expect(requests).toHaveLength(4)
@@ -1983,22 +2075,22 @@ export const WebhookHero = defineCapsule({
     ).toBe(true)
     expect(sources).toEqual(
       expect.arrayContaining([
-        {
+        expect.objectContaining({
           alt: 'पॉलिश ग्लास इंस्टॉलेशन का शोकेस',
           src: 'https://images.pexels.com/photos/7195588/pexels-photo-7195588.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
-        },
-        {
+        }),
+        expect.objectContaining({
           alt: 'स्काईलाइन रिटेल हब खुदरा marketing case study',
           src: 'https://images.pexels.com/photos/1111111/pexels-photo-1111111.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
-        },
-        {
+        }),
+        expect.objectContaining({
           alt: 'लक्से होटल लॉबी सत्कार marketing case study',
           src: 'https://images.pexels.com/photos/2222222/pexels-photo-2222222.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
-        },
-        {
+        }),
+        expect.objectContaining({
           alt: 'मेट्रो कॉरपोरेट कैंपस दफ्तर marketing case study',
           src: 'https://images.pexels.com/photos/3333333/pexels-photo-3333333.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
-        },
+        }),
       ]),
     )
     expect(
@@ -2006,6 +2098,74 @@ export const WebhookHero = defineCapsule({
         .filter((source) => source.alt.includes('marketing case study'))
         .every((source) => !source.src.includes('picsum.photos')),
     ).toBe(true)
+  })
+
+  it('resolves edited image src overrides in deployed runtime instead of leaking preview API URLs', async () => {
+    process.env.APP_BASE_URL = 'https://ship-fast.test'
+    delete process.env.PEXELS_API_KEY
+    delete process.env.VITE_PEXELS_API_KEY
+    delete process.env.UNSPLASH_ACCESS_KEY
+    delete process.env.VITE_UNSPLASH_ACCESS_KEY
+
+    const selectedImage =
+      'https://images.pexels.com/photos/4444444/pexels-photo-4444444.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    const stalePreviewImage =
+      'https://images.pexels.com/photos/9999999/pexels-photo-9999999.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+    const requests: string[] = []
+    globalThis.fetch = (async (url: RequestInfo | URL) => {
+      requests.push(String(url))
+      const parsed = new URL(String(url))
+      const query = parsed.searchParams.get('query')
+      const location =
+        query === 'user selected walnut'
+          ? selectedImage
+          : query === 'selected showroom hero'
+            ? stalePreviewImage
+            : null
+      if (!location) {
+        throw new Error(`unexpected image resolution request: ${String(url)}`)
+      }
+      return new Response(null, {
+        headers: { Location: location },
+        status: 302,
+      })
+    }) as typeof fetch
+
+    const built = await buildOpenUILakebedProjectFiles({
+      previewHtml:
+        '<img alt="Selected showroom hero" src="/api/pexels?query=stale+showroom&w=600&h=400&seed=Selected+showroom+hero">',
+      sessionId: 'lakebed-edited-src-override',
+      siteSpecJson: JSON.stringify({ projectName: 'Edited Source Export' }),
+      source:
+        'root = Avatar({"fallback":"SP","src":"/api/pexels?query=user+selected+walnut&w=600&h=400&seed=User+selected+hero","alt":"Selected showroom hero"})',
+      target: 'lakebed',
+    })
+    const rendered = await renderLakebedClientEntryHtml(
+      built.files,
+      `import { h, render } from "preact";
+import { Image } from "./client/lib/image";
+
+render(h(Image, {
+  alt: "Selected showroom hero",
+  src: "/api/pexels?query=user+selected+walnut&w=600&h=400&seed=User+selected+hero",
+}), document.getElementById("app"));
+`,
+    )
+    const dom = new JSDOM(rendered.html)
+    const image = dom.window.document.querySelector('img')
+
+    expect(requests).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('query=selected+showroom+hero'),
+        expect.stringContaining('query=user+selected+walnut'),
+      ]),
+    )
+    expect(rendered.errors).toEqual([])
+    expect(image?.getAttribute('src')).toBe(
+      'https://images.pexels.com/photos/4444444/pexels-photo-4444444.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
+    )
+    expect(image?.getAttribute('src')).not.toContain('/api/pexels')
+    expect(image?.getAttribute('src')).not.toContain('9999999')
   })
 
   it('resolves missing generated image alts through Pexels at build time', async () => {
@@ -2046,14 +2206,14 @@ export const WebhookHero = defineCapsule({
 
     expect(sources).toEqual(
       expect.arrayContaining([
-        {
+        expect.objectContaining({
           alt: 'Existing avatar',
           src: 'https://cdn.example.com/avatar.jpg',
-        },
-        {
+        }),
+        expect.objectContaining({
           alt: 'Golden retriever puppy playing with a ball',
           src: 'https://images.pexels.com/photos/dog-large2x.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop',
-        },
+        }),
       ]),
     )
     expect(requests).toHaveLength(1)
@@ -2193,14 +2353,14 @@ export const WebhookHero = defineCapsule({
 
     expect(sources).toEqual(
       expect.arrayContaining([
-        {
+        expect.objectContaining({
           alt: 'Existing avatar',
-          src: 'https://picsum.photos/seed/portrait-person-avatar/100/100',
-        },
-        {
+          src: 'https://picsum.photos/seed/existing-avatar/100/100',
+        }),
+        expect.objectContaining({
           alt: 'Golden retriever puppy playing with a ball',
           src: 'https://picsum.photos/seed/golden-retriever-puppy-playing-with-a-ball/1200/800',
-        },
+        }),
       ]),
     )
     expect(sources.every((source) => !source.src.includes('/api/pexels'))).toBe(

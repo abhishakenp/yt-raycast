@@ -15,6 +15,7 @@ export {
   useQuery,
 } from '@tanstack/react-query'
 export { ImageContextProvider, type ImageContext } from './lib/img.tsx'
+export { buildImageSearchQuery } from './lib/image-search-query.ts'
 export {
   BrandLogoProvider,
   Logo,

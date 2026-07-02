@@ -11,6 +11,11 @@ declare module '@ship-fast/blocks' {
   export const useQuery: any
   export const ImageContextProvider: ComponentType<any>
   export type ImageContext = any
+  export function buildImageSearchQuery(
+    alt: string,
+    baseQuery: string,
+    context?: ImageContext,
+  ): string
   export const BrandLogoProvider: ComponentType<any>
   export const Logo: ComponentType<any>
   export function getBrandLogoImageSrc(value: any): string | null

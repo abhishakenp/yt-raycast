@@ -467,6 +467,7 @@ export const prepareLakebedSessionDeployment = async (
 
   return {
     sessionId: args.sessionId,
+    prompt: session.prompt,
     source,
     sourceKind,
     siteSpecJson,

@@ -28,6 +28,11 @@ type UnsplashPhoto = {
 
 type UnsplashResponse = { results?: UnsplashPhoto[] }
 
+export type PreviewImageUrlResolutionOptions = {
+  fallbackAlt?: string
+  overrideGeneratedSrc?: string
+}
+
 const decodeHtmlEntities = (value: string): string =>
   value
     .replace(/&quot;/g, '"')
@@ -273,11 +278,14 @@ const resolvePexelsPreviewUrl = async (parsed: URL): Promise<string> => {
 
 export const resolvePreviewImageUrl = async (
   value: string,
-  fallbackAlt?: string,
+  options: string | PreviewImageUrlResolutionOptions = {},
 ): Promise<string | null> => {
+  const normalizedOptions =
+    typeof options === 'string' ? { fallbackAlt: options } : options
+  const sourceValue = normalizedOptions.overrideGeneratedSrc ?? value
   let parsed: URL
   try {
-    parsed = new URL(value, 'https://ship-fast.local')
+    parsed = new URL(sourceValue, 'https://ship-fast.local')
   } catch {
     return null
   }
@@ -294,12 +302,12 @@ export const resolvePreviewImageUrl = async (
     parsed.searchParams.get('query') ??
     parsed.searchParams.get('alt') ??
     parsed.searchParams.get('seed') ??
-    fallbackAlt ??
+    normalizedOptions.fallbackAlt ??
     'generated image'
   const width = readImageDimension(parsed.searchParams.get('w'), 800)
   const height = readImageDimension(parsed.searchParams.get('h'), 600)
   return picsumUrl(
-    parsed.searchParams.get('seed') ?? fallbackAlt ?? query,
+    parsed.searchParams.get('seed') ?? normalizedOptions.fallbackAlt ?? query,
     width,
     height,
   )
