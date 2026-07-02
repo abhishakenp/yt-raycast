@@ -17,6 +17,23 @@ export type LakebedAdminRow = {
   cells: JsonRecord
 }
 
+// --- Schema types matching the runtime shape of Lakebed's TableDefinition ---
+
+export type LakebedFieldSchema = {
+  kind: string
+  defaultValue?: unknown
+}
+
+export type LakebedTableSchema = {
+  kind: 'table'
+  fields: Record<string, LakebedFieldSchema>
+  seedFromProps?: boolean
+}
+
+export type LakebedSessionSchema = Record<string, LakebedTableSchema>
+
+export type CapsuleSchemaRegistry = Record<string, LakebedSessionSchema>
+
 export type LakebedAdminTable = {
   id: string
   name: string
@@ -27,6 +44,7 @@ export type LakebedAdminTable = {
   columns: string[]
   rows: LakebedAdminRow[]
   updatedAt: number
+  fieldTypes: Record<string, string>
 }
 
 const isJsonRecord = (value: unknown): value is JsonRecord =>
@@ -50,6 +68,21 @@ const uniqueColumns = (rows: LakebedAdminRow[]): string[] => {
     }
   }
   return ['_id', ...columns]
+}
+
+const columnsFromSchema = (schema: LakebedTableSchema): string[] => [
+  '_id',
+  ...Object.keys(schema.fields),
+]
+
+const fieldTypesFromSchema = (
+  schema: LakebedTableSchema,
+): Record<string, string> => {
+  const types: Record<string, string> = {}
+  for (const [name, field] of Object.entries(schema.fields)) {
+    types[name] = field.kind
+  }
+  return types
 }
 
 const rowIdFromValue = (value: unknown, fallback: string) => {
@@ -81,6 +114,7 @@ const rowFromValue = (
 
 export function createLakebedAdminTables(
   docs: LakebedSessionDataDoc[] | undefined,
+  capsuleSchemas?: CapsuleSchemaRegistry,
 ): LakebedAdminTable[] {
   if (!docs) return []
 
@@ -90,71 +124,134 @@ export function createLakebedAdminTables(
   const tables: LakebedAdminTable[] = []
 
   for (const doc of contentDocs) {
-    for (const [field, value] of Object.entries(doc.data)) {
-      if (Array.isArray(value)) {
-        const rows = value.map((item, index) =>
-          rowFromValue(item, index, undefined, {
-            capsule: doc.capsule,
-            field,
-          }),
-        )
-        tables.push({
-          capsule: doc.capsule,
-          columns: uniqueColumns(rows),
-          field,
-          id: tableId(doc.capsule, field),
-          name: field,
-          rows,
-          sourceCapsules: [doc.capsule],
-          storage: 'array',
-          updatedAt: doc.updatedAt,
-        })
-        continue
-      }
+    const componentName = capsuleComponentName(doc.capsule)
+    const schema = capsuleSchemas?.[componentName]
 
-      if (isJsonRecord(value) && Object.values(value).every(isJsonRecord)) {
-        const rows = Object.entries(value).map(([key, item], index) =>
-          rowFromValue(
-            { _key: key, ...(isJsonRecord(item) ? item : {}) },
-            index,
-            key,
-            { capsule: doc.capsule, field },
-          ),
-        )
-        tables.push({
-          capsule: doc.capsule,
-          columns: uniqueColumns(rows),
-          field,
-          id: tableId(doc.capsule, field),
-          name: field,
-          rows,
-          sourceCapsules: [doc.capsule],
-          storage: 'map',
-          updatedAt: doc.updatedAt,
-        })
-        continue
+    if (schema) {
+      tables.push(...createSchemaTables(doc, schema))
+      // Also infer tables for data fields not covered by schema
+      const schemaFields = new Set(Object.keys(schema))
+      for (const [field, value] of Object.entries(doc.data)) {
+        if (schemaFields.has(field)) continue
+        tables.push(...inferRuntimeTable(doc, field, value))
       }
-
-      const rows = [
-        rowFromValue(value, 0, undefined, { capsule: doc.capsule, field }),
-      ]
-      tables.push({
-        capsule: doc.capsule,
-        columns: uniqueColumns(rows),
-        field,
-        id: tableId(doc.capsule, field),
-        name: field,
-        rows,
-        sourceCapsules: [doc.capsule],
-        storage: 'value',
-        updatedAt: doc.updatedAt,
-      })
+    } else {
+      // No schema — fall back to pure runtime inference
+      for (const [field, value] of Object.entries(doc.data)) {
+        tables.push(...inferRuntimeTable(doc, field, value))
+      }
     }
   }
 
   return mergeCompatibleTables(tables).sort((a, b) =>
     a.name.localeCompare(b.name),
   )
+}
+
+const createSchemaTables = (
+  doc: LakebedSessionDataDoc,
+  schema: LakebedSessionSchema,
+): LakebedAdminTable[] => {
+  const tables: LakebedAdminTable[] = []
+
+  for (const [tableName, tableSchema] of Object.entries(schema)) {
+    const runtimeValue = doc.data[tableName]
+    const rows: LakebedAdminRow[] = Array.isArray(runtimeValue)
+      ? runtimeValue.map((item, index) =>
+          rowFromValue(item, index, undefined, {
+            capsule: doc.capsule,
+            field: tableName,
+          }),
+        )
+      : []
+
+    tables.push({
+      capsule: doc.capsule,
+      columns: columnsFromSchema(tableSchema),
+      field: tableName,
+      fieldTypes: fieldTypesFromSchema(tableSchema),
+      id: tableId(doc.capsule, tableName),
+      name: tableName,
+      rows,
+      sourceCapsules: [doc.capsule],
+      storage: 'array',
+      updatedAt: doc.updatedAt,
+    })
+  }
+
+  return tables
+}
+
+const inferRuntimeTable = (
+  doc: LakebedSessionDataDoc,
+  field: string,
+  value: unknown,
+): LakebedAdminTable[] => {
+  if (Array.isArray(value)) {
+    const rows = value.map((item, index) =>
+      rowFromValue(item, index, undefined, {
+        capsule: doc.capsule,
+        field,
+      }),
+    )
+    return [
+      {
+        capsule: doc.capsule,
+        columns: uniqueColumns(rows),
+        field,
+        fieldTypes: {},
+        id: tableId(doc.capsule, field),
+        name: field,
+        rows,
+        sourceCapsules: [doc.capsule],
+        storage: 'array',
+        updatedAt: doc.updatedAt,
+      },
+    ]
+  }
+
+  if (isJsonRecord(value) && Object.values(value).every(isJsonRecord)) {
+    const rows = Object.entries(value).map(([key, item], index) =>
+      rowFromValue(
+        { _key: key, ...(isJsonRecord(item) ? item : {}) },
+        index,
+        key,
+        { capsule: doc.capsule, field },
+      ),
+    )
+    return [
+      {
+        capsule: doc.capsule,
+        columns: uniqueColumns(rows),
+        field,
+        fieldTypes: {},
+        id: tableId(doc.capsule, field),
+        name: field,
+        rows,
+        sourceCapsules: [doc.capsule],
+        storage: 'map',
+        updatedAt: doc.updatedAt,
+      },
+    ]
+  }
+
+  const rows = [
+    rowFromValue(value, 0, undefined, { capsule: doc.capsule, field }),
+  ]
+  return [
+    {
+      capsule: doc.capsule,
+      columns: uniqueColumns(rows),
+      field,
+      fieldTypes: {},
+      id: tableId(doc.capsule, field),
+      name: field,
+      rows,
+      sourceCapsules: [doc.capsule],
+      storage: 'value',
+      updatedAt: doc.updatedAt,
+    },
+  ]
 }
 
 const mergeCompatibleTables = (
@@ -183,10 +280,22 @@ const mergeCompatibleTables = (
         sourceField: row.sourceField ?? table.field,
       })),
     )
+    // Merge field types from all group members (schema tables carry types,
+    // runtime-inferred tables have empty fieldTypes)
+    const fieldTypes: Record<string, string> = {}
+    for (const table of group) {
+      Object.assign(fieldTypes, table.fieldTypes)
+    }
+    // Use schema-defined columns if any group member has them; otherwise
+    // derive from runtime rows
+    const schemaTable = group.find((t) => Object.keys(t.fieldTypes).length > 0)
+    const columns = schemaTable ? schemaTable.columns : uniqueColumns(rows)
+
     merged.push({
       capsule: group[0].capsule,
-      columns: uniqueColumns(rows),
+      columns,
       field: group[0].field,
+      fieldTypes,
       id: `${group[0].storage}:${group[0].field}`,
       name: group[0].field,
       rows,

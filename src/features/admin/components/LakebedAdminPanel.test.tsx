@@ -149,7 +149,7 @@ function renderAdminPanel() {
       anonymousOwnerSecret="owner-secret"
       sessionId="session_123"
     >
-      <LakebedAdminPanel />
+      <LakebedAdminPanel capsuleSchemas={{}} />
     </LakebedSessionProvider>,
   )
 }

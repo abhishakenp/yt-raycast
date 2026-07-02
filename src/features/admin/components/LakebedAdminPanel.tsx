@@ -38,10 +38,12 @@ import {
   previewAdminValue,
 } from '@/features/admin/services/lakebed-admin-model'
 import type {
+  CapsuleSchemaRegistry,
   JsonRecord,
   LakebedAdminRow,
   LakebedAdminTable,
 } from '@/features/admin/services/lakebed-admin-model'
+import { buildCapsuleSchemaRegistry } from '@/features/admin/services/capsule-schema-registry'
 
 type SortState = {
   column: string
@@ -245,7 +247,11 @@ const documentFromRow = (row: LakebedAdminRow): LakebedDocument => ({
   __rowId: row.id,
 })
 
-export function LakebedAdminPanel() {
+export function LakebedAdminPanel({
+  capsuleSchemas,
+}: {
+  capsuleSchemas?: CapsuleSchemaRegistry
+} = {}) {
   const session = useLakebedSession()
   const sessionArgs = useMemo(
     () => ({
@@ -259,7 +265,11 @@ export function LakebedAdminPanel() {
   const docs = useQuery(lakebedApi.listSessionData, sessionArgs)
   const replaceSessionData = useMutation(lakebedApi.replaceSessionData)
 
-  const tables = useMemo(() => createLakebedAdminTables(docs), [docs])
+  const effectiveSchemas = capsuleSchemas ?? buildCapsuleSchemaRegistry()
+  const tables = useMemo(
+    () => createLakebedAdminTables(docs, effectiveSchemas),
+    [docs, effectiveSchemas],
+  )
   const [selectedTableId, setSelectedTableId] = useState<string>()
   const [tableSearch, setTableSearch] = useState('')
   const [rowFilter, setRowFilter] = useState('')
