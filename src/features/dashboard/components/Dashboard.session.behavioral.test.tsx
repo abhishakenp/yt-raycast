@@ -2,7 +2,7 @@
 //
 // Behavioral tests for the Dashboard session workspace. These tests assert the
 // EXPECTED, CORRECT behavior of the dashboard around generation handoff, live
-// Convex queries, fallback polling, ready-session caching, admin URL sync,
+// Convex queries, ready-session caching, admin URL sync,
 // progress reporting, edit override mapping, theme resolution, and scroll
 // preservation. If any of these behaviors regress, the corresponding test MUST
 // fail — these tests never pin buggy behavior.
@@ -32,6 +32,7 @@ type SessionState = {
   previewVersion?: number
   prompt?: string
   preferredLanguage?: string
+  preferredExportTarget?: string
   errorCode?: string
   errorMessage?: string
   isPrivate?: boolean
@@ -68,6 +69,7 @@ type GenerationView = {
   siteSpec?: { specJson?: string; updatedAt?: number } | null
   latestPreview?: {
     html?: string
+    openUiSource?: string
     siteSpecJson?: string
     version?: number
   } | null
@@ -534,7 +536,7 @@ const resetEditController = () => {
 }
 
 // ─── tests ─────────────────────────────────────────────────────────────────
-describe('Dashboard session workspace + fallback polling + intro loader', () => {
+describe('Dashboard session workspace + Convex realtime + intro loader', () => {
   beforeEach(() => {
     ensureWindowStorage()
     getConvexState().generationView = null
@@ -554,8 +556,8 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
 
   afterEach(() => {
     cleanup()
-    // Safety net: the polling test uses vi.useFakeTimers() inside a
-    // try/finally; if it times out the finally may not run, so ensure real
+    // Safety net: realtime loading tests use vi.useFakeTimers() inside a
+    // try/finally; if one times out the finally may not run, so ensure real
     // timers are restored for subsequent tests (waitFor hangs under faked timers).
     vi.useRealTimers()
     window.localStorage.clear()
@@ -664,7 +666,37 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
     expect(screen.queryByTestId('generated-module-preview')).toBeNull()
   })
 
-  it('keeps the intro loader up for a DB-observed v3 session whose rendered preview HTML is empty even when OpenUI source exists', () => {
+  it('does not mount a generated preview with blank render input', () => {
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'blank-preview-session',
+        status: 'preview_ready',
+        prompt: 'blank preview should not be considered renderable',
+        previewVersion: 1,
+      },
+      tasks: [
+        {
+          status: 'succeeded',
+          title: 'Generate homepage',
+          taskKey: 'homepage',
+        },
+      ],
+      homeModule: {
+        moduleKey: 'home',
+        source: '   \n\t',
+        status: 'succeeded',
+        updatedAt: 1782814095839,
+      },
+      latestPreview: null,
+    })
+
+    render(<Dashboard sessionId="blank-preview-session" />)
+
+    expect(screen.queryByTestId('generated-module-preview')).toBeNull()
+    expect(screen.getByTestId('intro-loader')).toBeTruthy()
+  })
+
+  it('renders DB-observed v3 gallery sessions immediately when static preview HTML is empty but OpenUI output is ready', () => {
     getConvexState().generationView = readyGenerationView({
       session: {
         sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
@@ -692,6 +724,7 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
       },
       latestPreview: {
         html: '',
+        openUiSource: dbObservedBreweryOpenUiSource,
         siteSpecJson: JSON.stringify({
           brand: 'Craft Beer Brewery',
           theme: 't3-chat',
@@ -703,8 +736,11 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
 
     render(<Dashboard sessionId="k574ms14ma9f94keq30r7dq24x89n1k2" />)
 
-    expect(screen.getByTestId('intro-loader')).toBeTruthy()
-    expect(screen.queryByTestId('generated-module-preview')).toBeNull()
+    expect(screen.queryByTestId('intro-loader')).toBeNull()
+    expect(screen.getByTestId('generated-module-preview')).toBeTruthy()
+    const source = screen.getByTestId('gmp-source').textContent ?? ''
+    expect(source).toContain('Pineapple Saison')
+    expect(source).toContain('Our Brew Selection')
   })
 
   // 2. Live Convex query → preview renders
@@ -789,66 +825,95 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
     ).toEqual(selectedBrandLogo)
   })
 
-  // 3. Fallback polling: WebSocket failure → 1.5s polling; success → stops
-  it('starts 1.5s fallback polling on WebSocket failure and stops when the live query recovers', async () => {
+  // 3. Convex realtime query drives readiness. No REST fallback fetches.
+  it('does not poll the session REST API while waiting for Convex realtime state', async () => {
     vi.useFakeTimers()
     try {
-      // undefined = live query loading / WebSocket failure → fallback kicks in.
       getConvexState().generationView = undefined
-      const readyFetchPayload = {
-        sessionId: 'poll-session',
-        status: 'preview_ready',
-        prompt: 'A polled site',
-        preferredLanguage: 'en',
-        preferredExportTarget: 'html',
-        previewVersion: 1,
-        homeModule: {
-          moduleKey: 'home',
-          source: '<!doctype html><html><body><h1>Polled</h1></body></html>',
-          status: 'succeeded',
-          updatedAt: 999,
-        },
-        preview: null,
-        siteSpec: null,
-        tasks: [{ id: 't1', title: 'Build', status: 'succeeded' }],
-      }
-      const fetchMock = vi
-        .fn()
-        .mockResolvedValue({ ok: true, json: async () => readyFetchPayload })
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn() })
       vi.stubGlobal('fetch', fetchMock)
 
-      const { rerender } = render(<Dashboard sessionId="poll-session" />)
+      render(<Dashboard sessionId="loading-session" />)
 
-      // Expected: the immediate fallback fetch fires on mount and the first
-      // 1.5s polling tick applies the polled snapshot so the preview renders.
-      // (waitFor cannot be used because its own setInterval is also faked.)
-      await vi.advanceTimersByTimeAsync(1500)
-      expect(screen.getByTestId('gmp-source').textContent).toContain(
-        '<h1>Polled</h1>',
-      )
+      expect(screen.getByTestId('intro-loader')).toBeTruthy()
+      expect(screen.queryByTestId('generated-module-preview')).toBeNull()
 
-      // Expected: polling continues at a 1.5s cadence → another fetch fires.
-      const callsAfterFirst = fetchMock.mock.calls.length
-      expect(callsAfterFirst).toBeGreaterThanOrEqual(1)
-      await vi.advanceTimersByTimeAsync(1500)
-      expect(fetchMock.mock.calls.length).toBeGreaterThan(callsAfterFirst)
+      await vi.advanceTimersByTimeAsync(5000)
 
-      // Expected: when the live Convex query recovers, the polling effect
-      // cleanup clears the interval → no further fetches.
-      getConvexState().generationView = readyGenerationView({
-        session: { sessionId: 'poll-session', status: 'preview_ready' },
-      })
-      rerender(<Dashboard sessionId="poll-session" />)
-
-      const callsBeforeStop = fetchMock.mock.calls.length
-      await vi.advanceTimersByTimeAsync(3000)
-      expect(fetchMock.mock.calls.length).toBe(callsBeforeStop)
+      expect(fetchMock).not.toHaveBeenCalled()
+      expect(screen.getByTestId('intro-loader')).toBeTruthy()
+      expect(screen.queryByTestId('generated-module-preview')).toBeNull()
     } finally {
       vi.useRealTimers()
     }
   })
 
-  it('keeps the intro loader visible when Convex and fallback polling have no renderable preview yet', async () => {
+  it('renders when the Convex realtime query emits a renderable preview', () => {
+    getConvexState().generationView = undefined
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn() })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { rerender } = render(<Dashboard sessionId="realtime-session" />)
+
+    expect(screen.getByTestId('intro-loader')).toBeTruthy()
+    expect(screen.queryByTestId('generated-module-preview')).toBeNull()
+
+    getConvexState().generationView = readyGenerationView({
+      session: { sessionId: 'realtime-session', status: 'preview_ready' },
+      homeModule: {
+        moduleKey: 'home',
+        source:
+          '<!doctype html><html><body><h1>Realtime Ready</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 1782814095839,
+      },
+    })
+    rerender(<Dashboard sessionId="realtime-session" />)
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('intro-loader')).toBeNull()
+    expect(screen.getByTestId('generated-module-preview')).toBeTruthy()
+    expect(screen.getByTestId('gmp-source').textContent).toContain(
+      'Realtime Ready',
+    )
+  })
+
+  it('renders already-built static HTML from Convex realtime without requiring a home module source', () => {
+    getConvexState().generationView = readyGenerationView({
+      session: {
+        sessionId: 'static-gallery-session',
+        status: 'preview_ready',
+        prompt:
+          'a craft beer brewery with taproom tours and seasonal releases in portland',
+        preferredLanguage: 'lt',
+        preferredExportTarget: 'html',
+        previewVersion: 1,
+      },
+      tasks: [{ status: 'succeeded', title: 'Build', taskKey: 'homepage' }],
+      homeModule: undefined,
+      latestPreview: {
+        html: dbObservedBreweryRenderedHtml,
+        version: 1,
+      },
+      siteSpec: {
+        specJson: JSON.stringify({
+          brand: 'Craft Beer Brewery',
+          theme: 'darkmatter',
+        }),
+        updatedAt: 1782814095839,
+      },
+    })
+
+    render(<Dashboard sessionId="static-gallery-session" />)
+
+    expect(screen.queryByTestId('intro-loader')).toBeNull()
+    expect(screen.getByTestId('generated-module-preview')).toBeTruthy()
+    const source = screen.getByTestId('gmp-source').textContent ?? ''
+    expect(source).toContain('data-sf-export-page="Home"')
+    expect(source).toContain('Pineapple Saison')
+  })
+
+  it('keeps the intro loader visible while Convex realtime has no renderable preview yet', async () => {
     vi.useFakeTimers()
     try {
       getConvexState().generationView = undefined
@@ -862,9 +927,7 @@ describe('Dashboard session workspace + fallback polling + intro loader', () => 
 
       await vi.advanceTimersByTimeAsync(3000)
 
-      expect(fetchMock).toHaveBeenCalledWith('/api/sessions/loading-session', {
-        headers: { accept: 'application/json' },
-      })
+      expect(fetchMock).not.toHaveBeenCalled()
       expect(screen.getByTestId('intro-loader')).toBeTruthy()
       expect(screen.queryByTestId('generated-module-preview')).toBeNull()
     } finally {
