@@ -357,6 +357,32 @@ const isLikelyImageAltKey = (key: string): boolean => {
   return false
 }
 
+const readStringField = (
+  value: Record<string, unknown>,
+  key: string,
+): string | null => {
+  const field = value[key]
+  return typeof field === 'string' && field.trim() ? field.trim() : null
+}
+
+const collectDerivedImageAltCandidates = (
+  value: Record<string, unknown>,
+  into: Set<string>,
+): void => {
+  const name = readStringField(value, 'name')
+  const tag = readStringField(value, 'tag')
+  if (
+    name !== null &&
+    tag !== null &&
+    readStringField(value, 'metricA') !== null &&
+    readStringField(value, 'labelA') !== null &&
+    readStringField(value, 'metricB') !== null &&
+    readStringField(value, 'labelB') !== null
+  ) {
+    into.add(`${name} ${tag} marketing case study`)
+  }
+}
+
 const collectImageAltCandidates = (
   value: unknown,
   into: Set<string>,
@@ -374,6 +400,7 @@ const collectImageAltCandidates = (
     return
   }
   if (!isRecord(value)) return
+  collectDerivedImageAltCandidates(value, into)
   for (const [childKey, childValue] of Object.entries(value)) {
     collectImageAltCandidates(childValue, into, childKey)
   }
