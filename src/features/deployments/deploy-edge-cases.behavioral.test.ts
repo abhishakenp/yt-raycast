@@ -755,10 +755,15 @@ describe('Lakebed static project builder', () => {
       })
       const preview = project.files['client/preview.ts']
 
-      expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.pexels.com/v1/search?query=max-the-dog&per_page=15&orientation=landscape',
-        { headers: { Authorization: 'pexels-key' } },
+      const calls = fetchMock.mock.calls as unknown as Array<
+        [RequestInfo | URL, RequestInit | undefined]
+      >
+      expect(String(calls[0]?.[0])).toBe(
+        'https://api.pexels.com/v1/search?query=max+dog&per_page=15&orientation=landscape',
       )
+      expect(calls[0]?.[1]).toEqual({
+        headers: { Authorization: 'pexels-key' },
+      })
       expect(preview).toContain(resolvedPexelsUrl)
       expectNoStockProviderCredentialsOrProxy(preview)
       expect(preview).not.toContain('picsum.photos')

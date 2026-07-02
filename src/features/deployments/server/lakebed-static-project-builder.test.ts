@@ -175,10 +175,15 @@ describe('buildStaticLakebedProjectFiles', () => {
     )
     const clientBundle = decodeClientBundle(deployRequest.requestBody)
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.pexels.com/v1/search?query=glass%20polished%20showcase%20installations&per_page=15&orientation=landscape',
-      { headers: { Authorization: 'pexels-key' } },
+    const calls = fetchMock.mock.calls as unknown as Array<
+      [RequestInfo | URL, RequestInit | undefined]
+    >
+    expect(String(calls[0]?.[0])).toBe(
+      'https://api.pexels.com/v1/search?query=glass+polished+showcase+installations&per_page=15&orientation=landscape',
     )
+    expect(calls[0]?.[1]).toEqual({
+      headers: { Authorization: 'pexels-key' },
+    })
     expect(clientBundle).toContain(resolvedPexelsUrl)
     expectNoStockProviderCredentialsOrProxy(clientBundle)
     expect(clientBundle).not.toContain('picsum.photos')

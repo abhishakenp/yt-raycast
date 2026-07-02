@@ -2005,7 +2005,7 @@ export const WebhookHero = defineCapsule({
       expect.arrayContaining([
         {
           alt: 'Existing avatar',
-          src: 'https://picsum.photos/seed/existing-avatar/64/64',
+          src: 'https://picsum.photos/seed/portrait-person-avatar/100/100',
         },
         {
           alt: 'Golden retriever puppy playing with a ball',
