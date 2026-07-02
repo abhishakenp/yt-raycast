@@ -277,7 +277,6 @@ describe('GitHubPanel', () => {
       body: JSON.stringify({
         target: 'html',
         anonymousOwnerSecret: 'owner-secret',
-        anonymousClientId: 'anon_test_client',
       }),
     })
     expect(fetchMock.mock.calls[pushCallIndex]?.[1]).toMatchObject({
