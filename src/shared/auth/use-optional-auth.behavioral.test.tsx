@@ -51,6 +51,7 @@ describe('useOptionalAuth', () => {
   })
 
   it('falls back to the default Clerk token when the Convex JWT template is missing', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', '')
     vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_optional_auth')
     const getToken = vi
       .fn()
@@ -82,6 +83,7 @@ describe('useOptionalAuth', () => {
   })
 
   it('dispatches the app sign-in event when Clerk is configured but not mounted with openSignIn', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', '')
     vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_optional_auth')
     setClerk({ session: null, user: null })
     const dispatched: string[] = []
@@ -97,6 +99,7 @@ describe('useOptionalAuth', () => {
   })
 
   it('exposes Clerk profile actions and falls back to sign-in when profile UI is unavailable', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', '')
     vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_optional_auth')
     const openUserProfile = vi.fn()
     const openSignIn = vi.fn()
