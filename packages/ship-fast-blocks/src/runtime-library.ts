@@ -10,18 +10,19 @@ import {
   type ShipFastCapsule,
 } from './capsules/openui.ts'
 import {
-  runtimeComponentLoaders,
+  runtimeComponentNames,
   type RuntimeComponentName,
-} from './generated/runtime-component-loaders.ts'
+} from './generated/runtime-component-names.ts'
 import { runtimeSectionComponentNameSet } from './generated/runtime-section-component-names.ts'
 
 const rootComponentName = 'Stack' satisfies RuntimeComponentName
 const componentCallPattern = /\b([A-Z][A-Za-z0-9_]*)\s*\(/g
 const capsuleCache = new Map<RuntimeComponentName, Promise<ShipFastCapsule>>()
 const libraryCache = new Map<string, Promise<Library>>()
+const runtimeComponentNameSet = new Set<string>(runtimeComponentNames)
 
 const isRuntimeComponentName = (name: string): name is RuntimeComponentName =>
-  name in runtimeComponentLoaders
+  runtimeComponentNameSet.has(name)
 
 export function extractOpenUIRuntimeComponentNames(
   response: string | null | undefined,
@@ -106,8 +107,11 @@ export function loadOpenUIRuntimeComponent(
 ): Promise<ShipFastCapsule> {
   let cached = capsuleCache.get(name)
   if (!cached) {
-    cached = runtimeComponentLoaders[name]().then((capsule) =>
-      withRealtimeSection(name, capsule),
+    cached = import('./generated/runtime-component-loaders.ts').then(
+      ({ runtimeComponentLoaders }) =>
+        runtimeComponentLoaders[name]().then((capsule) =>
+          withRealtimeSection(name, capsule),
+        ),
     )
     capsuleCache.set(name, cached)
   }
