@@ -1934,13 +1934,34 @@ export const WebhookHero = defineCapsule({
             },
             caseStudies: [
               {
-                imageAlt: 'स्काईलाइन रिटेल हब खुदरा marketing case study',
+                name: 'स्काईलाइन रिटेल हब',
+                tag: 'खुदरा',
+                summary:
+                  'एक 10-मंजिला ग्लास स्टोरफ्रंट जिसने पैदल यातायात में 35% की वृद्धि की।',
+                metricA: '10,000',
+                labelA: 'वर्ग फ़ुटबाल',
+                metricB: '35%',
+                labelB: 'फ़ुट-ट्रैफ़िक बूस्ट',
               },
               {
-                imageAlt: 'लक्से होटल लॉबी सत्कार marketing case study',
+                name: 'लक्से होटल लॉबी',
+                tag: 'सत्कार',
+                summary:
+                  'फर्श से छत तक कांच की दीवारें एक चमकदार स्वागत क्षेत्र बनाती हैं।',
+                metricA: '5',
+                labelA: 'सितारों की रेटिंग',
+                metricB: '98%',
+                labelB: 'अतिथि संतुष्टि',
               },
               {
-                imageAlt: 'मेट्रो कॉरपोरेट कैंपस दफ्तर marketing case study',
+                name: 'मेट्रो कॉरपोरेट कैंपस',
+                tag: 'दफ्तर',
+                summary:
+                  'ऊर्जा-कुशल ग्लास पर्दे की दीवार एचवीएसी लोड को 22% तक कम करती है।',
+                metricA: '22%',
+                labelA: 'ऊर्जा बचत',
+                metricB: '150,000',
+                labelB: 'वर्गफुट शीशा',
               },
             ],
           },
