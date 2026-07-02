@@ -1933,6 +1933,62 @@ export const WebhookHero = defineCapsule({
     ).toBe(true)
   })
 
+  it('resolves missing generated image alts with the Vite Pexels key used by app environments', async () => {
+    delete process.env.PEXELS_API_KEY
+    process.env.VITE_PEXELS_API_KEY = 'vite_pexels_test_key'
+    const requests: Array<{ auth?: string; url: string }> = []
+    globalThis.fetch = (async (url: RequestInfo | URL, init?: RequestInit) => {
+      requests.push({
+        auth: (init?.headers as Record<string, string> | undefined)
+          ?.Authorization,
+        url: String(url),
+      })
+      return new Response(
+        JSON.stringify({
+          photos: [
+            {
+              src: {
+                large: 'https://images.pexels.com/photos/vite-large.jpeg',
+                large2x: 'https://images.pexels.com/photos/vite-large2x.jpeg',
+                medium: 'https://images.pexels.com/photos/vite-medium.jpeg',
+                original: 'https://images.pexels.com/photos/vite-original.jpeg',
+              },
+            },
+          ],
+        }),
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      )
+    }) as typeof fetch
+
+    const sources = await resolveLakebedImageSources(
+      [
+        {
+          componentName: 'ShowroomPage',
+          label: 'Home',
+          path: '/',
+          props: {
+            hero: { imageAlt: 'Polished glass showroom installation' },
+          },
+        },
+      ],
+      undefined,
+    )
+
+    expect(requests).toEqual([
+      expect.objectContaining({
+        auth: 'vite_pexels_test_key',
+        url: expect.stringContaining('api.pexels.com/v1/search'),
+      }),
+    ])
+    expect(sources).toEqual([
+      {
+        alt: 'Polished glass showroom installation',
+        src: 'https://images.pexels.com/photos/vite-large2x.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop',
+      },
+    ])
+    expect(sources[0]?.src).not.toContain('picsum.photos')
+  })
+
   it('resolves missing generated image alts concurrently', async () => {
     process.env.PEXELS_API_KEY = 'pexels_test_key'
     let activeRequests = 0

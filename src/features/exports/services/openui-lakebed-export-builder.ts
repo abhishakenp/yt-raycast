@@ -200,8 +200,14 @@ type PexelsResponse = {
   photos?: PexelsPhoto[]
 }
 
-const readServerEnv = (key: string): string =>
-  typeof process !== 'undefined' ? (process.env[key]?.trim() ?? '') : ''
+const readServerEnv = (...keys: string[]): string => {
+  if (typeof process === 'undefined') return ''
+  for (const key of keys) {
+    const value = process.env[key]?.trim()
+    if (value) return value
+  }
+  return ''
+}
 
 const choosePexelsPhotoUrl = (
   photo: PexelsPhoto | undefined,
@@ -250,7 +256,7 @@ const resolvePexelsImageForLakebed = async (
   w: number,
   h: number,
 ): Promise<string | null> => {
-  const pexelsApiKey = readServerEnv('PEXELS_API_KEY')
+  const pexelsApiKey = readServerEnv('PEXELS_API_KEY', 'VITE_PEXELS_API_KEY')
   if (!pexelsApiKey) return null
   const searchUrl = new URL('https://api.pexels.com/v1/search')
   searchUrl.searchParams.set('query', searchQueryFromAlt(alt))
