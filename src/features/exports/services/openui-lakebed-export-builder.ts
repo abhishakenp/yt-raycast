@@ -3339,8 +3339,15 @@ function fallbackLakebedQueryValue(name: string): unknown {
 }
 
 function canUseLakebedRuntimeHooks(): boolean {
-  const source = Function.prototype.toString.call(useQuery);
-  return !source.includes("getQueryValue") && !source.includes("addQueryListener");
+  const querySource = Function.prototype.toString.call(useQuery);
+  const mutationSource = Function.prototype.toString.call(useMutation);
+  const combinedSource = querySource + "\\n" + mutationSource;
+  return ![
+    "addQueryListener",
+    "getQueryValue",
+    "mutation.run",
+    "query.subscribe",
+  ].some((needle) => combinedSource.includes(needle));
 }
 
 function useLakebedMutation<Args extends unknown[] = unknown[], Result = unknown>(
