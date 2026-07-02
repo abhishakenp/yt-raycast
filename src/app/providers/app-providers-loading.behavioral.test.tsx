@@ -268,7 +268,7 @@ describe('app provider loading', () => {
       expect(screen.getByTestId('child')).toBeTruthy()
     })
 
-    it('shows the public launch backdrop on the homepage without loading Convex providers', async () => {
+    it('wraps the homepage in Convex providers because the home gallery uses Convex hooks', async () => {
       appProviderMocks.pathname = '/'
       vi.stubEnv('VITE_CONVEX_URL', 'http://localhost:3001')
       const { AppProviders } = await import('@/app/providers/AppProviders')
@@ -280,8 +280,8 @@ describe('app provider loading', () => {
       )
 
       expect(await screen.findByTestId('launch-backdrop')).toBeTruthy()
+      expect(await screen.findByTestId('convex-with-clerk')).toBeTruthy()
       expect(screen.getByText('Public home')).toBeTruthy()
-      expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
       expect(screen.queryByTestId('convex-anonymous')).toBeNull()
     })
 
@@ -366,6 +366,7 @@ describe('app provider loading', () => {
       }
 
       for (const pathname of [
+        '/',
         '/generate/k574ms14ma9f94keq30r7dq24x89n1k2',
         '/gallery',
         '/mine',

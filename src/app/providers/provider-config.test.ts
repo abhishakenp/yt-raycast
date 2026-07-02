@@ -41,7 +41,7 @@ describe('provider config', () => {
   })
 
   it('loads Convex only on routes that call Convex hooks directly', () => {
-    expect(shouldUseConvexProviders('/')).toBe(false)
+    expect(shouldUseConvexProviders('/')).toBe(true)
     expect(shouldUseConvexProviders('/generate/session_123')).toBe(true)
     expect(shouldUseConvexProviders('/generate/missing-session')).toBe(true)
     expect(shouldUseConvexProviders('/gallery')).toBe(true)
