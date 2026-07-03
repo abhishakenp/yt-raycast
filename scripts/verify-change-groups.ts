@@ -47,7 +47,7 @@ export const changeGroups: ChangeGroup[] = [
       /^convex\/session_readiness\.test\.ts$/,
       /^convex\/sessions\.ts$/,
       /^convex\/(?:authenticated_admission|billing|brandfetch|chat_refinement|cms|contentCache|customLanguages|deployment|export_entitlement|gallery|generation_budget|generation_view|generationConfig|github|lakebed|lakebed_deploy|medusa|translationCache|usage_metrics)\.test\.ts$/,
-      /^convex\/(?:brandfetch|customLanguages|export_artifacts|github|lakebed_deploy|openui_ssr_health|translationCache)\.ts$/,
+      /^convex\/(?:brandfetch|customLanguages|export_artifacts|github|lakebed|lakebed_deploy|openui_ssr_health|translationCache)\.ts$/,
       /^convex\/lib\/(?:chat_refinement|session_|inline_edit_br_persistence_contract|cms_helpers|module_naming|openui_error_html).*\.(?:test\.)?ts$/,
       /^convex\/_generated\/ai\//,
     ],
