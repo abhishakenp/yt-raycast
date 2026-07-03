@@ -131,6 +131,57 @@ describe('session edit mutation helpers', () => {
     expect(reloaded2?.homeModule?.source).toContain('Reloaded twice headline')
   })
 
+  it('maps translated selected text back to canonical source text before patching artifacts', async () => {
+    const t = sessionEditConvexTest()
+    const sessionId = await createReadySession(t, 'Original English headline')
+
+    await t.mutation(api.sessions.setPreferredLanguage, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      preferredLanguage: 'hi',
+    })
+    await t.mutation(api.translationCache.setBatch, {
+      locale: 'hi',
+      entries: [
+        {
+          text: 'Original English headline',
+          translation: 'मूल अंग्रेज़ी शीर्षक',
+        },
+      ],
+    })
+
+    await expect(
+      t.mutation(api.sessions.createEdit, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'text',
+        targetLabel: 'Hero headline',
+        beforeText: 'मूल अंग्रेज़ी शीर्षक',
+        afterText: 'अपडेट किया गया शीर्षक',
+      }),
+    ).resolves.toMatchObject({
+      previewVersion: 2,
+      saved: true,
+    })
+
+    const reloaded = await t.query(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+    expect(reloaded?.homeModule?.source).toContain('अपडेट किया गया शीर्षक')
+    expect(reloaded?.homeModule?.source).not.toContain(
+      'Original English headline',
+    )
+    expect(reloaded?.siteSpec?.specJson).toContain('अपडेट किया गया शीर्षक')
+    expect(reloaded?.latestPreview?.html).toContain('अपडेट किया गया शीर्षक')
+
+    await expect(
+      t.query(api.translationCache.getBatch, {
+        locale: 'hi',
+        texts: ['अपडेट किया गया शीर्षक'],
+      }),
+    ).resolves.toEqual(['अपडेट किया गया शीर्षक'])
+  })
+
   it('records edit history with target label and occurrence metadata', async () => {
     const t = sessionEditConvexTest()
     const sessionId = await createReadySession(t, 'Repeated headline')
