@@ -119,7 +119,7 @@ const loadDirectGeneratedEndpointRoute = async (routeSource: string) => {
     writeExportFiles(
       {
         'app/api/webhooks/incoming/route.ts': routeSource,
-        'src/lib/site-data-store.ts': `
+        'src/lib/store.ts': `
           export const endpoint = (_definition: unknown, handler: unknown) => ({ handler })
           export const json = (value: unknown, init?: ResponseInit) => ({ kind: 'json', value, init })
           export const text = (value: string, init?: ResponseInit) => new Response(value, init)
@@ -215,6 +215,9 @@ const renderExportedBrowserEntry = async (
                   text: `Exported browser bundle leaked workspace package import: ${args.path}`,
                 },
               ],
+            }))
+            pluginBuild.onResolve({ filter: /^@\// }, (args) => ({
+              path: join(directory, args.path.replace(/^@\//, 'src/')),
             }))
             pluginBuild.onLoad(
               {
@@ -862,7 +865,7 @@ export function useParams() { return {}; }
     expect(pricingPage).toContain('<PricingPage />')
   })
 
-  it('creates QueryClient at module level in Next SiteDataProvider (not inside useState)', async () => {
+  it('creates QueryClient at module level in Next QueryProvider (not inside useState)', async () => {
     const result = await buildOpenUIExport({
       source: 'root = EcommerceHero()',
       siteSpecJson,
@@ -870,7 +873,7 @@ export function useParams() { return {}; }
       target: 'next',
     })
     const files = unzipBuiltExportTextFiles(result.body)
-    const provider = files['src/lib/site-data-provider.tsx']
+    const provider = files['src/lib/query-provider.tsx']
     expect(provider).toBeDefined()
     // QueryClient must be created at module scope, not inside useState
     expect(provider).not.toContain('useState')
@@ -888,8 +891,8 @@ export function useParams() { return {}; }
       target: 'next',
     })
     const files = unzipBuiltExportTextFiles(result.body)
-    // SiteDataProvider
-    const provider = files['src/lib/site-data-provider.tsx']
+    // QueryProvider
+    const provider = files['src/lib/query-provider.tsx']
     expect(provider).toContain('PropsWithChildren')
     expect(provider).not.toContain('{ children: ReactNode }')
     // BrandLogoProvider
@@ -1074,7 +1077,7 @@ export function useParams() { return {}; }
     const files = unzipBuiltExportTextFiles(result.body)
 
     expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
-    expect(files['src/lib/site-data.ts']).toBeDefined()
+    expect(files['src/lib/store.ts']).toBeDefined()
     const { dom, renderError, runtimeErrors } =
       await renderExportedBrowserEntry(files, `import './src/main'`)
     expect(renderError).toBeUndefined()
@@ -1137,7 +1140,7 @@ createRoot(document.getElementById('root')!).render(<${componentName} />)`,
     }
   })
 
-  it('packages fullstack capsule helpers for Next exports with the site data provider', async () => {
+  it('packages fullstack capsule helpers for Next exports with the query provider', async () => {
     const result = await buildOpenUIExport({
       source: 'root = EcommerceHero()',
       siteSpecJson,
@@ -1148,15 +1151,15 @@ createRoot(document.getElementById('root')!).render(<${componentName} />)`,
 
     expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
     expect(files['app/layout.tsx']).toBeDefined()
-    expect(files['src/lib/site-data.ts']).toBeDefined()
+    expect(files['src/lib/store.ts']).toBeDefined()
     const { dom, renderError, runtimeErrors } =
       await renderExportedBrowserEntry(
         files,
         `import React from 'react'
 import { createRoot } from 'react-dom/client'
 import Page from './app/page'
-import { SiteDataProvider } from './src/lib/site-data-provider'
-createRoot(document.getElementById('root')!).render(<SiteDataProvider><Page /></SiteDataProvider>)`,
+import { QueryProvider } from './src/lib/query-provider'
+createRoot(document.getElementById('root')!).render(<QueryProvider><Page /></QueryProvider>)`,
       )
     expect(renderError).toBeUndefined()
     expect(runtimeErrors).toEqual([])
@@ -1183,8 +1186,8 @@ createRoot(document.getElementById('root')!).render(<SiteDataProvider><Page /></
         `import React from 'react'
 import { createRoot } from 'react-dom/client'
 import Page from './app/page'
-import { SiteDataProvider } from './src/lib/site-data-provider'
-createRoot(document.getElementById('root')!).render(<SiteDataProvider><Page /></SiteDataProvider>)`,
+import { QueryProvider } from './src/lib/query-provider'
+createRoot(document.getElementById('root')!).render(<QueryProvider><Page /></QueryProvider>)`,
       )
     expect(renderError).toBeUndefined()
     expect(runtimeErrors).toEqual([])

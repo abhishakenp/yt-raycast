@@ -29,6 +29,20 @@ import {
   renderNextSitemapRoute,
   type ExportRouteSeo,
 } from './export-seo'
+import {
+  createDataKeys,
+  mutationActionName,
+  queryActionName,
+  renderKeyedMutationHook,
+  renderLakebedAdapterHook,
+  renderNextServerActions,
+  renderNextStore,
+  renderQueryClientProvider,
+  renderReactStore,
+  renderShooAuthProvider,
+  renderShooCallbackRoute,
+  type DataKeys,
+} from './export-data'
 import { resolvePreviewImageUrl } from './preview-image-url-resolution'
 
 type ParsedOpenUIProgram = {
@@ -813,14 +827,40 @@ const transformComponentImports = (
       moduleName === '@ship-fast/lakebed/react' ||
       moduleName === '@ship-fast/lakebed/server'
     ) {
-      imports.push(
-        rewriteImportModule(
-          statement,
-          sourceFile,
-          moduleName,
-          relativeImportPath(generatedFilePath, 'src/lib/site-data.ts'),
-        ),
+      // Rewrite lakebed imports to point to the store, which exports
+      // createLakebedDefinition, string, number, table, LakebedClientRuntime.
+      // useKeyedLakebedMutation is translated to useKeyedMutation in
+      // component bodies, so we filter it out of the import.
+      const storePath = relativeImportPath(
+        generatedFilePath,
+        'src/lib/store.ts',
       )
+      if (importClause?.isTypeOnly) {
+        // Type-only import: rewrite to store
+        if (
+          importClause.namedBindings &&
+          ts.isNamedImports(importClause.namedBindings)
+        ) {
+          const typeNames = importClause.namedBindings.elements.map(
+            (el) => el.name.text,
+          )
+          imports.push(
+            `import type { ${typeNames.join(', ')} } from '${storePath}'`,
+          )
+        }
+      } else if (
+        importClause?.namedBindings &&
+        ts.isNamedImports(importClause.namedBindings)
+      ) {
+        const names = importClause.namedBindings.elements.map((el) =>
+          el.propertyName
+            ? `${el.propertyName.text} as ${el.name.text}`
+            : el.name.text,
+        )
+        if (names.length > 0) {
+          imports.push(`import { ${names.join(', ')} } from '${storePath}'`)
+        }
+      }
       continue
     }
 
@@ -1360,81 +1400,41 @@ const rewriteNavigationCalls = (
   return { body: nextBody, usesNavigation: true }
 }
 
-const lakebedDataImport = `import {
-  applySiteMutation,
-  defaultSiteQueryValue,
-  guestAuth,
-  invalidateSiteQueries,
-  readSiteAuth,
-  readSiteData,
-  readSiteDataSnapshot,
-  runSiteMutation,
-  signInWithGoogle,
-  signOut,
-  siteAuthQueryKey,
-  siteMutationKey,
-  siteQueryKey,
-  updateSiteQueries,
-  useLakebedAdapter,
-} from '../lib/site-data'`
-
 const renderTranslatedQuery = (
   variableName: string,
   queryName: string,
   fallback?: string,
 ) => {
-  const defaultValue = fallback
-    ? `(${fallback.trim()}) as any`
-    : `defaultSiteQueryValue(${queryName}) as any`
+  const actionName = queryActionName(queryName)
+  const defaultValue = fallback ? `(${fallback.trim()})` : `[]`
   return `const { data: ${variableName} = ${defaultValue} } = useQuery({
-    queryKey: siteQueryKey(${queryName}),
-    queryFn: () => readSiteData(${queryName}),
-    initialData: () => readSiteDataSnapshot(${queryName}),
-    staleTime: Infinity,
-    gcTime: Infinity,
+    queryKey: [${JSON.stringify(queryName)}],
+    queryFn: ${actionName},
   });`
 }
 
-const renderTranslatedMutation = (variableName: string, mutationName: string) =>
-  `const ${variableName}Mutation = useMutation({
-    mutationKey: siteMutationKey(${mutationName}),
-    mutationFn: (args: unknown[]) => runSiteMutation(${mutationName}, args),
-    onSuccess: () => invalidateSiteQueries(queryClient, ${mutationName}),
-  });
-  const ${variableName} = Object.assign(async (...args: any[]) => {
-    const result = applySiteMutation(${mutationName}, args);
-    updateSiteQueries(queryClient, ${mutationName});
-    await ${variableName}Mutation.mutateAsync(args);
-    return result;
-  }, {
-    get isPending() {
-      return ${variableName}Mutation.isPending;
-    },
-    get lastError() {
-      return ${variableName}Mutation.error ?? null;
-    },
-    get pendingCount() {
-      return ${variableName}Mutation.isPending ? 1 : 0;
-    },
-    reset() {
-      ${variableName}Mutation.reset();
-    },
+const renderTranslatedMutation = (
+  variableName: string,
+  mutationName: string,
+) => {
+  const actionName = mutationActionName(mutationName)
+  return `const ${variableName} = useMutation({
+    mutationFn: ${actionName},
+    onSuccess: () => queryClient.invalidateQueries(),
   });`
+}
 
-const translateLakebedRuntimeCalls = (body: string) => {
-  let usesQuery = false
-  let usesMutation = false
-  let usesAuth = false
+const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
   const usesSignIn = /\blakebed\.signInWithGoogle\(\)/.test(body)
   const usesSignOut = /\blakebed\.signOut\(\)/.test(body)
 
   let nextBody = body.replace(
     /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*lakebed\.useQuery\(([^;\n]+)\)(\s*\?\?\s*[^;\n]+)?;?/g,
     (_match, variableName: string, queryName: string, fallback?: string) => {
-      usesQuery = true
+      dataKeys.queries.add(queryName.trim().replace(/['"]/g, ''))
       return renderTranslatedQuery(
         variableName,
-        queryName.trim(),
+        queryName.trim().replace(/['"]/g, ''),
         fallback?.replace(/^\s*\?\?\s*/, ''),
       )
     },
@@ -1443,64 +1443,59 @@ const translateLakebedRuntimeCalls = (body: string) => {
   nextBody = nextBody.replace(
     /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*lakebed\.useMutation\(([^;\n]+)\);?/g,
     (_match, variableName: string, mutationName: string) => {
-      usesMutation = true
-      return renderTranslatedMutation(variableName, mutationName.trim())
+      const cleanName = mutationName.trim().replace(/['"]/g, '')
+      dataKeys.mutations.add(cleanName)
+      return renderTranslatedMutation(variableName, cleanName)
     },
   )
 
+  // Translate useKeyedLakebedMutation(lakebed, 'name') → useKeyedMutation(nameAction)
+  nextBody = nextBody.replace(
+    /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*useKeyedLakebedMutation\(\s*lakebed\s*,\s*['"]([^'"]+)['"]\s*\)/g,
+    (_match, variableName: string, mutationName: string) => {
+      dataKeys.mutations.add(mutationName)
+      const actionName = mutationActionName(mutationName)
+      return `const ${variableName} = useKeyedMutation(${actionName})`
+    },
+  )
+
+  // Translate lakebed.useAuth() → useShooAuth() + adaptShooIdentity
   nextBody = nextBody.replace(
     /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*lakebed\.useAuth\(\);?/g,
     (_match, variableName: string) => {
-      usesAuth = true
-      return `const { data: ${variableName} = guestAuth } = useQuery({
-    queryKey: siteAuthQueryKey,
-    queryFn: readSiteAuth,
-    initialData: guestAuth,
-    staleTime: Infinity,
-    gcTime: Infinity,
-  });`
+      dataKeys.usesAuth = true
+      return `const { identity: shooIdentity, signIn, clearIdentity } = useShooAuth()\n  const ${variableName} = adaptShooIdentity(shooIdentity)`
     },
   )
 
-  nextBody = nextBody
-    .replace(
-      /\blakebed\.signInWithGoogle\(\)/g,
-      'signInWithGoogleMutation.mutateAsync()',
-    )
-    .replace(/\blakebed\.signOut\(\)/g, 'signOutMutation.mutate()')
-
-  const authMutationPrelude =
-    usesSignIn || usesSignOut
-      ? `${
-          usesSignIn
-            ? `const signInWithGoogleMutation = useMutation({
-    mutationKey: ['site-auth', 'sign-in'],
-    mutationFn: signInWithGoogle,
-    onSuccess: (auth) => queryClient.setQueryData(siteAuthQueryKey, auth),
-  });`
-            : ''
-        }
-  ${
-    usesSignOut
-      ? `const signOutMutation = useMutation({
-    mutationKey: ['site-auth', 'sign-out'],
-    mutationFn: signOut,
-    onSuccess: (auth) => queryClient.setQueryData(siteAuthQueryKey, auth),
-  });`
-      : ''
-  }`
-      : ''
-
-  if (authMutationPrelude) {
-    nextBody = `${authMutationPrelude}\n${nextBody}`
+  // Translate lakebed.signInWithGoogle() → signIn()
+  if (usesSignIn) {
+    dataKeys.usesSignIn = true
+    dataKeys.usesAuth = true
+    nextBody = nextBody.replace(/\blakebed\.signInWithGoogle\(\)/g, 'signIn()')
   }
+
+  // Translate lakebed.signOut() → clearIdentity()
+  if (usesSignOut) {
+    dataKeys.usesSignOut = true
+    dataKeys.usesAuth = true
+    nextBody = nextBody.replace(/\blakebed\.signOut\(\)/g, 'clearIdentity()')
+  }
+
+  // If auth is used but no specific variable was bound, still mark it
+  if (/\blakebed\.useAuth\(\)/.test(body)) {
+    dataKeys.usesAuth = true
+  }
+
+  const needsQueryClient =
+    dataKeys.mutations.size > 0 || usesSignIn || usesSignOut
 
   return {
     body: nextBody,
-    needsQueryClient: usesMutation || usesSignIn || usesSignOut,
-    usesAuth,
-    usesMutation,
-    usesQuery,
+    needsQueryClient,
+    usesAuth: dataKeys.usesAuth,
+    usesMutation: dataKeys.mutations.size > 0,
+    usesQuery: dataKeys.queries.size > 0,
   }
 }
 
@@ -1512,6 +1507,7 @@ const extractComponent = (
   componentName: string,
   stack: ExportStack,
   routeTargets: Record<string, string>,
+  dataKeys: DataKeys,
 ): ExtractedComponent => {
   const entry = getComponentSourceIndex().get(componentName)
   if (!entry)
@@ -1536,7 +1532,7 @@ const extractComponent = (
       sourceUsesLakebedRuntime(getBlockSourceFile(sourcePath)),
     )
   const translatedLakebed = usesLakebed
-    ? translateLakebedRuntimeCalls(functionBody)
+    ? translateLakebedRuntimeCalls(functionBody, dataKeys)
     : {
         body: functionBody,
         needsQueryClient: false,
@@ -1547,7 +1543,7 @@ const extractComponent = (
   const needsLakebedAdapter =
     usesLakebed && /\blakebed\b/.test(translatedLakebed.body)
   const translatedBody = needsLakebedAdapter
-    ? `const lakebed = useLakebedAdapter()\n${translatedLakebed.body}`
+    ? `const lakebed = useLakebed()\n${translatedLakebed.body}`
     : translatedLakebed.body
   const rewrittenNavigation = rewriteNavigationCalls(
     translatedBody,
@@ -1557,6 +1553,7 @@ const extractComponent = (
   const routePaths = rewrittenNavigation.usesNavigation
     ? `\nconst routePaths: Record<string, string> = ${JSON.stringify(routeTargets, null, 2)}\n`
     : ''
+  const componentSource = `${preludeSources.join('\n\n')}\n${rewrittenNavigation.body}`
   const queryHookImport =
     usesLakebed &&
     (translatedLakebed.usesAuth ||
@@ -1564,7 +1561,53 @@ const extractComponent = (
       translatedLakebed.usesQuery)
       ? `\nimport { useMutation, useQuery${translatedLakebed.needsQueryClient ? ', useQueryClient' : ''} } from '@tanstack/react-query'`
       : ''
-  const componentSource = `${preludeSources.join('\n\n')}\n${rewrittenNavigation.body}`
+  // Build named data imports based on what this component actually uses
+  const dataImportNames: string[] = []
+  // Collect query/mutation names used in THIS component's body
+  const componentQueryNames = [...dataKeys.queries].filter((name) =>
+    componentSource.includes(queryActionName(name)),
+  )
+  const componentMutationNames = [...dataKeys.mutations].filter((name) =>
+    componentSource.includes(mutationActionName(name)),
+  )
+  const usesKeyedMutation = /\buseKeyedMutation\b/.test(componentSource)
+  const usesShooAuth = /\buseShooAuth\b/.test(componentSource)
+  const dataImportPath =
+    stack === 'next' ? '../../app/actions/server-actions' : '../lib/store'
+  if (componentQueryNames.length > 0 || componentMutationNames.length > 0) {
+    const isNext = stack === 'next'
+    const allNames = [
+      ...componentQueryNames.map((n) =>
+        isNext
+          ? `${queryActionName(n)}Action as ${queryActionName(n)}`
+          : queryActionName(n),
+      ),
+      ...componentMutationNames.map((n) =>
+        isNext
+          ? `${mutationActionName(n)}Server as ${mutationActionName(n)}`
+          : mutationActionName(n),
+      ),
+    ]
+    dataImportNames.push(
+      `import { ${allNames.join(', ')} } from '${dataImportPath}'`,
+    )
+  }
+  if (usesKeyedMutation) {
+    dataImportNames.push(
+      `import { useKeyedMutation } from '../lib/use-keyed-mutation'`,
+    )
+  }
+  if (usesShooAuth) {
+    dataImportNames.push(`import { useShooAuth } from '@shoojs/react'`)
+    dataImportNames.push(`import { adaptShooIdentity } from '../lib/auth'`)
+  }
+  // Import useLakebed adapter when lakebed variable is still referenced
+  if (needsLakebedAdapter) {
+    const lakebedPath = stack === 'next' ? '../lib/use-lakebed' : '../lib/store'
+    dataImportNames.push(`import { useLakebed } from '${lakebedPath}'`)
+  }
+  const dataImports =
+    dataImportNames.length > 0 ? `\n${dataImportNames.join('\n')}` : ''
   // Detect runtime primitives (renderNode/useStateField) that need stub
   // implementations in the export. The runtime uses these to render child
   // element nodes and manage shared state. In the export we provide simple
@@ -1606,7 +1649,7 @@ const extractComponent = (
     componentImports = [`import React from 'react'`, ...componentImports]
   }
   const helpersSection = runtimeHelpers ? `\n${runtimeHelpers}\n` : ''
-  const source = `${componentImports.join('\n')}${queryHookImport}${usesLakebed ? `\n${lakebedDataImport}` : ''}${routePaths}
+  const source = `${componentImports.join('\n')}${queryHookImport}${dataImports}${routePaths}
 
 ${preludeSources.join('\n\n')}
 ${helpersSection}
@@ -2035,6 +2078,7 @@ const dependencyVersions: Record<string, string> = {
   'class-variance-authority': '^0.7.1',
   'radix-ui': '^1.4.3',
   '@tanstack/react-query': '^5.90.19',
+  '@shoojs/react': '^0.1.0',
 }
 
 const toDependencyRecord = (names: Iterable<string>): Record<string, string> =>
@@ -2230,1144 +2274,6 @@ export function StyleOverrides() {
 }
 `
 
-const renderSiteDataRuntime = (target: 'react' | 'next'): string => {
-  const nextActionImport =
-    target === 'next'
-      ? `import {
-  runSiteMutationAction,
-  signInWithGoogleAction,
-  signOutAction,
-} from './site-data-actions'
-`
-      : ''
-  const transport =
-    target === 'next'
-      ? `async function readRemote(name: string): Promise<unknown> {
-  const response = await fetch(\`/api/data?query=\${encodeURIComponent(name)}\`, {
-    cache: 'no-store',
-  })
-  if (!response.ok) throw new Error(\`Failed to read \${name}\`)
-  const payload = (await response.json()) as { value?: unknown }
-  return payload.value
-}
-
-async function writeRemote(name: string, args: unknown[]): Promise<unknown> {
-  if (name === 'auth:signIn') return signInWithGoogleAction()
-  if (name === 'auth:signOut') return signOutAction()
-  return runSiteMutationAction(name, args)
-}
-`
-      : `async function readRemote(name: string): Promise<unknown> {
-  if (name === 'auth') return localAuth
-  return readQueryValue(localStore, name)
-}
-
-async function writeRemote(name: string, args: unknown[]): Promise<unknown> {
-  if (name === 'auth:signIn') {
-    localAuth = createDemoAuth()
-    return localAuth
-  }
-  if (name === 'auth:signOut') {
-    localAuth = guestAuth
-    return localAuth
-  }
-  return mutationResult(localStore, name)
-}
-`
-
-  return `import { useCallback, useMemo, useRef, useState } from 'react'
-import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
-import { routes } from '../data/pages'
-${nextActionImport}
-
-type Store = Record<string, unknown>
-type FieldBuilder = { default(value: unknown): FieldBuilder }
-type AuthState = {
-  displayName: string | null
-  email: string | null
-  isAuthenticated: boolean
-  isGuest: boolean
-  isLoading: boolean
-  picture: string | null
-  user: {
-    displayName: string
-    email: string
-    picture: string | null
-  } | null
-  userId: string
-}
-type LakebedMutation = ((...args: unknown[]) => Promise<unknown>) & {
-  isPending: boolean
-  lastError: unknown | null
-  pendingCount: number
-  reset(): void
-}
-export type LakebedClientRuntime<_Definition = unknown> = {
-  signInWithGoogle(): Promise<AuthState>
-  signOut(): void
-  useAuth(): AuthState
-  useMutation(name: string): LakebedMutation
-  useQuery<TValue = unknown>(name: string): TValue
-}
-
-export const string = (): FieldBuilder => ({
-  default: () => string(),
-})
-
-export const number = (): FieldBuilder => ({
-  default: () => number(),
-})
-
-export const table = <TTable extends Record<string, unknown>>(
-  definition: TTable,
-): TTable => definition
-
-export const createLakebedDefinition = <TSchema extends Record<string, unknown>>(
-  schema: TSchema,
-) => ({
-  schema,
-  mutation: <TInput extends unknown[], TResult>(
-    handler: (ctx: unknown, ...input: TInput) => TResult,
-  ) => handler,
-  query: <TResult>(handler: (ctx: unknown) => TResult) => handler,
-})
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
-
-function collectionItems(name: string): Array<Record<string, unknown>> {
-  const items: Array<Record<string, unknown>> = []
-  const visit = (value: unknown) => {
-    if (!isRecord(value)) return
-    const collection = value[name]
-    if (Array.isArray(collection)) {
-      items.push(...collection.filter(isRecord))
-    } else if (isRecord(collection) && Array.isArray(collection.items)) {
-      items.push(...collection.items.filter(isRecord))
-    }
-    for (const nested of Object.values(value)) {
-      if (Array.isArray(nested)) nested.forEach(visit)
-      else visit(nested)
-    }
-  }
-  routes.forEach((route) => visit(route.props))
-  return items
-}
-
-const defaultCommerceProducts: Array<Record<string, unknown>> = [
-  {
-    alt: 'Featured product on a clean studio background',
-    badge: 'New',
-    brand: 'Featured',
-    image: '',
-    name: 'Signature Series',
-    oldPrice: '$230',
-    price: '$195',
-  },
-  {
-    alt: 'Lifestyle product photography on a neutral background',
-    badge: '',
-    brand: 'Featured',
-    image: '',
-    name: 'Everyday Essential',
-    oldPrice: '',
-    price: '$250',
-  },
-  {
-    alt: 'Close-up product detail on a neutral background',
-    badge: 'Sale',
-    brand: 'Featured',
-    image: '',
-    name: 'Classic Edition',
-    oldPrice: '$210',
-    price: '$175',
-  },
-  {
-    alt: 'Featured product on a clean studio background',
-    badge: '',
-    brand: 'Featured',
-    image: '',
-    name: 'Studio Collection',
-    oldPrice: '',
-    price: '$160',
-  },
-]
-
-function productsCollection(): Array<Record<string, unknown>> {
-  const products = collectionItems('products')
-  if (products.length > 0) return products
-  const hasCommerceRoute = routes.some((route) =>
-    /commerce|ecommerce|shop|store|marketplace/i.test(String(route.component)),
-  )
-  return hasCommerceRoute ? defaultCommerceProducts : products
-}
-
-const initialStore: Store = {
-  cartLines: [],
-  orderLines: [],
-  favoriteProductNames: new Set<string>(),
-  wishlistTitles: new Set<string>(),
-  favoriteTitles: new Set<string>(),
-  favoriteRestaurantNames: new Set<string>(),
-  favoriteMemberNames: new Set<string>(),
-  subscriberEmails: new Set<string>(),
-  orders: [],
-  inquiries: [],
-  products: productsCollection(),
-  restaurants: collectionItems('restaurants'),
-  subscribers: [],
-}
-
-export const guestAuth: AuthState = {
-  displayName: null,
-  email: null,
-  isAuthenticated: false,
-  isGuest: true,
-  isLoading: false,
-  picture: null,
-  user: null,
-  userId: 'guest',
-}
-
-function createDemoAuth(): AuthState {
-  return {
-    displayName: 'Demo Shopper',
-    email: 'demo@ship-fast.local',
-    isAuthenticated: true,
-    isGuest: false,
-    isLoading: false,
-    picture: null,
-    user: {
-      displayName: 'Demo Shopper',
-      email: 'demo@ship-fast.local',
-      picture: null,
-    },
-    userId: 'demo-user',
-  }
-}
-
-let localStore = initialStore
-let localAuth = guestAuth
-
-${transport}
-const readList = (store: Store, name: string): unknown[] =>
-  store[name] instanceof Set
-    ? [...(store[name] as Set<unknown>)]
-    : Array.isArray(store[name])
-      ? [...(store[name] as unknown[])]
-      : []
-
-const emptyQueryValue = (name: string): unknown =>
-  /(?:Names|Titles|Emails)$/.test(name) ? new Set<string>() : []
-
-const normalizeQueryValue = (name: string, value: unknown): unknown => {
-  if (!/(?:Names|Titles|Emails)$/.test(name)) return value ?? []
-  if (value instanceof Set) return value
-  if (Array.isArray(value)) return new Set(value.filter((item): item is string => typeof item === 'string'))
-  if (isRecord(value)) {
-    return new Set(
-      Object.values(value).filter((item): item is string => typeof item === 'string'),
-    )
-  }
-  return new Set<string>()
-}
-
-const readQueryValue = (store: Store, name: string): unknown =>
-  normalizeQueryValue(name, store[name] ?? emptyQueryValue(name))
-
-const productNameFromArgs = (args: unknown[]) =>
-  typeof args[0] === 'string' ? args[0] : 'Item'
-
-const stableId = (prefix: string, value: unknown): string =>
-  \`\${prefix}-\${String(value || 'item')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'item'}\`
-
-const lineName = (item: Record<string, unknown>): unknown =>
-  item.name ??
-  (item.product && typeof item.product === 'object'
-    ? (item.product as { name?: unknown }).name
-    : undefined) ??
-  (item.restaurant && typeof item.restaurant === 'object'
-    ? (item.restaurant as { name?: unknown }).name
-    : undefined)
-
-const lineMatches = (item: Record<string, unknown>, value: unknown): boolean =>
-  item.id === value ||
-  item.productId === value ||
-  item.restaurantId === value ||
-  lineName(item) === value
-
-const productFromStore = (store: Store, itemName: string): Record<string, unknown> | null =>
-  (readList(store, 'products') as Array<Record<string, unknown>>).find(
-    (item) => item.name === itemName,
-  ) ?? null
-
-const restaurantFromStore = (
-  store: Store,
-  itemName: string,
-): Record<string, unknown> | null =>
-  (readList(store, 'restaurants') as Array<Record<string, unknown>>).find(
-    (item) => item.name === itemName,
-  ) ?? null
-
-function applyMutation(store: Store, name: string, args: unknown[]): Store {
-  const next = { ...store }
-
-  if (/clear/i.test(name)) {
-    if (/cart/i.test(name)) next.cartLines = []
-    if (/order/i.test(name)) next.orderLines = []
-    if (/wishlist|favorite/i.test(name)) next.favoriteProductNames = []
-    return next
-  }
-
-  if (/remove/i.test(name)) {
-    const itemName = productNameFromArgs(args)
-    if (/order/i.test(name)) {
-      next.orderLines = readList(next, 'orderLines').filter(
-        (item) => !isRecord(item) || !lineMatches(item, itemName),
-      )
-    } else {
-      next.cartLines = readList(next, 'cartLines').filter(
-        (item) => !isRecord(item) || !lineMatches(item, itemName),
-      )
-      next.favoriteProductNames = new Set(
-        readList(next, 'favoriteProductNames').filter((item) => item !== itemName),
-      )
-    }
-    return next
-  }
-
-  if (/favorite|wishlist|saved/i.test(name) && /toggle/i.test(name)) {
-    const itemName = productNameFromArgs(args)
-    const list = readList(next, 'favoriteProductNames')
-    next.favoriteProductNames = new Set(
-      list.includes(itemName)
-        ? list.filter((item) => item !== itemName)
-        : [...list, itemName],
-    )
-    return next
-  }
-
-  if (/cart|bag/i.test(name) && /add/i.test(name)) {
-    const [nameArg, price, alt, image, category, badge, oldPrice] = args
-    const itemName = typeof nameArg === 'string' ? nameArg : 'Item'
-    const productId = stableId('product', itemName)
-    const product = productFromStore(next, itemName) ?? {
-      alt: typeof alt === 'string' ? alt : itemName,
-      badge: typeof badge === 'string' ? badge : '',
-      category: typeof category === 'string' ? category : '',
-      image: typeof image === 'string' ? image : '',
-      name: itemName,
-      oldPrice: typeof oldPrice === 'string' ? oldPrice : '',
-      price: typeof price === 'string' ? price : '',
-    }
-    const productRecord = { ...product, id: String(product.id ?? productId) }
-    const cart = readList(next, 'cartLines') as Array<Record<string, unknown>>
-    const existing = cart.find((item) => lineMatches(item, productRecord.id) || lineMatches(item, itemName))
-    next.cartLines = existing
-      ? cart.map((item) =>
-          lineMatches(item, productRecord.id) || lineMatches(item, itemName)
-            ? { ...item, quantity: Number(item.quantity ?? 1) + 1 }
-            : item,
-        )
-      : [
-          ...cart,
-          {
-            ...productRecord,
-            product: productRecord,
-            productId: productRecord.id,
-            quantity: 1,
-          },
-        ]
-    return next
-  }
-
-  if (/order/i.test(name) && /add/i.test(name)) {
-    const itemName = productNameFromArgs(args)
-    const restaurantId = stableId('restaurant', itemName)
-    const restaurant = restaurantFromStore(next, itemName) ?? { name: itemName }
-    const restaurantRecord = { ...restaurant, id: String(restaurant.id ?? restaurantId) }
-    const lines = readList(next, 'orderLines') as Array<Record<string, unknown>>
-    const existing = lines.find(
-      (item) => lineMatches(item, restaurantRecord.id) || lineMatches(item, itemName),
-    )
-    next.orderLines = existing
-      ? lines.map((item) =>
-          lineMatches(item, restaurantRecord.id) || lineMatches(item, itemName)
-            ? { ...item, quantity: Number(item.quantity ?? 1) + 1 }
-            : item,
-        )
-      : [
-          ...lines,
-          {
-            ...restaurantRecord,
-            restaurant: restaurantRecord,
-            restaurantId: restaurantRecord.id,
-            quantity: 1,
-          },
-        ]
-    return next
-  }
-
-  if (/quantity/i.test(name)) {
-    const [nameArg, quantityArg] = args
-    const itemName = typeof nameArg === 'string' ? nameArg : ''
-    const quantity = Math.max(1, Number(quantityArg) || 1)
-    const listName = /order/i.test(name) ? 'orderLines' : 'cartLines'
-    next[listName] = (readList(next, listName) as Array<Record<string, unknown>>).map((item) =>
-      lineMatches(item, itemName) ? { ...item, quantity } : item,
-    )
-    return next
-  }
-
-  if (/subscribe/i.test(name)) {
-    next.subscribers = [...readList(next, 'subscribers'), { email: args[0] }]
-    return next
-  }
-
-  if (/submit|create|add|book|reserve|register/i.test(name)) {
-    const key = /inquir|contact|message/i.test(name) ? 'inquiries' : 'orders'
-    next[key] = [...readList(next, key), { id: Date.now().toString(36), values: args }]
-    return next
-  }
-
-  return next
-}
-
-const mutationResult = (store: Store, name: string): unknown => {
-  if (/favorite|wishlist|saved/i.test(name)) return readQueryValue(store, 'favoriteProductNames')
-  if (/order/i.test(name)) return readQueryValue(store, 'orderLines')
-  if (/cart|bag|quantity|remove|clear/i.test(name)) return readQueryValue(store, 'cartLines')
-  if (/subscribe/i.test(name)) return readQueryValue(store, 'subscribers')
-  if (/inquir|contact|message/i.test(name)) return readQueryValue(store, 'inquiries')
-  return true
-}
-
-const affectedQueryNames = (name: string): string[] => {
-  const names = new Set<string>()
-  if (/favorite|wishlist|saved/i.test(name)) names.add('favoriteProductNames')
-  if (/cart|bag|quantity|remove|clear/i.test(name)) names.add('cartLines')
-  if (/order/i.test(name)) names.add('orderLines')
-  if (/subscribe/i.test(name)) {
-    names.add('subscribers')
-    names.add('subscriberEmails')
-  }
-  if (/inquir|contact|message/i.test(name)) names.add('inquiries')
-  if (/order/i.test(name)) names.add('orders')
-  return [...names]
-}
-
-export const siteAuthQueryKey = ['site-auth'] as const
-
-export const siteQueryKey = (name: string) => ['site-data', name] as const
-
-export const siteMutationKey = (name: string) => ['site-mutation', name] as const
-
-export const defaultSiteQueryValue = (name: string): any =>
-  emptyQueryValue(name) as any
-
-export async function readSiteAuth(): Promise<AuthState> {
-  return (await readRemote('auth')) as AuthState
-}
-
-export async function signInWithGoogle(): Promise<AuthState> {
-  return (await writeRemote('auth:signIn', [])) as AuthState
-}
-
-export async function signOut(): Promise<AuthState> {
-  return (await writeRemote('auth:signOut', [])) as AuthState
-}
-
-export function useAuth(): AuthState {
-  const { data = guestAuth } = useQuery({
-    queryKey: siteAuthQueryKey,
-    queryFn: readSiteAuth,
-    initialData: guestAuth,
-    staleTime: Infinity,
-    gcTime: Infinity,
-  })
-  return data
-}
-
-export async function readSiteData<T = any>(name: string): Promise<T> {
-  return normalizeQueryValue(name, await readRemote(name)) as T
-}
-
-export function readSiteDataSnapshot<T = any>(name: string): T {
-  return readQueryValue(localStore, name) as T
-}
-
-export async function runSiteMutation<Result = any>(
-  name: string,
-  args: unknown[],
-): Promise<Result> {
-  return (await writeRemote(name, args)) as Result
-}
-
-export function applySiteMutation<Result = any>(
-  name: string,
-  args: unknown[],
-): Result {
-  localStore = applyMutation(localStore, name, args)
-  return mutationResult(localStore, name) as Result
-}
-
-export function updateSiteQueries(queryClient: QueryClient, name: string) {
-  for (const queryName of affectedQueryNames(name)) {
-    queryClient.setQueryData(siteQueryKey(queryName), readQueryValue(localStore, queryName))
-  }
-}
-
-export function invalidateSiteQueries(queryClient: QueryClient, name: string) {
-  for (const queryName of affectedQueryNames(name)) {
-    void queryClient.invalidateQueries({ queryKey: siteQueryKey(queryName) })
-  }
-}
-
-export function useLakebedAdapter(): LakebedClientRuntime {
-  const queryClient = useQueryClient()
-
-  return {
-    async signInWithGoogle() {
-      const auth = (await writeRemote('auth:signIn', [])) as AuthState
-      queryClient.setQueryData(siteAuthQueryKey, auth)
-      return auth
-    },
-    signOut() {
-      void writeRemote('auth:signOut', []).then((auth) => {
-        queryClient.setQueryData(siteAuthQueryKey, auth as AuthState)
-      })
-    },
-    useAuth() {
-      const { data = guestAuth } = useQuery({
-        queryKey: siteAuthQueryKey,
-        queryFn: readSiteAuth,
-        initialData: guestAuth,
-        staleTime: Infinity,
-        gcTime: Infinity,
-      })
-      return data
-    },
-    useMutation(name: string) {
-      const mutation = useMutation({
-        mutationKey: siteMutationKey(name),
-        mutationFn: (args: unknown[]) => runSiteMutation(name, args),
-        onSuccess: () => invalidateSiteQueries(queryClient, name),
-      })
-      return Object.assign(
-        async (...args: unknown[]) => {
-          const result = applySiteMutation(name, args)
-          updateSiteQueries(queryClient, name)
-          await mutation.mutateAsync(args)
-          return result
-        },
-        {
-          get isPending() {
-            return mutation.isPending
-          },
-          get lastError() {
-            return mutation.error ?? null
-          },
-          get pendingCount() {
-            return mutation.isPending ? 1 : 0
-          },
-          reset() {
-            mutation.reset()
-          },
-        },
-      )
-    },
-    useQuery<TValue = unknown>(name: string): TValue {
-      const { data = defaultSiteQueryValue(name) } = useQuery({
-        queryKey: siteQueryKey(name),
-        queryFn: () => readSiteData(name),
-        initialData: () => readSiteDataSnapshot(name),
-        staleTime: Infinity,
-        gcTime: Infinity,
-      })
-      return data as TValue
-    },
-  }
-}
-
-export function useKeyedLakebedMutation(
-  lakebed: LakebedClientRuntime,
-  name: string,
-) {
-  const mutation = lakebed.useMutation(name)
-  const [pendingKeys, setPendingKeys] = useState<readonly string[]>([])
-  const pendingKeySetRef = useRef(new Set<string>())
-  const syncPendingKeys = useCallback(() => {
-    setPendingKeys(Array.from(pendingKeySetRef.current))
-  }, [])
-  const run = useCallback(
-    async (key: string, ...args: unknown[]) => {
-      if (pendingKeySetRef.current.has(key)) return undefined
-
-      pendingKeySetRef.current.add(key)
-      syncPendingKeys()
-      try {
-        return await mutation(...args)
-      } finally {
-        pendingKeySetRef.current.delete(key)
-        syncPendingKeys()
-      }
-    },
-    [mutation, syncPendingKeys],
-  )
-  const isPending = useCallback(
-    (key: string) => pendingKeys.includes(key),
-    [pendingKeys],
-  )
-  const reset = useCallback(() => {
-    pendingKeySetRef.current.clear()
-    syncPendingKeys()
-    mutation.reset()
-  }, [mutation, syncPendingKeys])
-  const pendingKey = pendingKeys[0] ?? null
-
-  return useMemo(
-    () => ({
-      hasPending: pendingKeys.length > 0,
-      isPending,
-      lastError: mutation.lastError,
-      pendingKey,
-      pendingKeys,
-      reset,
-      run,
-    }),
-    [isPending, mutation.lastError, pendingKey, pendingKeys, reset, run],
-  )
-}
-`
-}
-
-const renderNextDataStore =
-  (): string => `import { routes } from '../data/pages'
-
-type Store = Record<string, unknown>
-type AuthState = {
-  displayName: string | null
-  email: string | null
-  isAuthenticated: boolean
-  isGuest: boolean
-  isLoading: boolean
-  picture: string | null
-  user: {
-    displayName: string
-    email: string
-    picture: string | null
-  } | null
-  userId: string
-}
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
-
-function collectionItems(name: string): Array<Record<string, unknown>> {
-  const items: Array<Record<string, unknown>> = []
-  const visit = (value: unknown) => {
-    if (!isRecord(value)) return
-    const collection = value[name]
-    if (Array.isArray(collection)) {
-      items.push(...collection.filter(isRecord))
-    } else if (isRecord(collection) && Array.isArray(collection.items)) {
-      items.push(...collection.items.filter(isRecord))
-    }
-    for (const nested of Object.values(value)) {
-      if (Array.isArray(nested)) nested.forEach(visit)
-      else visit(nested)
-    }
-  }
-  routes.forEach((route) => visit(route.props))
-  return items
-}
-
-const defaultCommerceProducts: Array<Record<string, unknown>> = [
-  {
-    alt: 'Featured product on a clean studio background',
-    badge: 'New',
-    brand: 'Featured',
-    image: '',
-    name: 'Signature Series',
-    oldPrice: '$230',
-    price: '$195',
-  },
-  {
-    alt: 'Lifestyle product photography on a neutral background',
-    badge: '',
-    brand: 'Featured',
-    image: '',
-    name: 'Everyday Essential',
-    oldPrice: '',
-    price: '$250',
-  },
-  {
-    alt: 'Close-up product detail on a neutral background',
-    badge: 'Sale',
-    brand: 'Featured',
-    image: '',
-    name: 'Classic Edition',
-    oldPrice: '$210',
-    price: '$175',
-  },
-  {
-    alt: 'Featured product on a clean studio background',
-    badge: '',
-    brand: 'Featured',
-    image: '',
-    name: 'Studio Collection',
-    oldPrice: '',
-    price: '$160',
-  },
-]
-
-function productsCollection(): Array<Record<string, unknown>> {
-  const products = collectionItems('products')
-  if (products.length > 0) return products
-  const hasCommerceRoute = routes.some((route) =>
-    /commerce|ecommerce|shop|store|marketplace/i.test(String(route.component)),
-  )
-  return hasCommerceRoute ? defaultCommerceProducts : products
-}
-
-const siteDataGlobal = globalThis as typeof globalThis & {
-  __shipFastSiteDataDatabase?: Store
-}
-
-const database: Store = siteDataGlobal.__shipFastSiteDataDatabase ??= {
-  cartLines: [],
-  orderLines: [],
-  favoriteProductNames: [],
-  inquiries: [],
-  orders: [],
-  products: productsCollection(),
-  restaurants: collectionItems('restaurants'),
-  subscribers: [],
-}
-
-const guestAuth: AuthState = {
-  displayName: null,
-  email: null,
-  isAuthenticated: false,
-  isGuest: true,
-  isLoading: false,
-  picture: null,
-  user: null,
-  userId: 'guest',
-}
-
-function createDemoAuth(): AuthState {
-  return {
-    displayName: 'Demo Shopper',
-    email: 'demo@ship-fast.local',
-    isAuthenticated: true,
-    isGuest: false,
-    isLoading: false,
-    picture: null,
-    user: {
-      displayName: 'Demo Shopper',
-      email: 'demo@ship-fast.local',
-      picture: null,
-    },
-    userId: 'demo-user',
-  }
-}
-
-const siteAuthGlobal = globalThis as typeof globalThis & {
-  __shipFastSiteDataAuth?: AuthState
-}
-
-if (!siteAuthGlobal.__shipFastSiteDataAuth) {
-  siteAuthGlobal.__shipFastSiteDataAuth = guestAuth
-}
-
-const readAuth = (): AuthState => siteAuthGlobal.__shipFastSiteDataAuth ?? guestAuth
-
-const writeAuth = (nextAuth: AuthState): AuthState => {
-  siteAuthGlobal.__shipFastSiteDataAuth = nextAuth
-  return nextAuth
-}
-
-const readList = (name: string): unknown[] =>
-  Array.isArray(database[name]) ? [...(database[name] as unknown[])] : []
-
-const itemNameFromArgs = (args: unknown[]) =>
-  typeof args[0] === 'string' ? args[0] : 'Item'
-
-const stableId = (prefix: string, value: unknown): string =>
-  \`\${prefix}-\${String(value || 'item')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'item'}\`
-
-const lineName = (item: Record<string, unknown>): unknown =>
-  item.name ??
-  (item.product && typeof item.product === 'object'
-    ? (item.product as { name?: unknown }).name
-    : undefined) ??
-  (item.restaurant && typeof item.restaurant === 'object'
-    ? (item.restaurant as { name?: unknown }).name
-    : undefined)
-
-const lineMatches = (item: Record<string, unknown>, value: unknown): boolean =>
-  item.id === value ||
-  item.productId === value ||
-  item.restaurantId === value ||
-  lineName(item) === value
-
-const productFromDatabase = (itemName: string): Record<string, unknown> | null =>
-  (readList('products') as Array<Record<string, unknown>>).find(
-    (item) => item.name === itemName,
-  ) ?? null
-
-const restaurantFromDatabase = (itemName: string): Record<string, unknown> | null =>
-  (readList('restaurants') as Array<Record<string, unknown>>).find(
-    (item) => item.name === itemName,
-  ) ?? null
-
-function applyMutation(name: string, args: unknown[]): unknown {
-  if (name === 'auth:signIn') {
-    return writeAuth(createDemoAuth())
-  }
-
-  if (name === 'auth:signOut') {
-    return writeAuth(guestAuth)
-  }
-
-  if (/clear/i.test(name)) {
-    if (/cart/i.test(name)) database.cartLines = []
-    if (/order/i.test(name)) database.orderLines = []
-    if (/wishlist|favorite/i.test(name)) database.favoriteProductNames = []
-    return true
-  }
-
-  if (/remove/i.test(name)) {
-    const itemName = itemNameFromArgs(args)
-    if (/order/i.test(name)) {
-      database.orderLines = readList('orderLines').filter(
-        (item) => !isRecord(item) || !lineMatches(item, itemName),
-      )
-    } else {
-      database.cartLines = readList('cartLines').filter(
-        (item) => !isRecord(item) || !lineMatches(item, itemName),
-      )
-      database.favoriteProductNames = readList('favoriteProductNames').filter((item) => item !== itemName)
-    }
-    return true
-  }
-
-  if (/favorite|wishlist|saved/i.test(name) && /toggle/i.test(name)) {
-    const itemName = itemNameFromArgs(args)
-    const list = readList('favoriteProductNames')
-    database.favoriteProductNames = list.includes(itemName)
-      ? list.filter((item) => item !== itemName)
-      : [...list, itemName]
-    return database.favoriteProductNames
-  }
-
-  if (/cart|bag/i.test(name) && /add/i.test(name)) {
-    const [nameArg, price, alt, image, category, badge, oldPrice] = args
-    const itemName = typeof nameArg === 'string' ? nameArg : 'Item'
-    const productId = stableId('product', itemName)
-    const product = productFromDatabase(itemName) ?? {
-      alt: typeof alt === 'string' ? alt : itemName,
-      badge: typeof badge === 'string' ? badge : '',
-      category: typeof category === 'string' ? category : '',
-      image: typeof image === 'string' ? image : '',
-      name: itemName,
-      oldPrice: typeof oldPrice === 'string' ? oldPrice : '',
-      price: typeof price === 'string' ? price : '',
-    }
-    const productRecord = { ...product, id: String(product.id ?? productId) }
-    const cart = readList('cartLines') as Array<Record<string, unknown>>
-    const existing = cart.find((item) => lineMatches(item, productRecord.id) || lineMatches(item, itemName))
-    database.cartLines = existing
-      ? cart.map((item) =>
-          lineMatches(item, productRecord.id) || lineMatches(item, itemName)
-            ? { ...item, quantity: Number(item.quantity ?? 1) + 1 }
-            : item,
-        )
-      : [
-          ...cart,
-          {
-            ...productRecord,
-            product: productRecord,
-            productId: productRecord.id,
-            quantity: 1,
-          },
-        ]
-    return database.cartLines
-  }
-
-  if (/order/i.test(name) && /add/i.test(name)) {
-    const itemName = itemNameFromArgs(args)
-    const restaurantId = stableId('restaurant', itemName)
-    const restaurant = restaurantFromDatabase(itemName) ?? { name: itemName }
-    const restaurantRecord = { ...restaurant, id: String(restaurant.id ?? restaurantId) }
-    const lines = readList('orderLines') as Array<Record<string, unknown>>
-    const existing = lines.find(
-      (item) => lineMatches(item, restaurantRecord.id) || lineMatches(item, itemName),
-    )
-    database.orderLines = existing
-      ? lines.map((item) =>
-          lineMatches(item, restaurantRecord.id) || lineMatches(item, itemName)
-            ? { ...item, quantity: Number(item.quantity ?? 1) + 1 }
-            : item,
-        )
-      : [
-          ...lines,
-          {
-            ...restaurantRecord,
-            restaurant: restaurantRecord,
-            restaurantId: restaurantRecord.id,
-            quantity: 1,
-          },
-        ]
-    return database.orderLines
-  }
-
-  if (/quantity/i.test(name)) {
-    const [nameArg, quantityArg] = args
-    const itemName = typeof nameArg === 'string' ? nameArg : ''
-    const quantity = Math.max(1, Number(quantityArg) || 1)
-    const listName = /order/i.test(name) ? 'orderLines' : 'cartLines'
-    database[listName] = (readList(listName) as Array<Record<string, unknown>>).map((item) =>
-      lineMatches(item, itemName) ? { ...item, quantity } : item,
-    )
-    return database[listName]
-  }
-
-  if (/subscribe/i.test(name)) {
-    database.subscribers = [...readList('subscribers'), { email: args[0] }]
-    return database.subscribers
-  }
-
-  if (/submit|create|add|book|reserve|register/i.test(name)) {
-    const key = /inquir|contact|message/i.test(name) ? 'inquiries' : 'orders'
-    database[key] = [...readList(key), { id: Date.now().toString(36), values: args }]
-    return database[key]
-  }
-
-  return null
-}
-
-export function readSiteDataValue(name: string): unknown {
-  if (name === 'auth') return readAuth()
-  return database[name] ?? []
-}
-
-export function runSiteMutationValue(name: string, args: unknown[]): unknown {
-  return applyMutation(name, args)
-}
-
-type EndpointResponse = {
-  body: string
-  headers: Record<string, string>
-  kind: 'response'
-  status: number
-}
-
-type EndpointResponseOptions = {
-  headers?: Record<string, string>
-  status?: number
-}
-
-type SiteEndpointHandler = (
-  ctx: ReturnType<typeof createSiteEndpointContext>,
-  request: ReturnType<typeof toEndpointRequest>,
-) => unknown | Promise<unknown>
-
-const endpointResponse = (
-  body: string,
-  { headers = {}, status = 200 }: EndpointResponseOptions = {},
-): EndpointResponse => ({
-  body,
-  headers,
-  kind: 'response',
-  status,
-})
-
-export function json(value: unknown, options: EndpointResponseOptions = {}) {
-  return endpointResponse(JSON.stringify(value ?? null), {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      ...(options.headers ?? {}),
-    },
-  })
-}
-
-export function text(value: unknown, options: EndpointResponseOptions = {}) {
-  return endpointResponse(String(value ?? ''), {
-    ...options,
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-      ...(options.headers ?? {}),
-    },
-  })
-}
-
-export function empty(options: EndpointResponseOptions = {}) {
-  return endpointResponse('', { status: 204, ...options })
-}
-
-export function redirect(url: string, options: EndpointResponseOptions = {}) {
-  return endpointResponse('', {
-    status: 302,
-    ...options,
-    headers: {
-      Location: String(url),
-      ...(options.headers ?? {}),
-    },
-  })
-}
-
-export function endpoint(route: { method: string; path: string }, handler: SiteEndpointHandler) {
-  return {
-    handler,
-    method: String(route.method || '').toUpperCase(),
-    path: String(route.path || ''),
-  }
-}
-
-const rowWithMeta = (value: Record<string, unknown>) => {
-  const now = new Date().toISOString()
-  return {
-    id: String(value.id ?? Date.now().toString(36)),
-    createdAt: String(value.createdAt ?? now),
-    updatedAt: String(value.updatedAt ?? now),
-    ...value,
-  }
-}
-
-const tableRows = (name: string): Array<Record<string, unknown>> => {
-  if (!Array.isArray(database[name])) database[name] = []
-  return database[name] as Array<Record<string, unknown>>
-}
-
-const queryBuilder = (
-  name: string,
-  filters: Array<[string, unknown]> = [],
-  order: [string, 'asc' | 'desc'] | null = null,
-  limitCount: number | null = null,
-) => ({
-  where(field: string, value: unknown) {
-    return queryBuilder(name, [...filters, [field, value]], order, limitCount)
-  },
-  orderBy(field: string, direction: 'asc' | 'desc' = 'asc') {
-    return queryBuilder(name, filters, [field, direction], limitCount)
-  },
-  limit(count: number) {
-    return queryBuilder(name, filters, order, count)
-  },
-  all() {
-    let rows = tableRows(name).map(rowWithMeta)
-    for (const [field, value] of filters) {
-      rows = rows.filter((row) => row[field] === value)
-    }
-    if (order) {
-      const [field, direction] = order
-      rows = [...rows].sort((left, right) => {
-        const a = String(left[field] ?? '')
-        const b = String(right[field] ?? '')
-        return direction === 'desc' ? b.localeCompare(a) : a.localeCompare(b)
-      })
-    }
-    return typeof limitCount === 'number' ? rows.slice(0, limitCount) : rows
-  },
-})
-
-const tableApi = (name: string) => ({
-  ...queryBuilder(name),
-  get(id: string) {
-    return tableRows(name).map(rowWithMeta).find((row) => row.id === id) ?? null
-  },
-  insert(value: Record<string, unknown>) {
-    const row = rowWithMeta(value)
-    database[name] = [...tableRows(name), row]
-    return row
-  },
-  update(id: string, patch: Record<string, unknown>) {
-    database[name] = tableRows(name).map((row) =>
-      rowWithMeta(row).id === id ? { ...row, ...patch, updatedAt: new Date().toISOString() } : row,
-    )
-  },
-  delete(id: string) {
-    database[name] = tableRows(name).filter((row) => rowWithMeta(row).id !== id)
-  },
-})
-
-export function createSiteEndpointContext() {
-  return {
-    auth: readAuth(),
-    db: new Proxy({} as Record<string, ReturnType<typeof tableApi>>, {
-      get(_target, property) {
-        return tableApi(String(property))
-      },
-    }),
-    env: process.env,
-    log: console,
-  }
-}
-
-export function toEndpointRequest(request: Request) {
-  const url = new URL(request.url)
-  return {
-    method: request.method,
-    path: url.pathname,
-    url: request.url,
-    headers: request.headers,
-    query: url.searchParams,
-    text: () => request.clone().text(),
-    json: <T = any>() => request.clone().json() as Promise<T>,
-    bytes: async () => new Uint8Array(await request.clone().arrayBuffer()),
-  }
-}
-
-export function toEndpointResponse(value: unknown): Response {
-  if (value instanceof Response) return value
-  if (
-    value &&
-    typeof value === 'object' &&
-    (value as { kind?: unknown }).kind === 'response'
-  ) {
-    const response = value as EndpointResponse
-    return new Response(response.body, {
-      headers: response.headers,
-      status: response.status,
-    })
-  }
-  return Response.json(value ?? null)
-}
-`
-
-const renderNextDataApiRoute = (): string => `import {
-  readSiteDataValue,
-  runSiteMutationValue,
-} from '../../../src/lib/site-data-store'
-
-export async function GET(request: Request) {
-  const url = new URL(request.url)
-  const name = url.searchParams.get('query') ?? ''
-  return Response.json({ value: readSiteDataValue(name) })
-}
-
-export async function POST(request: Request) {
-  const payload = (await request.json().catch(() => null)) as {
-    name?: unknown
-    args?: unknown
-  } | null
-  const name = typeof payload?.name === 'string' ? payload.name : ''
-  const args = Array.isArray(payload?.args) ? payload.args : []
-  return Response.json({ ok: true, value: runSiteMutationValue(name, args) })
-}
-`
-
 const endpointRouteFilePath = (path: string): string => {
   const cleaned = path.split(/[?#]/)[0]?.trim() || '/'
   const segments = cleaned
@@ -3412,10 +2318,7 @@ export const renderNextEndpointRouteFiles = (
 
   return Object.fromEntries(
     [...byRoute.entries()].map(([routePath, routeEndpoints]) => {
-      const importPath = relativeImportPath(
-        routePath,
-        'src/lib/site-data-store.ts',
-      )
+      const importPath = relativeImportPath(routePath, 'src/lib/store.ts')
       const declarations = routeEndpoints
         .map(
           (endpointDefinition, index) =>
@@ -3464,26 +2367,6 @@ ${handlers}
     }),
   )
 }
-
-const renderNextDataActions = (): string => `'use server'
-
-import { runSiteMutationValue } from './site-data-store'
-
-export async function runSiteMutationAction(
-  name: string,
-  args: unknown[],
-): Promise<unknown> {
-  return runSiteMutationValue(name, args)
-}
-
-export async function signInWithGoogleAction(): Promise<unknown> {
-  return runSiteMutationValue('auth:signIn', [])
-}
-
-export async function signOutAction(): Promise<unknown> {
-  return runSiteMutationValue('auth:signOut', [])
-}
-`
 
 export function parseOpenUIForExport(
   source: string,
@@ -3795,23 +2678,19 @@ export default function App() {
 `
 }
 
-const renderReactMain = (usesLakebed: boolean): string => {
-  const queryImports = usesLakebed
-    ? `import { QueryClient, QueryClientProvider } from '@tanstack/react-query'\n`
-    : ''
-  const queryClient = usesLakebed
-    ? `\nconst queryClient = new QueryClient({\n  defaultOptions: {\n    queries: {\n      gcTime: 1000 * 60 * 60,\n      refetchOnWindowFocus: false,\n      staleTime: Infinity,\n    },\n  },\n})\n`
+const renderReactMain = (usesLakebed: boolean, usesAuth: boolean): string => {
+  const providerImports = usesLakebed
+    ? `import { QueryProvider } from './lib/query-provider'\n${usesAuth ? `import { AuthProvider } from './lib/auth'\n` : ''}`
     : ''
   const app = usesLakebed
-    ? `<QueryClientProvider client={queryClient}>\n      <App />\n    </QueryClientProvider>`
+    ? `<QueryProvider>\n      ${usesAuth ? '<AuthProvider>\n        ' : ''}<App />${usesAuth ? '\n      </AuthProvider>' : ''}\n    </QueryProvider>`
     : '<App />'
 
   return `import React from 'react'
 import { createRoot } from 'react-dom/client'
-${queryImports}import App from './App'
+${providerImports}import App from './App'
 import { StyleOverrides } from './lib/style-overrides'
 import './styles.css'
-${queryClient}
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -3821,30 +2700,6 @@ createRoot(document.getElementById('root')!).render(
 )
 `
 }
-
-const renderNextSiteDataProvider = (): string => `'use client'
-
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import type { PropsWithChildren } from 'react'
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      gcTime: 1000 * 60 * 60,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-    },
-  },
-})
-
-export function SiteDataProvider({ children }: PropsWithChildren) {
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  )
-}
-`
 
 const renderNextRoutePage = (
   componentName: string,
@@ -3905,9 +2760,12 @@ const collectExportComponents = (
   routes: ExportRoute[],
   stack: ExportStack,
   routeTargets: Record<string, string>,
+  dataKeys: DataKeys,
 ): ExtractedComponent[] => {
   const names = collectRouteComponentNames(routes)
-  return names.map((name) => extractComponent(name, stack, routeTargets))
+  return names.map((name) =>
+    extractComponent(name, stack, routeTargets, dataKeys),
+  )
 }
 
 const collectLakebedEndpoints = (
@@ -3932,7 +2790,13 @@ const buildReactExport = async (
 ): Promise<BuiltExport> => {
   const routes = buildRoutes(parsed)
   const routeTargets = buildRouteTargetMap(routes, parsed.targetMap)
-  const components = collectExportComponents(routes, 'react', routeTargets)
+  const dataKeys = createDataKeys()
+  const components = collectExportComponents(
+    routes,
+    'react',
+    routeTargets,
+    dataKeys,
+  )
   const nestedComponentNames = components.map((component) => component.name)
   const routeComponents = routes.map((route) => ({
     name: route.componentName,
@@ -3980,7 +2844,7 @@ const buildReactExport = async (
     'tsconfig.json': renderTsConfig(),
     'src/vite-env.d.ts': renderViteEnv(),
     'vite.config.ts': renderViteConfig(),
-    'src/main.tsx': renderReactMain(usesLakebed),
+    'src/main.tsx': renderReactMain(usesLakebed, dataKeys.usesAuth),
     'src/App.tsx': renderReactApp(routeComponentNames, input),
     'src/data/pages.ts': renderRouteData(routes, routeComponentNames),
     'src/lib/cn.ts': renderLibCn(),
@@ -3989,8 +2853,15 @@ const buildReactExport = async (
     'src/styles.css': renderThemeCss(input),
     'README.md': renderReadme(parsed.projectName, 'react'),
   }
-  if (usesLakebed)
-    files['src/lib/site-data.ts'] = renderSiteDataRuntime('react')
+  if (usesLakebed) {
+    dependencies['@shoojs/react'] = dependencyVersions['@shoojs/react']
+    files['src/lib/store.ts'] = renderReactStore(dataKeys)
+    files['src/lib/use-keyed-mutation.ts'] = renderKeyedMutationHook()
+    files['src/lib/query-provider.tsx'] = renderQueryClientProvider()
+    if (dataKeys.usesAuth) {
+      files['src/lib/auth.tsx'] = renderShooAuthProvider()
+    }
+  }
 
   for (const component of routeComponents) {
     files[`src/components/${component.name}.tsx`] = component.source
@@ -4021,7 +2892,13 @@ const buildNextExport = async (
 ): Promise<BuiltExport> => {
   const routes = buildRoutes(parsed)
   const routeTargets = buildRouteTargetMap(routes, parsed.targetMap)
-  const components = collectExportComponents(routes, 'next', routeTargets)
+  const dataKeys = createDataKeys()
+  const components = collectExportComponents(
+    routes,
+    'next',
+    routeTargets,
+    dataKeys,
+  )
   const nestedComponentNames = components.map((component) => component.name)
   const routeComponents = routes.map((route) => ({
     name: route.componentName,
@@ -4049,9 +2926,10 @@ const buildNextExport = async (
   if (usesLakebed) {
     dependencies['@tanstack/react-query'] =
       dependencyVersions['@tanstack/react-query']
+    dependencies['@shoojs/react'] = dependencyVersions['@shoojs/react']
   }
-  const layoutImport = `${usesLakebed ? "import { SiteDataProvider } from '../src/lib/site-data-provider'\n" : ''}${input.selectedBrandLogo ? "import { ExportBrandLogoProvider } from '../src/lib/brand-logo-provider'\n" : ''}`
-  const layoutChildren = `${input.selectedBrandLogo ? '<ExportBrandLogoProvider>' : ''}${usesLakebed ? '<SiteDataProvider>{children}</SiteDataProvider>' : '{children}'}${input.selectedBrandLogo ? '</ExportBrandLogoProvider>' : ''}`
+  const layoutImport = `${usesLakebed ? "import { QueryProvider } from '../src/lib/query-provider'\n" : ''}${usesLakebed && dataKeys.usesAuth ? "import { AuthProvider } from '../src/lib/auth'\n" : ''}${input.selectedBrandLogo ? "import { ExportBrandLogoProvider } from '../src/lib/brand-logo-provider'\n" : ''}`
+  const layoutChildren = `${input.selectedBrandLogo ? '<ExportBrandLogoProvider>' : ''}${usesLakebed ? `<QueryProvider>${dataKeys.usesAuth ? '<AuthProvider>' : ''}{children}${dataKeys.usesAuth ? '</AuthProvider>' : ''}</QueryProvider>` : '{children}'}${input.selectedBrandLogo ? '</ExportBrandLogoProvider>' : ''}`
   const seoBundle = buildExportSeoBundle(
     input.siteSpecJson,
     routes.map((r) => ({ path: r.path, label: r.label })),
@@ -4088,17 +2966,25 @@ export default function RootLayout({ children }: PropsWithChildren) {
     'README.md': renderReadme(parsed.projectName, 'next'),
   }
   if (usesLakebed) {
-    files['src/lib/site-data.ts'] = renderSiteDataRuntime('next')
-    files['src/lib/site-data-actions.ts'] = renderNextDataActions()
-    files['src/lib/site-data-provider.tsx'] = renderNextSiteDataProvider()
-    files['app/api/data/route.ts'] = renderNextDataApiRoute()
+    files['src/lib/store.ts'] = renderNextStore(dataKeys)
+    files['src/lib/query-provider.tsx'] = renderQueryClientProvider()
+    files['src/lib/use-keyed-mutation.ts'] = renderKeyedMutationHook()
+    files['src/lib/use-lakebed.ts'] = renderLakebedAdapterHook(dataKeys)
+    files['app/actions/server-actions.ts'] = renderNextServerActions(dataKeys)
+    if (dataKeys.usesAuth) {
+      files['src/lib/auth.tsx'] = renderShooAuthProvider()
+      files['app/auth/callback/page.tsx'] = renderShooCallbackRoute()
+    }
   }
   if (input.selectedBrandLogo) {
     files['src/lib/brand-logo-provider.tsx'] =
       renderNextBrandLogoProvider(input)
   }
-  if (usesLakebed || endpoints.length > 0) {
-    files['src/lib/site-data-store.ts'] = renderNextDataStore()
+  if (endpoints.length > 0) {
+    // Endpoint route files import from store.ts which is generated above
+    if (!usesLakebed) {
+      files['src/lib/store.ts'] = renderNextStore(dataKeys)
+    }
   }
   Object.assign(files, renderNextEndpointRouteFiles(endpoints))
 
