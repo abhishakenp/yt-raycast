@@ -156,6 +156,10 @@ const loadPrebuiltFiles = async (
 }
 
 const LAKEBED_REQUIRED_ENTRYPOINTS = ['client/index.tsx', 'server/index.ts']
+// Next.js app-router exports (buildNextExport) ship no index.html — their
+// entrypoints are package.json + app/layout.tsx. Validating against index.html
+// here would wrongly reject every Next.js GitHub push.
+const NEXT_REQUIRED_ENTRYPOINTS = ['package.json', 'app/layout.tsx']
 
 const validateExportFiles = (
   target: GitHubExportTarget,
@@ -167,6 +171,16 @@ const validateExportFiles = (
     )
     if (missingEntry) {
       return 'Lakebed export artifact is missing required project files.'
+    }
+    return null
+  }
+
+  if (target === 'next') {
+    const missingEntry = NEXT_REQUIRED_ENTRYPOINTS.find(
+      (entrypoint) => !files[entrypoint],
+    )
+    if (missingEntry) {
+      return 'Next.js export artifact is missing required project files.'
     }
     return null
   }

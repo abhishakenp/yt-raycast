@@ -62,6 +62,20 @@ const dbObservedBreweryLakebedExport = {
   filesUrl: 'https://storage.test/db-brewery-lakebed-files.json',
 }
 
+const dbObservedBreweryNextExport = {
+  ...dbObservedBreweryHtmlExport,
+  target: 'next',
+  artifact: {
+    byteLength: 88421,
+    contentType: 'application/zip',
+    fileCount: 24,
+    filename: 'ship-fast-k574ms14ma9f94keq30r7dq24x89n1k2-next.zip',
+    hash: 'c0ffee15deadbeef0123456789abcdef0123456789abcdef0123456789abcdef01',
+    status: 'ready',
+  },
+  filesUrl: 'https://storage.test/db-brewery-next-files.json',
+}
+
 const htmlPrebuiltFiles = {
   'README.md':
     '# Atlas Notes\n\nGenerated with [ShipFast](https://ship-fast.io) 🚀.\n',
@@ -83,12 +97,36 @@ const lakebedPrebuiltFiles = {
   'server/index.ts': 'export default {}',
 }
 
+// Mirrors the manifest produced by `buildNextExport` in openui-export-builder.ts:
+// a Next.js app-router project has NO index.html — entrypoints are package.json
+// and app/layout.tsx (plus next.config.mjs, app/page.tsx, etc.).
+const nextPrebuiltFiles = {
+  'README.md': '# Atlas Notes\n\nGenerated with Ship Fast as a next export.\n',
+  'package.json':
+    '{"name":"atlas-notes","scripts":{"dev":"next dev","build":"next build","start":"next start"}}',
+  'next.config.mjs':
+    'import { dirname } from "node:path"\nimport { fileURLToPath } from "node:url"\n\nconst projectRoot = dirname(fileURLToPath(import.meta.url))\n\n/** @type {import("next").NextConfig} */\nconst nextConfig = { turbopack: { root: projectRoot } }\n\nexport default nextConfig\n',
+  'next-env.d.ts':
+    '/// <reference types="next" />\n/// <reference types="next/image-types/global" />\n',
+  'tsconfig.json': '{"compilerOptions":{"jsx":"preserve"}}',
+  'postcss.config.mjs': 'export default { plugins: {} }',
+  'app/layout.tsx':
+    "import type { ReactNode } from 'react'\nimport './globals.css'\n\nexport const metadata = { title: 'Atlas Notes' }\n\nexport default function RootLayout({ children }: { children: ReactNode }) {\n  return <html lang=\"en\"><body>{children}</body></html>\n}\n",
+  'app/page.tsx':
+    'export default function Page() { return <main>Atlas Notes</main> }',
+  'app/globals.css': ':root { --background: #ffffff; }',
+  'src/data/pages.ts': 'export const pages = []',
+  'src/lib/cn.ts': 'export const cn = () => ""',
+}
+
 const filesUrlForTarget = (target: unknown): string =>
   target === 'react'
     ? 'https://storage.test/react-files.json'
     : target === 'lakebed'
       ? 'https://storage.test/lakebed-files.json'
-      : 'https://storage.test/html-files.json'
+      : target === 'next'
+        ? 'https://storage.test/next-files.json'
+        : 'https://storage.test/html-files.json'
 
 const jwtFor = (sub = 'user_123') =>
   [
@@ -176,6 +214,9 @@ describe('createGitHubPushResponse', () => {
       }
       if (href === 'https://storage.test/lakebed-files.json') {
         return Response.json(lakebedPrebuiltFiles)
+      }
+      if (href === 'https://storage.test/next-files.json') {
+        return Response.json(nextPrebuiltFiles)
       }
       return new Response('Unhandled storage fetch', { status: 404 })
     }) as typeof fetch
@@ -952,6 +993,111 @@ describe('createGitHubPushResponse', () => {
     expect(commitRequest?.body).toMatchObject({
       message: 'Ship Fast export (lakebed)',
     })
+  })
+
+  it('pushes Next.js project files from the prebuilt artifact without requiring index.html', async () => {
+    const { fetchMock, requests } = createGitHubFetch()
+    const nextExport = {
+      ...exportData,
+      target: 'next',
+      source: 'root = SaasHero()',
+      siteSpecJson: '{"projectName":"Atlas Notes"}',
+      previewHtml: '<main>Atlas Notes</main>',
+      themeName: 'graphite',
+      isDark: true,
+      filesUrl: 'https://storage.test/next-files.json',
+    }
+
+    client.query.mockResolvedValueOnce(nextExport)
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'next' }),
+        },
+      ),
+      'session_123',
+      env,
+      client,
+      fetchMock,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.query).toHaveBeenCalledWith(expect.anything(), {
+      lookup: 'session_123',
+      target: 'next',
+      anonymousOwnerSecret: undefined,
+    })
+    const body = await response.json()
+    expect(body).toMatchObject({
+      ok: true,
+      target: 'next',
+      repoFullName: 'shipfast-test-user/a-product-website-for-atlas-next',
+    })
+    // A Next.js app-router export must NOT ship an index.html — its entrypoint
+    // is app/layout.tsx + app/page.tsx. Asserting this guards against regressing
+    // back to the static-html validation that wrongly rejected Next.js pushes.
+    expect(body.files).not.toContain('index.html')
+    expect(body.files).toContain('app/layout.tsx')
+    expect(body.files).toContain('package.json')
+
+    const createRepoRequest = requests.find(
+      (request) => request.method === 'POST' && request.path === '/user/repos',
+    )
+    expect(createRepoRequest?.body).toMatchObject({
+      name: 'a-product-website-for-atlas-next',
+      description: 'Generated with Ship Fast as a next export.',
+    })
+
+    const commitRequest = requests.find((request) =>
+      request.path.endsWith('/git/commits'),
+    )
+    expect(commitRequest?.body).toMatchObject({
+      message: 'Ship Fast export (next)',
+    })
+  })
+
+  it('does not push a DB-observed ready Next.js artifact when required project entrypoints are missing', async () => {
+    const { fetchMock, requests } = createGitHubFetch()
+    globalThis.fetch = vi.fn(async (url: string | URL) => {
+      if (String(url) === 'https://storage.test/db-brewery-next-files.json') {
+        return Response.json({
+          'README.md':
+            '# Craft Beer Brewery Next.js\n\nGenerated artifact metadata says 24 files exist, but the manifest lacks the app-router entrypoints.',
+          'package.json': '{"scripts":{"dev":"next dev"}}',
+        })
+      }
+      return new Response('Unhandled storage fetch', { status: 404 })
+    }) as typeof fetch
+    client.query.mockResolvedValueOnce(dbObservedBreweryNextExport)
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'next' }),
+        },
+      ),
+      'k574ms14ma9f94keq30r7dq24x89n1k2',
+      env,
+      client,
+      fetchMock,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Next.js export artifact is missing required project files.',
+    })
+    expect(requests).toEqual([])
+    expect(tokenResolver).not.toHaveBeenCalled()
+    expect(client.mutation).not.toHaveBeenCalled()
   })
 
   it('maps Convex ownership errors to forbidden responses', async () => {
