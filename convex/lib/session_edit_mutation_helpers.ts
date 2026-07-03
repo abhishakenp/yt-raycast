@@ -8,6 +8,7 @@ import {
   applyPreviewTextEdit,
   applyStyleEdit,
 } from './session_edit_helpers'
+import { extractOpenUISourceStrings } from './session_translation_cache_helpers'
 
 type JsonObject = Record<string, unknown>
 
@@ -85,6 +86,87 @@ const getCurrentHomeModuleAndSiteSpec = async (
       .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
       .first(),
   ])
+
+const normalizeComparableText = (value: string | undefined): string =>
+  String(value ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+const translationCacheKey = (locale: string, text: string): string =>
+  `${locale.trim().toLowerCase()}\n${text.trim()}`
+
+const rememberIdentityTranslation = async (
+  ctx: MutationCtx,
+  locale: string | undefined,
+  text: string | undefined,
+  now: number,
+): Promise<void> => {
+  const normalizedLocale = normalizeComparableText(locale).toLowerCase()
+  const normalizedText = String(text ?? '').trim()
+  if (!normalizedLocale || normalizedLocale === 'en' || !normalizedText) return
+
+  const cacheKey = translationCacheKey(normalizedLocale, normalizedText)
+  const existing = await ctx.db
+    .query('translationCache')
+    .withIndex('by_cacheKey', (index) => index.eq('cacheKey', cacheKey))
+    .unique()
+
+  if (existing) {
+    await ctx.db.patch(existing._id, {
+      translation: normalizedText,
+      updatedAt: now,
+    })
+    return
+  }
+
+  await ctx.db.insert('translationCache', {
+    cacheKey,
+    locale: normalizedLocale,
+    sourceText: normalizedText,
+    translation: normalizedText,
+    createdAt: now,
+    updatedAt: now,
+  })
+}
+
+const withCanonicalTranslatedBeforeText = async (
+  ctx: MutationCtx,
+  session: Doc<'sessions'>,
+  sessionId: Id<'sessions'>,
+  args: SessionEditInput,
+): Promise<SessionEditInput> => {
+  if (args.editType !== 'text') return args
+
+  const selectedText = normalizeComparableText(args.beforeText)
+  const locale = normalizeComparableText(
+    session.preferredLanguage,
+  ).toLowerCase()
+  if (!selectedText || !locale || locale === 'en') return args
+
+  const [homeModule] = await getCurrentHomeModuleAndSiteSpec(ctx, sessionId)
+  const source = homeModule?.source
+  if (!source) return args
+
+  const sourceTexts = extractOpenUISourceStrings(source)
+  if (sourceTexts.length === 0) return args
+
+  const rows = await ctx.db
+    .query('translationCache')
+    .withIndex('by_locale', (index) => index.eq('locale', locale))
+    .take(1000)
+
+  for (const sourceText of sourceTexts) {
+    const comparableSource = normalizeComparableText(sourceText)
+    const matchingRow = rows.find(
+      (row) =>
+        normalizeComparableText(row.sourceText) === comparableSource &&
+        normalizeComparableText(row.translation) === selectedText,
+    )
+    if (matchingRow) return { ...args, beforeText: sourceText }
+  }
+
+  return args
+}
 
 export const applyTextEditToCurrentArtifacts = async (
   ctx: MutationCtx,
@@ -271,6 +353,12 @@ export const applySessionEdit = async (
   now: number,
 ) => {
   const sessionId = session._id
+  const patchArgs = await withCanonicalTranslatedBeforeText(
+    ctx,
+    session,
+    sessionId,
+    args,
+  )
 
   const preview = await ctx.db
     .query('previews')
@@ -294,25 +382,25 @@ export const applySessionEdit = async (
   let editedPreview =
     args.afterHtml !== undefined
       ? { html: args.afterHtml, replaced: true }
-      : args.editType === 'image'
+      : patchArgs.editType === 'image'
         ? applyImageSwap(
             preview.html,
-            args.beforeText,
-            args.afterText,
-            args.occurrenceIndex,
+            patchArgs.beforeText,
+            patchArgs.afterText,
+            patchArgs.occurrenceIndex,
           )
-        : args.editType === 'style'
+        : patchArgs.editType === 'style'
           ? applyStyleEdit(
               preview.html,
-              args.beforeText,
-              args.afterText,
-              args.occurrenceIndex,
+              patchArgs.beforeText,
+              patchArgs.afterText,
+              patchArgs.occurrenceIndex,
             )
           : applyPreviewTextEdit(
               preview.html,
-              args.beforeText,
-              args.afterText,
-              args.occurrenceIndex,
+              patchArgs.beforeText,
+              patchArgs.afterText,
+              patchArgs.occurrenceIndex,
             )
 
   let sourceAlreadyPatched = false
@@ -328,7 +416,7 @@ export const applySessionEdit = async (
     // imageOverrides (alt → newSrc), so just save the edit record. Do NOT fall
     // back to applyPreviewTextEdit — that would replace the alt TEXT in the
     // OpenUI source with the image URL, corrupting the source.
-    if (args.editType === 'style' || args.editType === 'image') {
+    if (patchArgs.editType === 'style' || patchArgs.editType === 'image') {
       editedPreview = { html: preview.html, replaced: true }
     } else {
       // Text edits: fall back to searching the OpenUI source directly.
@@ -339,9 +427,9 @@ export const applySessionEdit = async (
       if (homeModuleForFallback !== null) {
         const sourceEdit = applyPreviewTextEdit(
           homeModuleForFallback.source,
-          args.beforeText,
-          args.afterText,
-          args.occurrenceIndex,
+          patchArgs.beforeText,
+          patchArgs.afterText,
+          patchArgs.occurrenceIndex,
         )
         if (sourceEdit.replaced) {
           await ctx.db.patch(homeModuleForFallback._id, {
@@ -380,21 +468,21 @@ export const applySessionEdit = async (
   // If sourceAlreadyPatched is true (source fallback matched), skip this step.
   const isTextPatchEdit =
     args.afterHtml === undefined &&
-    args.editType !== 'style' &&
-    args.editType !== 'image'
+    patchArgs.editType !== 'style' &&
+    patchArgs.editType !== 'image'
   const isAiRewriteTextPatchEdit =
-    args.editType === 'ai_rewrite' &&
+    patchArgs.editType === 'ai_rewrite' &&
     args.afterHtml !== undefined &&
-    args.beforeText !== undefined &&
-    args.afterText !== undefined
+    patchArgs.beforeText !== undefined &&
+    patchArgs.afterText !== undefined
   if (sourceAlreadyPatched) {
     // Source was already patched in the fallback above — nothing more to do.
   } else if (isAiRewriteTextPatchEdit) {
     const artifactSnapshot = await applyAiRewriteToCurrentArtifacts(
       ctx,
       sessionId,
-      args.beforeText as string,
-      args.afterText as string,
+      patchArgs.beforeText as string,
+      patchArgs.afterText as string,
       now,
     )
     openUiSource = artifactSnapshot.openUiSource
@@ -403,10 +491,10 @@ export const applySessionEdit = async (
     const artifactSnapshot = await applyTextEditToCurrentArtifacts(
       ctx,
       sessionId,
-      args.beforeText,
-      args.afterText,
+      patchArgs.beforeText,
+      patchArgs.afterText,
       now,
-      args.occurrenceIndex,
+      patchArgs.occurrenceIndex,
     )
     if (!artifactSnapshot.openUiReplaced) {
       throw new ConvexError({
@@ -421,6 +509,19 @@ export const applySessionEdit = async (
     const artifactSnapshot = await snapshotCurrentArtifacts(ctx, sessionId)
     openUiSource = artifactSnapshot.openUiSource
     siteSpecJson = artifactSnapshot.siteSpecJson
+  }
+
+  if (
+    patchArgs.editType === 'text' &&
+    normalizeComparableText(patchArgs.beforeText) !==
+      normalizeComparableText(args.beforeText)
+  ) {
+    await rememberIdentityTranslation(
+      ctx,
+      session.preferredLanguage,
+      patchArgs.afterText,
+      now,
+    )
   }
 
   await ctx.db.insert('previews', {
