@@ -1649,7 +1649,43 @@ const extractComponent = (
     componentImports = [`import React from 'react'`, ...componentImports]
   }
   const helpersSection = runtimeHelpers ? `\n${runtimeHelpers}\n` : ''
-  const source = `${componentImports.join('\n')}${queryHookImport}${dataImports}${routePaths}
+  // Build full source first, then filter out imports whose named bindings
+  // are not referenced anywhere in the component (e.g. commerceCartLakebed
+  // becomes unused after lakebed runtime translation replaces
+  // `lakebed: commerceCartLakebed` with `const lakebed = useLakebed()`).
+  const fullSource = `${componentImports.join('\n')}${queryHookImport}${dataImports}${routePaths}
+
+${preludeSources.join('\n\n')}
+${helpersSection}
+${renderPropsType(componentName, propsSchema, sourceFile)}
+
+export function ${componentName}(props: ${componentName}Props) {
+${translatedLakebed.needsQueryClient ? '  const queryClient = useQueryClient()\n' : ''}${rewrittenNavigation.body
+    .split('\n')
+    .map((line) => `  ${line}`)
+    .join('\n')}
+}`
+  const filteredImports = componentImports.filter((importLine) => {
+    const namedMatch = importLine.match(/import\s+\{([^}]+)\}\s+from/)
+    if (!namedMatch) return true // Keep default/namespace imports
+    const names = namedMatch[1]
+      .split(',')
+      .map((n) => {
+        const parts = n.trim().split(/\s+as\s+/)
+        // Use the local name (after 'as') — that's what appears in the body
+        return parts[parts.length - 1].trim()
+      })
+      .filter(Boolean)
+    // Check against the full source minus the import lines themselves
+    const sourceWithoutImports = fullSource.replace(/^import .*$/gm, '')
+    return names.some((name) => {
+      const re = new RegExp(
+        `\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
+      )
+      return re.test(sourceWithoutImports)
+    })
+  })
+  const source = `${filteredImports.join('\n')}${queryHookImport}${dataImports}${routePaths}
 
 ${preludeSources.join('\n\n')}
 ${helpersSection}
@@ -2039,7 +2075,11 @@ const renderRouteComponentSource = (
   route: ExportRoute,
   nestedComponentNames: string[],
 ): string => {
-  const imports = nestedComponentNames
+  const known = new Set(nestedComponentNames)
+  const used = [...collectNodeComponentNames(route.node)].filter((name) =>
+    known.has(name),
+  )
+  const imports = used
     .map((name) => `import { ${name} } from './${name}'`)
     .join('\n')
   return `${imports}
@@ -2366,6 +2406,26 @@ ${handlers}
       ]
     }),
   )
+}
+
+/** Enrich siteSpecJson with projectName so SEO resolvers can use it as fallback title. */
+export const enrichSiteSpecJson = (
+  siteSpecJson: string | undefined,
+  projectName: string,
+): string | undefined => {
+  if (!siteSpecJson) {
+    return JSON.stringify({ projectName })
+  }
+  try {
+    const parsed = JSON.parse(siteSpecJson) as Record<string, unknown>
+    if (parsed.projectName === undefined) {
+      parsed.projectName = projectName
+      return JSON.stringify(parsed)
+    }
+    return siteSpecJson
+  } catch {
+    return JSON.stringify({ projectName })
+  }
 }
 
 export function parseOpenUIForExport(
@@ -2702,22 +2762,31 @@ createRoot(document.getElementById('root')!).render(
 }
 
 const renderNextRoutePage = (
-  componentName: string,
-  componentImportPath: string,
-  routeSeo?: ExportRouteSeo | null,
+  route: ExportRoute,
+  nestedComponentNames: string[],
+  componentImportDir: string,
+  routeSeo: ExportRouteSeo | null,
 ): string => {
+  const known = new Set(nestedComponentNames)
+  const used = [...collectNodeComponentNames(route.node)].filter((name) =>
+    known.has(name),
+  )
+  const imports = used
+    .map((name) => `import { ${name} } from '${componentImportDir}${name}'`)
+    .join('\n')
   const metadataExport = routeSeo
     ? `${renderNextMetadataExport(routeSeo)}\n\n`
     : ''
-  const jsonLd = routeSeo ? `\n${renderJsonLdScript(routeSeo)}` : ''
-  return `import { ${componentName} } from '${componentImportPath}'
+  const jsonLd = routeSeo ? `\n    ${renderJsonLdScript(routeSeo)}` : ''
+  // Page is a server component — nested components have their own 'use client'
+  // directives. This allows metadata exports to work correctly.
+  return `${imports}
 
 ${metadataExport}export default function Page() {
   return <>
-    <${componentName} />${jsonLd}
+${renderRouteNode(route.node)}${jsonLd}
   </>
-}
-`
+}`
 }
 
 const renderNextBrandLogoProvider = (
@@ -2825,7 +2894,7 @@ const buildReactExport = async (
       dependencyVersions['@tanstack/react-query']
   }
   const seoBundle = buildExportSeoBundle(
-    input.siteSpecJson,
+    enrichSiteSpecJson(input.siteSpecJson, parsed.projectName),
     routes.map((r) => ({ path: r.path, label: r.label })),
   )
   const homeHeadTags = seoBundle?.homeSeo?.headTags ?? []
@@ -2900,10 +2969,7 @@ const buildNextExport = async (
     dataKeys,
   )
   const nestedComponentNames = components.map((component) => component.name)
-  const routeComponents = routes.map((route) => ({
-    name: route.componentName,
-    source: renderRouteComponentSource(route, nestedComponentNames),
-  }))
+  const routeComponentNames = routes.map((route) => route.componentName)
   const blockSources = collectBlockSourceFiles(
     [
       ...brandLogoBlockSourcePaths(input),
@@ -2918,7 +2984,6 @@ const buildNextExport = async (
     ],
     'next',
   )
-  const routeComponentNames = routeComponents.map((component) => component.name)
   const usesLakebed = components.some((component) => component.usesLakebed)
   const endpoints = collectNextEndpoints(nestedComponentNames, input.source)
   const imageSources = await extractImageSources(input.previewHtml)
@@ -2931,7 +2996,7 @@ const buildNextExport = async (
   const layoutImport = `${usesLakebed ? "import { QueryProvider } from '../src/lib/query-provider'\n" : ''}${usesLakebed && dataKeys.usesAuth ? "import { AuthProvider } from '../src/lib/auth'\n" : ''}${input.selectedBrandLogo ? "import { ExportBrandLogoProvider } from '../src/lib/brand-logo-provider'\n" : ''}`
   const layoutChildren = `${input.selectedBrandLogo ? '<ExportBrandLogoProvider>' : ''}${usesLakebed ? `<QueryProvider>${dataKeys.usesAuth ? '<AuthProvider>' : ''}{children}${dataKeys.usesAuth ? '</AuthProvider>' : ''}</QueryProvider>` : '{children}'}${input.selectedBrandLogo ? '</ExportBrandLogoProvider>' : ''}`
   const seoBundle = buildExportSeoBundle(
-    input.siteSpecJson,
+    enrichSiteSpecJson(input.siteSpecJson, parsed.projectName),
     routes.map((r) => ({ path: r.path, label: r.label })),
   )
   const layoutMetadata = seoBundle?.homeSeo
@@ -2988,11 +3053,8 @@ export default function RootLayout({ children }: PropsWithChildren) {
   }
   Object.assign(files, renderNextEndpointRouteFiles(endpoints))
 
-  for (const component of routeComponents) {
-    files[`src/components/${component.name}.tsx`] = asClientComponent(
-      component.source,
-    )
-  }
+  // Route page content is inlined directly into app/<route>/page.tsx — no
+  // separate route component files needed. Only emit nested block components.
   for (const component of components) {
     files[`src/components/${component.name}.tsx`] = asClientComponent(
       component.source,
@@ -3004,15 +3066,17 @@ export default function RootLayout({ children }: PropsWithChildren) {
     const routeSeo = seoBundle?.routes.get(route.path) ?? null
     if (route.path === '/') {
       files['app/page.tsx'] = renderNextRoutePage(
-        route.componentName,
-        '../src/components/' + route.componentName,
+        route,
+        nestedComponentNames,
+        '../src/components/',
         routeSeo,
       )
     } else {
       const dir = route.path.slice(1)
       files[`app/${dir}/page.tsx`] = renderNextRoutePage(
-        route.componentName,
-        '../../src/components/' + route.componentName,
+        route,
+        nestedComponentNames,
+        '../../src/components/',
         routeSeo,
       )
     }
@@ -3023,6 +3087,8 @@ export default function RootLayout({ children }: PropsWithChildren) {
     const sitemapRoute = renderNextSitemapRoute(seoBundle.sitemapXml)
     if (sitemapRoute) files['app/sitemap.ts'] = sitemapRoute
     if (seoBundle.llmsTxt) files['public/llms.txt'] = seoBundle.llmsTxt
+    files['public/robots.txt'] = seoBundle.robotsTxt
+    if (seoBundle.sitemapXml) files['public/sitemap.xml'] = seoBundle.sitemapXml
   }
 
   const formattedFiles = await formatExportFiles(files)

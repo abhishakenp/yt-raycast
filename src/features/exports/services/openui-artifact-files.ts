@@ -275,11 +275,21 @@ const wireNextAdminAccess = (
     const withImport = source.includes('ShipFastAdminGate')
       ? source
       : `import { ShipFastAdminGate } from '${importPath}'\n${source}`
+    // Wrap the page's return fragment in <ShipFastAdminGate>. Handles both
+    // thin wrapper pages (<ComponentName />) and inlined route content
+    // (<>...nested JSX...</>). Files are already prettier-formatted, so the
+    // return value is wrapped in parentheses: return ( <>...</> )
     nextFiles[file] = withImport.replace(
-      /<([A-Za-z0-9_]+) \/>/,
-      `<ShipFastAdminGate routeLabel=${JSON.stringify(route.label)}>
-      <$1 />
-    </ShipFastAdminGate>`,
+      /export default function Page\(\) \{\s*return \(\s*(<>)([\s\S]*?)(<\/>)\s*\)\s*\n\}/,
+      `export default function Page() {
+  return (
+    $1
+      <ShipFastAdminGate routeLabel=${JSON.stringify(route.label)}>
+$2
+      </ShipFastAdminGate>
+    $3
+  )
+}`,
     )
   }
   // If no admin route page exists yet, create a standalone /admin page

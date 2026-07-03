@@ -88,17 +88,18 @@ export const extractDescriptionFromMarkup = (markup: string): string => {
 
 /**
  * Build per-route SEO data from siteSpecJson and the OpenUI export routes.
- * Returns null only when no siteSpec exists at all. Specs without an explicit
- * seo block get baseline metadata synthesized from brand/locale/route labels
- * so every export ships title, description, robots, OG/Twitter, and JSON-LD.
+ * Always returns a bundle — falls back to project name and route labels for
+ * title/description when no explicit SEO data is present in the site spec.
+ * Specs without an explicit seo block get baseline metadata synthesized from
+ * brand/locale/route labels so every export ships title, description, robots,
+ * OG/Twitter, and JSON-LD.
  */
 export const buildExportSeoBundle = (
   siteSpecJson: string | undefined,
   routePaths: Array<{ path: string; label: string }>,
   options: ExportSeoBundleOptions = {},
-): ExportSeoBundle | null => {
+): ExportSeoBundle => {
   const parsedSpec = parseSiteSpec(siteSpecJson)
-  if (Object.keys(parsedSpec).length === 0) return null
 
   // Generated specs carry `brand`/`locale` at the top level without a seo
   // block; fold them into the shape resolvePageSeo understands.
@@ -126,9 +127,11 @@ export const buildExportSeoBundle = (
       (p) => normalizePath(String(p.route ?? '/')) === normalized,
     )
     const fallbackDescription = options.fallbackDescriptions?.[normalized]
-    // Home falls through to projectName/brand for its title; other routes
-    // use their nav label.
-    const fallbackTitle = normalized === '/' ? undefined : label
+    // Home falls through to projectName/brand for its title when a projectName
+    // is available; otherwise it uses the nav label. Other routes always use
+    // their nav label.
+    const fallbackTitle =
+      normalized === '/' ? (siteSpec.projectName ? undefined : label) : label
     const page = matchingPage
       ? { description: fallbackDescription, ...matchingPage }
       : {

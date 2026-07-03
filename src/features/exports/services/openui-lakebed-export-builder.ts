@@ -27,7 +27,10 @@ import {
   slugifyAlt,
 } from '../../../lib/image-query'
 import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
-import { parseOpenUIForExport } from './openui-export-builder'
+import {
+  enrichSiteSpecJson,
+  parseOpenUIForExport,
+} from './openui-export-builder'
 import { formatExportFiles } from './format-export-files'
 import { buildExportSeoBundle } from './export-seo'
 import {
@@ -4266,7 +4269,7 @@ export async function buildOpenUILakebedProjectFiles(
       renderClientComponentModule(component)
   }
   const seoBundle = buildExportSeoBundle(
-    input.siteSpecJson,
+    enrichSiteSpecJson(input.siteSpecJson, parsed.projectName),
     routes.map((r) => ({ path: r.path, label: r.label })),
   )
   if (seoBundle) {

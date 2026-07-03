@@ -179,6 +179,30 @@ const renderGeneratedRouteText = async (
       mkdirSync(join(absolutePath, '..'), { recursive: true })
       writeFileSync(absolutePath, fileSource)
     }
+    // Check if separate component file exists (React export) or if route
+    // content is inlined in app/<route>/page.tsx (Next.js export).
+    const componentFile = `src/components/${routeComponent}.tsx`
+    const hasComponentFile = files[componentFile] !== undefined
+    // Derive route page path from component name: HomePage → app/page.tsx,
+    // ShopPage → app/shop/page.tsx, AdminPage → app/admin/page.tsx, etc.
+    const routeSlug =
+      routeComponent === 'HomePage'
+        ? ''
+        : routeComponent
+            .replace(/Page$/, '')
+            .replace(/^(.)/, (_, c) => c.toLowerCase())
+    const routePageFile = routeSlug
+      ? `app/${routeSlug}/page.tsx`
+      : 'app/page.tsx'
+    const hasRoutePage = files[routePageFile] !== undefined
+    const importLine = hasComponentFile
+      ? `import { ${routeComponent} } from "./src/components/${routeComponent}";`
+      : hasRoutePage
+        ? `import Page from "./${routePageFile}";`
+        : `import Page from "./app/page.tsx";`
+    const renderElement = hasComponentFile
+      ? `React.createElement(${routeComponent}, {})`
+      : `React.createElement(Page, {})`
     const entryPath = join(directory, 'render-route.tsx')
     writeFileSync(
       entryPath,
@@ -186,7 +210,7 @@ const renderGeneratedRouteText = async (
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
-import { ${routeComponent} } from "./src/components/${routeComponent}";
+${importLine}
 
 const root = createRoot(document.getElementById("root"));
 const queryClient = new QueryClient();
@@ -194,7 +218,7 @@ flushSync(() => root.render(
   React.createElement(
     QueryClientProvider,
     { client: queryClient },
-    React.createElement(${routeComponent}, {}),
+    ${renderElement},
   ),
 ));
 `,
@@ -412,7 +436,9 @@ describe('openui artifact files', () => {
     })
 
     expect(download?.filename).toBe('artifact-demo-next.zip')
-    expect(files['src/data/pages.ts']).toContain('Hello artifact')
+    // Next.js exports inline route content directly in app/<route>/page.tsx
+    // (no separate src/data/pages.ts or src/components/HomePage.tsx)
+    expect(files['app/page.tsx']).toContain('Hello artifact')
     await expect(
       renderGeneratedRouteText(files, 'HomePage'),
     ).resolves.toContain('Hello artifact')

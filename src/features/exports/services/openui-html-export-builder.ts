@@ -28,6 +28,7 @@ import {
   buildExportSeoBundle,
   extractDescriptionFromMarkup,
 } from './export-seo'
+import { enrichSiteSpecJson } from './openui-export-builder'
 import type {
   BuiltExport,
   OpenUIExportInput,
@@ -660,7 +661,7 @@ const buildStandaloneHtmlDocument = async (
     : pagesMarkup
   const genui = readGenUIExportMetadata(siteSpec)
   const seoBundle = buildExportSeoBundle(
-    input.siteSpecJson,
+    enrichSiteSpecJson(input.siteSpecJson, parsed.projectName),
     parsed.routes.map((label, index) => {
       const path =
         index === 0 ? '/' : `/${label.toLowerCase().replace(/\s+/g, '-')}`
