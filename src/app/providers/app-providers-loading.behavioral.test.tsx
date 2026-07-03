@@ -143,8 +143,8 @@ describe('app provider loading', () => {
   })
 
   describe('shouldUseAuthenticatedProviders', () => {
-    it('returns true for the homepage, pricing, and generate routes', () => {
-      expect(shouldUseAuthenticatedProviders('/')).toBe(true)
+    it('returns true for pricing and generate routes (homepage excluded to avoid double ClerkProvider)', () => {
+      expect(shouldUseAuthenticatedProviders('/')).toBe(false)
       expect(shouldUseAuthenticatedProviders('/pricing')).toBe(true)
       expect(shouldUseAuthenticatedProviders('/generate/abc')).toBe(true)
     })
@@ -268,7 +268,7 @@ describe('app provider loading', () => {
       expect(screen.getByTestId('child')).toBeTruthy()
     })
 
-    it('wraps the homepage in Convex providers because the home gallery uses Convex hooks', async () => {
+    it('wraps the homepage in anonymous Convex providers (Clerk stays owned by HomepageAuthControls)', async () => {
       appProviderMocks.pathname = '/'
       vi.stubEnv('VITE_CONVEX_URL', 'http://localhost:3001')
       const { AppProviders } = await import('@/app/providers/AppProviders')
@@ -280,9 +280,13 @@ describe('app provider loading', () => {
       )
 
       expect(await screen.findByTestId('launch-backdrop')).toBeTruthy()
-      expect(await screen.findByTestId('convex-with-clerk')).toBeTruthy()
+      // Homepage uses anonymous Convex for the public gallery; AppProviders must
+      // NOT mount Clerk here (the homepage mounts its own ClerkProvider via
+      // HomepageAuthControls), otherwise Clerk throws "multiple <ClerkProvider>".
+      expect(await screen.findByTestId('convex-anonymous')).toBeTruthy()
       expect(screen.getByText('Public home')).toBeTruthy()
-      expect(screen.queryByTestId('convex-anonymous')).toBeNull()
+      expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
+      expect(appProviderMocks.clerkProviderProps).toHaveLength(0)
     })
 
     it('loads anonymous Convex on generate routes when Clerk is not configured', async () => {

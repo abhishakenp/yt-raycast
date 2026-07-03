@@ -6,9 +6,27 @@ const LazyHomepageAuthControls = lazy(() =>
   })),
 )
 
-export const SignInModalHost = ({ requestId }: { requestId: number }) =>
+type SignInModalHostProps = {
+  requestId: number
+  // When true, a <ClerkProvider> is already mounted above this host (the
+  // authenticated ClerkConvexProvider branch). HomepageAuthControls must not
+  // wrap again or Clerk throws "multiple <ClerkProvider>". When false, no
+  // provider is mounted above (anonymous/public branches) so HomepageAuthControls
+  // owns the ClerkProvider mount.
+  clerkMounted?: boolean
+}
+
+export const SignInModalHost = ({
+  requestId,
+  clerkMounted = false,
+}: SignInModalHostProps) =>
   requestId > 0 ? (
     <Suspense fallback={null}>
-      <LazyHomepageAuthControls key={requestId} autoOpen renderButton={false} />
+      <LazyHomepageAuthControls
+        key={requestId}
+        autoOpen
+        renderButton={false}
+        wrapProvider={!clerkMounted}
+      />
     </Suspense>
   ) : null

@@ -66,9 +66,11 @@ const WithSignInHost = ({
   children,
   showLaunchBackdrop,
   signInRequestId,
+  clerkMounted,
 }: AppProvidersProps & {
   showLaunchBackdrop: boolean
   signInRequestId: number
+  clerkMounted: boolean
 }) => (
   <>
     {showLaunchBackdrop ? (
@@ -81,7 +83,10 @@ const WithSignInHost = ({
     </div>
     {signInRequestId > 0 ? (
       <Suspense fallback={null}>
-        <LazySignInModalHost requestId={signInRequestId} />
+        <LazySignInModalHost
+          requestId={signInRequestId}
+          clerkMounted={clerkMounted}
+        />
       </Suspense>
     ) : null}
   </>
@@ -126,6 +131,7 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
           <WithSignInHost
             showLaunchBackdrop={showLaunchBackdrop}
             signInRequestId={signInRequestId}
+            clerkMounted
           >
             {children}
           </WithSignInHost>
@@ -141,6 +147,7 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
           <WithSignInHost
             showLaunchBackdrop={showLaunchBackdrop}
             signInRequestId={signInRequestId}
+            clerkMounted={false}
           >
             {children}
           </WithSignInHost>
@@ -157,6 +164,7 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
       <WithSignInHost
         showLaunchBackdrop={showLaunchBackdrop}
         signInRequestId={signInRequestId}
+        clerkMounted={false}
       >
         <ProviderFallback />
       </WithSignInHost>
@@ -167,6 +175,7 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
     <WithSignInHost
       showLaunchBackdrop={showLaunchBackdrop}
       signInRequestId={signInRequestId}
+      clerkMounted={false}
     >
       {children}
     </WithSignInHost>
