@@ -95,7 +95,9 @@ const rejected = invalidCases.map((testCase) => {
 
 const quotaAnon = `anon-verify-admission-quota-${stamp}`
 const quotaCreates = []
-for (let index = 0; index < 2; index += 1) {
+// Anon daily limit = MAX_ANON_PER_DAY (2) + SHARE_BONUS_EXTRA (1); see src/billing/constants.ts
+const anonDailyLimit = 3
+for (let index = 0; index < anonDailyLimit; index += 1) {
   quotaCreates.push(
     convexRun('sessions:create', {
       prompt: `Admission verifier quota site ${stamp} ${index}`,
