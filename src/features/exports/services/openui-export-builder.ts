@@ -20,6 +20,7 @@ import {
   resolveRelativeBlockSourcePath,
 } from './block-source-manifest'
 import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
+import { formatExportFiles } from './format-export-files'
 import { resolvePreviewImageUrl } from './preview-image-url-resolution'
 
 type ParsedOpenUIProgram = {
@@ -3978,11 +3979,12 @@ const buildReactExport = async (
   }
   Object.assign(files, blockSources.files)
 
+  const formattedFiles = await formatExportFiles(files)
   return {
-    body: zipFiles(files),
+    body: zipFiles(formattedFiles),
     contentType: 'application/zip',
     filename: `${toProjectSlug(parsed.projectName)}-react.zip`,
-    fileCount: Object.keys(files).length,
+    fileCount: Object.keys(formattedFiles).length,
   }
 }
 
@@ -4098,11 +4100,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     }
   }
 
+  const formattedFiles = await formatExportFiles(files)
   return {
-    body: zipFiles(files),
+    body: zipFiles(formattedFiles),
     contentType: 'application/zip',
     filename: `${toProjectSlug(parsed.projectName)}-next.zip`,
-    fileCount: Object.keys(files).length,
+    fileCount: Object.keys(formattedFiles).length,
   }
 }
 
