@@ -1,6 +1,7 @@
 import {
   buildHeadTags,
   buildNextMetadata,
+  buildNextViewport,
   buildStructuredData,
   resolvePageSeo,
   serializeStructuredData,
@@ -17,6 +18,7 @@ export type ExportRouteSeo = {
   structuredDataJson: string
   headTags: string[]
   nextMetadata: Record<string, unknown>
+  nextViewport: Record<string, unknown>
 }
 
 export type ExportSeoBundle = {
@@ -98,6 +100,7 @@ export const buildExportSeoBundle = (
   siteSpecJson: string | undefined,
   routePaths: Array<{ path: string; label: string }>,
   options: ExportSeoBundleOptions = {},
+  routeJsonLdEntries?: Map<string, Record<string, unknown>[]>,
 ): ExportSeoBundle => {
   const parsedSpec = parseSiteSpec(siteSpecJson)
 
@@ -142,7 +145,11 @@ export const buildExportSeoBundle = (
         }
 
     const seo = resolvePageSeo(siteSpec, page)
-    const structuredData = buildStructuredData(siteSpec, page)
+    // Use tree-derived JSON-LD entries (from actual UI component props) when
+    // available — these describe entities on the page (products, reviews, FAQ)
+    // rather than duplicating head metadata. Fall back to siteSpec-based data.
+    const treeEntries = routeJsonLdEntries?.get(normalized)
+    const structuredData = treeEntries ?? buildStructuredData(siteSpec, page)
     const structuredDataJson = serializeStructuredData(structuredData)
     const structuredDataScript = structuredDataJson
       ? `<script type="application/ld+json">${structuredDataJson}</script>`
@@ -151,12 +158,14 @@ export const buildExportSeoBundle = (
       structuredDataScript,
     })
     const nextMetadata = buildNextMetadata(seo) as Record<string, unknown>
+    const nextViewport = buildNextViewport(seo) as Record<string, unknown>
 
     const routeSeo: ExportRouteSeo = {
       seo,
       structuredDataJson,
       headTags,
       nextMetadata,
+      nextViewport,
     }
     routes.set(normalized, routeSeo)
     if (normalized === '/') homeSeo = routeSeo
@@ -164,7 +173,23 @@ export const buildExportSeoBundle = (
 
   const robotsTxt = renderRobotsTxt(siteSpec)
   const sitemapXml = renderSitemapXml(siteSpec)
-  const llmsTxt = renderGeneratedSiteLlmsTxt(siteSpec)
+  // Enrich siteSpec with route-derived pages so llms.txt lists all routes
+  // even when the original siteSpec has no pages array
+  const specPagesForLlms = Array.isArray(siteSpec.pages) ? siteSpec.pages : []
+  const routeDerivedPages = routePaths.map(({ path, label }) => {
+    const normalized = normalizePath(path)
+    const existing = specPagesForLlms.find(
+      (p) => normalizePath(String(p.route ?? '/')) === normalized,
+    )
+    if (existing) return existing
+    return {
+      route: normalized,
+      name: label,
+      title: siteSpec.projectName ? undefined : label,
+    }
+  })
+  const enrichedSiteSpec = { ...siteSpec, pages: routeDerivedPages }
+  const llmsTxt = renderGeneratedSiteLlmsTxt(enrichedSiteSpec)
 
   return {
     routes,
@@ -189,11 +214,39 @@ export const renderNextMetadataExport = (routeSeo: ExportRouteSeo): string => {
 }
 
 /**
- * Generate JSON-LD script tag for a route's structured data.
+ * Generate Next.js viewport export string from a route's SEO data.
+ * Next.js 16+ requires themeColor in viewport export, not metadata.
+ */
+export const renderNextViewportExport = (routeSeo: ExportRouteSeo): string => {
+  const viewport = routeSeo.nextViewport
+  if (!viewport || Object.keys(viewport).length === 0) return ''
+  const lines: string[] = ['export const viewport = {']
+  for (const [key, value] of Object.entries(viewport)) {
+    lines.push(`  ${key}: ${JSON.stringify(value)},`)
+  }
+  lines.push('}')
+  return lines.join('\n')
+}
+
+/**
+ * Generate the module-level JSON-LD object literal for a route's structured data.
+ * Returns the `const jsonLd = {...}` declaration to be placed outside the
+ * component, plus the `<script>` JSX element to render inside it.
+ * Uses JSON.stringify with XSS sanitization per Next.js recommendation.
+ * @see https://nextjs.org/docs/app/guides/json-ld
  */
 export const renderJsonLdScript = (routeSeo: ExportRouteSeo): string => {
   if (!routeSeo.structuredDataJson) return ''
-  return `<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ${JSON.stringify(routeSeo.structuredDataJson)} }} />`
+  const data = JSON.parse(routeSeo.structuredDataJson)
+  const objectLiteral = JSON.stringify(data, null, 2)
+  return `const jsonLd = ${objectLiteral}
+
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify(jsonLd).replace(/</g, '\\\\u003c'),
+  }}
+/>`
 }
 
 /**

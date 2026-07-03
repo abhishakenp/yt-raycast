@@ -95,12 +95,13 @@ describe('export-data next server actions', () => {
 })
 
 describe('export-data shoo auth', () => {
-  it('renderShooAuthProvider generates a provider using @shoojs/react', () => {
+  it('renderShooAuthProvider generates a self-contained auth provider', () => {
     const provider = renderShooAuthProvider()
-    expect(provider).toContain('@shoojs/react')
     expect(provider).toContain('useShooAuth')
     expect(provider).toContain('AuthProvider')
     expect(provider).toContain('adaptShooIdentity')
+    expect(provider).toContain('createContext')
+    expect(provider).not.toContain('@shoojs/react')
   })
 
   it('renderShooCallbackRoute generates a Next.js callback page', () => {

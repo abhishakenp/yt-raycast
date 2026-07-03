@@ -216,6 +216,27 @@ const renderExportedBrowserEntry = async (
                 },
               ],
             }))
+            pluginBuild.onResolve({ filter: /^@shoojs\/react$/ }, () => ({
+              namespace: 'shoojs-stub',
+              path: '@shoojs/react',
+            }))
+            pluginBuild.onResolve(
+              { filter: /^react$/, namespace: 'shoojs-stub' },
+              () => ({
+                path: join(process.cwd(), 'node_modules/react/index.js'),
+              }),
+            )
+            pluginBuild.onLoad(
+              { filter: /^@shoojs\/react$/, namespace: 'shoojs-stub' },
+              () => ({
+                contents: `import React from "react";
+const AuthContext = React.createContext({ identity: { userId: 'guest', email: null, name: null, picture: null }, signIn: () => {}, clearIdentity: () => {} });
+export function useShooAuth() { return React.useContext(AuthContext); }
+export function AuthProvider({ children }) { return React.createElement(React.Fragment, null, children); }
+`,
+                loader: 'tsx',
+              }),
+            )
             pluginBuild.onResolve({ filter: /^@\// }, (args) => ({
               path: join(directory, args.path.replace(/^@\//, 'src/')),
             }))
@@ -634,6 +655,33 @@ describe('openui-export-builder', () => {
                 namespace: 'react-router-dom-stub',
                 path: 'react-router-dom',
               }))
+              pluginBuild.onResolve(
+                { filter: /^react$/, namespace: 'react-router-dom-stub' },
+                () => ({
+                  path: join(process.cwd(), 'node_modules/react/index.js'),
+                }),
+              )
+              pluginBuild.onResolve({ filter: /^@shoojs\/react$/ }, () => ({
+                namespace: 'shoojs-stub',
+                path: '@shoojs/react',
+              }))
+              pluginBuild.onResolve(
+                { filter: /^react$/, namespace: 'shoojs-stub' },
+                () => ({
+                  path: join(process.cwd(), 'node_modules/react/index.js'),
+                }),
+              )
+              pluginBuild.onLoad(
+                { filter: /^@shoojs\/react$/, namespace: 'shoojs-stub' },
+                () => ({
+                  contents: `import React from "react";
+const AuthContext = React.createContext({ identity: { userId: 'guest', email: null, name: null, picture: null }, signIn: () => {}, clearIdentity: () => {} });
+export function useShooAuth() { return React.useContext(AuthContext); }
+export function AuthProvider({ children }) { return React.createElement(React.Fragment, null, children); }
+`,
+                  loader: 'tsx',
+                }),
+              )
               pluginBuild.onLoad(
                 {
                   filter: /^react-router-dom$/,
@@ -896,10 +944,6 @@ export function useParams() { return {}; }
     const provider = files['src/lib/query-provider.tsx']
     expect(provider).toContain('PropsWithChildren')
     expect(provider).not.toContain('{ children: ReactNode }')
-    // BrandLogoProvider
-    const logo = files['src/lib/brand-logo-provider.tsx']
-    expect(logo).toContain('PropsWithChildren')
-    expect(logo).not.toContain('{ children: ReactNode }')
     // RootLayout
     const layout = files['app/layout.tsx']
     expect(layout).toContain('PropsWithChildren')
@@ -1331,7 +1375,7 @@ createRoot(document.getElementById('root')!).render(
     }
   })
 
-  it('embeds preview style edits in React and Next client runtimes', async () => {
+  it('embeds preview style edits as CSS in React and Next exports', async () => {
     const previewHtml =
       '<main><h1 class="hero-title text-4xl" style="color: rgb(255, 0, 0); text-align: center;">Hello export</h1></main>'
 
@@ -1358,30 +1402,17 @@ createRoot(document.getElementById('root')!).render(
       ).body,
     )
 
-    for (const files of [react, next]) {
-      const { dom, renderError, runtimeErrors } =
-        await renderExportedBrowserEntry(
-          files,
-          `import React from 'react'
-import { createRoot } from 'react-dom/client'
-import { StyleOverrides } from './src/lib/style-overrides'
+    // Style overrides should be emitted as CSS rules in the stylesheet,
+    // not as a runtime DOM manipulation component.
+    expect(react['src/lib/style-overrides.tsx']).toBeUndefined()
+    expect(next['src/lib/style-overrides.tsx']).toBeUndefined()
 
-createRoot(document.getElementById('root')!).render(
-  <>
-    <StyleOverrides />
-    <h1 className="hero-title text-4xl">Hello export</h1>
-  </>,
-)`,
-        )
-
-      const heading = dom.window.document.querySelector(
-        '.hero-title.text-4xl',
-      ) as HTMLElement | null
-
-      expect(renderError).toBeUndefined()
-      expect(runtimeErrors).toEqual([])
-      expect(heading?.style.color).toBe('rgb(255, 0, 0)')
-      expect(heading?.style.textAlign).toBe('center')
+    const reactCss = react['src/styles.css'] ?? ''
+    const nextCss = next['app/globals.css'] ?? ''
+    for (const css of [reactCss, nextCss]) {
+      expect(css).toContain('hero-title text-4xl')
+      expect(css).toContain('color: rgb(255, 0, 0)')
+      expect(css).toContain('text-align: center')
     }
   })
 

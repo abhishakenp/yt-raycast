@@ -32,6 +32,11 @@ export function buildNextMetadata(seo: ResolvedPageSeo) {
       description: seo.description,
       images: seo.ogImage ? [seo.ogImage] : undefined,
     }),
+  })
+}
+
+export function buildNextViewport(seo: ResolvedPageSeo) {
+  return cleanObject({
     themeColor: seo.themeColor,
   })
 }

@@ -1,12 +1,12 @@
 /**
- * Normalize a Lakebed catalog/query result to an array of records.
+ * Normalize a catalog/query result to an array of records.
  *
- * Lakebed can return DB-shaped record collections — objects mapping record IDs
- * to record objects — instead of arrays. Malformed rows (null / undefined /
- * non-object entries) are filtered out so downstream `.map()` calls don't
- * throw. Genuine scalar primitive fields (strings, numbers, booleans) on the
- * top-level value indicate a scalar record rather than a collection, so the
- * value is treated as empty in that case.
+ * Query results can return DB-shaped record collections — objects mapping
+ * record IDs to record objects — instead of arrays. Malformed rows (null /
+ * undefined / non-object entries) are filtered out so downstream `.map()`
+ * calls don't throw. Genuine scalar primitive fields (strings, numbers,
+ * booleans) on the top-level value indicate a scalar record rather than a
+ * collection, so the value is treated as empty in that case.
  */
 export function normalizeRecords<T>(value: unknown): T[] {
   if (Array.isArray(value)) {
