@@ -7,13 +7,16 @@ const authControlMock = vi.hoisted(() =>
     ({
       autoOpen,
       renderButton,
+      wrapProvider,
     }: {
       autoOpen?: boolean
       renderButton?: boolean
+      wrapProvider?: boolean
     }) => (
       <div
         data-auto-open={String(autoOpen)}
         data-render-button={String(renderButton)}
+        data-wrap-provider={String(wrapProvider)}
         data-testid="homepage-auth-controls"
       />
     ),
@@ -45,5 +48,22 @@ describe('SignInModalHost', () => {
     const controls = await screen.findByTestId('homepage-auth-controls')
     expect(controls.getAttribute('data-auto-open')).toBe('true')
     expect(controls.getAttribute('data-render-button')).toBe('false')
+  })
+
+  it('wraps HomepageAuthControls in its own ClerkProvider on anonymous routes', async () => {
+    render(<SignInModalHost requestId={3} clerkMounted={false} />)
+
+    const controls = await screen.findByTestId('homepage-auth-controls')
+    // No Clerk provider above → HomepageAuthControls must own the provider.
+    expect(controls.getAttribute('data-wrap-provider')).toBe('true')
+  })
+
+  it('does not wrap a second ClerkProvider when Clerk is already mounted above (authed routes)', async () => {
+    render(<SignInModalHost requestId={3} clerkMounted />)
+
+    const controls = await screen.findByTestId('homepage-auth-controls')
+    // A ClerkProvider is already mounted by ClerkConvexProvider; wrapping again
+    // would make Clerk throw "multiple <ClerkProvider>".
+    expect(controls.getAttribute('data-wrap-provider')).toBe('false')
   })
 })

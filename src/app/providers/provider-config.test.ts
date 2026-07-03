@@ -27,8 +27,11 @@ describe('provider config', () => {
     ).toBe('clerk_convex')
   })
 
-  it('enables authenticated providers on the homepage, pricing, and generate routes', () => {
-    expect(shouldUseAuthenticatedProviders('/')).toBe(true)
+  it('enables authenticated providers on pricing and generate routes', () => {
+    // The homepage (`/`) is intentionally excluded: it mounts its own
+    // ClerkProvider via HomepageAuthControls and only needs anonymous Convex,
+    // so AppProviders must not stack a second Clerk provider there.
+    expect(shouldUseAuthenticatedProviders('/')).toBe(false)
     expect(shouldUseAuthenticatedProviders('/pricing')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/generate/session_123')).toBe(true)
   })
