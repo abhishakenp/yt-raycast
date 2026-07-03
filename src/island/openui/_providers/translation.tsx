@@ -205,6 +205,15 @@ type TextTranslationState = {
   translatedText?: string
 }
 
+const ACTIVE_TEXT_EDIT_SELECTOR =
+  '[data-ship-fast-inline-editing="true"], [contenteditable="true"], [contenteditable="plaintext-only"]'
+
+const isInsideActiveTextEdit = (node: Node): boolean => {
+  const parent =
+    node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement
+  return Boolean(parent?.closest(ACTIVE_TEXT_EDIT_SELECTOR))
+}
+
 // T uses MutationObserver to find text nodes, then translates them in one
 // serialized batch per collection window.
 export function T({ children }: React.PropsWithChildren) {
@@ -286,16 +295,31 @@ export function T({ children }: React.PropsWithChildren) {
         )
         if (!cancelled) {
           batch.forEach((item, index) => {
+            const translated = translations[index] ?? item.text
+            if (isInsideActiveTextEdit(item.node)) {
+              const parent = item.node.parentElement
+              if (parent) {
+                parent.classList.remove('sf-shimmer-loading')
+                parent.style.backgroundImage = ''
+                parent.style.backgroundClip = ''
+                parent.style.webkitBackgroundClip = ''
+                parent.style.color = ''
+              }
+              textStateRef.current.set(item.node, {
+                originalText: item.node.textContent?.trim() || item.text,
+              })
+              return
+            }
             applyTranslationResult(
               item.node.parentElement,
               item.node,
-              translations[index] ?? item.text,
+              translated,
               item.text,
             )
             textStateRef.current.set(item.node, {
               originalText: item.text,
               translatedLocale: locale,
-              translatedText: translations[index] ?? item.text,
+              translatedText: translated,
             })
           })
         }
@@ -311,6 +335,7 @@ export function T({ children }: React.PropsWithChildren) {
 
       while (walker.nextNode()) {
         const node = walker.currentNode as Text
+        if (isInsideActiveTextEdit(node)) continue
         const text = sourceTextForNode(node)
         if (!text || processedRef.current.has(node)) continue
         processedRef.current.add(node)

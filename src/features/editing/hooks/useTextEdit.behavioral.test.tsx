@@ -371,6 +371,8 @@ describe('useTextEdit: alert dialog focus during active edits', () => {
         )
       })
 
+      expect(paragraph.dataset.shipFastInlineEditing).toBe('true')
+
       textNode.nodeValue = 'Delete me now'
       act(() => {
         dialog.focus()
@@ -402,6 +404,7 @@ describe('useTextEdit: alert dialog focus during active edits', () => {
         }),
       )
       expect(paragraph.hasAttribute('contenteditable')).toBe(false)
+      expect(paragraph.dataset.shipFastInlineEditing).toBeUndefined()
     } finally {
       unmount()
       container.remove()
