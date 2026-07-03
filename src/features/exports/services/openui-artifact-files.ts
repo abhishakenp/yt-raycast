@@ -28,11 +28,13 @@ const withGenUIExportMetadata = (
   files: Record<string, string>,
 ): Record<string, string> => {
   const genui = readGenUIExportMetadata(input.siteSpecJson)
-  if (genui === null) return files
-  const wiredFiles = withAdminAccessWiring(input, files, genui)
+  // Always include admin wiring — use empty genui fallback when no genui
+  // metadata is present so the admin gate uses a default owner email.
+  const effectiveGenui = genui ?? {}
+  const wiredFiles = withAdminAccessWiring(input, files, effectiveGenui)
   return {
     ...wiredFiles,
-    'src/ship-fast-admin.ts': createAdminTypescriptModule(genui),
+    'src/ship-fast-admin.ts': createAdminTypescriptModule(effectiveGenui),
   }
 }
 
@@ -54,7 +56,7 @@ const readAdminEmails = (genui: Record<string, unknown>): string[] => {
       : typeof genui.ownerEmail === 'string'
         ? [genui.ownerEmail]
         : []
-  return [
+  const emails = [
     ...new Set(
       values
         .filter((value): value is string => typeof value === 'string')
@@ -62,6 +64,9 @@ const readAdminEmails = (genui: Record<string, unknown>): string[] => {
         .filter((value) => value.includes('@')),
     ),
   ]
+  // Always provide a default owner email so the admin gate is usable
+  // even when no genui metadata is present in the site spec.
+  return emails.length > 0 ? emails : ['owner@ship-fast.local']
 }
 
 const slugifyRoute = (value: string): string =>
@@ -229,9 +234,21 @@ const wireReactAdminAccess = (
   )`,
   )
 
+  // Add /admin route to the routes data if it doesn't exist
+  const pagesData = files['src/data/pages.ts'] ?? ''
+  const hasAdminRoute = /['"]\/admin['"]/.test(pagesData)
+  let updatedPagesData = pagesData
+  if (!hasAdminRoute) {
+    updatedPagesData = pagesData.replace(
+      /(\];\s*$)/m,
+      `  { label: 'Admin', path: '/admin', component: 'AdminPage', props: {} },\n$1`,
+    )
+  }
+
   return {
     ...files,
     'src/App.tsx': wiredApp,
+    'src/data/pages.ts': updatedPagesData,
     'src/lib/ship-fast-admin-gate.tsx': createAdminGateModule(genui),
   }
 }
@@ -249,7 +266,8 @@ const wireNextAdminAccess = (
   genui: Record<string, unknown>,
 ): Record<string, string> => {
   const nextFiles = { ...files }
-  for (const route of readAdminRoutes(genui)) {
+  const adminRoutes = readAdminRoutes(genui)
+  for (const route of adminRoutes) {
     const file = routeFileForPath(route.path)
     const source = nextFiles[file]
     if (!source) continue
@@ -264,6 +282,17 @@ const wireNextAdminAccess = (
     </ShipFastAdminGate>`,
     )
   }
+  // If no admin route page exists yet, create a standalone /admin page
+  const adminFile = routeFileForPath('/admin')
+  if (!nextFiles[adminFile]) {
+    const importPath = nextImportPathForRouteFile(adminFile)
+    nextFiles[adminFile] = `import { ShipFastAdminGate } from '${importPath}'
+
+export default function Page() {
+  return <ShipFastAdminGate routeLabel="Admin" />
+}
+`
+  }
   return {
     ...nextFiles,
     'src/lib/ship-fast-admin-gate.tsx': createAdminGateModule(genui),
@@ -275,7 +304,6 @@ const withAdminAccessWiring = (
   files: Record<string, string>,
   genui: Record<string, unknown>,
 ): Record<string, string> => {
-  if (readAdminEmails(genui).length === 0) return files
   if (input.target === 'react') return wireReactAdminAccess(files, genui)
   if (input.target === 'next') return wireNextAdminAccess(files, genui)
   return files
