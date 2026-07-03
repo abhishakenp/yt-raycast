@@ -257,12 +257,10 @@ const wireNextAdminAccess = (
       ? source
       : `import { ShipFastAdminGate } from '${importPath}'\n${source}`
     nextFiles[file] = withImport.replace(
-      /return <([A-Za-z0-9_]+) \/>/,
-      `return (
-    <ShipFastAdminGate routeLabel=${JSON.stringify(route.label)}>
+      /<([A-Za-z0-9_]+) \/>/,
+      `<ShipFastAdminGate routeLabel=${JSON.stringify(route.label)}>
       <$1 />
-    </ShipFastAdminGate>
-  )`,
+    </ShipFastAdminGate>`,
     )
   }
   return {

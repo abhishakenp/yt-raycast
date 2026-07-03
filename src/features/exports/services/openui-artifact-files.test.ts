@@ -45,6 +45,34 @@ const siteSpecJsonWithGenUI = JSON.stringify({
   },
 })
 
+const siteSpecJsonWithGenUIAndSeo = JSON.stringify({
+  projectName: 'Artifact Demo',
+  seo: {
+    siteUrl: 'https://artifact.example.com',
+    siteName: 'Artifact Demo',
+    description: 'Admin publication workspace.',
+  },
+  pages: [
+    { route: '/', title: 'Home', seo: { title: 'Artifact Home' } },
+    {
+      route: '/admin',
+      title: 'Admin',
+      seo: { title: 'Artifact Admin' },
+    },
+  ],
+  genui: {
+    version: 1,
+    category: 'publication',
+    ownerEmail: 'founder@example.com',
+    adminPolicy: {
+      mode: 'baked-owner',
+      authProvider: 'shoo',
+      ownerEmail: 'founder@example.com',
+    },
+    fullstackManifest: { schema: 'publication-newsroom-v1' },
+  },
+})
+
 const siteSpecJsonWithCommerceGenUI = JSON.stringify({
   projectName: 'Artifact Store',
   genui: {
@@ -511,6 +539,24 @@ describe('openui artifact files', () => {
     )
     expect(files['src/lib/ship-fast-admin-gate.tsx']).toContain("'use client'")
     expect(files['src/ship-fast-admin.ts']).toContain('founder@example.com')
+  })
+
+  it('preserves Next SEO JSON-LD when wrapping admin routes', async () => {
+    const { files } = await buildOpenUIArtifactFiles({
+      source: v1PublicationSource,
+      siteSpecJson: siteSpecJsonWithGenUIAndSeo,
+      sessionId: 'demo',
+      target: 'next',
+    })
+
+    const adminPage = files['app/admin/page.tsx']
+    expect(adminPage).toContain('ShipFastAdminGate')
+    expect(adminPage).toContain('routeLabel="Admin"')
+    expect(adminPage).toContain('application/ld+json')
+    expect(adminPage).toContain('</>')
+    await expect(renderGeneratedRouteText(files, 'AdminPage')).resolves.toEqual(
+      expect.any(String),
+    )
   })
 
   it('includes generated admin metadata in Lakebed artifact files', async () => {

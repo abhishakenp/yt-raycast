@@ -857,9 +857,9 @@ export function useParams() { return {}; }
     expect(pricingPage).not.toContain('Props')
     // Direct component import and render
     expect(homePage).toMatch(/import \{ HomePage \}/)
-    expect(homePage).toMatch(/return <HomePage \/>/)
+    expect(homePage).toContain('<HomePage />')
     expect(pricingPage).toMatch(/import \{ PricingPage \}/)
-    expect(pricingPage).toMatch(/return <PricingPage \/>/)
+    expect(pricingPage).toContain('<PricingPage />')
   })
 
   it('creates QueryClient at module level in Next SiteDataProvider (not inside useState)', async () => {
@@ -900,6 +900,128 @@ export function useParams() { return {}; }
     const layout = files['app/layout.tsx']
     expect(layout).toContain('PropsWithChildren')
     expect(layout).not.toContain('{ children: ReactNode }')
+  })
+
+  it('injects AEO/SEO metadata into Next.js exports when siteSpecJson has SEO data', async () => {
+    const seoSiteSpec = JSON.stringify({
+      projectName: 'Acme Store',
+      siteType: 'ecommerce',
+      seo: {
+        siteUrl: 'https://acme.example.com',
+        siteName: 'Acme Store',
+        description: 'Buy the best widgets online.',
+        locale: 'en_US',
+        keywords: ['widgets', 'online store'],
+        ogImage: 'https://acme.example.com/og.png',
+      },
+      generatedTimestamp: '2024-06-01T00:00:00.000Z',
+      pages: [
+        {
+          route: '/',
+          title: 'Home',
+          description: 'Acme Store homepage',
+          seo: { title: 'Acme Store - Home' },
+        },
+        {
+          route: '/pricing',
+          title: 'Pricing',
+          description: 'Pricing plans',
+          seo: { title: 'Pricing - Acme Store' },
+        },
+      ],
+    })
+    const result = await buildOpenUIExport({
+      source: routedSource,
+      siteSpecJson: seoSiteSpec,
+      sessionId: 'demo',
+      target: 'next',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+
+    // Layout has full metadata (not just title)
+    const layout = files['app/layout.tsx']
+    expect(layout).toContain('openGraph:')
+    expect(layout).toContain('twitter:')
+    expect(layout).toContain('description:')
+
+    // Per-page metadata
+    const homePage = files['app/page.tsx']
+    expect(homePage).toContain('export const metadata')
+    expect(homePage).toContain('Acme Store - Home')
+    expect(homePage).toContain('application/ld+json')
+
+    const pricingPage = files['app/pricing/page.tsx']
+    expect(pricingPage).toContain('export const metadata')
+    expect(pricingPage).toContain('Pricing - Acme Store')
+    expect(pricingPage).toContain('application/ld+json')
+
+    // SEO static files
+    expect(files['app/robots.ts']).toContain('MetadataRoute.Robots')
+    expect(files['app/sitemap.ts']).toContain('MetadataRoute.Sitemap')
+    expect(files['app/sitemap.ts']).toContain('acme.example.com')
+    expect(files['public/llms.txt']).toContain('# Acme Store')
+    expect(files['public/llms.txt']).toContain('## Pages')
+
+    const htmlResult = await buildOpenUIHtmlExport({
+      source,
+      siteSpecJson: seoSiteSpec,
+      sessionId: 'demo-html-seo',
+      target: 'html',
+    })
+    const htmlDocument = parseHtmlDocument(decodeExportBody(htmlResult.body))
+    expect(htmlDocument.documentElement.getAttribute('lang')).toBe('en-US')
+    expect(htmlDocument.querySelector('title')?.textContent).toBe(
+      'Acme Store - Home',
+    )
+    expect(
+      htmlDocument
+        .querySelector('meta[property="og:title"]')
+        ?.getAttribute('content'),
+    ).toBe('Acme Store - Home')
+    expect(
+      htmlDocument.querySelector('script[type="application/ld+json"]'),
+    ).not.toBeNull()
+  })
+
+  it('injects AEO/SEO meta tags into React exports when siteSpecJson has SEO data', async () => {
+    const seoSiteSpec = JSON.stringify({
+      projectName: 'Acme Store',
+      siteType: 'ecommerce',
+      seo: {
+        siteUrl: 'https://acme.example.com',
+        siteName: 'Acme Store',
+        description: 'Buy the best widgets online.',
+        locale: 'en_US',
+        keywords: ['widgets', 'online store'],
+        ogImage: 'https://acme.example.com/og.png',
+      },
+      generatedTimestamp: '2024-06-01T00:00:00.000Z',
+      pages: [
+        {
+          route: '/',
+          title: 'Home',
+          description: 'Acme Store homepage',
+          seo: { title: 'Acme Store - Home' },
+        },
+      ],
+    })
+    const result = await buildOpenUIExport({
+      source: 'root = EcommerceHero()',
+      siteSpecJson: seoSiteSpec,
+      sessionId: 'demo',
+      target: 'react',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+
+    const html = files['index.html']
+    expect(html).toContain('og:title')
+    expect(html).toContain('twitter:card')
+    expect(html).toContain('application/ld+json')
+    expect(html).toContain('Acme Store - Home')
+
+    expect(files['public/robots.txt']).toContain('User-agent: *')
+    expect(files['public/sitemap.xml']).toContain('<urlset')
+    expect(files['public/llms.txt']).toContain('# Acme Store')
   })
 
   // Single explicit guard: exported artifacts (standalone HTML + React/Next

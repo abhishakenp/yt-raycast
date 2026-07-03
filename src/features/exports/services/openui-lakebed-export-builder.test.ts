@@ -418,6 +418,35 @@ homeHeroAnchor = SectionAnchor("home_hero", homeHero, "scroll-mt-28")
 homeDetail = ProductDetailHero({"title":"Aurora Pro"})
 home = Stack([homeHeroAnchor, homeDetail])`
 
+describe('openui lakebed seo integration', () => {
+  it('injects robots.txt, sitemap.xml, and llms.txt when siteSpecJson has SEO data', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: v2ComposedLakebedSource,
+      siteSpecJson: JSON.stringify({
+        projectName: 'Acme Store',
+        siteType: 'ecommerce',
+        seo: {
+          siteUrl: 'https://acme.example.com',
+          siteName: 'Acme Store',
+          description: 'Buy widgets online.',
+        },
+        generatedTimestamp: '2024-06-01T00:00:00.000Z',
+        pages: [
+          { route: '/', title: 'Home', seo: { title: 'Acme Store - Home' } },
+        ],
+      }),
+      sessionId: 'lakebed-seo-demo',
+      target: 'lakebed',
+    })
+    expect(built.files['public/robots.txt']).toContain('User-agent: *')
+    expect(built.files['public/robots.txt']).toContain('Sitemap:')
+    expect(built.files['public/sitemap.xml']).toContain('<urlset')
+    expect(built.files['public/sitemap.xml']).toContain('acme.example.com')
+    expect(built.files['public/llms.txt']).toContain('# Acme Store')
+    expect(built.files['public/llms.txt']).toContain('## Pages')
+  })
+})
+
 describe('openui lakebed image source generation', () => {
   it('exports nested composed route capsules as native Lakebed components and schema', async () => {
     const built = await buildOpenUILakebedProjectFiles({

@@ -24,6 +24,7 @@ import { preprocessOpenUIResponse } from '@ship-fast/engine'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { buildHtmlExport } from './html-export-builder'
+import { buildExportSeoBundle } from './export-seo'
 import type {
   BuiltExport,
   OpenUIExportInput,
@@ -655,14 +656,27 @@ const buildStandaloneHtmlDocument = async (
     ? await rewritePreviewImageUrls(extractBodyMarkup(input.previewHtml))
     : pagesMarkup
   const genui = readGenUIExportMetadata(siteSpec)
+  const seoBundle = buildExportSeoBundle(
+    input.siteSpecJson,
+    parsed.routes.map((label, index) => {
+      const path =
+        index === 0 ? '/' : `/${label.toLowerCase().replace(/\s+/g, '-')}`
+      return { path, label }
+    }),
+  )
+  const seoHeadTags = seoBundle?.homeSeo?.headTags ?? []
+  const seoHeadMarkup = seoHeadTags.length > 0 ? seoHeadTags.join('\n  ') : ''
+  const htmlLang =
+    input.locale?.trim() || seoBundle?.homeSeo?.seo.htmlLang || locale
 
   return buildHtmlExport(
     `<!doctype html>
-<html lang="${escapeAttribute(locale)}">
+<html lang="${escapeAttribute(htmlLang)}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(parsed.projectName)}</title>
+  <title>${escapeHtml(seoBundle?.homeSeo?.seo.title ?? parsed.projectName)}</title>
+  ${seoHeadMarkup}
   ${themeFontLinks}
   <style>
 ${css}
