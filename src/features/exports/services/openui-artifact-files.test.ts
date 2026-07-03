@@ -559,6 +559,25 @@ describe('openui artifact files', () => {
     )
   })
 
+  it('always includes /admin route in Next exports even without genui metadata', async () => {
+    const { files } = await buildOpenUIArtifactFiles({
+      source: 'root = SaasHero("Demo", "Hello", "artifact", "Start", "Book")',
+      siteSpecJson: JSON.stringify({ projectName: 'Demo' }),
+      sessionId: 'demo-no-genui',
+      target: 'next',
+    })
+
+    // Admin route page should always be generated
+    expect(files['app/admin/page.tsx']).toBeDefined()
+    expect(files['app/admin/page.tsx']).toContain('ShipFastAdminGate')
+    expect(files['app/admin/page.tsx']).toContain('routeLabel="Admin"')
+    // Admin gate module should always be present
+    expect(files['src/lib/ship-fast-admin-gate.tsx']).toBeDefined()
+    expect(files['src/ship-fast-admin.ts']).toBeDefined()
+    // Default owner email should be baked in
+    expect(files['src/ship-fast-admin.ts']).toContain('owner@ship-fast.local')
+  })
+
   it('includes generated admin metadata in Lakebed artifact files', async () => {
     const { files } = await buildOpenUIArtifactFiles({
       source,
