@@ -862,6 +862,23 @@ export function useParams() { return {}; }
     expect(pricingPage).toMatch(/return <PricingPage \/>/)
   })
 
+  it('creates QueryClient at module level in Next SiteDataProvider (not inside useState)', async () => {
+    const result = await buildOpenUIExport({
+      source: 'root = EcommerceHero()',
+      siteSpecJson,
+      sessionId: 'demo',
+      target: 'next',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    const provider = files['src/lib/site-data-provider.tsx']
+    expect(provider).toBeDefined()
+    // QueryClient must be created at module scope, not inside useState
+    expect(provider).not.toContain('useState')
+    expect(provider).toMatch(/const queryClient = new QueryClient/)
+    // Provider component should just use the module-level client
+    expect(provider).toMatch(/QueryClientProvider client=\{queryClient\}/)
+  })
+
   // Single explicit guard: exported artifacts (standalone HTML + React/Next
   // ZIPs) must never leak OpenUI internals (@openuidev imports, Vue
   // defineComponent, or raw OpenUI source like "root = Stack").
