@@ -96,6 +96,7 @@ export const changeGroups: ChangeGroup[] = [
       /^src\/features\/exports\/services\/openui-artifact-files\.(?:test\.)?ts$/,
       /^src\/features\/exports\/services\/block-source-manifest\.test\.ts$/,
       /^src\/features\/exports\/services\/export-builders\.edge-cases\.behavioral\.test\.ts$/,
+      /^src\/features\/exports\/services\/export-seo\.(?:test\.)?ts$/,
       /^src\/features\/exports\/services\/format-export-files\.(?:test\.)?ts$/,
       /^src\/features\/exports\/services\/html-export-files\.(?:test\.)?ts$/,
       /^src\/features\/exports\/services\/openui-html-export-builder\.ts$/,
