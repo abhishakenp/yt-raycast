@@ -328,6 +328,50 @@ describe('translation shimmer removal', () => {
     expect(globalThis.fetch).toHaveBeenCalledTimes(1)
   })
 
+  it('does not retranslate native Hindi text that is already in a Hindi preview', async () => {
+    const requests: string[][] = []
+    translationMocks.translateOnDevice.mockImplementation(async (text) =>
+      text === 'Standard Glass' ? null : 'WRONG_BROWSER_TRANSLATION',
+    )
+    globalThis.fetch = vi.fn(async (_input, init) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as {
+        texts?: string[]
+      }
+      requests.push(body.texts ?? [])
+      return {
+        ok: true,
+        json: async () => ({
+          translations: ['मानक कांच'],
+        }),
+      } as Response
+    }) as unknown as typeof fetch
+
+    const { getByText, queryByText } = render(
+      createElement(
+        I18nProvider,
+        { locale: 'hi' },
+        createElement(
+          T,
+          null,
+          createElement('span', null, 'पॉलिश किया हुआ'),
+          createElement('span', null, 'Standard Glass'),
+        ),
+      ),
+    )
+
+    await waitFor(() => {
+      expect(getByText('पॉलिश किया हुआ')).toBeTruthy()
+      expect(getByText('मानक कांच')).toBeTruthy()
+    })
+    expect(queryByText('WRONG_BROWSER_TRANSLATION')).toBeNull()
+    expect(translationMocks.translateOnDevice).toHaveBeenCalledTimes(1)
+    expect(translationMocks.translateOnDevice).toHaveBeenCalledWith(
+      'Standard Glass',
+      'hi',
+    )
+    expect(requests).toEqual([['Standard Glass']])
+  })
+
   it('does not overwrite text that becomes contenteditable while translation is in flight', async () => {
     let resolveFetch: ((value: Response) => void) | undefined
     const fetchStarted = new Promise<void>((resolveStarted) => {

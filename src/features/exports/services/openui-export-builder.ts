@@ -1677,7 +1677,8 @@ const collectBlockSourceFiles = (
 }
 
 const buildRoutes = (parsed: ParsedOpenUIProgram): ExportRoute[] => {
-  const used = new Set<string>()
+  const usedPaths = new Set<string>()
+  const usedNames = new Set<string>()
   return parsed.pages.map((page, index) => {
     unwrapSingleObjectArgProps(page)
     const label = parsed.routes[index] ?? `Page ${index + 1}`
@@ -1686,10 +1687,15 @@ const buildRoutes = (parsed: ParsedOpenUIProgram): ExportRoute[] => {
         `React export cannot render route "${label}" because it does not resolve to a page component`,
       )
     }
+    const baseName = `${toIdentifier(label)}Page`
+    const componentName = usedNames.has(baseName)
+      ? `${baseName}${index + 1}`
+      : baseName
+    usedNames.add(componentName)
     return {
       label,
-      path: uniqueRoutePath(label, index, used),
-      componentName: `RoutePage${index + 1}${toIdentifier(label)}`,
+      path: uniqueRoutePath(label, index, usedPaths),
+      componentName,
       node: page,
       props: page.props as Record<string, unknown>,
     }
@@ -3837,18 +3843,12 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
 `
 
 const renderNextRoutePage = (
-  route: ExportRoute,
   componentName: string,
-  dataImportPath: string,
   componentImportPath: string,
-): string => `import { routes } from '${dataImportPath}'
-import { ${componentName} } from '${componentImportPath}'
-import type { ${componentName}Props } from '${componentImportPath}'
-
-const route = routes.find((entry) => entry.path === ${JSON.stringify(route.path)})!
+): string => `import { ${componentName} } from '${componentImportPath}'
 
 export default function Page() {
-  return <${componentName} {...(route.props as ${componentName}Props)} />
+  return <${componentName} />
 }
 `
 
@@ -4082,17 +4082,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   for (const route of routes) {
     if (route.path === '/') {
       files['app/page.tsx'] = renderNextRoutePage(
-        route,
         route.componentName,
-        '../src/data/pages',
         '../src/components/' + route.componentName,
       )
     } else {
       const dir = route.path.slice(1)
       files[`app/${dir}/page.tsx`] = renderNextRoutePage(
-        route,
         route.componentName,
-        '../../src/data/pages',
         '../../src/components/' + route.componentName,
       )
     }

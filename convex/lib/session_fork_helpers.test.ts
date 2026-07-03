@@ -107,6 +107,7 @@ const ctxFor = (input: {
   const previews = [...(input.previews ?? [])]
   const generatedModules = [...(input.generatedModules ?? [])]
   const siteSpecs = [...(input.siteSpecs ?? [])]
+  const sessionData: Array<Record<string, unknown>> = []
   const tasks: TaskRecord[] = []
   const generationEvents: GenerationEventRecord[] = []
   const edits: EditRecord[] = []
@@ -123,6 +124,8 @@ const ctxFor = (input: {
         return generatedModules as unknown as Array<Record<string, unknown>>
       case 'siteSpecs':
         return siteSpecs as unknown as Array<Record<string, unknown>>
+      case 'sessionData':
+        return sessionData
       case 'tasks':
         return tasks as unknown as Array<Record<string, unknown>>
       case 'generationEvents':
@@ -168,9 +171,13 @@ const ctxFor = (input: {
     },
     db: {
       get: async (id: string) =>
-        [...sessions, ...previews, ...generatedModules, ...siteSpecs].find(
-          (row) => row._id === id,
-        ) ?? null,
+        [
+          ...sessions,
+          ...previews,
+          ...generatedModules,
+          ...siteSpecs,
+          ...sessionData,
+        ].find((row) => row._id === id) ?? null,
       insert: async (table: string, value: Record<string, unknown>) => {
         const rows = rowsFor(table)
         const nextId =
@@ -190,6 +197,7 @@ const ctxFor = (input: {
           ...previews,
           ...generatedModules,
           ...siteSpecs,
+          ...sessionData,
           ...tasks,
         ].find((item) => item._id === id)
         if (row === undefined) throw new Error(`Missing row ${id}`)
@@ -239,6 +247,7 @@ const ctxFor = (input: {
       previews,
       generatedModules,
       siteSpecs,
+      sessionData,
       tasks,
       generationEvents,
       edits,

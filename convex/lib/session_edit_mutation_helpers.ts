@@ -59,6 +59,59 @@ const replaceFirstJsonText = (
   return { value: next, replaced }
 }
 
+const uniqueNonEmptyTexts = (values: Array<string | undefined>): string[] => {
+  const seen = new Set<string>()
+  const texts: string[] = []
+
+  for (const value of values) {
+    const text = String(value ?? '').trim()
+    if (!text || seen.has(text)) continue
+    seen.add(text)
+    texts.push(text)
+  }
+
+  return texts
+}
+
+const patchTextEditIntoSessionData = async (
+  ctx: MutationCtx,
+  sessionId: Id<'sessions'>,
+  beforeTexts: Array<string | undefined>,
+  afterText: string | undefined,
+  now: number,
+): Promise<void> => {
+  const replacement = String(afterText ?? '').trim()
+  if (!replacement) return
+
+  const candidates = uniqueNonEmptyTexts(beforeTexts)
+  if (candidates.length === 0) return
+
+  const docs = await ctx.db
+    .query('sessionData')
+    .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
+    .take(128)
+
+  for (const doc of docs) {
+    let nextData: unknown = doc.data
+    let replaced = false
+
+    for (const candidate of candidates) {
+      const edit = replaceFirstJsonText(nextData, candidate, replacement)
+      if (!edit.replaced) continue
+      nextData = edit.value
+      replaced = true
+      break
+    }
+
+    if (replaced && isJsonObject(nextData)) {
+      await ctx.db.patch(doc._id, {
+        data: nextData,
+        updatedAt: now,
+      })
+    }
+  }
+}
+
 export type SessionEditInput = {
   editType: 'text' | 'ai_rewrite' | 'style' | 'image' | 'delete'
   targetLabel?: string
@@ -519,6 +572,16 @@ export const applySessionEdit = async (
     await rememberIdentityTranslation(
       ctx,
       session.preferredLanguage,
+      patchArgs.afterText,
+      now,
+    )
+  }
+
+  if (patchArgs.editType === 'text') {
+    await patchTextEditIntoSessionData(
+      ctx,
+      sessionId,
+      [args.beforeText, patchArgs.beforeText],
       patchArgs.afterText,
       now,
     )

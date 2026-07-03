@@ -5,6 +5,7 @@ import React, {
   useRef,
   type ReactNode,
 } from 'react'
+import { shouldPreserveNativeLocaleText } from '@/features/localization/native-script'
 import { translateOnDevice } from './chrome-translator'
 
 type Locale = string
@@ -98,6 +99,11 @@ export async function fetchTranslationBatch(
 
   for (let index = 0; index < texts.length; index += 1) {
     const text = texts[index]
+    if (shouldPreserveNativeLocaleText(text, locale)) {
+      translations[index] = text
+      continue
+    }
+
     const cached = getCachedTranslation(locale, text)
     if (cached !== null) {
       translations[index] = cached

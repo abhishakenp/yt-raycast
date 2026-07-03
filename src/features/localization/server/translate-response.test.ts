@@ -288,6 +288,98 @@ describe('createTranslateResponse', () => {
     ])
   })
 
+  it('does not model-translate native Hindi text that is already in a Hindi preview', async () => {
+    const calls: Array<{ user: string }> = []
+    const stored: Array<{
+      locale: string
+      entries: Array<{ text: string; translation: string }>
+    }> = []
+
+    const response = await createTranslateResponse(
+      new Request('https://ship-fast.test/api/translate', {
+        method: 'POST',
+        body: JSON.stringify({
+          texts: ['पॉलिश किया हुआ', 'Standard Glass'],
+          locale: 'hi',
+        }),
+      }),
+      async (_system, user) => {
+        calls.push({ user })
+        return JSON.stringify(['मानक कांच'])
+      },
+      {
+        getBatch: async () => ['प्रिल्लिषक्य', null],
+        setBatch: async (input) => {
+          stored.push(input)
+        },
+      },
+    )
+
+    await expect(response.json()).resolves.toMatchObject({
+      translations: ['पॉलिश किया हुआ', 'मानक कांच'],
+      locale: 'hi',
+      translated: true,
+      cached: false,
+    })
+    expect(calls).toHaveLength(1)
+    expect(calls[0].user).toContain(JSON.stringify(['Standard Glass']))
+    expect(calls[0].user).not.toContain('पॉलिश किया हुआ')
+    expect(stored).toEqual([
+      {
+        locale: 'hi',
+        entries: [{ text: 'Standard Glass', translation: 'मानक कांच' }],
+      },
+    ])
+  })
+
+  it('refuses to persist native Hindi text as a Hindi translation cache entry', async () => {
+    const stored: Array<{
+      locale: string
+      entries: Array<{ text: string; translation: string }>
+    }> = []
+
+    const response = await createTranslateResponse(
+      new Request('https://ship-fast.test/api/translate', {
+        method: 'POST',
+        body: JSON.stringify({
+          locale: 'hi',
+          entries: [
+            {
+              text: 'मानक कांचमानक शीशा',
+              translation: 'मोनक काँचमाक',
+            },
+            {
+              text: 'Standard Glass',
+              translation: 'मानक कांच',
+            },
+          ],
+        }),
+      }),
+      async () => {
+        throw new Error('model should not run')
+      },
+      {
+        getBatch: async () => [],
+        setBatch: async (input) => {
+          stored.push(input)
+        },
+      },
+    )
+
+    await expect(response.json()).resolves.toMatchObject({
+      locale: 'hi',
+      stored: 1,
+      translated: true,
+      cached: true,
+    })
+    expect(stored).toEqual([
+      {
+        locale: 'hi',
+        entries: [{ text: 'Standard Glass', translation: 'मानक कांच' }],
+      },
+    ])
+  })
+
   it('translates custom language slugs instead of skipping them as unsupported', async () => {
     const calls: Array<{ user: string }> = []
     const response = await createTranslateResponse(
