@@ -817,6 +817,53 @@ export function useParams() { return {}; }
 
   // Single explicit guard: exported artifacts (standalone HTML + React/Next
   // ZIPs) must never leak OpenUI internals (@openuidev imports, Vue
+  it('uses clean route component names derived from labels (no RoutePage prefix)', async () => {
+    const result = await buildOpenUIExport({
+      source: routedSource,
+      siteSpecJson,
+      sessionId: 'demo',
+      target: 'next',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    expect(files['src/components/HomePage.tsx']).toBeDefined()
+    expect(files['src/components/PricingPage.tsx']).toBeDefined()
+    expect(Object.keys(files)).not.toContain(
+      'src/components/RoutePage1Home.tsx',
+    )
+    expect(Object.keys(files)).not.toContain(
+      'src/components/RoutePage2Pricing.tsx',
+    )
+  })
+
+  it('inlines Next page files without routes.find indirection or props spread', async () => {
+    const result = await buildOpenUIExport({
+      source: routedSource,
+      siteSpecJson,
+      sessionId: 'demo',
+      target: 'next',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    const homePage = files['app/page.tsx']
+    const pricingPage = files['app/pricing/page.tsx']
+    expect(homePage).toBeDefined()
+    expect(pricingPage).toBeDefined()
+    // No routes.find indirection
+    expect(homePage).not.toContain('routes.find')
+    expect(pricingPage).not.toContain('routes.find')
+    // No props spread / props type import
+    expect(homePage).not.toContain('route.props')
+    expect(pricingPage).not.toContain('route.props')
+    expect(homePage).not.toContain('Props')
+    expect(pricingPage).not.toContain('Props')
+    // Direct component import and render
+    expect(homePage).toMatch(/import \{ HomePage \}/)
+    expect(homePage).toMatch(/return <HomePage \/>/)
+    expect(pricingPage).toMatch(/import \{ PricingPage \}/)
+    expect(pricingPage).toMatch(/return <PricingPage \/>/)
+  })
+
+  // Single explicit guard: exported artifacts (standalone HTML + React/Next
+  // ZIPs) must never leak OpenUI internals (@openuidev imports, Vue
   // defineComponent, or raw OpenUI source like "root = Stack").
   it('does not leak OpenUI internals into exported artifacts', async () => {
     const forbiddenTokens = ['@openuidev', 'defineComponent', 'root = Stack']
@@ -883,7 +930,7 @@ export function useParams() { return {}; }
     })
     const files = unzipBuiltExportTextFiles(result.body)
 
-    expect(files['src/components/RoutePage1Home.tsx']).toBeDefined()
+    expect(files['src/components/HomePage.tsx']).toBeDefined()
     expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
     expect(files['src/components/ProductDetailHero.tsx']).toBeDefined()
     expect(files['src/components/Stack.tsx']).toBeUndefined()
@@ -964,7 +1011,7 @@ createRoot(document.getElementById('root')!).render(<SiteDataProvider><Page /></
     })
     const files = unzipBuiltExportTextFiles(result.body)
 
-    expect(files['src/components/RoutePage1Home.tsx']).toBeDefined()
+    expect(files['src/components/HomePage.tsx']).toBeDefined()
     expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
     expect(files['src/components/ProductDetailHero.tsx']).toBeDefined()
     expect(files['src/components/Stack.tsx']).toBeUndefined()

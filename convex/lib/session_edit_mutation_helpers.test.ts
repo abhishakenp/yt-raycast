@@ -182,6 +182,96 @@ describe('session edit mutation helpers', () => {
     ).resolves.toEqual(['अपडेट किया गया शीर्षक'])
   })
 
+  it('patches Lakebed session data so realtime section state cannot replay stale text after reload', async () => {
+    const t = sessionEditConvexTest()
+    const sessionId = await createReadySession(t, 'Standard Glass')
+
+    await t.mutation(api.lakebed.mergeSessionData, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      capsule: 'MarketingAgencyPricing:home_pricing',
+      patch: {
+        plans: [
+          {
+            name: 'Standard Glass',
+            audience: 'Small businesses',
+          },
+        ],
+      },
+    })
+
+    await t.mutation(api.sessions.createEdit, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'text',
+      targetLabel: 'Pricing plan',
+      beforeText: 'Standard Glass',
+      afterText: 'Custom Glass',
+    })
+
+    await expect(
+      t.query(api.lakebed.getSessionData, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        capsule: 'MarketingAgencyPricing:home_pricing',
+      }),
+    ).resolves.toMatchObject({
+      plans: [
+        {
+          name: 'Custom Glass',
+          audience: 'Small businesses',
+        },
+      ],
+    })
+  })
+
+  it('patches translated Lakebed section data when selected text is mapped back to canonical source text', async () => {
+    const t = sessionEditConvexTest()
+    const sessionId = await createReadySession(t, 'Original English headline')
+
+    await t.mutation(api.sessions.setPreferredLanguage, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      preferredLanguage: 'hi',
+    })
+    await t.mutation(api.translationCache.setBatch, {
+      locale: 'hi',
+      entries: [
+        {
+          text: 'Original English headline',
+          translation: 'मूल अंग्रेज़ी शीर्षक',
+        },
+      ],
+    })
+    await t.mutation(api.lakebed.mergeSessionData, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      capsule: 'MarketingAgencyHero:home_hero',
+      patch: {
+        heading: 'मूल अंग्रेज़ी शीर्षक',
+      },
+    })
+
+    await t.mutation(api.sessions.createEdit, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'text',
+      targetLabel: 'Hero headline',
+      beforeText: 'मूल अंग्रेज़ी शीर्षक',
+      afterText: 'अपडेट किया गया शीर्षक',
+    })
+
+    await expect(
+      t.query(api.lakebed.getSessionData, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        capsule: 'MarketingAgencyHero:home_hero',
+      }),
+    ).resolves.toMatchObject({
+      heading: 'अपडेट किया गया शीर्षक',
+    })
+  })
+
   it('records edit history with target label and occurrence metadata', async () => {
     const t = sessionEditConvexTest()
     const sessionId = await createReadySession(t, 'Repeated headline')

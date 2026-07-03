@@ -1715,14 +1715,20 @@ const collectClientComponents = (
 const buildRoutes = (
   parsed: ReturnType<typeof parseOpenUIForExport>,
 ): LakebedRoute[] => {
-  const used = new Set<string>()
+  const usedPaths = new Set<string>()
+  const usedNames = new Set<string>()
   return parsed.pages.map((page, index) => {
     unwrapSingleObjectArgProps(page)
     const label = parsed.routes[index] ?? `Page ${index + 1}`
+    const baseName = `${toIdentifier(label)}Page`
+    const componentName = usedNames.has(baseName)
+      ? `${baseName}${index + 1}`
+      : baseName
+    usedNames.add(componentName)
     return {
       label,
-      path: uniqueRoutePath(label, index, used),
-      componentName: `RoutePage${index + 1}${toIdentifier(label)}`,
+      path: uniqueRoutePath(label, index, usedPaths),
+      componentName,
       node: page,
       props: (page.props ?? {}) as Record<string, unknown>,
     }

@@ -15,6 +15,11 @@ describe('buildSectionSeedPatch', () => {
     ).toEqual({
       headingTop: 'Launch',
       primaryCta: 'Start',
+      shipFastGeneratedProps: {
+        headingTop: 'Launch',
+        primaryCta: 'Start',
+        stats: [{ value: '1' }],
+      },
       stats: [{ value: '1' }],
     })
   })
@@ -23,9 +28,12 @@ describe('buildSectionSeedPatch', () => {
     expect(
       buildSectionSeedPatch(
         { headingTop: 'Launch', primaryCta: 'Start' },
-        { headingTop: 'Edited' },
+        { headingTop: 'Edited', shipFastGeneratedProps: { headingTop: 'Old' } },
       ),
-    ).toEqual({ primaryCta: 'Start' })
+    ).toEqual({
+      primaryCta: 'Start',
+      shipFastGeneratedProps: { headingTop: 'Launch', primaryCta: 'Start' },
+    })
   })
 
   it('drops reserved bookkeeping keys and undefined values', () => {
@@ -34,11 +42,71 @@ describe('buildSectionSeedPatch', () => {
         { id: 'x', createdAt: 1, headingTop: 'Launch', missing: undefined },
         {},
       ),
-    ).toEqual({ headingTop: 'Launch' })
+    ).toEqual({
+      headingTop: 'Launch',
+      shipFastGeneratedProps: { headingTop: 'Launch' },
+    })
   })
 
   it('returns an empty patch when everything is already seeded', () => {
-    expect(buildSectionSeedPatch({ a: 1, b: 2 }, { a: 1, b: 2 })).toEqual({})
+    expect(buildSectionSeedPatch({ a: 1, b: 2 }, { a: 1, b: 2 })).toEqual({
+      shipFastGeneratedProps: { a: 1, b: 2 },
+    })
+  })
+
+  it('updates stale auto-seeded values when generated props change', () => {
+    expect(
+      buildSectionSeedPatch(
+        { heading: 'Fresh source heading', cta: 'Start' },
+        {
+          heading: 'Old seeded heading',
+          cta: 'Start',
+          shipFastGeneratedProps: {
+            heading: 'Old seeded heading',
+            cta: 'Start',
+          },
+        },
+      ),
+    ).toEqual({
+      heading: 'Fresh source heading',
+      shipFastGeneratedProps: {
+        heading: 'Fresh source heading',
+        cta: 'Start',
+      },
+    })
+  })
+
+  it('does not overwrite live admin edits that differ from the previous generated seed', () => {
+    expect(
+      buildSectionSeedPatch(
+        { heading: 'Fresh source heading', cta: 'Start' },
+        {
+          heading: 'Admin heading',
+          cta: 'Start',
+          shipFastGeneratedProps: {
+            heading: 'Old seeded heading',
+            cta: 'Start',
+          },
+        },
+      ),
+    ).toEqual({
+      shipFastGeneratedProps: {
+        heading: 'Fresh source heading',
+        cta: 'Start',
+      },
+    })
+  })
+
+  it('repairs legacy unmarked seeded values to the latest generated props', () => {
+    expect(
+      buildSectionSeedPatch(
+        { heading: 'Fresh source heading' },
+        { heading: 'Legacy stale heading' },
+      ),
+    ).toEqual({
+      heading: 'Fresh source heading',
+      shipFastGeneratedProps: { heading: 'Fresh source heading' },
+    })
   })
 })
 
@@ -52,9 +120,41 @@ describe('mergeSectionProps', () => {
     expect(
       mergeSectionProps(
         { headingTop: 'Launch', primaryCta: 'Start' },
-        { headingTop: 'Edited' },
+        {
+          headingTop: 'Edited',
+          shipFastGeneratedProps: { headingTop: 'Launch' },
+        },
       ),
     ).toEqual({ headingTop: 'Edited', primaryCta: 'Start' })
+  })
+
+  it('does not let stale auto-seeded values override fresher generated props', () => {
+    expect(
+      mergeSectionProps(
+        { headingTop: 'Fresh source heading', primaryCta: 'Start' },
+        {
+          headingTop: 'Old seeded heading',
+          primaryCta: 'Start',
+          shipFastGeneratedProps: {
+            headingTop: 'Old seeded heading',
+            primaryCta: 'Start',
+          },
+        },
+      ),
+    ).toEqual({ headingTop: 'Fresh source heading', primaryCta: 'Start' })
+  })
+
+  it('treats legacy unmarked section data as seed data for generated prop keys', () => {
+    expect(
+      mergeSectionProps(
+        { headingTop: 'Fresh source heading', primaryCta: 'Start' },
+        { headingTop: 'Legacy stale heading', customAdminField: 'keep me' },
+      ),
+    ).toEqual({
+      headingTop: 'Fresh source heading',
+      primaryCta: 'Start',
+      customAdminField: 'keep me',
+    })
   })
 
   it('passes through live keys not present in generated props', () => {
@@ -67,7 +167,12 @@ describe('mergeSectionProps', () => {
     expect(
       mergeSectionProps(
         { headingTop: 'Launch' },
-        { _id: 'doc', updatedAt: 123, headingTop: 'Edited' },
+        {
+          _id: 'doc',
+          updatedAt: 123,
+          headingTop: 'Edited',
+          shipFastGeneratedProps: { headingTop: 'Launch' },
+        },
       ),
     ).toEqual({ headingTop: 'Edited' })
   })

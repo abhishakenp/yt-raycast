@@ -33,11 +33,35 @@ const RESERVED_DATA_KEYS = new Set([
   '_key',
   'id',
   'createdAt',
+  'shipFastGeneratedProps',
   'updatedAt',
 ])
 
 const isPlainRecord = (value: unknown): value is JsonRecord =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+
+const GENERATED_PROPS_KEY = 'shipFastGeneratedProps'
+
+const jsonEqual = (left: unknown, right: unknown): boolean =>
+  JSON.stringify(left) === JSON.stringify(right)
+
+const generatedSeedProps = (generatedProps: JsonRecord): JsonRecord => {
+  const seedProps: JsonRecord = {}
+  for (const [key, value] of Object.entries(generatedProps)) {
+    if (RESERVED_DATA_KEYS.has(key)) continue
+    if (value === undefined) continue
+    seedProps[key] = value
+  }
+  return seedProps
+}
+
+const seedSnapshotFromLiveData = (
+  liveData: JsonRecord | null,
+): JsonRecord | null => {
+  if (!liveData) return null
+  const snapshot = liveData[GENERATED_PROPS_KEY]
+  return isPlainRecord(snapshot) ? snapshot : null
+}
 
 /**
  * Build the seed patch for a section: one top-level key per generated prop.
@@ -51,12 +75,34 @@ export const buildSectionSeedPatch = (
   liveData: JsonRecord | null,
 ): JsonRecord => {
   const patch: JsonRecord = {}
-  for (const [key, value] of Object.entries(generatedProps)) {
-    if (RESERVED_DATA_KEYS.has(key)) continue
-    if (value === undefined) continue
-    if (liveData && key in liveData) continue
-    patch[key] = value
+  const seedProps = generatedSeedProps(generatedProps)
+  const previousSeedProps = seedSnapshotFromLiveData(liveData)
+
+  for (const [key, value] of Object.entries(seedProps)) {
+    if (!liveData || !(key in liveData)) {
+      patch[key] = value
+      continue
+    }
+
+    if (previousSeedProps) {
+      if (
+        jsonEqual(liveData[key], previousSeedProps[key]) &&
+        !jsonEqual(liveData[key], value)
+      ) {
+        patch[key] = value
+      }
+      continue
+    }
+
+    if (!jsonEqual(liveData[key], value)) {
+      patch[key] = value
+    }
   }
+
+  if (!jsonEqual(previousSeedProps, seedProps)) {
+    patch[GENERATED_PROPS_KEY] = seedProps
+  }
+
   return patch
 }
 
@@ -71,8 +117,21 @@ export const mergeSectionProps = (
 ): JsonRecord => {
   if (!liveData) return generatedProps
   const merged: JsonRecord = { ...generatedProps }
+  const previousSeedProps = seedSnapshotFromLiveData(liveData)
+
   for (const [key, value] of Object.entries(liveData)) {
     if (RESERVED_DATA_KEYS.has(key)) continue
+
+    if (key in generatedProps) {
+      if (!previousSeedProps) continue
+      if (
+        key in previousSeedProps &&
+        jsonEqual(value, previousSeedProps[key])
+      ) {
+        continue
+      }
+    }
+
     merged[key] = value
   }
   return merged

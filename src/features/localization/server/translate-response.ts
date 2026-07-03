@@ -1,6 +1,7 @@
 import { isTranslatableLocale, lookupKnownLanguage } from '@/config/languages'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { api } from '../../../../convex/_generated/api'
+import { shouldPreserveNativeLocaleText } from '../native-script'
 
 type TranslateModel = (
   system: string,
@@ -188,6 +189,10 @@ const translateBatch = async ({
 
   texts.forEach((text, index) => {
     if (!text) return
+    if (shouldPreserveNativeLocaleText(text, locale)) {
+      translations[index] = text
+      return
+    }
     const cachedTranslation = cached?.[index]
     if (typeof cachedTranslation === 'string') {
       translations[index] = cachedTranslation
@@ -247,6 +252,9 @@ export const createTranslateResponse = async (
   const texts = normalizeTexts(body)
   const locale = normalizeLocale(body.locale)
   const entries = normalizeEntries(body)
+  const cacheableEntries = entries.filter(
+    (entry) => !shouldPreserveNativeLocaleText(entry.text, locale),
+  )
 
   if (entries.length > 0) {
     if (!isTranslatableLocale(locale)) {
@@ -258,11 +266,17 @@ export const createTranslateResponse = async (
           locale === 'en' || locale === '' ? 'english' : 'unsupported-locale',
       })
     }
-    await cacheClient?.setBatch({ locale, entries }).catch(() => null)
+    if (cacheableEntries.length > 0) {
+      await cacheClient
+        ?.setBatch({ locale, entries: cacheableEntries })
+        .catch(() => null)
+    }
     return json({
       locale,
-      stored: entries.length,
-      translated: entries.some((entry) => entry.translation !== entry.text),
+      stored: cacheableEntries.length,
+      translated: cacheableEntries.some(
+        (entry) => entry.translation !== entry.text,
+      ),
       cached: true,
     })
   }
