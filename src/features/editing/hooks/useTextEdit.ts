@@ -249,6 +249,7 @@ export function useTextEdit(
       if (!originalText.trim()) return
 
       textEl.contentEditable = 'true'
+      textEl.dataset.shipFastInlineEditing = 'true'
       // Lock non-text children (SVG icons, images) so the user can't
       // accidentally delete them while editing the text.
       const lockedChildren = lockNonTextChildren(textEl)
@@ -677,6 +678,7 @@ function cleanupElement(el: HTMLElement, lockedChildren?: HTMLElement[]) {
   // Remove the attribute (not just reset the property) so it never leaks into
   // the serialized afterHtml payload that gets persisted as preview.html.
   el.removeAttribute('contenteditable')
+  delete el.dataset.shipFastInlineEditing
   // Unlock non-text children that were locked during editing.
   if (lockedChildren) {
     unlockNonTextChildren(lockedChildren)

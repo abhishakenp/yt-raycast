@@ -327,4 +327,44 @@ describe('translation shimmer removal', () => {
     expect(requests).toEqual([['Contact']])
     expect(globalThis.fetch).toHaveBeenCalledTimes(1)
   })
+
+  it('does not overwrite text that becomes contenteditable while translation is in flight', async () => {
+    let resolveFetch: ((value: Response) => void) | undefined
+    const fetchStarted = new Promise<void>((resolveStarted) => {
+      globalThis.fetch = vi.fn(async () => {
+        resolveStarted()
+        return await new Promise<Response>((resolve) => {
+          resolveFetch = resolve
+        })
+      }) as unknown as typeof fetch
+    })
+
+    const { getByText } = render(
+      createElement(
+        I18nProvider,
+        { locale: 'fr' },
+        createElement(T, null, createElement('span', null, 'Polished Glass')),
+      ),
+    )
+
+    await fetchStarted
+
+    const editable = getByText('Polished Glass')
+    editable.setAttribute('contenteditable', 'true')
+    const editableTextNode = editable.firstChild
+    expect(editableTextNode?.nodeType).toBe(Node.TEXT_NODE)
+    editableTextNode!.textContent = 'पॉलिश किया हुआ'
+
+    resolveFetch?.({
+      ok: true,
+      json: async () => ({
+        translations: ['Verre poli'],
+      }),
+    } as Response)
+
+    await waitFor(() => {
+      expect(editable.classList.contains('sf-shimmer-loading')).toBe(false)
+    })
+    expect(editable.textContent).toBe('पॉलिश किया हुआ')
+  })
 })
