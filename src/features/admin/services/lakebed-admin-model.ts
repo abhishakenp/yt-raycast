@@ -126,21 +126,8 @@ export function createLakebedAdminTables(
   for (const doc of contentDocs) {
     const componentName = capsuleComponentName(doc.capsule)
     const schema = capsuleSchemas?.[componentName]
-
-    if (schema) {
-      tables.push(...createSchemaTables(doc, schema))
-      // Also infer tables for data fields not covered by schema
-      const schemaFields = new Set(Object.keys(schema))
-      for (const [field, value] of Object.entries(doc.data)) {
-        if (schemaFields.has(field)) continue
-        tables.push(...inferRuntimeTable(doc, field, value))
-      }
-    } else {
-      // No schema — fall back to pure runtime inference
-      for (const [field, value] of Object.entries(doc.data)) {
-        tables.push(...inferRuntimeTable(doc, field, value))
-      }
-    }
+    if (!schema) continue
+    tables.push(...createSchemaTables(doc, schema))
   }
 
   return mergeCompatibleTables(tables).sort((a, b) =>
@@ -180,78 +167,6 @@ const createSchemaTables = (
   }
 
   return tables
-}
-
-const inferRuntimeTable = (
-  doc: LakebedSessionDataDoc,
-  field: string,
-  value: unknown,
-): LakebedAdminTable[] => {
-  if (Array.isArray(value)) {
-    const rows = value.map((item, index) =>
-      rowFromValue(item, index, undefined, {
-        capsule: doc.capsule,
-        field,
-      }),
-    )
-    return [
-      {
-        capsule: doc.capsule,
-        columns: uniqueColumns(rows),
-        field,
-        fieldTypes: {},
-        id: tableId(doc.capsule, field),
-        name: field,
-        rows,
-        sourceCapsules: [doc.capsule],
-        storage: 'array',
-        updatedAt: doc.updatedAt,
-      },
-    ]
-  }
-
-  if (isJsonRecord(value) && Object.values(value).every(isJsonRecord)) {
-    const rows = Object.entries(value).map(([key, item], index) =>
-      rowFromValue(
-        { _key: key, ...(isJsonRecord(item) ? item : {}) },
-        index,
-        key,
-        { capsule: doc.capsule, field },
-      ),
-    )
-    return [
-      {
-        capsule: doc.capsule,
-        columns: uniqueColumns(rows),
-        field,
-        fieldTypes: {},
-        id: tableId(doc.capsule, field),
-        name: field,
-        rows,
-        sourceCapsules: [doc.capsule],
-        storage: 'map',
-        updatedAt: doc.updatedAt,
-      },
-    ]
-  }
-
-  const rows = [
-    rowFromValue(value, 0, undefined, { capsule: doc.capsule, field }),
-  ]
-  return [
-    {
-      capsule: doc.capsule,
-      columns: uniqueColumns(rows),
-      field,
-      fieldTypes: {},
-      id: tableId(doc.capsule, field),
-      name: field,
-      rows,
-      sourceCapsules: [doc.capsule],
-      storage: 'value',
-      updatedAt: doc.updatedAt,
-    },
-  ]
 }
 
 const mergeCompatibleTables = (

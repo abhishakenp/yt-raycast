@@ -210,16 +210,20 @@ describe('lakebed admin integration: convex-test → schema-aware model', () => 
     }
   })
 
-  it('falls back to runtime inference for capsules without a schema', async () => {
+  it('produces no tables for capsules without a matching dataKey schema', async () => {
     const t = convexTest(schema, modules) as any
     const sessionId = await createSession(t, 'admin-int-5')
 
-    // Use a capsule name that does NOT match any block registry dataKey/name
+    // Use a capsule name that does NOT match any block registry dataKey.
+    // Section prop docs are stored under component names like this and must
+    // NOT produce admin tables — only lakebed.schema dataKey docs should.
     await t.mutation(convexApi.lakebed.replaceSessionData, {
       anonymousOwnerSecret: ownerSecret,
       capsule: 'UnknownComponent:home_unknown',
       data: {
         customItems: [{ id: 'x1', label: 'Custom' }],
+        heading: 'A section prop',
+        body: 'Scalar prop content',
       },
       sessionId,
     })
@@ -232,15 +236,59 @@ describe('lakebed admin integration: convex-test → schema-aware model', () => 
     const registry = buildCapsuleSchemaRegistry()
     const tables = createLakebedAdminTables(docs, registry)
 
-    // Falls back to runtime inference
-    const customItems = tables.find((tbl) => tbl.name === 'customItems')
-    expect(customItems).toBeDefined()
-    expect(customItems!.rows).toHaveLength(1)
-    expect(customItems!.rows[0].cells).toMatchObject({
-      id: 'x1',
-      label: 'Custom',
+    expect(tables).toHaveLength(0)
+  })
+
+  it('ignores section-capsule prop docs even when a lakebed schema exists for that vertical', async () => {
+    const t = convexTest(schema, modules) as any
+    const sessionId = await createSession(t, 'admin-int-6')
+
+    // Real restaurant lakebed data under the dataKey
+    await t.mutation(convexApi.lakebed.replaceSessionData, {
+      anonymousOwnerSecret: ownerSecret,
+      capsule: 'Restaurant',
+      data: {
+        catalog: [{ name: 'Ramen', price: '12' }],
+      },
+      sessionId,
     })
-    // No schema field types
-    expect(Object.keys(customItems!.fieldTypes)).toHaveLength(0)
+    // Section prop docs stored under component names — these used to leak
+    // heading/body/reviews/images tables into the admin via runtime inference
+    await t.mutation(convexApi.lakebed.mergeSessionData, {
+      anonymousOwnerSecret: ownerSecret,
+      capsule: 'RestaurantStory:home_story',
+      patch: {
+        body: 'Our story',
+        heading: 'From Homebrew',
+        alt: [{ title: 'Award', description: 'Gold medal' }],
+      },
+      sessionId,
+    })
+    await t.mutation(convexApi.lakebed.mergeSessionData, {
+      anonymousOwnerSecret: ownerSecret,
+      capsule: 'RestaurantGallery:home_gallery',
+      patch: {
+        heading: 'Taproom',
+        images: [{ alt: 'bar area' }],
+      },
+      sessionId,
+    })
+
+    const docs = await t.query(convexApi.lakebed.listSessionData, {
+      anonymousOwnerSecret: ownerSecret,
+      sessionId,
+    })
+
+    const registry = buildCapsuleSchemaRegistry()
+    const tables = createLakebedAdminTables(docs, registry)
+
+    const tableNames = tables.map((tbl) => tbl.name).sort()
+    expect(tableNames).toEqual(RESTAURANT_TABLES)
+    // No prop-derived garbage tables
+    expect(tables.find((tbl) => tbl.name === 'heading')).toBeUndefined()
+    expect(tables.find((tbl) => tbl.name === 'body')).toBeUndefined()
+    expect(tables.find((tbl) => tbl.name === 'alt')).toBeUndefined()
+    expect(tables.find((tbl) => tbl.name === 'images')).toBeUndefined()
+    expect(tables.find((tbl) => tbl.name === 'reviews')).toBeUndefined()
   })
 })

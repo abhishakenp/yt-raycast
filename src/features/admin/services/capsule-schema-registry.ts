@@ -46,15 +46,13 @@ export function buildCapsuleSchemaRegistry(): CapsuleSchemaRegistry {
     const schema = extractSchema(entry.lakebed.schema)
     if (Object.keys(schema).length === 0) continue
 
-    // Key by both dataKey and component name so the admin model can look up
-    // schemas regardless of whether sessionData stores the capsule as the
-    // dataKey (e.g. 'Restaurant') or as the component name (e.g.
-    // 'RestaurantMenu:home_menu'). The capsuleComponentName helper in
-    // lakebed-admin-model strips the statementId suffix before lookup.
+    // Key only by dataKey. Lakebed table data is stored under the dataKey
+    // (e.g. 'Restaurant'); section prop data is stored under component names
+    // (e.g. 'RestaurantStory:story_story') and must NOT produce admin tables.
+    // Keying by component name caused false matches on prop docs.
     if (entry.lakebed.dataKey) {
       registry[entry.lakebed.dataKey] = schema
     }
-    registry[entry.name] = schema
   }
 
   cachedRegistry = registry

@@ -12,13 +12,15 @@ import type {
 } from './lakebed-admin-model'
 
 // --- Schema fixtures matching the runtime shape of Lakebed's TableDefinition ---
+// Schemas are keyed by dataKey (e.g. 'Restaurant'), NOT component name.
+// Section prop docs (e.g. 'RestaurantStory:story_story') must NOT match.
 
 const str = () => ({ kind: 'string' as const })
 const num = () => ({ kind: 'number' as const })
 const bool = () => ({ kind: 'boolean' as const })
 
 const restaurantSchema: CapsuleSchemaRegistry = {
-  RestaurantStory: {
+  Restaurant: {
     catalog: {
       kind: 'table',
       fields: {
@@ -51,7 +53,7 @@ const restaurantSchema: CapsuleSchemaRegistry = {
 }
 
 const publicationSchema: CapsuleSchemaRegistry = {
-  PublicationFeatured: {
+  PublicationWorkspace: {
     articles: {
       kind: 'table',
       fields: {
@@ -80,8 +82,8 @@ const expectTable = (
 }
 
 describe('lakebed admin model', () => {
-  it('infers array fields as editable data tables', () => {
-    const [products] = createLakebedAdminTables([
+  it('produces no tables for docs without a matching dataKey schema', () => {
+    const tables = createLakebedAdminTables([
       {
         capsule: 'Store',
         createdAt: 1,
@@ -94,237 +96,123 @@ describe('lakebed admin model', () => {
         },
       },
     ])
-
-    expect(products).toMatchObject({
-      capsule: 'Store',
-      columns: ['_id', 'id', 'name', 'price', 'featured'],
-      field: 'products',
-      name: 'products',
-      storage: 'array',
-    })
-    expect(products?.rows).toHaveLength(2)
-    expect(products?.rows.map((row) => row.id)).toEqual(['p1', 'p2'])
+    expect(tables).toHaveLength(0)
   })
 
-  it('infers object maps as data tables with stable row keys', () => {
-    const [orders] = createLakebedAdminTables([
+  it('produces no tables for section-capsule prop docs', () => {
+    const tables = createLakebedAdminTables([
       {
-        capsule: 'Orders',
+        capsule: 'RestaurantStory:story_story',
         createdAt: 1,
         updatedAt: 2,
         data: {
-          byId: {
-            order_1: { status: 'paid', total: 42 },
-            order_2: { status: 'open', total: 9 },
-          },
+          heading: 'Our Story',
+          body: 'Started in a garage',
+          alt: [{ title: 'Award', description: 'Gold medal' }],
         },
       },
     ])
-
-    expect(orders).toMatchObject({
-      columns: ['_id', '_key', 'status', 'total'],
-      storage: 'map',
-    })
-    expect(orders?.rows[0]).toMatchObject({
-      id: 'order_1',
-      key: 'order_1',
-      cells: { _key: 'order_1', status: 'paid', total: 42 },
-    })
+    expect(tables).toHaveLength(0)
   })
 
   it('filters structural chrome docs out of the admin table list', () => {
-    const tables = createLakebedAdminTables([
-      {
-        capsule: 'BeautyStoreFooter:explore_footer',
-        createdAt: 1,
-        updatedAt: 2,
-        data: {
-          brand: 'Beauty Store',
-          linkColumns: [{ title: 'Shop', links: ['Products'] }],
+    const tables = createLakebedAdminTables(
+      [
+        {
+          capsule: 'RestaurantNavbar:home_navbar',
+          createdAt: 1,
+          updatedAt: 2,
+          data: {
+            brand: 'Restaurant',
+            linkColumns: [{ title: 'Menu', links: ['Items'] }],
+          },
         },
-      },
-      {
-        capsule: 'BeautyStoreProducts:home_products',
-        createdAt: 1,
-        updatedAt: 2,
-        data: {
-          items: [{ id: 'p1', title: 'Serum' }],
+        {
+          capsule: 'Restaurant',
+          createdAt: 1,
+          updatedAt: 2,
+          data: {
+            catalog: [{ name: 'Ramen' }],
+          },
         },
-      },
-    ])
+      ],
+      restaurantSchema,
+    )
 
-    expect(tables.map((table) => table.name)).toEqual(['items'])
+    // All schema tables appear from the Restaurant dataKey doc
+    expect(tables.map((table) => table.name).sort()).toEqual([
+      'catalog',
+      'orderItems',
+      'reservations',
+    ])
+    // Navbar chrome doc produces no tables
     expect(tables.map((table) => table.capsule)).not.toContain(
-      'BeautyStoreFooter:explore_footer',
-    )
-    expect(tables.map((table) => table.name)).not.toContain(
-      'BeautyStoreFooter:explore_footer.brand',
+      'RestaurantNavbar:home_navbar',
     )
   })
 
-  it('keeps valid Lakebed docs editable when a generated doc has malformed data', () => {
-    const tables = createLakebedAdminTables([
-      {
-        capsule: 'BrokenProducts:home_products',
-        createdAt: 1,
-        updatedAt: 2,
-        data: undefined,
-      },
-      {
-        capsule: 'BeautyStoreProducts:home_products',
-        createdAt: 1,
-        updatedAt: 3,
-        data: {
-          items: [{ id: 'p1', title: 'Serum' }],
+  it('keeps valid schema docs editable when a generated doc has malformed data', () => {
+    const tables = createLakebedAdminTables(
+      [
+        {
+          capsule: 'BrokenProducts:home_products',
+          createdAt: 1,
+          updatedAt: 2,
+          data: undefined,
         },
-      },
-    ] as never)
-
-    const products = expectTable(tables.find((table) => table.name === 'items'))
-    expect(products.rows).toHaveLength(1)
-    expect(products.rows[0].cells).toMatchObject({
-      _id: 'p1',
-      id: 'p1',
-      title: 'Serum',
-    })
-  })
-
-  it('filters all structural chrome docs out of admin tables', () => {
-    const tables = createLakebedAdminTables([
-      {
-        capsule: 'DashboardHeader:home_header',
-        createdAt: 1,
-        updatedAt: 2,
-        data: { title: 'Overview' },
-      },
-      {
-        capsule: 'AnalyticsSidebar:admin_sidebar',
-        createdAt: 1,
-        updatedAt: 2,
-        data: { items: [{ label: 'Reports' }] },
-      },
-      {
-        capsule: 'DashboardOrdersTable:admin_orders',
-        createdAt: 1,
-        updatedAt: 2,
-        data: { orders: [{ id: 'order_1', status: 'new' }] },
-      },
-    ])
-
-    expect(tables.map((table) => table.name)).toEqual(['orders'])
-    expect(tables.flatMap((table) => table.sourceCapsules)).toEqual([
-      'DashboardOrdersTable:admin_orders',
-    ])
-  })
-
-  it('merges repeated section arrays into one semantic table', () => {
-    const [items] = createLakebedAdminTables([
-      {
-        capsule: 'BeautyStoreProducts:home_products',
-        createdAt: 1,
-        updatedAt: 2,
-        data: {
-          items: [{ id: 'p1', title: 'Serum' }],
+        {
+          capsule: 'Restaurant',
+          createdAt: 1,
+          updatedAt: 3,
+          data: {
+            catalog: [{ name: 'Ramen' }],
+          },
         },
-      },
-      {
-        capsule: 'BeautyStoreProducts:products_products',
-        createdAt: 1,
-        updatedAt: 4,
-        data: {
-          items: [{ id: 'p2', title: 'Cleanser' }],
-        },
-      },
-    ])
+      ] as never,
+      restaurantSchema,
+    )
 
-    expect(items).toMatchObject({
-      field: 'items',
-      name: 'items',
-      sourceCapsules: [
-        'BeautyStoreProducts:home_products',
-        'BeautyStoreProducts:products_products',
-      ],
-      storage: 'array',
-      updatedAt: 4,
+    const catalog = expectTable(
+      tables.find((table) => table.name === 'catalog'),
+    )
+    expect(catalog.rows).toHaveLength(1)
+    expect(catalog.rows[0].cells).toMatchObject({
+      name: 'Ramen',
     })
-    expect(items?.rows).toMatchObject([
-      {
-        cells: { _id: 'p1', id: 'p1', title: 'Serum' },
-        id: 'BeautyStoreProducts:home_products:items:p1',
-        sourceCapsule: 'BeautyStoreProducts:home_products',
-      },
-      {
-        cells: { _id: 'p2', id: 'p2', title: 'Cleanser' },
-        id: 'BeautyStoreProducts:products_products:items:p2',
-        sourceCapsule: 'BeautyStoreProducts:products_products',
-      },
-    ])
-  })
-
-  it('merges repeated primitive fields without exposing capsule namespaces', () => {
-    const [brand] = createLakebedAdminTables([
-      {
-        capsule: 'BeautyStoreHero:home_hero',
-        createdAt: 1,
-        updatedAt: 2,
-        data: { brand: 'Glow' },
-      },
-      {
-        capsule: 'BeautyStoreNewsletter:home_newsletter',
-        createdAt: 1,
-        updatedAt: 4,
-        data: { brand: 'Glow Club' },
-      },
-    ])
-
-    expect(brand).toMatchObject({
-      field: 'brand',
-      name: 'brand',
-      sourceCapsules: [
-        'BeautyStoreHero:home_hero',
-        'BeautyStoreNewsletter:home_newsletter',
-      ],
-      storage: 'value',
-    })
-    expect(brand?.rows).toMatchObject([
-      {
-        cells: { _id: '1', value: 'Glow' },
-        sourceCapsule: 'BeautyStoreHero:home_hero',
-      },
-      {
-        cells: { _id: '1', value: 'Glow Club' },
-        sourceCapsule: 'BeautyStoreNewsletter:home_newsletter',
-      },
-    ])
-    expect(brand?.name).not.toContain(':')
   })
 
   it('only allows adding rows to a single-source collection table', () => {
-    const [mergedItems] = createLakebedAdminTables([
-      {
-        capsule: 'StoreHome:products',
-        createdAt: 1,
-        updatedAt: 2,
-        data: { items: [{ id: 'p1' }] },
-      },
-      {
-        capsule: 'StoreCatalog:products',
-        createdAt: 1,
-        updatedAt: 2,
-        data: { items: [{ id: 'p2' }] },
-      },
-    ])
-    const [singleOrders] = createLakebedAdminTables([
-      {
-        capsule: 'Orders:admin',
-        createdAt: 1,
-        updatedAt: 2,
-        data: { orders: [{ id: 'o1' }] },
-      },
-    ])
+    const [mergedCatalog] = createLakebedAdminTables(
+      [
+        {
+          capsule: 'Restaurant:home',
+          createdAt: 1,
+          updatedAt: 2,
+          data: { catalog: [{ name: 'Ramen' }] },
+        },
+        {
+          capsule: 'Restaurant:menu',
+          createdAt: 1,
+          updatedAt: 2,
+          data: { catalog: [{ name: 'Gyoza' }] },
+        },
+      ],
+      restaurantSchema,
+    )
+    const [singleCatalog] = createLakebedAdminTables(
+      [
+        {
+          capsule: 'Restaurant',
+          createdAt: 1,
+          updatedAt: 2,
+          data: { catalog: [{ name: 'Ramen' }] },
+        },
+      ],
+      restaurantSchema,
+    )
 
-    expect(canAddRowsToTable(expectTable(mergedItems))).toBe(false)
-    expect(canAddRowsToTable(expectTable(singleOrders))).toBe(true)
+    expect(canAddRowsToTable(expectTable(mergedCatalog))).toBe(false)
+    expect(canAddRowsToTable(expectTable(singleCatalog))).toBe(true)
   })
 
   it('formats primitive cells without hiding values behind object syntax', () => {
@@ -345,7 +233,7 @@ describe('schema-aware admin table creation', () => {
     const tables = createLakebedAdminTables(
       [
         {
-          capsule: 'RestaurantStory:story_story',
+          capsule: 'Restaurant',
           createdAt: 1,
           updatedAt: 2,
           data: {},
@@ -374,7 +262,7 @@ describe('schema-aware admin table creation', () => {
     const tables = createLakebedAdminTables(
       [
         {
-          capsule: 'RestaurantStory:story_story',
+          capsule: 'Restaurant',
           createdAt: 1,
           updatedAt: 2,
           data: {
@@ -403,7 +291,7 @@ describe('schema-aware admin table creation', () => {
     const tables = createLakebedAdminTables(
       [
         {
-          capsule: 'RestaurantStory:story_story',
+          capsule: 'Restaurant',
           createdAt: 1,
           updatedAt: 2,
           data: {
@@ -426,7 +314,7 @@ describe('schema-aware admin table creation', () => {
     const tables = createLakebedAdminTables(
       [
         {
-          capsule: 'RestaurantStory:story_story',
+          capsule: 'Restaurant',
           createdAt: 1,
           updatedAt: 2,
           data: {
@@ -463,7 +351,7 @@ describe('schema-aware admin table creation', () => {
     const tables = createLakebedAdminTables(
       [
         {
-          capsule: 'RestaurantStory:story_story',
+          capsule: 'Restaurant',
           createdAt: 1,
           updatedAt: 2,
           data: {},
@@ -481,10 +369,10 @@ describe('schema-aware admin table creation', () => {
     expect(canAddRowsToTable(reservations)).toBe(true)
   })
 
-  it('still infers tables from runtime data when no schema is provided', () => {
+  it('produces no tables when no schema is provided', () => {
     const tables = createLakebedAdminTables([
       {
-        capsule: 'RestaurantStory:story_story',
+        capsule: 'Restaurant',
         createdAt: 1,
         updatedAt: 2,
         data: {
@@ -493,18 +381,16 @@ describe('schema-aware admin table creation', () => {
       },
     ])
 
-    // Without schema, only tables with runtime data appear
-    expect(tables.map((t) => t.name)).toEqual(['catalog'])
-    const catalog = expectTable(tables[0])
-    // Without schema, columns are only from runtime row keys
-    expect(catalog.columns).toEqual(['_id', 'name'])
+    // Without a schema, no tables are produced — admin tables are
+    // derived solely from lakebed.schema, never from runtime inference.
+    expect(tables).toHaveLength(0)
   })
 
-  it('falls back to runtime inference for data fields not in schema', () => {
+  it('does not infer runtime tables for data fields not in schema', () => {
     const tables = createLakebedAdminTables(
       [
         {
-          capsule: 'RestaurantStory:story_story',
+          capsule: 'Restaurant',
           createdAt: 1,
           updatedAt: 2,
           data: {
@@ -516,17 +402,17 @@ describe('schema-aware admin table creation', () => {
       restaurantSchema,
     )
 
-    // catalog comes from schema; customField is inferred from runtime
+    // catalog comes from schema; customField is NOT inferred from runtime
     const tableNames = tables.map((t) => t.name).sort()
     expect(tableNames).toContain('catalog')
-    expect(tableNames).toContain('customField')
+    expect(tableNames).not.toContain('customField')
   })
 
-  it('merges schema tables across multiple capsules with the same component', () => {
+  it('merges schema tables across multiple capsules with the same dataKey', () => {
     const tables = createLakebedAdminTables(
       [
         {
-          capsule: 'RestaurantStory:home_story',
+          capsule: 'Restaurant:home_story',
           createdAt: 1,
           updatedAt: 2,
           data: {
@@ -534,7 +420,7 @@ describe('schema-aware admin table creation', () => {
           },
         },
         {
-          capsule: 'RestaurantStory:menu_story',
+          capsule: 'Restaurant:menu_story',
           createdAt: 1,
           updatedAt: 3,
           data: {
@@ -560,7 +446,7 @@ describe('schema-aware admin table creation', () => {
     const tables = createLakebedAdminTables(
       [
         {
-          capsule: 'RestaurantStory:story_story',
+          capsule: 'Restaurant',
           createdAt: 1,
           updatedAt: 2,
           data: {
@@ -568,7 +454,7 @@ describe('schema-aware admin table creation', () => {
           },
         },
         {
-          capsule: 'PublicationFeatured:home_featured',
+          capsule: 'PublicationWorkspace',
           createdAt: 1,
           updatedAt: 3,
           data: {
@@ -605,7 +491,7 @@ describe('schema-aware admin table creation', () => {
     const tables = createLakebedAdminTables(
       [
         {
-          capsule: 'PublicationFeatured:home_featured',
+          capsule: 'PublicationWorkspace',
           createdAt: 1,
           updatedAt: 2,
           data: {},
@@ -632,7 +518,7 @@ describe('schema-aware admin table creation', () => {
 
   it('preserves schema field types for boolean and number fields', () => {
     const schema: CapsuleSchemaRegistry = {
-      TestComponent: {
+      TestWorkspace: {
         flags: {
           kind: 'table',
           fields: {
@@ -646,7 +532,7 @@ describe('schema-aware admin table creation', () => {
     const tables = createLakebedAdminTables(
       [
         {
-          capsule: 'TestComponent:test_test',
+          capsule: 'TestWorkspace',
           createdAt: 1,
           updatedAt: 2,
           data: {},

@@ -3,6 +3,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 
+import type { CapsuleSchemaRegistry } from '../services/lakebed-admin-model'
+
 type TestSessionDataDoc = {
   capsule: string
   createdAt: number
@@ -10,95 +12,41 @@ type TestSessionDataDoc = {
   updatedAt: number
 }
 
-const realCraftBeerSessionDataDocs: TestSessionDataDoc[] = [
-  {
-    capsule: 'RestaurantStory:story_story',
-    createdAt: 1782820944968,
-    updatedAt: 1782820944968,
-    data: {
-      alt: [
-        {
-          description: 'Gold medal at Oregon Beer Fest 2022',
-          title: 'Award-Winning',
-        },
-        {
-          description: 'Weekly open mic and board game nights',
-          title: 'Community Hub',
-        },
-      ],
-      body: 'Founded in 2015 by brothers Alex and Jamie, Riverbend Brewing started in a garage and grew into a beloved taproom where locals gather for fresh brews and live music.',
-      cta: null,
-      eyebrow: 'Our Journey',
-      heading: 'From Homebrew to Community Hub',
+// Minimal restaurant lakebed schema matching the real
+// packages/ship-fast-blocks/.../restaurant-lakebed.ts shape.
+// Only lakebed.schema dataKey docs should produce admin tables.
+const restaurantSchema: CapsuleSchemaRegistry = {
+  Restaurant: {
+    catalog: {
+      kind: 'table',
+      fields: {
+        category: { kind: 'string', defaultValue: '' },
+        description: { kind: 'string', defaultValue: '' },
+        name: { kind: 'string' },
+        price: { kind: 'string', defaultValue: '' },
+        tag: { kind: 'string', defaultValue: '' },
+      },
+    },
+    orderItems: {
+      kind: 'table',
+      fields: {
+        category: { kind: 'string', defaultValue: '' },
+        description: { kind: 'string', defaultValue: '' },
+        name: { kind: 'string' },
+        price: { kind: 'string', defaultValue: '' },
+        quantity: { kind: 'number', defaultValue: 1 },
+        tag: { kind: 'string', defaultValue: '' },
+      },
+    },
+    reservations: {
+      kind: 'table',
+      fields: {
+        label: { kind: 'string', defaultValue: '' },
+        source: { kind: 'string' },
+      },
     },
   },
-  {
-    capsule: 'RestaurantTestimonials:testimonials_testimonials',
-    createdAt: 1782820942727,
-    updatedAt: 1782820942727,
-    data: {
-      heading: 'What Our Patrons Say',
-      reviews: [
-        {
-          name: 'name',
-          quote: 'reviews[quote',
-          rating: 'rating]“The Pineapple Saison is a summer must‑try!”',
-          role: 'role',
-        },
-        {
-          name: 'Javier Lopez',
-          quote: '“Loved the tour – the staff are so knowledgeable.”',
-          rating: '5',
-          role: 'Software Engineer',
-        },
-        {
-          name: 'Samantha Reed',
-          quote: '“Great vibe, amazing beers, and friendly people.”',
-          rating: '4',
-          role: 'Graphic Designer',
-        },
-      ],
-    },
-  },
-  {
-    capsule: 'RestaurantTestimonials:home_testimonials',
-    createdAt: 1782814096628,
-    updatedAt: 1782814096628,
-    data: {
-      heading: 'What Our Patrons Say',
-      reviews: [
-        {
-          name: 'name',
-          quote: 'reviews[quote',
-          rating: 'rating]“The Pineapple Saison is a summer must‑try!”',
-          role: 'role',
-        },
-        {
-          name: 'Javier Lopez',
-          quote: '“Loved the tour – the staff are so knowledgeable.”',
-          rating: '5',
-          role: 'Software Engineer',
-        },
-        {
-          name: 'Samantha Reed',
-          quote: '“Great vibe, amazing beers, and friendly people.”',
-          rating: '4',
-          role: 'Graphic Designer',
-        },
-      ],
-    },
-  },
-  {
-    capsule: 'RestaurantGallery:gallery_gallery',
-    createdAt: 1782814177686,
-    updatedAt: 1782814177686,
-    data: {
-      description: 'Snapshots of our space and gatherings.',
-      heading: 'Taproom & Events',
-      images: [{ alt: 'images[alt]Taproom bar area' }],
-    },
-  },
-]
+}
 
 const mocks = vi.hoisted(() => ({
   docs: [] as TestSessionDataDoc[],
@@ -149,7 +97,7 @@ function renderAdminPanel() {
       anonymousOwnerSecret="owner-secret"
       sessionId="session_123"
     >
-      <LakebedAdminPanel capsuleSchemas={{}} />
+      <LakebedAdminPanel capsuleSchemas={restaurantSchema} />
     </LakebedSessionProvider>,
   )
 }
@@ -158,11 +106,11 @@ describe('LakebedAdminPanel', () => {
   beforeEach(() => {
     mocks.docs = [
       {
-        capsule: 'BeautyStoreProducts:home_products',
+        capsule: 'Restaurant',
         createdAt: 1,
         updatedAt: 2,
         data: {
-          items: [{ id: 'p1', title: 'Serum' }],
+          catalog: [{ name: 'Ramen', price: '12', category: 'Mains' }],
         },
       },
     ]
@@ -180,15 +128,15 @@ describe('LakebedAdminPanel', () => {
     mocks.pendingMutation = deferred.promise
     renderAdminPanel()
 
-    fireEvent.doubleClick(screen.getByText('Serum'))
+    fireEvent.doubleClick(screen.getByText('Ramen'))
 
-    const editor = screen.getByDisplayValue('Serum')
-    fireEvent.change(editor, { target: { value: 'Retinol Serum' } })
+    const editor = screen.getByDisplayValue('Ramen')
+    fireEvent.change(editor, { target: { value: 'Spicy Ramen' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() => {
       expect(mocks.replaceCalls).toHaveLength(1)
-      expect(screen.getByDisplayValue('Retinol Serum')).toBeTruthy()
+      expect(screen.getByDisplayValue('Spicy Ramen')).toBeTruthy()
     })
 
     await act(async () => {
@@ -197,39 +145,55 @@ describe('LakebedAdminPanel', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Write rejected')).toBeTruthy()
-      expect(screen.getByDisplayValue('Retinol Serum')).toBeTruthy()
+      expect(screen.getByDisplayValue('Spicy Ramen')).toBeTruthy()
       expect(screen.getByRole('button', { name: 'Save' })).toBeTruthy()
     })
-    expect(JSON.stringify(mocks.replaceCalls[0])).toContain('Retinol Serum')
+    expect(JSON.stringify(mocks.replaceCalls[0])).toContain('Spicy Ramen')
   })
 
-  it('renders and filters real Convex sessionData-shaped Lakebed docs without enabling add on merged tables', async () => {
-    mocks.docs = realCraftBeerSessionDataDocs
+  it('renders schema tables from a dataKey doc and filters rows', async () => {
+    mocks.docs = [
+      {
+        capsule: 'Restaurant',
+        createdAt: 1,
+        updatedAt: 2,
+        data: {
+          catalog: [
+            { name: 'Ramen', price: '12', category: 'Mains' },
+            { name: 'Gyoza', price: '6', category: 'Sides' },
+          ],
+          reservations: [{ source: 'web', label: 'Party of 4' }],
+        },
+      },
+    ]
     renderAdminPanel()
 
-    expect(screen.getByRole('button', { name: 'reviews' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'alt' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'images' })).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'images' }))
+    // Schema tables appear
+    expect(screen.getByRole('button', { name: 'catalog' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'reservations' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'orderItems' })).toBeTruthy()
 
-    expect(screen.getByText('images[alt]Taproom bar area')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'catalog' }))
+    expect(screen.getByText('Ramen')).toBeTruthy()
+    expect(screen.getByText('Gyoza')).toBeTruthy()
 
-    fireEvent.click(screen.getByRole('button', { name: 'reviews' }))
-
-    expect(screen.getAllByText('Javier Lopez')).not.toHaveLength(0)
+    // Empty schema table allows adding rows
+    fireEvent.click(screen.getByRole('button', { name: 'orderItems' }))
     expect(
       screen.getByRole<HTMLButtonElement>('button', { name: 'Add' }).disabled,
-    ).toBe(true)
+    ).toBe(false)
 
+    // Filter works on schema-backed rows
+    fireEvent.click(screen.getByRole('button', { name: 'catalog' }))
     fireEvent.click(screen.getByRole('button', { name: /Filter & Sort/ }))
     fireEvent.change(screen.getByPlaceholderText('Filter documents'), {
-      target: { value: 'Samantha' },
+      target: { value: 'Gyoza' },
     })
 
     await waitFor(() => {
-      expect(screen.getAllByText('Samantha Reed')).toHaveLength(2)
+      expect(screen.getByText('Gyoza')).toBeTruthy()
     })
-    expect(screen.queryAllByText('Javier Lopez')).toHaveLength(0)
+    expect(screen.queryAllByText('Ramen')).toHaveLength(0)
 
     const rowCheckbox = screen.getAllByRole<HTMLInputElement>('checkbox').at(1)
     expect(rowCheckbox).toBeDefined()
@@ -239,28 +203,52 @@ describe('LakebedAdminPanel', () => {
     expect(screen.getByRole('button', { name: 'Delete' })).toBeTruthy()
   })
 
-  it('renders editable valid rows when one Lakebed admin doc has malformed data', () => {
+  it('ignores section-capsule prop docs and malformed docs without a matching dataKey schema', () => {
     mocks.docs = [
       {
+        // Section prop doc — must NOT produce tables
+        capsule: 'RestaurantStory:home_story',
+        createdAt: 1,
+        updatedAt: 2,
+        data: {
+          heading: 'Our Story',
+          body: 'Started in a garage',
+          alt: [{ title: 'Award', description: 'Gold medal' }],
+        },
+      },
+      {
+        // Malformed doc with no matching schema — must NOT produce tables
         capsule: 'BrokenProducts:home_products',
         createdAt: 1,
         updatedAt: 2,
         data: undefined as never,
       },
       {
-        capsule: 'BeautyStoreProducts:home_products',
+        // Valid dataKey doc — produces schema tables
+        capsule: 'Restaurant',
         createdAt: 1,
         updatedAt: 3,
         data: {
-          items: [{ id: 'p1', title: 'Serum' }],
+          catalog: [{ name: 'Ramen', price: '12' }],
         },
       },
     ]
 
     renderAdminPanel()
 
-    expect(screen.getByRole('button', { name: 'items' })).toBeTruthy()
-    expect(screen.getByText('Serum')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Add' })).toBeTruthy()
+    // Only schema tables from the dataKey doc appear
+    expect(screen.getByRole('button', { name: 'catalog' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'reservations' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'orderItems' })).toBeTruthy()
+    // No prop-derived garbage tables
+    expect(screen.queryByRole('button', { name: 'heading' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'body' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'alt' })).toBeNull()
+    // Schema-backed catalog row is editable
+    fireEvent.click(screen.getByRole('button', { name: 'catalog' }))
+    expect(screen.getByText('Ramen')).toBeTruthy()
+    expect(
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Add' }).disabled,
+    ).toBe(false)
   })
 })
