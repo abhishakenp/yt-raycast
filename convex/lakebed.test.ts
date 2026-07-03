@@ -1,5 +1,5 @@
 import { convexTest } from 'convex-test'
-import { expect, test } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 
 import { api } from './_generated/api'
 import schema from './schema'
@@ -7,6 +7,10 @@ import schema from './schema'
 const modules = import.meta.glob('./**/*.ts')
 const convexApi = api as any
 const ownerSecret = 'lakebed-owner-secret'
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
 
 const identityFor = (userId: string) => ({
   issuer: 'https://convex.test',
@@ -202,4 +206,57 @@ test('lakebed admin listing includes legacy session data without owner keys', as
       }),
     ]),
   )
+})
+
+test('lakebed writes succeed without identity or owner secret when VITE_DISABLE_CLERK is true', async () => {
+  vi.stubEnv('VITE_DISABLE_CLERK', 'true')
+  const t = convexTest(schema, modules) as any
+
+  const { sessionId } = await createSession(t, {
+    anonymousClientId: 'lakebed-disabled-clerk',
+    prompt: 'Lakebed disabled-clerk flow',
+  })
+
+  // No identity, no anonymousOwnerSecret — would throw UNAUTHENTICATED without
+  // the isAuthDisabled() bypass in getSessionActor.
+  await expect(
+    t.mutation(convexApi.lakebed.mergeSessionData, {
+      capsule: 'Cart',
+      patch: { count: 4 },
+      sessionId,
+    }),
+  ).resolves.toEqual({ count: 4 })
+
+  await expect(
+    t.query(convexApi.lakebed.getSessionData, {
+      capsule: 'Cart',
+      sessionId,
+    }),
+  ).resolves.toEqual({ count: 4 })
+
+  // getSessionState should report canWrite: true under disabled-clerk mode.
+  await expect(
+    t.query(convexApi.lakebed.getSessionState, {
+      capsule: 'Cart',
+      sessionId,
+    }),
+  ).resolves.toMatchObject({ canWrite: true, data: { count: 4 } })
+})
+
+test('lakebed writes still require auth when VITE_DISABLE_CLERK is false', async () => {
+  vi.stubEnv('VITE_DISABLE_CLERK', 'false')
+  const t = convexTest(schema, modules) as any
+
+  const { sessionId } = await createSession(t, {
+    anonymousClientId: 'lakebed-clerk-enabled',
+    prompt: 'Lakebed clerk-enabled flow',
+  })
+
+  await expect(
+    t.mutation(convexApi.lakebed.mergeSessionData, {
+      capsule: 'Cart',
+      patch: { count: 9 },
+      sessionId,
+    }),
+  ).rejects.toMatchObject({ data: { code: 'UNAUTHENTICATED' } })
 })

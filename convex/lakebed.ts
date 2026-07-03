@@ -1,5 +1,6 @@
 import { ConvexError, v } from 'convex/values'
 
+import { isAuthDisabled } from './lib/session_export_helpers'
 import { mutation, query } from './_generated/server'
 import type { Id } from './_generated/dataModel'
 import type { MutationCtx, QueryCtx } from './_generated/server'
@@ -150,6 +151,17 @@ const getSessionActor = async (
       code: 'FORBIDDEN',
       message: 'You do not own this session',
     })
+  }
+
+  // When VITE_DISABLE_CLERK=true is set on the deployment, bypass ownership
+  // checks so anonymous users can read/write lakebed capsules without signing
+  // in. Mirrors `assertCanMutateSession` in `session_access_helpers.ts`.
+  if (isAuthDisabled()) {
+    const userId = 'guest:public'
+    return {
+      auth: createGuestAuth(userId, 'Guest'),
+      ownerKey: userId,
+    }
   }
 
   return null
