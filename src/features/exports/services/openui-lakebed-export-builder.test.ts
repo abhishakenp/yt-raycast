@@ -12,6 +12,7 @@ import {
   readLakebedDefinition,
   resolveLakebedImageSources,
 } from './openui-lakebed-export-builder'
+import { formatExportFiles } from './format-export-files'
 
 const originalFetch = globalThis.fetch
 const originalStockEnv = {
@@ -1761,6 +1762,28 @@ export function signOut() { globalThis.__lakebedSignedOut = true; }
     expect(built.files['client/index.tsx']).toContain('PurrSpecs')
     expect(Object.values(built.files).join('\n')).not.toContain('root =')
     expect(Object.values(built.files).join('\n')).not.toContain('@openuidev')
+  })
+
+  it('formats every Lakebed export file with the shared Ship Fast prettier config (no semis, single quotes)', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        '<main><h1>PurrSpecs</h1><p>Subscribers value Satisfaction Readers cat lovers.</p></main>',
+      siteSpecJson: JSON.stringify({ projectName: 'PurrSpecs' }),
+      sessionId: 'demo',
+      target: 'lakebed',
+    })
+
+    const reformatted = await formatExportFiles(built.files)
+    for (const [path, original] of Object.entries(built.files)) {
+      if (!/\.(ts|tsx|mjs|js|json|css|md)$/.test(path)) continue
+      expect(
+        reformatted[path],
+        `lakebed file not prettier-formatted: ${path}`,
+      ).toBe(original)
+    }
+    // explicit config guards: lakebed previously used semi:true + double quotes
+    const tsx = built.files['client/index.tsx']
+    expect(tsx).not.toMatch(/;\s*$/m)
   })
 
   it('builds Lakebed projects when a generated object argument is closed with a parenthesis before the next argument', async () => {

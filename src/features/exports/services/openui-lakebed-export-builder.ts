@@ -2,7 +2,6 @@ import { Buffer } from 'node:buffer'
 import { dirname, join, relative } from 'node:path'
 import { brotliDecompressSync } from 'node:zlib'
 import { zipSync, strToU8 } from 'fflate'
-import { format } from 'prettier'
 import ts from 'typescript'
 import type { ElementNode } from '@openuidev/lang-core'
 import { buildImageSearchQuery, library } from '@ship-fast/blocks'
@@ -29,6 +28,7 @@ import {
 } from '../../../lib/image-query'
 import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
 import { parseOpenUIForExport } from './openui-export-builder'
+import { formatExportFiles } from './format-export-files'
 import {
   resolvePreviewImageUrl,
   rewritePreviewImageUrls,
@@ -4118,36 +4118,6 @@ const zipFiles = (files: Record<string, string>): Uint8Array =>
     { level: 9 },
   )
 
-const prettierParserForPath = (
-  path: string,
-): 'babel-ts' | 'markdown' | null => {
-  if (path.endsWith('.ts') || path.endsWith('.tsx')) return 'babel-ts'
-  if (path.endsWith('.md')) return 'markdown'
-  return null
-}
-
-const formatOutputFiles = async (
-  files: Record<string, string>,
-): Promise<Record<string, string>> => {
-  const formatted = await Promise.all(
-    Object.entries(files).map(async ([path, content]) => {
-      const parser = prettierParserForPath(path)
-      if (!parser) return [path, content] as const
-      return [
-        path,
-        await format(content, {
-          parser,
-          printWidth: 90,
-          semi: true,
-          singleQuote: false,
-          trailingComma: 'all',
-        }),
-      ] as const
-    }),
-  )
-  return Object.fromEntries(formatted)
-}
-
 const assertNoLeakedSourceTerms = (files: Record<string, string>) => {
   const forbiddenPathParts = ['/capsules/']
   const forbiddenTerms = [
@@ -4191,7 +4161,7 @@ const buildStaticLakebedProjectFiles = async (
       props: { title: projectName, description: 'Static Lakebed review app' },
     },
   ]
-  const files = await formatOutputFiles({
+  const files = await formatExportFiles({
     'AGENTS.md': renderAgents(),
     'CLAUDE.md': renderAgents(),
     'README.md': renderReadme(projectName),
@@ -4288,7 +4258,7 @@ export async function buildOpenUILakebedProjectFiles(
     files[`client/components/${toIdentifier(component.name)}.tsx`] =
       renderClientComponentModule(component)
   }
-  const formattedFiles = await formatOutputFiles(files)
+  const formattedFiles = await formatExportFiles(files)
   assertNoLeakedSourceTerms(formattedFiles)
 
   return {

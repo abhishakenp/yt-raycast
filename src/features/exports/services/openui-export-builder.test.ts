@@ -14,6 +14,10 @@ import {
   parseOpenUIForExport,
   renderNextEndpointRouteFiles,
 } from './openui-export-builder'
+import {
+  EXPORT_PRETTIER_OPTIONS,
+  formatExportFiles,
+} from './format-export-files'
 import { resolveBlockSourceManifestPath } from './block-source-manifest'
 import {
   buildOpenUIHtmlExport,
@@ -708,6 +712,62 @@ export function useParams() { return {}; }
 
     expect(files['src/data/pages.ts']).toContain('Hello export')
     expect(files['app/layout.tsx']).toContain('Export Demo')
+  })
+
+  const assertAllFormattableFilesArePrettierFormatted = async (
+    files: Record<string, string>,
+  ) => {
+    const reformatted = await formatExportFiles(files)
+    for (const [path, original] of Object.entries(files)) {
+      if (!/\.(ts|tsx|mjs|js|json|css|md)$/.test(path)) continue
+      expect(reformatted[path], `file not prettier-formatted: ${path}`).toBe(
+        original,
+      )
+    }
+  }
+
+  it('formats every React export file with the shared Ship Fast prettier config', async () => {
+    const result = await buildOpenUIExport({
+      source,
+      siteSpecJson,
+      sessionId: 'demo',
+      target: 'react',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    await assertAllFormattableFilesArePrettierFormatted(files)
+  })
+
+  it('formats every Next.js export file with the shared Ship Fast prettier config', async () => {
+    const result = await buildOpenUIExport({
+      source,
+      siteSpecJson,
+      sessionId: 'demo',
+      target: 'next',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    await assertAllFormattableFilesArePrettierFormatted(files)
+  })
+
+  it('uses no semicolons and single quotes in React export TypeScript', async () => {
+    const result = await buildOpenUIExport({
+      source,
+      siteSpecJson,
+      sessionId: 'demo',
+      target: 'react',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    const tsx = files['src/components/SaasHero.tsx']
+    expect(tsx).toBeDefined()
+    // no statement-terminating semicolons
+    expect(tsx).not.toMatch(/;\s*$/m)
+    // single-quoted string literals present (import lines use single quotes)
+    expect(tsx).toMatch(/from '/)
+  })
+
+  it('exposes export prettier options matching the repo config', () => {
+    expect(EXPORT_PRETTIER_OPTIONS.semi).toBe(false)
+    expect(EXPORT_PRETTIER_OPTIONS.singleQuote).toBe(true)
+    expect(EXPORT_PRETTIER_OPTIONS.trailingComma).toBe('all')
   })
 
   // Single explicit guard: exported artifacts (standalone HTML + React/Next
