@@ -828,10 +828,8 @@ export function useParams() { return {}; }
       target: 'next',
     })
     const files = unzipBuiltExportTextFiles(result.body)
-    // Next.js exports inline route content directly in app/<route>/page.tsx
-    // (no separate src/components/HomePage.tsx route wrapper files)
-    expect(files['app/page.tsx']).toBeDefined()
-    expect(files['app/pricing/page.tsx']).toBeDefined()
+    expect(files['src/components/HomePage.tsx']).toBeDefined()
+    expect(files['src/components/PricingPage.tsx']).toBeDefined()
     expect(Object.keys(files)).not.toContain(
       'src/components/RoutePage1Home.tsx',
     )
@@ -840,7 +838,7 @@ export function useParams() { return {}; }
     )
   })
 
-  it('inlines Next page files without routes.find indirection or props spread', async () => {
+  it('renders Next page files as server components with metadata that import client route components', async () => {
     const result = await buildOpenUIExport({
       source: routedSource,
       siteSpecJson,
@@ -858,12 +856,14 @@ export function useParams() { return {}; }
     // No props spread / props type import
     expect(homePage).not.toContain('route.props')
     expect(pricingPage).not.toContain('route.props')
-    // Inlined content: no separate HomePage/PricingPage wrapper imports
-    expect(homePage).not.toMatch(/import \{ HomePage \}/)
-    expect(pricingPage).not.toMatch(/import \{ PricingPage \}/)
-    // Content is inlined directly — should contain nested component JSX
-    expect(homePage).toContain('export default function Page')
-    expect(pricingPage).toContain('export default function Page')
+    // Server component imports and renders the client route component
+    expect(homePage).toMatch(/import \{ HomePage \}/)
+    expect(homePage).toContain('<HomePage />')
+    expect(pricingPage).toMatch(/import \{ PricingPage \}/)
+    expect(pricingPage).toContain('<PricingPage />')
+    // Page is a server component (no 'use client') so metadata exports work
+    expect(homePage).not.toContain("'use client'")
+    expect(pricingPage).not.toContain("'use client'")
   })
 
   it('creates QueryClient at module level in Next QueryProvider (not inside useState)', async () => {
@@ -1177,9 +1177,7 @@ createRoot(document.getElementById('root')!).render(<QueryProvider><Page /></Que
     })
     const files = unzipBuiltExportTextFiles(result.body)
 
-    // Next.js exports inline route content in app/page.tsx — no separate
-    // HomePage.tsx route wrapper. Nested block components are still emitted.
-    expect(files['app/page.tsx']).toBeDefined()
+    expect(files['src/components/HomePage.tsx']).toBeDefined()
     expect(files['src/components/EcommerceHero.tsx']).toBeDefined()
     expect(files['src/components/ProductDetailHero.tsx']).toBeDefined()
     expect(files['src/components/Stack.tsx']).toBeUndefined()

@@ -2762,30 +2762,23 @@ createRoot(document.getElementById('root')!).render(
 }
 
 const renderNextRoutePage = (
-  route: ExportRoute,
-  nestedComponentNames: string[],
-  componentImportDir: string,
+  componentName: string,
+  componentImportPath: string,
   routeSeo: ExportRouteSeo | null,
 ): string => {
-  const known = new Set(nestedComponentNames)
-  const used = [...collectNodeComponentNames(route.node)].filter((name) =>
-    known.has(name),
-  )
-  const imports = used
-    .map((name) => `import { ${name} } from '${componentImportDir}${name}'`)
-    .join('\n')
   const metadataExport = routeSeo
     ? `${renderNextMetadataExport(routeSeo)}\n\n`
     : ''
-  const jsonLd = routeSeo ? `\n    ${renderJsonLdScript(routeSeo)}` : ''
-  // Page is a server component — nested components have their own 'use client'
-  // directives. This allows metadata exports to work correctly.
-  return `${imports}
+  const jsonLd = routeSeo ? `\n      ${renderJsonLdScript(routeSeo)}` : ''
+  // Server component: exports metadata, renders the client component.
+  return `import { ${componentName} } from '${componentImportPath}'
 
 ${metadataExport}export default function Page() {
-  return <>
-${renderRouteNode(route.node)}${jsonLd}
-  </>
+  return (
+    <>
+      <${componentName} />${jsonLd}
+    </>
+  )
 }`
 }
 
@@ -2969,7 +2962,11 @@ const buildNextExport = async (
     dataKeys,
   )
   const nestedComponentNames = components.map((component) => component.name)
-  const routeComponentNames = routes.map((route) => route.componentName)
+  const routeComponents = routes.map((route) => ({
+    name: route.componentName,
+    source: renderRouteComponentSource(route, nestedComponentNames),
+  }))
+  const routeComponentNames = routeComponents.map((component) => component.name)
   const blockSources = collectBlockSourceFiles(
     [
       ...brandLogoBlockSourcePaths(input),
@@ -3053,8 +3050,12 @@ export default function RootLayout({ children }: PropsWithChildren) {
   }
   Object.assign(files, renderNextEndpointRouteFiles(endpoints))
 
-  // Route page content is inlined directly into app/<route>/page.tsx — no
-  // separate route component files needed. Only emit nested block components.
+  // Emit route wrapper components (client) + nested block components.
+  for (const component of routeComponents) {
+    files[`src/components/${component.name}.tsx`] = asClientComponent(
+      component.source,
+    )
+  }
   for (const component of components) {
     files[`src/components/${component.name}.tsx`] = asClientComponent(
       component.source,
@@ -3066,17 +3067,15 @@ export default function RootLayout({ children }: PropsWithChildren) {
     const routeSeo = seoBundle?.routes.get(route.path) ?? null
     if (route.path === '/') {
       files['app/page.tsx'] = renderNextRoutePage(
-        route,
-        nestedComponentNames,
-        '../src/components/',
+        route.componentName,
+        '../src/components/' + route.componentName,
         routeSeo,
       )
     } else {
       const dir = route.path.slice(1)
       files[`app/${dir}/page.tsx`] = renderNextRoutePage(
-        route,
-        nestedComponentNames,
-        '../../src/components/',
+        route.componentName,
+        '../../src/components/' + route.componentName,
         routeSeo,
       )
     }
