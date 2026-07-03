@@ -175,6 +175,26 @@ describe('export-seo', () => {
     expect(bundle.llmsTxt).toContain('## Pages')
   })
 
+  it('llms.txt lists all routes even when siteSpec has no pages array', () => {
+    const minimalSpec = JSON.stringify({ projectName: 'Test Site' })
+    const bundle = buildExportSeoBundle(minimalSpec, [
+      { path: '/', label: 'Home' },
+      { path: '/collections', label: 'Collections' },
+      { path: '/shop', label: 'Shop' },
+      { path: '/about', label: 'About' },
+      { path: '/newsletter', label: 'Newsletter' },
+    ])
+    expect(bundle).not.toBeNull()
+    expect(bundle.llmsTxt).toContain('# Test Site')
+    expect(bundle.llmsTxt).toContain('## Pages')
+    expect(bundle.llmsTxt).toContain('Home')
+    expect(bundle.llmsTxt).toContain('Collections')
+    expect(bundle.llmsTxt).toContain('Shop')
+    expect(bundle.llmsTxt).toContain('About')
+    expect(bundle.llmsTxt).toContain('Newsletter')
+    expect(bundle.llmsTxt).not.toContain('No indexable pages')
+  })
+
   it('exposes homeSeo for the root route', () => {
     const bundle = buildExportSeoBundle(siteSpecWithSeo, [
       { path: '/', label: 'Home' },

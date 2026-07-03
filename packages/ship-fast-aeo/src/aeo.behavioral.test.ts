@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { parseHTML } from 'linkedom'
 
-import { buildNextMetadata } from './metadata/build-next-metadata.ts'
+import {
+  buildNextMetadata,
+  buildNextViewport,
+} from './metadata/build-next-metadata.ts'
 import { buildPreviewSeoHead } from './metadata/build-preview-head.ts'
 import {
   auditSiteSpecAeo,
@@ -198,7 +201,8 @@ describe('AEO behavioral', () => {
       ])
       expect(metadata!.twitter?.card).toBe('summary_large_image')
       expect(metadata!.twitter?.images).toEqual([seo.ogImage])
-      expect(metadata!.themeColor).toBe('#0b0f1a')
+      const viewport = buildNextViewport(seo)
+      expect(viewport!.themeColor).toBe('#0b0f1a')
     })
 
     it('emits a summary twitter card and no images when ogImage is absent', () => {

@@ -1,9 +1,8 @@
 /**
- * Framework-native data layer for OpenUI exports.
+ * Framework-native data layer for exports.
  *
- * Replaces the generic `useLakebedAdapter` / `site-data.ts` runtime with
- * named server actions (Next.js) or named local functions (React) so
- * exported code looks like idiomatic framework code.
+ * Generates named server actions (Next.js) or named local functions (React)
+ * so exported code looks like idiomatic framework code.
  */
 
 // ─── naming helpers ───────────────────────────────────────────
@@ -35,6 +34,18 @@ export type DataKeys = {
   usesSignOut: boolean
 }
 
+// ─── precomputed collections (extracted at export time) ───────
+
+export type PrecomputedCollections = {
+  products: Array<Record<string, unknown>>
+  restaurants: Array<Record<string, unknown>>
+}
+
+export const emptyCollections: PrecomputedCollections = {
+  products: [],
+  restaurants: [],
+}
+
 export const createDataKeys = (): DataKeys => ({
   queries: new Set(),
   mutations: new Set(),
@@ -45,9 +56,9 @@ export const createDataKeys = (): DataKeys => ({
 
 // ─── store generator (shared logic) ───────────────────────────
 
-const storeCoreLogic = `'use client'
-
-import { routes } from '../data/pages'
+const renderStoreCoreLogic = (
+  collections: PrecomputedCollections,
+): string => `'use client'
 
 type Store = Record<string, unknown>
 type AuthState = {
@@ -64,67 +75,9 @@ type AuthState = {
   } | null
   userId: string
 }
-type FieldBuilder = { default(value: unknown): FieldBuilder }
-type LakebedMutation = ((...args: unknown[]) => Promise<unknown>) & {
-  isPending: boolean
-  lastError: unknown | null
-  pendingCount: number
-  reset(): void
-}
-export type LakebedClientRuntime<_Definition = unknown> = {
-  signInWithGoogle(): Promise<AuthState>
-  signOut(): void
-  useAuth(): AuthState
-  useMutation(name: string): LakebedMutation
-  useQuery<TValue = unknown>(name: string): TValue
-}
-
-export const string = (): FieldBuilder => ({ default: () => string() })
-export const number = (): FieldBuilder => ({ default: () => number() })
-export const table = <TTable extends Record<string, unknown>>(definition: TTable): TTable => definition
-export const createLakebedDefinition = <TSchema extends Record<string, unknown>>(schema: TSchema) => ({
-  schema,
-  mutation: <TInput extends unknown[], TResult>(handler: (ctx: unknown, ...input: TInput) => TResult) => handler,
-  query: <TResult>(handler: (ctx: unknown) => TResult) => handler,
-})
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value)
-
-function collectionItems(name: string): Array<Record<string, unknown>> {
-  const items: Array<Record<string, unknown>> = []
-  const visit = (value: unknown) => {
-    if (!isRecord(value)) return
-    const collection = value[name]
-    if (Array.isArray(collection)) {
-      items.push(...collection.filter(isRecord))
-    } else if (isRecord(collection) && Array.isArray(collection.items)) {
-      items.push(...collection.items.filter(isRecord))
-    }
-    for (const nested of Object.values(value)) {
-      if (Array.isArray(nested)) nested.forEach(visit)
-      else visit(nested)
-    }
-  }
-  routes.forEach((route) => visit(route.props))
-  return items
-}
-
-const defaultCommerceProducts: Array<Record<string, unknown>> = [
-  { alt: 'Featured product on a clean studio background', badge: 'New', brand: 'Featured', image: '', name: 'Signature Series', oldPrice: '$230', price: '$195' },
-  { alt: 'Lifestyle product photography on a neutral background', badge: '', brand: 'Featured', image: '', name: 'Everyday Essential', oldPrice: '', price: '$250' },
-  { alt: 'Close-up product detail on a neutral background', badge: 'Sale', brand: 'Featured', image: '', name: 'Classic Edition', oldPrice: '$210', price: '$175' },
-  { alt: 'Featured product on a clean studio background', badge: '', brand: 'Featured', image: '', name: 'Studio Collection', oldPrice: '', price: '$160' },
-]
-
-function productsCollection(): Array<Record<string, unknown>> {
-  const products = collectionItems('products')
-  if (products.length > 0) return products
-  const hasCommerceRoute = routes.some((route) =>
-    /commerce|ecommerce|shop|store|marketplace/i.test(String(route.component)),
-  )
-  return hasCommerceRoute ? defaultCommerceProducts : products
-}
 
 const initialStore: Store = {
   cartLines: [],
@@ -137,8 +90,8 @@ const initialStore: Store = {
   subscriberEmails: new Set<string>(),
   orders: [],
   inquiries: [],
-  products: productsCollection(),
-  restaurants: collectionItems('restaurants'),
+  products: ${JSON.stringify(collections.products, null, 2)},
+  restaurants: ${JSON.stringify(collections.restaurants, null, 2)},
   subscribers: [],
 }
 
@@ -299,11 +252,14 @@ const affectedQueryNames = (name: string): string[] => {
 
 // ─── React store (client-side, no server) ─────────────────────
 
-export const renderReactStore = (keys: DataKeys): string => {
+export const renderReactStore = (
+  keys: DataKeys,
+  collections: PrecomputedCollections = emptyCollections,
+): string => {
   const queryFns = [...keys.queries]
     .map(
       (name) =>
-        `export async function ${queryActionName(name)}(): Promise<unknown> {
+        `export async function ${queryActionName(name)}(): Promise<any> {
   return normalizeQueryValue(${JSON.stringify(name)}, localStore[${JSON.stringify(name)}] ?? emptyQueryValue(${JSON.stringify(name)}))
 }`,
     )
@@ -312,7 +268,7 @@ export const renderReactStore = (keys: DataKeys): string => {
   const mutationFns = [...keys.mutations]
     .map(
       (name) =>
-        `export async function ${mutationActionName(name)}(...args: unknown[]): Promise<unknown> {
+        `export async function ${mutationActionName(name)}(...args: unknown[]): Promise<any> {
   localStore = applyMutation(localStore, ${JSON.stringify(name)}, args)
   return mutationResult(localStore, ${JSON.stringify(name)})
 }`,
@@ -367,119 +323,7 @@ export function signOut(): void {
       ? `export function getAffectedQueryNames(name: string): string[] { return affectedQueryNames(name) }`
       : ''
 
-  // Generate a lakebed adapter that wraps the named functions, so helper
-  // functions that take `lakebed` as a parameter still work.
-  const querySwitch = [...keys.queries]
-    .map(
-      (name) =>
-        `    case ${JSON.stringify(name)}: return ${queryActionName(name)}()`,
-    )
-    .join('\n')
-
-  const mutationSwitch = [...keys.mutations]
-    .map(
-      (name) =>
-        `    case ${JSON.stringify(name)}: return ${mutationActionName(name)}(...args)`,
-    )
-    .join('\n')
-
-  const lakebedAdapter = `export function useLakebed(): LakebedClientRuntime {
-  return {
-    useQuery<TValue = unknown>(name: string): TValue {
-      const { data } = useQuery({
-        queryKey: [name],
-        queryFn: async () => {
-          switch (name) {
-${querySwitch}
-            default: return []
-          }
-        },
-      })
-      return (data ?? []) as TValue
-    },
-    useMutation(name: string): LakebedMutation {
-      const mutation = useReactMutation({
-        mutationFn: async (args: unknown[]) => {
-          switch (name) {
-${mutationSwitch}
-            default: return undefined
-          }
-        },
-      })
-      return Object.assign(async (...args: unknown[]) => mutation.mutateAsync(args), {
-        get isPending() { return mutation.isPending },
-        get lastError() { return mutation.error ?? null },
-        get pendingCount() { return mutation.isPending ? 1 : 0 },
-        reset() { mutation.reset() },
-      })
-    },
-    useAuth(): AuthState {
-      return guestAuth
-    },
-    async signInWithGoogle(): Promise<AuthState> {
-      return createDemoAuth()
-    },
-    signOut(): void {
-      // no-op in local mode
-    },
-  }
-}`
-
-  const keyedMutationCompat = `export function useKeyedLakebedMutation(lakebed: LakebedClientRuntime, name: string) {
-  const mutation = lakebed.useMutation(name)
-  const [pendingKeys, setPendingKeys] = React.useState<readonly string[]>([])
-  const pendingKeySetRef = React.useRef(new Set<string>())
-  const queuedKeySetRef = React.useRef(new Set<string>())
-
-  const syncPendingKeys = React.useCallback(() => {
-    setPendingKeys(Array.from(pendingKeySetRef.current))
-  }, [])
-
-  const run = React.useCallback(
-    async (key: string, ...args: unknown[]) => {
-      if (queuedKeySetRef.current.has(key)) return undefined
-      queuedKeySetRef.current.add(key)
-      try {
-        pendingKeySetRef.current.add(key)
-        syncPendingKeys()
-        return await (mutation as (...a: unknown[]) => Promise<unknown>)(...args)
-      } finally {
-        queuedKeySetRef.current.delete(key)
-        pendingKeySetRef.current.delete(key)
-        syncPendingKeys()
-      }
-    },
-    [mutation, syncPendingKeys],
-  )
-
-  const isPending = React.useCallback(
-    (key: string) => pendingKeys.includes(key),
-    [pendingKeys],
-  )
-
-  const reset = React.useCallback(() => {
-    queuedKeySetRef.current.clear()
-    pendingKeySetRef.current.clear()
-    syncPendingKeys()
-  }, [syncPendingKeys])
-
-  return {
-    hasPending: pendingKeys.length > 0,
-    isPending,
-    lastError: (mutation as { lastError?: unknown }).lastError ?? null,
-    pendingKey: pendingKeys[0] ?? null,
-    pendingKeys,
-    reset,
-    run,
-  }
-}`
-
-  return `${storeCoreLogic}
-
-import React from 'react'
-import { useMutation as useReactMutation, useQuery } from '@tanstack/react-query'
-
-${keyedMutationCompat}
+  return `${renderStoreCoreLogic(collections)}
 
 ${queryFns}
 
@@ -487,18 +331,16 @@ ${mutationFns}
 
 ${authFns}
 
-${invalidationFn}
-
-${lakebedAdapter}
-`
+${invalidationFn}`
 }
 
 // ─── Next.js store (server-side) ──────────────────────────────
 
-export const renderNextStore = (keys: DataKeys): string => {
-  const serverStoreSetup = `import { routes } from '../data/pages'
-
-type Store = Record<string, unknown>
+export const renderNextStore = (
+  keys: DataKeys,
+  collections: PrecomputedCollections = emptyCollections,
+): string => {
+  const serverStoreSetup = `type Store = Record<string, unknown>
 type AuthState = {
   displayName: string | null
   email: string | null
@@ -509,64 +351,16 @@ type AuthState = {
   user: { displayName: string; email: string; picture: string | null } | null
   userId: string
 }
-type FieldBuilder = { default(value: unknown): FieldBuilder }
-type LakebedMutation = ((...args: unknown[]) => Promise<unknown>) & {
-  isPending: boolean
-  lastError: unknown | null
-  pendingCount: number
-  reset(): void
-}
-export type LakebedClientRuntime<_Definition = unknown> = {
-  signInWithGoogle(): Promise<AuthState>
-  signOut(): void
-  useAuth(): AuthState
-  useMutation(name: string): LakebedMutation
-  useQuery<TValue = unknown>(name: string): TValue
-}
-
-export const string = (): FieldBuilder => ({ default: () => string() })
-export const number = (): FieldBuilder => ({ default: () => number() })
-export const table = <TTable extends Record<string, unknown>>(definition: TTable): TTable => definition
-export const createLakebedDefinition = <TSchema extends Record<string, unknown>>(schema: TSchema) => ({
-  schema,
-  mutation: <TInput extends unknown[], TResult>(handler: (ctx: unknown, ...input: TInput) => TResult) => handler,
-  query: <TResult>(handler: (ctx: unknown) => TResult) => handler,
-})
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 
-function collectionItems(name: string): Array<Record<string, unknown>> {
-  const items: Array<Record<string, unknown>> = []
-  const visit = (value: unknown) => {
-    if (!isRecord(value)) return
-    const collection = value[name]
-    if (Array.isArray(collection)) items.push(...collection.filter(isRecord))
-    else if (isRecord(collection) && Array.isArray(collection.items)) items.push(...collection.items.filter(isRecord))
-    for (const nested of Object.values(value)) { if (Array.isArray(nested)) nested.forEach(visit); else visit(nested) }
-  }
-  routes.forEach((route) => visit(route.props))
-  return items
-}
-
-const defaultCommerceProducts: Array<Record<string, unknown>> = [
-  { alt: 'Featured product on a clean studio background', badge: 'New', brand: 'Featured', image: '', name: 'Signature Series', oldPrice: '$230', price: '$195' },
-  { alt: 'Lifestyle product photography on a neutral background', badge: '', brand: 'Featured', image: '', name: 'Everyday Essential', oldPrice: '', price: '$250' },
-  { alt: 'Close-up product detail on a neutral background', badge: 'Sale', brand: 'Featured', image: '', name: 'Classic Edition', oldPrice: '$210', price: '$175' },
-  { alt: 'Featured product on a clean studio background', badge: '', brand: 'Featured', image: '', name: 'Studio Collection', oldPrice: '', price: '$160' },
-]
-
-function productsCollection(): Array<Record<string, unknown>> {
-  const products = collectionItems('products')
-  if (products.length > 0) return products
-  const hasCommerceRoute = routes.some((route) => /commerce|ecommerce|shop|store|marketplace/i.test(String(route.component)))
-  return hasCommerceRoute ? defaultCommerceProducts : products
-}
-
 const siteDataGlobal = globalThis as typeof globalThis & { __shipFastSiteDataDatabase?: Store }
 const database: Store = siteDataGlobal.__shipFastSiteDataDatabase ??= {
   cartLines: [], orderLines: [], favoriteProductNames: [], inquiries: [], orders: [],
-  products: productsCollection(), restaurants: collectionItems('restaurants'), subscribers: [],
+  products: ${JSON.stringify(collections.products, null, 2)},
+  restaurants: ${JSON.stringify(collections.restaurants, null, 2)},
+  subscribers: [],
 }
 
 export const guestAuth: AuthState = { displayName: null, email: null, isAuthenticated: false, isGuest: true, isLoading: false, picture: null, user: null, userId: 'guest' }
@@ -640,8 +434,8 @@ function applyMutation(name: string, args: unknown[]): unknown {
   return null
 }
 
-function readSiteDataValue(name: string): unknown { return database[name] ?? [] }
-function runSiteMutationValue(name: string, args: unknown[]): unknown { return applyMutation(name, args) }
+function readSiteDataValue(name: string): any { return database[name] ?? [] }
+function runSiteMutationValue(name: string, args: unknown[]): any { return applyMutation(name, args) }
 
 const affectedQueryNames = (name: string): string[] => {
   const names = new Set<string>()
@@ -710,14 +504,14 @@ export function toEndpointResponse(value: unknown): Response {
   const queryFns = [...keys.queries]
     .map(
       (name) =>
-        `export function ${queryActionName(name)}(): unknown { return readSiteDataValue(${JSON.stringify(name)}) }`,
+        `export function ${queryActionName(name)}(): any { return readSiteDataValue(${JSON.stringify(name)}) }`,
     )
     .join('\n\n')
 
   const mutationFns = [...keys.mutations]
     .map(
       (name) =>
-        `export function ${mutationActionName(name)}(...args: unknown[]): unknown { return runSiteMutationValue(${JSON.stringify(name)}, args) }`,
+        `export function ${mutationActionName(name)}(...args: unknown[]): any { return runSiteMutationValue(${JSON.stringify(name)}, args) }`,
     )
     .join('\n\n')
 
@@ -734,21 +528,6 @@ export function signOutAuth(): AuthState { return writeAuth(guestAuth) }
       ? `export function getAffectedQueryNames(name: string): string[] { return affectedQueryNames(name) }`
       : ''
 
-  const compatFns = `export function useKeyedLakebedMutation(_lakebed: LakebedClientRuntime, name: string) {
-  return {
-    hasPending: false,
-    isPending: (_key: string) => false,
-    lastError: null,
-    pendingKey: null,
-    pendingKeys: [] as readonly string[],
-    reset() {},
-    async run(_key: string, ...args: unknown[]) { return runSiteMutationValue(name, args) },
-  }
-}
-export function useAuth(): AuthState { return readAuth() }
-export async function signInWithGoogle(): Promise<AuthState> { return writeAuth(createDemoAuth()) }
-export function signOut(): void { writeAuth(guestAuth) }`
-
   return `${serverStoreSetup}
 
 ${queryFns}
@@ -758,117 +537,6 @@ ${mutationFns}
 ${authFns}
 
 ${invalidationFn}
-
-${compatFns}
-`
-}
-
-// ─── Lakebed adapter hook (Next.js client-side) ───────────────
-
-export const renderLakebedAdapterHook = (keys: DataKeys): string => {
-  const querySwitch = [...keys.queries]
-    .map(
-      (name) =>
-        `    case ${JSON.stringify(name)}: return await ${queryActionName(name)}Action()`,
-    )
-    .join('\n')
-
-  const mutationSwitch = [...keys.mutations]
-    .map(
-      (name) =>
-        `    case ${JSON.stringify(name)}: return await ${mutationActionName(name)}Server(...args)`,
-    )
-    .join('\n')
-
-  const authFn = keys.usesAuth
-    ? `
-    useAuth(): AuthState {
-      return guestAuth
-    },
-    async signInWithGoogle(): Promise<AuthState> {
-      const result = await signInAction()
-      return result as AuthState
-    },
-    signOut(): void {
-      void signOutAction()
-    },`
-    : `
-    useAuth(): AuthState {
-      return guestAuth
-    },
-    async signInWithGoogle(): Promise<AuthState> {
-      return guestAuth
-    },
-    signOut(): void {},`
-
-  const actionImports: string[] = []
-  if (keys.queries.size > 0) {
-    actionImports.push(
-      ...[...keys.queries].map((n) => `${queryActionName(n)}Action`),
-    )
-  }
-  if (keys.mutations.size > 0) {
-    actionImports.push(
-      ...[...keys.mutations].map((n) => `${mutationActionName(n)}Server`),
-    )
-  }
-  if (keys.usesAuth) {
-    actionImports.push('signInAction', 'signOutAction')
-  }
-
-  return `'use client'
-
-import { useMutation as useReactMutation, useQuery } from '@tanstack/react-query'
-import type { AuthState } from './store'
-import { guestAuth } from './store'
-${actionImports.length > 0 ? `import { ${actionImports.join(', ')} } from '../../app/actions/server-actions'` : ''}
-
-type LakebedMutation = ((...args: unknown[]) => Promise<unknown>) & {
-  isPending: boolean
-  lastError: unknown | null
-  pendingCount: number
-  reset(): void
-}
-type LakebedClientRuntime = {
-  useQuery<TValue = unknown>(name: string): TValue
-  useMutation(name: string): LakebedMutation
-  useAuth(): AuthState
-  signInWithGoogle(): Promise<AuthState>
-  signOut(): void
-}
-
-export function useLakebed(): LakebedClientRuntime {
-  return {
-    useQuery<TValue = unknown>(name: string): TValue {
-      const { data } = useQuery({
-        queryKey: [name],
-        queryFn: async () => {
-          switch (name) {
-${querySwitch}
-            default: return []
-          }
-        },
-      })
-      return (data ?? []) as TValue
-    },
-    useMutation(name: string): LakebedMutation {
-      const mutation = useReactMutation({
-        mutationFn: async (args: unknown[]) => {
-          switch (name) {
-${mutationSwitch}
-            default: return undefined
-          }
-        },
-      })
-      return Object.assign(async (...args: unknown[]) => mutation.mutateAsync(args), {
-        get isPending() { return mutation.isPending },
-        get lastError() { return mutation.error ?? null },
-        get pendingCount() { return mutation.isPending ? 1 : 0 },
-        reset() { mutation.reset() },
-      })
-    },${authFn}
-  }
-}
 `
 }
 
@@ -939,8 +607,37 @@ ${authActions}
 
 export const renderShooAuthProvider = (): string => `'use client'
 
-import { useShooAuth } from '@shoojs/react'
-import type { PropsWithChildren } from 'react'
+import { createContext, useContext, type PropsWithChildren } from 'react'
+
+type ShooIdentity = {
+  userId: string
+  email: string | null
+  name: string | null
+  picture: string | null
+}
+
+type ShooAuthValue = {
+  identity: ShooIdentity
+  signIn: (identity?: Partial<ShooIdentity>) => void
+  clearIdentity: () => void
+}
+
+const guestIdentity: ShooIdentity = {
+  userId: 'guest',
+  email: null,
+  name: null,
+  picture: null,
+}
+
+const ShooAuthContext = createContext<ShooAuthValue>({
+  identity: guestIdentity,
+  signIn: () => {},
+  clearIdentity: () => {},
+})
+
+export function useShooAuth(): ShooAuthValue {
+  return useContext(ShooAuthContext)
+}
 
 type AuthState = {
   displayName: string | null
@@ -991,13 +688,11 @@ export function adaptShooIdentity(identity: {
 export function AuthProvider({ children }: PropsWithChildren) {
   return <>{children}</>
 }
-
-export { useShooAuth }
 `
 
 export const renderShooCallbackRoute = (): string => `"use client"
 
-import { useShooAuth } from '@shoojs/react'
+import { useShooAuth } from '../../../src/lib/auth'
 
 export default function ShooCallback() {
   useShooAuth()

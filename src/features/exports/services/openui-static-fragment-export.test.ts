@@ -99,6 +99,27 @@ export function useNavigate() { return () => {}; }
                   loader: 'tsx',
                 }),
               )
+              pluginBuild.onResolve({ filter: /^@shoojs\/react$/ }, () => ({
+                namespace: 'shoojs-stub',
+                path: '@shoojs/react',
+              }))
+              pluginBuild.onResolve(
+                { filter: /^react$/, namespace: 'shoojs-stub' },
+                () => ({
+                  path: join(process.cwd(), 'node_modules/react/index.js'),
+                }),
+              )
+              pluginBuild.onLoad(
+                { filter: /^@shoojs\/react$/, namespace: 'shoojs-stub' },
+                () => ({
+                  contents: `import React from "react";
+const AuthContext = React.createContext({ identity: { userId: 'guest', email: null, name: null, picture: null }, signIn: () => {}, clearIdentity: () => {} });
+export function useShooAuth() { return React.useContext(AuthContext); }
+export function AuthProvider({ children }) { return React.createElement(React.Fragment, null, children); }
+`,
+                  loader: 'tsx',
+                }),
+              )
             },
           },
         ],

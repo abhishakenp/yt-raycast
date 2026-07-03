@@ -25,6 +25,7 @@ import {
   buildExportSeoBundle,
   renderJsonLdScript,
   renderNextMetadataExport,
+  renderNextViewportExport,
   renderNextRobotsRoute,
   renderNextSitemapRoute,
   type ExportRouteSeo,
@@ -34,7 +35,6 @@ import {
   mutationActionName,
   queryActionName,
   renderKeyedMutationHook,
-  renderLakebedAdapterHook,
   renderNextServerActions,
   renderNextStore,
   renderQueryClientProvider,
@@ -53,7 +53,7 @@ type ParsedOpenUIProgram = {
   projectName: string
 }
 
-type ExportRoute = {
+export type ExportRoute = {
   label: string
   path: string
   componentName: string
@@ -864,7 +864,7 @@ const transformComponentImports = (
       continue
     }
 
-    if (importClause?.isTypeOnly) continue
+    if (importClause?.isTypeOnly && moduleName.startsWith('#/')) continue
 
     if (moduleName === '@openuidev/react-lang') continue
     if (moduleName === 'zod' || moduleName.startsWith('zod/')) continue
@@ -1418,10 +1418,12 @@ const renderTranslatedMutation = (
   mutationName: string,
 ) => {
   const actionName = mutationActionName(mutationName)
+  // Extract mutateAsync so the variable is callable, matching the original
+  // lakebed.useMutation() API where the result was a callable function
   return `const ${variableName} = useMutation({
     mutationFn: ${actionName},
     onSuccess: () => queryClient.invalidateQueries(),
-  });`
+  }).mutateAsync`
 }
 
 const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
@@ -1449,13 +1451,36 @@ const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
     },
   )
 
-  // Translate useKeyedLakebedMutation(lakebed, 'name') → useKeyedMutation(nameAction)
+  // Translate inline lakebed.useQuery('name') (not assigned to const)
+  // e.g. lakebed.useQuery('productCatalog') → useQuery({ queryKey: ['productCatalog'], queryFn: ... })
   nextBody = nextBody.replace(
-    /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*useKeyedLakebedMutation\(\s*lakebed\s*,\s*['"]([^'"]+)['"]\s*\)/g,
-    (_match, variableName: string, mutationName: string) => {
+    /\blakebed\.useQuery\(\s*['"]([^'"]+)['"]\s*\)/g,
+    (_match, queryName: string) => {
+      dataKeys.queries.add(queryName)
+      const actionName = queryActionName(queryName)
+      return `useQuery({ queryKey: [${JSON.stringify(queryName)}], queryFn: ${actionName} })`
+    },
+  )
+
+  // Translate inline lakebed.useMutation('name') (not assigned to const)
+  nextBody = nextBody.replace(
+    /\blakebed\.useMutation\(\s*['"]([^'"]+)['"]\s*\)/g,
+    (_match, mutationName: string) => {
       dataKeys.mutations.add(mutationName)
       const actionName = mutationActionName(mutationName)
-      return `const ${variableName} = useKeyedMutation(${actionName})`
+      return `useMutation({ mutationFn: ${actionName} })`
+    },
+  )
+
+  // Translate useKeyedLakebedMutation(lakebed, 'name') → useKeyedMutation(nameAction)
+  // Handle both `const x = useKeyedLakebedMutation(lakebed, 'name')` and inline usage
+  // Also handle multi-line calls where `lakebed` and `'name'` are on separate lines
+  nextBody = nextBody.replace(
+    /\buseKeyedLakebedMutation\(\s*lakebed\s*,\s*['"]([^'"]+)['"]\s*[\s\S]*?\)/g,
+    (_match, mutationName: string) => {
+      dataKeys.mutations.add(mutationName)
+      const actionName = mutationActionName(mutationName)
+      return `useKeyedMutation(${actionName})`
     },
   )
 
@@ -1467,6 +1492,12 @@ const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
       return `const { identity: shooIdentity, signIn, clearIdentity } = useShooAuth()\n  const ${variableName} = adaptShooIdentity(shooIdentity)`
     },
   )
+
+  // Translate inline lakebed.useAuth() (not assigned to const)
+  nextBody = nextBody.replace(/\blakebed\.useAuth\(\)/g, () => {
+    dataKeys.usesAuth = true
+    return 'adaptShooIdentity(useShooAuth().identity)'
+  })
 
   // Translate lakebed.signInWithGoogle() → signIn()
   if (usesSignIn) {
@@ -1502,6 +1533,333 @@ const translateLakebedRuntimeCalls = (body: string, dataKeys: DataKeys) => {
 const sourceUsesLakebedRuntime = (source: string): boolean =>
   /\blakebed\b/.test(source) ||
   /@ship-fast\/lakebed\/(?:react|server)/.test(source)
+
+/**
+ * Translate lakebed runtime calls in block source files for Next.js/React
+ * exports. Removes `lakebed` parameters, translates `lakebed.useQuery()` →
+ * `useQuery()`, removes lakebed type imports, and adds React Query imports.
+ * Also collects query/mutation names into dataKeys.
+ */
+const translateBlockSourceLakebed = (
+  source: string,
+  stack: ExportStack,
+  dataKeys: DataKeys,
+  outPath: string,
+): { source: string; skip: boolean } => {
+  // Process lakebed definition files: keep types and utility functions,
+  // but remove the createLakebedDefinition call and its imports
+  const isLakebedDefFile =
+    /cart-lakebed\.ts$/.test(outPath) || /newsletter-lakebed\.ts$/.test(outPath)
+
+  if (isLakebedDefFile) {
+    // Remove createLakebedDefinition import
+    let body = source.replace(
+      /import\s+\{[^}]*createLakebedDefinition[^}]*\}\s+from[^\n]+;?\n?/g,
+      '',
+    )
+    // Remove other lakebed-specific imports (string, number, table)
+    body = body.replace(
+      /import\s+\{[^}]*(?:string|number|table)[^}]*\}\s+from\s+['"]@ship-fast\/lakebed\/(?:server|react)['"];?\n?/g,
+      '',
+    )
+    // Remove the createLakebedDefinition call and everything after it
+    // (the lakebed definition, queries, mutations, etc.)
+    // Keep everything before `const commerce = createLakebedDefinition`
+    const defStart = body.search(/const\s+\w+\s*=\s*createLakebedDefinition/)
+    if (defStart !== -1) {
+      body = body.substring(0, defStart).trimEnd() + '\n'
+    }
+    // Remove `export type ...Lakebed = LakebedClientRuntime<...>` lines
+    body = body.replace(
+      /export\s+type\s+\w+Lakebed\s*=\s*LakebedClientRuntime[^;\n]*;?\n?/g,
+      '',
+    )
+    // Remove LakebedClientRuntime type import
+    body = body.replace(
+      /import\s+type\s+\{[^}]*LakebedClientRuntime[^}]*\}\s+from[^\n]+;?\n?/g,
+      '',
+    )
+    return { source: body, skip: false }
+  }
+
+  if (!sourceUsesLakebedRuntime(source)) return { source, skip: false }
+
+  // Collect query/mutation names from lakebed calls in this block source
+  const queryNameRegex = /lakebed\.useQuery\(\s*['"]([^'"]+)['"]\s*\)/g
+  const mutationNameRegex = /lakebed\.useMutation\(\s*['"]([^'"]+)['"]\s*\)/g
+  const keyedMutationRegex =
+    /useKeyedLakebedMutation\(\s*lakebed\s*,\s*['"]([^'"]+)['"]\s*\)/g
+
+  let match: RegExpExecArray | null
+  while ((match = queryNameRegex.exec(source)) !== null) {
+    dataKeys.queries.add(match[1])
+  }
+  while ((match = mutationNameRegex.exec(source)) !== null) {
+    dataKeys.mutations.add(match[1])
+  }
+  while ((match = keyedMutationRegex.exec(source)) !== null) {
+    dataKeys.mutations.add(match[1])
+  }
+
+  // Check for auth usage
+  if (/\blakebed\.useAuth\(\)/.test(source)) {
+    dataKeys.usesAuth = true
+  }
+  if (/\blakebed\.signInWithGoogle\(\)/.test(source)) {
+    dataKeys.usesSignIn = true
+    dataKeys.usesAuth = true
+  }
+  if (/\blakebed\.signOut\(\)/.test(source)) {
+    dataKeys.usesSignOut = true
+    dataKeys.usesAuth = true
+  }
+
+  // Run the standard lakebed translation (handles lakebed.useQuery → useQuery,
+  // lakebed.useMutation → useMutation, useKeyedLakebedMutation → useKeyedMutation,
+  // lakebed.useAuth → useShooAuth, etc.)
+  const translated = translateLakebedRuntimeCalls(source, dataKeys)
+  let body = translated.body
+
+  // Remove `lakebed: CommerceLakebed` and `lakebed: NewsletterLakebed` from
+  // function parameters. Handles both single-param and multi-param signatures.
+  body = body.replace(/,\s*lakebed:\s*[A-Za-z_]+Lakebed/g, '')
+  body = body.replace(/lakebed:\s*[A-Za-z_]+Lakebed\s*,?\s*/g, '')
+
+  // Remove `lakebed` from destructured props: { lakebed, ... } → { ... }
+  // Also handles { item, lakebed } and { lakebed, item, ... }
+  body = body.replace(/\{\s*lakebed\s*,\s*/g, '{ ')
+  body = body.replace(/,\s*lakebed\s*(?=\})/g, '')
+  body = body.replace(/,\s*lakebed\s*,/g, ',')
+
+  // Remove `lakebed={lakebed}` from JSX props
+  body = body.replace(/\s*lakebed=\{lakebed\}/g, '')
+
+  // Remove `lakebed` from function call arguments
+  // e.g. useCommerceSearch(lakebed) → useCommerceSearch()
+  // e.g. useSyncCommerceCatalog(lakebed, products) → useSyncCommerceCatalog(products)
+  body = body.replace(/\b(\w+)\(lakebed\s*,\s*/g, '$1(')
+  body = body.replace(/\b(\w+)\(lakebed\s*\)/g, '$1()')
+  // Multi-line: func(\n  lakebed,\n  ...) → func(\n  ...)
+  body = body.replace(/\b(\w+)\(\s*\n\s*lakebed\s*,\s*\n/g, '$1(\n')
+  body = body.replace(/\b(\w+)\(\s*\n\s*lakebed\s*\n\s*\)/g, '$1()')
+
+  // Remove `lakebed` from import lists (e.g., `import { lakebed } from ...`)
+  // and remove lakebed type imports
+  body = body.replace(
+    /import\s+type\s*\{[^}]*LakebedClientRuntime[^}]*\}\s+from[^\n]+;?\n?/g,
+    '',
+  )
+  body = body.replace(
+    /import\s+type\s*\{[^}]*\b[A-Z]\w*Lakebed\b[^}]*\}\s+from[^\n]+;?\n?/g,
+    '',
+  )
+  body = body.replace(
+    /import\s+\{[^}]*useKeyedLakebedMutation[^}]*\}\s+from\s+['"]@ship-fast\/lakebed\/react['"];?\n?/g,
+    '',
+  )
+  // Also remove useKeyedLakebedMutation import that was rewritten to lib/store
+  body = body.replace(
+    /import\s+\{[^}]*useKeyedLakebedMutation[^}]*\}\s+from\s+['"][^'"]*lib\/store['"];?\n?/g,
+    '',
+  )
+  body = body.replace(
+    /import\s+\{[^}]*createLakebedDefinition[^}]*\}\s+from[^\n]+;?\n?/g,
+    '',
+  )
+
+  // Remove type aliases that reference lakebed (use [^;\n] to avoid eating across lines)
+  body = body.replace(
+    /export\s+type\s+[A-Za-z_]+Lakebed\s*=\s*LakebedClientRuntime[^;\n]*;?\n?/g,
+    '',
+  )
+  body = body.replace(
+    /type\s+[A-Za-z_]+Lakebed\s*=\s*LakebedClientRuntime[^;\n]*;?\n?/g,
+    '',
+  )
+
+  // Replace type definitions that reference lakebed definitions with any.
+  // Handles multi-line definitions with nested generics like:
+  //   type CommerceCatalogProduct = NonNullable<
+  //     ReturnType<typeof commerceCartLakebed.queries.productCatalog>
+  //   >[number]
+  // Matches from "type X =" to the newline before the next declaration/blank line.
+  // MUST run before removing lakebed definition names from imports
+  body = body.replace(
+    /type\s+(\w+)\s*=(?:(?!^type\s)[\s\S])*?\b[a-z]\w*Lakebed\b[\s\S]*?\n(?=(?:type\s|export\s|const\s|function\s|import\s|\n|$))/gm,
+    'type $1 = any\n',
+  )
+
+  // Remove lakebed-specific names from imports of cart-lakebed/newsletter-lakebed
+  // but keep imports of utility functions and types (commerceCartItemKey, CommerceCartItemInput, etc.)
+  // Only remove the lakebed definition names from the import list
+  body = body.replace(/,\s*(?:commerceCartLakebed|newsletterLakebed)\b/g, '')
+  body = body.replace(/\b(?:commerceCartLakebed|newsletterLakebed)\s*,\s*/g, '')
+  body = body.replace(/\b(?:commerceCartLakebed|newsletterLakebed)\b/g, '')
+  // Remove LakebedClientRuntime type imports entirely
+  body = body.replace(
+    /import\s+type\s+\{[^}]*LakebedClientRuntime[^}]*\}\s+from[^\n]+;?\n?/g,
+    '',
+  )
+
+  // Remove `CommerceLakebed = LakebedClientRuntime<...>` type exports
+  body = body.replace(
+    /export\s+type\s+CommerceLakebed\s*=\s*LakebedClientRuntime[^;\n]*;?\n?/g,
+    '',
+  )
+
+  // Remove standalone `type CommerceLakebed = ...` lines
+  body = body.replace(/^type\s+[A-Za-z_]+Lakebed\b.*$/gm, '')
+
+  // Remove `export type { ... Lakebed ... }` re-exports
+  body = body.replace(
+    /export\s+type\s+\{[^}]*Lakebed[^}]*\}\s+from[^\n]+;?\n?/g,
+    '',
+  )
+
+  // Add React Query imports if the file uses useQuery/useMutation after translation
+  const needsReactQuery =
+    /\buseQuery\b/.test(body) || /\buseMutation\b/.test(body)
+  const needsQueryClient = /\bqueryClient\b/.test(body)
+  const needsKeyedMutation = /\buseKeyedMutation\b/.test(body)
+  const needsShooAuth = /\buseShooAuth\b/.test(body)
+  const needsAdaptShoo = /\badaptShooIdentity\b/.test(body)
+
+  // Calculate relative path from the block source file to src/lib/
+  // outPath is like "src/vendor/blocks/src/registry/sections/commerce/commerce-interactions.tsx"
+  // The file's directory is 7 levels deep; src/ is 1 level deep, so we need 6 ../
+  const outPathDepth = outPath.split('/').length - 1 // number of path segments including filename
+  const upLevels = outPathDepth - 1 // directory depth - src/ depth(1) → how many ../ to reach src/
+  const relPrefix = `${'../'.repeat(Math.max(1, upLevels))}`
+
+  const extraImports: string[] = []
+  if (needsReactQuery) {
+    const imports: string[] = []
+    if (/\buseQuery\b/.test(body)) imports.push('useQuery')
+    if (/\buseMutation\b/.test(body)) imports.push('useMutation')
+    if (needsQueryClient) imports.push('useQueryClient')
+    extraImports.push(
+      `import { ${imports.join(', ')} } from '@tanstack/react-query'`,
+    )
+  }
+  if (needsKeyedMutation) {
+    extraImports.push(
+      `import { useKeyedMutation } from '${relPrefix}lib/use-keyed-mutation'`,
+    )
+  }
+  if (needsShooAuth) {
+    extraImports.push(`import { useShooAuth } from '${relPrefix}lib/auth'`)
+  }
+  if (needsAdaptShoo) {
+    extraImports.push(
+      `import { adaptShooIdentity } from '${relPrefix}lib/auth'`,
+    )
+  }
+
+  // Add queryClient declaration if needed
+  if (needsQueryClient) {
+    // Insert `const queryClient = useQueryClient()` once per function that uses useMutation.
+    // We find each function body that contains useMutation and insert the declaration
+    // before the first useMutation call in that function.
+    // To avoid duplicate declarations, we only insert before the first useMutation
+    // in each function scope.
+    const lines = body.split('\n')
+    const result: string[] = []
+    let inFunction = false
+    let functionBraceDepth = 0
+    let insertedInCurrentFunction = false
+    for (const line of lines) {
+      // Track function entry by looking for `useMutation({` without an existing queryClient
+      if (
+        !insertedInCurrentFunction &&
+        inFunction &&
+        /useMutation\(\{/.test(line) &&
+        !/queryClient/.test(line)
+      ) {
+        result.push('  const queryClient = useQueryClient()')
+        insertedInCurrentFunction = true
+      }
+      // Track function boundaries
+      if (/^(export\s+)?(async\s+)?function\s+\w+/.test(line.trim())) {
+        inFunction = true
+        functionBraceDepth = 0
+        insertedInCurrentFunction = false
+      }
+      // Count braces to detect function end
+      if (inFunction) {
+        for (const ch of line) {
+          if (ch === '{') functionBraceDepth++
+          else if (ch === '}') {
+            functionBraceDepth--
+            if (functionBraceDepth <= 0) {
+              inFunction = false
+              insertedInCurrentFunction = false
+            }
+          }
+        }
+      }
+      result.push(line)
+    }
+    body = result.join('\n')
+  }
+
+  // Collect all action names used in the body and add imports
+  const usedActionNames: string[] = []
+  for (const q of dataKeys.queries) {
+    const action = queryActionName(q)
+    if (new RegExp(`\\b${action}\\b`).test(body)) {
+      usedActionNames.push(action)
+    }
+  }
+  for (const m of dataKeys.mutations) {
+    const action = mutationActionName(m)
+    if (new RegExp(`\\b${action}\\b`).test(body)) {
+      usedActionNames.push(action)
+    }
+  }
+
+  if (usedActionNames.length > 0) {
+    if (stack === 'next') {
+      // Next.js: import from server actions
+      // Query actions are exported as `${actionName}Action`, mutations as `${actionName}Server`
+      const queryActionSet = new Set(
+        [...dataKeys.queries].map((q) => queryActionName(q)),
+      )
+      const actionImports = usedActionNames.map((n) => {
+        const isQuery = queryActionSet.has(n)
+        return isQuery ? `${n}Action as ${n}` : `${n}Server as ${n}`
+      })
+      extraImports.push(
+        `import { ${actionImports.join(', ')} } from '${relPrefix}../app/actions/server-actions'`,
+      )
+    } else {
+      // React: import from store
+      extraImports.push(
+        `import { ${usedActionNames.join(', ')} } from '${relPrefix}lib/store'`,
+      )
+    }
+  }
+
+  // Add React import if needed for hooks
+  if (needsReactQuery || translated.usesAuth) {
+    if (
+      !/^import\s+React\b/m.test(body) &&
+      !/^import\s+\*\s+as\s+React\b/m.test(body)
+    ) {
+      // Check if React is needed (for useState, useRef, etc.)
+      if (
+        /\bReact\.(useState|useRef|useCallback|useMemo|useEffect)\b/.test(body)
+      ) {
+        extraImports.unshift(`import React from 'react'`)
+      }
+    }
+  }
+
+  if (extraImports.length > 0) {
+    body = `${extraImports.join('\n')}\n${body}`
+  }
+
+  return { source: body, skip: false }
+}
 
 const extractComponent = (
   componentName: string,
@@ -1540,11 +1898,21 @@ const extractComponent = (
         usesMutation: false,
         usesQuery: false,
       }
-  const needsLakebedAdapter =
-    usesLakebed && /\blakebed\b/.test(translatedLakebed.body)
-  const translatedBody = needsLakebedAdapter
-    ? `const lakebed = useLakebed()\n${translatedLakebed.body}`
-    : translatedLakebed.body
+  // After translation, remove any remaining `lakebed` references:
+  // - `lakebed={lakebed}` JSX props (block components no longer take lakebed)
+  // - `const lakebed = useLakebed()` (no adapter needed)
+  // - `lakebed` as first argument to hook calls (e.g. useSyncCommerceCatalog(lakebed, products))
+  //   Handles both single-line and multi-line call patterns
+  const lakebedPurgedBody = translatedLakebed.body
+    .replace(/\s*lakebed=\{lakebed\}/g, '')
+    .replace(/const\s+lakebed\s*=\s*useLakebed\(\)\s*\n?/g, '')
+    // Single-line: func(lakebed, ...) → func(...)
+    .replace(/\b(\w+)\(lakebed\s*,\s*/g, '$1(')
+    .replace(/\b(\w+)\(lakebed\s*\)/g, '$1()')
+    // Multi-line: func(\n  lakebed,\n  ...) → func(\n  ...)
+    .replace(/\b(\w+)\(\s*\n\s*lakebed\s*,\s*\n/g, '$1(\n')
+    .replace(/\b(\w+)\(\s*\n\s*lakebed\s*\n\s*\)/g, '$1()')
+  const translatedBody = lakebedPurgedBody
   const rewrittenNavigation = rewriteNavigationCalls(
     translatedBody,
     stack,
@@ -1598,13 +1966,9 @@ const extractComponent = (
     )
   }
   if (usesShooAuth) {
-    dataImportNames.push(`import { useShooAuth } from '@shoojs/react'`)
-    dataImportNames.push(`import { adaptShooIdentity } from '../lib/auth'`)
-  }
-  // Import useLakebed adapter when lakebed variable is still referenced
-  if (needsLakebedAdapter) {
-    const lakebedPath = stack === 'next' ? '../lib/use-lakebed' : '../lib/store'
-    dataImportNames.push(`import { useLakebed } from '${lakebedPath}'`)
+    dataImportNames.push(
+      `import { useShooAuth, adaptShooIdentity } from '../lib/auth'`,
+    )
   }
   const dataImports =
     dataImportNames.length > 0 ? `\n${dataImportNames.join('\n')}` : ''
@@ -1712,6 +2076,8 @@ ${rewrittenNavigation.body
 const collectBlockSourceFiles = (
   sourcePaths: Iterable<string>,
   stack: ExportStack,
+  dataKeys?: DataKeys,
+  routeTargets?: Record<string, string>,
 ): { files: Record<string, string>; dependencies: Set<string> } => {
   const pending = [...new Set(sourcePaths)]
   const seen = new Set<string>()
@@ -1753,10 +2119,40 @@ const collectBlockSourceFiles = (
       if (!seen.has(nestedSourcePath)) pending.push(nestedSourcePath)
     }
 
-    files[outPath] = prependImports(
-      removeImportDeclarations(source, sourceFile),
-      transformed.imports,
-    )
+    // For Next.js/React exports, translate lakebed runtime calls in block
+    // source files and skip lakebed definition files.
+    if (dataKeys && (stack === 'next' || stack === 'react')) {
+      const rawSource = prependImports(
+        removeImportDeclarations(source, sourceFile),
+        ensureReactNodeImport(transformed.imports, source),
+      )
+      const result = translateBlockSourceLakebed(
+        rawSource,
+        stack,
+        dataKeys,
+        outPath,
+      )
+      if (result.skip) continue
+      const navRewritten = routeTargets
+        ? rewriteNavigationCalls(result.source, stack, routeTargets)
+        : { body: result.source, usesNavigation: false }
+      const routePathsConst = navRewritten.usesNavigation
+        ? `const routePaths: Record<string, string> = ${JSON.stringify(routeTargets, null, 2)}\n`
+        : ''
+      files[outPath] = routePathsConst + navRewritten.body
+    } else {
+      const rawSource = prependImports(
+        removeImportDeclarations(source, sourceFile),
+        ensureReactNodeImport(transformed.imports, source),
+      )
+      const navRewritten = routeTargets
+        ? rewriteNavigationCalls(rawSource, stack, routeTargets)
+        : { body: rawSource, usesNavigation: false }
+      const routePathsConst = navRewritten.usesNavigation
+        ? `const routePaths: Record<string, string> = ${JSON.stringify(routeTargets, null, 2)}\n`
+        : ''
+      files[outPath] = routePathsConst + navRewritten.body
+    }
   }
 
   return { files, dependencies }
@@ -1765,7 +2161,11 @@ const collectBlockSourceFiles = (
 const buildRoutes = (parsed: ParsedOpenUIProgram): ExportRoute[] => {
   const usedPaths = new Set<string>()
   const usedNames = new Set<string>()
-  return parsed.pages.map((page, index) => {
+  // Only create routes for pages that have corresponding route labels.
+  // The PageSwitch routes array defines the intended navigation structure;
+  // extra pages beyond that are nested/child elements, not top-level routes.
+  const routeCount = parsed.routes.length
+  return parsed.pages.slice(0, routeCount).map((page, index) => {
     unwrapSingleObjectArgProps(page)
     const label = parsed.routes[index] ?? `Page ${index + 1}`
     if (!page.typeName || page.typeName === 'PageSwitch') {
@@ -1808,6 +2208,386 @@ const isOpenUIElementNode = (value: unknown): value is ElementNode =>
   value.type === 'element' &&
   'typeName' in value &&
   typeof value.typeName === 'string'
+
+// ─── JSON-LD extraction from the OpenUI element tree ───────────
+//
+// JSON-LD's purpose is to describe ENTITIES on the page (products, reviews,
+// FAQ items, articles) — data that ISN'T already in the HTML <title> and
+// <meta description>. We walk the parsed element tree and classify array
+// props by their item SHAPE — no component name matching, no hardcoding.
+// An array of objects with {name, price} → Products. {question, answer} →
+// FAQ. {quote, rating} → Reviews. {title, author, date} → Articles.
+
+const isStr = (v: unknown): v is string =>
+  typeof v === 'string' && v.trim().length > 0
+const isObj = (v: unknown): v is Record<string, unknown> =>
+  v !== null && typeof v === 'object' && !Array.isArray(v)
+
+const str = (o: Record<string, unknown>, k: string): string | undefined =>
+  isStr(o[k]) ? o[k] : undefined
+
+const num = (o: Record<string, unknown>, k: string): number | undefined => {
+  const v = o[k]
+  return typeof v === 'number'
+    ? v
+    : isStr(v)
+      ? Number(v) || undefined
+      : undefined
+}
+
+const cleanPrice = (v: unknown): string | undefined => {
+  if (!isStr(v)) return undefined
+  const d = v.replace(/[^0-9.]/g, '')
+  return d || undefined
+}
+
+/** Walk the element tree yielding all ElementNodes (depth-first). */
+function* walkElements(node: ElementNode): Generator<ElementNode> {
+  yield node
+  for (const v of Object.values(node.props || {})) {
+    if (isOpenUIElementNode(v)) {
+      yield* walkElements(v)
+    } else if (Array.isArray(v)) {
+      for (const item of v)
+        if (isOpenUIElementNode(item)) yield* walkElements(item)
+    }
+  }
+}
+
+/** Classify an array of objects by item shape → schema.org entity. */
+type Entity =
+  | { kind: 'Product'; data: Record<string, unknown> }
+  | { kind: 'Review'; data: Record<string, unknown> }
+  | { kind: 'Question'; question: string; answer: string }
+  | { kind: 'Article'; data: Record<string, unknown> }
+
+const classifyItem = (o: Record<string, unknown>): Entity | null => {
+  // Product: has a name/title AND a price (or oldPrice)
+  const pname = str(o, 'name') ?? str(o, 'title')
+  const price = cleanPrice(o.price) ?? cleanPrice(o.oldPrice)
+  if (pname && (price || 'price' in o || 'oldPrice' in o)) {
+    return {
+      kind: 'Product',
+      data: {
+        '@type': 'Product',
+        name: pname,
+        description:
+          str(o, 'subtitle') ?? str(o, 'description') ?? str(o, 'body'),
+        offers: price
+          ? { '@type': 'Offer', price, priceCurrency: 'USD' }
+          : undefined,
+      },
+    }
+  }
+
+  // Review: has a quote AND (rating or author name)
+  const quote = str(o, 'quote') ?? str(o, 'reviewBody')
+  const rating = num(o, 'rating')
+  const author = str(o, 'name') ?? str(o, 'author')
+  if (quote && (rating !== undefined || author)) {
+    return {
+      kind: 'Review',
+      data: {
+        '@type': 'Review',
+        author: author ? { '@type': 'Person', name: author } : undefined,
+        reviewBody: quote,
+        reviewRating:
+          rating !== undefined
+            ? {
+                '@type': 'Rating',
+                ratingValue: String(rating),
+                bestRating: '5',
+              }
+            : undefined,
+      },
+    }
+  }
+
+  // Question: has question AND answer
+  const question = str(o, 'question')
+  const answer = str(o, 'answer')
+  if (question && answer) {
+    return { kind: 'Question', question, answer }
+  }
+
+  // Article: has title/headline AND (author or date)
+  const headline = str(o, 'title') ?? str(o, 'headline')
+  const artAuthor = str(o, 'author')
+  const date = str(o, 'date')
+  if (headline && (artAuthor || date)) {
+    return {
+      kind: 'Article',
+      data: {
+        '@type': 'Article',
+        headline,
+        description: str(o, 'excerpt') ?? str(o, 'description'),
+        author: artAuthor ? { '@type': 'Person', name: artAuthor } : undefined,
+        datePublished: date,
+      },
+    }
+  }
+
+  return null
+}
+
+/**
+ * Extract JSON-LD entries from the OpenUI element tree for a route.
+ * Scans ALL array props on ALL elements, classifies items by shape.
+ * Also checks scalar props for featured product signals (name+price).
+ */
+const extractJsonLdFromRoute = (
+  routeNode: ElementNode,
+  orgName: string,
+): Record<string, unknown>[] => {
+  const products: Record<string, unknown>[] = []
+  const reviews: Record<string, unknown>[] = []
+  const questions: Array<{ question: string; answer: string }> = []
+  const articles: Record<string, unknown>[] = []
+
+  for (const el of walkElements(routeNode)) {
+    const props = el.props
+    if (!isObj(props)) continue
+
+    // Scan all array props — classify by item shape
+    for (const [key, value] of Object.entries(props)) {
+      if (!Array.isArray(value)) continue
+      // Skip non-object arrays (strings, numbers)
+      if (!value.every((v) => isObj(v))) continue
+      // Skip nav/CTA arrays (items with only href/label)
+      if (key === 'trust' || key === 'features' || key === 'benefits') continue
+
+      for (const item of value) {
+        const entity = classifyItem(item)
+        if (!entity) continue
+        if (entity.kind === 'Product') {
+          if (orgName) entity.data.brand = { '@type': 'Brand', name: orgName }
+          products.push(entity.data)
+        } else if (entity.kind === 'Review') {
+          reviews.push(entity.data)
+        } else if (entity.kind === 'Question') {
+          questions.push({ question: entity.question, answer: entity.answer })
+        } else if (entity.kind === 'Article') {
+          articles.push(entity.data)
+        }
+      }
+    }
+
+    // Also check scalar props for a single featured product (hero pattern)
+    const featName = str(props, 'featuredProductName')
+    const featPrice = cleanPrice(props.featuredProductPrice)
+    if (featName && featPrice) {
+      products.push({
+        '@type': 'Product',
+        name: featName,
+        description: str(props, 'featuredProductSubtitle'),
+        offers: { '@type': 'Offer', price: featPrice, priceCurrency: 'USD' },
+        brand: orgName ? { '@type': 'Brand', name: orgName } : undefined,
+      })
+    }
+  }
+
+  // Assemble JSON-LD entries — only entities that actually exist on the page
+  const entries: Record<string, unknown>[] = []
+
+  if (products.length === 1) {
+    entries.push({ '@context': 'https://schema.org', ...products[0] })
+  } else if (products.length > 1) {
+    entries.push({
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement: products.map((p, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        item: p,
+      })),
+    })
+  }
+
+  if (reviews.length > 0) {
+    // Attach reviews to the first product entry (single Product or ItemList's first product)
+    const firstEntry = entries[0]
+    let productTarget: Record<string, unknown> | null = null
+    if (firstEntry?.['@type'] === 'Product') {
+      productTarget = firstEntry
+    } else if (firstEntry?.['@type'] === 'ItemList') {
+      const items = firstEntry.itemListElement as Array<Record<string, unknown>>
+      if (items?.[0]?.item)
+        productTarget = items[0].item as Record<string, unknown>
+    }
+    if (productTarget) {
+      productTarget.review = reviews
+      const rated = reviews.filter((r) => r.reviewRating)
+      if (rated.length > 0) {
+        const avg =
+          rated.reduce(
+            (s, r) =>
+              s +
+              Number(
+                (r.reviewRating as Record<string, unknown>)?.ratingValue || 0,
+              ),
+            0,
+          ) / rated.length
+        productTarget.aggregateRating = {
+          '@type': 'AggregateRating',
+          ratingValue: String(avg),
+          reviewCount: String(reviews.length),
+        }
+      }
+    } else {
+      for (const r of reviews)
+        entries.push({ '@context': 'https://schema.org', ...r })
+    }
+  }
+
+  if (questions.length > 0) {
+    entries.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: questions.map((q) => ({
+        '@type': 'Question',
+        name: q.question,
+        acceptedAnswer: { '@type': 'Answer', text: q.answer },
+      })),
+    })
+  }
+
+  if (articles.length === 1) {
+    entries.push({ '@context': 'https://schema.org', ...articles[0] })
+  } else if (articles.length > 1) {
+    entries.push({
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement: articles.map((a, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        item: a,
+      })),
+    })
+  }
+
+  return entries
+}
+
+/**
+ * Build a map of route path → JSON-LD entries by walking the actual
+ * OpenUI element tree for each route page.
+ */
+export const buildRouteJsonLd = (
+  routes: ExportRoute[],
+  orgName: string,
+): Map<string, Record<string, unknown>[]> => {
+  const map = new Map<string, Record<string, unknown>[]>()
+  for (const route of routes) {
+    if (!route.node) continue
+    const entries = extractJsonLdFromRoute(route.node, orgName)
+    if (entries.length > 0) map.set(route.path, entries)
+  }
+  return map
+}
+
+/**
+ * Extract products and restaurants from the route tree at export time.
+ * Uses shape inference (same as classifyItem for JSON-LD): any array of
+ * objects with name + price is a product collection. This replaces the
+ * runtime `collectionItems()` walker that was in store.ts.
+ */
+const extractCollections = (
+  routes: ExportRoute[],
+): {
+  products: Array<Record<string, unknown>>
+  restaurants: Array<Record<string, unknown>>
+} => {
+  const products: Array<Record<string, unknown>> = []
+  const restaurants: Array<Record<string, unknown>> = []
+  const seenProductNames = new Set<string>()
+  const seenRestaurantNames = new Set<string>()
+
+  for (const route of routes) {
+    if (!route.node) continue
+    for (const el of walkElements(route.node)) {
+      const props = el.props
+      if (!isObj(props)) continue
+      for (const [, value] of Object.entries(props)) {
+        if (!Array.isArray(value) || !value.every((v) => isObj(v))) continue
+        for (const item of value) {
+          // Product shape: name + (price or oldPrice)
+          const pname = str(item, 'name') ?? str(item, 'title')
+          const hasPrice = 'price' in item || 'oldPrice' in item
+          if (pname && hasPrice && !seenProductNames.has(pname)) {
+            seenProductNames.add(pname)
+            products.push(item)
+            continue
+          }
+          // Restaurant shape: name + description (no price)
+          const rname = str(item, 'name') ?? str(item, 'title')
+          const hasDesc = str(item, 'description') ?? str(item, 'body')
+          const hasCuisine = 'cuisine' in item || 'menu' in item
+          if (
+            rname &&
+            (hasDesc || hasCuisine) &&
+            !hasPrice &&
+            !seenRestaurantNames.has(rname)
+          ) {
+            seenRestaurantNames.add(rname)
+            restaurants.push(item)
+          }
+        }
+      }
+    }
+  }
+
+  // Fallback: if no products found but routes have commerce-like components,
+  // use default commerce products (same logic as the old productsCollection())
+  if (products.length === 0) {
+    const hasCommerceRoute = routes.some((route) =>
+      /commerce|ecommerce|shop|store|marketplace/i.test(
+        String(route.componentName),
+      ),
+    )
+    if (hasCommerceRoute) {
+      products.push(
+        {
+          alt: 'Featured product on a clean studio background',
+          badge: 'New',
+          brand: 'Featured',
+          image: '',
+          name: 'Signature Series',
+          oldPrice: '$230',
+          price: '$195',
+        },
+        {
+          alt: 'Lifestyle product photography on a neutral background',
+          badge: '',
+          brand: 'Featured',
+          image: '',
+          name: 'Everyday Essential',
+          oldPrice: '',
+          price: '$250',
+        },
+        {
+          alt: 'Close-up product detail on a neutral background',
+          badge: 'Sale',
+          brand: 'Featured',
+          image: '',
+          name: 'Classic Edition',
+          oldPrice: '$210',
+          price: '$175',
+        },
+        {
+          alt: 'Featured product on a clean studio background',
+          badge: '',
+          brand: 'Featured',
+          image: '',
+          name: 'Studio Collection',
+          oldPrice: '',
+          price: '$160',
+        },
+      )
+    }
+  }
+
+  return { products, restaurants }
+}
 
 type ComponentSchemaDef = {
   properties?: Record<
@@ -1853,7 +2633,7 @@ const isObjectLikeSchema = (def: {
 // as the props bag. Detect that mis-assignment — the sole prop slot expects a
 // scalar but received a non-array object whose keys are all valid prop names
 // of the component — and unwrap it so the object becomes the component props.
-const unwrapSingleObjectArgProps = (node: unknown): void => {
+export const unwrapSingleObjectArgProps = (node: unknown): void => {
   if (!isOpenUIElementNode(node)) return
   const props = node.props
   if (props && typeof props === 'object' && !Array.isArray(props)) {
@@ -2209,7 +2989,7 @@ export function cn(...inputs: ClassValue[]) {
 const renderImageHelper = (imageSources: ImageSource[]): string => {
   return `import type { ImgHTMLAttributes } from 'react'
 
-const previewImageSources = ${JSON.stringify(imageSources, null, 2)} satisfies Array<{ alt: string; src: string }>
+const previewImageSources: Array<{ alt: string; src: string }> = ${JSON.stringify(imageSources, null, 2)}
 const previewImageSourceByAlt = new Map(previewImageSources.map((image) => [image.alt, image.src]))
 
 function normalizeAlt(alt: unknown): string {
@@ -2271,48 +3051,31 @@ export function Image({
 `
 }
 
-const renderStyleOverridesRuntime = (
-  styleOverrides: StyleOverride[],
-): string => `'use client'
-
-import { useEffect } from 'react'
-
-const styleOverrides = ${JSON.stringify(styleOverrides, null, 2)} satisfies Array<{
-  classAnchor: string
-  occurrenceIndex: number
-  style: string
-}>
-
-function applyStyleOverrides() {
-  for (const override of styleOverrides) {
-    if (!override.classAnchor) continue
-    const matches = Array.from(document.querySelectorAll<HTMLElement>('*')).filter(
-      (element) => element.getAttribute('class') === override.classAnchor,
-    )
-    const element = matches[override.occurrenceIndex] ?? matches[0]
-    if (!element) continue
-    for (const declaration of override.style.split(';')) {
-      const colon = declaration.indexOf(':')
-      if (colon === -1) continue
-      const property = declaration.slice(0, colon).trim()
-      const value = declaration.slice(colon + 1).trim()
-      if (property) element.style.setProperty(property, value)
-    }
-  }
+const renderStyleOverridesCss = (styleOverrides: StyleOverride[]): string => {
+  if (styleOverrides.length === 0) return ''
+  const rules = styleOverrides
+    .map((override) => {
+      // Use attribute selector for exact class match (same as runtime behavior)
+      const selector = `[class="${override.classAnchor}"]`
+      const declarations = override.style
+        .split(';')
+        .map((d) => {
+          const colon = d.indexOf(':')
+          if (colon === -1) return ''
+          const prop = d.slice(0, colon).trim()
+          const val = d.slice(colon + 1).trim()
+          return prop ? `  ${prop}: ${val};` : ''
+        })
+        .filter(Boolean)
+        .join('\n')
+      return declarations ? `${selector} {\n${declarations}\n}` : ''
+    })
+    .filter(Boolean)
+    .join('\n\n')
+  return rules
+    ? `/* Style overrides extracted at export time */\n${rules}\n`
+    : ''
 }
-
-export function StyleOverrides() {
-  useEffect(() => {
-    if (styleOverrides.length === 0) return
-    applyStyleOverrides()
-    const observer = new MutationObserver(() => applyStyleOverrides())
-    observer.observe(document.body, { childList: true, subtree: true })
-    return () => observer.disconnect()
-  }, [])
-
-  return null
-}
-`
 
 const endpointRouteFilePath = (path: string): string => {
   const cleaned = path.split(/[?#]/)[0]?.trim() || '/'
@@ -2428,6 +3191,25 @@ export const enrichSiteSpecJson = (
   }
 }
 
+/** Extract siteUrl and orgName from siteSpecJson for JSON-LD entity extraction. */
+const extractSiteMeta = (
+  siteSpecJson: string | undefined,
+): { siteUrl: string; orgName: string } => {
+  try {
+    if (!siteSpecJson) return { siteUrl: '', orgName: '' }
+    const spec = JSON.parse(siteSpecJson) as Record<string, unknown>
+    const seo = (
+      spec.seo && typeof spec.seo === 'object' ? spec.seo : {}
+    ) as Record<string, unknown>
+    return {
+      siteUrl: String(seo.siteUrl || ''),
+      orgName: String(spec.projectName || seo.siteName || ''),
+    }
+  } catch {
+    return { siteUrl: '', orgName: '' }
+  }
+}
+
 export function parseOpenUIForExport(
   source: string,
   siteSpecJson?: string,
@@ -2506,10 +3288,14 @@ export function parseOpenUIForExport(
         )
       : {}
 
+  // Truncate pages to match routes length — extra pages are nested/child
+  // elements that should not become top-level routes (prevents page-N routes)
+  const alignedPages = pages.slice(0, routes.length)
+
   return {
     root: result.root,
     routes: routes.length > 0 ? routes : ['Home'],
-    pages: pages.length > 0 ? pages : [result.root],
+    pages: alignedPages.length > 0 ? alignedPages : [result.root],
     targetMap,
     projectName: readProjectName(siteSpec, routes[0] ?? 'Generated Site'),
   }
@@ -2684,24 +3470,74 @@ export const routes = ${JSON.stringify(serializedRoutes, null, 2)} satisfies Sit
 `
 }
 
-const brandLogoLiteral = (input: OpenUIExportInput): string =>
-  JSON.stringify(input.selectedBrandLogo ?? null, null, 2)
+/**
+ * Generate a simplified Logo.tsx at export time with the brand logo
+ * src hardcoded. No runtime DOM manipulation, no MutationObserver,
+ * no context provider — just a pure component that renders the logo.
+ */
+const renderExportLogoComponent = (input: OpenUIExportInput): string => {
+  const selection = input.selectedBrandLogo
+  const icon = typeof selection?.icon === 'string' ? selection.icon.trim() : ''
+  const logo = typeof selection?.logo === 'string' ? selection.logo.trim() : ''
+  const src = icon || logo || ''
+  const brandName = selection?.name ?? ''
+  return `import type { ReactNode } from 'react'
+import { cn } from '../lib/cn'
 
-const brandLogoBlockSourcePaths = (input: OpenUIExportInput): string[] =>
-  input.selectedBrandLogo ? ['src/section-kit/Logo.tsx'] : []
+const brandLogoSrc = ${JSON.stringify(src)}
+const brandName = ${JSON.stringify(brandName)}
+
+export function Logo({
+  fallback,
+  className,
+  imageClassName,
+  labelClassName,
+  showLabel = true,
+  brand = brandName,
+}: {
+  brand?: string
+  fallback?: ReactNode
+  className?: string
+  imageClassName?: string
+  labelClassName?: string
+  showLabel?: boolean
+}) {
+  return (
+    <>
+      {brandLogoSrc ? (
+        <span
+          aria-hidden="true"
+          className={cn(
+            'inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent',
+            className,
+          )}
+          data-brand-logo-selected="true"
+        >
+          <img
+            alt=""
+            className={cn('block size-full object-contain', imageClassName)}
+            draggable={false}
+            src={brandLogoSrc}
+          />
+        </span>
+      ) : (
+        fallback
+      )}
+      {showLabel ? <span className={labelClassName}>{brand}</span> : null}
+    </>
+  )
+}
+`
+}
 
 const renderReactApp = (
   componentNames: string[],
-  input: OpenUIExportInput,
+  _input: OpenUIExportInput,
 ): string => {
   const imports = componentNames
     .map((name) => `import { ${name} } from './components/${name}'`)
     .join('\n')
   const mapEntries = componentNames.map((name) => `  ${name},`).join('\n')
-  const logoImport = input.selectedBrandLogo
-    ? "import { BrandLogoProvider } from './section-kit/Logo'\n"
-    : ''
-  const brandLogo = brandLogoLiteral(input)
   const appTree = `<BrowserRouter>
       <Routes>
         {routes.map((route) => (
@@ -2713,7 +3549,7 @@ const renderReactApp = (
   return `import type { ComponentType } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { routes } from './data/pages'
-${logoImport}${input.selectedBrandLogo ? `const selectedBrandLogo = ${brandLogo} as const\n` : ''}${imports}
+${imports}
 
 const components = {
 ${mapEntries}
@@ -2726,16 +3562,9 @@ function RoutePage({ route }: { route: (typeof routes)[number] }) {
 
 export default function App() {
   return (
-    ${
-      input.selectedBrandLogo
-        ? `<BrandLogoProvider value={selectedBrandLogo}>
-      ${appTree}
-    </BrandLogoProvider>`
-        : appTree
-    }
+    ${appTree}
   )
-}
-`
+}`
 }
 
 const renderReactMain = (usesLakebed: boolean, usesAuth: boolean): string => {
@@ -2749,12 +3578,10 @@ const renderReactMain = (usesLakebed: boolean, usesAuth: boolean): string => {
   return `import React from 'react'
 import { createRoot } from 'react-dom/client'
 ${providerImports}import App from './App'
-import { StyleOverrides } from './lib/style-overrides'
 import './styles.css'
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <StyleOverrides />
     ${app}
   </React.StrictMode>,
 )
@@ -2769,32 +3596,34 @@ const renderNextRoutePage = (
   const metadataExport = routeSeo
     ? `${renderNextMetadataExport(routeSeo)}\n\n`
     : ''
-  const jsonLd = routeSeo ? `\n      ${renderJsonLdScript(routeSeo)}` : ''
-  // Server component: exports metadata, renders the client component.
+  const viewportExport = routeSeo
+    ? `${renderNextViewportExport(routeSeo)}\n\n`
+    : ''
+  const jsonLdBlock = routeSeo ? renderJsonLdScript(routeSeo) : ''
+  // jsonLdBlock contains a module-level `const jsonLd = {...}` declaration
+  // plus a `<script>` JSX element. Split them: declaration goes before the
+  // component, script goes inside the JSX.
+  let jsonLdDecl = ''
+  let jsonLdJsx = ''
+  if (jsonLdBlock) {
+    const scriptIdx = jsonLdBlock.indexOf('<script')
+    if (scriptIdx >= 0) {
+      jsonLdDecl = `${jsonLdBlock.slice(0, scriptIdx).trim()}\n\n`
+      jsonLdJsx = `\n      ${jsonLdBlock.slice(scriptIdx).trim()}`
+    } else {
+      jsonLdJsx = `\n      ${jsonLdBlock}`
+    }
+  }
   return `import { ${componentName} } from '${componentImportPath}'
 
-${metadataExport}export default function Page() {
+${jsonLdDecl}${metadataExport}${viewportExport}export default function Page() {
   return (
     <>
-      <${componentName} />${jsonLd}
+      <${componentName} />${jsonLdJsx}
     </>
   )
 }`
 }
-
-const renderNextBrandLogoProvider = (
-  input: OpenUIExportInput,
-): string => `'use client'
-
-import type { PropsWithChildren } from 'react'
-import { BrandLogoProvider } from '../section-kit/Logo'
-
-const selectedBrandLogo = ${brandLogoLiteral(input)} as const
-
-export function ExportBrandLogoProvider({ children }: PropsWithChildren) {
-  return <BrandLogoProvider value={selectedBrandLogo}>{children}</BrandLogoProvider>
-}
-`
 
 const asClientComponent = (source: string): string => `'use client'
 
@@ -2865,11 +3694,10 @@ const buildReactExport = async (
     source: renderRouteComponentSource(route, nestedComponentNames),
   }))
   const blockSources = collectBlockSourceFiles(
-    [
-      ...brandLogoBlockSourcePaths(input),
-      ...components.flatMap((component) => [...component.blockSources]),
-    ],
+    [...components.flatMap((component) => [...component.blockSources])],
     'react',
+    dataKeys,
+    routeTargets,
   )
   const { dependencies, devDependencies } = resolveDependencyVersions(
     [
@@ -2886,9 +3714,16 @@ const buildReactExport = async (
     dependencies['@tanstack/react-query'] =
       dependencyVersions['@tanstack/react-query']
   }
+  const enrichedSpec = enrichSiteSpecJson(
+    input.siteSpecJson,
+    parsed.projectName,
+  )
+  const { orgName } = extractSiteMeta(enrichedSpec)
+  const routeJsonLd = buildRouteJsonLd(routes, orgName)
   const seoBundle = buildExportSeoBundle(
-    enrichSiteSpecJson(input.siteSpecJson, parsed.projectName),
+    enrichedSpec,
     routes.map((r) => ({ path: r.path, label: r.label })),
+    routeJsonLd,
   )
   const homeHeadTags = seoBundle?.homeSeo?.headTags ?? []
   const htmlLang = seoBundle?.homeSeo?.seo.htmlLang ?? 'en'
@@ -2911,13 +3746,15 @@ const buildReactExport = async (
     'src/data/pages.ts': renderRouteData(routes, routeComponentNames),
     'src/lib/cn.ts': renderLibCn(),
     'src/lib/image.tsx': renderImageHelper(imageSources),
-    'src/lib/style-overrides.tsx': renderStyleOverridesRuntime(styleOverrides),
-    'src/styles.css': renderThemeCss(input),
+    'src/styles.css':
+      renderThemeCss(input) + renderStyleOverridesCss(styleOverrides),
     'README.md': renderReadme(parsed.projectName, 'react'),
   }
   if (usesLakebed) {
-    dependencies['@shoojs/react'] = dependencyVersions['@shoojs/react']
-    files['src/lib/store.ts'] = renderReactStore(dataKeys)
+    files['src/lib/store.ts'] = renderReactStore(
+      dataKeys,
+      extractCollections(routes),
+    )
     files['src/lib/use-keyed-mutation.ts'] = renderKeyedMutationHook()
     files['src/lib/query-provider.tsx'] = renderQueryClientProvider()
     if (dataKeys.usesAuth) {
@@ -2932,6 +3769,9 @@ const buildReactExport = async (
     files[`src/components/${component.name}.tsx`] = component.source
   }
   Object.assign(files, blockSources.files)
+  if (files['src/section-kit/Logo.tsx']) {
+    files['src/section-kit/Logo.tsx'] = renderExportLogoComponent(input)
+  }
 
   if (seoBundle) {
     files['public/robots.txt'] = seoBundle.robotsTxt
@@ -2968,11 +3808,10 @@ const buildNextExport = async (
   }))
   const routeComponentNames = routeComponents.map((component) => component.name)
   const blockSources = collectBlockSourceFiles(
-    [
-      ...brandLogoBlockSourcePaths(input),
-      ...components.flatMap((component) => [...component.blockSources]),
-    ],
+    [...components.flatMap((component) => [...component.blockSources])],
     'next',
+    dataKeys,
+    routeTargets,
   )
   const { dependencies, devDependencies } = resolveDependencyVersions(
     [
@@ -2988,17 +3827,26 @@ const buildNextExport = async (
   if (usesLakebed) {
     dependencies['@tanstack/react-query'] =
       dependencyVersions['@tanstack/react-query']
-    dependencies['@shoojs/react'] = dependencyVersions['@shoojs/react']
   }
-  const layoutImport = `${usesLakebed ? "import { QueryProvider } from '../src/lib/query-provider'\n" : ''}${usesLakebed && dataKeys.usesAuth ? "import { AuthProvider } from '../src/lib/auth'\n" : ''}${input.selectedBrandLogo ? "import { ExportBrandLogoProvider } from '../src/lib/brand-logo-provider'\n" : ''}`
-  const layoutChildren = `${input.selectedBrandLogo ? '<ExportBrandLogoProvider>' : ''}${usesLakebed ? `<QueryProvider>${dataKeys.usesAuth ? '<AuthProvider>' : ''}{children}${dataKeys.usesAuth ? '</AuthProvider>' : ''}</QueryProvider>` : '{children}'}${input.selectedBrandLogo ? '</ExportBrandLogoProvider>' : ''}`
+  const layoutImport = `${usesLakebed ? "import { QueryProvider } from '../src/lib/query-provider'\n" : ''}${usesLakebed && dataKeys.usesAuth ? "import { AuthProvider } from '../src/lib/auth'\n" : ''}`
+  const layoutChildren = `${usesLakebed ? `<QueryProvider>${dataKeys.usesAuth ? '<AuthProvider>' : ''}{children}${dataKeys.usesAuth ? '</AuthProvider>' : ''}</QueryProvider>` : '{children}'}`
+  const nextEnrichedSpec = enrichSiteSpecJson(
+    input.siteSpecJson,
+    parsed.projectName,
+  )
+  const { orgName: nextOrgName } = extractSiteMeta(nextEnrichedSpec)
+  const nextRouteJsonLd = buildRouteJsonLd(routes, nextOrgName)
   const seoBundle = buildExportSeoBundle(
-    enrichSiteSpecJson(input.siteSpecJson, parsed.projectName),
+    nextEnrichedSpec,
     routes.map((r) => ({ path: r.path, label: r.label })),
+    nextRouteJsonLd,
   )
   const layoutMetadata = seoBundle?.homeSeo
     ? renderNextMetadataExport(seoBundle.homeSeo)
     : `export const metadata = { title: ${JSON.stringify(parsed.projectName)} }`
+  const layoutViewport = seoBundle?.homeSeo
+    ? renderNextViewportExport(seoBundle.homeSeo)
+    : ''
   const files: Record<string, string> = {
     'package.json': renderNextPackageJson(
       parsed.projectName,
@@ -3011,41 +3859,41 @@ const buildNextExport = async (
     'next-env.d.ts': renderNextEnv(),
     'tsconfig.json': renderTsConfig('preserve'),
     'app/layout.tsx': `import type { PropsWithChildren } from 'react'
-${layoutImport}import { StyleOverrides } from '../src/lib/style-overrides'
-import './globals.css'
+${layoutImport}import './globals.css'
 
 ${layoutMetadata}
-
+${layoutViewport ? `${layoutViewport}\n\n` : ''}
 export default function RootLayout({ children }: PropsWithChildren) {
-  return <html lang="${seoBundle?.homeSeo?.seo.htmlLang ?? 'en'}"><body><StyleOverrides />${layoutChildren}</body></html>
+  return <html lang="${seoBundle?.homeSeo?.seo.htmlLang ?? 'en'}"><body>${layoutChildren}</body></html>
 }
 `,
-    'app/globals.css': renderThemeCss(input),
+    'app/globals.css':
+      renderThemeCss(input) + renderStyleOverridesCss(styleOverrides),
     'src/data/pages.ts': renderRouteData(routes, routeComponentNames),
     'src/lib/cn.ts': renderLibCn(),
     'src/lib/image.tsx': renderImageHelper(imageSources),
-    'src/lib/style-overrides.tsx': renderStyleOverridesRuntime(styleOverrides),
     'README.md': renderReadme(parsed.projectName, 'next'),
   }
   if (usesLakebed) {
-    files['src/lib/store.ts'] = renderNextStore(dataKeys)
+    files['src/lib/store.ts'] = renderNextStore(
+      dataKeys,
+      extractCollections(routes),
+    )
     files['src/lib/query-provider.tsx'] = renderQueryClientProvider()
     files['src/lib/use-keyed-mutation.ts'] = renderKeyedMutationHook()
-    files['src/lib/use-lakebed.ts'] = renderLakebedAdapterHook(dataKeys)
     files['app/actions/server-actions.ts'] = renderNextServerActions(dataKeys)
     if (dataKeys.usesAuth) {
       files['src/lib/auth.tsx'] = renderShooAuthProvider()
       files['app/auth/callback/page.tsx'] = renderShooCallbackRoute()
     }
   }
-  if (input.selectedBrandLogo) {
-    files['src/lib/brand-logo-provider.tsx'] =
-      renderNextBrandLogoProvider(input)
-  }
   if (endpoints.length > 0) {
     // Endpoint route files import from store.ts which is generated above
     if (!usesLakebed) {
-      files['src/lib/store.ts'] = renderNextStore(dataKeys)
+      files['src/lib/store.ts'] = renderNextStore(
+        dataKeys,
+        extractCollections(routes),
+      )
     }
   }
   Object.assign(files, renderNextEndpointRouteFiles(endpoints))
@@ -3062,6 +3910,9 @@ export default function RootLayout({ children }: PropsWithChildren) {
     )
   }
   Object.assign(files, blockSources.files)
+  if (files['src/section-kit/Logo.tsx']) {
+    files['src/section-kit/Logo.tsx'] = renderExportLogoComponent(input)
+  }
 
   for (const route of routes) {
     const routeSeo = seoBundle?.routes.get(route.path) ?? null

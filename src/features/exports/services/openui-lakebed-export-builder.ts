@@ -3333,46 +3333,87 @@ export function StyleRuntime() {
 }
 `
 
-const renderClientStyleOverrides = (
-  styleOverrides: StyleOverride[],
-): string => `import { useEffect } from "preact/hooks";
+const renderLakebedLogoComponent = (input: OpenUIExportInput): string => {
+  const selection = input.selectedBrandLogo
+  const icon = typeof selection?.icon === 'string' ? selection.icon.trim() : ''
+  const logo = typeof selection?.logo === 'string' ? selection.logo.trim() : ''
+  const src = icon || logo || ''
+  const brandName = selection?.name ?? ''
+  return `import type { ComponentChildren } from "preact";
+import { cn } from "../lib/cn";
 
-const styleOverrides = ${JSON.stringify(styleOverrides, null, 2)} satisfies Array<{
-  classAnchor: string;
-  occurrenceIndex: number;
-  style: string;
-}>;
+const brandLogoSrc = ${JSON.stringify(src)};
+const brandName = ${JSON.stringify(brandName)};
 
-function applyStyleOverrides() {
-  for (const override of styleOverrides) {
-    if (!override.classAnchor) continue;
-    const matches = Array.from(document.querySelectorAll<HTMLElement>("*")).filter(
-      (element) => element.getAttribute("class") === override.classAnchor,
-    );
-    const element = matches[override.occurrenceIndex] ?? matches[0];
-    if (!element) continue;
-    for (const declaration of override.style.split(";")) {
-      const colon = declaration.indexOf(":");
-      if (colon === -1) continue;
-      const property = declaration.slice(0, colon).trim();
-      const value = declaration.slice(colon + 1).trim();
-      if (property) element.style.setProperty(property, value);
-    }
-  }
-}
-
-export function StyleOverrides() {
-  useEffect(() => {
-    if (styleOverrides.length === 0) return;
-    applyStyleOverrides();
-    const observer = new MutationObserver(() => applyStyleOverrides());
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
-
-  return null;
+export function Logo({
+  fallback,
+  className,
+  imageClassName,
+  labelClassName,
+  showLabel = true,
+  brand = brandName,
+}: {
+  brand?: string;
+  fallback?: ComponentChildren;
+  className?: string;
+  imageClassName?: string;
+  labelClassName?: string;
+  showLabel?: boolean;
+}) {
+  return (
+    <>
+      {brandLogoSrc ? (
+        <span
+          aria-hidden="true"
+          className={cn(
+            "inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent",
+            className,
+          )}
+          data-brand-logo-selected="true"
+        >
+          <img
+            alt=""
+            className={cn("block size-full object-contain", imageClassName)}
+            draggable={false}
+            src={brandLogoSrc}
+          />
+        </span>
+      ) : (
+        fallback
+      )}
+      {showLabel ? <span className={labelClassName}>{brand}</span> : null}
+    </>
+  );
 }
 `
+}
+
+const renderClientStyleOverridesCss = (
+  styleOverrides: StyleOverride[],
+): string => {
+  if (styleOverrides.length === 0) return ''
+  const rules = styleOverrides
+    .map((override) => {
+      const selector = `[class="${override.classAnchor}"]`
+      const declarations = override.style
+        .split(';')
+        .map((d) => {
+          const colon = d.indexOf(':')
+          if (colon === -1) return ''
+          const prop = d.slice(0, colon).trim()
+          const val = d.slice(colon + 1).trim()
+          return prop ? `  ${prop}: ${val};` : ''
+        })
+        .filter(Boolean)
+        .join('\n')
+      return declarations ? `${selector} {\n${declarations}\n}` : ''
+    })
+    .filter(Boolean)
+    .join('\n\n')
+  return rules
+    ? `/* Style overrides extracted at export time */\n${rules}\n`
+    : ''
+}
 
 const renderClientNavigation =
   (): string => `import { routeByLabel, routeTargets } from "../routes";
@@ -3799,13 +3840,7 @@ const renderClientIndex = (
   input: OpenUIExportInput,
 ): string => {
   void routes
-  const selectedBrandLogo = input.selectedBrandLogo ?? null
-  const brandLogoImport = selectedBrandLogo
-    ? 'import { BrandLogoProvider } from "./section-kit/Logo";\n'
-    : ''
-  const brandLogoDefinition = selectedBrandLogo
-    ? `const selectedBrandLogo = ${JSON.stringify(selectedBrandLogo, null, 2)} as const;\n`
-    : ''
+  void input.selectedBrandLogo
   const componentImports = components
     .map(
       (component) =>
@@ -3839,11 +3874,8 @@ import type { ComponentChildren } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { pages, type SitePage } from "./routes";
 import { AuthRuntime, useLakebedAdapter, type LakebedAdapter } from "./lib/lakebed";
-import { StyleOverrides } from "./lib/style-overrides";
 import { StyleRuntime } from "./lib/theme";
-${brandLogoImport}${componentImports}
-
-${brandLogoDefinition}
+${componentImports}
 
 type PageComponent = (input: {
   props: Record<string, unknown>;
@@ -3980,7 +4012,6 @@ export function App() {
   const app = (
     <Router>
       <StyleRuntime />
-      <StyleOverrides />
       <AuthRuntime />
       <Routes>
         {pages.map((page) => (
@@ -3994,7 +4025,7 @@ export function App() {
       </Routes>
     </Router>
   );
-  return ${selectedBrandLogo ? '<BrandLogoProvider value={selectedBrandLogo}>{app}</BrandLogoProvider>' : 'app'};
+  return app;
 }
 `
 }
@@ -4209,14 +4240,6 @@ export async function buildOpenUILakebedProjectFiles(
   const files: Record<string, string> = {}
   const seenVendorFiles = new Set<string>()
   const seenBlockFiles = new Set<string>()
-  if (input.selectedBrandLogo) {
-    copyBlocksClientSourceForLakebed(
-      'src/section-kit/Logo.tsx',
-      files,
-      seenVendorFiles,
-      seenBlockFiles,
-    )
-  }
   const nestedClientComponents = collectClientComponents(
     componentNames,
     files,
@@ -4254,9 +4277,9 @@ export async function buildOpenUILakebedProjectFiles(
     'client/lib/image.tsx': renderClientImage(),
     'client/lib/lakebed.ts': renderClientLakebed(),
     'client/lib/navigation.tsx': renderClientNavigation(),
-    'client/lib/style-overrides.tsx':
-      renderClientStyleOverrides(styleOverrides),
-    'client/lib/theme.tsx': renderClientTheme(themeCss),
+    'client/lib/theme.tsx': renderClientTheme(
+      themeCss + renderClientStyleOverridesCss(styleOverrides),
+    ),
     'server/index.ts': renderServerIndex(
       parsed.projectName,
       definitions,
@@ -4267,6 +4290,9 @@ export async function buildOpenUILakebedProjectFiles(
   for (const component of clientComponents) {
     files[`client/components/${toIdentifier(component.name)}.tsx`] =
       renderClientComponentModule(component)
+  }
+  if (files['client/section-kit/Logo.tsx']) {
+    files['client/section-kit/Logo.tsx'] = renderLakebedLogoComponent(input)
   }
   const seoBundle = buildExportSeoBundle(
     enrichSiteSpecJson(input.siteSpecJson, parsed.projectName),

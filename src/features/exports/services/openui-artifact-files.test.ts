@@ -250,6 +250,27 @@ export function useSearchParams() {
                 loader: 'tsx',
               }),
             )
+            pluginBuild.onResolve({ filter: /^@shoojs\/react$/ }, () => ({
+              namespace: 'shoojs-stub',
+              path: '@shoojs/react',
+            }))
+            pluginBuild.onResolve(
+              { filter: /^react$/, namespace: 'shoojs-stub' },
+              () => ({
+                path: join(process.cwd(), 'node_modules/react/index.js'),
+              }),
+            )
+            pluginBuild.onLoad(
+              { filter: /^@shoojs\/react$/, namespace: 'shoojs-stub' },
+              () => ({
+                contents: `import React from "react";
+const AuthContext = React.createContext({ identity: { userId: 'guest', email: null, name: null, picture: null }, signIn: () => {}, clearIdentity: () => {} });
+export function useShooAuth() { return React.useContext(AuthContext); }
+export function AuthProvider({ children }) { return React.createElement(React.Fragment, null, children); }
+`,
+                loader: 'tsx',
+              }),
+            )
           },
         },
       ],
@@ -344,7 +365,7 @@ describe('openui artifact files', () => {
       'export function assertShipFastAdminAccess',
     )
     expect(files['src/ship-fast-admin.ts']).toContain(
-      'shipFastAdminEmails = [\n  "founder@example.com"\n]',
+      'shipFastAdminEmails: readonly string[] = [\n  "founder@example.com"\n]',
     )
   })
 
@@ -433,22 +454,22 @@ describe('openui artifact files', () => {
       ),
     )
 
-    expect(react.files['src/App.tsx']).toContain('BrandLogoProvider')
-    expect(react.files['src/App.tsx']).toContain(selectedBrandLogo.icon)
     expect(react.files['src/section-kit/Logo.tsx']).toContain(
       'data-brand-logo-selected',
     )
-
-    expect(next.files['app/layout.tsx']).toContain('ExportBrandLogoProvider')
-    expect(next.files['src/lib/brand-logo-provider.tsx']).toContain(
+    expect(react.files['src/section-kit/Logo.tsx']).toContain(
       selectedBrandLogo.icon,
     )
+    expect(react.files['src/lib/brand-logo-provider.tsx']).toBeUndefined()
+
     expect(next.files['src/section-kit/Logo.tsx']).toContain(
       'data-brand-logo-selected',
     )
+    expect(next.files['src/section-kit/Logo.tsx']).toContain(
+      selectedBrandLogo.icon,
+    )
+    expect(next.files['src/lib/brand-logo-provider.tsx']).toBeUndefined()
 
-    expect(lakebed.files['client/index.tsx']).toContain('BrandLogoProvider')
-    expect(lakebed.files['client/index.tsx']).toContain(selectedBrandLogo.icon)
     expect(lakebed.files['client/section-kit/Logo.tsx']).toContain(
       'data-brand-logo-selected',
     )
@@ -587,7 +608,7 @@ describe('openui artifact files', () => {
     })
 
     expect(files['src/ship-fast-admin.ts']).toContain(
-      'shipFastAdminEmails = [\n  "founder@example.com"\n]',
+      'shipFastAdminEmails: readonly string[] = [\n  "founder@example.com"\n]',
     )
   })
 
