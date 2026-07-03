@@ -268,6 +268,26 @@ describe('openui artifact files', () => {
     }
   })
 
+  it('does not ship dead ship-fast-admin.js or public/ship-fast-admin.js in any export target', async () => {
+    for (const target of ['react', 'next', 'lakebed', 'html'] as const) {
+      const { files } = await buildOpenUIArtifactFiles({
+        source:
+          target === 'html'
+            ? '<!doctype html><html><body><h1>Artifact</h1></body></html>'
+            : v1PublicationSource,
+        siteSpecJson: siteSpecJsonWithGenUI,
+        sessionId: 'demo',
+        target,
+      })
+      expect(Object.keys(files), `target=${target}`).not.toContain(
+        'ship-fast-admin.js',
+      )
+      expect(Object.keys(files), `target=${target}`).not.toContain(
+        'public/ship-fast-admin.js',
+      )
+    }
+  })
+
   it('builds React artifact files from OpenUI components instead of static preview HTML', async () => {
     const { files, download } = await buildOpenUIArtifactFiles({
       source,
@@ -292,11 +312,6 @@ describe('openui artifact files', () => {
       target: 'react',
     })
 
-    expect(files['ship-fast-admin.js']).toContain(
-      'window.assertShipFastAdminAccess',
-    )
-    expect(files['ship-fast-admin.js']).toContain('founder@example.com')
-    expect(files['public/ship-fast-admin.js']).toBe(files['ship-fast-admin.js'])
     expect(files['src/ship-fast-admin.ts']).toContain(
       'export function assertShipFastAdminAccess',
     )
@@ -444,7 +459,6 @@ describe('openui artifact files', () => {
     expect(files['index.html']).toContain('window.__SHIP_FAST_ADMIN__')
     expect(files['index.html']).toContain('window.assertShipFastAdminAccess')
     expect(files['index.html']).toContain('founder@example.com')
-    expect(files['ship-fast-admin.js']).toContain('founder@example.com')
   })
 
   it('exports v1 PageSwitch publication/admin source as HTML with baked admin metadata', async () => {
@@ -507,10 +521,6 @@ describe('openui artifact files', () => {
       target: 'lakebed',
     })
 
-    expect(files['ship-fast-admin.js']).toContain(
-      'window.assertShipFastAdminAccess',
-    )
-    expect(files['ship-fast-admin.js']).toContain('founder@example.com')
     expect(files['src/ship-fast-admin.ts']).toContain(
       'shipFastAdminEmails = [\n  "founder@example.com"\n]',
     )
@@ -528,7 +538,6 @@ describe('openui artifact files', () => {
     expect(files['client/index.tsx']).toContain('shipFastAdminEmails')
     expect(files['client/index.tsx']).toContain('founder@example.com')
     expect(files['client/index.tsx']).toContain('isShipFastAdminRoute(page)')
-    expect(files['ship-fast-admin.js']).toContain('founder@example.com')
   })
 
   it('exports generic v1 commerce source across targets with baked admin access', async () => {
@@ -542,7 +551,6 @@ describe('openui artifact files', () => {
     expect(html.files['index.html']).toContain('Artifact Store')
     expect(html.files['index.html']).toContain('Store Admin')
     expect(html.files['index.html']).toContain('window.__SHIP_FAST_ADMIN__')
-    expect(html.files['ship-fast-admin.js']).toContain('store@example.com')
 
     const react = await buildOpenUIArtifactFiles({
       source: v1CommerceSource,
@@ -577,7 +585,6 @@ describe('openui artifact files', () => {
     expect(lakebed.files['client/index.tsx']).toContain(
       'isShipFastAdminRoute(page)',
     )
-    expect(lakebed.files['ship-fast-admin.js']).toContain('store@example.com')
   })
 
   it('exports generic v1 software source with docs, contact, and admin routes', async () => {
