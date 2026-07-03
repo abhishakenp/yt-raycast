@@ -9,12 +9,21 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const topActionMocks = vi.hoisted(() => ({
-  authControls: vi.fn(({ autoOpen }: { autoOpen?: boolean }) => (
-    <div
-      data-testid="homepage-auth-controls"
-      data-auto-open={String(autoOpen)}
-    />
-  )),
+  authControls: vi.fn(
+    ({
+      autoOpen,
+      wrapProvider,
+    }: {
+      autoOpen?: boolean
+      wrapProvider?: boolean
+    }) => (
+      <div
+        data-testid="homepage-auth-controls"
+        data-auto-open={String(autoOpen)}
+        data-wrap-provider={String(wrapProvider)}
+      />
+    ),
+  ),
 }))
 
 vi.mock('@tanstack/react-router', () => ({
@@ -102,8 +111,14 @@ describe('TopActions', () => {
           .getAttribute('data-auto-open'),
       ).toBe('true'),
     )
+    // AppProviders mounts ClerkConvexProvider on `/` from first paint, so the
+    // homepage's auth controls must NOT wrap their own ClerkProvider (otherwise
+    // Clerk throws "multiple <ClerkProvider>").
+    expect(
+      screen.getByTestId('homepage-auth-controls').dataset.wrapProvider,
+    ).toBe('false')
     expect(topActionMocks.authControls).toHaveBeenCalledWith(
-      expect.objectContaining({ autoOpen: true }),
+      expect.objectContaining({ autoOpen: true, wrapProvider: false }),
       undefined,
     )
   })

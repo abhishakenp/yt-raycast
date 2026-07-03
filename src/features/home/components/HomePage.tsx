@@ -121,7 +121,10 @@ const TopActions = () => {
               </GlassPillButton>
             }
           >
-            <LazyHomepageAuthControls autoOpen={authRequested} />
+            <LazyHomepageAuthControls
+              autoOpen={authRequested}
+              wrapProvider={false}
+            />
           </Suspense>
         ) : null}
       </div>

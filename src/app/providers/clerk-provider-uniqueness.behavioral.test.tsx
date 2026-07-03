@@ -137,9 +137,11 @@ describe('ClerkProvider uniqueness across AppProviders + SignInModalHost', () =>
     expect(screen.getAllByTestId('clerk-provider').length).toBe(1)
   })
 
-  it('keeps Clerk off the homepage so HomepageAuthControls owns the single ClerkProvider', async () => {
+  it('mounts exactly one ClerkProvider on the homepage and does not stack on sign-in', async () => {
     pathnameState.value = '/'
     vi.stubEnv('VITE_CONVEX_URL', 'http://localhost:3001')
+    const { openSignInEventName } =
+      await import('@/shared/auth/use-optional-auth')
     const { AppProviders } = await import('@/app/providers/AppProviders')
 
     render(
@@ -148,12 +150,19 @@ describe('ClerkProvider uniqueness across AppProviders + SignInModalHost', () =>
       </AppProviders>,
     )
 
-    // Homepage uses anonymous Convex; AppProviders must not mount Clerk here.
+    // `/` mounts ClerkConvexProvider from first paint so the homepage's
+    // <Waitlist /> lives inside a ClerkProvider.
     await waitFor(() =>
-      expect(screen.getByTestId('convex-anonymous')).toBeTruthy(),
+      expect(screen.getAllByTestId('clerk-provider').length).toBe(1),
     )
-    expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
-    expect(screen.queryByTestId('clerk-provider')).toBeNull()
-    expect(clerkProviderMounts.length).toBe(0)
+    expect(screen.queryByTestId('convex-anonymous')).toBeNull()
+
+    // Simulate a sign-in request: SignInModalHost must NOT stack a second
+    // ClerkProvider on `/` (clerkMounted flag => wrapProvider={false}).
+    window.dispatchEvent(new Event(openSignInEventName))
+
+    await waitFor(() =>
+      expect(screen.getAllByTestId('clerk-provider').length).toBe(1),
+    )
   })
 })

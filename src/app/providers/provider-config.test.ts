@@ -27,11 +27,12 @@ describe('provider config', () => {
     ).toBe('clerk_convex')
   })
 
-  it('enables authenticated providers on pricing and generate routes', () => {
-    // The homepage (`/`) is intentionally excluded: it mounts its own
-    // ClerkProvider via HomepageAuthControls and only needs anonymous Convex,
-    // so AppProviders must not stack a second Clerk provider there.
-    expect(shouldUseAuthenticatedProviders('/')).toBe(false)
+  it('enables authenticated providers on homepage, pricing and generate routes', () => {
+    // `/` is included so AppProviders mounts ClerkConvexProvider from first
+    // paint: the homepage renders Clerk's <Waitlist /> for non-approved users,
+    // which must live inside a <ClerkProvider>. The clerkMounted flag prevents
+    // SignInModalHost from stacking a second ClerkProvider on `/`.
+    expect(shouldUseAuthenticatedProviders('/')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/pricing')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/generate/session_123')).toBe(true)
   })
@@ -43,13 +44,18 @@ describe('provider config', () => {
     expect(shouldUseAuthenticatedProviders('/sign-in')).toBe(false)
   })
 
-  it('loads Convex only on routes that call Convex hooks directly', () => {
+  it('loads Convex only on routes that call Convex hooks directly or need Clerk', () => {
+    // `/` and `/pricing` both need ClerkConvexProvider (Clerk + Convex):
+    // `/` renders <Waitlist /> and `/pricing` uses Clerk's <Show>/<SignInButton>.
+    // `shouldLoadClerk` in AppProviders depends on `shouldLoadConvex`, so any
+    // route in shouldUseAuthenticatedProviders must also be in
+    // shouldUseConvexProviders to get a ClerkProvider mounted.
     expect(shouldUseConvexProviders('/')).toBe(true)
+    expect(shouldUseConvexProviders('/pricing')).toBe(true)
     expect(shouldUseConvexProviders('/generate/session_123')).toBe(true)
     expect(shouldUseConvexProviders('/generate/missing-session')).toBe(true)
     expect(shouldUseConvexProviders('/gallery')).toBe(true)
     expect(shouldUseConvexProviders('/mine')).toBe(true)
-    expect(shouldUseConvexProviders('/pricing')).toBe(false)
     expect(shouldUseConvexProviders('/referrals')).toBe(false)
   })
 

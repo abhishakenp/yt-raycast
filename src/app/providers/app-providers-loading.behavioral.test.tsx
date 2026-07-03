@@ -143,8 +143,10 @@ describe('app provider loading', () => {
   })
 
   describe('shouldUseAuthenticatedProviders', () => {
-    it('returns true for pricing and generate routes (homepage excluded to avoid double ClerkProvider)', () => {
-      expect(shouldUseAuthenticatedProviders('/')).toBe(false)
+    it('returns true for homepage, pricing and generate routes', () => {
+      // `/` is included so the homepage's <Waitlist /> renders inside a
+      // ClerkProvider from first paint; clerkMounted prevents a double mount.
+      expect(shouldUseAuthenticatedProviders('/')).toBe(true)
       expect(shouldUseAuthenticatedProviders('/pricing')).toBe(true)
       expect(shouldUseAuthenticatedProviders('/generate/abc')).toBe(true)
     })
@@ -268,7 +270,7 @@ describe('app provider loading', () => {
       expect(screen.getByTestId('child')).toBeTruthy()
     })
 
-    it('wraps the homepage in anonymous Convex providers (Clerk stays owned by HomepageAuthControls)', async () => {
+    it('mounts ClerkConvexProvider on the homepage so <Waitlist /> has a ClerkProvider', async () => {
       appProviderMocks.pathname = '/'
       vi.stubEnv('VITE_CONVEX_URL', 'http://localhost:3001')
       const { AppProviders } = await import('@/app/providers/AppProviders')
@@ -280,13 +282,15 @@ describe('app provider loading', () => {
       )
 
       expect(await screen.findByTestId('launch-backdrop')).toBeTruthy()
-      // Homepage uses anonymous Convex for the public gallery; AppProviders must
-      // NOT mount Clerk here (the homepage mounts its own ClerkProvider via
-      // HomepageAuthControls), otherwise Clerk throws "multiple <ClerkProvider>".
-      expect(await screen.findByTestId('convex-anonymous')).toBeTruthy()
+      // `/` mounts ClerkConvexProvider from first paint so the homepage's
+      // <Waitlist /> (rendered by WaitlistGate for non-approved users) lives
+      // inside a ClerkProvider. The clerkMounted flag keeps SignInModalHost from
+      // stacking a second ClerkProvider when a sign-in event fires.
+      expect(await screen.findByTestId('convex-with-clerk')).toBeTruthy()
+      expect(await screen.findByTestId('clerk-provider')).toBeTruthy()
       expect(screen.getByText('Public home')).toBeTruthy()
-      expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
-      expect(appProviderMocks.clerkProviderProps).toHaveLength(0)
+      expect(screen.queryByTestId('convex-anonymous')).toBeNull()
+      expect(appProviderMocks.clerkProviderProps).toHaveLength(1)
     })
 
     it('loads anonymous Convex on generate routes when Clerk is not configured', async () => {
