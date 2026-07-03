@@ -302,15 +302,12 @@ const wireNextAdminAccess = (
     const importPath = nextImportPathForRouteFile(file)
     const withImport = source.includes('ShipFastAdminGate')
       ? source
-      : source.replace(
-          "import { routes } from '",
-          `import { ShipFastAdminGate } from '${importPath}'\nimport { routes } from '`,
-        )
+      : `import { ShipFastAdminGate } from '${importPath}'\n${source}`
     nextFiles[file] = withImport.replace(
-      /return <([A-Za-z0-9_]+) \{\.\.\.\(route\.props as [^)]+\)\} \/>/,
+      /return <([A-Za-z0-9_]+) \/>/,
       `return (
-    <ShipFastAdminGate routeLabel={route.label}>
-      <$1 {...(route.props as $1Props)} />
+    <ShipFastAdminGate routeLabel=${JSON.stringify(route.label)}>
+      <$1 />
     </ShipFastAdminGate>
   )`,
     )
