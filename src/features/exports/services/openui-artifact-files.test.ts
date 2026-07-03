@@ -259,7 +259,7 @@ describe('openui artifact files', () => {
     expect(download?.filename).toBe('artifact-demo-react.zip')
     expect(files['src/data/pages.ts']).toContain('Hello artifact')
     await expect(
-      renderGeneratedRouteText(files, 'RoutePage1Home'),
+      renderGeneratedRouteText(files, 'HomePage'),
     ).resolves.toContain('Hello artifact')
     expect(files['vite.config.js']).toBeUndefined()
   })
@@ -369,7 +369,7 @@ describe('openui artifact files', () => {
     expect(download?.filename).toBe('artifact-demo-next.zip')
     expect(files['src/data/pages.ts']).toContain('Hello artifact')
     await expect(
-      renderGeneratedRouteText(files, 'RoutePage1Home'),
+      renderGeneratedRouteText(files, 'HomePage'),
     ).resolves.toContain('Hello artifact')
     expect(files['next.config.js']).toBeUndefined()
   })
@@ -490,7 +490,7 @@ describe('openui artifact files', () => {
     })
 
     expect(files['app/admin/page.tsx']).toContain('ShipFastAdminGate')
-    expect(files['app/admin/page.tsx']).toContain('routeLabel={route.label}')
+    expect(files['app/admin/page.tsx']).toContain('routeLabel="Admin"')
     expect(files['src/lib/ship-fast-admin-gate.tsx']).toContain(
       'assertShipFastAdminAccess',
     )
@@ -571,7 +571,7 @@ describe('openui artifact files', () => {
     })
     expect(next.files['app/admin/page.tsx']).toContain('ShipFastAdminGate')
     await expect(
-      renderGeneratedRouteText(next.files, 'RoutePage2Shop'),
+      renderGeneratedRouteText(next.files, 'ShopPage'),
     ).resolves.toEqual(expect.any(String))
     expect(next.files['src/ship-fast-admin.ts']).toContain('store@example.com')
 
@@ -610,10 +610,10 @@ describe('openui artifact files', () => {
       target: 'next',
     })
     await expect(
-      renderGeneratedRouteText(next.files, 'RoutePage2Docs'),
+      renderGeneratedRouteText(next.files, 'DocsPage'),
     ).resolves.toContain('Artifact SaaS Docs')
     await expect(
-      renderGeneratedRouteText(next.files, 'RoutePage3Contact'),
+      renderGeneratedRouteText(next.files, 'ContactPage'),
     ).resolves.toContain('Talk to Artifact SaaS')
     expect(next.files['app/admin/page.tsx']).toContain('ShipFastAdminGate')
     expect(next.files['src/ship-fast-admin.ts']).toContain('saas@example.com')

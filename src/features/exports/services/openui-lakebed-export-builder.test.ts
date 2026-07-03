@@ -429,7 +429,7 @@ describe('openui lakebed image source generation', () => {
     const renderedText = await renderLakebedClientEntryText(
       built.files,
       `import { h, render } from "preact";
-import { RoutePage1HomeBlock } from "./client/components/RoutePage1Home";
+import { HomePageBlock } from "./client/components/HomePage";
 
 const lakebed = {
   useQuery() {
@@ -445,12 +445,12 @@ const lakebed = {
   signOut() {},
 };
 
-render(h(RoutePage1HomeBlock, { props: {}, lakebed }), document.getElementById("app"));
+render(h(HomePageBlock, { props: {}, lakebed }), document.getElementById("app"));
 `,
     )
     const serverCapsule = await evaluateLakebedServerCapsule(built.files)
 
-    expect(built.files['client/components/RoutePage1Home.tsx']).toBeDefined()
+    expect(built.files['client/components/HomePage.tsx']).toBeDefined()
     expect(built.files['client/components/EcommerceHero.tsx']).toBeDefined()
     expect(built.files['client/components/ProductDetailHero.tsx']).toBeDefined()
     expect(built.files['client/components/Stack.tsx']).toBeUndefined()

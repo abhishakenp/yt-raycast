@@ -505,8 +505,8 @@ home = Stack([homeHeroAnchor])`,
 
     // The route component imports its sections via relative paths
     const routeComponent =
-      files['src/components/RoutePage1Home.tsx'] ??
-      files['src/components/RoutePage1.tsx'] ??
+      files['src/components/HomePage.tsx'] ??
+      files['src/components/HomePage.tsx'] ??
       ''
     expect(routeComponent).toBeDefined()
 
