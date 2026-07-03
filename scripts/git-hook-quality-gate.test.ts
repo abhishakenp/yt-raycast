@@ -50,7 +50,6 @@ describe('git hook quality gate planning', () => {
     expect(buildPrePushPlan().map((step) => step.name)).toEqual([
       'ESLint',
       'TypeScript',
-      'Coverage tests',
       'Change groups',
       'Review readiness',
       'Generated artifacts',

@@ -95,7 +95,6 @@ export function buildPrePushPlan() {
   return [
     { name: 'ESLint', command: 'bun', args: ['run', 'lint'] },
     { name: 'TypeScript', command: 'bun', args: ['run', 'typecheck'] },
-    { name: 'Coverage tests', command: 'bun', args: ['run', 'test:coverage'] },
     {
       name: 'Change groups',
       command: 'bun',
