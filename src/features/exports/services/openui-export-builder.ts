@@ -21,6 +21,14 @@ import {
 } from './block-source-manifest'
 import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
 import { formatExportFiles } from './format-export-files'
+import {
+  buildExportSeoBundle,
+  renderJsonLdScript,
+  renderNextMetadataExport,
+  renderNextRobotsRoute,
+  renderNextSitemapRoute,
+  type ExportRouteSeo,
+} from './export-seo'
 import { resolvePreviewImageUrl } from './preview-image-url-resolution'
 
 type ParsedOpenUIProgram = {
@@ -91,7 +99,6 @@ const forbiddenExportTokens = [
   'openui',
   'ship-fast-blocks',
   'data-tsd-source',
-  'dangerouslySetInnerHTML',
 ] as const
 
 const toProjectSlug = (value: string): string =>
@@ -3842,12 +3849,21 @@ export function SiteDataProvider({ children }: PropsWithChildren) {
 const renderNextRoutePage = (
   componentName: string,
   componentImportPath: string,
-): string => `import { ${componentName} } from '${componentImportPath}'
+  routeSeo?: ExportRouteSeo | null,
+): string => {
+  const metadataExport = routeSeo
+    ? `${renderNextMetadataExport(routeSeo)}\n\n`
+    : ''
+  const jsonLd = routeSeo ? `\n${renderJsonLdScript(routeSeo)}` : ''
+  return `import { ${componentName} } from '${componentImportPath}'
 
-export default function Page() {
-  return <${componentName} />
+${metadataExport}export default function Page() {
+  return <>
+    <${componentName} />${jsonLd}
+  </>
 }
 `
+}
 
 const renderNextBrandLogoProvider = (
   input: OpenUIExportInput,
@@ -3944,14 +3960,23 @@ const buildReactExport = async (
     dependencies['@tanstack/react-query'] =
       dependencyVersions['@tanstack/react-query']
   }
+  const seoBundle = buildExportSeoBundle(
+    input.siteSpecJson,
+    routes.map((r) => ({ path: r.path, label: r.label })),
+  )
+  const homeHeadTags = seoBundle?.homeSeo?.headTags ?? []
+  const htmlLang = seoBundle?.homeSeo?.seo.htmlLang ?? 'en'
+  const indexHtml =
+    homeHeadTags.length > 0
+      ? `<!doctype html><html lang="${htmlLang}"><head>${homeHeadTags.join('\n')}</head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n`
+      : '<!doctype html><html><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Ship Fast Export</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n'
   const files: Record<string, string> = {
     'package.json': renderReactPackageJson(
       parsed.projectName,
       dependencies,
       devDependencies,
     ),
-    'index.html':
-      '<!doctype html><html><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Ship Fast Export</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n',
+    'index.html': indexHtml,
     'tsconfig.json': renderTsConfig(),
     'src/vite-env.d.ts': renderViteEnv(),
     'vite.config.ts': renderViteConfig(),
@@ -3974,6 +3999,12 @@ const buildReactExport = async (
     files[`src/components/${component.name}.tsx`] = component.source
   }
   Object.assign(files, blockSources.files)
+
+  if (seoBundle) {
+    files['public/robots.txt'] = seoBundle.robotsTxt
+    if (seoBundle.sitemapXml) files['public/sitemap.xml'] = seoBundle.sitemapXml
+    if (seoBundle.llmsTxt) files['public/llms.txt'] = seoBundle.llmsTxt
+  }
 
   const formattedFiles = await formatExportFiles(files)
   return {
@@ -4021,6 +4052,13 @@ const buildNextExport = async (
   }
   const layoutImport = `${usesLakebed ? "import { SiteDataProvider } from '../src/lib/site-data-provider'\n" : ''}${input.selectedBrandLogo ? "import { ExportBrandLogoProvider } from '../src/lib/brand-logo-provider'\n" : ''}`
   const layoutChildren = `${input.selectedBrandLogo ? '<ExportBrandLogoProvider>' : ''}${usesLakebed ? '<SiteDataProvider>{children}</SiteDataProvider>' : '{children}'}${input.selectedBrandLogo ? '</ExportBrandLogoProvider>' : ''}`
+  const seoBundle = buildExportSeoBundle(
+    input.siteSpecJson,
+    routes.map((r) => ({ path: r.path, label: r.label })),
+  )
+  const layoutMetadata = seoBundle?.homeSeo
+    ? renderNextMetadataExport(seoBundle.homeSeo)
+    : `export const metadata = { title: ${JSON.stringify(parsed.projectName)} }`
   const files: Record<string, string> = {
     'package.json': renderNextPackageJson(
       parsed.projectName,
@@ -4036,10 +4074,10 @@ const buildNextExport = async (
 ${layoutImport}import { StyleOverrides } from '../src/lib/style-overrides'
 import './globals.css'
 
-export const metadata = { title: ${JSON.stringify(parsed.projectName)} }
+${layoutMetadata}
 
 export default function RootLayout({ children }: PropsWithChildren) {
-  return <html lang="en"><body><StyleOverrides />${layoutChildren}</body></html>
+  return <html lang="${seoBundle?.homeSeo?.seo.htmlLang ?? 'en'}"><body><StyleOverrides />${layoutChildren}</body></html>
 }
 `,
     'app/globals.css': renderThemeCss(input),
@@ -4077,18 +4115,28 @@ export default function RootLayout({ children }: PropsWithChildren) {
   Object.assign(files, blockSources.files)
 
   for (const route of routes) {
+    const routeSeo = seoBundle?.routes.get(route.path) ?? null
     if (route.path === '/') {
       files['app/page.tsx'] = renderNextRoutePage(
         route.componentName,
         '../src/components/' + route.componentName,
+        routeSeo,
       )
     } else {
       const dir = route.path.slice(1)
       files[`app/${dir}/page.tsx`] = renderNextRoutePage(
         route.componentName,
         '../../src/components/' + route.componentName,
+        routeSeo,
       )
     }
+  }
+
+  if (seoBundle) {
+    files['app/robots.ts'] = renderNextRobotsRoute(seoBundle.robotsTxt)
+    const sitemapRoute = renderNextSitemapRoute(seoBundle.sitemapXml)
+    if (sitemapRoute) files['app/sitemap.ts'] = sitemapRoute
+    if (seoBundle.llmsTxt) files['public/llms.txt'] = seoBundle.llmsTxt
   }
 
   const formattedFiles = await formatExportFiles(files)

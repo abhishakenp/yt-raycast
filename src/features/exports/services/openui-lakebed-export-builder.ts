@@ -29,6 +29,7 @@ import {
 import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
 import { parseOpenUIForExport } from './openui-export-builder'
 import { formatExportFiles } from './format-export-files'
+import { buildExportSeoBundle } from './export-seo'
 import {
   resolvePreviewImageUrl,
   rewritePreviewImageUrls,
@@ -4263,6 +4264,15 @@ export async function buildOpenUILakebedProjectFiles(
   for (const component of clientComponents) {
     files[`client/components/${toIdentifier(component.name)}.tsx`] =
       renderClientComponentModule(component)
+  }
+  const seoBundle = buildExportSeoBundle(
+    input.siteSpecJson,
+    routes.map((r) => ({ path: r.path, label: r.label })),
+  )
+  if (seoBundle) {
+    files['public/robots.txt'] = seoBundle.robotsTxt
+    if (seoBundle.sitemapXml) files['public/sitemap.xml'] = seoBundle.sitemapXml
+    if (seoBundle.llmsTxt) files['public/llms.txt'] = seoBundle.llmsTxt
   }
   const formattedFiles = await formatExportFiles(files)
   assertNoLeakedSourceTerms(formattedFiles)
