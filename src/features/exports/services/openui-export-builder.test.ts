@@ -573,7 +573,6 @@ describe('openui-export-builder', () => {
 
     expect(Object.keys(files).sort()).toEqual(
       expect.arrayContaining([
-        '.env.local',
         'README.md',
         'index.html',
         'package.json',
@@ -768,6 +767,52 @@ export function useParams() { return {}; }
     expect(EXPORT_PRETTIER_OPTIONS.semi).toBe(false)
     expect(EXPORT_PRETTIER_OPTIONS.singleQuote).toBe(true)
     expect(EXPORT_PRETTIER_OPTIONS.trailingComma).toBe('all')
+  })
+
+  it('does not ship a .env.local or any ship-fast.io server URL in React exports', async () => {
+    const result = await buildOpenUIExport({
+      source,
+      siteSpecJson,
+      sessionId: 'demo',
+      target: 'react',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    expect(Object.keys(files)).not.toContain('.env.local')
+    expect(Object.values(files).join('\n')).not.toContain('VITE_SERVER_URL')
+    expect(Object.values(files).join('\n')).not.toContain(
+      'NEXT_PUBLIC_SERVER_URL',
+    )
+  })
+
+  it('does not ship a .env.local or any ship-fast.io server URL in Next exports', async () => {
+    const result = await buildOpenUIExport({
+      source,
+      siteSpecJson,
+      sessionId: 'demo',
+      target: 'next',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    expect(Object.keys(files)).not.toContain('.env.local')
+    expect(Object.values(files).join('\n')).not.toContain(
+      'NEXT_PUBLIC_SERVER_URL',
+    )
+    expect(Object.values(files).join('\n')).not.toContain('VITE_SERVER_URL')
+  })
+
+  it('whitelists only pexels, picsum, and unsplash image hosts in Next config (no ship-fast.io)', async () => {
+    const result = await buildOpenUIExport({
+      source,
+      siteSpecJson,
+      sessionId: 'demo',
+      target: 'next',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    const nextConfig = files['next.config.mjs']
+    expect(nextConfig).toBeDefined()
+    expect(nextConfig).toContain('images.pexels.com')
+    expect(nextConfig).toContain('picsum.photos')
+    expect(nextConfig).toContain('images.unsplash.com')
+    expect(nextConfig).not.toContain('ship-fast.io')
   })
 
   // Single explicit guard: exported artifacts (standalone HTML + React/Next

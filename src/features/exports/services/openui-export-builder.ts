@@ -3955,7 +3955,6 @@ const buildReactExport = async (
     ),
     'index.html':
       '<!doctype html><html><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Ship Fast Export</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n',
-    '.env.local': 'VITE_SERVER_URL=https://ship-fast.io\n',
     'tsconfig.json': renderTsConfig(),
     'src/vite-env.d.ts': renderViteEnv(),
     'vite.config.ts': renderViteConfig(),
@@ -4031,10 +4030,9 @@ const buildNextExport = async (
       dependencies,
       devDependencies,
     ),
-    '.env.local': 'NEXT_PUBLIC_SERVER_URL=https://ship-fast.io\n',
     'postcss.config.mjs': renderNextPostcssConfig(),
     'next.config.mjs':
-      'import { dirname } from "node:path"\nimport { fileURLToPath } from "node:url"\n\nconst projectRoot = dirname(fileURLToPath(import.meta.url))\n\n/** @type {import("next").NextConfig} */\nconst nextConfig = {\n  images: {\n    remotePatterns: [\n      { protocol: "https", hostname: "images.pexels.com" },\n      { protocol: "https", hostname: "picsum.photos" },\n      { protocol: "https", hostname: "ship-fast.io" },\n    ],\n  },\n  turbopack: {\n    root: projectRoot,\n  },\n}\n\nexport default nextConfig\n',
+      'import { dirname } from "node:path"\nimport { fileURLToPath } from "node:url"\n\nconst projectRoot = dirname(fileURLToPath(import.meta.url))\n\n/** @type {import("next").NextConfig} */\nconst nextConfig = {\n  images: {\n    remotePatterns: [\n      { protocol: "https", hostname: "images.pexels.com" },\n      { protocol: "https", hostname: "picsum.photos" },\n      { protocol: "https", hostname: "images.unsplash.com" },\n    ],\n  },\n  turbopack: {\n    root: projectRoot,\n  },\n}\n\nexport default nextConfig\n',
     'next-env.d.ts': renderNextEnv(),
     'tsconfig.json': renderTsConfig('preserve'),
     'app/layout.tsx': `import type { ReactNode } from 'react'
