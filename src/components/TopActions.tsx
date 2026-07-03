@@ -40,7 +40,10 @@ export const TopActions = () => {
               </div>
             </Show>
             <Suspense fallback={null}>
-              <LazyHomepageAuthControls autoOpen={authRequested} />
+              <LazyHomepageAuthControls
+                autoOpen={authRequested}
+                wrapProvider={false}
+              />
             </Suspense>
           </>
         ) : (

@@ -15,14 +15,21 @@ export const resolveProviderMode = (config: ProviderConfig): ProviderMode =>
     : 'anonymous'
 
 export const shouldUseAuthenticatedProviders = (pathname: string): boolean =>
-  // The homepage (`/`) mounts its own ClerkProvider via HomepageAuthControls
-  // and only needs anonymous Convex for the public gallery. Letting AppProviders
-  // mount Clerk on `/` would stack a second <ClerkProvider> and crash Clerk, so
-  // `/` is intentionally excluded here (it stays in shouldUseConvexProviders).
-  pathname === '/pricing' || pathname.startsWith('/generate/')
+  // `/` is included so AppProviders mounts ClerkConvexProvider from first paint:
+  // the homepage renders Clerk's <Waitlist /> (via WaitlistGate) for non-approved
+  // users, and <Waitlist /> must live inside a <ClerkProvider>. Previously `/`
+  // was excluded to avoid a double <ClerkProvider> from HomepageAuthControls, but
+  // the clerkMounted flag now makes SignInModalHost pass wrapProvider={false} on
+  // authed routes, so exactly one ClerkProvider mounts on `/`. Public gallery
+  // reads still work: Clerk's useAuth returns a null token when signed out, so
+  // Convex treats the visitor as anonymous.
+  pathname === '/' ||
+  pathname === '/pricing' ||
+  pathname.startsWith('/generate/')
 
 export const shouldUseConvexProviders = (pathname: string): boolean =>
   pathname === '/' ||
+  pathname === '/pricing' ||
   pathname.startsWith('/generate/') ||
   pathname.startsWith('/gallery') ||
   pathname.startsWith('/mine')
