@@ -3818,7 +3818,7 @@ createRoot(document.getElementById('root')!).render(
 const renderNextSiteDataProvider = (): string => `'use client'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import type { ReactNode } from 'react'
+import type { PropsWithChildren } from 'react'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -3830,7 +3830,7 @@ const queryClient = new QueryClient({
   },
 })
 
-export function SiteDataProvider({ children }: { children: ReactNode }) {
+export function SiteDataProvider({ children }: PropsWithChildren) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
@@ -3853,12 +3853,12 @@ const renderNextBrandLogoProvider = (
   input: OpenUIExportInput,
 ): string => `'use client'
 
-import type { ReactNode } from 'react'
+import type { PropsWithChildren } from 'react'
 import { BrandLogoProvider } from '../section-kit/Logo'
 
 const selectedBrandLogo = ${brandLogoLiteral(input)} as const
 
-export function ExportBrandLogoProvider({ children }: { children: ReactNode }) {
+export function ExportBrandLogoProvider({ children }: PropsWithChildren) {
   return <BrandLogoProvider value={selectedBrandLogo}>{children}</BrandLogoProvider>
 }
 `
@@ -4032,13 +4032,13 @@ const buildNextExport = async (
       'import { dirname } from "node:path"\nimport { fileURLToPath } from "node:url"\n\nconst projectRoot = dirname(fileURLToPath(import.meta.url))\n\n/** @type {import("next").NextConfig} */\nconst nextConfig = {\n  images: {\n    remotePatterns: [\n      { protocol: "https", hostname: "images.pexels.com" },\n      { protocol: "https", hostname: "picsum.photos" },\n      { protocol: "https", hostname: "images.unsplash.com" },\n    ],\n  },\n  turbopack: {\n    root: projectRoot,\n  },\n}\n\nexport default nextConfig\n',
     'next-env.d.ts': renderNextEnv(),
     'tsconfig.json': renderTsConfig('preserve'),
-    'app/layout.tsx': `import type { ReactNode } from 'react'
+    'app/layout.tsx': `import type { PropsWithChildren } from 'react'
 ${layoutImport}import { StyleOverrides } from '../src/lib/style-overrides'
 import './globals.css'
 
 export const metadata = { title: ${JSON.stringify(parsed.projectName)} }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: PropsWithChildren) {
   return <html lang="en"><body><StyleOverrides />${layoutChildren}</body></html>
 }
 `,

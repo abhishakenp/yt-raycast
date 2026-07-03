@@ -879,6 +879,29 @@ export function useParams() { return {}; }
     expect(provider).toMatch(/QueryClientProvider client=\{queryClient\}/)
   })
 
+  it('uses PropsWithChildren instead of manual { children: ReactNode } in Next exports', async () => {
+    const result = await buildOpenUIExport({
+      source: 'root = EcommerceHero()',
+      siteSpecJson: JSON.stringify({ projectName: 'Demo' }),
+      selectedBrandLogo: { name: 'Demo', logo: 'x' },
+      sessionId: 'demo',
+      target: 'next',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    // SiteDataProvider
+    const provider = files['src/lib/site-data-provider.tsx']
+    expect(provider).toContain('PropsWithChildren')
+    expect(provider).not.toContain('{ children: ReactNode }')
+    // BrandLogoProvider
+    const logo = files['src/lib/brand-logo-provider.tsx']
+    expect(logo).toContain('PropsWithChildren')
+    expect(logo).not.toContain('{ children: ReactNode }')
+    // RootLayout
+    const layout = files['app/layout.tsx']
+    expect(layout).toContain('PropsWithChildren')
+    expect(layout).not.toContain('{ children: ReactNode }')
+  })
+
   // Single explicit guard: exported artifacts (standalone HTML + React/Next
   // ZIPs) must never leak OpenUI internals (@openuidev imports, Vue
   // defineComponent, or raw OpenUI source like "root = Stack").
