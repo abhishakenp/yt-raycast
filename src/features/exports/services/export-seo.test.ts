@@ -47,11 +47,15 @@ const siteSpecWithSeo = JSON.stringify({
 })
 
 describe('export-seo', () => {
-  it('returns null when no siteSpecJson is provided', () => {
+  it('always returns a bundle even when no siteSpecJson is provided', () => {
     const bundle = buildExportSeoBundle(undefined, [
       { path: '/', label: 'Home' },
     ])
-    expect(bundle).toBeNull()
+    expect(bundle).not.toBeNull()
+    expect(bundle.routes.size).toBe(1)
+    const home = bundle.routes.get('/')
+    expect(home).toBeDefined()
+    expect(home!.seo.title).toBe('Home')
   })
 
   // Contract change: generated siteSpecs carry no seo block at all (only
@@ -63,6 +67,7 @@ describe('export-seo', () => {
       { path: '/', label: 'Home' },
     ])
     expect(bundle).not.toBeNull()
+    expect(bundle.routes.size).toBe(1)
     const home = bundle!.homeSeo!
     expect(home.seo.robots).toBe('index, follow')
     expect(home.headTags.join('\n')).toContain('og:title')
@@ -77,6 +82,7 @@ describe('export-seo', () => {
     )
     expect(bundle).not.toBeNull()
     expect(bundle!.homeSeo!.seo.siteName).toBe('Export Demo')
+    expect(bundle!.homeSeo!.seo.title).toBe('Export Demo')
   })
 
   it('folds generated-spec brand/locale into synthesized SEO', () => {
@@ -109,15 +115,27 @@ describe('export-seo', () => {
     )
   })
 
+  it('uses route label as title for non-home routes when no projectName', () => {
+    const bundle = buildExportSeoBundle(undefined, [
+      { path: '/', label: 'Home' },
+      { path: '/about', label: 'About' },
+    ])
+    expect(bundle).not.toBeNull()
+    const home = bundle.routes.get('/')
+    expect(home!.seo.title).toBe('Home')
+    const about = bundle.routes.get('/about')
+    expect(about!.seo.title).toBe('About')
+  })
+
   it('builds per-route SEO with meta tags, structured data, and Next.js metadata', () => {
     const bundle = buildExportSeoBundle(siteSpecWithSeo, [
       { path: '/', label: 'Home' },
       { path: '/shop', label: 'Shop' },
     ])
     expect(bundle).not.toBeNull()
-    expect(bundle!.routes.size).toBe(2)
+    expect(bundle.routes.size).toBe(2)
 
-    const home = bundle!.routes.get('/')
+    const home = bundle.routes.get('/')
     expect(home).toBeDefined()
     expect(home!.seo.title).toBe('Acme Store - Home')
     expect(home!.seo.siteName).toBe('Acme Store')
@@ -128,7 +146,7 @@ describe('export-seo', () => {
     expect(home!.nextMetadata).toHaveProperty('title')
     expect(home!.nextMetadata).toHaveProperty('openGraph')
 
-    const shop = bundle!.routes.get('/shop')
+    const shop = bundle.routes.get('/shop')
     expect(shop).toBeDefined()
     expect(shop!.seo.title).toBe('Shop - Acme Store')
   })
@@ -138,7 +156,7 @@ describe('export-seo', () => {
       { path: '/about', label: 'About' },
     ])
     expect(bundle).not.toBeNull()
-    const about = bundle!.routes.get('/about')
+    const about = bundle.routes.get('/about')
     expect(about).toBeDefined()
     expect(about!.seo.title).toBeTruthy()
   })
@@ -149,12 +167,12 @@ describe('export-seo', () => {
       { path: '/shop', label: 'Shop' },
     ])
     expect(bundle).not.toBeNull()
-    expect(bundle!.robotsTxt).toContain('User-agent: *')
-    expect(bundle!.robotsTxt).toContain('Sitemap:')
-    expect(bundle!.sitemapXml).toContain('<urlset')
-    expect(bundle!.sitemapXml).toContain('acme.example.com')
-    expect(bundle!.llmsTxt).toContain('# Acme Store')
-    expect(bundle!.llmsTxt).toContain('## Pages')
+    expect(bundle.robotsTxt).toContain('User-agent: *')
+    expect(bundle.robotsTxt).toContain('Sitemap:')
+    expect(bundle.sitemapXml).toContain('<urlset')
+    expect(bundle.sitemapXml).toContain('acme.example.com')
+    expect(bundle.llmsTxt).toContain('# Acme Store')
+    expect(bundle.llmsTxt).toContain('## Pages')
   })
 
   it('exposes homeSeo for the root route', () => {
@@ -163,14 +181,14 @@ describe('export-seo', () => {
       { path: '/shop', label: 'Shop' },
     ])
     expect(bundle).not.toBeNull()
-    expect(bundle!.homeSeo).toBe(bundle!.routes.get('/'))
+    expect(bundle.homeSeo).toBe(bundle.routes.get('/'))
   })
 
   it('renderNextMetadataExport produces valid Next.js metadata export', () => {
     const bundle = buildExportSeoBundle(siteSpecWithSeo, [
       { path: '/', label: 'Home' },
     ])
-    const meta = renderNextMetadataExport(bundle!.homeSeo!)
+    const meta = renderNextMetadataExport(bundle.homeSeo!)
     expect(meta).toContain('export const metadata = {')
     expect(meta).toContain('title:')
     expect(meta).toContain('openGraph:')
@@ -180,7 +198,7 @@ describe('export-seo', () => {
     const bundle = buildExportSeoBundle(siteSpecWithSeo, [
       { path: '/', label: 'Home' },
     ])
-    const script = renderJsonLdScript(bundle!.homeSeo!)
+    const script = renderJsonLdScript(bundle.homeSeo!)
     expect(script).toContain('application/ld+json')
     expect(script).toContain('dangerouslySetInnerHTML')
   })
@@ -189,7 +207,7 @@ describe('export-seo', () => {
     const bundle = buildExportSeoBundle(siteSpecWithSeo, [
       { path: '/', label: 'Home' },
     ])
-    const route = renderNextRobotsRoute(bundle!.robotsTxt)
+    const route = renderNextRobotsRoute(bundle.robotsTxt)
     expect(route).toContain('MetadataRoute.Robots')
     expect(route).toContain('userAgent')
     expect(route).toContain('sitemap')
@@ -200,7 +218,7 @@ describe('export-seo', () => {
       { path: '/', label: 'Home' },
       { path: '/shop', label: 'Shop' },
     ])
-    const route = renderNextSitemapRoute(bundle!.sitemapXml)
+    const route = renderNextSitemapRoute(bundle.sitemapXml)
     expect(route).not.toBeNull()
     expect(route).toContain('MetadataRoute.Sitemap')
     expect(route).toContain('acme.example.com')
