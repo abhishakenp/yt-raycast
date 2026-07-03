@@ -28,23 +28,10 @@ const withGenUIExportMetadata = (
 ): Record<string, string> => {
   const genui = readGenUIExportMetadata(input.siteSpecJson)
   if (genui === null) return files
-  const metadata = JSON.stringify(
-    {
-      version: 1,
-      generatedBy: 'ship-fast',
-      sessionId: input.sessionId,
-      target: input.target,
-      genui,
-    },
-    null,
-    2,
-  )
   const adminBootstrap = createAdminBootstrap(input, genui)
   const wiredFiles = withAdminAccessWiring(input, files, genui)
   return {
     ...wiredFiles,
-    'ship-fast-genui.json': metadata,
-    'public/ship-fast-genui.json': metadata,
     'ship-fast-admin.js': adminBootstrap,
     'public/ship-fast-admin.js': adminBootstrap,
     'src/ship-fast-admin.ts': createAdminTypescriptModule(genui),

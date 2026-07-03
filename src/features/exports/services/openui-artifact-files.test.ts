@@ -248,6 +248,26 @@ export function useSearchParams() {
 }
 
 describe('openui artifact files', () => {
+  it('does not leak ship-fast-genui.json in any export target', async () => {
+    for (const target of ['react', 'next', 'lakebed', 'html'] as const) {
+      const { files } = await buildOpenUIArtifactFiles({
+        source:
+          target === 'html'
+            ? '<!doctype html><html><body><h1>Artifact</h1></body></html>'
+            : v1PublicationSource,
+        siteSpecJson: siteSpecJsonWithGenUI,
+        sessionId: 'demo',
+        target,
+      })
+      expect(Object.keys(files), `target=${target}`).not.toContain(
+        'ship-fast-genui.json',
+      )
+      expect(Object.keys(files), `target=${target}`).not.toContain(
+        'public/ship-fast-genui.json',
+      )
+    }
+  })
+
   it('builds React artifact files from OpenUI components instead of static preview HTML', async () => {
     const { files, download } = await buildOpenUIArtifactFiles({
       source,
@@ -272,24 +292,6 @@ describe('openui artifact files', () => {
       target: 'react',
     })
 
-    const metadata = JSON.parse(files['ship-fast-genui.json'])
-    expect(metadata).toMatchObject({
-      generatedBy: 'ship-fast',
-      sessionId: 'demo',
-      target: 'react',
-      genui: {
-        category: 'publication',
-        ownerEmail: 'founder@example.com',
-        adminPolicy: {
-          mode: 'baked-owner',
-          authProvider: 'shoo',
-          ownerEmail: 'founder@example.com',
-        },
-      },
-    })
-    expect(files['public/ship-fast-genui.json']).toBe(
-      files['ship-fast-genui.json'],
-    )
     expect(files['ship-fast-admin.js']).toContain(
       'window.assertShipFastAdminAccess',
     )
@@ -459,7 +461,6 @@ describe('openui artifact files', () => {
     expect(files['index.html']).toContain('Newsroom Admin')
     expect(files['index.html']).toContain('window.__SHIP_FAST_ADMIN__')
     expect(files['index.html']).toContain('founder@example.com')
-    expect(files['ship-fast-genui.json']).toContain('publication-newsroom-v1')
   })
 
   it('wires baked admin access into React artifact routes', async () => {
@@ -506,12 +507,6 @@ describe('openui artifact files', () => {
       target: 'lakebed',
     })
 
-    const metadata = JSON.parse(files['ship-fast-genui.json'])
-    expect(metadata.target).toBe('lakebed')
-    expect(metadata.genui.adminPolicy.ownerEmail).toBe('founder@example.com')
-    expect(files['public/ship-fast-genui.json']).toBe(
-      files['ship-fast-genui.json'],
-    )
     expect(files['ship-fast-admin.js']).toContain(
       'window.assertShipFastAdminAccess',
     )
@@ -547,9 +542,6 @@ describe('openui artifact files', () => {
     expect(html.files['index.html']).toContain('Artifact Store')
     expect(html.files['index.html']).toContain('Store Admin')
     expect(html.files['index.html']).toContain('window.__SHIP_FAST_ADMIN__')
-    expect(html.files['ship-fast-genui.json']).toContain(
-      'commerce-fullstack-v1',
-    )
     expect(html.files['ship-fast-admin.js']).toContain('store@example.com')
 
     const react = await buildOpenUIArtifactFiles({
@@ -598,9 +590,6 @@ describe('openui artifact files', () => {
     expect(react.files['src/App.tsx']).toContain('ShipFastAdminGate')
     expect(react.files['src/data/pages.ts']).toContain('Artifact SaaS Docs')
     expect(react.files['src/data/pages.ts']).toContain('Talk to Artifact SaaS')
-    expect(react.files['ship-fast-genui.json']).toContain(
-      'software-fullstack-v1',
-    )
     expect(react.files['src/ship-fast-admin.ts']).toContain('saas@example.com')
 
     const next = await buildOpenUIArtifactFiles({
