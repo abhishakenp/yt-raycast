@@ -116,8 +116,11 @@ const fetchStripeCheckout = async (
     'metadata[mode]': mode,
     'metadata[tier]': tier,
     'metadata[packId]': packId,
-    'subscription_data[metadata][userId]': userId,
-    'subscription_data[metadata][tier]': tier,
+  }
+  if (mode !== 'credit_pack') {
+    // Stripe rejects subscription_data in payment mode.
+    checkoutFields['subscription_data[metadata][userId]'] = userId
+    checkoutFields['subscription_data[metadata][tier]'] = tier
   }
   if (mode === 'subscription' && referralCouponId) {
     checkoutFields['discounts[0][coupon]'] = referralCouponId
