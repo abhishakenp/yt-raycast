@@ -38,8 +38,10 @@ This rule exists because claiming unverified fixes wastes time and breaks trust.
 
 1. Write a unit test that covers the fix or restored behavior
 2. Write behavioral tests that exercise the actual runtime behavior, public API, rendered DOM, side effects, or generated artifact contract
-3. Run `bun test` and fix any failures BEFORE claiming the work is done
-4. NEVER push without all tests passing
+3. Run the smallest relevant test command that exercises the changed behavior, plus the actual runtime/tool path when one exists
+4. Do NOT run full project test/build suites for hook, CI, docs, config, or tooling-only changes unless the user explicitly asks; GitHub Actions owns exhaustive gates for those changes
+5. For production/runtime changes, run the relevant package or project gate; if the only meaningful gate is a slow full suite, ask before launching it
+6. NEVER push unless local targeted verification has passed and CI is expected to run the exhaustive gates
 
 **WHEN TESTS FAIL:**
 
