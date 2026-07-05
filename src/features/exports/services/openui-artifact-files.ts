@@ -1,5 +1,6 @@
 import { strFromU8, unzipSync } from 'fflate'
 
+import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import {
   createHtmlExportFiles,
   extractExportMetadata,
@@ -334,8 +335,14 @@ export async function buildDownloadFromArtifactFiles(
   if (prebuiltDownload !== undefined) return prebuiltDownload
 
   if (input.target === 'html') {
+    // Never fall back to a handoff/error preview document.
+    const safePreviewHtml =
+      input.previewHtml !== undefined &&
+      !isUnsafePublicPreviewHtml(input.previewHtml)
+        ? input.previewHtml
+        : undefined
     return {
-      body: files['index.html'] ?? input.previewHtml ?? input.source,
+      body: files['index.html'] ?? safePreviewHtml ?? input.source,
       contentType: 'text/html; charset=utf-8',
       filename: 'index.html',
       fileCount: 1,

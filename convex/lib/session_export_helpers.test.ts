@@ -1001,7 +1001,11 @@ describe('createSessionExport', () => {
     ).rejects.toMatchObject({ data: { code: 'ARTIFACT_NOT_READY' } })
   })
 
-  it('rejects empty, renderer-error, and handoff previews instead of creating ready exports', async () => {
+  // Contract (2026-07-03): a stale renderer-error/handoff PREVIEW no longer
+  // blocks exporting when the module SOURCE is healthy — prod sessions stored
+  // by a skewed deploy were permanently unexportable. Unsafe output is still
+  // blocked at artifact build/validation and download fallbacks.
+  it('rejects empty previews but self-heals renderer-error and handoff previews from healthy source', async () => {
     const emptyPreview = workflowCtxFor({
       identityUserId: userId,
       subscriptions: [subscriptionDoc()],
@@ -1044,8 +1048,8 @@ describe('createSessionExport', () => {
         sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
         target: 'next',
       }),
-    ).rejects.toMatchObject({ data: { code: 'PREVIEW_NOT_READY' } })
-    expect(rendererErrorPreview.exportRows).toHaveLength(0)
+    ).resolves.toMatchObject({ target: 'next' })
+    expect(rendererErrorPreview.exportRows).toHaveLength(1)
 
     const handoffPreview = workflowCtxFor({
       identityUserId: userId,
@@ -1080,8 +1084,8 @@ describe('createSessionExport', () => {
         sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
         target: 'html',
       }),
-    ).rejects.toMatchObject({ data: { code: 'PREVIEW_NOT_READY' } })
-    expect(handoffPreview.exportRows).toHaveLength(0)
+    ).resolves.toMatchObject({ target: 'html' })
+    expect(handoffPreview.exportRows).toHaveLength(1)
   })
 })
 
@@ -1204,7 +1208,7 @@ describe('ensureExportArtifactBuild', () => {
     expect(ready.scheduledBuilds).toHaveLength(0)
   })
 
-  it('does not queue artifact builds for empty, renderer-error, or handoff previews', async () => {
+  it('rejects empty previews but queues artifact builds for renderer-error/handoff previews with healthy source', async () => {
     const emptyPreview = workflowCtxFor({
       identityUserId: userId,
       previews: [previewDoc({ html: '', version: 8 })],
@@ -1251,9 +1255,8 @@ describe('ensureExportArtifactBuild', () => {
         target: 'lakebed',
         buildExportArtifact: buildExportArtifactReference,
       }),
-    ).rejects.toMatchObject({ data: { code: 'PREVIEW_NOT_READY' } })
-    expect(rendererErrorPreview.exportArtifacts).toHaveLength(0)
-    expect(rendererErrorPreview.scheduledBuilds).toHaveLength(0)
+    ).resolves.toMatchObject({ status: 'queued' })
+    expect(rendererErrorPreview.scheduledBuilds).toHaveLength(1)
 
     const handoffPreview = workflowCtxFor({
       identityUserId: userId,
@@ -1288,9 +1291,8 @@ describe('ensureExportArtifactBuild', () => {
         target: 'react',
         buildExportArtifact: buildExportArtifactReference,
       }),
-    ).rejects.toMatchObject({ data: { code: 'PREVIEW_NOT_READY' } })
-    expect(handoffPreview.exportArtifacts).toHaveLength(0)
-    expect(handoffPreview.scheduledBuilds).toHaveLength(0)
+    ).resolves.toMatchObject({ status: 'queued' })
+    expect(handoffPreview.scheduledBuilds).toHaveLength(1)
   })
 })
 
@@ -1841,7 +1843,7 @@ describe('loadOwnedExportForGitHubPush', () => {
     ).rejects.toMatchObject({ data: { code: 'ARTIFACT_NOT_READY' } })
   })
 
-  it('rejects ready GitHub push records when the current preview is DB-observed OpenUI handoff HTML', async () => {
+  it('loads GitHub push build input from the healthy source when the stored preview is DB-observed handoff HTML', async () => {
     const { ctx } = workflowCtxFor({
       identityUserId: userId,
       sessions: [
@@ -1884,11 +1886,13 @@ describe('loadOwnedExportForGitHubPush', () => {
       ],
     })
 
-    await expect(
-      loadOwnedExportForGitHubPush(ctx, {
-        sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
-        target: 'html',
-      }),
-    ).rejects.toMatchObject({ data: { code: 'ARTIFACT_NOT_READY' } })
+    const result = await loadOwnedExportForGitHubPush(ctx, {
+      sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
+      target: 'html',
+    })
+    // Build input renders from the module source; the handoff preview is
+    // never propagated as previewHtml.
+    expect(result.source).toContain('EcommerceHero')
+    expect(result.previewHtml).not.toContain('data-openui-ready')
   })
 })

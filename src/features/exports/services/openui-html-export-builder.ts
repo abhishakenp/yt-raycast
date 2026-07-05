@@ -24,7 +24,10 @@ import { preprocessOpenUIResponse } from '@ship-fast/engine'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { buildHtmlExport } from './html-export-builder'
-import { buildExportSeoBundle } from './export-seo'
+import {
+  buildExportSeoBundle,
+  extractDescriptionFromMarkup,
+} from './export-seo'
 import type {
   BuiltExport,
   OpenUIExportInput,
@@ -663,8 +666,15 @@ const buildStandaloneHtmlDocument = async (
         index === 0 ? '/' : `/${label.toLowerCase().replace(/\s+/g, '-')}`
       return { path, label }
     }),
+    { fallbackDescriptions: { '/': extractDescriptionFromMarkup(bodyMarkup) } },
   )
-  const seoHeadTags = seoBundle?.homeSeo?.headTags ?? []
+  // The document shell below already emits charset/viewport/title.
+  const seoHeadTags = (seoBundle?.homeSeo?.headTags ?? []).filter(
+    (tag) =>
+      !tag.startsWith('<meta charset') &&
+      !tag.startsWith('<meta name="viewport"') &&
+      !tag.startsWith('<title>'),
+  )
   const seoHeadMarkup = seoHeadTags.length > 0 ? seoHeadTags.join('\n  ') : ''
   const htmlLang =
     input.locale?.trim() || seoBundle?.homeSeo?.seo.htmlLang || locale
