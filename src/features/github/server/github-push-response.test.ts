@@ -1184,4 +1184,38 @@ describe('createGitHubPushResponse', () => {
       error: 'PAYMENT_REQUIRED: Subscribe before exporting',
     })
   })
+
+  it('maps the real payment-required message containing "download" to 402, not 403', async () => {
+    // Regression: /FORBIDDEN|own/i matched the "own" inside "download credits"
+    // and masked PAYMENT_REQUIRED as a 403 access error.
+    client.query.mockRejectedValueOnce(
+      new Error(
+        'Uncaught ConvexError: {"code":"PAYMENT_REQUIRED","message":"Subscribe to Pro or purchase download credits to export ZIP files."}',
+      ),
+    )
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'html' }),
+        },
+      ),
+      'session_123',
+      env,
+      client,
+      unusedFetch,
+    )
+
+    expect(response.status).toBe(402)
+    const body = (await response.json()) as { error: string; code?: string }
+    expect(body.error).toBe(
+      'Subscribe to Pro or purchase download credits to export ZIP files.',
+    )
+    expect(body.code).toBe('PAYMENT_REQUIRED')
+    expect(JSON.stringify(body)).not.toContain('Request ID')
+    expect(JSON.stringify(body)).not.toContain('session_export_helpers')
+  })
 })
