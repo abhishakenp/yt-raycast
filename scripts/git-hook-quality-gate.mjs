@@ -18,20 +18,8 @@ const PRETTIER_EXTENSIONS = new Set([
   '.yml',
 ])
 
-const CODE_FILE_PATTERN =
-  /^(?:src|convex|scripts)\/.+\.[cm]?[jt]sx?$|^packages\/[^/]+\/(?:src|scripts)\/.+\.[cm]?[jt]sx?$/
 const TEST_FILE_PATTERN = /\.(?:test|spec)\.[cm]?[jt]sx?$/
 const GENERATED_FILE_PATTERN = /^convex\/_generated\//
-const QUALITY_CONFIG_FILES = new Set([
-  '.github/workflows/ci.yml',
-  'bun.lock',
-  'eslint.config.js',
-  'package.json',
-  'prettier.config.js',
-  'tsconfig.json',
-  'vite.config.ts',
-  'vitest.config.ts',
-])
 
 function extname(file) {
   const match = file.match(/(\.[^.]+)$/)
@@ -40,10 +28,6 @@ function extname(file) {
 
 function uniqueSorted(files) {
   return [...new Set(files)].sort((a, b) => a.localeCompare(b))
-}
-
-function hasQualityImpact(file) {
-  return CODE_FILE_PATTERN.test(file) || QUALITY_CONFIG_FILES.has(file)
 }
 
 export function buildPreCommitPlan(stagedFiles) {
@@ -57,10 +41,7 @@ export function buildPreCommitPlan(stagedFiles) {
       PRETTIER_EXTENSIONS.has(extname(file)) &&
       !GENERATED_FILE_PATTERN.test(file),
   )
-  const qualityFiles = files.filter(hasQualityImpact)
-  const testFiles = files.filter(
-    (file) => hasQualityImpact(file) && TEST_FILE_PATTERN.test(file),
-  )
+  const testFiles = files.filter((file) => TEST_FILE_PATTERN.test(file))
 
   const commands = []
   if (prettierFiles.length > 0) {
@@ -68,15 +49,6 @@ export function buildPreCommitPlan(stagedFiles) {
       name: 'Prettier changed files',
       command: 'bunx',
       args: ['prettier', '--check', ...prettierFiles],
-    })
-  }
-
-  if (qualityFiles.length > 0) {
-    commands.push({ name: 'ESLint', command: 'bun', args: ['run', 'lint'] })
-    commands.push({
-      name: 'TypeScript',
-      command: 'bun',
-      args: ['run', 'typecheck'],
     })
   }
 
@@ -92,31 +64,8 @@ export function buildPreCommitPlan(stagedFiles) {
 }
 
 export function buildPrePushPlan() {
-  return [
-    { name: 'ESLint', command: 'bun', args: ['run', 'lint'] },
-    { name: 'TypeScript', command: 'bun', args: ['run', 'typecheck'] },
-    {
-      name: 'Change groups',
-      command: 'bun',
-      args: ['run', 'verify:change-groups'],
-    },
-    {
-      name: 'Review readiness',
-      command: 'bun',
-      args: ['run', 'verify:review-readiness'],
-    },
-    {
-      name: 'Generated artifacts',
-      command: 'bun',
-      args: ['run', 'verify:generated'],
-    },
-    { name: 'Production build', command: 'bun', args: ['run', 'build'] },
-    {
-      name: 'Bundle boundaries',
-      command: 'bun',
-      args: ['run', 'verify:bundle'],
-    },
-  ]
+  // Push-time quality gates run in GitHub Actions so local git push stays fast.
+  return []
 }
 
 export function readStagedFiles() {
@@ -146,9 +95,9 @@ function runCommand(step) {
   }
 }
 
-function runPlan(plan) {
+function runPlan(plan, emptyMessage = '[quality-gate] No checks required.') {
   if (plan.length === 0) {
-    console.log('[quality-gate] No staged files require checks.')
+    console.log(emptyMessage)
     return
   }
 
@@ -199,12 +148,18 @@ function main(argv) {
   }
 
   if (mode === 'pre-push') {
-    runPlan(buildPrePushPlan())
+    runPlan(
+      buildPrePushPlan(),
+      '[quality-gate] Pre-push checks run in GitHub Actions; local push is not blocked.',
+    )
     return
   }
 
   if (mode === 'pre-commit') {
-    runPlan(buildPreCommitPlan(readStagedFiles()))
+    runPlan(
+      buildPreCommitPlan(readStagedFiles()),
+      '[quality-gate] No staged files require local checks.',
+    )
     return
   }
 
