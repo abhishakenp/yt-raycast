@@ -47,6 +47,18 @@ const RootDocument = ({ children }: { children: ReactNode }) => {
         <HeadContent />
       </head>
       <body suppressHydrationWarning>
+        <noscript>
+          <div
+            style={{
+              padding: '16px',
+              textAlign: 'center',
+              fontFamily: 'system-ui, sans-serif',
+            }}
+          >
+            Ship Fast needs JavaScript to generate and preview websites. Please
+            enable JavaScript in your browser settings.
+          </div>
+        </noscript>
         {children}
         <Toaster richColors />
         <Scripts />
