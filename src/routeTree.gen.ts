@@ -28,6 +28,7 @@ import { Route as ApiRewriteRouteImport } from './routes/api/rewrite'
 import { Route as ApiPromptSuggestionsRouteImport } from './routes/api/prompt-suggestions'
 import { Route as ApiPexelsRouteImport } from './routes/api/pexels'
 import { Route as ApiMedusaCheckoutRouteImport } from './routes/api/medusa-checkout'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiGalleryRouteImport } from './routes/api/gallery'
 import { Route as ApiCreditsRouteImport } from './routes/api/credits'
 import { Route as ApiCloneRouteImport } from './routes/api/clone'
@@ -170,6 +171,11 @@ const ApiPexelsRoute = ApiPexelsRouteImport.update({
 const ApiMedusaCheckoutRoute = ApiMedusaCheckoutRouteImport.update({
   id: '/api/medusa-checkout',
   path: '/api/medusa-checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiGalleryRoute = ApiGalleryRouteImport.update({
@@ -455,6 +461,7 @@ export interface FileRoutesByFullPath {
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/gallery': typeof ApiGalleryRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
@@ -524,6 +531,7 @@ export interface FileRoutesByTo {
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/gallery': typeof ApiGalleryRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
@@ -594,6 +602,7 @@ export interface FileRoutesById {
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/gallery': typeof ApiGalleryRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
@@ -665,6 +674,7 @@ export interface FileRouteTypes {
     | '/api/clone'
     | '/api/credits'
     | '/api/gallery'
+    | '/api/health'
     | '/api/medusa-checkout'
     | '/api/pexels'
     | '/api/prompt-suggestions'
@@ -734,6 +744,7 @@ export interface FileRouteTypes {
     | '/api/clone'
     | '/api/credits'
     | '/api/gallery'
+    | '/api/health'
     | '/api/medusa-checkout'
     | '/api/pexels'
     | '/api/prompt-suggestions'
@@ -803,6 +814,7 @@ export interface FileRouteTypes {
     | '/api/clone'
     | '/api/credits'
     | '/api/gallery'
+    | '/api/health'
     | '/api/medusa-checkout'
     | '/api/pexels'
     | '/api/prompt-suggestions'
@@ -873,6 +885,7 @@ export interface RootRouteChildren {
   ApiCloneRoute: typeof ApiCloneRoute
   ApiCreditsRoute: typeof ApiCreditsRoute
   ApiGalleryRoute: typeof ApiGalleryRoute
+  ApiHealthRoute: typeof ApiHealthRoute
   ApiMedusaCheckoutRoute: typeof ApiMedusaCheckoutRoute
   ApiPexelsRoute: typeof ApiPexelsRoute
   ApiPromptSuggestionsRoute: typeof ApiPromptSuggestionsRoute
@@ -1038,6 +1051,13 @@ declare module '@tanstack/react-router' {
       path: '/api/medusa-checkout'
       fullPath: '/api/medusa-checkout'
       preLoaderRoute: typeof ApiMedusaCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/gallery': {
@@ -1497,6 +1517,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCloneRoute: ApiCloneRoute,
   ApiCreditsRoute: ApiCreditsRoute,
   ApiGalleryRoute: ApiGalleryRoute,
+  ApiHealthRoute: ApiHealthRoute,
   ApiMedusaCheckoutRoute: ApiMedusaCheckoutRoute,
   ApiPexelsRoute: ApiPexelsRoute,
   ApiPromptSuggestionsRoute: ApiPromptSuggestionsRoute,
