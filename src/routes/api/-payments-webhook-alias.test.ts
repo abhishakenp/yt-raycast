@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
+const checkoutResponseMock = vi.hoisted(() => vi.fn())
 const webhookResponseMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@tanstack/react-router', () => ({
@@ -13,13 +14,20 @@ vi.mock('@/features/billing/server/webhook-api-response', () => ({
   createWebhookApiResponse: webhookResponseMock,
 }))
 
+vi.mock('@/features/billing/server/checkout-api-response', () => ({
+  createCheckoutApiResponse: checkoutResponseMock,
+}))
+
 type RouteWithHandlers = {
   path: string
   options: {
     server: {
       handlers: Record<
         string,
-        (args: { request: Request }) => Promise<Response>
+        (args: {
+          params?: Record<string, string>
+          request: Request
+        }) => Promise<Response>
       >
     }
   }
@@ -88,6 +96,26 @@ describe('payments webhook alias routes', () => {
     expect(webhookResponseMock).toHaveBeenCalledWith(
       expect.any(Request),
       'stripe',
+    )
+  })
+
+  it('checkout start alias maps the route gateway param to the checkout handler', async () => {
+    checkoutResponseMock.mockResolvedValue(new Response('{}'))
+    const Route = await importRoute('./payments.$gateway.start')
+    const request = new Request(
+      'https://ship-fast.test/api/payments/razorpay/start',
+    )
+
+    expect(Route.path).toBe('/api/payments/$gateway/start')
+    await Route.options.server.handlers.POST({
+      params: { gateway: 'razorpay' },
+      request,
+    })
+    expect(checkoutResponseMock).toHaveBeenCalledWith(
+      request,
+      process.env,
+      undefined,
+      'razorpay',
     )
   })
 })

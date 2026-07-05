@@ -70,6 +70,7 @@ import { Route as ApiSessionsSessionIdHistoryRouteImport } from './routes/api/se
 import { Route as ApiSessionsSessionIdExportRouteImport } from './routes/api/sessions.$sessionId.export'
 import { Route as ApiPaymentsStripeWebhookRouteImport } from './routes/api/payments.stripe.webhook'
 import { Route as ApiPaymentsRazorpayWebhookRouteImport } from './routes/api/payments.razorpay.webhook'
+import { Route as ApiPaymentsGatewayStartRouteImport } from './routes/api/payments.$gateway.start'
 import { Route as ApiMedusaStoreCartLineItemsRouteImport } from './routes/api/medusa-store.cart.line-items'
 import { Route as ApiMedusaStoreCartIdRouteImport } from './routes/api/medusa-store.cart.$id'
 import { Route as ApiGithubConnectStartRouteImport } from './routes/api/github.connect.start'
@@ -413,6 +414,11 @@ const ApiPaymentsRazorpayWebhookRoute =
     path: '/api/payments/razorpay/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPaymentsGatewayStartRoute = ApiPaymentsGatewayStartRouteImport.update({
+  id: '/api/payments/$gateway/start',
+  path: '/api/payments/$gateway/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMedusaStoreCartLineItemsRoute =
   ApiMedusaStoreCartLineItemsRouteImport.update({
     id: '/line-items',
@@ -614,6 +620,7 @@ export interface FileRoutesByFullPath {
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
+  '/api/payments/$gateway/start': typeof ApiPaymentsGatewayStartRoute
   '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
   '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
@@ -700,6 +707,7 @@ export interface FileRoutesByTo {
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
+  '/api/payments/$gateway/start': typeof ApiPaymentsGatewayStartRoute
   '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
   '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
@@ -788,6 +796,7 @@ export interface FileRoutesById {
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
+  '/api/payments/$gateway/start': typeof ApiPaymentsGatewayStartRoute
   '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
   '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
@@ -877,6 +886,7 @@ export interface FileRouteTypes {
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
+    | '/api/payments/$gateway/start'
     | '/api/payments/razorpay/webhook'
     | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/export'
@@ -963,6 +973,7 @@ export interface FileRouteTypes {
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
+    | '/api/payments/$gateway/start'
     | '/api/payments/razorpay/webhook'
     | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/export'
@@ -1050,6 +1061,7 @@ export interface FileRouteTypes {
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
+    | '/api/payments/$gateway/start'
     | '/api/payments/razorpay/webhook'
     | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/export'
@@ -1129,6 +1141,7 @@ export interface RootRouteChildren {
   ApiDeploymentsDeploymentSlugMedusaWebhookRoute: typeof ApiDeploymentsDeploymentSlugMedusaWebhookRoute
   ApiGithubConnectCallbackRoute: typeof ApiGithubConnectCallbackRoute
   ApiGithubConnectStartRoute: typeof ApiGithubConnectStartRoute
+  ApiPaymentsGatewayStartRoute: typeof ApiPaymentsGatewayStartRoute
   ApiPaymentsRazorpayWebhookRoute: typeof ApiPaymentsRazorpayWebhookRoute
   ApiPaymentsStripeWebhookRoute: typeof ApiPaymentsStripeWebhookRoute
   ApiCommerceScopeTenantCartsRoute: typeof ApiCommerceScopeTenantCartsRouteWithChildren
@@ -1565,6 +1578,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPaymentsRazorpayWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/payments/$gateway/start': {
+      id: '/api/payments/$gateway/start'
+      path: '/api/payments/$gateway/start'
+      fullPath: '/api/payments/$gateway/start'
+      preLoaderRoute: typeof ApiPaymentsGatewayStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/medusa-store/cart/line-items': {
       id: '/api/medusa-store/cart/line-items'
       path: '/line-items'
@@ -1965,6 +1985,7 @@ const rootRouteChildren: RootRouteChildren = {
     ApiDeploymentsDeploymentSlugMedusaWebhookRoute,
   ApiGithubConnectCallbackRoute: ApiGithubConnectCallbackRoute,
   ApiGithubConnectStartRoute: ApiGithubConnectStartRoute,
+  ApiPaymentsGatewayStartRoute: ApiPaymentsGatewayStartRoute,
   ApiPaymentsRazorpayWebhookRoute: ApiPaymentsRazorpayWebhookRoute,
   ApiPaymentsStripeWebhookRoute: ApiPaymentsStripeWebhookRoute,
   ApiCommerceScopeTenantCartsRoute:

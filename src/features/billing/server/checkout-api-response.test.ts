@@ -225,6 +225,88 @@ describe('createCheckoutApiResponse', () => {
     })
   })
 
+  it('lets route params override a conflicting checkout body gateway', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: 'order_override',
+          amount: 19900,
+          currency: 'INR',
+        }),
+      ),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/payments/razorpay/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'credit_pack',
+          gateway: 'stripe',
+          packId: '3_credits',
+        }),
+      }),
+      env,
+      client,
+      'razorpay',
+    )
+
+    expect(response.status).toBe(200)
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toBe(
+      'https://api.razorpay.com/v1/orders',
+    )
+    expect(await response.json()).toMatchObject({
+      provider: 'razorpay',
+      orderId: 'order_override',
+    })
+  })
+
+  it('rejects an unsupported gateway route override with 400 before calling any payment provider', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/payments/paypal/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({ mode: 'subscription' }),
+      }),
+      env,
+      client,
+      'paypal',
+    )
+
+    expect(response.status).toBe(400)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    await expect(response.json()).resolves.toEqual({
+      error: 'Invalid payment gateway.',
+    })
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('rejects an unsupported checkout body gateway instead of falling back to country routing', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'subscription',
+          gateway: 'paypal',
+          countryCode: 'US',
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Invalid payment gateway.',
+    })
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
   it('returns JSON instead of throwing when an authenticated checkout request has malformed JSON', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
 
