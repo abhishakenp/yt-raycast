@@ -469,11 +469,31 @@ const ensureRepository = async (
   throw new Error('Unable to create a GitHub repository for this export.')
 }
 
+const getConvexErrorPayload = (
+  message: string,
+): { code?: string; message?: string } | null => {
+  const match = message.match(/\{.*\}/)
+  if (!match) return null
+  try {
+    const parsed = JSON.parse(match[0]) as unknown
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed))
+      return null
+    const payload = parsed as Record<string, unknown>
+    return {
+      code: typeof payload.code === 'string' ? payload.code : undefined,
+      message:
+        typeof payload.message === 'string' ? payload.message : undefined,
+    }
+  } catch {
+    return null
+  }
+}
+
 const convexStatus = (error: unknown): number => {
   const message = error instanceof Error ? error.message : String(error)
   if (/AUTH_REQUIRED|Sign in/i.test(message)) return 401
-  if (/FORBIDDEN|own/i.test(message)) return 403
   if (/PAYMENT_REQUIRED|Subscribe|purchase/i.test(message)) return 402
+  if (/FORBIDDEN|\bown\b|\bowner\b/i.test(message)) return 403
   if (/NOT_FOUND/i.test(message)) return 404
   if (/NOT_READY/i.test(message)) return 409
   return 500
@@ -661,22 +681,26 @@ export async function createGitHubPushResponse(
       previewVersion: exportData.previewVersion,
     })
   } catch (error) {
+    const rawMessage = error instanceof Error ? error.message : ''
+    const convexPayload = getConvexErrorPayload(rawMessage)
     const code =
       error instanceof Error && 'code' in error
         ? (error as Error & { code?: string }).code
-        : undefined
+        : convexPayload?.code
     const status =
       error instanceof Error && 'status' in error
         ? ((error as Error & { status?: number }).status ?? 400)
         : convexStatus(error)
     const isForbidden = status === 403
+    const isServerDump = /Server Error|Request ID:/i.test(rawMessage)
     return json(
       {
         error: isForbidden
           ? 'You do not have access to this export.'
-          : error instanceof Error
-            ? error.message
-            : 'Unable to push export to GitHub.',
+          : (convexPayload?.message ??
+            (rawMessage && !isServerDump
+              ? rawMessage
+              : 'Unable to push export to GitHub.')),
         ...(code && !isForbidden ? { code } : {}),
       },
       { status },
