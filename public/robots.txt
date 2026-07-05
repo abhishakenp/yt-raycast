@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /generate/
+
+Sitemap: https://ship-fast.io/sitemap.xml
