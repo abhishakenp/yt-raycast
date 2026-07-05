@@ -235,6 +235,9 @@ export default defineSchema({
       v.literal('style'),
       v.literal('image'),
       v.literal('delete'),
+      // Legacy value from the pre-rewrite app; prod docs still carry it and
+      // Convex schema validation rejects deploys without it.
+      v.literal('chat'),
     ),
     targetLabel: v.optional(v.string()),
     beforeText: v.optional(v.string()),
