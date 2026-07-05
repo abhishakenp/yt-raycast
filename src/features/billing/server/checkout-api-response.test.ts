@@ -72,6 +72,63 @@ describe('createCheckoutApiResponse', () => {
     })
   })
 
+  it('omits subscription_data from Stripe credit-pack (payment mode) checkout', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: 'cs_pack',
+          url: 'https://stripe.test/checkout',
+        }),
+      ),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'credit_pack',
+          gateway: 'stripe',
+          packId: '3_credits',
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    const stripeBody = String(fetchSpy.mock.calls[0]?.[1]?.body)
+    expect(stripeBody).toContain('mode=payment')
+    expect(stripeBody).not.toContain('subscription_data')
+  })
+
+  it('includes subscription_data metadata on Stripe subscription checkout', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ id: 'cs_sub', url: 'https://stripe.test/checkout' }),
+        ),
+      )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({ mode: 'subscription', gateway: 'stripe' }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    const stripeBody = String(fetchSpy.mock.calls[0]?.[1]?.body)
+    expect(stripeBody).toContain('mode=subscription')
+    expect(stripeBody).toContain(
+      encodeURIComponent('subscription_data[metadata][userId]'),
+    )
+  })
+
   it('creates a Razorpay credit-pack order', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(

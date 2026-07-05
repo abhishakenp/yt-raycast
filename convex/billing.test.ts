@@ -124,12 +124,22 @@ describe('billing webhook state mutation', () => {
       limit: 10,
     })
     expect(ledger.current).toBe(2)
-    expect(ledger.history).toHaveLength(1)
-    expect(ledger.history[0]).toMatchObject({
-      userId,
-      amount: -1,
-      balanceAfter: 2,
-      reason: 'export',
-    })
+    expect(ledger.history).toHaveLength(2)
+    expect(ledger.history).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          userId,
+          amount: 3,
+          balanceAfter: 3,
+          reason: 'purchase',
+        }),
+        expect.objectContaining({
+          userId,
+          amount: -1,
+          balanceAfter: 2,
+          reason: 'export',
+        }),
+      ]),
+    )
   })
 })

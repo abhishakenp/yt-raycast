@@ -406,18 +406,27 @@ export const applyBillingWebhook = mutation({
         .query('customerCredits')
         .withIndex('by_userId', (index) => index.eq('userId', args.userId))
         .first()
+      const balanceAfter =
+        (existingCredits?.remaining ?? 0) + (args.credits ?? 0)
       if (existingCredits === null) {
         await ctx.db.insert('customerCredits', {
           userId: args.userId,
-          remaining: args.credits!,
+          remaining: balanceAfter,
           updatedAt: now,
         })
       } else {
         await ctx.db.patch(existingCredits._id, {
-          remaining: existingCredits.remaining + args.credits!,
+          remaining: balanceAfter,
           updatedAt: now,
         })
       }
+      await ctx.db.insert('creditLedger', {
+        userId: args.userId,
+        amount: args.credits!,
+        balanceAfter,
+        reason: 'purchase',
+        createdAt: now,
+      })
     }
 
     return { processed: true, duplicate: false, referralUnlock }
