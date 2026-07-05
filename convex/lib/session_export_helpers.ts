@@ -817,10 +817,9 @@ export const createSessionExport = async (
       })
     })()
 
-  if (
-    preview.html.trim().length === 0 ||
-    isUnsafePublicPreviewHtml(preview.html)
-  ) {
+  // A stale handoff/error preview must not block exporting: builders render
+  // from the module source and only use preview HTML when it is usable.
+  if (preview.html.trim().length === 0) {
     throw new ConvexError({
       code: 'PREVIEW_NOT_READY',
       message: 'Preview is not ready to export',
@@ -1017,10 +1016,9 @@ export const ensureExportArtifactBuild = async (
       })
     })()
 
-  if (
-    preview.html.trim().length === 0 ||
-    isUnsafePublicPreviewHtml(preview.html)
-  ) {
+  // A stale handoff/error preview must not block exporting: builders render
+  // from the module source and only use preview HTML when it is usable.
+  if (preview.html.trim().length === 0) {
     throw new ConvexError({
       code: 'PREVIEW_NOT_READY',
       message: 'Preview is not ready to export',
@@ -1126,10 +1124,10 @@ export const prepareExportArtifactBuild = async (
     ),
   )
 
-  if (
-    isUnsafePublicPreviewHtml(source) ||
-    isUnsafePublicPreviewHtml(preview.html)
-  ) {
+  // Only the module source gates the build — artifacts render from source,
+  // so a stale handoff/error preview (e.g. stored by a skewed deploy) must
+  // not permanently block re-export of an otherwise healthy session.
+  if (isUnsafePublicPreviewHtml(source)) {
     throw new ConvexError({
       code: 'ARTIFACT_NOT_READY',
       message: 'Generated source is not ready to export',
@@ -1386,10 +1384,10 @@ export const loadOwnedExportForGitHubPush = async (
       editedSource,
     ),
   )
-  if (
-    isUnsafePublicPreviewHtml(source) ||
-    isUnsafePublicPreviewHtml(preview.html)
-  ) {
+  // Only the module source gates the build — artifacts render from source,
+  // so a stale handoff/error preview (e.g. stored by a skewed deploy) must
+  // not permanently block re-export of an otherwise healthy session.
+  if (isUnsafePublicPreviewHtml(source)) {
     throw new ConvexError({
       code: 'ARTIFACT_NOT_READY',
       message: 'Generated source is not ready to export',

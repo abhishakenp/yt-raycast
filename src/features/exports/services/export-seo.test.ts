@@ -54,19 +54,59 @@ describe('export-seo', () => {
     expect(bundle).toBeNull()
   })
 
-  it('returns null when siteSpecJson has no SEO data', () => {
+  // Contract change: generated siteSpecs carry no seo block at all (only
+  // brand/theme/locale/modules), so a null bundle meant every real export
+  // shipped without description/OG/Twitter/JSON-LD. The bundle now
+  // synthesizes baseline metadata whenever a spec exists.
+  it('synthesizes baseline SEO when siteSpecJson has no seo block', () => {
     const bundle = buildExportSeoBundle(JSON.stringify({ foo: 'bar' }), [
       { path: '/', label: 'Home' },
     ])
-    expect(bundle).toBeNull()
+    expect(bundle).not.toBeNull()
+    const home = bundle!.homeSeo!
+    expect(home.seo.robots).toBe('index, follow')
+    expect(home.headTags.join('\n')).toContain('og:title')
+    expect(home.headTags.join('\n')).toContain('twitter:card')
+    expect(home.structuredDataJson).toContain('WebSite')
   })
 
-  it('does not treat projectName alone as export SEO data', () => {
+  it('uses projectName as synthesized title and site name', () => {
     const bundle = buildExportSeoBundle(
       JSON.stringify({ projectName: 'Export Demo' }),
       [{ path: '/', label: 'Home' }],
     )
-    expect(bundle).toBeNull()
+    expect(bundle).not.toBeNull()
+    expect(bundle!.homeSeo!.seo.siteName).toBe('Export Demo')
+  })
+
+  it('folds generated-spec brand/locale into synthesized SEO', () => {
+    const bundle = buildExportSeoBundle(
+      JSON.stringify({ brand: 'Portfolio Aiko', locale: 'ja', modules: [] }),
+      [{ path: '/', label: 'Home' }],
+    )
+    expect(bundle).not.toBeNull()
+    const home = bundle!.homeSeo!
+    expect(home.seo.siteName).toBe('Portfolio Aiko')
+    expect(home.seo.htmlLang).toBe('ja')
+    expect(home.headTags.join('\n')).toContain('og:site_name')
+  })
+
+  it('applies per-route fallback descriptions from rendered markup', () => {
+    const bundle = buildExportSeoBundle(
+      JSON.stringify({ brand: 'Portfolio Aiko' }),
+      [{ path: '/', label: 'Home' }],
+      {
+        fallbackDescriptions: {
+          '/': 'Hand-crafted ceramics by Aiko Tanaka in Tokyo.',
+        },
+      },
+    )
+    expect(bundle!.homeSeo!.seo.description).toBe(
+      'Hand-crafted ceramics by Aiko Tanaka in Tokyo.',
+    )
+    expect(bundle!.homeSeo!.headTags.join('\n')).toContain(
+      'name="description" content="Hand-crafted ceramics',
+    )
   })
 
   it('builds per-route SEO with meta tags, structured data, and Next.js metadata', () => {

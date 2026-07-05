@@ -193,6 +193,19 @@ export const build = internalAction({
       }
       stage = 'build-files'
       const artifact = await buildGitHubFiles(prepared)
+      stage = 'validate-files'
+      // Never persist renderer-error output as a ready artifact — a failed
+      // SSR pass must surface as a build failure, not a poisoned download.
+      const brokenFile = Object.entries(artifact.files).find(
+        ([, contents]) =>
+          contents.includes('class="openui-error"') ||
+          contents.includes('Failed to render:'),
+      )
+      if (brokenFile !== undefined) {
+        throw new Error(
+          `Rendered artifact file ${brokenFile[0]} contains an OpenUI renderer error`,
+        )
+      }
       stage = 'build-download'
       const download = await buildDownload(prepared, artifact)
       stage = 'encode-download'

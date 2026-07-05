@@ -62,25 +62,60 @@ const normalizePath = (value: string): string => {
   return raw.startsWith('/') ? raw : `/${raw}`
 }
 
+export type ExportSeoBundleOptions = {
+  /** Per-route description fallback (e.g. extracted from rendered markup). */
+  fallbackDescriptions?: Record<string, string>
+}
+
+/**
+ * Derive a plain-text meta description from rendered page markup.
+ * Strips tags/scripts, collapses whitespace, and trims to ~160 chars at a
+ * word boundary. Returns '' when no meaningful text exists.
+ */
+export const extractDescriptionFromMarkup = (markup: string): string => {
+  const text = markup
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&[a-z#0-9]+;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (text.length <= 160) return text
+  const cut = text.slice(0, 160)
+  const lastSpace = cut.lastIndexOf(' ')
+  return `${cut.slice(0, lastSpace > 80 ? lastSpace : 160).trim()}…`
+}
+
 /**
  * Build per-route SEO data from siteSpecJson and the OpenUI export routes.
- * Returns null if no siteSpecJson is provided or no meaningful SEO data exists.
+ * Returns null only when no siteSpec exists at all. Specs without an explicit
+ * seo block get baseline metadata synthesized from brand/locale/route labels
+ * so every export ships title, description, robots, OG/Twitter, and JSON-LD.
  */
 export const buildExportSeoBundle = (
   siteSpecJson: string | undefined,
   routePaths: Array<{ path: string; label: string }>,
+  options: ExportSeoBundleOptions = {},
 ): ExportSeoBundle | null => {
-  const siteSpec = parseSiteSpec(siteSpecJson)
+  const parsedSpec = parseSiteSpec(siteSpecJson)
+  if (Object.keys(parsedSpec).length === 0) return null
+
+  // Generated specs carry `brand`/`locale` at the top level without a seo
+  // block; fold them into the shape resolvePageSeo understands.
+  const brand =
+    typeof parsedSpec.brand === 'string' && parsedSpec.brand.trim()
+      ? parsedSpec.brand.trim()
+      : undefined
+  const specLocale =
+    typeof parsedSpec.locale === 'string' && parsedSpec.locale.trim()
+      ? parsedSpec.locale.trim()
+      : undefined
+  const siteSpec: SiteSpecLike = {
+    ...parsedSpec,
+    projectName: parsedSpec.projectName ?? brand,
+    seo: parsedSpec.seo ?? (specLocale ? { locale: specLocale } : {}),
+  }
   const specPages = Array.isArray(siteSpec.pages) ? siteSpec.pages : []
-  const hasSeoData =
-    siteSpec.seo !== undefined ||
-    specPages.some(
-      (page) =>
-        page.seo !== undefined ||
-        page.aeo !== undefined ||
-        typeof page.description === 'string',
-    )
-  if (!hasSeoData) return null
 
   const routes = new Map<string, ExportRouteSeo>()
   let homeSeo: ExportRouteSeo | null = null
@@ -90,11 +125,18 @@ export const buildExportSeoBundle = (
     const matchingPage = specPages.find(
       (p) => normalizePath(String(p.route ?? '/')) === normalized,
     )
-    const page = matchingPage ?? {
-      route: normalized,
-      title: label,
-      name: label,
-    }
+    const fallbackDescription = options.fallbackDescriptions?.[normalized]
+    // Home falls through to projectName/brand for its title; other routes
+    // use their nav label.
+    const fallbackTitle = normalized === '/' ? undefined : label
+    const page = matchingPage
+      ? { description: fallbackDescription, ...matchingPage }
+      : {
+          route: normalized,
+          title: fallbackTitle,
+          name: label,
+          description: fallbackDescription,
+        }
 
     const seo = resolvePageSeo(siteSpec, page)
     const structuredData = buildStructuredData(siteSpec, page)
