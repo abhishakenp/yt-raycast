@@ -43,7 +43,9 @@ jobs:
         run: bun run eslint "convex/**/*.{ts,tsx}"
 
       - name: Lint packages
-        run: bun run eslint "packages/*/src/**/*.{ts,tsx}"
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: bun run eslint "packages/*/src/**/*.{ts,tsx}" --max-warnings=0
 
       - name: Lint scripts
         run: bun run eslint "scripts/**/*.ts"

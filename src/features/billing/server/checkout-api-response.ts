@@ -327,6 +327,7 @@ export async function createCheckoutApiResponse(
   request: Request,
   env: CheckoutEnv = process.env,
   clientOverride?: CheckoutConvexClient,
+  gatewayOverride?: unknown,
 ): Promise<Response> {
   const token = getBearerToken(request)
   if (token === null) {
@@ -359,7 +360,18 @@ export async function createCheckoutApiResponse(
     return json({ error: 'Sign in before checkout.' }, { status: 401 })
   }
 
-  const requestedGateway = normalizeString(body.gateway)
+  const requestedGateway =
+    normalizeString(gatewayOverride) || normalizeString(body.gateway)
+  // Fail closed: an explicit but unsupported gateway (e.g. the alias route
+  // /api/payments/<gateway>/start or a body.gateway) must be rejected rather
+  // than silently falling back to country-based routing.
+  if (
+    requestedGateway !== '' &&
+    requestedGateway !== 'stripe' &&
+    requestedGateway !== 'razorpay'
+  ) {
+    return json({ error: 'Invalid payment gateway.' }, { status: 400 })
+  }
   const countryCode = normalizeString(body.countryCode)
   const gateway =
     requestedGateway === 'stripe' || requestedGateway === 'razorpay'
