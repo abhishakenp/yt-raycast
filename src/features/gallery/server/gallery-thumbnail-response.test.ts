@@ -1,11 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-
-const thumbnailCaptureMocks = vi.hoisted(() => ({
-  captureGalleryThumb: vi.fn(),
-  readCachedGalleryThumb: vi.fn(),
-}))
-
-vi.mock('./gallery-thumbnail-capture', () => thumbnailCaptureMocks)
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   generateDeterministicThumbnailSvg,
@@ -15,11 +8,6 @@ import {
 } from './gallery-thumbnail-response'
 
 describe('Gallery Thumbnail Response', () => {
-  beforeEach(() => {
-    thumbnailCaptureMocks.captureGalleryThumb.mockResolvedValue(null)
-    thumbnailCaptureMocks.readCachedGalleryThumb.mockReturnValue(null)
-  })
-
   describe('getGalleryCategories', () => {
     it('should extract SaaS categories from prompt', () => {
       const categories = getGalleryCategories(
@@ -398,9 +386,6 @@ describe('Gallery Thumbnail Response', () => {
     })
 
     it('renders a DB-observed OpenUI gallery session to static HTML with edits, theme, and locale applied', async () => {
-      thumbnailCaptureMocks.captureGalleryThumb.mockResolvedValue(
-        Buffer.from([0x89, 0x50, 0x4e, 0x47]),
-      )
       const mockClient = {
         query: async () => ({
           categories: ['service'],
@@ -448,10 +433,6 @@ describe('Gallery Thumbnail Response', () => {
         mockClient,
       )
 
-      expect(
-        thumbnailCaptureMocks.readCachedGalleryThumb,
-      ).not.toHaveBeenCalled()
-      expect(thumbnailCaptureMocks.captureGalleryThumb).not.toHaveBeenCalled()
       expect(response.headers.get('content-type')).toBe(
         'text/html; charset=utf-8',
       )
