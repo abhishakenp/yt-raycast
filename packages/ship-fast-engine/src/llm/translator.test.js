@@ -271,4 +271,51 @@ describe('translateHtml', () => {
       'Commencer maintenant judge polished polished',
     )
   })
+
+  // Regression: image alt text is the stock-photo search query (Pexels/Unsplash
+  // search in English). The server-side translator must NEVER extract or
+  // translate alt attributes (or any attribute values) — only visible text
+  // between tags. extractTextNodes uses />([^<]+)</g which structurally
+  // excludes attributes; this test locks that in.
+  it('does not extract or translate img alt attributes', async () => {
+    const html =
+      '<main><h1>Hello</h1><img src="/api/pexels?query=onam%20shopping" alt="Onam shopping festival" /><p>Book a strategy call</p></main>'
+    const result = await translateHtml(html, {
+      code: 'ml',
+      name: 'Malayalam',
+      nativeName: 'മലയാളം',
+    })
+
+    // The alt text must NOT be sent to the translator — only "Hello" and
+    // "Book a strategy call" are visible text nodes.
+    const sourceTexts = JSON.parse(groqCalls[0].prompt).sourceTexts.map(
+      (item) => item.text,
+    )
+    expect(sourceTexts).not.toContain('Onam shopping festival')
+    expect(sourceTexts).toEqual(['Hello', 'Book a strategy call'])
+
+    // The alt attribute must be unchanged in the output HTML.
+    expect(result.content).toContain('alt="Onam shopping festival"')
+    expect(result.content).not.toContain('alt="ഓണം')
+  })
+
+  it('does not extract or translate aria-label or title attributes', async () => {
+    const html =
+      '<main><button aria-label="Close dialog" title="Close">Hello</button></main>'
+    const result = await translateHtml(html, {
+      code: 'fr',
+      name: 'French',
+      nativeName: 'Français',
+    })
+
+    const sourceTexts = JSON.parse(groqCalls[0].prompt).sourceTexts.map(
+      (item) => item.text,
+    )
+    expect(sourceTexts).toEqual(['Hello'])
+    expect(sourceTexts).not.toContain('Close dialog')
+    expect(sourceTexts).not.toContain('Close')
+
+    expect(result.content).toContain('aria-label="Close dialog"')
+    expect(result.content).toContain('title="Close"')
+  })
 })

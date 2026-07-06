@@ -1,9 +1,19 @@
 import { z } from 'zod'
-import { generateText } from './generate.ts'
+import {
+  generateStructuredWithTools,
+  generateText,
+  generateWithTools,
+} from './generate.ts'
 import { THEME_CATALOG } from './theme-apply.ts'
 import { stripFences } from './parser.ts'
 
-export { generateText, THEME_CATALOG, stripFences }
+export {
+  generateStructuredWithTools,
+  generateText,
+  generateWithTools,
+  THEME_CATALOG,
+  stripFences,
+}
 export {
   loadSiteSpec,
   saveSiteSpec,
