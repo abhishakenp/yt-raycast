@@ -19,6 +19,18 @@ const loadFixture = (name: string): string =>
 // completeGeneration and otherwise writes after the test's transaction
 // context is torn down, causing "Write outside of transaction" errors).
 let activeTest: ReturnType<typeof convexTest> | null = null
+const scheduledDrainTimeoutMs = 5_000
+
+const drainScheduledFunctionsWithTimeout = async (
+  t: ReturnType<typeof convexTest>,
+) => {
+  await Promise.race([
+    t.finishInProgressScheduledFunctions(),
+    new Promise<void>((resolve) =>
+      setTimeout(resolve, scheduledDrainTimeoutMs),
+    ),
+  ])
+}
 
 const sessionEditContractTest = () => {
   const t = convexTest(schema, modules)
@@ -37,7 +49,7 @@ afterEach(async () => {
     // down, causing "Write outside of transaction" unhandled errors.
     for (let i = 0; i < 5; i++) {
       await new Promise((r) => setTimeout(r, 10))
-      await activeTest.finishInProgressScheduledFunctions()
+      await drainScheduledFunctionsWithTimeout(activeTest)
     }
     activeTest = null
   }
