@@ -2037,4 +2037,61 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
       expect(restored!.scrollTop).toBe(200)
     })
   })
+
+  // 12b. Scroll position preserved across remounts triggered by a section
+  // AI edit. The AI edit path goes through handleSectionEditSubmit → fetch
+  // to /section-edit, NOT through editController.applyEdit, so it has its
+  // own scroll-save branch. Without it, a successful AI edit bumps
+  // previewVersion, the preview remounts, and scroll jumps to 0.
+  it('restores the preview scroll position after a remount triggered by a section AI edit', async () => {
+    setupReady({
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 100,
+      },
+    })
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn() })
+    vi.stubGlobal('fetch', fetchMock)
+    const { rerender } = render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Toggle inline edit mode' }),
+    )
+
+    const previewEl = document.querySelector(
+      '.genui-preview',
+    ) as HTMLElement | null
+    expect(previewEl).not.toBeNull()
+    previewEl!.scrollTop = 320
+
+    fireEvent.click(screen.getByTestId('gmp-trigger-attached-section-activate'))
+    fireEvent.click(await screen.findByTestId('toolbar-trigger-section-edit'))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/sessions/ready-session/section-edit',
+        expect.objectContaining({ method: 'POST' }),
+      )
+    })
+
+    // Bump previewVersion → renderedPreviewKey changes → remount + restore.
+    const bumped = readyGenerationView({
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready v2</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 200,
+      },
+    })
+    getConvexState().generationView = bumped
+    rerender(<Dashboard sessionId="ready-session" />)
+
+    await waitFor(() => {
+      const restored = document.querySelector(
+        '.genui-preview',
+      ) as HTMLElement | null
+      expect(restored).not.toBeNull()
+      expect(restored!.scrollTop).toBe(320)
+    })
+  })
 })

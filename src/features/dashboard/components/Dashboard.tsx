@@ -52,7 +52,7 @@ import {
 import { useEditController } from '@/features/editing/hooks/useEditController'
 import { useUndoRedo } from '@/features/editing/hooks/useUndoRedo'
 import { useReorderElement } from '@/features/editing/hooks/useReorderElement'
-import { replaceHrefInSource } from '@/features/editing/lib/link-source'
+import { updateLinkInSource } from '@/features/editing/lib/link-source'
 import { revertTextPreservingIcons } from '@/features/editing/hooks/useTextEdit'
 const InlineEditToolbar = lazy(() =>
   import('@/features/editing/components/InlineEditToolbar').then((module) => ({
@@ -473,6 +473,11 @@ export function Dashboard({
   const { requireSignIn: requireSignInForEdit } = useSignInGate()
   const commitTextEditRef = useRef<(() => void) | null>(null)
   const cancelTextEditRef = useRef<(() => void) | null>(null)
+  // Capture the element's original style attribute when the toolbar opens
+  // (before any live-preview modification) so handleStyleApply can revert
+  // to the exact pre-edit state on failure. Capturing at apply-time is too
+  // late — the toolbar has already applied the live preview by then.
+  const originalStyleAttributeRef = useRef<string | null>(null)
   // Save scroll position of the preview container before a remount (caused
   // by an inline edit bumping the preview version) and restore it after the
   // new preview mounts. Without this, every successful edit resets scroll
@@ -507,10 +512,14 @@ export function Dashboard({
     activeElement: null as HTMLElement | null,
   })
   // Leaving inline edit mode must close any open toolbar so the floating
-  // UI does not linger over a non-editable preview.
+  // UI does not linger over a non-editable preview. It must also cancel
+  // any pending text edit (so the unsaved buffer is discarded, not
+  // silently committed) and clear the inspector selection.
   useEffect(() => {
     if (!editMode && toolbarState.isOpen) {
+      cancelTextEditRef.current?.()
       setToolbarState((s) => ({ ...s, isOpen: false }))
+      closeInspectorToolbar()
     }
   }, [editMode, toolbarState.isOpen])
   const [isApplyingStyle, setIsApplyingStyle] = useState(false)
@@ -942,6 +951,7 @@ export function Dashboard({
       const el = root?.querySelector<HTMLElement>(selection.elementPath)
       if (el) {
         const rect = el.getBoundingClientRect()
+        originalStyleAttributeRef.current = el.getAttribute('style')
         setToolbarState({
           isOpen: true,
           anchorRect: rect,
@@ -1003,7 +1013,26 @@ export function Dashboard({
   }
 
   const handleSectionEditSubmit = async (prompt: string) => {
-    if (!inspectorSelection || !resolvedSessionId) return
+    if (!resolvedSessionId) return
+    // The AI edit can be triggered from either the section inspector
+    // (inspectorSelection set) or the inline toolbar's Sparkles panel
+    // (only toolbarState.activeElement is set). Fall back to building a
+    // selection from the inline toolbar's active element so the AI edit
+    // works without the inspector being open.
+    const previewRoot = document.querySelector('.genui-preview')
+    const selection = resolveSectionEditSelection({
+      activeElement: toolbarState.activeElement,
+      inspectorSelection,
+      previewRoot: previewRoot instanceof HTMLElement ? previewRoot : null,
+    })
+    if (!selection) return
+    // Save the preview scroll position before the edit. A successful AI edit
+    // bumps previewVersion → renderedPreviewKey changes → the scroll container
+    // remounts at scrollTop=0. The restore effect picks this up.
+    const previewScrollEl = getPreviewScrollEl()
+    if (previewScrollEl) {
+      savedPreviewScrollRef.current = previewScrollEl.scrollTop
+    }
     setIsSectionEditing(true)
     setSectionEditError(undefined)
     try {
@@ -1014,7 +1043,7 @@ export function Dashboard({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             instruction: prompt,
-            selection: inspectorSelection,
+            selection,
             anonymousOwnerSecret: activeAnonymousOwnerSecret,
           }),
         },
@@ -1027,8 +1056,11 @@ export function Dashboard({
         )
       }
       // Success — the Convex mutation bumps previewVersion, which triggers
-      // a live query update and re-renders the preview automatically.
+      // a live query update and re-renders the preview automatically. Close
+      // the inline toolbar too: the edited element is gone after the re-render
+      // and the toolbar would otherwise linger over a stale selection.
       closeInspectorToolbar()
+      setToolbarState((s) => ({ ...s, isOpen: false }))
     } catch (error) {
       setSectionEditError(
         error instanceof Error ? error.message : 'Section edit failed',
@@ -1145,6 +1177,7 @@ export function Dashboard({
 
     // Unified: open the InlineEditToolbar with the image element.
     // The toolbar detects <img> and shows the image swap panel.
+    originalStyleAttributeRef.current = element.getAttribute('style')
     setToolbarState({
       isOpen: true,
       anchorRect: rect,
@@ -1165,6 +1198,7 @@ export function Dashboard({
   }
 
   const handleElementActivate = (element: HTMLElement, rect: DOMRect) => {
+    originalStyleAttributeRef.current = element.getAttribute('style')
     setToolbarState({
       isOpen: true,
       anchorRect: rect,
@@ -1175,17 +1209,24 @@ export function Dashboard({
   const handleLinkEdit = async (payload: {
     oldHref: string
     newHref: string
+    oldText: string
+    newText: string
+    target: string | null
+    rel: string
     occurrenceIndex: number
   }) => {
     if (!resolvedSessionId) return
     const source = generationView?.homeModule?.source
     if (!source) return
-    const result = replaceHrefInSource(
-      source,
-      payload.oldHref,
-      payload.newHref,
-      payload.occurrenceIndex,
-    )
+    const result = updateLinkInSource(source, {
+      oldHref: payload.oldHref,
+      newHref: payload.newHref,
+      oldText: payload.oldText,
+      newText: payload.newText,
+      target: payload.target,
+      rel: payload.rel,
+      occurrenceIndex: payload.occurrenceIndex,
+    })
     if (!result.replaced) return
     await editController.applyEdit(
       'ai_rewrite',
@@ -1230,17 +1271,11 @@ export function Dashboard({
     style: string
     occurrenceIndex: number
   }) => {
-    // Store original styles for revert
+    // Use the original style captured when the toolbar opened (before any
+    // live-preview modification). Capturing at apply-time is too late — the
+    // toolbar has already applied the live preview by then.
     const activeElement = toolbarState.activeElement
-    const originalStyles: Record<string, string> = {}
-    if (activeElement) {
-      const computed = window.getComputedStyle(activeElement)
-      originalStyles.fontSize = computed.fontSize
-      originalStyles.fontWeight = computed.fontWeight
-      originalStyles.fontStyle = computed.fontStyle
-      originalStyles.color = computed.color
-      originalStyles.textAlign = computed.textAlign
-    }
+    const originalStyleAttribute = originalStyleAttributeRef.current
 
     setIsApplyingStyle(true)
     const tag = toolbarState.activeElement?.tagName.toLowerCase() || 'DIV'
@@ -1267,14 +1302,15 @@ export function Dashboard({
       setIsForkingSession(true)
       toast.info('Forking session to save your changes...')
       const forkResult = await editController.forkCurrentSession()
+      setIsForkingSession(false)
       if (!forkResult) {
         // Fork failed, revert the style changes
         if (activeElement) {
-          activeElement.style.fontSize = originalStyles.fontSize
-          activeElement.style.fontWeight = originalStyles.fontWeight
-          activeElement.style.fontStyle = originalStyles.fontStyle
-          activeElement.style.color = originalStyles.color
-          activeElement.style.textAlign = originalStyles.textAlign
+          if (originalStyleAttribute === null) {
+            activeElement.removeAttribute('style')
+          } else {
+            activeElement.setAttribute('style', originalStyleAttribute)
+          }
         }
         toast.error(editController.editError || 'Failed to fork session')
       }
@@ -1284,11 +1320,11 @@ export function Dashboard({
     } else {
       // Revert the style changes on other errors
       if (activeElement) {
-        activeElement.style.fontSize = originalStyles.fontSize
-        activeElement.style.fontWeight = originalStyles.fontWeight
-        activeElement.style.fontStyle = originalStyles.fontStyle
-        activeElement.style.color = originalStyles.color
-        activeElement.style.textAlign = originalStyles.textAlign
+        if (originalStyleAttribute === null) {
+          activeElement.removeAttribute('style')
+        } else {
+          activeElement.setAttribute('style', originalStyleAttribute)
+        }
       }
       console.error('[Inline Edit] Failed to save style:', result.error)
       toast.error(result.error)
