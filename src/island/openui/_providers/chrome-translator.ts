@@ -33,6 +33,7 @@ interface ChromeTranslatorFactory {
 }
 
 const SOURCE = 'en'
+const BATCH_SEPARATOR = '\n\uE000SHIP_FAST_TRANSLATION_BOUNDARY\uE000\n'
 
 // Resolve the Translator factory across the API's naming history: the stable global
 // `Translator` (Chrome 138+), and the older `self.translation` / `self.ai.translator`
@@ -108,7 +109,7 @@ export async function isChromeTranslatorLocaleAvailable(
   locale: string,
 ): Promise<boolean> {
   const status = await getChromeTranslatorAvailability(locale)
-  return Boolean(status && status !== 'unavailable')
+  return status === 'available'
 }
 
 async function getTranslator(target: string): Promise<ChromeTranslator | null> {
@@ -121,10 +122,7 @@ async function getTranslator(target: string): Promise<ChromeTranslator | null> {
   const created = (async () => {
     try {
       const status = await getChromeTranslatorAvailability(target)
-      if (!status || status === 'unavailable') return null
-      // 'available' | 'downloadable' | 'downloading' → attempt create. A
-      // 'downloadable' model may require a user gesture; if create() rejects we
-      // cache the null and let the LLM take over for this session.
+      if (status !== 'available') return null
       return await factory.create({
         sourceLanguage: SOURCE,
         targetLanguage: target,
@@ -151,6 +149,30 @@ export async function translateOnDevice(
     if (!translator) return null
     const out = (await translator.translate(text))?.trim()
     return out || null
+  } catch {
+    return null
+  }
+}
+
+export async function translateOnDeviceBatch(
+  texts: string[],
+  locale: string,
+): Promise<Array<string | null> | null> {
+  if (texts.length === 0) return []
+  if (texts.length === 1) return [await translateOnDevice(texts[0], locale)]
+  if (!canUseChromeTranslator(locale)) return null
+  try {
+    const translator = await getTranslator(
+      normalizeNativeLocaleForBrowser(locale),
+    )
+    if (!translator) return null
+    const translated = (
+      await translator.translate(texts.join(BATCH_SEPARATOR))
+    )?.trim()
+    if (!translated) return null
+    const parts = translated.split(BATCH_SEPARATOR).map((part) => part.trim())
+    if (parts.length !== texts.length) return null
+    return parts.map((part) => part || null)
   } catch {
     return null
   }

@@ -432,6 +432,43 @@ describe('createTranslateResponse', () => {
     expect(calls[0].user).toContain(JSON.stringify([DB_OBSERVED_TEXT.taproom]))
   })
 
+  it('splits a large cache-miss batch into smaller parallel model calls instead of one giant request (regression: a full-page-sized batch of ~100+ unique strings took ~12s in ONE model call, right at the request timeout, causing silent whole-page translation failures under normal latency variance)', async () => {
+    const calls: Array<{ user: string }> = []
+    const texts = Array.from(
+      { length: 65 },
+      (_, i) => `Unique landing copy line ${i}`,
+    )
+    const response = await createTranslateResponse(
+      new Request('https://ship-fast.test/api/translate', {
+        method: 'POST',
+        body: JSON.stringify({ texts, locale: 'hi' }),
+      }),
+      async (_system, user) => {
+        calls.push({ user })
+        // Echo back a "translated" marker per line in this call's batch so
+        // we can verify correct reassembly order across chunks.
+        const parsed = JSON.parse(user.slice(user.indexOf('['))) as string[]
+        return JSON.stringify(parsed.map((t) => `HI:${t}`))
+      },
+      null,
+    )
+
+    const body = (await response.json()) as { translations: string[] }
+
+    // Must be split into more than one call — a single 65-item call is
+    // exactly the scenario that measured ~12s in production.
+    expect(calls.length).toBeGreaterThan(1)
+    // No single call should carry the whole batch.
+    for (const call of calls) {
+      const parsed = JSON.parse(
+        call.user.slice(call.user.indexOf('[')),
+      ) as string[]
+      expect(parsed.length).toBeLessThan(texts.length)
+    }
+    // Reassembly must preserve original order across chunks.
+    expect(body.translations).toEqual(texts.map((t) => `HI:${t}`))
+  })
+
   it('returns a stable public error with source text when the model fails', async () => {
     const response = await createTranslateResponse(
       new Request('https://ship-fast.test/api/translate', {

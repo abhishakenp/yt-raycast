@@ -128,10 +128,16 @@ export const rememberReadySession = (
     createdAt: input.now ?? Date.now(),
   }
 
-  storage.setItem(
-    getReadySessionCacheKey(entry.prompt, entry.preferredLanguage),
-    JSON.stringify(entry),
-  )
+  try {
+    storage.setItem(
+      getReadySessionCacheKey(entry.prompt, entry.preferredLanguage),
+      JSON.stringify(entry),
+    )
+  } catch {
+    // localStorage quota exceeded or unavailable (private mode / disabled).
+    // The ready-session cache is a best-effort optimization; a failed write
+    // must never crash the dashboard or break preview rendering.
+  }
 }
 
 export const readReadySessionCache = (
@@ -225,10 +231,16 @@ export const rememberReadySessionPreview = (
     createdAt: input.createdAt ?? Date.now(),
   }
 
-  storage.setItem(
-    getReadySessionPreviewCacheKey(sessionId),
-    JSON.stringify(entry),
-  )
+  try {
+    storage.setItem(
+      getReadySessionPreviewCacheKey(sessionId),
+      JSON.stringify(entry),
+    )
+  } catch {
+    // localStorage quota exceeded or unavailable (private mode / disabled).
+    // The ready-session preview cache is a best-effort optimization; a failed
+    // write must never crash the dashboard or break preview rendering.
+  }
 }
 
 export const readReadySessionPreview = (

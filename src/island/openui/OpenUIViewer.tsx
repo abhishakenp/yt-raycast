@@ -312,6 +312,18 @@ export default function OpenUIViewer({
         ? current
         : { ...current, error: null },
     )
+    // If the source references a custom AI capsule (AICustom_ prefix) but the
+    // session's capsule rows haven't loaded yet, hold off loading the runtime
+    // library — loading without the capsule bindings would render a broken
+    // fallback. Once useQuery resolves, aiCapsules changes and this effect
+    // re-runs with the full capsule set.
+    if (
+      aiCapsules === undefined &&
+      typeof preparedResponse === 'string' &&
+      preparedResponse.includes('AICustom_')
+    ) {
+      return
+    }
     loadOpenUIRuntimeLibrary(preparedResponse, aiCapsules)
       .then((library) => {
         if (cancelled) return

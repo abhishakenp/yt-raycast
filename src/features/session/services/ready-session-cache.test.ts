@@ -202,6 +202,74 @@ describe('ready session cache', () => {
     ).toBeNull()
   })
 
+  it('swallows QuotaExceededError from setItem in rememberReadySession', () => {
+    const store = new Map<string, string>()
+    const storage = {
+      getItem: (key: string) => store.get(key) ?? null,
+      removeItem: (key: string) => {
+        store.delete(key)
+      },
+      setItem: () => {
+        const err = new Error('Setting the value exceeded the quota')
+        err.name = 'QuotaExceededError'
+        throw err
+      },
+    }
+
+    expect(() =>
+      rememberReadySession(storage, {
+        sessionId: 'session_quota',
+        prompt: 'a blog about dogs',
+        preferredLanguage: 'en',
+        now: 1000,
+      }),
+    ).not.toThrow()
+
+    // Nothing was persisted; reads return null without crashing.
+    expect(
+      readReadySessionCache(storage, {
+        prompt: 'a blog about dogs',
+        preferredLanguage: 'en',
+        now: 2000,
+      }),
+    ).toBeNull()
+  })
+
+  it('swallows QuotaExceededError from setItem in rememberReadySessionPreview', () => {
+    const store = new Map<string, string>()
+    const storage = {
+      getItem: (key: string) => store.get(key) ?? null,
+      removeItem: (key: string) => {
+        store.delete(key)
+      },
+      setItem: () => {
+        const err = new Error(
+          "Setting the value of 'ship-fast:ready-session-preview:v1:x' exceeded the quota",
+        )
+        err.name = 'QuotaExceededError'
+        throw err
+      },
+    }
+
+    expect(() =>
+      rememberReadySessionPreview(storage, {
+        sessionId: 'session_preview_quota',
+        status: 'preview_ready',
+        prompt: 'Build a cached preview site',
+        preferredLanguage: 'en',
+        homeModule: { source: '<html><body>cached</body></html>' },
+        createdAt: 1000,
+      }),
+    ).not.toThrow()
+
+    expect(
+      readReadySessionPreview(storage, {
+        sessionId: 'session_preview_quota',
+        now: 2000,
+      }),
+    ).toBeNull()
+  })
+
   it('does not store ready preview snapshots that contain DB-observed OpenUI handoff HTML', () => {
     const storage = createStorage()
 
