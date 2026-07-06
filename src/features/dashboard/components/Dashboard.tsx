@@ -1625,9 +1625,7 @@ export function Dashboard({
                 'relative grid min-h-0 flex-1',
                 isAdminActive || isMissingSession || hasGenerationFailure
                   ? 'grid-cols-1'
-                  : railCollapsed
-                    ? 'grid-cols-1'
-                    : 'grid-cols-[minmax(0,1fr)_280px]',
+                  : 'grid-cols-[minmax(0,1fr)_auto]',
               )}
             >
               {publishError && (
@@ -1730,51 +1728,57 @@ export function Dashboard({
                   )}
                 </div>
               </div>
-              {!isAdminActive &&
-                !isMissingSession &&
-                !hasGenerationFailure &&
-                railCollapsed && (
+              {!isAdminActive && !isMissingSession && !hasGenerationFailure && (
+                <>
                   <button
                     type="button"
                     onClick={() => setRailUserToggle(false)}
                     aria-label="Expand site tools"
                     aria-expanded={false}
-                    className="absolute right-0 top-4 z-20 flex items-center gap-1.5 rounded-l-xl border border-r-0 border-white/10 bg-[#0c1018]/92 px-2.5 py-2.5 text-white/56 transition-[color,background-color] duration-150 hover:text-white hover:bg-[#0c1018]"
+                    className={cn(
+                      'absolute right-0 top-16 z-20 flex items-center gap-1.5 rounded-l-xl border border-r-0 border-white/10 bg-[#0c1018]/92 px-2.5 py-2.5 text-white/56 transition-[color,background-color,transform,opacity] duration-200 ease-out hover:text-white hover:bg-[#0c1018]',
+                      railCollapsed
+                        ? 'translate-x-0 opacity-100'
+                        : 'pointer-events-none translate-x-3 opacity-0',
+                    )}
                   >
                     <ChevronLeft className="size-4" aria-hidden="true" />
                     <span className="text-[11px] font-medium tracking-wide">
                       Tools
                     </span>
                   </button>
-                )}
+                  <button
+                    type="button"
+                    onClick={() => setRailUserToggle(true)}
+                    aria-label="Collapse site tools"
+                    aria-expanded={true}
+                    className={cn(
+                      'absolute right-0 top-16 z-20 grid size-7 place-items-center rounded-l-lg border border-r-0 border-white/10 bg-[#0c1018]/92 text-white/56 transition-[color,background-color,transform,opacity] duration-200 ease-out hover:text-white hover:bg-[#0c1018]',
+                      railCollapsed
+                        ? 'pointer-events-none -translate-x-3 opacity-0'
+                        : '-translate-x-[280px] opacity-100',
+                    )}
+                  >
+                    <ChevronRight className="size-4" aria-hidden="true" />
+                  </button>
+                </>
+              )}
               {(!isAdminActive && !isMissingSession && !hasGenerationFailure
-                ? !railCollapsed
+                ? true
                 : true) && (
                 <aside
                   className={cn(
-                    'relative flex min-h-0 flex-col border-l border-white/10 bg-[#0c1018]/92',
+                    'relative flex min-h-0 flex-col overflow-hidden border-l border-white/10 bg-[#0c1018]/92 transition-[width] duration-200 ease-out',
                     (isAdminActive ||
                       isMissingSession ||
                       hasGenerationFailure) &&
                       'hidden',
+                    railCollapsed ? 'w-0' : 'w-[280px]',
                   )}
                   id="preview-site-rail"
                   aria-label="Site tools"
                 >
-                  {!isAdminActive &&
-                    !isMissingSession &&
-                    !hasGenerationFailure && (
-                      <button
-                        type="button"
-                        onClick={() => setRailUserToggle(true)}
-                        aria-label="Collapse site tools"
-                        aria-expanded={true}
-                        className="absolute -left-7 top-4 z-20 grid size-7 place-items-center rounded-l-lg border border-r-0 border-white/10 bg-[#0c1018]/92 text-white/56 transition-[color,background-color] duration-150 hover:text-white hover:bg-[#0c1018]"
-                      >
-                        <ChevronRight className="size-4" aria-hidden="true" />
-                      </button>
-                    )}
-                  <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-4">
+                  <div className="flex min-h-0 w-[280px] flex-1 flex-col gap-5 overflow-y-auto p-4">
                     <div className="grid gap-2">
                       <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">
                         Manage content
@@ -2367,7 +2371,7 @@ export function Dashboard({
                     </div>
                   </div>
                   <div
-                    className="flex items-center gap-2 border-t border-white/10 px-4 py-3 text-xs text-white/48"
+                    className="flex w-[280px] items-center gap-2 border-t border-white/10 px-4 py-3 text-xs text-white/48"
                     id="preview-site-rail-status"
                   >
                     <span
