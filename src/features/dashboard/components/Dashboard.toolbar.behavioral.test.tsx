@@ -699,64 +699,71 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
   })
 
   // 11. Site tools siderail collapse / expand
-  it('shows the siderail with a collapse button on desktop (default expanded)', () => {
+  it('shows the siderail expanded with a visible collapse button on desktop', () => {
     setupReady()
     render(<Dashboard sessionId="ready-session" />)
 
-    // Rail is visible — E-commerce button is in the DOM
-    expect(screen.getByRole('button', { name: /E-commerce/i })).toBeTruthy()
-    // Collapse button is present
-    expect(
-      screen.getByRole('button', { name: 'Collapse site tools' }),
-    ).toBeTruthy()
-    // Expand button is NOT present (rail is already expanded)
-    expect(
-      screen.queryByRole('button', { name: 'Expand site tools' }),
-    ).toBeNull()
+    // Rail is expanded — aside has w-[280px]
+    const rail = document.getElementById('preview-site-rail')
+    expect(rail?.className).toContain('w-[280px]')
+    // Collapse button is visible (opacity-100)
+    const collapseBtn = screen.getByRole('button', {
+      name: 'Collapse site tools',
+    })
+    expect(collapseBtn.className).toContain('opacity-100')
+    // Expand button is hidden (opacity-0 + pointer-events-none)
+    const expandBtn = screen.getByRole('button', {
+      name: 'Expand site tools',
+    })
+    expect(expandBtn.className).toContain('opacity-0')
+    expect(expandBtn.className).toContain('pointer-events-none')
   })
 
   it('collapses the siderail when the collapse button is clicked', () => {
     setupReady()
     render(<Dashboard sessionId="ready-session" />)
 
-    // Rail is initially expanded
-    expect(screen.getByRole('button', { name: /E-commerce/i })).toBeTruthy()
+    const rail = document.getElementById('preview-site-rail')
+    expect(rail?.className).toContain('w-[280px]')
 
     fireEvent.click(screen.getByRole('button', { name: 'Collapse site tools' }))
 
-    // Rail content is gone — E-commerce button is no longer in the DOM
-    expect(screen.queryByRole('button', { name: /E-commerce/i })).toBeNull()
-    // Expand button is now present
-    expect(
-      screen.getByRole('button', { name: 'Expand site tools' }),
-    ).toBeTruthy()
-    // Collapse button is gone
-    expect(
-      screen.queryByRole('button', { name: 'Collapse site tools' }),
-    ).toBeNull()
+    // Rail is now collapsed — aside has w-0
+    expect(rail?.className).toContain('w-0')
+    // Expand button is now visible
+    const expandBtn = screen.getByRole('button', {
+      name: 'Expand site tools',
+    })
+    expect(expandBtn.className).toContain('opacity-100')
+    expect(expandBtn.className).not.toContain('pointer-events-none')
+    // Collapse button is now hidden
+    const collapseBtn = screen.getByRole('button', {
+      name: 'Collapse site tools',
+    })
+    expect(collapseBtn.className).toContain('opacity-0')
+    expect(collapseBtn.className).toContain('pointer-events-none')
   })
 
   it('expands the siderail when the expand button is clicked after collapsing', () => {
     setupReady()
     render(<Dashboard sessionId="ready-session" />)
 
-    // Collapse the rail
-    fireEvent.click(screen.getByRole('button', { name: 'Collapse site tools' }))
-    expect(screen.queryByRole('button', { name: /E-commerce/i })).toBeNull()
+    const rail = document.getElementById('preview-site-rail')
 
-    // Expand it back
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse site tools' }))
+    expect(rail?.className).toContain('w-0')
+
     fireEvent.click(screen.getByRole('button', { name: 'Expand site tools' }))
 
-    // Rail content is back
-    expect(screen.getByRole('button', { name: /E-commerce/i })).toBeTruthy()
-    // Collapse button is back
-    expect(
-      screen.getByRole('button', { name: 'Collapse site tools' }),
-    ).toBeTruthy()
-    // Expand button is gone
-    expect(
-      screen.queryByRole('button', { name: 'Expand site tools' }),
-    ).toBeNull()
+    expect(rail?.className).toContain('w-[280px]')
+    const collapseBtn = screen.getByRole('button', {
+      name: 'Collapse site tools',
+    })
+    expect(collapseBtn.className).toContain('opacity-100')
+    const expandBtn = screen.getByRole('button', {
+      name: 'Expand site tools',
+    })
+    expect(expandBtn.className).toContain('opacity-0')
   })
 
   it('does not show collapse/expand buttons when the project is missing', () => {
