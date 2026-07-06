@@ -16,7 +16,8 @@
     "./portal": "./src/components/ui/portal-container.tsx"
   },
   "dependencies": {
-    "@ship-fast/lakebed": "workspace:*"
+    "@ship-fast/lakebed": "workspace:*",
+    "framer-motion": "^12.40.0"
   },
   "imports": {
     "#/*": "./src/*"
