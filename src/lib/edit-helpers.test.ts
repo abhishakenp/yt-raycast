@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   applyImageSwap,
+  applyOpenUiVarReplace,
   applyPreviewTextEdit,
+  applySectionHtmlReplace,
   applyStyleEdit,
 } from './edit-helpers'
 
@@ -12,6 +14,39 @@ describe('edit-helpers (shared)', () => {
 
     expect(applyPreviewTextEdit(html, 'Start', 'Launch', 1)).toEqual({
       html: '<nav>Start</nav><main><h1>Launch</h1></main>',
+      replaced: true,
+    })
+  })
+
+  it('escapes HTML-special characters typed as plain text when escapeReplacement is requested for genuine HTML, even on an exact match (regression: typing "Use <b> for bold" as a heading replacement produced live markup instead of literal text)', () => {
+    const html = '<h1>Hello World</h1>'
+
+    const result = applyPreviewTextEdit(
+      html,
+      'Hello World',
+      'Use <b> for bold & <script>alert(1)</script>',
+      undefined,
+      true,
+    )
+
+    expect(result).toEqual({
+      html: '<h1>Use &lt;b&gt; for bold &amp; &lt;script&gt;alert(1)&lt;/script&gt;</h1>',
+      replaced: true,
+    })
+  })
+
+  it('does NOT escape replacement text by default — needed for non-HTML callers (OpenUI source, compiled JS, JSON string leaves) where "&"/"<" are literal characters inside a string literal, not markup', () => {
+    const source =
+      'nav = Navbar("Home", "Features", "Plans & Pricing", "About", "Contact")'
+
+    const result = applyPreviewTextEdit(
+      source,
+      'Plans & Pricing',
+      'Plans & Pricing 2.0',
+    )
+
+    expect(result).toEqual({
+      html: 'nav = Navbar("Home", "Features", "Plans & Pricing 2.0", "About", "Contact")',
       replaced: true,
     })
   })
@@ -44,6 +79,104 @@ describe('edit-helpers (shared)', () => {
 
     expect(applyStyleEdit(html, 'tile', 'color: blue', 1)).toEqual({
       html: '<div class="tile" style="color:red">A</div><div class="tile" style="color: blue">B</div>',
+      replaced: true,
+    })
+  })
+
+  it('updates id-anchored style edits for generated sections without classes', () => {
+    const html =
+      '<section id="newsletter_newsletter">A</section><section id="other">B</section>'
+
+    expect(
+      applyStyleEdit(
+        html,
+        '#newsletter_newsletter',
+        'background-image: url(&quot;https://images.pexels.com/bg.jpeg&quot;)',
+      ),
+    ).toEqual({
+      html: '<section id="newsletter_newsletter" style="background-image: url(&quot;https://images.pexels.com/bg.jpeg&quot;)">A</section><section id="other">B</section>',
+      replaced: true,
+    })
+  })
+
+  it('updates id-anchored style edits when the raw id is not a simple CSS selector', () => {
+    const html =
+      '<section id="hero:newsletter/1">A</section><section id="other">B</section>'
+
+    expect(
+      applyStyleEdit(html, '#hero:newsletter/1', 'background-size: cover'),
+    ).toEqual({
+      html: '<section id="hero:newsletter/1" style="background-size: cover">A</section><section id="other">B</section>',
+      replaced: true,
+    })
+  })
+
+  it('updates data-openui-var style edits for rendered artifacts without id or class anchors', () => {
+    const html =
+      '<section data-openui-var="home_hero">Hero</section><section data-openui-var="home_footer">Footer</section>'
+
+    expect(
+      applyStyleEdit(
+        html,
+        '[data-openui-var="home_hero"]',
+        'background-image: url(&quot;https://images.pexels.com/openui-var-bg.jpeg&quot;); background-size: cover',
+      ),
+    ).toEqual({
+      html: '<section data-openui-var="home_hero" style="background-image: url(&quot;https://images.pexels.com/openui-var-bg.jpeg&quot;); background-size: cover">Hero</section><section data-openui-var="home_footer">Footer</section>',
+      replaced: true,
+    })
+  })
+
+  it('updates class-anchored style edits when the generated HTML uses single-quoted attributes', () => {
+    const html =
+      "<div class='tile' style='color:red'>A</div><div class='tile'>B</div>"
+
+    expect(applyStyleEdit(html, 'tile', 'color: blue', 0)).toEqual({
+      html: "<div class='tile' style=\"color: blue\">A</div><div class='tile'>B</div>",
+      replaced: true,
+    })
+  })
+
+  it('updates class-anchored style edits when generated class tokens are stored in a different order', () => {
+    const html =
+      '<section class="py-20 bg-white hero-section">Hero</section><section class="py-20 bg-white footer-section">Footer</section>'
+
+    expect(
+      applyStyleEdit(
+        html,
+        'hero-section bg-white py-20',
+        'background-image: url(&quot;https://images.pexels.com/bg.jpeg&quot;); background-size: cover',
+      ),
+    ).toEqual({
+      html: '<section class="py-20 bg-white hero-section" style="background-image: url(&quot;https://images.pexels.com/bg.jpeg&quot;); background-size: cover">Hero</section><section class="py-20 bg-white footer-section">Footer</section>',
+      replaced: true,
+    })
+  })
+
+  it('updates React className artifacts with the same style edit contract used for rendered HTML', () => {
+    const source =
+      '<section className="hero-section bg-white py-20">Hero</section><section className="footer-section bg-white py-20">Footer</section>'
+
+    expect(
+      applyStyleEdit(source, 'hero-section bg-white py-20', 'color: blue'),
+    ).toEqual({
+      html: '<section className="hero-section bg-white py-20" style={{ color: "blue" }}>Hero</section><section className="footer-section bg-white py-20">Footer</section>',
+      replaced: true,
+    })
+  })
+
+  it('updates id-anchored style edits when the generated HTML uses a single-quoted id', () => {
+    const html =
+      "<section id='newsletter_newsletter'>A</section><section id='other'>B</section>"
+
+    expect(
+      applyStyleEdit(
+        html,
+        '#newsletter_newsletter',
+        'background-position: center center',
+      ),
+    ).toEqual({
+      html: "<section id='newsletter_newsletter' style=\"background-position: center center\">A</section><section id='other'>B</section>",
       replaced: true,
     })
   })
@@ -281,5 +414,117 @@ describe('edit-helpers (shared)', () => {
     const r1 = applyPreviewTextEdit(source, 'go', 'GO2', 1)
     expect(r1.html).toContain('"go"')
     expect(r1.html).toContain('"a", "GO2")')
+  })
+})
+
+describe('applySectionHtmlReplace (section-scoped AI rewrite splice)', () => {
+  it('splices a section fragment in place, leaving surrounding markup untouched', () => {
+    const html =
+      '<html><body><nav>Site Nav</nav><main><section class="hero">Hero</section></main><footer>Site Footer</footer></body></html>'
+
+    const result = applySectionHtmlReplace(
+      html,
+      '<section class="hero">Hero</section>',
+      '<section class="hero">Sharper Hero</section>',
+    )
+
+    expect(result).toEqual({
+      html: '<html><body><nav>Site Nav</nav><main><section class="hero">Sharper Hero</section></main><footer>Site Footer</footer></body></html>',
+      replaced: true,
+    })
+  })
+
+  it('does not HTML-escape the replacement markup (unlike text edits)', () => {
+    const html = '<main><section class="hero"><h1>Old</h1></section></main>'
+
+    const result = applySectionHtmlReplace(
+      html,
+      '<section class="hero"><h1>Old</h1></section>',
+      '<section class="hero"><h1>New</h1><p>Sub</p></section>',
+    )
+
+    expect(result.html).toBe(
+      '<main><section class="hero"><h1>New</h1><p>Sub</p></section></main>',
+    )
+    expect(result.html).not.toContain('&lt;')
+  })
+
+  it('returns replaced:false without modifying html when the anchor is not found', () => {
+    const html = '<main><section class="hero">Hero</section></main>'
+
+    const result = applySectionHtmlReplace(
+      html,
+      '<section class="hero">Stale snapshot</section>',
+      '<section class="hero">New</section>',
+    )
+
+    expect(result).toEqual({ html, replaced: false })
+  })
+
+  it('picks the requested occurrence when the anchor repeats', () => {
+    const html =
+      '<section class="card">A</section><section class="card">A</section>'
+
+    const result = applySectionHtmlReplace(
+      html,
+      '<section class="card">A</section>',
+      '<section class="card">Z</section>',
+      1,
+    )
+
+    expect(result).toEqual({
+      html: '<section class="card">A</section><section class="card">Z</section>',
+      replaced: true,
+    })
+  })
+})
+
+describe('applyOpenUiVarReplace (section-scoped AI rewrite splice for OpenUI DSL)', () => {
+  it('replaces the bare component-call the AI returned, restoring the assignment prefix, without touching sibling statements (regression: sectionRewrite wiped nav/footer/root)', () => {
+    const source = [
+      'home_navbar = BakeryNavbar("Sweet Crumbs", ["Home","Menu"], "Order Now", "#menu", "0")',
+      'home_hero = BakeryHero("Welcome to Sweet Crumbs", "Wel...")',
+      'home_footer = BakeryFooter("Sweet Crumbs")',
+      'root = Stack([home_navbar, home_hero, home_footer])',
+    ].join('\n')
+
+    const result = applyOpenUiVarReplace(
+      source,
+      'home_hero',
+      'BakeryHero("Elevate Your Senses", "Indulge in the Sweet Life")',
+    )
+
+    expect(result.replaced).toBe(true)
+    expect(result.source).toContain(
+      'home_hero = BakeryHero("Elevate Your Senses", "Indulge in the Sweet Life")',
+    )
+    expect(result.source).toContain('home_navbar = BakeryNavbar(')
+    expect(result.source).toContain('home_footer = BakeryFooter(')
+    expect(result.source).toContain(
+      'root = Stack([home_navbar, home_hero, home_footer])',
+    )
+  })
+
+  it('accepts a replacement that already includes the varName assignment', () => {
+    const source = 'home_hero = Hero("Old")\nroot = Stack([home_hero])'
+
+    const result = applyOpenUiVarReplace(
+      source,
+      'home_hero',
+      'home_hero = Hero("New")',
+    )
+
+    expect(result).toEqual({
+      source: 'home_hero = Hero("New")\nroot = Stack([home_hero])',
+      replaced: true,
+    })
+  })
+
+  it('returns replaced:false without modifying source when the variable is not found', () => {
+    const source = 'home_hero = Hero("Old")\nroot = Stack([home_hero])'
+
+    const result = applyOpenUiVarReplace(source, 'home_missing', 'Hero("New")')
+
+    expect(result).toEqual({ source, replaced: false })
   })
 })

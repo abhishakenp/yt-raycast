@@ -24,6 +24,87 @@ const escapeHtml = (str: string): string =>
 const escapeRegExp = (str: string): string =>
   str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
+const getQuotedAttribute = (
+  tag: string,
+  names: string[],
+): { name: string; value: string } | null => {
+  const pattern = new RegExp(`\\b(${names.join('|')})\\s*=\\s*(["'])(.*?)\\2`)
+  const match = tag.match(pattern)
+  return match ? { name: match[1], value: match[3] } : null
+}
+
+const classTokensIncludeAnchor = (
+  classValue: string,
+  anchor: string,
+): boolean => {
+  const anchorTokens = anchor.trim().split(/\s+/).filter(Boolean)
+  if (anchorTokens.length === 0) return false
+  const classTokens = new Set(classValue.trim().split(/\s+/).filter(Boolean))
+  return anchorTokens.every((token) => classTokens.has(token))
+}
+
+const STYLE_ATTRIBUTE_ANCHOR_RE =
+  /^\[(data-openui-var|data-openui-component|data-sf-export-page)=(["'])(.*?)\2\]$/
+
+const unescapeAttributeSelectorValue = (value: string): string =>
+  value.replace(/\\(["'\\])/g, '$1')
+
+const cssPropertyToJsxStyleKey = (property: string): string => {
+  const trimmed = property.trim()
+  if (trimmed.startsWith('--')) return JSON.stringify(trimmed)
+  const camel = trimmed.replace(/-([a-z])/g, (_, char: string) =>
+    char.toUpperCase(),
+  )
+  return /^[A-Za-z_$][\w$]*$/.test(camel) ? camel : JSON.stringify(trimmed)
+}
+
+const cssDeclarationsToJsxStyle = (styleValue: string): string => {
+  const entries = styleValue
+    .split(';')
+    .map((declaration) => declaration.trim())
+    .filter(Boolean)
+    .map((declaration) => {
+      const colon = declaration.indexOf(':')
+      if (colon <= 0) return null
+      const property = declaration.slice(0, colon).trim()
+      const value = declaration.slice(colon + 1).trim()
+      if (!property || !value) return null
+      return `${cssPropertyToJsxStyleKey(property)}: ${JSON.stringify(value)}`
+    })
+    .filter((entry): entry is string => entry !== null)
+
+  return `{{ ${entries.join(', ')} }}`
+}
+
+const tagMatchesStyleAnchor = (
+  tag: string,
+  anchor: string,
+): { isJsx: boolean } | null => {
+  if (anchor.startsWith('#')) {
+    const id = getQuotedAttribute(tag, ['id'])
+    const expected = anchor.slice(1).replace(/\\(.)/g, '$1')
+    return id?.value === expected ? { isJsx: false } : null
+  }
+
+  const attributeAnchor = anchor.match(STYLE_ATTRIBUTE_ANCHOR_RE)
+  if (attributeAnchor) {
+    const [, attributeName, , rawExpected] = attributeAnchor
+    const attribute = getQuotedAttribute(tag, [attributeName])
+    if (attribute?.value !== unescapeAttributeSelectorValue(rawExpected)) {
+      return null
+    }
+    return {
+      isJsx: /\bclassName\s*=|\bstyle\s*=\{\{/.test(tag),
+    }
+  }
+
+  const classAttr = getQuotedAttribute(tag, ['class', 'className'])
+  if (!classAttr || !classTokensIncludeAnchor(classAttr.value, anchor)) {
+    return null
+  }
+  return { isJsx: classAttr.name === 'className' }
+}
+
 /** Split oldText into word-only tokens and join with a pattern that matches
  *  any sequence of non-word characters or HTML tags between them. This
  *  handles the case where the client's diffEdits fallback produces oldText
@@ -105,6 +186,14 @@ export const applyPreviewTextEdit = (
   oldText: string | undefined,
   newText: string | undefined,
   occurrenceIndex?: number,
+  // This function is shared across genuinely different content types: real
+  // HTML (preview.html) where `<`/`>`/`&` are markup and must be escaped,
+  // but also OpenUI DSL source, compiled JS, and JSON string leaves — where
+  // those same characters are just literal text inside a string/JSON
+  // literal and escaping them would corrupt the source. Defaults to false
+  // (preserving the non-HTML majority of call sites); only pass true when
+  // `html` is genuinely rendered/stored HTML.
+  escapeReplacement = false,
 ): { html: string; replaced: boolean } => {
   const from = String(oldText ?? '')
   const to = String(newText ?? '')
@@ -127,7 +216,15 @@ export const applyPreviewTextEdit = (
   const isExact =
     target.length === from.length &&
     protectedHtml.startsWith(from, target.index)
-  const replacement = isExact ? to : escapeHtml(to)
+  // For genuine HTML, always escape — this replaces literal TEXT content,
+  // never raw markup. Previously only the tolerant/fuzzy-match path
+  // escaped, on the assumption that an exact match meant the replacement's
+  // characters didn't need it either — but that conflates "how the OLD
+  // text matched" with "what characters the NEW text contains": typing
+  // plain text containing `<`, `>`, or `&` (e.g. "Use <b> for bold") into
+  // an exactly-matched heading spliced it in unescaped, turning literal
+  // text into live markup.
+  const replacement = escapeReplacement || !isExact ? escapeHtml(to) : to
   const edited = `${protectedHtml.slice(0, target.index)}${replacement}${protectedHtml.slice(target.index + target.length)}`
   return {
     html: blocks.reduce(
@@ -185,16 +282,14 @@ export const applyStyleEdit = (
   styleValue: string | undefined,
   occurrenceIndex?: number,
 ): { html: string; replaced: boolean } => {
-  const cls = String(classAnchor ?? '').trim()
-  if (!html.trim() || !cls) return { html, replaced: false }
-  const tagRe = new RegExp(
-    `<[a-zA-Z][\\w-]*\\b[^>]*\\bclass="${escapeRegExp(cls)}"[^>]*?>`,
-    'g',
-  )
-  const matches: Array<{ index: number; tag: string }> = []
+  const anchor = String(classAnchor ?? '').trim()
+  if (!html.trim() || !anchor) return { html, replaced: false }
+  const tagRe = /<[a-zA-Z][\w-]*\b[^>]*?>/g
+  const matches: Array<{ index: number; tag: string; isJsx: boolean }> = []
   let m: RegExpExecArray | null
   while ((m = tagRe.exec(html)) !== null) {
-    matches.push({ index: m.index, tag: m[0] })
+    const match = tagMatchesStyleAnchor(m[0], anchor)
+    if (match) matches.push({ index: m.index, tag: m[0], isJsx: match.isJsx })
     if (m[0].length === 0) tagRe.lastIndex += 1
   }
   if (matches.length === 0) return { html, replaced: false }
@@ -204,10 +299,20 @@ export const applyStyleEdit = (
       : 0
   const target = matches[wanted]
   const escaped = String(styleValue ?? '').replace(/"/g, '&quot;')
-  const styleAttrRe = /\sstyle\s*=\s*"[^"]*"/i
+  const styleAttrRe = /\sstyle\s*=\s*(["'])[\s\S]*?\1/i
+  const jsxStyleAttrRe = /\sstyle\s*=\s*(?:\{\{[\s\S]*?\}\}|(["'])[\s\S]*?\1)/i
   const selfClose = /\/>$/.test(target.tag)
   let updatedTag: string
-  if (styleAttrRe.test(target.tag)) {
+  if (target.isJsx) {
+    const jsxStyle = cssDeclarationsToJsxStyle(String(styleValue ?? ''))
+    if (jsxStyleAttrRe.test(target.tag)) {
+      updatedTag = target.tag.replace(jsxStyleAttrRe, ` style=${jsxStyle}`)
+    } else if (selfClose) {
+      updatedTag = target.tag.replace(/\/>$/, ` style=${jsxStyle} />`)
+    } else {
+      updatedTag = target.tag.replace(/>$/, ` style=${jsxStyle}>`)
+    }
+  } else if (styleAttrRe.test(target.tag)) {
     updatedTag = target.tag.replace(styleAttrRe, ` style="${escaped}"`)
   } else if (selfClose) {
     updatedTag = target.tag.replace(/\/>$/, ` style="${escaped}" />`)
@@ -219,6 +324,85 @@ export const applyStyleEdit = (
     updatedTag +
     html.slice(target.index + target.tag.length)
   return { html: edited, replaced: true }
+}
+
+/**
+ * Splice an AI-rewritten section/element fragment into a larger HTML document
+ * by locating an exact literal match of the section's ORIGINAL outerHTML.
+ *
+ * Unlike applyPreviewTextEdit, this does no fuzzy whitespace/entity-tolerant
+ * matching and never HTML-escapes the replacement — both sides are markup,
+ * and a fuzzy match risks slicing through tag boundaries or corrupting the
+ * new markup. If the anchor isn't found verbatim, the caller must treat that
+ * as a real failure (e.g. stale selection) rather than falling back to
+ * replacing the whole document — a full-document fallback is exactly the bug
+ * this function exists to prevent (a section-scoped AI rewrite has no way to
+ * know the rest of the page, so it must never be allowed to overwrite it).
+ */
+export const applySectionHtmlReplace = (
+  html: string,
+  beforeHtml: string | undefined,
+  afterHtml: string | undefined,
+  occurrenceIndex?: number,
+): { html: string; replaced: boolean } => {
+  const before = String(beforeHtml ?? '')
+  const after = String(afterHtml ?? '')
+  if (!html.trim() || !before.trim()) return { html, replaced: false }
+
+  const indices: number[] = []
+  let from = html.indexOf(before)
+  while (from !== -1) {
+    indices.push(from)
+    from = html.indexOf(before, from + before.length)
+  }
+  if (indices.length === 0) return { html, replaced: false }
+
+  const wanted =
+    occurrenceIndex !== undefined && occurrenceIndex >= 0
+      ? Math.min(occurrenceIndex, indices.length - 1)
+      : 0
+  const target = indices[wanted]
+  const edited =
+    html.slice(0, target) + after + html.slice(target + before.length)
+  return { html: edited, replaced: true }
+}
+
+/**
+ * Replace the top-level `varName = ...` assignment line in OpenUI DSL source
+ * with a new expression, without touching any other line (sibling sections,
+ * the root/page Stack assembly, etc). The DSL emits exactly one statement per
+ * line (see reorder-source.ts's identical line-anchor approach for
+ * Stack([...]) arrays), so anchoring on the variable's own line is safe.
+ *
+ * The sectionRewrite AI tool only ever sees the selected section, so its
+ * `replacementOpenUiSource` output commonly omits the `varName = ` prefix —
+ * if the replacement doesn't already start with `varName =`, it is treated
+ * as a bare component-call expression and the prefix is restored. Without
+ * this anchor, a caller would have to trust the AI's output as the ENTIRE
+ * document source, which silently destroys every other section (the same
+ * corruption class applySectionHtmlReplace guards against for HTML).
+ */
+export const applyOpenUiVarReplace = (
+  source: string,
+  varName: string,
+  replacementExpr: string,
+): { source: string; replaced: boolean } => {
+  if (!source.trim() || !varName.trim() || !replacementExpr.trim()) {
+    return { source, replaced: false }
+  }
+
+  const assignmentRe = new RegExp(`^${escapeRegExp(varName)}\\s*=\\s*`)
+  const lines = source.split('\n')
+  const lineIndex = lines.findIndex((line) => assignmentRe.test(line))
+  if (lineIndex === -1) return { source, replaced: false }
+
+  const trimmedReplacement = replacementExpr.trim()
+  const hasAssignment = assignmentRe.test(trimmedReplacement)
+  lines[lineIndex] = hasAssignment
+    ? trimmedReplacement
+    : `${varName} = ${trimmedReplacement}`
+
+  return { source: lines.join('\n'), replaced: true }
 }
 
 /** Decode a named or numeric HTML entity to its character(s), or null if not
