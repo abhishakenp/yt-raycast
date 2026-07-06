@@ -1,6 +1,9 @@
 import { Buffer } from 'node:buffer'
 import { brotliDecompressSync } from 'node:zlib'
 
+import type { Tool } from '@tanstack/ai'
+import { createCodeMode } from '@tanstack/ai-code-mode'
+import { createNodeIsolateDriver } from '@tanstack/ai-isolate-node'
 import { ConvexHttpClient } from 'convex/browser'
 import { renderToStaticMarkup } from 'react-dom/server'
 
@@ -8,6 +11,19 @@ import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import type { InspectorSelection } from '@/features/editing/element-path'
+import {
+  buildElementDeleteCommand,
+  buildImageRemoveCommand,
+  buildImageReplaceCommand,
+  buildLinkEditCommand,
+  buildSectionMoveCommand,
+  buildSectionRewriteCommand,
+  buildStyleApplyCommand,
+  buildTextRewriteCommand,
+  buildUndoCommand,
+  type InlineEditPersistenceCommand,
+} from '@/features/editing/lib/inline-edit-commands'
+import { INLINE_EDIT_TOOL_DEFINITIONS } from '@/features/editing/lib/inline-edit-tool-definitions'
 
 type SectionEditClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
 
@@ -20,8 +36,17 @@ type GenerateText = (
   signal: AbortSignal,
   retries?: number,
 ) => Promise<string>
+type GenerateWithTools = (
+  model: string,
+  system: string,
+  user: string,
+  tools: Tool[],
+  signal: AbortSignal,
+  retries?: number,
+) => Promise<unknown>
 type GenerateTextRuntime = {
   generateText: GenerateText
+  generateWithTools: GenerateWithTools
   DEFAULT_MODEL: string
 }
 type CapsuleSmokeGlobals = typeof globalThis & {
@@ -49,11 +74,21 @@ const json = (body: unknown, init?: ResponseInit) =>
   })
 
 const loadGenerateTextRuntime = async (): Promise<GenerateTextRuntime> => {
-  const [{ generateText }, { DEFAULT_MODEL }] = await Promise.all([
-    import('@ship-fast/engine'),
-    import('@ship-fast/engine/model-list.js'),
-  ])
-  return { generateText, DEFAULT_MODEL }
+  const [{ generateText, generateWithTools }, { DEFAULT_MODEL }] =
+    await Promise.all([
+      import('@ship-fast/engine'),
+      import('@ship-fast/engine/model-list.js'),
+    ])
+  return {
+    generateText,
+    generateWithTools,
+    DEFAULT_MODEL,
+  }
+}
+
+const resolveInlineStockImage: ResolveInlineStockImage = async (input) => {
+  const { resolveStockImage } = await import('@/lib/stock-image')
+  return resolveStockImage(input)
 }
 
 const getString = (body: JsonBody, keys: string[]): string | undefined => {
@@ -79,17 +114,85 @@ const truncate = (value: string, max: number): string =>
 
 type GenerationViewSnapshot = {
   homeModule?: { source: string } | null
-  latestPreview?: { html: string } | null
+  latestPreview?: { html: string; version?: number } | null
 }
+
+type InlineToolExecutionResult = {
+  tool: string
+  sessionId: string
+  previewVersion: number
+  saved: boolean
+  translatedEdit?: {
+    locale: string
+    sourceText: string
+    translation: string
+  }
+}
+type ResolveInlineStockImage = (input: {
+  alt?: string
+  query?: string
+  w?: number
+  h?: number
+}) => Promise<{
+  imageUrl: string
+  source: 'pexels' | 'unsplash' | 'picsum'
+  query: string
+}>
+
+const INLINE_EDIT_CODE_MODE_TOOL_DEFINITIONS = INLINE_EDIT_TOOL_DEFINITIONS
+
+const isTranslatedEditOutput = (
+  value: unknown,
+): value is NonNullable<InlineToolExecutionResult['translatedEdit']> =>
+  Boolean(
+    value &&
+    typeof value === 'object' &&
+    typeof (value as { locale?: unknown }).locale === 'string' &&
+    typeof (value as { sourceText?: unknown }).sourceText === 'string' &&
+    typeof (value as { translation?: unknown }).translation === 'string',
+  )
 
 /** Determine if the session is HTML (iframe srcDoc) or OpenUI (component tree). */
 const isHtmlSession = (snapshot: GenerationViewSnapshot): boolean => {
   const source = snapshot.homeModule?.source ?? ''
-  // HTML sessions have <!DOCTYPE html> or <html> at the start
-  return /^\s*(?:<!DOCTYPE\s+html|<html)/i.test(source.trim())
+  return /^\s*(?:<!DOCTYPE\s+html|<html[\s>]|<[a-z][\w:-]*(?:\s|>|\/>))/i.test(
+    source.trim(),
+  )
 }
 
 // ─── LLM Prompt Builders ────────────────────────────────────────────────────
+
+const buildHtmlToolOnlyEditPrompt = (
+  selection: InspectorSelection,
+  instruction: string,
+  previewHtml: string,
+): { system: string; user: string } => {
+  const system = [
+    'You are editing an HTML page with inline editor tools.',
+    'Use only the available tools when the requested edit can be represented as text, style, image, link, deletion, or section rewrite operations.',
+    'For visual styling requests, call styleApply. For copy requests, call textRewrite.',
+    'If no available tool can perform the edit, return no tool calls.',
+  ].join('\n')
+
+  const user = [
+    `User instruction: ${truncate(instruction, MAX_INSTRUCTION_CHARS)}`,
+    '',
+    `Selected element tag: ${selection.tag}`,
+    `Selected element path: ${selection.elementPath}`,
+    `Selected element text: ${truncate(selection.textContent, 1000)}`,
+    `Selected element outerHTML: ${truncate(
+      selection.outerHTML,
+      MAX_SELECTION_HTML_CHARS,
+    )}`,
+    '',
+    'Current full page HTML:',
+    truncate(previewHtml, 50000),
+    '',
+    'Call the smallest sufficient inline editor tools now.',
+  ].join('\n')
+
+  return { system, user }
+}
 
 const buildHtmlSectionEditPrompt = (
   selection: InspectorSelection,
@@ -134,7 +237,6 @@ const buildOpenUiCapsuleEditPrompt = (
     'You are a React/TypeScript engineer rewriting an OpenUI capsule component.',
     'The capsule is a React component that receives props and renders a UI section.',
     'You will receive the capsule source code and a user instruction.',
-    'Return ONLY a complete TSX module that exports a default React component.',
     'The component must accept a props object and render the section.',
     'Use inline Tailwind classes for styling. Do not import external CSS.',
     'You may import from "react" only. Do not import other modules.',
@@ -166,6 +268,519 @@ const buildOpenUiCapsuleEditPrompt = (
   ].join('\n')
 
   return { system, user }
+}
+
+const buildOpenUiToolOnlyEditPrompt = (
+  selection: InspectorSelection,
+  instruction: string,
+  source: string,
+): { system: string; user: string } => {
+  const system = [
+    'You are editing an OpenUI-generated page with inline editor tools.',
+    'Use only the available tools when the requested edit can be represented as text, style, image, link, deletion, section move, or section rewrite operations.',
+    'For visual styling requests, call styleApply. For copy requests, call textRewrite.',
+    'Do not write TSX source in the response.',
+    'If no available tool can perform the edit, return no tool calls.',
+  ].join('\n')
+
+  const user = [
+    `User instruction: ${truncate(instruction, MAX_INSTRUCTION_CHARS)}`,
+    '',
+    `Selected element tag: ${selection.tag}`,
+    `Selected element path: ${selection.elementPath}`,
+    `Selected element text: ${truncate(selection.textContent, 1000)}`,
+    `Selected element outerHTML: ${truncate(
+      selection.outerHTML,
+      MAX_SELECTION_HTML_CHARS,
+    )}`,
+    '',
+    'Current OpenUI page source:',
+    truncate(source, MAX_TSX_SOURCE_CHARS),
+    '',
+    'Call the smallest sufficient inline editor tools now.',
+  ].join('\n')
+
+  return { system, user }
+}
+
+const selectionClassAnchor = (selection: InspectorSelection): string => {
+  const match = selection.outerHTML?.match(/\sclass=(["'])(.*?)\1/i)
+  return match?.[2]?.trim() ?? ''
+}
+
+const selectionIdAnchor = (selection: InspectorSelection): string => {
+  const match = selection.outerHTML?.match(/\sid=(["'])(.*?)\1/i)
+  const id = match?.[2]?.trim()
+  return id ? `#${id}` : ''
+}
+
+const STYLE_SOURCE_ATTRIBUTE_ANCHORS = [
+  'data-openui-var',
+  'data-openui-component',
+  'data-sf-export-page',
+] as const
+
+const escapeAttributeSelectorValue = (value: string): string =>
+  value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+
+const selectionAttributeAnchor = (selection: InspectorSelection): string => {
+  for (const attributeName of STYLE_SOURCE_ATTRIBUTE_ANCHORS) {
+    const pattern = new RegExp(`\\s${attributeName}=(["'])(.*?)\\1`, 'i')
+    const match = selection.outerHTML?.match(pattern)
+    const value = match?.[2]?.trim()
+    if (value) {
+      return `[${attributeName}="${escapeAttributeSelectorValue(value)}"]`
+    }
+  }
+  return ''
+}
+
+const selectionOpenUiVar = (selection: InspectorSelection): string => {
+  if (selection.openuiVar) return selection.openuiVar
+  const match = selection.outerHTML?.match(/\sdata-openui-var=(["'])(.*?)\1/i)
+  return match?.[2]?.trim() ?? ''
+}
+
+const selectionStyleAnchor = (selection: InspectorSelection): string =>
+  selectionClassAnchor(selection) ||
+  selectionIdAnchor(selection) ||
+  selectionAttributeAnchor(selection)
+
+const selectionHasAnchor = (
+  selection: InspectorSelection,
+  anchor: string | undefined,
+): boolean => {
+  const normalizedAnchor = anchor?.trim()
+  if (!normalizedAnchor) return false
+  const selectedTag = selection.tag.trim().toLowerCase()
+  if (normalizedAnchor.toLowerCase() === selectedTag) return false
+
+  const attributeAnchor = normalizedAnchor.match(
+    /^\[(data-openui-var|data-openui-component|data-sf-export-page)=(["'])(.*?)\2\]$/,
+  )
+  if (attributeAnchor) {
+    const [, attributeName, , rawExpected] = attributeAnchor
+    const expected = rawExpected.replace(/\\(["'\\])/g, '$1')
+    const pattern = new RegExp(`\\s${attributeName}=(["'])(.*?)\\1`, 'i')
+    const actual = selection.outerHTML?.match(pattern)?.[2]?.trim()
+    return actual === expected
+  }
+
+  if (normalizedAnchor.startsWith('#')) {
+    return selectionIdAnchor(selection) === normalizedAnchor
+  }
+
+  const classTokens = new Set(
+    selectionClassAnchor(selection).split(/\s+/).filter(Boolean),
+  )
+  const anchorTokens = normalizedAnchor.split(/\s+/).filter(Boolean)
+  return (
+    anchorTokens.length > 0 &&
+    anchorTokens.every((token) => classTokens.has(token))
+  )
+}
+
+const normalizeStyleApplyInput = (
+  input: Parameters<typeof buildStyleApplyCommand>[0],
+  selection: InspectorSelection,
+): Parameters<typeof buildStyleApplyCommand>[0] => {
+  if (input.targetScope && input.targetScope !== 'element') {
+    const scopedAnchor = selectionScopedAnchor(selection, input.targetScope)
+    if (scopedAnchor) {
+      return {
+        ...input,
+        sourceAnchor: scopedAnchor,
+        className: undefined,
+        selector: undefined,
+        targetLabel: input.targetLabel ?? scopedAnchor,
+      }
+    }
+  }
+
+  const selectedAnchor = selectionStyleAnchor(selection)
+  const requestedAnchor =
+    input.sourceAnchor ?? input.className ?? input.selector
+  if (!requestedAnchor || selectionHasAnchor(selection, requestedAnchor)) {
+    return input
+  }
+  return {
+    ...input,
+    sourceAnchor: selectedAnchor || input.sourceAnchor,
+    className: undefined,
+    selector: undefined,
+    targetLabel:
+      input.targetLabel === requestedAnchor
+        ? selectedAnchor
+        : input.targetLabel,
+  }
+}
+
+const normalizeElementDeleteInput = (
+  input: Parameters<typeof buildElementDeleteCommand>[0],
+  selection: InspectorSelection,
+): Parameters<typeof buildElementDeleteCommand>[0] => {
+  if (input.targetScope && input.targetScope !== 'element') {
+    const scopedAnchor = selectionScopedAnchor(selection, input.targetScope)
+    if (scopedAnchor) {
+      return {
+        ...input,
+        sourceAnchor: scopedAnchor,
+      }
+    }
+  }
+  return input
+}
+
+const normalizeImageReplaceInput = (
+  input: Parameters<typeof buildImageReplaceCommand>[0],
+  selection: InspectorSelection,
+): Parameters<typeof buildImageReplaceCommand>[0] => {
+  if (input.targetScope && input.targetScope !== 'element') {
+    const scopedAnchor = selectionScopedAnchor(selection, input.targetScope)
+    if (scopedAnchor) {
+      return {
+        ...input,
+        sourceAnchor: scopedAnchor,
+      }
+    }
+  }
+  return input
+}
+
+const normalizeImageRemoveInput = (
+  input: Parameters<typeof buildImageRemoveCommand>[0],
+  selection: InspectorSelection,
+): Parameters<typeof buildImageRemoveCommand>[0] => {
+  if (input.targetScope && input.targetScope !== 'element') {
+    const scopedAnchor = selectionScopedAnchor(selection, input.targetScope)
+    if (scopedAnchor) {
+      return {
+        ...input,
+        sourceAnchor: scopedAnchor,
+      }
+    }
+  }
+  return input
+}
+
+const selectionOpenUiVarAnchor = (selection: InspectorSelection): string => {
+  const openUiVar = selectionOpenUiVar(selection)
+  return openUiVar
+    ? `[data-openui-var="${escapeAttributeSelectorValue(openUiVar)}"]`
+    : ''
+}
+
+const selectionSectionAnchor = (selection: InspectorSelection): string =>
+  selection.sectionAnchor ?? selectionOpenUiVarAnchor(selection)
+
+const selectionPageAnchor = (selection: InspectorSelection): string => {
+  if (selection.pageLabel) {
+    return `[data-sf-export-page="${escapeAttributeSelectorValue(
+      selection.pageLabel,
+    )}"]`
+  }
+  return selectionAttributeAnchor(selection)
+}
+
+const selectionScopedAnchor = (
+  selection: InspectorSelection,
+  targetScope: 'section' | 'page',
+): string =>
+  targetScope === 'section'
+    ? selectionSectionAnchor(selection)
+    : selectionPageAnchor(selection) || selectionSectionAnchor(selection)
+
+const selectionImageSrcAnchor = (selection: InspectorSelection): string => {
+  const match = selection.outerHTML?.match(/\ssrc=(["'])(.*?)\1/i)
+  return match?.[2]?.trim() ?? ''
+}
+
+const selectionImageAltAnchor = (selection: InspectorSelection): string => {
+  const imageMatch = selection.outerHTML?.match(/<img\b[^>]*>/i)
+  const altMatch = imageMatch?.[0].match(/\salt=(["'])(.*?)\1/i)
+  return altMatch?.[2]?.trim() ?? ''
+}
+
+const selectionLinkHref = (selection: InspectorSelection): string => {
+  const anchorMatch = selection.outerHTML?.match(/<a\b[^>]*>/i)
+  const hrefMatch = anchorMatch?.[0].match(/\shref=(["'])(.*?)\1/i)
+  return hrefMatch?.[2]?.trim() ?? ''
+}
+
+const stockDimension = (
+  value: number | string | undefined,
+  fallback: number,
+): number => {
+  const numeric =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string'
+        ? Number(value.trim())
+        : undefined
+  return numeric !== undefined && Number.isFinite(numeric) && numeric > 0
+    ? Math.round(numeric)
+    : fallback
+}
+
+const getStockImageDimensions = (
+  input: {
+    width?: number | string
+    height?: number | string
+    targetScope?: 'element' | 'section' | 'page'
+  },
+  selection: InspectorSelection,
+): { w: number; h: number } => {
+  const selectedWidth = Math.round(selection.boundingBox.width) || 800
+  const selectedHeight = Math.round(selection.boundingBox.height) || 600
+
+  if (input.targetScope && input.targetScope !== 'element') {
+    const fallbackWidth = Math.max(selectedWidth, 1200)
+    const fallbackHeight = Math.max(selectedHeight, 600)
+    return {
+      w: stockDimension(input.width, fallbackWidth),
+      h: stockDimension(input.height, fallbackHeight),
+    }
+  }
+
+  return {
+    w: stockDimension(input.width, selectedWidth),
+    h: stockDimension(input.height, selectedHeight),
+  }
+}
+
+const executeInlineEditCommand = (
+  client: SectionEditClient,
+  command: InlineEditPersistenceCommand,
+): Promise<unknown> => client.mutation(command.mutation, command.args)
+
+const buildServerInlineEditCommand = async ({
+  anonymousOwnerSecret,
+  currentPreviewVersion,
+  currentSource,
+  input,
+  instruction,
+  resolveStockImage,
+  selection,
+  sessionId,
+  toolName,
+}: {
+  anonymousOwnerSecret: string | undefined
+  currentPreviewVersion?: number
+  currentSource?: string
+  input: unknown
+  instruction: string
+  resolveStockImage: ResolveInlineStockImage
+  selection: InspectorSelection
+  sessionId: string
+  toolName: string
+}): Promise<InlineEditPersistenceCommand> => {
+  const sourceAnchor =
+    toolName === 'styleApply'
+      ? selectionStyleAnchor(selection) ||
+        selectionSectionAnchor(selection) ||
+        selectionImageAltAnchor(selection) ||
+        selectionImageSrcAnchor(selection) ||
+        selection.textContent
+      : toolName === 'imageReplace' || toolName === 'imageRemove'
+        ? selectionImageAltAnchor(selection) ||
+          selectionImageSrcAnchor(selection) ||
+          selectionStyleAnchor(selection) ||
+          selectionSectionAnchor(selection) ||
+          selection.textContent
+        : selectionStyleAnchor(selection) ||
+          selectionImageAltAnchor(selection) ||
+          selectionImageSrcAnchor(selection) ||
+          selectionSectionAnchor(selection) ||
+          selection.textContent
+  const commandContext = {
+    sessionId,
+    anonymousOwnerSecret,
+    currentSource,
+    instruction,
+    openuiVar: selectionOpenUiVar(selection) || undefined,
+    linkHref: selectionLinkHref(selection) || undefined,
+    selectedText: selection.textContent,
+    sourceAnchor,
+    selectionHtml: selection.outerHTML || undefined,
+    selectedTag: selection.tag || undefined,
+    currentPreviewVersion,
+  }
+
+  if (toolName === 'textRewrite') {
+    return buildTextRewriteCommand(
+      input as Parameters<typeof buildTextRewriteCommand>[0],
+      commandContext,
+    )
+  }
+  if (toolName === 'styleApply') {
+    return buildStyleApplyCommand(
+      normalizeStyleApplyInput(
+        input as Parameters<typeof buildStyleApplyCommand>[0],
+        selection,
+      ),
+      commandContext,
+    )
+  }
+  if (toolName === 'imageReplace') {
+    const imageInput = normalizeImageReplaceInput(
+      input as Parameters<typeof buildImageReplaceCommand>[0],
+      selection,
+    )
+    if (!imageInput.src && imageInput.query) {
+      const dimensions = getStockImageDimensions(imageInput, selection)
+      const resolved = await resolveStockImage({
+        query: imageInput.query,
+        alt: imageInput.alt ?? imageInput.query,
+        ...dimensions,
+      })
+      return buildImageReplaceCommand(
+        { ...imageInput, src: resolved.imageUrl },
+        commandContext,
+      )
+    }
+    return buildImageReplaceCommand(imageInput, commandContext)
+  }
+  if (toolName === 'imageRemove') {
+    return buildImageRemoveCommand(
+      normalizeImageRemoveInput(
+        input as Parameters<typeof buildImageRemoveCommand>[0],
+        selection,
+      ),
+      commandContext,
+    )
+  }
+  if (toolName === 'linkEdit') {
+    return buildLinkEditCommand(
+      input as Parameters<typeof buildLinkEditCommand>[0],
+      commandContext,
+    )
+  }
+  if (toolName === 'elementDelete') {
+    return buildElementDeleteCommand(
+      normalizeElementDeleteInput(
+        input as Parameters<typeof buildElementDeleteCommand>[0],
+        selection,
+      ),
+      commandContext,
+    )
+  }
+  if (toolName === 'sectionMove') {
+    return buildSectionMoveCommand(
+      input as Parameters<typeof buildSectionMoveCommand>[0],
+      commandContext,
+    )
+  }
+  if (toolName === 'sectionRewrite') {
+    return buildSectionRewriteCommand(
+      input as Parameters<typeof buildSectionRewriteCommand>[0],
+      commandContext,
+    )
+  }
+  if (toolName === 'undoLastEdit') {
+    return buildUndoCommand(
+      input as Parameters<typeof buildUndoCommand>[0],
+      commandContext,
+    )
+  }
+  throw new Error(`Unsupported inline editor tool: ${toolName}`)
+}
+
+const runInlineEditsWithCodeMode = async ({
+  anonymousOwnerSecret,
+  client,
+  currentPreviewVersion,
+  currentSource,
+  generateWithTools,
+  instruction,
+  model,
+  prompt,
+  resolveStockImage,
+  selection,
+  sessionId,
+  signal,
+}: {
+  anonymousOwnerSecret: string | undefined
+  client: SectionEditClient
+  currentPreviewVersion?: number
+  currentSource?: string
+  generateWithTools: GenerateWithTools
+  instruction: string
+  model: string
+  prompt: { system: string; user: string }
+  resolveStockImage: ResolveInlineStockImage
+  selection: InspectorSelection
+  sessionId: string
+  signal: AbortSignal
+}): Promise<InlineToolExecutionResult[]> => {
+  const results: InlineToolExecutionResult[] = []
+  let workingSource = currentSource
+  let workingPreviewVersion = currentPreviewVersion
+  const serverTools = INLINE_EDIT_CODE_MODE_TOOL_DEFINITIONS.map((tool) =>
+    tool.server(async (input) => {
+      const command = await buildServerInlineEditCommand({
+        anonymousOwnerSecret,
+        currentPreviewVersion: workingPreviewVersion,
+        currentSource: workingSource,
+        input,
+        instruction,
+        resolveStockImage,
+        selection,
+        sessionId,
+        toolName: tool.name,
+      })
+      const mutationResult = await executeInlineEditCommand(client, command)
+      const record = mutationResult as {
+        translatedEdit?: unknown
+        previewVersion?: unknown
+        saved?: unknown
+      }
+      if (
+        typeof record.previewVersion !== 'number' ||
+        typeof record.saved !== 'boolean'
+      ) {
+        throw new Error('Inline edit mutation returned invalid tool output')
+      }
+      const result = {
+        tool: tool.name,
+        sessionId,
+        previewVersion: record.previewVersion,
+        saved: record.saved,
+        ...(isTranslatedEditOutput(record.translatedEdit)
+          ? { translatedEdit: record.translatedEdit }
+          : {}),
+      } satisfies InlineToolExecutionResult
+      if (
+        command.kind === 'createEdit' &&
+        command.args.editType === 'ai_rewrite' &&
+        typeof command.args.afterText === 'string'
+      ) {
+        workingSource = command.args.afterText
+      }
+      // Keep the working preview version current across multiple tool calls
+      // in the same code-mode session — otherwise a later undoLastEdit call
+      // would compute its target against the STALE version read at session
+      // start, undoing further back than the single edit it's meant to undo.
+      workingPreviewVersion = record.previewVersion
+      results.push(result)
+      return result
+    }),
+  )
+  const codeMode = createCodeMode({
+    driver: createNodeIsolateDriver(),
+    tools: serverTools,
+    timeout: 30_000,
+  })
+
+  await generateWithTools(
+    model,
+    [prompt.system, codeMode.systemPrompt].filter(Boolean).join('\n\n'),
+    prompt.user,
+    [codeMode.tool],
+    signal,
+    1,
+  )
+
+  return results
 }
 
 // ─── TSX Compilation + Validation ───────────────────────────────────────────
@@ -401,7 +1016,9 @@ export const createSectionEditResponse = async (
   options: {
     client?: SectionEditClient
     generate?: GenerateText
+    generateWithTools?: GenerateWithTools
     model?: string
+    resolveStockImage?: ResolveInlineStockImage
   } = {},
 ): Promise<Response> => {
   let body: JsonBody
@@ -444,10 +1061,14 @@ export const createSectionEditResponse = async (
   }
 
   const htmlSession = isHtmlSession(generationView)
-  const runtime = options.generate ? null : await loadGenerateTextRuntime()
+  const needsRuntime = !options.generate || !options.generateWithTools
+  const runtime = needsRuntime ? await loadGenerateTextRuntime() : null
   const generate = options.generate ?? runtime!.generateText
+  const generateWithTools =
+    options.generateWithTools ?? runtime!.generateWithTools
   const model =
     options.model ?? runtime?.DEFAULT_MODEL ?? DEFAULT_SECTION_EDIT_MODEL
+  const resolveStockImage = options.resolveStockImage ?? resolveInlineStockImage
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), SECTION_EDIT_TIMEOUT_MS)
@@ -456,12 +1077,41 @@ export const createSectionEditResponse = async (
     if (htmlSession) {
       // ─── HTML Session: generate replacement HTML ───
       const previewHtml = generationView.latestPreview?.html ?? ''
-      const prompt = buildHtmlSectionEditPrompt(
+      const toolPrompt = buildHtmlToolOnlyEditPrompt(
         selection,
         instruction,
         previewHtml,
       )
 
+      const results = await runInlineEditsWithCodeMode({
+        anonymousOwnerSecret,
+        client,
+        currentPreviewVersion: generationView.latestPreview?.version,
+        currentSource: generationView.homeModule?.source,
+        generateWithTools,
+        instruction,
+        model,
+        prompt: toolPrompt,
+        resolveStockImage,
+        selection,
+        sessionId,
+        signal: controller.signal,
+      })
+      if (results.length > 0) {
+        const last = results.at(-1)
+        return json({
+          mode: 'tools',
+          applied: results.length,
+          previewVersion: last?.previewVersion,
+          results,
+        })
+      }
+
+      const prompt = buildHtmlSectionEditPrompt(
+        selection,
+        instruction,
+        previewHtml,
+      )
       const replacementHtml = await generate(
         model,
         prompt.system,
@@ -490,6 +1140,36 @@ export const createSectionEditResponse = async (
       // ─── OpenUI Session: generate AI capsule ───
       const capsuleName = selection.openuiComponent
       if (!capsuleName) {
+        const source = generationView.homeModule?.source ?? ''
+        const prompt = buildOpenUiToolOnlyEditPrompt(
+          selection,
+          instruction,
+          source,
+        )
+        const results = await runInlineEditsWithCodeMode({
+          anonymousOwnerSecret,
+          client,
+          currentPreviewVersion: generationView.latestPreview?.version,
+          currentSource: source,
+          generateWithTools,
+          instruction,
+          model,
+          prompt,
+          resolveStockImage,
+          selection,
+          sessionId,
+          signal: controller.signal,
+        })
+        if (results.length > 0) {
+          const last = results.at(-1)
+          return json({
+            mode: 'tools',
+            applied: results.length,
+            previewVersion: last?.previewVersion,
+            results,
+          })
+        }
+
         return json(
           { error: 'No OpenUI capsule found in selection.' },
           { status: 400 },
@@ -504,13 +1184,42 @@ export const createSectionEditResponse = async (
       // Load the capsule source for the LLM prompt
       const capsuleSource = await loadCapsuleSource(capsuleName)
 
+      const toolPrompt = buildOpenUiToolOnlyEditPrompt(
+        selection,
+        instruction,
+        generationView.homeModule?.source ?? capsuleSource,
+      )
+
+      const results = await runInlineEditsWithCodeMode({
+        anonymousOwnerSecret,
+        client,
+        currentPreviewVersion: generationView.latestPreview?.version,
+        currentSource: generationView.homeModule?.source,
+        generateWithTools,
+        instruction,
+        model,
+        prompt: toolPrompt,
+        resolveStockImage,
+        selection,
+        sessionId,
+        signal: controller.signal,
+      })
+      if (results.length > 0) {
+        const last = results.at(-1)
+        return json({
+          mode: 'tools',
+          applied: results.length,
+          previewVersion: last?.previewVersion,
+          results,
+        })
+      }
+
       const prompt = buildOpenUiCapsuleEditPrompt(
         selection,
         instruction,
         capsuleSource,
         similar,
       )
-
       const tsxSource = await generate(
         model,
         prompt.system,
@@ -584,6 +1293,7 @@ const generateAiCapsuleName = (
   parentName: string,
   varName?: string,
 ): string => {
+  if (parentName.startsWith('AICustom_')) return parentName
   if (varName) {
     return `AICustom_${parentName}_${varName}`
   }
