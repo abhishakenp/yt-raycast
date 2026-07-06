@@ -266,13 +266,14 @@ describe('translation provider', () => {
 
     const span = container.querySelector('span')
     expect(span).not.toBeNull()
-    expect(span!.classList.contains('sf-shimmer-loading')).toBe(true)
+    expect(span!.classList.contains('shimmer')).toBe(true)
+    expect(span!.classList.contains('text-muted-foreground')).toBe(true)
   })
 
   describe('applyTranslationResult', () => {
-    it('18. clears shimmer, updates text, and clears inline styles', () => {
+    it('18. preserves author shimmer classes, updates text, and clears inline styles', () => {
       const parent = document.createElement('span')
-      parent.classList.add('sf-shimmer-loading')
+      parent.classList.add('shimmer')
       parent.style.backgroundImage =
         'linear-gradient(90deg, #0000, currentColor)'
       parent.style.backgroundClip = 'text'
@@ -283,8 +284,8 @@ describe('translation provider', () => {
 
       applyTranslationResult(parent, node, 'Bonjour', 'Hello')
 
-      // shimmer class removed
-      expect(parent.classList.contains('sf-shimmer-loading')).toBe(false)
+      // author-owned shimmer class is preserved
+      expect(parent.classList.contains('shimmer')).toBe(true)
       // all shimmer inline styles cleared
       expect(parent.style.backgroundImage).toBe('')
       expect(parent.style.backgroundClip).toBe('')
@@ -293,9 +294,9 @@ describe('translation provider', () => {
       expect(node.textContent).toBe('Bonjour')
     })
 
-    it('clears shimmer even when the translation equals the original text', () => {
+    it('clears shimmer inline styles even when the translation equals the original text', () => {
       const parent = document.createElement('span')
-      parent.classList.add('sf-shimmer-loading')
+      parent.classList.add('shimmer')
       parent.style.backgroundImage =
         'linear-gradient(90deg, #0000, currentColor)'
       document.body.appendChild(parent)
@@ -304,7 +305,7 @@ describe('translation provider', () => {
 
       applyTranslationResult(parent, node, 'Hello', 'Hello')
 
-      expect(parent.classList.contains('sf-shimmer-loading')).toBe(false)
+      expect(parent.classList.contains('shimmer')).toBe(true)
       expect(parent.style.backgroundImage).toBe('')
       expect(node.textContent).toBe('Hello')
     })
@@ -430,11 +431,9 @@ describe('translation provider', () => {
     expect(requests).toEqual([['One', 'Two']])
   })
 
-  it('uses browser translations before the API and only sends misses', async () => {
-    const translate = vi
-      .fn()
-      .mockResolvedValueOnce('Uno')
-      .mockResolvedValueOnce('')
+  it('uses a complete browser translation batch before the API and persists entries', async () => {
+    const batchSeparator = '\n\uE000SHIP_FAST_TRANSLATION_BOUNDARY\uE000\n'
+    const translate = vi.fn().mockResolvedValueOnce(`Uno${batchSeparator}Dos`)
     ;(globalThis as Record<string, unknown>).Translator = {
       availability: vi.fn(async () => 'available'),
       create: vi.fn(async () => ({ translate })),
@@ -460,15 +459,20 @@ describe('translation provider', () => {
     const translations = await fetchTranslationBatch(['One', 'Two'], 'es')
 
     expect(translations).toEqual(['Uno', 'Dos'])
-    expect(requests).toEqual([['Two']])
-    expect(persistedEntries).toEqual([[{ text: 'One', translation: 'Uno' }]])
+    expect(requests).toEqual([])
+    expect(persistedEntries).toEqual([
+      [
+        { text: 'One', translation: 'Uno' },
+        { text: 'Two', translation: 'Dos' },
+      ],
+    ])
   })
 
-  it('uses regional browser locale tags before the API and only sends misses', async () => {
+  it('uses regional browser locale tags in a complete browser batch before the API', async () => {
+    const batchSeparator = '\n\uE000SHIP_FAST_TRANSLATION_BOUNDARY\uE000\n'
     const translate = vi
       .fn()
-      .mockResolvedValueOnce('Iniciar')
-      .mockResolvedValueOnce('')
+      .mockResolvedValueOnce(`Iniciar${batchSeparator}Reservar`)
     ;(globalThis as Record<string, unknown>).Translator = {
       availability: vi.fn(async () => 'available'),
       create: vi.fn(async () => ({ translate })),
@@ -497,9 +501,12 @@ describe('translation provider', () => {
     )
 
     expect(translations).toEqual(['Iniciar', 'Reservar'])
-    expect(requests).toEqual([['Book']])
+    expect(requests).toEqual([])
     expect(persistedEntries).toEqual([
-      [{ text: 'Start now', translation: 'Iniciar' }],
+      [
+        { text: 'Start now', translation: 'Iniciar' },
+        { text: 'Book', translation: 'Reservar' },
+      ],
     ])
   })
 })
@@ -614,7 +621,7 @@ describe('chrome on-device translator', () => {
   })
 
   describe('model download states', () => {
-    it('25. "downloadable" triggers a download (create is invoked)', async () => {
+    it('25. "downloadable" returns null so preview rendering falls back instead of blocking on model setup', async () => {
       const create = vi.fn(async () => ({
         translate: async (t: string) => `D:${t}`,
       }))
@@ -624,8 +631,8 @@ describe('chrome on-device translator', () => {
       }
 
       const out = await mod.translateOnDevice('hello', 'ja')
-      expect(create).toHaveBeenCalledTimes(1)
-      expect(out).toBe('D:hello')
+      expect(create).not.toHaveBeenCalled()
+      expect(out).toBeNull()
     })
 
     it('"unavailable" returns null so the caller falls back to the LLM', async () => {

@@ -11,6 +11,13 @@ type TranslateModel = (
 
 const MAX_TRANSLATION_TEXT_LENGTH = 1200
 const MAX_TRANSLATION_BATCH_SIZE = 120
+// A single model call for a full-page-sized batch (~100+ unique strings)
+// measured ~12s in production — right at (and sometimes over) the request's
+// abort timeout, causing the WHOLE batch to silently fail and fall back to
+// untranslated text with no error surfaced. Splitting cache misses into
+// smaller chunks and translating them in parallel keeps each call's latency
+// well under the timeout regardless of total page size.
+const MAX_MODEL_BATCH_SIZE = 30
 
 type TranslationCacheClient = {
   getBatch: (input: {
@@ -205,15 +212,20 @@ const translateBatch = async ({
     return { translations, modelCalled: false }
   }
 
-  const prompt = buildTranslationPrompt(
-    missing.map((item) => item.text),
-    locale,
+  const chunks: Array<{ index: number; text: string }[]> = []
+  for (let start = 0; start < missing.length; start += MAX_MODEL_BATCH_SIZE) {
+    chunks.push(missing.slice(start, start + MAX_MODEL_BATCH_SIZE))
+  }
+
+  const chunkTranslations = await Promise.all(
+    chunks.map(async (chunk) => {
+      const chunkTexts = chunk.map((item) => item.text)
+      const prompt = buildTranslationPrompt(chunkTexts, locale)
+      const raw = await translateModel(prompt.system, prompt.user, signal)
+      return parseTranslationArray(raw, chunkTexts)
+    }),
   )
-  const raw = await translateModel(prompt.system, prompt.user, signal)
-  const translatedMissing = parseTranslationArray(
-    raw,
-    missing.map((item) => item.text),
-  )
+  const translatedMissing = chunkTranslations.flat()
 
   const cacheEntries: Array<{ text: string; translation: string }> = []
   missing.forEach((item, offset) => {

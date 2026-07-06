@@ -5,8 +5,9 @@ import React, {
   useRef,
   type ReactNode,
 } from 'react'
+import { isTranslatableLocale } from '@/config/languages'
 import { shouldPreserveNativeLocaleText } from '@/features/localization/native-script'
-import { translateOnDevice } from './chrome-translator'
+import { translateOnDeviceBatch } from './chrome-translator'
 
 type Locale = string
 
@@ -31,6 +32,9 @@ export function useI18n() {
 }
 
 const memoryTranslationCache = new Map<string, string>()
+const MAX_BROWSER_TRANSLATION_BATCH_TEXTS = 20
+const MAX_BROWSER_TRANSLATION_BATCH_CHARS = 1800
+const MAX_SIMULTANEOUS_SHIMMER_NODES = 24
 
 const translationCacheKey = (locale: string, text: string): string =>
   `${locale.trim().toLowerCase()}\n${text.trim()}`
@@ -52,7 +56,7 @@ const getCachedTranslation = (locale: string, text: string): string | null => {
   return null
 }
 
-const setCachedTranslation = (
+export const setCachedTranslation = (
   locale: string,
   text: string,
   translation: string,
@@ -90,8 +94,8 @@ export async function fetchTranslationBatch(
   locale: string,
 ): Promise<string[]> {
   const translations = [...texts]
-  const networkTexts: string[] = []
-  const networkIndexes: number[] = []
+  const browserTexts: string[] = []
+  const browserIndexes: number[] = []
   const browserTranslationEntries: Array<{
     text: string
     translation: string
@@ -110,19 +114,41 @@ export async function fetchTranslationBatch(
       continue
     }
 
-    // Tier 1: on-device Chrome/Edge Translator (free, instant) for plain native
-    // locales it supports. Run sequentially to avoid a burst of browser jobs.
-    const onDevice = await translateOnDevice(text, locale)
-    if (onDevice) {
-      translations[index] = onDevice
-      setCachedTranslation(locale, text, onDevice)
-      browserTranslationEntries.push({ text, translation: onDevice })
-      continue
-    }
-
-    networkIndexes.push(index)
-    networkTexts.push(text)
+    browserIndexes.push(index)
+    browserTexts.push(text)
   }
+
+  if (browserTexts.length > 0) {
+    const browserBatch =
+      browserTexts.length <= MAX_BROWSER_TRANSLATION_BATCH_TEXTS &&
+      browserTexts.reduce((total, text) => total + text.length, 0) <=
+        MAX_BROWSER_TRANSLATION_BATCH_CHARS
+        ? await translateOnDeviceBatch(browserTexts, locale)
+        : null
+    browserIndexes.forEach((originalIndex, offset) => {
+      const translated = browserBatch?.[offset]
+      if (typeof translated === 'string' && translated.trim()) {
+        translations[originalIndex] = translated
+        // A no-op result (identical to the source) is not proof of a
+        // successful translation — it may be a degraded/fallback response.
+        // Caching it would permanently block retries for this text+locale.
+        if (translated !== texts[originalIndex]) {
+          setCachedTranslation(locale, texts[originalIndex], translated)
+        }
+        browserTranslationEntries.push({
+          text: texts[originalIndex],
+          translation: translated,
+        })
+      }
+    })
+  }
+
+  const networkIndexes = browserIndexes.filter(
+    (originalIndex) => translations[originalIndex] === texts[originalIndex],
+  )
+  const networkTexts = networkIndexes.map(
+    (originalIndex) => texts[originalIndex],
+  )
 
   if (networkTexts.length === 0) {
     await persistTranslationEntries(locale, browserTranslationEntries)
@@ -144,14 +170,19 @@ export async function fetchTranslationBatch(
     const translated = batch[offset]
     if (typeof translated === 'string' && translated.trim()) {
       translations[originalIndex] = translated
-      setCachedTranslation(locale, texts[originalIndex], translated)
+      // Same no-op guard as the on-device path above: a degraded response
+      // that echoes the source text must not poison the cache permanently.
+      if (translated !== texts[originalIndex]) {
+        setCachedTranslation(locale, texts[originalIndex], translated)
+      }
     }
   })
   await persistTranslationEntries(locale, browserTranslationEntries)
   return translations
 }
 
-// Inject shimmer keyframes once
+// Inject the shadcn shimmer utility once for preview frames that do not inherit
+// the app-level Tailwind bundle.
 if (
   typeof document !== 'undefined' &&
   !document.getElementById('sf-shimmer-style')
@@ -159,18 +190,97 @@ if (
   const style = document.createElement('style')
   style.id = 'sf-shimmer-style'
   style.textContent = `
-    @keyframes sf-shimmer { from { background-position: 100% center; } to { background-position: 0% center; } }
-    .sf-shimmer-loading {
-      display: inline-block;
+    @property --shimmer-angle {
+      syntax: "<angle>";
+      inherits: true;
+      initial-value: 20deg;
+    }
+    @property --shimmer-image {
+      syntax: "*";
+      inherits: false;
+    }
+    @property --shimmer-text-fill {
+      syntax: "*";
+      inherits: false;
+    }
+
+    @keyframes tw-shimmer {
+      from {
+        background-position: 100% 0;
+      }
+      to {
+        background-position: 0 0;
+      }
+    }
+
+    .shimmer {
+      --_spread: var(--shimmer-spread, calc(3ch + 40px));
+      --_base: currentColor;
+      --_highlight: var(
+        --shimmer-color,
+        oklch(from currentColor l c h / calc(alpha* 0.2))
+      );
+
+      background-image: var(
+        --shimmer-image,
+        linear-gradient(
+          calc(90deg + var(--shimmer-angle)),
+          var(--_base) calc(50% - var(--_spread)),
+          color-mix(in oklch, var(--_highlight), var(--_base) 50%)
+            calc(50% - var(--_spread) * 0.5),
+          var(--_highlight) 50%,
+          color-mix(in oklch, var(--_highlight), var(--_base) 50%)
+            calc(50% + var(--_spread) * 0.5),
+          var(--_base) calc(50% + var(--_spread))
+        )
+      );
+      background-repeat: no-repeat;
+      background-size: calc(200% + var(--_spread) * 2) 100%;
+      background-position: 0 0;
       background-clip: text;
       -webkit-background-clip: text;
-      color: transparent;
-      background-size: 250% 100%;
-      background-repeat: no-repeat;
-      animation: sf-shimmer 2s linear infinite;
+      -webkit-text-fill-color: var(--shimmer-text-fill, transparent);
+      animation: tw-shimmer var(--shimmer-duration, 2s) linear infinite;
+    }
+
+    .dark .shimmer {
+      --_highlight: var(
+        --shimmer-color,
+        oklch(from currentColor max(0.8, calc(l + 0.4)) c h / calc(alpha + 0.4))
+      );
+    }
+
+    .shimmer:where([dir="rtl"], [dir="rtl"] *) {
+      animation-direction: reverse;
+    }
+
+    .shimmer-none {
+      --shimmer-image: none;
+      --shimmer-text-fill: currentColor;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .shimmer {
+        animation: none;
+        background-image: none;
+        -webkit-text-fill-color: currentColor;
+      }
     }
   `
   document.head.appendChild(style)
+}
+
+const shimmerTemporaryClasses = new WeakMap<HTMLElement, string[]>()
+
+const addTemporaryShimmerClass = (
+  element: HTMLElement,
+  className: string,
+): void => {
+  if (element.classList.contains(className)) return
+  element.classList.add(className)
+  const current = shimmerTemporaryClasses.get(element) ?? []
+  current.push(className)
+  shimmerTemporaryClasses.set(element, current)
 }
 
 /**
@@ -187,7 +297,11 @@ export function applyTranslationResult(
   text: string,
 ): void {
   if (parent) {
-    parent.classList.remove('sf-shimmer-loading')
+    const temporaryClasses = shimmerTemporaryClasses.get(parent) ?? []
+    for (const className of temporaryClasses) {
+      parent.classList.remove(className)
+    }
+    shimmerTemporaryClasses.delete(parent)
     parent.style.backgroundImage = ''
     parent.style.backgroundClip = ''
     parent.style.webkitBackgroundClip = ''
@@ -198,11 +312,15 @@ export function applyTranslationResult(
   }
 }
 
-const addTranslationShimmer = (node: Text, text: string): void => {
+const addTranslationShimmer = (node: Text): void => {
   const parent = node.parentElement
   if (!parent) return
-  parent.classList.add('sf-shimmer-loading')
-  parent.style.backgroundImage = `linear-gradient(90deg, #0000 calc(50% - ${text.length * 2}px), currentColor 50%, #0000 calc(50% + ${text.length * 2}px)), linear-gradient(currentColor, currentColor)`
+  addTemporaryShimmerClass(parent, 'shimmer')
+  addTemporaryShimmerClass(parent, 'text-muted-foreground')
+  parent.style.color = ''
+  parent.style.backgroundClip = ''
+  parent.style.webkitBackgroundClip = ''
+  parent.style.backgroundImage = ''
 }
 
 type TextTranslationState = {
@@ -260,11 +378,7 @@ export function T({ children }: React.PropsWithChildren) {
         const sourceText = sourceTextForNode(node)
         const parent = node.parentElement
         if (parent) {
-          parent.classList.remove('sf-shimmer-loading')
-          parent.style.backgroundImage = ''
-          parent.style.backgroundClip = ''
-          parent.style.webkitBackgroundClip = ''
-          parent.style.color = ''
+          applyTranslationResult(parent, node, sourceText, sourceText)
         }
         if (sourceText && node.textContent?.trim() !== sourceText) {
           node.textContent = sourceText
@@ -275,7 +389,11 @@ export function T({ children }: React.PropsWithChildren) {
       }
     }
 
-    if (locale === 'en') {
+    // Mirrors the server-side gate in isTranslatableLocale — locales like
+    // "english" (an AI-resolved custom-language code for users who typed
+    // "English") must skip the whole translate pipeline the same as the
+    // literal "en" sentinel, not just fail fast once the request lands.
+    if (!isTranslatableLocale(locale)) {
       restoreOriginalTextNodes()
       return
     }
@@ -295,22 +413,25 @@ export function T({ children }: React.PropsWithChildren) {
 
       inFlightRef.current = true
       try {
-        const translations = await fetchTranslationBatch(
-          batch.map((item) => item.text),
-          locale,
-        )
+        let translations: string[]
+        try {
+          translations = await fetchTranslationBatch(
+            batch.map((item) => item.text),
+            locale,
+          )
+        } catch {
+          translations = batch.map((item) => item.text)
+        }
         if (!cancelled) {
           batch.forEach((item, index) => {
             const translated = translations[index] ?? item.text
             if (isInsideActiveTextEdit(item.node)) {
-              const parent = item.node.parentElement
-              if (parent) {
-                parent.classList.remove('sf-shimmer-loading')
-                parent.style.backgroundImage = ''
-                parent.style.backgroundClip = ''
-                parent.style.webkitBackgroundClip = ''
-                parent.style.color = ''
-              }
+              applyTranslationResult(
+                item.node.parentElement,
+                item.node,
+                item.node.textContent ?? item.text,
+                item.node.textContent ?? item.text,
+              )
               textStateRef.current.set(item.node, {
                 originalText: item.node.textContent?.trim() || item.text,
               })
@@ -338,6 +459,7 @@ export function T({ children }: React.PropsWithChildren) {
     const collectTextNodes = () => {
       const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
       const nodes: Array<{ node: Text; text: string }> = []
+      let shimmeredNodes = 0
 
       while (walker.nextNode()) {
         const node = walker.currentNode as Text
@@ -345,7 +467,10 @@ export function T({ children }: React.PropsWithChildren) {
         const text = sourceTextForNode(node)
         if (!text || processedRef.current.has(node)) continue
         processedRef.current.add(node)
-        addTranslationShimmer(node, text)
+        if (shimmeredNodes < MAX_SIMULTANEOUS_SHIMMER_NODES) {
+          addTranslationShimmer(node)
+          shimmeredNodes += 1
+        }
         nodes.push({ node, text })
       }
 

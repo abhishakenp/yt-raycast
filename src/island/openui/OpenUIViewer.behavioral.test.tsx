@@ -321,6 +321,43 @@ describe('OpenUIViewer behavioral', () => {
     ])
   })
 
+  it('waits for session AI capsules before loading a source that references custom capsules', async () => {
+    state.loadOpenUIRuntimeLibrary.mockResolvedValue({} as never)
+    const capsuleRows = [
+      {
+        capsuleName: 'AICustom_FashionStoreHero_home_hero',
+        parentCapsule: 'FashionStoreHero',
+        compiledJs: 'export default () => null',
+        description: 'AI-edited hero',
+      },
+    ]
+    state.useQuery.mockReturnValue(undefined)
+
+    const { rerender } = render(
+      <OpenUIViewer
+        response="root = AICustom_AICustom_FashionStoreHero_home_hero_home_hero({ title: 'Launch' })"
+        sessionId="s1"
+      />,
+    )
+
+    await act(async () => {})
+
+    expect(state.loadOpenUIRuntimeLibrary).not.toHaveBeenCalled()
+
+    state.useQuery.mockReturnValue(capsuleRows)
+    rerender(
+      <OpenUIViewer
+        response="root = AICustom_AICustom_FashionStoreHero_home_hero_home_hero({ title: 'Launch' })"
+        sessionId="s1"
+      />,
+    )
+
+    await waitFor(() =>
+      expect(state.loadOpenUIRuntimeLibrary).toHaveBeenCalledTimes(1),
+    )
+    expect(state.loadOpenUIRuntimeLibrary.mock.calls[0][1]).toEqual(capsuleRows)
+  })
+
   // 6. Medusa sync
   it('syncs Medusa products after render when generated products are present', async () => {
     state.loadOpenUIRuntimeLibrary.mockResolvedValue({} as never)
