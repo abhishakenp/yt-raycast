@@ -36,6 +36,20 @@ describe('language configuration', () => {
     expect(lookupKnownLanguage('zh-Hant')).toBeNull()
   })
 
+  // Regression: a user who types "English" into the custom-language box gets
+  // a Convex customLanguages row resolved as {code: "english", name: "English"}
+  // — there's no "English" entry in KNOWN_LANGUAGES, so it falls through to
+  // AI resolution. isTranslatableLocale's catch-all ad-hoc-locale regex
+  // (`/^[a-z][a-z0-9-]{1,31}$/`) matched "english" same as any real locale,
+  // so selecting it re-ran the full LLM translateBatch pipeline asking to
+  // "translate" already-English text into English — a multi-second delay
+  // and wasted API cost/cache pollution for what should be an instant no-op.
+  it('treats the "english" custom-language code as untranslatable, same as "en"', () => {
+    expect(isTranslatableLocale('english')).toBe(false)
+    expect(isTranslatableLocale('English')).toBe(false)
+    expect(isTranslatableLocale(' ENGLISH ')).toBe(false)
+  })
+
   it('resolves code-mixed and romanized language hints from natural prompts', () => {
     expect(
       preferMixedEnglishBcp47FromPrompt(

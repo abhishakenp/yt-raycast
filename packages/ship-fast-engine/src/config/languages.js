@@ -64,6 +64,20 @@ export const INDIC_PURE_LANGUAGES = [
       'in malayalam',
       'malayalam website',
       'malayalam language',
+      // Common misspellings / typos users actually type
+      'malyalam',
+      'malayalm',
+      'malyalm',
+      'malylam',
+      'mallayalam',
+      'malayalm',
+      'in malyalam',
+      'in malayalm',
+      'in malyalm',
+      'in malylam',
+      'in mallayalam',
+      'malyalam website',
+      'malayalm website',
     ],
   },
   {
@@ -346,10 +360,36 @@ const ROMANIZED_PROMPT_LANGUAGE_HINTS = {
     'okke',
     'cheyyuka',
     'cheyyunna',
+    'cheyyanam',
+    'cheyyaruth',
     'undaakuka',
     'venam',
     'ente',
     'de',
+    'nalla',
+    'namukku',
+    'pinne',
+    'koodi',
+    'paranju',
+    'vannu',
+    'kaanuka',
+    'kelkkuka',
+    'valiya',
+    'sundaram',
+    'shesham',
+    'enthu',
+    'engane',
+    'enthokke',
+    'entha',
+    'eppozhu',
+    'allengil',
+    'aanaal',
+    'veedu',
+    'chorum',
+    'njan',
+    'ningal',
+    'illa',
+    'pani',
   ],
   bn: ['ekta', 'ache', 'korun', 'jonno', 'amar', 'apnar'],
   mr: ['ahe', 'karaycha', 'sathi', 'madhe', 'majha', 'tumcha'],
@@ -487,12 +527,12 @@ export const preferIndicBcp47FromRomanizedPrompt = (snippet) => {
       .toLowerCase()
       .match(/\b[a-z][a-z']{1,}\b/g) || [],
   )
-  if (words.size < 4) return null
+  if (words.size < 3) return null
 
   let best = null
   for (const [code, hints] of Object.entries(ROMANIZED_PROMPT_LANGUAGE_HINTS)) {
     const hits = hints.filter((hint) => words.has(hint))
-    if (hits.length < 3) continue
+    if (hits.length < 2) continue
     if (!best || hits.length > best.hits) best = { code, hits: hits.length }
   }
   return best ? best.code : null
