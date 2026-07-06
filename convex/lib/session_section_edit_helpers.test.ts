@@ -1,3 +1,4 @@
+import { ConvexError } from 'convex/values'
 import { describe, expect, it } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
@@ -176,5 +177,127 @@ describe('applySectionEditToArtifacts', () => {
       source: 'edit',
       version: 2,
     })
+  })
+
+  it('splices a section-scoped replacementHtml via beforeHtml, preserving untouched nav/footer (regression: sectionRewrite tool wiped whole page down to a fragment)', async () => {
+    const { ctx, rows } = await mutationCtxFor()
+    const fullDocument =
+      '<html><body><nav>Site Nav</nav><main><section class="hero">Hero</section></main><footer>Site Footer</footer></body></html>'
+    rows.previews[0].html = fullDocument
+    rows.generatedModules[0].source = fullDocument
+
+    const result = await applySectionEditToArtifacts(
+      ctx,
+      {
+        anonymousOwnerSecret: 'owner-secret',
+        instruction: 'make the hero punchier',
+        beforeHtml: '<section class="hero">Hero</section>',
+        replacementHtml: '<section class="hero">Sharper Hero</section>',
+        sessionId,
+      },
+      10,
+    )
+
+    expect(result).toEqual({ previewVersion: 2, saved: true, sessionId })
+    const persisted = rows.previews.at(-1)
+    expect(persisted?.html).toContain('<nav>Site Nav</nav>')
+    expect(persisted?.html).toContain('<footer>Site Footer</footer>')
+    expect(persisted?.html).toContain(
+      '<section class="hero">Sharper Hero</section>',
+    )
+    expect(persisted?.html).not.toContain(
+      'Hero</section></main><footer>Site Footer</footer></body></html><section',
+    )
+    expect(rows.generatedModules.at(-1)?.source).toContain('Site Nav')
+    expect(rows.generatedModules.at(-1)?.source).toContain('Site Footer')
+  })
+
+  it('rejects a section rewrite when beforeHtml anchor is not found, instead of overwriting the whole page (regression)', async () => {
+    const { ctx, rows } = await mutationCtxFor()
+    const fullDocument =
+      '<html><body><nav>Site Nav</nav><main><section class="hero">Hero</section></main><footer>Site Footer</footer></body></html>'
+    rows.previews[0].html = fullDocument
+    rows.generatedModules[0].source = fullDocument
+
+    await expect(
+      applySectionEditToArtifacts(
+        ctx,
+        {
+          anonymousOwnerSecret: 'owner-secret',
+          instruction: 'make the hero punchier',
+          beforeHtml: '<section class="hero">Stale selection</section>',
+          replacementHtml: '<h1>Only this survives</h1>',
+          sessionId,
+        },
+        10,
+      ),
+    ).rejects.toThrow(ConvexError)
+
+    // The page must be untouched — no new preview version was written.
+    expect(rows.previews).toHaveLength(1)
+    expect(rows.previews[0].html).toBe(fullDocument)
+  })
+
+  it('splices a bare component-call replacementOpenUiSource via sectionVarName, preserving sibling sections and the root Stack (regression: sectionRewrite blanked the whole live render)', async () => {
+    const { ctx, rows } = await mutationCtxFor()
+    const fullSource = [
+      'home_navbar = BakeryNavbar("Sweet Crumbs", ["Home","Menu"], "Order Now", "#menu", "0")',
+      'home_hero = BakeryHero("Welcome to Sweet Crumbs", "Wel...")',
+      'home_footer = BakeryFooter("Sweet Crumbs")',
+      'root = Stack([home_navbar, home_hero, home_footer])',
+    ].join('\n')
+    rows.generatedModules[0].source = fullSource
+    rows.previews[0].html = fullSource
+
+    const result = await applySectionEditToArtifacts(
+      ctx,
+      {
+        anonymousOwnerSecret: 'owner-secret',
+        instruction: 'make the hero punchier',
+        sectionVarName: 'home_hero',
+        replacementOpenUiSource:
+          'BakeryHero("Elevate Your Senses", "Indulge in the Sweet Life")',
+        sessionId,
+      },
+      10,
+    )
+
+    expect(result).toEqual({ previewVersion: 2, saved: true, sessionId })
+    const persistedSource = rows.generatedModules.at(-1)?.source
+    expect(persistedSource).toContain(
+      'home_hero = BakeryHero("Elevate Your Senses", "Indulge in the Sweet Life")',
+    )
+    expect(persistedSource).toContain('home_navbar = BakeryNavbar(')
+    expect(persistedSource).toContain('home_footer = BakeryFooter(')
+    expect(persistedSource).toContain(
+      'root = Stack([home_navbar, home_hero, home_footer])',
+    )
+  })
+
+  it('rejects a section rewrite when sectionVarName is not found in the current source, instead of overwriting homeModule.source with a fragment (regression)', async () => {
+    const { ctx, rows } = await mutationCtxFor()
+    const fullSource = [
+      'home_hero = BakeryHero("Welcome to Sweet Crumbs", "Wel...")',
+      'root = Stack([home_hero])',
+    ].join('\n')
+    rows.generatedModules[0].source = fullSource
+    rows.previews[0].html = fullSource
+
+    await expect(
+      applySectionEditToArtifacts(
+        ctx,
+        {
+          anonymousOwnerSecret: 'owner-secret',
+          instruction: 'make the hero punchier',
+          sectionVarName: 'home_missing',
+          replacementOpenUiSource: 'BakeryHero("Only this survives")',
+          sessionId,
+        },
+        10,
+      ),
+    ).rejects.toThrow(ConvexError)
+
+    expect(rows.previews).toHaveLength(1)
+    expect(rows.generatedModules.at(-1)?.source).toBe(fullSource)
   })
 })

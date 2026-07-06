@@ -53,6 +53,11 @@ export const lookupArgs = {
   lookup: v.string(),
 }
 
+export const sessionReadinessArgs = {
+  lookup: v.optional(v.string()),
+  sessionId: v.optional(v.string()),
+}
+
 export const clonePageLookupArgs = {
   lookup: v.string(),
   pathname: v.optional(v.string()),
@@ -177,6 +182,7 @@ export const exportArtifactStalledArgs = {
 export const editedSessionExportRebuildArgs = {
   sessionId: v.id('sessions'),
   previewVersion: v.number(),
+  saved: v.optional(v.boolean()),
 }
 
 export const exportArtifactReadyArgs = {
@@ -445,7 +451,14 @@ export const applySectionEditArgs = {
   sessionId: v.id('sessions'),
   anonymousOwnerSecret: v.optional(v.string()),
   replacementHtml: v.optional(v.string()),
+  /** Anchor: the original selected section/element's outerHTML. Required to
+   *  treat replacementHtml as a section-scoped splice instead of a full-page
+   *  replacement — see ApplySectionEditInput. */
+  beforeHtml: v.optional(v.string()),
   replacementOpenUiSource: v.optional(v.string()),
+  /** Anchor for a section-scoped replacementOpenUiSource: the OpenUI source
+   *  variable name to splice into — see ApplySectionEditInput. */
+  sectionVarName: v.optional(v.string()),
   aiCapsule: v.optional(
     v.object({
       capsuleName: v.string(),

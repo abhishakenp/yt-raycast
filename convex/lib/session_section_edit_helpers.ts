@@ -4,14 +4,34 @@ import type { Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
 import { assertCanMutateSession } from './session_access_helpers'
 import { upsertSessionAiCapsule } from './session_ai_capsule_helpers'
+import {
+  applyOpenUiVarReplace,
+  applySectionHtmlReplace,
+} from './session_edit_helpers'
 
 export type ApplySectionEditInput = {
   sessionId: Id<'sessions'>
   anonymousOwnerSecret?: string
-  /** For HTML sessions: the full replacement preview.html. */
+  /** For HTML sessions: the replacement HTML. Full-document replacement when
+   *  `beforeHtml` is omitted (the caller is responsible for validating it is
+   *  actually a complete document); a section-scoped splice via `beforeHtml`
+   *  otherwise. */
   replacementHtml?: string
+  /** Anchor for a section-scoped `replacementHtml`: the ORIGINAL selected
+   *  element/section's outerHTML, used to splice the replacement into the
+   *  existing document instead of overwriting the whole page. The
+   *  sectionRewrite AI tool only ever sees the selected section, so its
+   *  output must never be trusted as a full-page replacement. */
+  beforeHtml?: string
   /** For OpenUI sessions: the patched OpenUI source (with AI capsule reference). */
   replacementOpenUiSource?: string
+  /** Anchor for a section-scoped `replacementOpenUiSource`: the OpenUI
+   *  source variable name (e.g. "home_hero") whose assignment line should be
+   *  replaced. Same rationale as `beforeHtml` — the sectionRewrite AI tool
+   *  only sees the selected section, so its output must never be trusted as
+   *  the entire document source. Omitted only by the AI-capsule path, which
+   *  already computes a full, valid patched source. */
+  sectionVarName?: string
   /** For OpenUI sessions: the AI capsule to store. */
   aiCapsule?: {
     capsuleName: string
@@ -74,7 +94,40 @@ export const applySectionEditToArtifacts = async (
   let newPreviewHtml = latestPreview.html
   let newOpenUiSource = homeModule?.source
 
-  if (args.replacementHtml !== undefined) {
+  if (args.replacementHtml !== undefined && args.beforeHtml !== undefined) {
+    // Section-scoped rewrite (e.g. the sectionRewrite AI tool): the model
+    // only ever saw the selected section, so its output must be spliced into
+    // the existing document at that anchor — never trusted as the full page.
+    const spliced = applySectionHtmlReplace(
+      latestPreview.html,
+      args.beforeHtml,
+      args.replacementHtml,
+    )
+    if (!spliced.replaced) {
+      throw new ConvexError({
+        code: 'SECTION_NOT_FOUND',
+        message:
+          'Selected section was not found in the current preview. Reselect the section and try again.',
+      })
+    }
+    newPreviewHtml = spliced.html
+    if (homeModule !== null) {
+      const sourceSpliced = applySectionHtmlReplace(
+        homeModule.source,
+        args.beforeHtml,
+        args.replacementHtml,
+      )
+      newOpenUiSource = sourceSpliced.replaced
+        ? sourceSpliced.html
+        : homeModule.source
+      await ctx.db.patch(homeModule._id, {
+        source: newOpenUiSource,
+        status: 'succeeded',
+        errorMessage: undefined,
+        updatedAt: now,
+      })
+    }
+  } else if (args.replacementHtml !== undefined) {
     // HTML session: replacement is the full page HTML
     newPreviewHtml = args.replacementHtml
     if (homeModule !== null) {
@@ -86,6 +139,39 @@ export const applySectionEditToArtifacts = async (
         updatedAt: now,
       })
     }
+  } else if (
+    args.replacementOpenUiSource !== undefined &&
+    args.sectionVarName !== undefined
+  ) {
+    // Section-scoped rewrite (e.g. the sectionRewrite AI tool): splice the
+    // replacement into the existing source at the named variable's
+    // assignment line — never trust it as the entire document source.
+    if (homeModule === null) {
+      throw new ConvexError({
+        code: 'SECTION_NOT_FOUND',
+        message: 'No OpenUI source to rewrite for this session.',
+      })
+    }
+    const spliced = applyOpenUiVarReplace(
+      homeModule.source,
+      args.sectionVarName,
+      args.replacementOpenUiSource,
+    )
+    if (!spliced.replaced) {
+      throw new ConvexError({
+        code: 'SECTION_NOT_FOUND',
+        message:
+          'Selected section was not found in the current source. Reselect the section and try again.',
+      })
+    }
+    newOpenUiSource = spliced.source
+    await ctx.db.patch(homeModule._id, {
+      source: newOpenUiSource,
+      status: 'succeeded',
+      errorMessage: undefined,
+      updatedAt: now,
+    })
+    newPreviewHtml = latestPreview.html
   } else if (args.replacementOpenUiSource !== undefined) {
     // OpenUI session: patch the source, keep preview.html as-is
     // (the OpenUIViewer will re-render from source on remount)
