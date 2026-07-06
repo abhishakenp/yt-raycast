@@ -131,7 +131,7 @@ describe('session edit mutation helpers', () => {
     expect(reloaded2?.homeModule?.source).toContain('Reloaded twice headline')
   })
 
-  it('maps translated selected text back to canonical source text before patching artifacts', async () => {
+  it('persists translated inline edits as locale translations without rewriting canonical source text', async () => {
     const t = sessionEditConvexTest()
     const sessionId = await createReadySession(t, 'Original English headline')
 
@@ -167,19 +167,175 @@ describe('session edit mutation helpers', () => {
     const reloaded = await t.query(api.sessions.getGenerationView, {
       lookup: sessionId,
     })
-    expect(reloaded?.homeModule?.source).toContain('अपडेट किया गया शीर्षक')
-    expect(reloaded?.homeModule?.source).not.toContain(
-      'Original English headline',
-    )
-    expect(reloaded?.siteSpec?.specJson).toContain('अपडेट किया गया शीर्षक')
-    expect(reloaded?.latestPreview?.html).toContain('अपडेट किया गया शीर्षक')
+    expect(reloaded?.homeModule?.source).toContain('Original English headline')
+    expect(reloaded?.homeModule?.source).not.toContain('अपडेट किया गया शीर्षक')
+    expect(reloaded?.siteSpec?.specJson).toContain('Original English headline')
+    expect(reloaded?.siteSpec?.specJson).not.toContain('अपडेट किया गया शीर्षक')
+    expect(reloaded?.latestPreview?.html).toContain('Original English headline')
 
     await expect(
       t.query(api.translationCache.getBatch, {
         locale: 'hi',
-        texts: ['अपडेट किया गया शीर्षक'],
+        texts: ['Original English headline'],
       }),
     ).resolves.toEqual(['अपडेट किया गया शीर्षक'])
+  })
+
+  it('allows a second inline edit after a translated edit has been saved and reloaded', async () => {
+    const t = sessionEditConvexTest()
+    const sessionId = await createReadySession(t, 'Original English headline')
+
+    await t.mutation(api.sessions.setPreferredLanguage, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      preferredLanguage: 'hi',
+    })
+    await t.mutation(api.translationCache.setBatch, {
+      locale: 'hi',
+      entries: [
+        {
+          text: 'Original English headline',
+          translation: 'मूल अंग्रेज़ी शीर्षक',
+        },
+      ],
+    })
+
+    await t.mutation(api.sessions.createEdit, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'text',
+      targetLabel: 'Hero headline',
+      beforeText: 'मूल अंग्रेज़ी शीर्षक',
+      afterText: 'पहला हिंदी संपादन',
+    })
+
+    const afterReload = await t.query(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+    expect(afterReload?.homeModule?.source).toContain(
+      'Original English headline',
+    )
+    expect(afterReload?.homeModule?.source).not.toContain('पहला हिंदी संपादन')
+    await expect(
+      t.query(api.translationCache.getBatch, {
+        locale: 'hi',
+        texts: ['Original English headline'],
+      }),
+    ).resolves.toEqual(['पहला हिंदी संपादन'])
+
+    await expect(
+      t.mutation(api.sessions.createEdit, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'text',
+        targetLabel: 'Hero headline',
+        beforeText: 'पहला हिंदी संपादन',
+        afterText: 'दूसरा हिंदी संपादन',
+      }),
+    ).resolves.toMatchObject({
+      previewVersion: 3,
+      saved: true,
+    })
+
+    const afterSecondReload = await t.query(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+    expect(afterSecondReload?.homeModule?.source).toContain(
+      'Original English headline',
+    )
+    expect(afterSecondReload?.homeModule?.source).not.toContain(
+      'दूसरा हिंदी संपादन',
+    )
+    await expect(
+      t.query(api.translationCache.getBatch, {
+        locale: 'hi',
+        texts: ['Original English headline'],
+      }),
+    ).resolves.toEqual(['दूसरा हिंदी संपादन'])
+  })
+
+  it('patches only the selected repeated occurrence when translated text maps back to canonical source', async () => {
+    const t = sessionEditConvexTest()
+    const { sessionId } = await t.mutation(api.sessions.create, {
+      prompt: 'Repeated glass page',
+      preferredLanguage: 'en',
+      preferredExportTarget: 'html',
+      isPrivate: false,
+      workspace: 'workspace_repeated_glass_page',
+      anonymousClientId: 'anon_repeated_glass_page',
+      anonymousOwnerSecret: 'owner-secret',
+    })
+
+    await t.action(internal.sessions.completeGeneration, {
+      sessionId,
+      html: [
+        '<html><body>',
+        '<header>Polished Glass</header>',
+        '<main><h1>Polished Glass</h1></main>',
+        '<footer>Polished Glass</footer>',
+        '</body></html>',
+      ].join(''),
+      openUiSource: [
+        '$page = "Home"',
+        'header = Text("Polished Glass")',
+        'hero = Text("Polished Glass")',
+        'footer = Text("Polished Glass")',
+        'root = Stack([header, hero, footer])',
+      ].join('\n'),
+      siteSpecJson: JSON.stringify({
+        nav: { brand: 'Polished Glass' },
+        hero: { headline: 'Polished Glass' },
+        footer: { brand: 'Polished Glass' },
+      }),
+      tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
+      elapsed: 1000,
+    })
+    await t.mutation(api.sessions.setPreferredLanguage, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      preferredLanguage: 'hi',
+    })
+    await t.mutation(api.translationCache.setBatch, {
+      locale: 'hi',
+      entries: [
+        {
+          text: 'Polished Glass',
+          translation: 'पॉलिश किया हुआ',
+        },
+      ],
+    })
+
+    await t.mutation(api.sessions.createEdit, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'text',
+      targetLabel: 'Hero headline',
+      beforeText: 'पॉलिश किया हुआ',
+      afterText: 'एजेंट सत्यापन शीर्षक',
+      occurrenceIndex: 1,
+    })
+
+    const reloaded = await t.query(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+    expect(reloaded?.homeModule?.source).toContain(
+      'header = Text("Polished Glass")',
+    )
+    expect(reloaded?.homeModule?.source).toContain(
+      'hero = Text("एजेंट सत्यापन शीर्षक")',
+    )
+    expect(reloaded?.homeModule?.source).toContain(
+      'footer = Text("Polished Glass")',
+    )
+    expect(reloaded?.latestPreview?.html).toContain(
+      'data-openui-var="header">Polished Glass</p>',
+    )
+    expect(reloaded?.latestPreview?.html).toContain(
+      'data-openui-var="hero">एजेंट सत्यापन शीर्षक</p>',
+    )
+    expect(reloaded?.latestPreview?.html).toContain(
+      'data-openui-var="footer">Polished Glass</p>',
+    )
   })
 
   it('patches Lakebed session data so realtime section state cannot replay stale text after reload', async () => {
@@ -223,6 +379,85 @@ describe('session edit mutation helpers', () => {
         },
       ],
     })
+  })
+
+  it('patches AI capsule compiled source when the edited text is rendered by a custom capsule', async () => {
+    const t = sessionEditConvexTest()
+    const { sessionId } = await t.mutation(api.sessions.create, {
+      prompt: 'AI capsule boutique page',
+      preferredLanguage: 'en',
+      preferredExportTarget: 'html',
+      isPrivate: false,
+      workspace: 'workspace_ai_capsule_inline_text',
+      anonymousClientId: 'anon_ai_capsule_inline_text',
+      anonymousOwnerSecret: 'owner-secret',
+    })
+
+    const capsuleName = 'AICustom_FashionStoreHero_home_hero'
+    await t.mutation(internal.sessions.completeGenerationInternal, {
+      sessionId,
+      html: [
+        '<!DOCTYPE html><html lang="en"><head><title>AI Capsule Preview</title></head><body>',
+        '<main id="openui-root" data-openui-ready="source">',
+        '<p>AI capsule shell loaded.</p>',
+        '</main></body></html>',
+      ].join(''),
+      openUiSource: [
+        '$page = "Home"',
+        `home_hero = ${capsuleName}("New Collection")`,
+        'root = home_hero',
+      ].join('\n'),
+      siteSpecJson: JSON.stringify({
+        brand: 'Hello Kitty',
+        hero: { capsule: capsuleName },
+      }),
+      tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
+      elapsed: 1000,
+    })
+    await t.mutation(internal.sessions.upsertAiCapsule, {
+      sessionId,
+      capsuleName,
+      parentCapsule: 'FashionStoreHero',
+      compiledJs:
+        'export default function Hero(props){const heroTop = props.headingTop ?? "The Quiet"; const heroBottom = props.headingBottom ?? "Luxury Edit"; return <h1>{heroTop}<br />{heroBottom}</h1>}',
+      description: 'AI capsule hero',
+    })
+    await t.mutation(internal.sessions.upsertAiCapsule, {
+      sessionId,
+      capsuleName: `AICustom_${capsuleName}_v2`,
+      parentCapsule: capsuleName,
+      compiledJs:
+        'export default function Hero(){return <h1>{["The Quiet", <br />, "Luxury Edit"]}</h1>}',
+      description: 'Nested AI capsule hero',
+    })
+
+    await expect(
+      t.mutation(api.sessions.createEdit, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'text',
+        targetLabel: 'Hero headline',
+        beforeText: 'The QuietLuxury Edit',
+        afterText: 'Deep QA Inline Headline',
+      }),
+    ).resolves.toMatchObject({
+      previewVersion: 2,
+      saved: true,
+    })
+
+    const reloaded = await t.query(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+    const capsules = await t.query(api.sessions.listAiCapsules, { sessionId })
+
+    expect(reloaded?.latestPreview?.html).toContain('AI capsule shell loaded.')
+    expect(reloaded?.homeModule?.source).toContain(capsuleName)
+    expect(capsules).toHaveLength(2)
+    for (const capsule of capsules) {
+      expect(capsule.compiledJs).toContain('Deep QA Inline Headline')
+      expect(capsule.compiledJs).not.toContain('"The Quiet"')
+      expect(capsule.compiledJs).not.toContain('"Luxury Edit"')
+    }
   })
 
   it('patches translated Lakebed section data when selected text is mapped back to canonical source text', async () => {
