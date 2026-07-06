@@ -41,6 +41,7 @@ function extractImageFiles(files: File[]): File[] {
 interface BackgroundPanelProps {
   activeElement: HTMLElement | null
   onModified?: () => void
+  onImageElementPreview?: (newSrc: string | null) => void
   sessionId?: string
 }
 
@@ -115,6 +116,7 @@ const DEFAULT_GRADIENT: GradientState = {
 export function BackgroundPanel({
   activeElement,
   onModified,
+  onImageElementPreview,
   sessionId,
 }: BackgroundPanelProps) {
   const [bgMode, setBgMode] = useState<BgMode>('solid')
@@ -124,6 +126,8 @@ export function BackgroundPanel({
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<StockImageResult[]>([])
   const [searching, setSearching] = useState(false)
+  const [searchError, setSearchError] = useState<string>()
+  const [hasSearchedImages, setHasSearchedImages] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
@@ -134,10 +138,14 @@ export function BackgroundPanel({
 
   const userModifiedRef = useRef(false)
   const prevElementRef = useRef<HTMLElement | null>(null)
+  const originalImageSrcRef = useRef<string | null>(null)
+  const originalHadBgImageRef = useRef(false)
+  const originalInlineBgImageRef = useRef('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dragCounterRef = useRef(0)
   const scrollRef = useRef<HTMLDivElement>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
+  const searchRequestIdRef = useRef(0)
 
   const generateUploadUrl = useMutation(api.sessions.generateImageUploadUrl)
   const saveUserImage = useMutation(api.sessions.saveUserImage)
@@ -148,15 +156,23 @@ export function BackgroundPanel({
 
   useEffect(() => {
     if (!activeElement) return
+    const computed = window.getComputedStyle(activeElement)
+    const backgroundImage = computed.backgroundImage || ''
+    const hasComputedBgImage =
+      Boolean(backgroundImage) && backgroundImage !== 'none'
     if (prevElementRef.current !== activeElement) {
       prevElementRef.current = activeElement
       userModifiedRef.current = false
+      originalImageSrcRef.current =
+        activeElement.tagName.toLowerCase() === 'img'
+          ? (activeElement as HTMLImageElement).src
+          : null
+      originalHadBgImageRef.current = hasComputedBgImage
+      originalInlineBgImageRef.current = activeElement.style.backgroundImage
     }
-    const computed = window.getComputedStyle(activeElement)
     setBgColor(computed.backgroundColor || '#000000')
 
-    const backgroundImage = computed.backgroundImage || ''
-    if (backgroundImage && backgroundImage !== 'none') {
+    if (hasComputedBgImage) {
       setHasBgImage(true)
       const gradMatch = backgroundImage.match(
         /(linear|radial)-gradient\(([^)]+(?:\([^)]*\))*[^)]*)\)/,
@@ -217,7 +233,11 @@ export function BackgroundPanel({
   const handleSearch = async () => {
     const query = searchQuery.trim()
     if (!query) return
+    const requestId = searchRequestIdRef.current + 1
+    searchRequestIdRef.current = requestId
     setSearching(true)
+    setSearchError(undefined)
+    setHasSearchedImages(false)
     setPage(1)
     setHasMore(true)
     try {
@@ -228,10 +248,19 @@ export function BackgroundPanel({
         page: 1,
         perPage: PER_PAGE,
       })
+      if (searchRequestIdRef.current !== requestId) return
       setSearchResults(results)
       setHasMore(results.length === PER_PAGE)
+      setHasSearchedImages(true)
+    } catch (err) {
+      if (searchRequestIdRef.current !== requestId) return
+      setHasMore(false)
+      setHasSearchedImages(false)
+      setSearchError(err instanceof Error ? err.message : 'Search failed')
     } finally {
-      setSearching(false)
+      if (searchRequestIdRef.current === requestId) {
+        setSearching(false)
+      }
     }
   }
 
@@ -250,6 +279,10 @@ export function BackgroundPanel({
       setSearchResults((prev) => [...prev, ...results])
       setPage(nextPage)
       setHasMore(results.length === PER_PAGE)
+      setSearchError(undefined)
+    } catch (err) {
+      setHasMore(false)
+      setSearchError(err instanceof Error ? err.message : 'Failed to load more')
     } finally {
       setIsLoadingMore(false)
     }
@@ -273,6 +306,21 @@ export function BackgroundPanel({
     if (!activeElement) return
     setHasBgImage(true)
     setBgMode('solid')
+    if (activeElement.tagName.toLowerCase() === 'img') {
+      if (originalImageSrcRef.current === null) {
+        originalImageSrcRef.current = (activeElement as HTMLImageElement).src
+      }
+      activeElement.style.setProperty('background-image', '')
+      activeElement.style.setProperty('background-size', '')
+      activeElement.style.setProperty('background-position', '')
+      if (onImageElementPreview) {
+        onImageElementPreview(url)
+      } else {
+        ;(activeElement as HTMLImageElement).src = url
+      }
+      markModified()
+      return
+    }
     activeElement.style.setProperty('background-image', `url("${url}")`)
     activeElement.style.setProperty('background-size', 'cover')
     activeElement.style.setProperty('background-position', 'center')
@@ -283,7 +331,23 @@ export function BackgroundPanel({
     if (!activeElement) return
     setHasBgImage(false)
     setSearchResults([])
-    activeElement.style.setProperty('background-image', '')
+    if (activeElement.tagName.toLowerCase() === 'img') {
+      if (onImageElementPreview) {
+        onImageElementPreview(null)
+      } else if (originalImageSrcRef.current) {
+        ;(activeElement as HTMLImageElement).src = originalImageSrcRef.current
+      }
+      markModified()
+      return
+    }
+    if (
+      originalHadBgImageRef.current &&
+      !originalInlineBgImageRef.current.trim()
+    ) {
+      activeElement.style.setProperty('background-image', 'none')
+    } else {
+      activeElement.style.setProperty('background-image', '')
+    }
     activeElement.style.setProperty('background-size', '')
     activeElement.style.setProperty('background-position', '')
     markModified()
@@ -407,11 +471,12 @@ export function BackgroundPanel({
     'text-[10px] uppercase tracking-wider text-muted-foreground font-medium'
 
   return (
-    <div className="flex flex-col gap-2 p-2 w-full min-w-[420px] bg-background/95">
+    <div className="flex w-full min-w-0 max-w-full flex-col gap-2 bg-background/95 p-2">
       {/* Mode toggle: Solid / Gradient */}
       <div className="flex items-center gap-2">
         <span className={labelCls}>Mode</span>
         <ToggleGroup
+          aria-label="Background mode"
           type="single"
           value={bgMode}
           onValueChange={(v) => {
@@ -445,6 +510,7 @@ export function BackgroundPanel({
           <label className="relative cursor-pointer">
             <input
               type="color"
+              aria-label="Background color"
               value={bgColor}
               onChange={(e) => applySolidColor(e.target.value)}
               className="absolute inset-0 size-full cursor-pointer opacity-0"
@@ -466,6 +532,7 @@ export function BackgroundPanel({
           <div className="flex items-center gap-2">
             <span className={labelCls}>Type</span>
             <ToggleGroup
+              aria-label="Gradient type"
               type="single"
               value={gradient.type}
               onValueChange={(v) => {
@@ -503,6 +570,7 @@ export function BackgroundPanel({
               <label className="relative cursor-pointer">
                 <input
                   type="color"
+                  aria-label="Gradient first color"
                   value={gradient.color1}
                   onChange={(e) => updateGradient({ color1: e.target.value })}
                   className="absolute inset-0 size-full cursor-pointer opacity-0"
@@ -528,6 +596,7 @@ export function BackgroundPanel({
               <label className="relative cursor-pointer">
                 <input
                   type="color"
+                  aria-label="Gradient second color"
                   value={gradient.color2}
                   onChange={(e) => updateGradient({ color2: e.target.value })}
                   className="absolute inset-0 size-full cursor-pointer opacity-0"
@@ -610,6 +679,7 @@ export function BackgroundPanel({
             <Search className="pointer-events-none absolute left-2.5 size-3.5 text-white/40" />
             <input
               type="text"
+              aria-label="Search background images"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -651,7 +721,6 @@ export function BackgroundPanel({
           <button
             type="button"
             onClick={handleSearch}
-            disabled={searching}
             aria-label="Search images"
             className={cn(
               'size-7 grid place-items-center rounded transition-colors',
@@ -683,6 +752,21 @@ export function BackgroundPanel({
             {uploadError}
           </div>
         )}
+
+        {searchError && (
+          <div className="rounded border border-red-500/20 bg-red-500/10 px-2 py-1 text-[10px] text-red-300">
+            {searchError}
+          </div>
+        )}
+
+        {!searchError &&
+          hasSearchedImages &&
+          uploadedImages.length === 0 &&
+          searchResults.length === 0 && (
+            <div className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-white/40">
+              No results found
+            </div>
+          )}
 
         {isDragging && (
           <div className="absolute inset-0 z-10 flex items-center justify-center border-2 border-dashed border-cyan-300/50 bg-[#0b0d14]/80 backdrop-blur-sm">

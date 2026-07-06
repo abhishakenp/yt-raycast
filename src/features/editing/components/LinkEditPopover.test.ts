@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { createElement } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -7,7 +7,15 @@ import { LinkEditPopover } from './LinkEditPopover'
 
 const onApply =
   vi.fn<
-    (p: { oldHref: string; newHref: string; occurrenceIndex: number }) => void
+    (p: {
+      oldHref: string
+      newHref: string
+      oldText: string
+      newText: string
+      target: string | null
+      rel: string
+      occurrenceIndex: number
+    }) => void
   >()
 const onClose = vi.fn()
 
@@ -41,6 +49,18 @@ describe('LinkEditPopover', () => {
     expect(inputs[1].value).toBe('Click Here')
   })
 
+  it('exposes URL and link text inputs by accessible name', () => {
+    renderPopover(activeElement)
+
+    expect(
+      (screen.getByRole('textbox', { name: 'URL' }) as HTMLInputElement).value,
+    ).toBe('/old-path')
+    expect(
+      (screen.getByRole('textbox', { name: 'Link Text' }) as HTMLInputElement)
+        .value,
+    ).toBe('Click Here')
+  })
+
   it('returns null when activeElement is null', () => {
     const { container } = renderPopover(null)
     expect(container.querySelector('input')).toBeNull()
@@ -60,7 +80,37 @@ describe('LinkEditPopover', () => {
     const payload = onApply.mock.calls[0][0]
     expect(payload.oldHref).toBe('/old-path')
     expect(payload.newHref).toBe('/new-path')
+    expect(payload.oldText).toBe('Click Here')
+    expect(payload.newText).toBe('Click Here')
+    expect(payload.target).toBeNull()
+    expect(payload.rel).toBe('')
     expect(payload.occurrenceIndex).toBe(0)
+  })
+
+  it('apply sends changed link text and attributes so they can persist', () => {
+    renderPopover(activeElement)
+    const inputs = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[type="text"]'),
+    )
+    fireEvent.change(inputs[1], { target: { value: 'Read the docs' } })
+    fireEvent.click(screen.getByRole('switch', { name: 'Open in new tab' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Noindex' }))
+
+    fireEvent.click(screen.getByRole('button', { name: /apply/i }))
+
+    expect(onApply).toHaveBeenCalledTimes(1)
+    expect(onApply.mock.calls[0][0]).toMatchObject({
+      oldHref: '/old-path',
+      newHref: '/old-path',
+      oldText: 'Click Here',
+      newText: 'Read the docs',
+      target: '_blank',
+      occurrenceIndex: 0,
+    })
+    const rel = onApply.mock.calls[0][0].rel
+    expect(rel.split(/\s+/)).toEqual(
+      expect.arrayContaining(['noopener', 'noreferrer', 'nofollow']),
+    )
   })
 
   it('apply without changes just closes', () => {
@@ -78,6 +128,55 @@ describe('LinkEditPopover', () => {
     const closeBtn = document.querySelector('button[aria-label="Close"]')!
     fireEvent.click(closeBtn)
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('close reverts live-previewed target and rel changes instead of leaving cancelled link attrs in the preview', () => {
+    activeElement.setAttribute('rel', 'sponsored')
+    renderPopover(activeElement)
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Open in new tab' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Noindex' }))
+    expect(activeElement.getAttribute('target')).toBe('_blank')
+    expect(activeElement.getAttribute('rel') ?? '').toContain('nofollow')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+    expect(activeElement.getAttribute('target')).toBeNull()
+    expect(activeElement.getAttribute('rel')).toBe('sponsored')
+    expect(onApply).not.toHaveBeenCalled()
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('unmount reverts live-previewed target and rel changes when the parent toolbar closes', () => {
+    activeElement.setAttribute('rel', 'sponsored')
+    const { unmount } = renderPopover(activeElement)
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Open in new tab' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Noindex' }))
+    expect(activeElement.getAttribute('target')).toBe('_blank')
+    expect(activeElement.getAttribute('rel') ?? '').toContain('nofollow')
+
+    unmount()
+
+    expect(activeElement.getAttribute('target')).toBeNull()
+    expect(activeElement.getAttribute('rel')).toBe('sponsored')
+    expect(onApply).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('unmount after apply keeps committed target and rel changes in the preview', () => {
+    const { unmount } = renderPopover(activeElement)
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Open in new tab' }))
+    fireEvent.click(screen.getByRole('button', { name: /apply/i }))
+    unmount()
+
+    expect(onApply).toHaveBeenCalledTimes(1)
+    expect(activeElement.getAttribute('target')).toBe('_blank')
+    const rel = activeElement.getAttribute('rel') ?? ''
+    expect(rel.split(/\s+/)).toEqual(
+      expect.arrayContaining(['noopener', 'noreferrer']),
+    )
   })
 
   it('open-in-new-tab toggle adds target=_blank and rel attributes', () => {
@@ -139,6 +238,29 @@ describe('LinkEditPopover', () => {
     fireEvent.click(applyBtn)
     const payload = onApply.mock.calls[0][0]
     expect(payload.occurrenceIndex).toBe(1)
+
+    link2.remove()
+  })
+
+  it('computes occurrenceIndex for hrefs that contain CSS selector punctuation', () => {
+    activeElement.setAttribute('href', '/search?q="polished glass"&tag=[hero]')
+    const link2 = document.createElement('a')
+    link2.setAttribute('href', '/search?q="polished glass"&tag=[hero]')
+    link2.textContent = 'Second matching link'
+    document.body.appendChild(link2)
+
+    renderPopover(link2)
+    fireEvent.change(screen.getByRole('textbox', { name: 'URL' }), {
+      target: { value: '/search?q=updated&tag=[hero]' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /apply/i }))
+
+    expect(onApply).toHaveBeenCalledTimes(1)
+    expect(onApply.mock.calls[0][0]).toMatchObject({
+      oldHref: '/search?q="polished glass"&tag=[hero]',
+      newHref: '/search?q=updated&tag=[hero]',
+      occurrenceIndex: 1,
+    })
 
     link2.remove()
   })

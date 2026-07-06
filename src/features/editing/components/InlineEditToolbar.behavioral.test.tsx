@@ -1,13 +1,26 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { createElement } from 'react'
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react'
+import type { StockImageResult } from '@/lib/stock-image'
+import { createElement, useState } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+const resizeObserverCallbacks: ResizeObserverCallback[] = []
 
 // jsdom lacks ResizeObserver / IntersectionObserver — provide stubs.
 if (typeof ResizeObserver === 'undefined') {
   Object.defineProperty(globalThis, 'ResizeObserver', {
     configurable: true,
     value: class ResizeObserver {
+      constructor(callback: ResizeObserverCallback) {
+        resizeObserverCallbacks.push(callback)
+      }
       disconnect() {}
       observe() {}
       unobserve() {}
@@ -50,10 +63,21 @@ if (
 
 // --- Mocks -----------------------------------------------------------------
 
+const floatingUpdateSpy = vi.hoisted(() => vi.fn())
+const floatingStyleState = vi.hoisted(() => ({
+  top: '0px',
+  left: '0px',
+  transform: undefined as string | undefined,
+}))
+const searchStockImagesMock = vi.hoisted(() =>
+  vi.fn<() => Promise<StockImageResult[]>>(async () => []),
+)
+const useQueryMock = vi.hoisted(() => vi.fn<() => unknown>(() => undefined))
+
 // convex/react is used by the image/background panels. Provide no-op hooks.
 vi.mock('convex/react', () => ({
   useMutation: () => vi.fn(async () => undefined),
-  useQuery: () => undefined,
+  useQuery: useQueryMock,
 }))
 
 vi.mock('../../../../convex/_generated/api', () => ({
@@ -67,7 +91,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 vi.mock('@/lib/stock-image', () => ({
-  searchStockImages: vi.fn(async () => []),
+  searchStockImages: searchStockImagesMock,
 }))
 vi.mock('@/lib/image-context', () => ({
   generateContextAwareQuery: vi.fn((alt: string) => alt),
@@ -81,7 +105,13 @@ vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
 vi.mock('@floating-ui/react', () => ({
   useFloating: () => ({
     refs: { setFloating: () => {}, setPositionReference: () => {} },
-    floatingStyles: { position: 'fixed', top: '0px', left: '0px' },
+    floatingStyles: {
+      position: 'fixed',
+      top: floatingStyleState.top,
+      left: floatingStyleState.left,
+      transform: floatingStyleState.transform,
+    },
+    update: floatingUpdateSpy,
   }),
   autoUpdate: () => () => {},
   offset: () => ({}),
@@ -266,11 +296,25 @@ vi.mock('#/components/ui/select', () => {
 // Radix ToggleGroup → native buttons (jsdom-friendly).
 vi.mock('#/components/ui/toggle-group', () => {
   const React = require('react') as typeof import('react')
+  const ToggleGroupContext = React.createContext<{
+    value: string | undefined
+    onValueChange: ((value: string) => void) | undefined
+  }>({ value: undefined, onValueChange: undefined })
   const ToggleGroup = ({
     children,
+    value,
+    onValueChange,
     ...rest
-  }: { children: React.ReactNode } & Record<string, unknown>) =>
-    React.createElement('div', { ...rest, role: 'group' }, children)
+  }: {
+    children: React.ReactNode
+    value?: string
+    onValueChange?: (value: string) => void
+  } & Record<string, unknown>) =>
+    React.createElement(
+      ToggleGroupContext.Provider,
+      { value: { value, onValueChange } },
+      React.createElement('div', { ...rest, role: 'group' }, children),
+    )
   const ToggleGroupItem = ({
     value,
     children,
@@ -278,8 +322,20 @@ vi.mock('#/components/ui/toggle-group', () => {
   }: {
     value: string
     children: React.ReactNode
-  } & Record<string, unknown>) =>
-    React.createElement('button', { ...rest, type: 'button', value }, children)
+  } & Record<string, unknown>) => {
+    const group = React.useContext(ToggleGroupContext)
+    return React.createElement(
+      'button',
+      {
+        ...rest,
+        'aria-pressed': group.value === value,
+        type: 'button',
+        value,
+        onClick: () => group.onValueChange?.(value),
+      },
+      children,
+    )
+  }
   return { ToggleGroup, ToggleGroupItem }
 })
 
@@ -325,6 +381,15 @@ let originalRaf: typeof globalThis.requestAnimationFrame
 
 beforeEach(async () => {
   vi.resetModules()
+  floatingUpdateSpy.mockClear()
+  floatingStyleState.top = '0px'
+  floatingStyleState.left = '0px'
+  floatingStyleState.transform = undefined
+  resizeObserverCallbacks.length = 0
+  searchStockImagesMock.mockReset()
+  searchStockImagesMock.mockResolvedValue([])
+  useQueryMock.mockReset()
+  useQueryMock.mockReturnValue(undefined)
   ;({ InlineEditToolbar } = await import('./InlineEditToolbar'))
   vi.spyOn(window, 'getComputedStyle').mockReturnValue(
     fakeComputedStyle as unknown as CSSStyleDeclaration,
@@ -372,6 +437,22 @@ function makeImageEl() {
   return el
 }
 
+function makeSectionEl() {
+  const el = document.createElement('section')
+  el.className = 'hero-section bg-white py-20'
+  el.textContent = 'Hero section'
+  document.body.appendChild(el)
+  return el
+}
+
+function makeIdOnlySectionEl(id = 'newsletter_newsletter') {
+  const el = document.createElement('section')
+  el.id = id
+  el.textContent = 'Newsletter section'
+  document.body.appendChild(el)
+  return el
+}
+
 // The active visual class applied to toggled buttons in the real component.
 const ACTIVE_CLASS = 'bg-cyan-300/20'
 
@@ -379,15 +460,32 @@ function isActive(btn: HTMLElement): boolean {
   return btn.className.includes(ACTIVE_CLASS)
 }
 
+function findAnimatedPanel(container: HTMLElement): HTMLElement {
+  const panel = Array.from(container.querySelectorAll('div')).find(
+    (node) => node.style.gridTemplateRows !== '',
+  )
+  if (!panel) throw new Error('Animated panel container was not rendered')
+  return panel
+}
+
 interface RenderOpts {
   activeElement?: HTMLElement
   isApplying?: boolean
   isForking?: boolean
+  isSectionSubmitting?: boolean
+  sectionError?: string
   canUndo?: boolean
   canRedo?: boolean
   canMoveUp?: boolean
   canMoveDown?: boolean
   sessionId?: string
+  onLinkEdit?: Parameters<typeof InlineEditToolbar>[0]['onLinkEdit']
+  onImageSelect?: Parameters<typeof InlineEditToolbar>[0]['onImageSelect']
+  onSelectParentSection?: Parameters<
+    typeof InlineEditToolbar
+  >[0]['onSelectParentSection']
+  onSectionEdit?: (prompt: string) => void
+  disableSectionEdit?: boolean
 }
 
 function renderToolbar(opts: RenderOpts = {}) {
@@ -399,8 +497,10 @@ function renderToolbar(opts: RenderOpts = {}) {
   const onRedo = vi.fn()
   const onMoveUp = vi.fn()
   const onMoveDown = vi.fn()
-  const onLinkEdit = vi.fn()
-  const onImageSelect = vi.fn()
+  const onLinkEdit = opts.onLinkEdit ?? vi.fn()
+  const onImageSelect = opts.onImageSelect ?? vi.fn()
+  const onSectionEdit = opts.onSectionEdit ?? vi.fn()
+  const sectionEditProp = opts.disableSectionEdit ? undefined : onSectionEdit
   const utils = render(
     createElement(InlineEditToolbar, {
       isOpen: true,
@@ -421,11 +521,49 @@ function renderToolbar(opts: RenderOpts = {}) {
       canMoveDown: opts.canMoveDown ?? true,
       onLinkEdit,
       onImageSelect,
+      onSelectParentSection: opts.onSelectParentSection,
       sessionId: opts.sessionId,
+      onSectionEdit: sectionEditProp,
+      isSectionSubmitting: opts.isSectionSubmitting ?? false,
+      sectionError: opts.sectionError,
     }),
   )
+  const baseProps = {
+    isOpen: true,
+    anchorRect,
+    activeElement,
+    onStyleApply,
+    onCommitText,
+    onClose,
+    isApplying: opts.isApplying ?? false,
+    isForking: opts.isForking ?? false,
+    canUndo: opts.canUndo ?? true,
+    canRedo: opts.canRedo ?? true,
+    onUndo,
+    onRedo,
+    onMoveUp,
+    onMoveDown,
+    canMoveUp: opts.canMoveUp ?? true,
+    canMoveDown: opts.canMoveDown ?? true,
+    onLinkEdit,
+    onImageSelect,
+    onSelectParentSection: opts.onSelectParentSection,
+    sessionId: opts.sessionId,
+    onSectionEdit: sectionEditProp,
+    isSectionSubmitting: opts.isSectionSubmitting ?? false,
+    sectionError: opts.sectionError,
+  }
   return {
     ...utils,
+    rerenderToolbar(nextOpts: Partial<RenderOpts> = {}) {
+      utils.rerender(
+        createElement(InlineEditToolbar, {
+          ...baseProps,
+          ...nextOpts,
+          activeElement: nextOpts.activeElement ?? baseProps.activeElement,
+        }),
+      )
+    },
     activeElement,
     onStyleApply,
     onCommitText,
@@ -436,6 +574,7 @@ function renderToolbar(opts: RenderOpts = {}) {
     onMoveDown,
     onLinkEdit,
     onImageSelect,
+    onSectionEdit,
   }
 }
 
@@ -505,6 +644,31 @@ describe('InlineEditToolbar (behavioral)', () => {
     expect(isActive(right)).toBe(true)
   })
 
+  it('5b. formatting and alignment toggles expose pressed state to assistive tech', () => {
+    renderToolbar()
+    const bold = screen.getByRole('button', { name: 'Bold' })
+    const italic = screen.getByRole('button', { name: 'Italic' })
+    const left = screen.getByRole('button', { name: 'Align left' })
+    const center = screen.getByRole('button', { name: 'Align center' })
+    const right = screen.getByRole('button', { name: 'Align right' })
+
+    expect(bold.getAttribute('aria-pressed')).toBe('false')
+    expect(italic.getAttribute('aria-pressed')).toBe('false')
+    expect(left.getAttribute('aria-pressed')).toBe('true')
+    expect(center.getAttribute('aria-pressed')).toBe('false')
+    expect(right.getAttribute('aria-pressed')).toBe('false')
+
+    fireEvent.click(bold)
+    fireEvent.click(italic)
+    fireEvent.click(center)
+
+    expect(bold.getAttribute('aria-pressed')).toBe('true')
+    expect(italic.getAttribute('aria-pressed')).toBe('true')
+    expect(left.getAttribute('aria-pressed')).toBe('false')
+    expect(center.getAttribute('aria-pressed')).toBe('true')
+    expect(right.getAttribute('aria-pressed')).toBe('false')
+  })
+
   // 6. Font size: type "24" → input value is "24"
   it('6. font size input updates value; unit selector updates', () => {
     const { container } = renderToolbar()
@@ -518,6 +682,21 @@ describe('InlineEditToolbar (behavioral)', () => {
     expect(unitSelect).not.toBeNull()
     fireEvent.change(unitSelect, { target: { value: 'em' } })
     expect(unitSelect.value).toBe('em')
+  })
+
+  it('6b. font size controls are named by role for keyboard and assistive tech users', () => {
+    renderToolbar()
+
+    const sizeInput = screen.getByRole('spinbutton', { name: 'Font size' })
+    const unitSelect = screen.getByRole('combobox', {
+      name: 'Font size unit',
+    })
+
+    fireEvent.change(sizeInput, { target: { value: '28' } })
+    fireEvent.change(unitSelect, { target: { value: 'rem' } })
+
+    expect((sizeInput as HTMLInputElement).value).toBe('28')
+    expect((unitSelect as HTMLSelectElement).value).toBe('rem')
   })
 
   // 7. Font weight: select "700" → value updates
@@ -555,6 +734,29 @@ describe('InlineEditToolbar (behavioral)', () => {
     expect((paste as HTMLButtonElement).disabled).toBe(true)
     fireEvent.click(copy)
     expect((paste as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  it('9b. paste style: copying an unstyled element clears inline style on the target', () => {
+    const source = makeTextEl()
+    const target = makeTextEl()
+    target.setAttribute('style', 'color: red; font-size: 20px')
+    const { rerenderToolbar, onStyleApply } = renderToolbar({
+      activeElement: source,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy style' }))
+
+    rerenderToolbar({ activeElement: target })
+    fireEvent.click(screen.getByRole('button', { name: 'Paste style' }))
+
+    expect(target.hasAttribute('style')).toBe(false)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+    expect(onStyleApply).toHaveBeenCalledWith({
+      sourceAnchor: 'hero-title',
+      style: '',
+      occurrenceIndex: 1,
+    })
   })
 
   // 10. Paste style: after copy, click paste → onStyleApply called with copied style
@@ -688,6 +890,44 @@ describe('InlineEditToolbar (behavioral)', () => {
     expect(apply.querySelector('.animate-spin')).not.toBeNull()
   })
 
+  it('19a. moves focus into the toolbar when it opens (accessibility: keyboard users previously had to tab in from elsewhere)', () => {
+    const { container } = renderToolbar()
+    const toolbar = container.querySelector<HTMLElement>('.inline-edit-toolbar')
+    expect(toolbar).not.toBeNull()
+    expect(document.activeElement).toBe(toolbar)
+  })
+
+  it('19b. restores focus to the edited element when the toolbar unmounts (accessibility: keyboard/screen-reader users previously lost focus context on close)', () => {
+    const activeElement = makeTextEl()
+    const { unmount } = renderToolbar({ activeElement })
+
+    unmount()
+
+    expect(document.activeElement).toBe(activeElement)
+  })
+
+  it('19c. does not steal focus from a live contentEditable text edit (regression: cursor vanished out of the text ~100ms after clicking it, right after useTextEdit placed the caret)', () => {
+    const activeElement = makeTextEl()
+    // jsdom doesn't implement the contentEditable IDL property's attribute
+    // reflection, so set the attribute directly — this is what real browsers
+    // end up with after useTextEdit.ts's `textEl.contentEditable = 'true'`,
+    // and matches how the rest of the codebase detects an active text edit
+    // (e.g. translation.tsx's ACTIVE_TEXT_EDIT_SELECTOR uses the same attribute).
+    activeElement.setAttribute('contenteditable', 'true')
+    // jsdom also doesn't treat contentEditable elements as implicitly
+    // focusable — a tabIndex is required for .focus() to take effect here.
+    // Real browsers need no such attribute.
+    activeElement.tabIndex = -1
+    activeElement.focus()
+    expect(document.activeElement).toBe(activeElement)
+
+    const { container } = renderToolbar({ activeElement })
+    const toolbar = container.querySelector<HTMLElement>('.inline-edit-toolbar')
+    expect(toolbar).not.toBeNull()
+    expect(document.activeElement).toBe(activeElement)
+    expect(document.activeElement).not.toBe(toolbar)
+  })
+
   // 20. Style panel: click → StyleControlsPanel visible; click again → hidden
   it('20. style panel: click → StyleControlsPanel appears; click → collapses', () => {
     renderToolbar()
@@ -701,6 +941,319 @@ describe('InlineEditToolbar (behavioral)', () => {
     expect(isActive(toggle)).toBe(false)
   })
 
+  it('20b. opening style panels requests floating reposition so Apply remains reachable near viewport edges', async () => {
+    renderToolbar()
+    floatingUpdateSpy.mockClear()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+
+    await waitFor(() => {
+      expect(floatingUpdateSpy).toHaveBeenCalled()
+    })
+  })
+
+  it('20c. clamps offscreen top placement so Apply stays inside the viewport', async () => {
+    floatingStyleState.top = '-168.5px'
+    const { container } = renderToolbar()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+
+    await waitFor(() => {
+      const toolbar = container.querySelector<HTMLElement>(
+        '.inline-edit-toolbar',
+      )
+      expect(toolbar?.style.top).toBe('8px')
+    })
+  })
+
+  it('20d. clamps transform-based offscreen placement from Floating UI', async () => {
+    floatingStyleState.top = '8px'
+    floatingStyleState.transform = 'translate(199px, -177.5px)'
+    const { container } = renderToolbar()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+
+    await waitFor(() => {
+      const toolbar = container.querySelector<HTMLElement>(
+        '.inline-edit-toolbar',
+      )
+      expect(toolbar?.style.transform).toBe('translate(199px, 0px)')
+    })
+  })
+
+  it('20d.1. clamps offscreen left placement so Apply stays inside the viewport (regression: only top/y was ever clamped)', async () => {
+    floatingStyleState.left = '-168.5px'
+    const { container } = renderToolbar()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+
+    await waitFor(() => {
+      const toolbar = container.querySelector<HTMLElement>(
+        '.inline-edit-toolbar',
+      )
+      expect(toolbar?.style.left).toBe('8px')
+    })
+  })
+
+  it('20d.2. clamps transform-based offscreen left placement from Floating UI (regression: only the y component was ever clamped)', async () => {
+    floatingStyleState.top = '8px'
+    floatingStyleState.left = '8px'
+    floatingStyleState.transform = 'translate(-199px, 0px)'
+    const { container } = renderToolbar()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+
+    await waitFor(() => {
+      const toolbar = container.querySelector<HTMLElement>(
+        '.inline-edit-toolbar',
+      )
+      expect(toolbar?.style.transform).toBe('translate(0px, 0px)')
+    })
+  })
+
+  it('20d.3. clamps offscreen right placement (wide toolbar near the right edge) so Apply stays reachable', async () => {
+    const originalInnerWidth = window.innerWidth
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 400,
+    })
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(
+      function getOffsetWidth(this: HTMLElement) {
+        return this.dataset.inlineEditWrapper === 'true' ? 320 : 0
+      },
+    )
+    // Anchored near the right edge of a 400px-wide viewport — a 320px-wide
+    // toolbar placed here would overflow past innerWidth without clamping.
+    floatingStyleState.left = '350px'
+    const { container } = renderToolbar()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+
+    await waitFor(() => {
+      const toolbar = container.querySelector<HTMLElement>(
+        '.inline-edit-toolbar',
+      )
+      // maxLeft = innerWidth(400) - width(320) - padding(8) = 72
+      expect(toolbar?.style.left).toBe('72px')
+    })
+
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: originalInnerWidth,
+    })
+  })
+
+  it('20e. reclamps after BG image results grow the panel so Apply remains reachable', async () => {
+    const originalInnerHeight = window.innerHeight
+    Object.defineProperty(window, 'innerHeight', {
+      configurable: true,
+      value: 360,
+    })
+    let toolbarHeight = 40
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(
+      function getOffsetHeight(this: HTMLElement) {
+        return this.dataset.inlineEditWrapper === 'true' ? toolbarHeight : 0
+      },
+    )
+    floatingStyleState.top = '300px'
+    searchStockImagesMock.mockResolvedValue(
+      Array.from({ length: 9 }, (_, index) => ({
+        imageUrl: `https://images.pexels.com/photos/${index}/replacement.jpeg`,
+        query: `result ${index}`,
+        source: 'pexels' as const,
+      })),
+    )
+    const { container } = renderToolbar({ sessionId: 'sess-1' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    await new Promise((resolve) => setTimeout(resolve, 270))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'large result grid' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+
+    await screen.findByRole('button', { name: 'Select image 9' })
+    toolbarHeight = 340
+    await act(async () => {
+      for (const callback of resizeObserverCallbacks) {
+        callback([], {} as ResizeObserver)
+      }
+    })
+
+    await waitFor(() => {
+      const toolbar = container.querySelector<HTMLElement>(
+        '.inline-edit-toolbar',
+      )
+      const apply = screen.getByRole('button', { name: 'Apply' })
+      expect(toolbar?.style.top).toBe('12px')
+      expect(apply).not.toBeNull()
+      expect((apply as HTMLButtonElement).disabled).toBe(false)
+    })
+
+    Object.defineProperty(window, 'innerHeight', {
+      configurable: true,
+      value: originalInnerHeight,
+    })
+  })
+
+  it('20e.1. commits a selected section background after a large BG result grid opens', async () => {
+    const originalInnerHeight = window.innerHeight
+    Object.defineProperty(window, 'innerHeight', {
+      configurable: true,
+      value: 360,
+    })
+    let toolbarHeight = 40
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(
+      function getOffsetHeight(this: HTMLElement) {
+        return this.dataset.inlineEditWrapper === 'true' ? toolbarHeight : 0
+      },
+    )
+    floatingStyleState.top = '300px'
+    const imageUrl =
+      'https://images.pexels.com/photos/8/reachable-background.jpeg'
+    searchStockImagesMock.mockResolvedValue(
+      Array.from({ length: 9 }, (_, index) => ({
+        imageUrl:
+          index === 8
+            ? imageUrl
+            : `https://images.pexels.com/photos/${index}/replacement.jpeg`,
+        query: `result ${index}`,
+        source: 'pexels' as const,
+      })),
+    )
+    const sectionElement = makeSectionEl()
+    const { onClose, onStyleApply } = renderToolbar({
+      activeElement: sectionElement,
+      sessionId: 'sess-1',
+    })
+
+    try {
+      fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+      fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+      await new Promise((resolve) => setTimeout(resolve, 270))
+      fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+        target: { value: 'large result grid' },
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+
+      const result = await screen.findByRole('button', {
+        name: 'Select image 9',
+      })
+      toolbarHeight = 340
+      await act(async () => {
+        for (const callback of resizeObserverCallbacks) {
+          callback([], {} as ResizeObserver)
+        }
+      })
+      fireEvent.click(result)
+      fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+      expect(onStyleApply).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sourceAnchor: 'hero-section bg-white py-20',
+          occurrenceIndex: 0,
+          style: expect.stringContaining(imageUrl),
+        }),
+      )
+      expect(sectionElement.style.backgroundImage).toContain(imageUrl)
+      expect(sectionElement.style.backgroundSize).toBe('cover')
+      expect(sectionElement.style.backgroundPosition).toBe('center center')
+      expect(onClose).toHaveBeenCalledTimes(1)
+    } finally {
+      Object.defineProperty(window, 'innerHeight', {
+        configurable: true,
+        value: originalInnerHeight,
+      })
+    }
+  })
+
+  it('20e.2. commits a selected text-element background image through Apply', async () => {
+    const imageUrl =
+      'https://images.pexels.com/photos/text-bg/reachable-background.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'text background',
+        source: 'pexels',
+      },
+    ])
+    const textElement = makeTextEl()
+    const { onClose, onStyleApply } = renderToolbar({
+      activeElement: textElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'text background' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Select image 1' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: 'hero-title',
+        occurrenceIndex: 0,
+        style: expect.stringContaining(imageUrl),
+      }),
+    )
+    expect(textElement.style.backgroundImage).toContain(imageUrl)
+    expect(textElement.style.backgroundSize).toBe('cover')
+    expect(textElement.style.backgroundPosition).toBe('center center')
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('20f. keeps Apply and Close outside the horizontal tool scroller so they remain reachable', () => {
+    const { container } = renderToolbar()
+
+    const toolScroller = container.querySelector('[data-inline-toolbar-scroll]')
+    const actionGroup = container.querySelector('[data-inline-toolbar-actions]')
+    const apply = screen.getByRole('button', { name: 'Apply' })
+    const close = screen.getByRole('button', { name: 'Close' })
+
+    expect(toolScroller).not.toBeNull()
+    expect(actionGroup).not.toBeNull()
+    expect(toolScroller?.contains(apply)).toBe(false)
+    expect(toolScroller?.contains(close)).toBe(false)
+    expect(actionGroup?.contains(apply)).toBe(true)
+    expect(actionGroup?.contains(close)).toBe(true)
+  })
+
+  it('20g. closing after a size preview removes temporary inline edit styles', () => {
+    const headingElement = makeTextEl()
+    headingElement.dataset.shipFastInlineEditing = 'true'
+    headingElement.setAttribute(
+      'style',
+      'outline: 2px solid hsl(var(--primary)); outline-offset: 2px; cursor: text;',
+    )
+    const { onClose } = renderToolbar({ activeElement: headingElement })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Size' }))
+    fireEvent.change(screen.getByRole('textbox', { name: 'Width' }), {
+      target: { value: '320' },
+    })
+
+    expect(headingElement.style.width).toBe('320px')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+    expect(headingElement.hasAttribute('style')).toBe(false)
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
   // 21. Typography panel: click → TypographyControlsPanel visible
   it('21. typography panel: click → TypographyControlsPanel appears', () => {
     renderToolbar()
@@ -710,6 +1263,142 @@ describe('InlineEditToolbar (behavioral)', () => {
     expect(screen.getByPlaceholderText('normal')).not.toBeNull()
   })
 
+  it('21b. expanded panels expose expanded state on their trigger buttons', () => {
+    renderToolbar()
+    const style = screen.getByRole('button', { name: 'Style controls' })
+    const typography = screen.getByRole('button', {
+      name: 'Typography controls',
+    })
+    const ai = screen.getByRole('button', { name: 'AI edit' })
+
+    expect(style.getAttribute('aria-expanded')).toBe('false')
+    expect(typography.getAttribute('aria-expanded')).toBe('false')
+    expect(ai.getAttribute('aria-expanded')).toBe('false')
+
+    fireEvent.click(style)
+    expect(style.getAttribute('aria-expanded')).toBe('true')
+    expect(typography.getAttribute('aria-expanded')).toBe('false')
+    expect(ai.getAttribute('aria-expanded')).toBe('false')
+
+    fireEvent.click(typography)
+    expect(style.getAttribute('aria-expanded')).toBe('false')
+    expect(typography.getAttribute('aria-expanded')).toBe('true')
+    expect(ai.getAttribute('aria-expanded')).toBe('false')
+
+    fireEvent.click(ai)
+    expect(style.getAttribute('aria-expanded')).toBe('false')
+    expect(typography.getAttribute('aria-expanded')).toBe('false')
+    expect(ai.getAttribute('aria-expanded')).toBe('true')
+  })
+
+  it('21b.1. does not expose AI edit when no section edit handler is available', () => {
+    renderToolbar({ disableSectionEdit: true })
+
+    expect(screen.queryByRole('button', { name: 'AI edit' })).toBeNull()
+  })
+
+  it('21b.2. closes the AI panel if section editing becomes unavailable', async () => {
+    const { container, rerenderToolbar } = renderToolbar()
+    const ai = screen.getByRole('button', { name: 'AI edit' })
+
+    fireEvent.click(ai)
+    expect(
+      screen.getByRole('textbox', { name: 'Describe AI edit' }),
+    ).toBeTruthy()
+    expect(findAnimatedPanel(container).style.gridTemplateRows).toBe('1fr')
+
+    rerenderToolbar({ onSectionEdit: undefined })
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'AI edit' })).toBeNull()
+      expect(
+        screen.queryByRole('textbox', { name: 'Describe AI edit' }),
+      ).toBeNull()
+      expect(findAnimatedPanel(container).style.gridTemplateRows).toBe('0fr')
+    })
+  })
+
+  it('21c. AI edit panel exposes a named prompt and submits a trimmed prompt with Enter', () => {
+    const onSectionEdit = vi.fn()
+    renderToolbar({ onSectionEdit })
+
+    fireEvent.click(screen.getByRole('button', { name: 'AI edit' }))
+    const prompt = screen.getByRole('textbox', { name: 'Describe AI edit' })
+    const generate = screen.getByRole('button', { name: 'Generate' })
+
+    expect((generate as HTMLButtonElement).disabled).toBe(true)
+
+    fireEvent.change(prompt, {
+      target: { value: '  Make the hero more premium  ' },
+    })
+    fireEvent.keyDown(prompt, { key: 'Enter', code: 'Enter', shiftKey: false })
+
+    expect(onSectionEdit).toHaveBeenCalledTimes(1)
+    expect(onSectionEdit).toHaveBeenCalledWith('Make the hero more premium')
+  })
+
+  it('21c.1. AI edit keeps Shift+Enter as multiline prompt input instead of submitting', () => {
+    const onSectionEdit = vi.fn()
+    renderToolbar({ onSectionEdit })
+
+    fireEvent.click(screen.getByRole('button', { name: 'AI edit' }))
+    const prompt = screen.getByRole('textbox', { name: 'Describe AI edit' })
+
+    fireEvent.change(prompt, { target: { value: 'Make it dreamy' } })
+    fireEvent.keyDown(prompt, { key: 'Enter', code: 'Enter', shiftKey: true })
+
+    expect(onSectionEdit).not.toHaveBeenCalled()
+    expect((prompt as HTMLTextAreaElement).value).toBe('Make it dreamy')
+  })
+
+  it('21c.2. AI edit announces pending and error states accessibly', () => {
+    renderToolbar({
+      isSectionSubmitting: true,
+      sectionError: 'AI edit failed',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'AI edit' }))
+
+    expect(screen.getByRole('status').textContent).toBe('Generating...')
+    expect(screen.getByRole('alert').textContent).toBe('AI edit failed')
+    expect(
+      (
+        screen.getByRole('textbox', {
+          name: 'Describe AI edit',
+        }) as HTMLTextAreaElement
+      ).disabled,
+    ).toBe(true)
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Generating...',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true)
+  })
+
+  it('21d. AI edit cannot be opened while an edit is saving or forking', () => {
+    const applying = renderToolbar({ isApplying: true })
+    const applyingAi = screen.getByRole('button', { name: 'AI edit' })
+
+    expect((applyingAi as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(applyingAi)
+    expect(
+      screen.queryByRole('textbox', { name: 'Describe AI edit' }),
+    ).toBeNull()
+
+    applying.unmount()
+
+    renderToolbar({ isForking: true })
+    const forkingAi = screen.getByRole('button', { name: 'AI edit' })
+
+    expect((forkingAi as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(forkingAi)
+    expect(
+      screen.queryByRole('textbox', { name: 'Describe AI edit' }),
+    ).toBeNull()
+  })
+
   // 22. Link panel: click → LinkEditPopover visible
   it('22. link panel: click → LinkEditPopover appears', () => {
     renderToolbar({ activeElement: makeLinkEl() })
@@ -717,11 +1406,1534 @@ describe('InlineEditToolbar (behavioral)', () => {
     expect(screen.getByPlaceholderText('https://...')).not.toBeNull()
   })
 
+  it('22b. link panel trigger exposes expanded state', () => {
+    renderToolbar({ activeElement: makeLinkEl() })
+    const link = screen.getByRole('button', { name: 'Edit link' })
+
+    expect(link.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(link)
+    expect(link.getAttribute('aria-expanded')).toBe('true')
+    fireEvent.click(link)
+    expect(link.getAttribute('aria-expanded')).toBe('false')
+  })
+
+  it('22b.1. applying a link edit commits href, text, target, and rel through the toolbar callback', async () => {
+    const linkElement = makeLinkEl()
+    const { container, onLinkEdit, onClose } = renderToolbar({
+      activeElement: linkElement,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit link' }))
+    fireEvent.change(screen.getByRole('textbox', { name: 'URL' }), {
+      target: { value: '/learn' },
+    })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Link Text' }), {
+      target: { value: 'Read the guide' },
+    })
+    fireEvent.click(screen.getByRole('switch', { name: 'Open in new tab' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Noindex' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Apply' }).at(-1)!)
+
+    const onLinkEditMock = onLinkEdit as ReturnType<typeof vi.fn>
+    expect(onLinkEdit).toHaveBeenCalledTimes(1)
+    expect(onLinkEditMock.mock.calls[0][0]).toMatchObject({
+      oldHref: 'https://example.com',
+      newHref: '/learn',
+      oldText: 'Click here',
+      newText: 'Read the guide',
+      target: '_blank',
+      occurrenceIndex: 0,
+    })
+    expect(onLinkEditMock.mock.calls[0][0].rel.split(/\s+/)).toEqual(
+      expect.arrayContaining(['noopener', 'noreferrer', 'nofollow']),
+    )
+    expect(linkElement.getAttribute('target')).toBe('_blank')
+    expect(linkElement.getAttribute('rel')?.split(/\s+/)).toEqual(
+      expect.arrayContaining(['noopener', 'noreferrer', 'nofollow']),
+    )
+    await waitFor(() => {
+      expect(screen.queryByRole('textbox', { name: 'URL' })).toBeNull()
+      expect(findAnimatedPanel(container).style.gridTemplateRows).toBe('0fr')
+    })
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('22c. escape after live-previewed link attrs reverts them without saving', () => {
+    const linkElement = makeLinkEl()
+    linkElement.setAttribute('rel', 'sponsored')
+    const { onClose, onLinkEdit } = renderToolbar({
+      activeElement: linkElement,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit link' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Open in new tab' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Noindex' }))
+
+    expect(linkElement.getAttribute('target')).toBe('_blank')
+    expect(linkElement.getAttribute('rel') ?? '').toContain('nofollow')
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect(linkElement.getAttribute('target')).toBeNull()
+    expect(linkElement.getAttribute('rel')).toBe('sponsored')
+    expect(onLinkEdit).not.toHaveBeenCalled()
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('22d. outside click after live-previewed link attrs reverts them without saving', () => {
+    const linkElement = makeLinkEl()
+    linkElement.setAttribute('rel', 'sponsored')
+    const { onClose, onLinkEdit } = renderToolbar({
+      activeElement: linkElement,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit link' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Open in new tab' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Noindex' }))
+
+    expect(linkElement.getAttribute('target')).toBe('_blank')
+    expect(linkElement.getAttribute('rel') ?? '').toContain('nofollow')
+
+    const outside = document.createElement('div')
+    document.body.appendChild(outside)
+    fireEvent.mouseDown(outside)
+
+    expect(linkElement.getAttribute('target')).toBeNull()
+    expect(linkElement.getAttribute('rel')).toBe('sponsored')
+    expect(onLinkEdit).not.toHaveBeenCalled()
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('22e. toggling the link panel closed reverts live-previewed link attrs without saving', () => {
+    const linkElement = makeLinkEl()
+    linkElement.setAttribute('rel', 'sponsored')
+    const { onClose, onLinkEdit } = renderToolbar({
+      activeElement: linkElement,
+    })
+
+    const linkButton = screen.getByRole('button', { name: 'Edit link' })
+    fireEvent.click(linkButton)
+    fireEvent.click(screen.getByRole('switch', { name: 'Open in new tab' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Noindex' }))
+
+    fireEvent.click(linkButton)
+
+    expect(linkElement.getAttribute('target')).toBeNull()
+    expect(linkElement.getAttribute('rel')).toBe('sponsored')
+    expect(onLinkEdit).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('22f. switching away from the link panel reverts live-previewed link attrs without saving', () => {
+    const linkElement = makeLinkEl()
+    linkElement.setAttribute('rel', 'sponsored')
+    const { onClose, onLinkEdit } = renderToolbar({
+      activeElement: linkElement,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit link' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Open in new tab' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Noindex' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+
+    expect(linkElement.getAttribute('target')).toBeNull()
+    expect(linkElement.getAttribute('rel')).toBe('sponsored')
+    expect(onLinkEdit).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
+    expect(
+      screen
+        .getByRole('button', { name: 'Style controls' })
+        .getAttribute('aria-expanded'),
+    ).toBe('true')
+  })
+
+  it('22g. changing the active element after live-previewed link attrs reverts the old link without saving', () => {
+    const firstLink = makeLinkEl()
+    firstLink.setAttribute('rel', 'sponsored')
+    const secondLink = makeLinkEl()
+    secondLink.setAttribute('href', '/second')
+    secondLink.textContent = 'Second link'
+    const { onClose, onLinkEdit, rerenderToolbar } = renderToolbar({
+      activeElement: firstLink,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit link' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Open in new tab' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Noindex' }))
+
+    expect(firstLink.getAttribute('target')).toBe('_blank')
+    expect(firstLink.getAttribute('rel') ?? '').toContain('nofollow')
+
+    rerenderToolbar({ activeElement: secondLink })
+
+    expect(firstLink.getAttribute('target')).toBeNull()
+    expect(firstLink.getAttribute('rel')).toBe('sponsored')
+    expect(secondLink.getAttribute('target')).toBeNull()
+    expect(secondLink.getAttribute('rel')).toBeNull()
+    expect(onLinkEdit).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('22h. changing from a link to non-link selection closes the link panel instead of leaving empty expanded space', async () => {
+    const firstLink = makeLinkEl()
+    const nextText = makeTextEl()
+    const { container, rerenderToolbar } = renderToolbar({
+      activeElement: firstLink,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit link' }))
+    expect(screen.getByPlaceholderText('https://...')).not.toBeNull()
+    expect(findAnimatedPanel(container).style.gridTemplateRows).toBe('1fr')
+
+    rerenderToolbar({ activeElement: nextText })
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Edit link' })).toBeNull()
+      expect(screen.queryByPlaceholderText('https://...')).toBeNull()
+      expect(findAnimatedPanel(container).style.gridTemplateRows).toBe('0fr')
+    })
+  })
+
+  it('22i. removing the link edit handler while the link panel is open closes the panel', async () => {
+    const linkElement = makeLinkEl()
+    linkElement.setAttribute('rel', 'sponsored')
+    const { container, rerenderToolbar } = renderToolbar({
+      activeElement: linkElement,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit link' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Open in new tab' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Noindex' }))
+
+    expect(linkElement.getAttribute('target')).toBe('_blank')
+    expect(linkElement.getAttribute('rel') ?? '').toContain('nofollow')
+    expect(screen.getByPlaceholderText('https://...')).not.toBeNull()
+    expect(findAnimatedPanel(container).style.gridTemplateRows).toBe('1fr')
+
+    rerenderToolbar({ onLinkEdit: undefined })
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Edit link' })).toBeNull()
+      expect(screen.queryByPlaceholderText('https://...')).toBeNull()
+      expect(findAnimatedPanel(container).style.gridTemplateRows).toBe('0fr')
+    })
+    expect(linkElement.getAttribute('target')).toBeNull()
+    expect(linkElement.getAttribute('rel')).toBe('sponsored')
+  })
+
   // 23. Image panel: click → ImageSwapPanel visible
   it('23. image panel: click → ImageSwapPanel appears', () => {
     renderToolbar({ activeElement: makeImageEl(), sessionId: 'sess-1' })
     fireEvent.click(screen.getByRole('button', { name: 'Swap image' }))
     expect(screen.getByPlaceholderText('Search stock images...')).not.toBeNull()
+  })
+
+  it('23a. image panel trigger exposes expanded state', () => {
+    renderToolbar({ activeElement: makeImageEl(), sessionId: 'sess-1' })
+    const image = screen.getByRole('button', { name: 'Swap image' })
+
+    expect(image.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(image)
+    expect(image.getAttribute('aria-expanded')).toBe('true')
+    fireEvent.click(image)
+    expect(image.getAttribute('aria-expanded')).toBe('false')
+  })
+
+  it('23b. BG image selection on an img previews and commits through image swap, not a style edit', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/replacement.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'replacement hero',
+        source: 'pexels',
+      },
+    ])
+    const imageElement = makeImageEl()
+    const { onClose, onImageSelect, onStyleApply } = renderToolbar({
+      activeElement: imageElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'replacement hero' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+
+    expect((imageElement as HTMLImageElement).src).toBe(imageUrl)
+    expect(imageElement.style.backgroundImage).toBe('')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(onImageSelect).toHaveBeenCalledWith(
+      imageUrl,
+      'https://example.com/orig.png',
+    )
+    expect(onStyleApply).not.toHaveBeenCalled()
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  it('23b.1. BG image selection on a section previews and commits through style apply', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/section-bg.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'section background',
+        source: 'pexels',
+      },
+    ])
+    const sectionElement = makeSectionEl()
+    const { onClose, onImageSelect, onStyleApply } = renderToolbar({
+      activeElement: sectionElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'section background' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+
+    expect(sectionElement.style.backgroundImage).toContain(imageUrl)
+    expect(sectionElement.style.backgroundSize).toBe('cover')
+    expect(sectionElement.style.backgroundPosition).toBe('center center')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(onImageSelect).not.toHaveBeenCalled()
+    expect(onStyleApply).toHaveBeenCalledTimes(1)
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: 'hero-section bg-white py-20',
+        occurrenceIndex: 0,
+        style: expect.stringContaining(imageUrl),
+      }),
+    )
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('23b.1a. uploaded BG image selection on a section previews and commits through style apply', async () => {
+    const imageUrl = 'https://ship-fast.test/uploads/section-bg.jpeg'
+    useQueryMock.mockReturnValue([
+      {
+        url: imageUrl,
+        filename: 'section-bg.jpeg',
+      },
+    ])
+    const sectionElement = makeSectionEl()
+    const { onClose, onImageSelect, onStyleApply } = renderToolbar({
+      activeElement: sectionElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Select uploaded image 1' }),
+    )
+
+    expect(sectionElement.style.backgroundImage).toContain(imageUrl)
+    expect(sectionElement.style.backgroundSize).toBe('cover')
+    expect(sectionElement.style.backgroundPosition).toBe('center center')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(onImageSelect).not.toHaveBeenCalled()
+    expect(onStyleApply).toHaveBeenCalledTimes(1)
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: 'hero-section bg-white py-20',
+        occurrenceIndex: 0,
+        style: expect.stringContaining(imageUrl),
+      }),
+    )
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('23b.2. BG image selection on an id-only section commits a durable id anchor', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/newsletter-bg.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'newsletter background',
+        source: 'pexels',
+      },
+    ])
+    const sectionElement = makeIdOnlySectionEl()
+    const { onStyleApply } = renderToolbar({
+      activeElement: sectionElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'newsletter background' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: '#newsletter_newsletter',
+        occurrenceIndex: 0,
+        style: expect.stringContaining(imageUrl),
+      }),
+    )
+  })
+
+  it('23b.3. BG image selection on an id-only section stores the raw id, not CSS escape syntax', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/special-bg.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'special id background',
+        source: 'pexels',
+      },
+    ])
+    const sectionElement = makeIdOnlySectionEl('hero:newsletter/1')
+    const { onStyleApply } = renderToolbar({
+      activeElement: sectionElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'special id background' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: '#hero:newsletter/1',
+        occurrenceIndex: 0,
+        style: expect.stringContaining(imageUrl),
+      }),
+    )
+  })
+
+  it('23b.3b. can promote a selected child text element to its section before applying a background image', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/promoted-section-bg.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'hero section background',
+        source: 'pexels',
+      },
+    ])
+
+    const sectionElement = document.createElement('section')
+    sectionElement.id = 'hero_section'
+    sectionElement.setAttribute('data-openui-var', 'home_hero')
+    const headingElement = document.createElement('h1')
+    headingElement.className = 'hero-title'
+    headingElement.textContent = 'Hero title'
+    sectionElement.appendChild(headingElement)
+    document.body.appendChild(sectionElement)
+
+    const onStyleApply = vi.fn()
+    const onClose = vi.fn()
+
+    function Harness() {
+      const [activeElement, setActiveElement] =
+        useState<HTMLElement>(headingElement)
+      return createElement(InlineEditToolbar, {
+        isOpen: true,
+        anchorRect,
+        activeElement,
+        onStyleApply,
+        onCommitText: vi.fn(),
+        onClose,
+        onSelectParentSection: setActiveElement,
+        isApplying: false,
+        isForking: false,
+        canUndo: true,
+        canRedo: true,
+        onUndo: vi.fn(),
+        onRedo: vi.fn(),
+        onMoveUp: vi.fn(),
+        onMoveDown: vi.fn(),
+        canMoveUp: true,
+        canMoveDown: true,
+        onLinkEdit: vi.fn(),
+        onImageSelect: vi.fn(),
+        sessionId: 'sess-1',
+        onSectionEdit: vi.fn(),
+        isSectionSubmitting: false,
+      })
+    }
+
+    render(createElement(Harness))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select section' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'hero section background' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Select image 1' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(sectionElement.style.backgroundImage).toContain(imageUrl)
+    expect(headingElement.style.backgroundImage).toBe('')
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: '#hero_section',
+        occurrenceIndex: 0,
+        style: expect.stringContaining(imageUrl),
+      }),
+    )
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('23b.3c. keeps the toolbar open when a real pointer click promotes a text child to its section', async () => {
+    const imageUrl =
+      'https://images.pexels.com/photos/promoted-section-pointer-bg.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'pointer promoted background',
+        source: 'pexels',
+      },
+    ])
+
+    const sectionElement = document.createElement('section')
+    sectionElement.id = 'pointer_hero_section'
+    sectionElement.setAttribute('data-openui-var', 'home_pointer_hero')
+    const headingElement = document.createElement('h1')
+    headingElement.className = 'hero-title'
+    headingElement.textContent = 'Pointer selected title'
+    sectionElement.appendChild(headingElement)
+    document.body.appendChild(sectionElement)
+
+    const onStyleApply = vi.fn()
+    const onClose = vi.fn()
+
+    function Harness() {
+      const [activeElement, setActiveElement] =
+        useState<HTMLElement>(headingElement)
+      return createElement(InlineEditToolbar, {
+        isOpen: true,
+        anchorRect,
+        activeElement,
+        onStyleApply,
+        onCommitText: vi.fn(),
+        onClose,
+        onSelectParentSection: setActiveElement,
+        isApplying: false,
+        isForking: false,
+        canUndo: true,
+        canRedo: true,
+        onUndo: vi.fn(),
+        onRedo: vi.fn(),
+        onMoveUp: vi.fn(),
+        onMoveDown: vi.fn(),
+        canMoveUp: true,
+        canMoveDown: true,
+        onLinkEdit: vi.fn(),
+        onImageSelect: vi.fn(),
+        sessionId: 'sess-1',
+        onSectionEdit: vi.fn(),
+        isSectionSubmitting: false,
+      })
+    }
+
+    render(createElement(Harness))
+
+    const promoteButton = screen.getByRole('button', {
+      name: 'Select section',
+    })
+    fireEvent.mouseDown(promoteButton)
+    fireEvent.mouseUp(promoteButton)
+    fireEvent.click(promoteButton)
+
+    expect(onClose).not.toHaveBeenCalled()
+    expect(
+      screen.getByRole('button', { name: 'Style controls' }),
+    ).not.toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'pointer promoted background' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Select image 1' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(sectionElement.style.backgroundImage).toContain(imageUrl)
+    expect(headingElement.style.backgroundImage).toBe('')
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: '#pointer_hero_section',
+        occurrenceIndex: 0,
+        style: expect.stringContaining(imageUrl),
+      }),
+    )
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('23b.3d. prevents pointer focus loss before promoting a focused text child to its section', () => {
+    const sectionElement = document.createElement('section')
+    sectionElement.id = 'focused_pointer_hero_section'
+    const headingElement = document.createElement('h1')
+    headingElement.className = 'hero-title'
+    headingElement.textContent = 'Focused pointer title'
+    headingElement.contentEditable = 'true'
+    headingElement.tabIndex = -1
+    sectionElement.appendChild(headingElement)
+    document.body.appendChild(sectionElement)
+
+    renderToolbar({
+      activeElement: headingElement,
+      onSelectParentSection: vi.fn(),
+    })
+    headingElement.focus()
+    expect(document.activeElement).toBe(headingElement)
+
+    const promoteButton = screen.getByRole('button', {
+      name: 'Select section',
+    })
+    const pointerDown = new PointerEvent('pointerdown', {
+      bubbles: true,
+      cancelable: true,
+    })
+    promoteButton.dispatchEvent(pointerDown)
+
+    expect(pointerDown.defaultPrevented).toBe(true)
+  })
+
+  it('23b.3e. puts Select section first so it is reachable before narrow toolbar overflow', () => {
+    const sectionElement = document.createElement('section')
+    sectionElement.id = 'priority_hero_section'
+    const headingElement = document.createElement('h1')
+    headingElement.className = 'hero-title'
+    headingElement.textContent = 'Priority title'
+    sectionElement.appendChild(headingElement)
+    document.body.appendChild(sectionElement)
+
+    const { container } = renderToolbar({
+      activeElement: headingElement,
+      onSelectParentSection: vi.fn(),
+    })
+
+    const scroller = container.querySelector('[data-inline-toolbar-scroll]')
+    expect(scroller).not.toBeNull()
+    const firstButton = scroller?.querySelector('button')
+
+    expect(firstButton?.getAttribute('aria-label')).toBe('Select section')
+  })
+
+  it('23b.3f. promotes text inside anonymous nested sections to the nearest durable section anchor', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/durable-section-bg.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'durable section background',
+        source: 'pexels',
+      },
+    ])
+
+    const durableSection = document.createElement('section')
+    durableSection.id = 'durable_hero_section'
+    durableSection.setAttribute('data-openui-var', 'home_hero')
+    const anonymousSection = document.createElement('section')
+    const headingElement = document.createElement('h1')
+    headingElement.textContent = 'Nested hero title'
+    anonymousSection.appendChild(headingElement)
+    durableSection.appendChild(anonymousSection)
+    document.body.appendChild(durableSection)
+
+    const onStyleApply = vi.fn()
+
+    function Harness() {
+      const [activeElement, setActiveElement] =
+        useState<HTMLElement>(headingElement)
+      return createElement(InlineEditToolbar, {
+        isOpen: true,
+        anchorRect,
+        activeElement,
+        onStyleApply,
+        onCommitText: vi.fn(),
+        onClose: vi.fn(),
+        onSelectParentSection: setActiveElement,
+        isApplying: false,
+        isForking: false,
+        canUndo: true,
+        canRedo: true,
+        onUndo: vi.fn(),
+        onRedo: vi.fn(),
+        onMoveUp: vi.fn(),
+        onMoveDown: vi.fn(),
+        canMoveUp: true,
+        canMoveDown: true,
+        onLinkEdit: vi.fn(),
+        onImageSelect: vi.fn(),
+        sessionId: 'sess-1',
+        onSectionEdit: vi.fn(),
+        isSectionSubmitting: false,
+      })
+    }
+
+    render(createElement(Harness))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select section' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'durable section background' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Select image 1' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(durableSection.style.backgroundImage).toContain(imageUrl)
+    expect(anonymousSection.style.backgroundImage).toBe('')
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: '#durable_hero_section',
+        occurrenceIndex: 0,
+        style: expect.stringContaining(imageUrl),
+      }),
+    )
+  })
+
+  it('23b.3g. commits data-openui-var as the durable style anchor when the selected section has no id or class', async () => {
+    const imageUrl =
+      'https://images.pexels.com/photos/openui-var-section-bg.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'openui var section background',
+        source: 'pexels',
+      },
+    ])
+
+    const sectionElement = document.createElement('section')
+    sectionElement.setAttribute('data-openui-var', 'home_hero')
+    sectionElement.textContent = 'Hero section'
+    document.body.appendChild(sectionElement)
+
+    const { onStyleApply } = renderToolbar({
+      activeElement: sectionElement,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'openui var section background' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Select image 1' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(sectionElement.style.backgroundImage).toContain(imageUrl)
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: '[data-openui-var="home_hero"]',
+        occurrenceIndex: 0,
+        style: expect.stringContaining(imageUrl),
+      }),
+    )
+  })
+
+  it('23b.3h. can promote a selected child to the full page wrapper before applying a background image', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/page-bg.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'full page background',
+        source: 'pexels',
+      },
+    ])
+
+    const pageElement = document.createElement('section')
+    pageElement.setAttribute('data-sf-export-page', 'Home')
+    const sectionElement = document.createElement('section')
+    sectionElement.id = 'hero_section'
+    const headingElement = document.createElement('h1')
+    headingElement.textContent = 'Hero title'
+    sectionElement.appendChild(headingElement)
+    pageElement.appendChild(sectionElement)
+    document.body.appendChild(pageElement)
+
+    const onStyleApply = vi.fn()
+
+    function Harness() {
+      const [activeElement, setActiveElement] =
+        useState<HTMLElement>(headingElement)
+      return createElement(InlineEditToolbar, {
+        isOpen: true,
+        anchorRect,
+        activeElement,
+        onStyleApply,
+        onCommitText: vi.fn(),
+        onClose: vi.fn(),
+        onSelectParentSection: setActiveElement,
+        isApplying: false,
+        isForking: false,
+        canUndo: true,
+        canRedo: true,
+        onUndo: vi.fn(),
+        onRedo: vi.fn(),
+        onMoveUp: vi.fn(),
+        onMoveDown: vi.fn(),
+        canMoveUp: true,
+        canMoveDown: true,
+        onLinkEdit: vi.fn(),
+        onImageSelect: vi.fn(),
+        sessionId: 'sess-1',
+        onSectionEdit: vi.fn(),
+        isSectionSubmitting: false,
+      })
+    }
+
+    render(createElement(Harness))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select page' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'full page background' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Select image 1' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(pageElement.style.backgroundImage).toContain(imageUrl)
+    expect(sectionElement.style.backgroundImage).toBe('')
+    expect(headingElement.style.backgroundImage).toBe('')
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: '[data-sf-export-page="Home"]',
+        occurrenceIndex: 0,
+        style: expect.stringContaining(imageUrl),
+      }),
+    )
+  })
+
+  it('23b.3i. can promote an OpenUI child to the generated page stack before applying a background image', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/openui-page-bg.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'openui page background',
+        source: 'pexels',
+      },
+    ])
+
+    const pageStackElement = document.createElement('div')
+    pageStackElement.className = 'flex flex-col gap-4'
+    pageStackElement.setAttribute('data-openui-component', 'Stack')
+    pageStackElement.setAttribute('data-openui-var', 'home')
+    const sectionWrapper = document.createElement('div')
+    sectionWrapper.id = 'home_hero'
+    const sectionElement = document.createElement('section')
+    sectionElement.className = 'relative overflow-hidden bg-background'
+    sectionElement.setAttribute('data-openui-component', 'MarketingAgencyHero')
+    sectionElement.setAttribute('data-openui-var', 'home_hero')
+    const headingElement = document.createElement('h1')
+    headingElement.textContent = 'Hero title'
+    sectionElement.appendChild(headingElement)
+    sectionWrapper.appendChild(sectionElement)
+    pageStackElement.appendChild(sectionWrapper)
+    document.body.appendChild(pageStackElement)
+
+    const onStyleApply = vi.fn()
+
+    function Harness() {
+      const [activeElement, setActiveElement] =
+        useState<HTMLElement>(headingElement)
+      return createElement(InlineEditToolbar, {
+        isOpen: true,
+        anchorRect,
+        activeElement,
+        onStyleApply,
+        onCommitText: vi.fn(),
+        onClose: vi.fn(),
+        onSelectParentSection: setActiveElement,
+        isApplying: false,
+        isForking: false,
+        canUndo: true,
+        canRedo: true,
+        onUndo: vi.fn(),
+        onRedo: vi.fn(),
+        onMoveUp: vi.fn(),
+        onMoveDown: vi.fn(),
+        canMoveUp: true,
+        canMoveDown: true,
+        onLinkEdit: vi.fn(),
+        onImageSelect: vi.fn(),
+        sessionId: 'sess-1',
+        onSectionEdit: vi.fn(),
+        isSectionSubmitting: false,
+      })
+    }
+
+    render(createElement(Harness))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select page' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'openui page background' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Select image 1' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(pageStackElement.style.backgroundImage).toContain(imageUrl)
+    expect(sectionElement.style.backgroundImage).toBe('')
+    expect(headingElement.style.backgroundImage).toBe('')
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: '[data-openui-var="home"]',
+        occurrenceIndex: 0,
+        style: expect.stringContaining(imageUrl),
+      }),
+    )
+  })
+
+  it('23b.3j. can promote an OpenUI child to the generated page stack before applying a gradient background', async () => {
+    const pageStackElement = document.createElement('div')
+    pageStackElement.className = 'flex flex-col gap-4'
+    pageStackElement.setAttribute('data-openui-component', 'Stack')
+    pageStackElement.setAttribute('data-openui-var', 'home')
+    const sectionWrapper = document.createElement('div')
+    sectionWrapper.id = 'home_hero'
+    const sectionElement = document.createElement('section')
+    sectionElement.className = 'relative overflow-hidden bg-background'
+    sectionElement.setAttribute('data-openui-component', 'MarketingAgencyHero')
+    sectionElement.setAttribute('data-openui-var', 'home_hero')
+    const headingElement = document.createElement('h1')
+    headingElement.textContent = 'Hero title'
+    sectionElement.appendChild(headingElement)
+    sectionWrapper.appendChild(sectionElement)
+    pageStackElement.appendChild(sectionWrapper)
+    document.body.appendChild(pageStackElement)
+
+    const onStyleApply = vi.fn()
+
+    function Harness() {
+      const [activeElement, setActiveElement] =
+        useState<HTMLElement>(headingElement)
+      return createElement(InlineEditToolbar, {
+        isOpen: true,
+        anchorRect,
+        activeElement,
+        onStyleApply,
+        onCommitText: vi.fn(),
+        onClose: vi.fn(),
+        onSelectParentSection: setActiveElement,
+        isApplying: false,
+        isForking: false,
+        canUndo: true,
+        canRedo: true,
+        onUndo: vi.fn(),
+        onRedo: vi.fn(),
+        onMoveUp: vi.fn(),
+        onMoveDown: vi.fn(),
+        canMoveUp: true,
+        canMoveDown: true,
+        onLinkEdit: vi.fn(),
+        onImageSelect: vi.fn(),
+        sessionId: 'sess-1',
+        onSectionEdit: vi.fn(),
+        isSectionSubmitting: false,
+      })
+    }
+
+    render(createElement(Harness))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select page' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Gradient' }))
+    fireEvent.change(screen.getByLabelText('Gradient first color'), {
+      target: { value: '#ff0000' },
+    })
+    fireEvent.change(screen.getByLabelText('Gradient second color'), {
+      target: { value: '#0000ff' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(pageStackElement.style.backgroundImage).toContain('linear-gradient')
+    expect(pageStackElement.style.backgroundImage).toContain('rgb(255, 0, 0)')
+    expect(pageStackElement.style.backgroundImage).toContain('rgb(0, 0, 255)')
+    expect(sectionElement.style.backgroundImage).toBe('')
+    expect(headingElement.style.backgroundImage).toBe('')
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: '[data-openui-var="home"]',
+        occurrenceIndex: 0,
+        style: expect.stringContaining('linear-gradient'),
+      }),
+    )
+  })
+
+  it('23b.3a. expanded BG image controls keep Apply reachable when the toolbar would overflow the viewport', async () => {
+    const originalInnerHeight = window.innerHeight
+    const originalOffsetHeight = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'offsetHeight',
+    )
+    Object.defineProperty(window, 'innerHeight', {
+      configurable: true,
+      value: 360,
+    })
+    Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+      configurable: true,
+      get() {
+        return this instanceof HTMLElement &&
+          this.hasAttribute('data-inline-edit-wrapper')
+          ? 520
+          : 0
+      },
+    })
+    floatingStyleState.top = '260px'
+    const imageUrl = 'https://images.pexels.com/photos/reachable-bg.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'newsletter background',
+        source: 'pexels',
+      },
+    ])
+
+    try {
+      const sectionElement = makeIdOnlySectionEl()
+      const { onStyleApply } = renderToolbar({
+        activeElement: sectionElement,
+        sessionId: 'sess-1',
+      })
+
+      fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+      fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+      act(() => {
+        for (const callback of resizeObserverCallbacks) {
+          callback([], {} as ResizeObserver)
+        }
+      })
+
+      const wrapper = document.querySelector(
+        '[data-inline-edit-wrapper]',
+      ) as HTMLElement
+      await waitFor(() => {
+        expect(wrapper.style.top).toBe('8px')
+      })
+
+      fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+        target: { value: 'newsletter background' },
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+      fireEvent.click(
+        await screen.findByRole('button', { name: 'Select image 1' }),
+      )
+
+      const apply = screen.getByRole('button', { name: 'Apply' })
+      expect((apply as HTMLButtonElement).disabled).toBe(false)
+      fireEvent.click(apply)
+
+      expect(onStyleApply).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sourceAnchor: '#newsletter_newsletter',
+          occurrenceIndex: 0,
+          style: expect.stringContaining(imageUrl),
+        }),
+      )
+    } finally {
+      Object.defineProperty(window, 'innerHeight', {
+        configurable: true,
+        value: originalInnerHeight,
+      })
+      if (originalOffsetHeight) {
+        Object.defineProperty(
+          HTMLElement.prototype,
+          'offsetHeight',
+          originalOffsetHeight,
+        )
+      } else {
+        delete (HTMLElement.prototype as { offsetHeight?: unknown })
+          .offsetHeight
+      }
+    }
+  })
+
+  it('23b.4. removing an img preview before Apply restores the original src without persisting a style edit', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/remove-preview.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'replacement hero',
+        source: 'pexels',
+      },
+    ])
+    const imageElement = makeImageEl()
+    const { onClose, onImageSelect, onStyleApply } = renderToolbar({
+      activeElement: imageElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'replacement hero' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+    expect((imageElement as HTMLImageElement).src).toBe(imageUrl)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove image' }))
+    expect((imageElement as HTMLImageElement).src).toBe(
+      'https://example.com/orig.png',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(onImageSelect).not.toHaveBeenCalled()
+    expect(onStyleApply).not.toHaveBeenCalled()
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('23b.5. removing a new section BG image before Apply closes without persisting an empty style edit', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/remove-section-bg.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'section background',
+        source: 'pexels',
+      },
+    ])
+    const sectionElement = makeSectionEl()
+    const { onClose, onImageSelect, onStyleApply } = renderToolbar({
+      activeElement: sectionElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'section background' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+    expect(sectionElement.style.backgroundImage).toContain(imageUrl)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove image' }))
+    expect(sectionElement.getAttribute('style') ?? '').toBe('')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(onImageSelect).not.toHaveBeenCalled()
+    expect(onStyleApply).not.toHaveBeenCalled()
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('23b.6. removing an existing section BG image persists the cleared style', async () => {
+    vi.mocked(window.getComputedStyle).mockReturnValue({
+      ...fakeComputedStyle,
+      backgroundImage:
+        'url("https://images.pexels.com/photos/original-bg.jpeg")',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center center',
+    } as unknown as CSSStyleDeclaration)
+    const sectionElement = makeSectionEl()
+    sectionElement.style.backgroundImage =
+      'url("https://images.pexels.com/photos/original-bg.jpeg")'
+    sectionElement.style.backgroundSize = 'cover'
+    sectionElement.style.backgroundPosition = 'center'
+    const { onStyleApply } = renderToolbar({
+      activeElement: sectionElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Remove image' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(onStyleApply).toHaveBeenCalledTimes(1)
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: 'hero-section bg-white py-20',
+        style: '',
+      }),
+    )
+  })
+
+  it('23b.7. removing a class-provided section BG image persists an override instead of closing as unchanged', async () => {
+    vi.mocked(window.getComputedStyle).mockReturnValue({
+      ...fakeComputedStyle,
+      backgroundImage: 'url("https://images.pexels.com/photos/class-bg.jpeg")',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center center',
+    } as unknown as CSSStyleDeclaration)
+    const sectionElement = makeSectionEl()
+    expect(sectionElement.getAttribute('style')).toBeNull()
+    const { onClose, onStyleApply } = renderToolbar({
+      activeElement: sectionElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Remove image' }))
+
+    expect(sectionElement.style.backgroundImage).toBe('none')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(onStyleApply).toHaveBeenCalledTimes(1)
+    expect(onStyleApply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAnchor: 'hero-section bg-white py-20',
+        style: expect.stringContaining('background-image: none'),
+      }),
+    )
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('23c. closing after a BG image preview on an img reverts the original src', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/replacement.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'replacement hero',
+        source: 'pexels',
+      },
+    ])
+    const imageElement = makeImageEl()
+    const { onImageSelect } = renderToolbar({
+      activeElement: imageElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'replacement hero' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+    expect((imageElement as HTMLImageElement).src).toBe(imageUrl)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+    expect((imageElement as HTMLImageElement).src).toBe(
+      'https://example.com/orig.png',
+    )
+    expect(onImageSelect).not.toHaveBeenCalled()
+  })
+
+  it('23d. escape after an image preview reverts the original src without saving', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/escape-replacement.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'replacement hero',
+        source: 'pexels',
+      },
+    ])
+    const imageElement = makeImageEl()
+    const { onClose, onImageSelect } = renderToolbar({
+      activeElement: imageElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Swap image' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'replacement hero' },
+    })
+
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+    expect((imageElement as HTMLImageElement).src).toBe(imageUrl)
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    expect((imageElement as HTMLImageElement).src).toBe(
+      'https://example.com/orig.png',
+    )
+    expect(onImageSelect).not.toHaveBeenCalled()
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('23e. outside click after an image preview reverts the original src without saving', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/outside-replacement.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'replacement hero',
+        source: 'pexels',
+      },
+    ])
+    const imageElement = makeImageEl()
+    const { onClose, onImageSelect } = renderToolbar({
+      activeElement: imageElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Swap image' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'replacement hero' },
+    })
+
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+    expect((imageElement as HTMLImageElement).src).toBe(imageUrl)
+
+    const outside = document.createElement('div')
+    document.body.appendChild(outside)
+    fireEvent.mouseDown(outside)
+
+    expect((imageElement as HTMLImageElement).src).toBe(
+      'https://example.com/orig.png',
+    )
+    expect(onImageSelect).not.toHaveBeenCalled()
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('23f. toggling the image panel closed reverts the preview without saving', async () => {
+    const imageUrl = 'https://images.pexels.com/photos/toggle-replacement.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'replacement hero',
+        source: 'pexels',
+      },
+    ])
+    const imageElement = makeImageEl()
+    const { onClose, onImageSelect } = renderToolbar({
+      activeElement: imageElement,
+      sessionId: 'sess-1',
+    })
+
+    const imageButton = screen.getByRole('button', { name: 'Swap image' })
+    fireEvent.click(imageButton)
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'replacement hero' },
+    })
+
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+    expect((imageElement as HTMLImageElement).src).toBe(imageUrl)
+
+    fireEvent.click(imageButton)
+
+    expect((imageElement as HTMLImageElement).src).toBe(
+      'https://example.com/orig.png',
+    )
+    expect(onImageSelect).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('23g. changing the active element after an image preview reverts the old image without saving', async () => {
+    const imageUrl =
+      'https://images.pexels.com/photos/selection-change-replacement.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'replacement hero',
+        source: 'pexels',
+      },
+    ])
+    const firstImage = makeImageEl()
+    const secondImage = makeImageEl()
+    secondImage.setAttribute('src', 'https://example.com/second.png')
+    const { onClose, onImageSelect, rerenderToolbar } = renderToolbar({
+      activeElement: firstImage,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Swap image' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'replacement hero' },
+    })
+
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+    expect((firstImage as HTMLImageElement).src).toBe(imageUrl)
+
+    rerenderToolbar({ activeElement: secondImage })
+
+    expect((firstImage as HTMLImageElement).src).toBe(
+      'https://example.com/orig.png',
+    )
+    expect((secondImage as HTMLImageElement).src).toBe(
+      'https://example.com/second.png',
+    )
+    expect(onImageSelect).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('23g.0. reopening image search after switching images uses the new image context', async () => {
+    const firstImage = makeImageEl()
+    firstImage.alt = 'Craft beer taproom hero'
+    const secondImage = makeImageEl()
+    secondImage.alt = 'Seasonal release product bottle'
+    const { rerenderToolbar } = renderToolbar({
+      activeElement: firstImage,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Swap image' }))
+    await waitFor(() => {
+      expect(
+        (
+          screen.getByRole('textbox', {
+            name: 'Search stock images',
+          }) as HTMLInputElement
+        ).value,
+      ).toBe('Craft beer taproom hero')
+    })
+
+    rerenderToolbar({ activeElement: secondImage })
+    fireEvent.click(screen.getByRole('button', { name: 'Swap image' }))
+
+    await waitFor(() => {
+      expect(
+        (
+          screen.getByRole('textbox', {
+            name: 'Search stock images',
+          }) as HTMLInputElement
+        ).value,
+      ).toBe('Seasonal release product bottle')
+    })
+  })
+
+  it('23g.1. changing from an image to non-image selection closes the image panel instead of leaving empty expanded space', async () => {
+    const firstImage = makeImageEl()
+    const nextText = makeTextEl()
+    const { container, rerenderToolbar } = renderToolbar({
+      activeElement: firstImage,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Swap image' }))
+    expect(screen.getByPlaceholderText('Search stock images...')).not.toBeNull()
+    expect(findAnimatedPanel(container).style.gridTemplateRows).toBe('1fr')
+
+    rerenderToolbar({ activeElement: nextText })
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Swap image' })).toBeNull()
+      expect(screen.queryByPlaceholderText('Search stock images...')).toBeNull()
+      expect(findAnimatedPanel(container).style.gridTemplateRows).toBe('0fr')
+    })
+  })
+
+  it('23g.2. removing image selection capability while the image panel is open closes the panel', async () => {
+    const imageUrl =
+      'https://images.pexels.com/photos/capability-lost-preview.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'capability lost preview',
+        source: 'pexels',
+      },
+    ])
+    const imageElement = makeImageEl()
+    const { container, rerenderToolbar } = renderToolbar({
+      activeElement: imageElement,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Swap image' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'capability lost preview' },
+    })
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+
+    expect((imageElement as HTMLImageElement).src).toBe(imageUrl)
+    expect(screen.getByPlaceholderText('Search stock images...')).not.toBeNull()
+    expect(findAnimatedPanel(container).style.gridTemplateRows).toBe('1fr')
+
+    rerenderToolbar({ onImageSelect: undefined })
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Swap image' })).toBeNull()
+      expect(screen.queryByPlaceholderText('Search stock images...')).toBeNull()
+      expect(findAnimatedPanel(container).style.gridTemplateRows).toBe('0fr')
+    })
+    expect((imageElement as HTMLImageElement).src).toBe(
+      'https://example.com/orig.png',
+    )
+  })
+
+  it('23h. changing the active element after a section background preview reverts the old style without saving', async () => {
+    const imageUrl =
+      'https://images.pexels.com/photos/selection-change-section-bg.jpeg'
+    searchStockImagesMock.mockResolvedValue([
+      {
+        imageUrl,
+        query: 'section background',
+        source: 'pexels',
+      },
+    ])
+    const firstSection = makeSectionEl()
+    const secondSection = makeSectionEl()
+    secondSection.className = 'pricing-section bg-slate-50 py-16'
+    secondSection.style.backgroundColor = 'rgb(248, 250, 252)'
+    const originalSecondStyle = secondSection.getAttribute('style')
+    const { onClose, onStyleApply, rerenderToolbar } = renderToolbar({
+      activeElement: firstSection,
+      sessionId: 'sess-1',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Style controls' }))
+    fireEvent.click(screen.getByRole('button', { name: 'BG' }))
+    fireEvent.change(screen.getByPlaceholderText('Search stock images...'), {
+      target: { value: 'section background' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Search images' }))
+
+    const result = await screen.findByRole('button', { name: 'Select image 1' })
+    fireEvent.click(result)
+    expect(firstSection.style.backgroundImage).toContain(imageUrl)
+
+    rerenderToolbar({ activeElement: secondSection })
+
+    expect(firstSection.getAttribute('style')).toBeNull()
+    expect(secondSection.getAttribute('style')).toBe(originalSecondStyle)
+    expect(onStyleApply).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
   })
 
   // 24. Escape key → onClose called

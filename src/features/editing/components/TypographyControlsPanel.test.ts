@@ -7,26 +7,48 @@ import { TypographyControlsPanel } from './TypographyControlsPanel'
 
 const onModified = vi.fn<() => void>()
 
+const installPointerCapturePolyfill = () => {
+  for (const [name, value] of [
+    ['hasPointerCapture', () => false],
+    ['setPointerCapture', () => undefined],
+    ['releasePointerCapture', () => undefined],
+  ] as const) {
+    if (!(name in HTMLElement.prototype)) {
+      Object.defineProperty(HTMLElement.prototype, name, {
+        configurable: true,
+        value,
+      })
+    }
+  }
+}
+
 const renderPanel = (activeElement: HTMLElement) =>
   render(createElement(TypographyControlsPanel, { activeElement, onModified }))
 
 const makeComputed = (
   overrides: Partial<Record<string, string>> = {},
-): CSSStyleDeclaration =>
-  ({
+): CSSStyleDeclaration => {
+  const values = {
     fontFamily: 'system-ui, sans-serif',
     lineHeight: 'normal',
     letterSpacing: '0px',
     wordSpacing: '0px',
     textTransform: 'none',
     ...overrides,
-  }) as CSSStyleDeclaration
+  }
+  return {
+    ...values,
+    getPropertyValue: (property: string) =>
+      values[property as keyof typeof values] ?? '',
+  } as CSSStyleDeclaration
+}
 
 describe('TypographyControlsPanel', () => {
   let activeElement: HTMLElement
   let originalGetComputedStyle: typeof window.getComputedStyle
 
   beforeEach(() => {
+    installPointerCapturePolyfill()
     onModified.mockReset()
     activeElement = document.createElement('p')
     activeElement.setAttribute('class', 'body-text')
@@ -43,11 +65,54 @@ describe('TypographyControlsPanel', () => {
     cleanup()
   })
 
-  it('renders font family select with options', () => {
-    renderPanel(activeElement)
-    // Radix Select renders a combobox trigger, not a native <select>
-    const trigger = document.querySelector('[role="combobox"]')
-    expect(trigger).toBeTruthy()
+  it('font family selection applies the selected font stack', () => {
+    const { getByRole } = renderPanel(activeElement)
+
+    const font = getByRole('combobox', { name: 'Font' })
+    fireEvent.pointerDown(font, {
+      button: 0,
+      ctrlKey: false,
+      pointerType: 'mouse',
+    })
+    fireEvent.click(getByRole('option', { name: 'Georgia' }))
+
+    expect(activeElement.style.fontFamily).toBe('Georgia, serif')
+    expect(onModified).toHaveBeenCalled()
+  })
+
+  it('font weight selection applies the selected numeric weight', () => {
+    const { getByRole } = renderPanel(activeElement)
+
+    const weight = getByRole('combobox', { name: 'Weight' })
+    fireEvent.pointerDown(weight, {
+      button: 0,
+      ctrlKey: false,
+      pointerType: 'mouse',
+    })
+    fireEvent.click(getByRole('option', { name: 'Bold' }))
+
+    expect(activeElement.style.fontWeight).toBe('700')
+    expect(onModified).toHaveBeenCalled()
+  })
+
+  it('exposes typography controls by accessible name', () => {
+    const { getByRole } = renderPanel(activeElement)
+
+    expect(getByRole('combobox', { name: 'Font' })).toBeTruthy()
+    expect(getByRole('combobox', { name: 'Weight' })).toBeTruthy()
+    expect(getByRole('spinbutton', { name: 'Line height' })).toBeTruthy()
+    expect(getByRole('button', { name: 'Auto line height' })).toBeTruthy()
+    expect(getByRole('spinbutton', { name: 'Letter spacing' })).toBeTruthy()
+    expect(getByRole('combobox', { name: 'Letter spacing unit' })).toBeTruthy()
+    expect(getByRole('spinbutton', { name: 'Word spacing' })).toBeTruthy()
+    expect(getByRole('combobox', { name: 'Word spacing unit' })).toBeTruthy()
+    expect(getByRole('radio', { name: 'Upper' })).toBeTruthy()
+  })
+
+  it('labels the case toggle group so transform options have context', () => {
+    const { getByRole } = renderPanel(activeElement)
+
+    expect(getByRole('radiogroup', { name: 'Case' })).toBeTruthy()
   })
 
   it('renders text transform toggle group items', () => {
@@ -68,6 +133,44 @@ describe('TypographyControlsPanel', () => {
     ).find((i) => i.step === '0.01')!
     fireEvent.change(letterInput, { target: { value: '0.05' } })
     expect(activeElement.style.letterSpacing).toBe('0.05em')
+  })
+
+  it('letter spacing unit change reapplies the existing value with the new unit', () => {
+    const { getByRole } = renderPanel(activeElement)
+    const letterInput = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[type="number"]'),
+    ).find((i) => i.getAttribute('aria-label') === 'Letter spacing')!
+    fireEvent.change(letterInput, { target: { value: '0.05' } })
+
+    const unit = getByRole('combobox', { name: 'Letter spacing unit' })
+    fireEvent.pointerDown(unit, {
+      button: 0,
+      ctrlKey: false,
+      pointerType: 'mouse',
+    })
+    fireEvent.click(getByRole('option', { name: 'px' }))
+
+    expect(activeElement.style.letterSpacing).toBe('0.05px')
+    expect(onModified).toHaveBeenCalled()
+  })
+
+  it('word spacing unit change reapplies the existing value with the new unit', () => {
+    const { getByRole } = renderPanel(activeElement)
+    const wordInput = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[type="number"]'),
+    ).find((i) => i.getAttribute('aria-label') === 'Word spacing')!
+    fireEvent.change(wordInput, { target: { value: '0.25' } })
+
+    const unit = getByRole('combobox', { name: 'Word spacing unit' })
+    fireEvent.pointerDown(unit, {
+      button: 0,
+      ctrlKey: false,
+      pointerType: 'mouse',
+    })
+    fireEvent.click(getByRole('option', { name: 'px' }))
+
+    expect(activeElement.style.wordSpacing).toBe('0.25px')
+    expect(onModified).toHaveBeenCalled()
   })
 
   it('text transform uppercase applies to element style', () => {

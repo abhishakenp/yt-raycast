@@ -38,6 +38,22 @@ type ConvexTestState = {
   themeMutation: ReturnType<typeof vi.fn>
 }
 
+type AuthTestState = {
+  clerkEnabled: boolean
+  isSignedIn: boolean
+  openSignIn: ReturnType<typeof vi.fn>
+  ownerSecret?: string
+}
+
+const { authState } = vi.hoisted(() => ({
+  authState: {
+    clerkEnabled: false,
+    isSignedIn: false,
+    openSignIn: vi.fn(),
+    ownerSecret: undefined as string | undefined,
+  },
+}))
+
 const getConvexState = (): ConvexTestState => {
   const testGlobal = globalThis as typeof globalThis & {
     __shipFastDashboardToolbarConvexState?: ConvexTestState
@@ -65,6 +81,8 @@ const createMemoryStorage = (): Storage => {
   }
 }
 
+const getAuthState = (): AuthTestState => authState
+
 const ensureWindowStorage = () => {
   try {
     void window.localStorage.length
@@ -87,16 +105,33 @@ const ensureWindowStorage = () => {
 // ─── mocks ─────────────────────────────────────────────────────────────────
 vi.mock('@clerk/tanstack-react-start', () => ({
   useAuth: () => ({
-    isSignedIn: false,
-    userId: null,
+    isSignedIn: authState.isSignedIn,
+    userId: authState.isSignedIn ? 'user_1' : null,
     getToken: async () => null,
   }),
-  useClerk: () => ({ session: null, user: null }),
+  useClerk: () => ({
+    session: authState.isSignedIn ? {} : null,
+    user: authState.isSignedIn ? {} : null,
+    openSignIn: authState.openSignIn,
+  }),
 }))
 
-// SignInGate must be a no-op so rail popovers / edit toggles work ungated.
 vi.mock('@/shared/auth/clerk-runtime', () => ({
-  isClerkClientEnabled: () => false,
+  isClerkClientEnabled: () => authState.clerkEnabled,
+}))
+
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useOptionalAuth: () => ({
+    getToken: async () => null,
+    isLoaded: true,
+    isSignedIn: authState.isSignedIn,
+  }),
+  useOptionalClerk: () => ({
+    openSignIn: authState.openSignIn,
+    openUserProfile: vi.fn(),
+    session: authState.isSignedIn ? {} : null,
+    user: authState.isSignedIn ? {} : null,
+  }),
 }))
 
 vi.mock('convex/react', () => ({
@@ -181,21 +216,34 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
     source,
     editMode,
     deviceMode,
+    onElementActivate,
   }: {
     source: string
     editMode?: boolean
     deviceMode?: string
+    onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
   }) => (
     <div data-testid="generated-module-preview">
       <span data-testid="gmp-source">{source}</span>
       <span data-testid="gmp-edit-mode">{String(editMode)}</span>
       <span data-testid="gmp-device-mode">{deviceMode}</span>
+      <button
+        type="button"
+        onClick={() => {
+          const element = document.createElement('p')
+          element.textContent = 'Editable heading'
+          document.body.appendChild(element)
+          onElementActivate?.(element, new DOMRect(10, 20, 100, 30))
+        }}
+      >
+        Activate inline element
+      </button>
     </div>
   ),
 }))
 
 vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
-  readAnonymousOwnerSecret: () => undefined,
+  readAnonymousOwnerSecret: () => authState.ownerSecret,
 }))
 
 vi.mock('@/components/GenUI/IntroLoader', () => ({
@@ -282,6 +330,10 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     getConvexState().sidePanelData = null
     getConvexState().publishMutation = vi.fn().mockResolvedValue(undefined)
     getConvexState().themeMutation = vi.fn().mockResolvedValue(undefined)
+    getAuthState().clerkEnabled = false
+    getAuthState().isSignedIn = false
+    getAuthState().ownerSecret = undefined
+    getAuthState().openSignIn = vi.fn()
     window.localStorage.clear()
     window.sessionStorage.clear()
     // Reset the URL so admin-view pushState from a prior test does not leak
@@ -301,6 +353,10 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     window.history.replaceState(null, '', '/')
     getConvexState().generationView = null
     getConvexState().sidePanelData = null
+    getAuthState().clerkEnabled = false
+    getAuthState().isSignedIn = false
+    getAuthState().ownerSecret = undefined
+    getAuthState().openSignIn = vi.fn()
     vi.clearAllMocks()
   })
 
@@ -354,11 +410,71 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
 
     fireEvent.click(pencil)
     expect(pencil.getAttribute('aria-pressed')).toBe('true')
+    expect(getAuthState().openSignIn).not.toHaveBeenCalled()
 
     // editMode is forwarded to the preview as an observable prop
     expect(screen.getByTestId('gmp-edit-mode').textContent).toBe('true')
 
     fireEvent.click(pencil)
+    expect(pencil.getAttribute('aria-pressed')).toBe('false')
+    expect(screen.getByTestId('gmp-edit-mode').textContent).toBe('false')
+  })
+
+  it('keeps the inline edit toggle reachable in narrow dashboard viewports', () => {
+    setupReady()
+    render(<Dashboard sessionId="ready-session" />)
+
+    const pencil = screen.getByRole('button', {
+      name: 'Toggle inline edit mode',
+    })
+    const editControls = pencil.closest('[aria-label="Edit controls"]')
+    const viewportControls = screen
+      .getByRole('button', { name: 'Mobile viewport' })
+      .closest('[aria-label="Viewport size"]')
+
+    expect(editControls).not.toBeNull()
+    expect(editControls?.className).not.toContain('max-[760px]:hidden')
+    expect(viewportControls).not.toBeNull()
+    expect(
+      editControls!.compareDocumentPosition(viewportControls!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('closes the inline toolbar when edit mode is turned off', () => {
+    setupReady()
+    render(<Dashboard sessionId="ready-session" />)
+
+    const pencil = screen.getByRole('button', {
+      name: 'Toggle inline edit mode',
+    })
+    fireEvent.click(pencil)
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Activate inline element' }),
+    )
+
+    expect(screen.getByTestId('inline-edit-toolbar')).toBeTruthy()
+
+    fireEvent.click(pencil)
+
+    expect(pencil.getAttribute('aria-pressed')).toBe('false')
+    expect(screen.queryByTestId('inline-edit-toolbar')).toBeNull()
+  })
+
+  it('opens Clerk and keeps inline edit mode off when Clerk is enabled and the user is signed out', () => {
+    setupReady()
+    getAuthState().clerkEnabled = true
+    getAuthState().isSignedIn = false
+    getAuthState().ownerSecret = 'owned-anonymous-session'
+    render(<Dashboard sessionId="ready-session" />)
+
+    const pencil = screen.getByRole('button', {
+      name: 'Toggle inline edit mode',
+    })
+
+    fireEvent.click(pencil)
+
+    expect(getAuthState().openSignIn).toHaveBeenCalledTimes(1)
     expect(pencil.getAttribute('aria-pressed')).toBe('false')
     expect(screen.getByTestId('gmp-edit-mode').textContent).toBe('false')
   })

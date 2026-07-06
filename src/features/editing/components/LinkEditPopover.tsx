@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useId } from 'react'
 import { Check, X, Link as LinkIcon } from 'lucide-react'
 import { cn } from '#/lib/utils'
 
@@ -7,6 +7,10 @@ interface LinkEditPopoverProps {
   onApply: (payload: {
     oldHref: string
     newHref: string
+    oldText: string
+    newText: string
+    target: string | null
+    rel: string
     occurrenceIndex: number
   }) => void
   onClose: () => void
@@ -22,19 +26,47 @@ export function LinkEditPopover({
   const [openInNewTab, setOpenInNewTab] = useState(false)
   const [noindex, setNoindex] = useState(false)
   const originalHrefRef = useRef('')
+  const originalTextRef = useRef('')
+  const originalTargetRef = useRef<string | null>(null)
+  const originalRelRef = useRef('')
   const prevElementRef = useRef<HTMLElement | null>(null)
+  const didApplyRef = useRef(false)
+  const hrefInputId = useId()
+  const textInputId = useId()
 
   useEffect(() => {
     if (!activeElement) return
     if (prevElementRef.current !== activeElement) {
       prevElementRef.current = activeElement
+      didApplyRef.current = false
       originalHrefRef.current = activeElement.getAttribute('href') ?? ''
+      originalTextRef.current = activeElement.textContent ?? ''
+      originalTargetRef.current = activeElement.getAttribute('target')
+      originalRelRef.current = activeElement.getAttribute('rel') ?? ''
       setHref(originalHrefRef.current)
-      setText(activeElement.textContent ?? '')
+      setText(originalTextRef.current)
       // Read current target/rel from the element on mount.
       setOpenInNewTab(activeElement.getAttribute('target') === '_blank')
       const currentRel = activeElement.getAttribute('rel') ?? ''
       setNoindex(currentRel.split(/\s+/).includes('nofollow'))
+    }
+  }, [activeElement])
+
+  useEffect(() => {
+    if (!activeElement) return
+    const element = activeElement
+    return () => {
+      if (didApplyRef.current) return
+      if (originalTargetRef.current === null) {
+        element.removeAttribute('target')
+      } else {
+        element.setAttribute('target', originalTargetRef.current)
+      }
+      if (originalRelRef.current) {
+        element.setAttribute('rel', originalRelRef.current)
+      } else {
+        element.removeAttribute('rel')
+      }
     }
   }, [activeElement])
 
@@ -91,29 +123,59 @@ export function LinkEditPopover({
     }
     const oldHref = originalHrefRef.current
     const newHref = href
-    if (oldHref === newHref) {
+    const oldText = originalTextRef.current
+    const newText = text
+    const target = activeElement.getAttribute('target')
+    const rel = activeElement.getAttribute('rel') ?? ''
+    if (
+      oldHref === newHref &&
+      oldText === newText &&
+      originalTargetRef.current === target &&
+      originalRelRef.current === rel
+    ) {
       onClose()
       return
     }
-    // Find occurrence index by counting all elements with the same href
+    // Find occurrence index without constructing a CSS selector from href:
+    // hrefs can legally contain quotes/brackets that would make selectors
+    // invalid.
     const doc = activeElement.ownerDocument
-    const peers = Array.from(doc.querySelectorAll(`a[href="${oldHref}"]`))
+    const peers = Array.from(doc.querySelectorAll('a')).filter(
+      (anchor) => anchor.getAttribute('href') === oldHref,
+    )
     const occurrenceIndex = peers.indexOf(activeElement)
+    didApplyRef.current = true
     onApply({
       oldHref,
       newHref,
+      oldText,
+      newText,
+      target,
+      rel,
       occurrenceIndex: occurrenceIndex < 0 ? 0 : occurrenceIndex,
     })
   }
 
   const handleClose = () => {
+    if (activeElement) {
+      if (originalTargetRef.current === null) {
+        activeElement.removeAttribute('target')
+      } else {
+        activeElement.setAttribute('target', originalTargetRef.current)
+      }
+      if (originalRelRef.current) {
+        activeElement.setAttribute('rel', originalRelRef.current)
+      } else {
+        activeElement.removeAttribute('rel')
+      }
+    }
     onClose()
   }
 
   if (!activeElement) return null
 
   return (
-    <div className="flex w-full min-w-[280px] flex-col gap-2 p-2">
+    <div className="flex w-full min-w-0 max-w-full flex-col gap-2 p-2">
       <div className="flex items-center gap-1.5">
         <LinkIcon className="size-3.5 text-cyan-300" />
         <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">
@@ -122,10 +184,14 @@ export function LinkEditPopover({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+        <label
+          htmlFor={hrefInputId}
+          className="text-[10px] font-medium uppercase tracking-wider text-white/40"
+        >
           URL
         </label>
         <input
+          id={hrefInputId}
           type="text"
           value={href}
           onChange={(e) => setHref(e.target.value)}
@@ -135,10 +201,14 @@ export function LinkEditPopover({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+        <label
+          htmlFor={textInputId}
+          className="text-[10px] font-medium uppercase tracking-wider text-white/40"
+        >
           Link Text
         </label>
         <input
+          id={textInputId}
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}

@@ -78,6 +78,7 @@ export function ImageSwapPanel({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [hasSearchedImages, setHasSearchedImages] = useState(false)
   const [error, setError] = useState<string>()
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
@@ -86,8 +87,18 @@ export function ImageSwapPanel({
   const sentinelRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dragCounterRef = useRef(0)
+  const appliedInitialQueryKeyRef = useRef<string | null>(null)
   const w = imageWidth || DEFAULT_W
   const h = imageHeight || DEFAULT_H
+  const loadMoreStateRef = useRef({
+    hasMore: true,
+    h,
+    isLoading: false,
+    isLoadingMore: false,
+    page: 1,
+    searchQuery: '',
+    w,
+  })
 
   const generateUploadUrl = useMutation(api.sessions.generateImageUploadUrl)
   const saveUserImage = useMutation(api.sessions.saveUserImage)
@@ -95,28 +106,38 @@ export function ImageSwapPanel({
     sessionId: sessionId as Id<'sessions'>,
   })
 
-  // Set initial query on mount — the panel is only rendered when active.
-  // Intentionally empty deps: we only want the initial query on mount.
+  // Set the contextual default query when the selected image changes. The
+  // toolbar keeps the panel mounted briefly during collapse animations, so a
+  // fast image-to-image selection can reuse this component instance.
   useEffect(() => {
-    if (currentAlt) {
-      const initialQuery = generateContextAwareQuery(currentAlt, context)
-      setSearchQuery(initialQuery)
+    const queryKey = JSON.stringify([currentAlt, context ?? null])
+    if (appliedInitialQueryKeyRef.current === queryKey) return
+    appliedInitialQueryKeyRef.current = queryKey
+
+    if (!currentAlt.trim()) {
+      setSearchQuery('')
+      return
     }
-  }, [])
+
+    setSearchQuery(generateContextAwareQuery(currentAlt, context))
+  }, [context, currentAlt])
 
   // Reset results when query changes
   useEffect(() => {
     if (!searchQuery.trim()) {
       setResults([])
       setHasMore(false)
+      setHasSearchedImages(false)
+      setIsLoading(false)
       return
     }
 
     let cancelled = false
+    setIsLoading(true)
+    setError(undefined)
+    setHasSearchedImages(false)
 
     const searchImages = async () => {
-      setIsLoading(true)
-      setError(undefined)
       setPage(1)
       setHasMore(true)
 
@@ -131,9 +152,11 @@ export function ImageSwapPanel({
         if (cancelled) return
         setResults(pageResults)
         setHasMore(pageResults.length === PER_PAGE)
+        setHasSearchedImages(true)
       } catch (err) {
         if (cancelled) return
         setError(err instanceof Error ? err.message : 'Search failed')
+        setHasSearchedImages(false)
       } finally {
         if (!cancelled) setIsLoading(false)
       }
@@ -146,17 +169,32 @@ export function ImageSwapPanel({
     }
   }, [searchQuery, w, h])
 
-  const loadMore = useCallback(async () => {
-    if (isLoadingMore || isLoading || !hasMore || !searchQuery.trim()) return
+  useEffect(() => {
+    loadMoreStateRef.current = {
+      hasMore,
+      h,
+      isLoading,
+      isLoadingMore,
+      page,
+      searchQuery,
+      w,
+    }
+  }, [hasMore, h, isLoading, isLoadingMore, page, searchQuery, w])
 
-    const nextPage = page + 1
+  const loadMore = useCallback(async () => {
+    const state = loadMoreStateRef.current
+    const query = state.searchQuery.trim()
+    if (state.isLoadingMore || state.isLoading || !state.hasMore || !query)
+      return
+
+    const nextPage = state.page + 1
     setIsLoadingMore(true)
 
     try {
       const pageResults = await searchStockImages({
-        query: searchQuery,
-        w,
-        h,
+        query,
+        w: state.w,
+        h: state.h,
         page: nextPage,
         perPage: PER_PAGE,
       })
@@ -168,7 +206,7 @@ export function ImageSwapPanel({
     } finally {
       setIsLoadingMore(false)
     }
-  }, [isLoadingMore, isLoading, hasMore, page, searchQuery, w, h])
+  }, [])
 
   // Infinite scroll via IntersectionObserver
   useEffect(() => {
@@ -185,7 +223,7 @@ export function ImageSwapPanel({
     )
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [loadMore])
+  }, [loadMore, results.length])
 
   // ── File upload ──────────────────────────────────────────────────────
 
@@ -313,6 +351,7 @@ export function ImageSwapPanel({
           <Search className="pointer-events-none absolute left-3 size-4 text-white/40" />
           <input
             type="text"
+            aria-label="Search stock images"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search stock images..."
@@ -377,7 +416,7 @@ export function ImageSwapPanel({
               />
             ))}
           </div>
-        ) : error ? (
+        ) : error && !hasContent ? (
           <div className="flex flex-col items-center gap-2 py-8 text-center">
             <ImageIcon className="size-8 text-white/20" />
             <p className="text-sm text-white/40">{error}</p>
@@ -389,13 +428,19 @@ export function ImageSwapPanel({
               Search for images or upload your own
             </p>
           </div>
-        ) : !hasContent && searchQuery.trim() ? (
+        ) : !hasContent && searchQuery.trim() && hasSearchedImages ? (
           <div className="flex flex-col items-center gap-2 py-8 text-center">
             <ImageIcon className="size-8 text-white/20" />
             <p className="text-sm text-white/40">No results found</p>
           </div>
         ) : (
           <>
+            {error && (
+              <div className="mb-3 rounded border border-red-500/20 bg-red-500/10 px-2 py-1 text-xs text-red-300">
+                {error}
+              </div>
+            )}
+
             {uploadedImages.length > 0 && (
               <div className="mb-3">
                 <p className="mb-2 text-xs font-medium uppercase tracking-wide text-white/40">

@@ -136,7 +136,7 @@ describe('InlineEditToolbar — behavioral', () => {
     expect(activeElement.getAttribute('style')).toBeNull()
   })
 
-  it('does NOT restore the original style on Apply; commits the live style instead', () => {
+  it('commits the live style and closes the toolbar on Apply', () => {
     activeElement.setAttribute('style', 'color: red')
     renderToolbar(activeElement)
 
@@ -154,8 +154,8 @@ describe('InlineEditToolbar — behavioral', () => {
     expect(onStyleApply).toHaveBeenCalledTimes(1)
     expect(onStyleApply.mock.calls[0][0].style).toBe(liveStyle)
     expect(onCommitText).toHaveBeenCalledTimes(1)
-    // Apply does not call onClose itself; the parent closes after saving.
-    expect(onClose).not.toHaveBeenCalled()
+    // Apply closes after handing the committed style to the parent.
+    expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('maps computed textAlign "start" to the left alignment control', () => {
