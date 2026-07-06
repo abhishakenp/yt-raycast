@@ -2205,6 +2205,9 @@ render(h(Image, {
     )
     const dom = new JSDOM(rendered.html)
     const image = dom.window.document.querySelector('img')
+    const routeRendered = await renderLakebedAppAtPath(built.files, '/')
+    const routeDom = new JSDOM(routeRendered.html)
+    const routeImage = routeDom.window.document.querySelector('img')
 
     expect(requests).toEqual(
       expect.arrayContaining([
@@ -2218,6 +2221,12 @@ render(h(Image, {
     )
     expect(image?.getAttribute('src')).not.toContain('/api/pexels')
     expect(image?.getAttribute('src')).not.toContain('9999999')
+    expect(routeRendered.errors).toEqual([])
+    expect(routeImage?.getAttribute('src')).toBe(
+      'https://images.pexels.com/photos/4444444/pexels-photo-4444444.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
+    )
+    expect(routeImage?.getAttribute('src')).not.toContain('/api/pexels')
+    expect(routeImage?.getAttribute('src')).not.toContain('9999999')
   })
 
   it('resolves missing generated image alts through Pexels at build time', async () => {
@@ -2418,5 +2427,249 @@ render(h(Image, {
     expect(sources.every((source) => !source.src.includes('/api/pexels'))).toBe(
       true,
     )
+  })
+})
+
+describe('openui lakebed export — LLM malformed FAQ props', () => {
+  // Reproduces the quiet-ridge lakebed deployment crash where the LLM generated
+  // FAQ items with {question, answer} (singular string) instead of the block's
+  // schema {q, a} (array of strings). The lakebed export strips defineCapsule
+  // (and thus sanitizeProps), so the raw component must defend itself.
+  const malformedFaqSource = `home_faq = FashionStoreFaq("Questions", "Common Inquiries", [{"question":"How long does coffee stay fresh?","answer":"Properly stored, 6 months."},{"question":"What is the difference between roasts?","answer":"Roasting time and temperature affect flavor and aroma."},{"question":"Where are allergen info?","answer":"Ingredient lists at the bottom of each product page."}])
+root = home_faq`
+
+  it('renders FashionStoreFaq without crashing when LLM emits {question, answer} instead of {q, a}', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: malformedFaqSource,
+      siteSpecJson: JSON.stringify({ projectName: 'Malformed FAQ Lakebed' }),
+      sessionId: 'lakebed-malformed-faq',
+      target: 'lakebed',
+    })
+
+    expect(built.files['client/components/FashionStoreFaq.tsx']).toBeDefined()
+
+    // The exact malformed props from session k57f7j6b41razt4ta9jg1vwrqh89y5x2:
+    // LLM generated {question, answer} (singular string) instead of {q, a} (array).
+    // The lakebed export strips defineCapsule/sanitizeProps, so the raw component
+    // must defend itself. We pass the malformed props directly to the component.
+    const malformedProps = {
+      eyebrow: 'Questions',
+      heading: 'Common Inquiries',
+      items: [
+        {
+          question: 'How long does coffee stay fresh?',
+          answer: 'Properly stored, 6 months.',
+        },
+        {
+          question: 'What is the difference between roasts?',
+          answer: 'Roasting time and temperature affect flavor and aroma.',
+        },
+        {
+          question: 'Where are allergen info?',
+          answer: 'Ingredient lists at the bottom of each product page.',
+        },
+      ],
+    }
+
+    const directory = mkdtempSync(join(tmpdir(), 'lakebed-malformed-faq-'))
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-faq.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
+import { FashionStoreFaqBlock } from "./client/components/FashionStoreFaq";
+
+const lakebed = {
+  useQuery() { return undefined; },
+  useMutation() { return async () => undefined; },
+  useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; },
+  signInWithGoogle() {},
+  signOut() {},
+};
+
+const props = ${JSON.stringify(malformedProps)};
+
+render(h(FashionStoreFaqBlock, { props, lakebed }), document.getElementById("app"));
+`,
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-malformed-faq-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve(
+                { filter: /^(@ship-fast\/|#\/)/ },
+                (args) => ({
+                  errors: [
+                    {
+                      text: `Generated client bundle leaked workspace package import: ${args.path}`,
+                    },
+                  ],
+                }),
+              )
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
+                  namespace: 'lakebed-client-stub',
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery() { return undefined; }
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                  loader: 'tsx',
+                }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+      const dom = new JSDOM('<div id="app"></div>', {
+        runScripts: 'outside-only',
+      })
+      const errors = collectWindowRuntimeErrors(dom)
+
+      expect(() =>
+        dom.window.eval(bundled.outputFiles[0]?.text ?? ''),
+      ).not.toThrow()
+
+      const app = dom.window.document.querySelector('#app')
+      const text = app?.textContent ?? ''
+      // The LLM-generated questions should render (normalized from question→q)
+      expect(text).toContain('How long does coffee stay fresh?')
+      expect(text).toContain('What is the difference between roasts?')
+      // The LLM-generated answers should render (normalized from answer→a)
+      expect(text).toContain('Properly stored, 6 months.')
+      expect(text).toContain('Roasting time and temperature affect flavor')
+      // No runtime errors
+      expect(errors).toHaveLength(0)
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
+  it('renders FashionStoreFaq with correct {q, a} schema props without regression', async () => {
+    const correctFaqSource = `home_faq = FashionStoreFaq("Questions", "Common Inquiries", [{"q":"Test question?","a":["Answer one","Answer two"]}])
+root = home_faq`
+
+    const built = await buildOpenUILakebedProjectFiles({
+      source: correctFaqSource,
+      siteSpecJson: JSON.stringify({ projectName: 'Correct FAQ Lakebed' }),
+      sessionId: 'lakebed-correct-faq',
+      target: 'lakebed',
+    })
+
+    const correctProps = {
+      eyebrow: 'Questions',
+      heading: 'Common Inquiries',
+      items: [{ q: 'Test question?', a: ['Answer one', 'Answer two'] }],
+    }
+
+    const directory = mkdtempSync(join(tmpdir(), 'lakebed-correct-faq-'))
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-faq-correct.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
+import { FashionStoreFaqBlock } from "./client/components/FashionStoreFaq";
+
+const lakebed = {
+  useQuery() { return undefined; },
+  useMutation() { return async () => undefined; },
+  useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; },
+  signInWithGoogle() {},
+  signOut() {},
+};
+
+const props = ${JSON.stringify(correctProps)};
+
+render(h(FashionStoreFaqBlock, { props, lakebed }), document.getElementById("app"));
+`,
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-correct-faq-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
+                  namespace: 'lakebed-client-stub',
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery() { return undefined; }
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                  loader: 'tsx',
+                }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+      const dom = new JSDOM('<div id="app"></div>', {
+        runScripts: 'outside-only',
+      })
+      expect(() =>
+        dom.window.eval(bundled.outputFiles[0]?.text ?? ''),
+      ).not.toThrow()
+      const text = dom.window.document.querySelector('#app')?.textContent ?? ''
+      expect(text).toContain('Test question?')
+      expect(text).toContain('Answer one')
+      expect(text).toContain('Answer two')
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
   })
 })
