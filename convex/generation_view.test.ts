@@ -2,11 +2,18 @@ import { convexTest } from 'convex-test'
 import { afterEach, expect, test } from 'vitest'
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import type { DebouncerComponentApi } from '@ikhrustalev/convex-debouncer'
+import type { FunctionReference } from 'convex/server'
 import { api, components, internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
+type DebouncerCallDetailsReference = FunctionReference<
+  'query',
+  'internal',
+  { namespace: string; key: string },
+  { functionPath: string; functionArgs: unknown } | null
+>
 
 // Track the active convexTest instance so afterEach can drain pending
 // scheduled functions (export_artifacts:build is scheduled by
@@ -538,8 +545,17 @@ test('inline preview edits use one sliding debounce entry for export rebuild aut
 
   const debouncerComponent =
     components.debouncer as unknown as DebouncerComponentApi
+  const debouncerCallDetails = (
+    debouncerComponent.lib as typeof debouncerComponent.lib & {
+      getCallDetails: DebouncerCallDetailsReference
+    }
+  ).getCallDetails
 
   const status = await t.query(debouncerComponent.lib.status, {
+    namespace: 'edited-session-export-rebuild',
+    key: sessionId,
+  })
+  const callDetails = await t.query(debouncerCallDetails, {
     namespace: 'edited-session-export-rebuild',
     key: sessionId,
   })
@@ -548,6 +564,10 @@ test('inline preview edits use one sliding debounce entry for export rebuild aut
     pending: true,
     mode: 'sliding',
     retriggerCount: 2,
+  })
+  expect(callDetails?.functionArgs).toEqual({
+    sessionId,
+    previewVersion: 3,
   })
 })
 

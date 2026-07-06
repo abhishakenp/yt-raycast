@@ -10,6 +10,7 @@ import {
   normalizeDeploymentSlug,
   prepareLakebedSessionDeployment,
   publishSessionPreview,
+  recordLakebedSessionDeploymentFailure,
   recordLakebedSessionDeploymentSuccess,
 } from './session_deployment_helpers'
 
@@ -1068,5 +1069,132 @@ describe('session deployment helpers', () => {
           row.value.previewVersion === realConvexOpenUiHandoffPreview.version,
       ),
     ).toBe(false)
+  })
+
+  it('uses the reserved session.deploymentSlug when recording Lakebed failures instead of recomputing a colliding slug', async () => {
+    const reservedSlug = 'reserved-unique-slug'
+    const collidingDeployment = deploymentDoc({
+      _id: 'deployment_other_session' as Id<'deployments'>,
+      sessionId: 'session_other' as Id<'sessions'>,
+      slug: 'build-a-deployable-site',
+    })
+    const { ctx, inserted } = mutationCtxFor({
+      sessions: [
+        sessionDoc({
+          userId: 'user_1',
+          deploymentSlug: reservedSlug,
+        }),
+      ],
+      deployments: [collidingDeployment],
+    })
+
+    await expect(
+      recordLakebedSessionDeploymentFailure(ctx, {
+        sessionId,
+        errorMessage: 'lakebed build exploded',
+      }),
+    ).resolves.toMatchObject({
+      sessionId,
+      slug: reservedSlug,
+      status: 'failed',
+    })
+
+    expect(
+      inserted.some(
+        (row) =>
+          row.table === 'deployments' &&
+          row.value.slug === reservedSlug &&
+          row.value.status === 'failed' &&
+          row.value.errorMessage === 'lakebed build exploded',
+      ),
+    ).toBe(true)
+    expect(
+      inserted.some(
+        (row) =>
+          row.table === 'generationEvents' &&
+          row.value.eventType === 'publish_failed',
+      ),
+    ).toBe(true)
+  })
+
+  it('uses the reserved session.deploymentSlug when recording Lakebed successes on first deploy', async () => {
+    const reservedSlug = 'reserved-success-slug'
+    const collidingDeployment = deploymentDoc({
+      _id: 'deployment_other_session' as Id<'deployments'>,
+      sessionId: 'session_other' as Id<'sessions'>,
+      slug: 'build-a-deployable-site',
+    })
+    const { ctx, inserted } = mutationCtxFor({
+      sessions: [
+        sessionDoc({
+          userId: 'user_1',
+          deploymentSlug: reservedSlug,
+        }),
+      ],
+      deployments: [collidingDeployment],
+    })
+
+    await expect(
+      recordLakebedSessionDeploymentSuccess(ctx, {
+        sessionId,
+        previewVersion: 2,
+        url: 'https://reserved-success-slug.lakebed.app',
+        deployId: 'dep_reserved',
+        claimUrl: 'https://lakebed.app/claim/dep_reserved/token',
+        artifactHash: 'sha256:artifact',
+        clientBundleHash: 'sha256:client',
+        clientBundleBytes: 100,
+        requestBodyBytes: 200,
+        serverBundleBytes: 50,
+        sourceFileCount: 5,
+      }),
+    ).resolves.toMatchObject({
+      provider: 'lakebed',
+      slug: reservedSlug,
+      url: 'https://reserved-success-slug.lakebed.app',
+      deployId: 'dep_reserved',
+    })
+
+    expect(
+      inserted.some(
+        (row) =>
+          row.table === 'deployments' &&
+          row.value.slug === reservedSlug &&
+          row.value.provider === 'lakebed',
+      ),
+    ).toBe(true)
+  })
+
+  it('publishes with the reserved session.deploymentSlug when no requested slug and no existing deployment', async () => {
+    const reservedSlug = 'reserved-publish-slug'
+    const collidingDeployment = deploymentDoc({
+      _id: 'deployment_other_session' as Id<'deployments'>,
+      sessionId: 'session_other' as Id<'sessions'>,
+      slug: 'build-a-deployable-site',
+    })
+    const { ctx, inserted } = mutationCtxFor({
+      sessions: [
+        sessionDoc({ userId: 'user_1', deploymentSlug: reservedSlug }),
+      ],
+      previews: [previewDoc({ version: 6 })],
+      deployments: [collidingDeployment],
+    })
+
+    await expect(
+      publishSessionPreview(ctx, { sessionId }),
+    ).resolves.toMatchObject({
+      slug: reservedSlug,
+      url: 'https://reserved-publish-slug.ship-fast.io',
+      status: 'ready',
+    })
+
+    expect(
+      inserted.some(
+        (row) =>
+          row.table === 'deployments' &&
+          row.value.slug === reservedSlug &&
+          row.value.previewVersion === 6,
+      ),
+    ).toBe(true)
   })
 })

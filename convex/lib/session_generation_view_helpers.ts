@@ -48,7 +48,7 @@ export const loadGenerationView = async (
 
   if (session === null) return null
 
-  const [tasks, events, homeModule, siteSpec, latestPreview] =
+  const [tasks, events, homeModule, siteSpec, latestPreview, aiCapsules] =
     await Promise.all([
       ctx.db
         .query('tasks')
@@ -78,6 +78,10 @@ export const loadGenerationView = async (
         )
         .order('desc')
         .first(),
+      ctx.db
+        .query('aiCapsules')
+        .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
+        .take(100),
     ])
 
   return {
@@ -98,5 +102,6 @@ export const loadGenerationView = async (
             : (latestPreview as Doc<'previews'>).html,
         }
       : null,
+    aiCapsules: aiCapsules as Doc<'aiCapsules'>[],
   }
 }

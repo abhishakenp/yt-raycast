@@ -487,18 +487,24 @@ export const prepareLakebedSessionDeployment = async (
 const deploymentSlugForRecord = async (
   ctx: Pick<MutationCtx, 'db'>,
   sessionId: Id<'sessions'>,
-  prompt: string,
+  session: { prompt: string; deploymentSlug?: string },
   requestedSlug?: string,
 ) => {
   const existingDeployment = await ctx.db
     .query('deployments')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
     .first()
+  const reservedSlug =
+    typeof session.deploymentSlug === 'string' && session.deploymentSlug.trim()
+      ? normalizeDeploymentSlug(session.deploymentSlug)
+      : undefined
   const slug =
     existingDeployment !== null && requestedSlug === undefined
       ? existingDeployment.slug
       : normalizeDeploymentSlug(
-          requestedSlug ?? createDefaultDeploymentSlug(prompt, sessionId),
+          requestedSlug ??
+            reservedSlug ??
+            createDefaultDeploymentSlug(session.prompt, sessionId),
         )
 
   slug.length > 0 ||
@@ -544,7 +550,7 @@ export const recordLakebedSessionDeploymentSuccess = async (
   const { existingDeployment, slug } = await deploymentSlugForRecord(
     ctx,
     args.sessionId,
-    session.prompt,
+    session,
     args.requestedSlug,
   )
   const stableUrl =
@@ -644,7 +650,7 @@ export const recordLakebedSessionDeploymentFailure = async (
   const { existingDeployment, slug } = await deploymentSlugForRecord(
     ctx,
     args.sessionId,
-    session.prompt,
+    session,
     args.requestedSlug,
   )
   const url = existingDeployment?.url ?? createDeploymentUrl(slug)
@@ -746,11 +752,16 @@ export const publishSessionPreview = async (
     })
   }
 
+  const reservedSlug =
+    typeof session.deploymentSlug === 'string' && session.deploymentSlug.trim()
+      ? normalizeDeploymentSlug(session.deploymentSlug)
+      : undefined
   const slug =
     existingDeployment !== null && args.requestedSlug === undefined
       ? existingDeployment.slug
       : normalizeDeploymentSlug(
           args.requestedSlug ??
+            reservedSlug ??
             createDefaultDeploymentSlug(session.prompt, args.sessionId),
         )
 

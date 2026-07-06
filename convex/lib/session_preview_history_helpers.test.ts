@@ -338,9 +338,15 @@ describe('session preview history helpers', () => {
         restoredVersion: 3,
         now: 500,
       }),
+      // saved:true matches the same {sessionId, previewVersion, saved}
+      // contract createEdit/applySectionEdit return — required so an
+      // undoLastEdit AI tool can share persistedInlineEditOutputSchema
+      // (regression: this mutation was the only edit-persistence path
+      // missing `saved`, which is required for TanStack AI tool output).
     ).resolves.toEqual({
       sessionId,
       previewVersion: 5,
+      saved: true,
     })
 
     expect(generatedModules).toEqual([
@@ -440,6 +446,7 @@ describe('session preview history helpers', () => {
     ).resolves.toEqual({
       sessionId,
       previewVersion: 5,
+      saved: true,
     })
 
     expect(previews.at(-1)).toMatchObject({
