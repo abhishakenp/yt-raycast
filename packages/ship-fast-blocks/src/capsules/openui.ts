@@ -16,7 +16,7 @@ import type {
 import type * as OpenUI from '@openuidev/react-lang'
 import type { z } from 'zod/v4'
 import type { $ZodObject } from 'zod/v4/core'
-import { cloneElement, createElement, isValidElement } from 'react'
+import { Children, cloneElement, createElement, isValidElement } from 'react'
 import type { ReactElement, ReactNode } from 'react'
 import { sanitizeProps } from './sanitize-props.ts'
 
@@ -142,6 +142,38 @@ const defaultCapsuleDataKey = (
   statementId: string | undefined,
 ) => (statementId ? `${capsuleName}:${statementId}` : capsuleName)
 
+const sanitizeGeneratedCapsuleOutput = (output: ReactNode): ReactNode => {
+  if (!isValidElement(output)) return output
+
+  const element = output as ReactElement<Record<string, unknown>>
+  const existing = (element.props ?? {}) as Record<string, unknown>
+  const nextProps = { ...existing }
+  const hasChildren = Object.prototype.hasOwnProperty.call(existing, 'children')
+
+  if (Object.prototype.hasOwnProperty.call(nextProps, 'contentEditable')) {
+    nextProps.contentEditable = undefined
+  }
+  if (
+    Object.prototype.hasOwnProperty.call(
+      nextProps,
+      'suppressContentEditableWarning',
+    )
+  ) {
+    nextProps.suppressContentEditableWarning = undefined
+  }
+
+  if (hasChildren) {
+    const children = existing.children as ReactNode
+    const nextChildren = Array.isArray(children)
+      ? Children.map(children, sanitizeGeneratedCapsuleOutput)
+      : sanitizeGeneratedCapsuleOutput(children)
+    delete nextProps.children
+    return cloneElement(element, nextProps, nextChildren)
+  }
+
+  return cloneElement(element, nextProps)
+}
+
 /**
  * Stamp `data-openui-component` (capsule name) and `data-openui-var` (source
  * variable name) on the root element of a capsule's rendered output so the
@@ -157,8 +189,9 @@ const stampCapsuleAttrs = (
   capsuleName: string,
   statementId: string | undefined,
 ): ReactNode => {
-  if (isValidElement(output)) {
-    const element = output as ReactElement<Record<string, unknown>>
+  const safeOutput = sanitizeGeneratedCapsuleOutput(output)
+  if (isValidElement(safeOutput)) {
+    const element = safeOutput as ReactElement<Record<string, unknown>>
     const existing = (element.props ?? {}) as Record<string, unknown>
     return cloneElement(element, {
       ...existing,
@@ -172,7 +205,7 @@ const stampCapsuleAttrs = (
       'data-openui-var': statementId,
     }),
     undefined,
-    output,
+    safeOutput,
   )
 }
 

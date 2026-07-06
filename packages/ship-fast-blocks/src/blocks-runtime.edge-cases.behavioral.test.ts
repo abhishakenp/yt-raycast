@@ -16,6 +16,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, waitFor } from '@testing-library/react'
 import React from 'react'
 import { z } from 'zod/v4'
+import { Renderer } from '@openuidev/react-lang'
 
 import {
   extractAllComponentNames,
@@ -183,6 +184,159 @@ describe('runtime', () => {
       expect(capsule.client).toBeTruthy()
       expect(typeof capsule.client.component).toBe('function')
       expect((capsule as { lakebed?: unknown }).lakebed).toBeTruthy()
+    })
+  })
+
+  describe('AI capsule rendering', () => {
+    it('inherits positional props through AI capsule parent chains', async () => {
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue(
+        [
+          'data:text/javascript,',
+          encodeURIComponent(`
+            export default function C(props) {
+              return globalThis.React.createElement(
+                'p',
+                { 'data-testid': 'ai-capsule' },
+                String(props.text || '')
+              )
+            }
+          `),
+        ].join(''),
+      )
+      vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+
+      const source = 'root = AICustom_AICustom_Text_body_body("Inherited text")'
+      const library = await loadOpenUIRuntimeLibrary(source, [
+        {
+          capsuleName: 'AICustom_Text_body',
+          parentCapsule: 'Text',
+          compiledJs: 'export default function C(props) { return null }',
+          description: 'First AI edit',
+        },
+        {
+          capsuleName: 'AICustom_AICustom_Text_body_body',
+          parentCapsule: 'AICustom_Text_body',
+          compiledJs: 'export default function C(props) { return null }',
+          description: 'Second AI edit',
+        },
+      ])
+
+      const { container } = render(
+        React.createElement(Renderer, {
+          response: source,
+          library,
+        }),
+      )
+
+      expect(
+        container.querySelector('[data-testid="ai-capsule"]')?.textContent,
+      ).toBe('Inherited text')
+
+      vi.restoreAllMocks()
+    })
+
+    it('passes OpenUI args into legacy double-prefixed AI capsule aliases', async () => {
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue(
+        [
+          'data:text/javascript,',
+          encodeURIComponent(`
+            export default function C(props) {
+              return globalThis.React.createElement(
+                'section',
+                { 'data-testid': 'ai-capsule' },
+                String(props.title || '') + '|' + String(props.subtitle || '')
+              )
+            }
+          `),
+        ].join(''),
+      )
+      vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+
+      const source = `
+        root = AICustom_AICustom_FashionStoreHero_home_hero_home_hero({
+          title: "Editorial launch",
+          subtitle: "Quiet luxury"
+        })
+      `
+      const library = await loadOpenUIRuntimeLibrary(source, [
+        {
+          capsuleName: 'AICustom_FashionStoreHero_home_hero',
+          parentCapsule: 'MissingDynamicParent',
+          compiledJs: 'export default function C(props) { return null }',
+          description: 'AI-edited fashion store hero',
+        },
+      ])
+
+      const { container } = render(
+        React.createElement(Renderer, {
+          response: source,
+          library,
+        }),
+      )
+
+      expect(
+        container.querySelector('[data-testid="ai-capsule"]')?.textContent,
+      ).toBe('Editorial launch|Quiet luxury')
+
+      vi.restoreAllMocks()
+    })
+
+    it('renders a multi-page marketing agency source with an AI hero capsule and non-English props', async () => {
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue(
+        [
+          'data:text/javascript,',
+          encodeURIComponent(`
+            export default function C(props) {
+              return globalThis.React.createElement(
+                'section',
+                { 'data-testid': 'ai-marketing-hero' },
+                [
+                  globalThis.React.createElement('p', { key: 'eyebrow' }, 'AI live edit verified 0705'),
+                  globalThis.React.createElement('h1', { key: 'heading' }, String(props.headingBefore || '')),
+                  globalThis.React.createElement('p', { key: 'highlight' }, String(props.highlight || ''))
+                ]
+              )
+            }
+          `),
+        ].join(''),
+      )
+      vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+
+      const source = `
+        home_navbar = MarketingAgencyNavbar("Glass Polished", ["Home","Services","Pricing"])
+        home_navbar_anchor = SectionAnchor("home_navbar", home_navbar)
+        home_hero = AICustom_MarketingAgencyHero_home_hero("प्रीमियम ग्लास सॉल्यूशंस", "हिंदी पक्का सत्यापन", "", "From sleek storefronts to sophisticated interiors.", "Get a Free Quote", "View Portfolio", ["ISO Certified","10,000+ Projects"], "Showcase of polished glass installations", "99%", "Customer Satisfaction")
+        home_hero_anchor = SectionAnchor("home_hero", home_hero, "scroll-mt-28")
+        home_stats = MarketingAgencyStats([{"value":"99%","label":"Customer Satisfaction"}])
+        home_stats_anchor = SectionAnchor("home_stats", home_stats, "scroll-mt-28")
+        home = Stack([home_navbar_anchor, home_hero_anchor, home_stats_anchor])
+        services = Stack([home_navbar_anchor, home_stats_anchor])
+        pricing = Stack([home_navbar_anchor, home_stats_anchor])
+        root = PageSwitch(["Home","Services","Pricing"], [home, services, pricing], "", {"Home":"Home","Services":"Services","Pricing":"Pricing"})
+      `
+      const library = await loadOpenUIRuntimeLibrary(source, [
+        {
+          capsuleName: 'AICustom_MarketingAgencyHero_home_hero',
+          parentCapsule: 'MarketingAgencyHero',
+          compiledJs: 'export default function C(props) { return null }',
+          description: 'AI-edited marketing agency hero',
+        },
+      ])
+
+      const { container } = render(
+        React.createElement(Renderer, {
+          response: source,
+          library,
+        }),
+      )
+
+      expect(
+        container.querySelector('[data-testid="ai-marketing-hero"]')
+          ?.textContent,
+      ).toContain('AI live edit verified 0705')
+      expect(container.textContent).toContain('हिंदी पक्का सत्यापन')
+
+      vi.restoreAllMocks()
     })
   })
 

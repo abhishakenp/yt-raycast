@@ -166,6 +166,9 @@ const GENERIC_ALT = new Set([
 const tokenize = (value: string): string[] =>
   value
     .toLowerCase()
+    // Strip non-ASCII (non-English script like Malayalam/Tamil Unicode) —
+    // Pexels/Unsplash index in English; non-ASCII tokens break search.
+    .replace(/[^\x20-\x7E]/g, ' ')
     .replace(/[^a-z0-9\s-]/g, ' ')
     .split(/\s+/)
     .filter((token) => token.length > 2)

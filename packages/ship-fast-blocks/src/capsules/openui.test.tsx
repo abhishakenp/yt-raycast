@@ -1,7 +1,7 @@
 import { createLakebedHandlerContext } from '@ship-fast/lakebed/server'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactElement } from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { z } from 'zod/v4'
 
 import { defineCapsule, withLakebed } from './openui.ts'
@@ -183,6 +183,75 @@ describe('defineCapsule data-openui-* attr stamping', () => {
     expect(html).toContain('data-openui-component="NoVarProbe"')
     // data-openui-var should be absent (undefined → React omits the attr)
     expect(html).not.toContain('data-openui-var=')
+  })
+
+  it('removes generated contentEditable props before rendering capsule output', () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const capsule = defineCapsule({
+        name: 'EditableProbe',
+        description: 'Generated editable prop probe',
+        props: z.object({}),
+        component: () => (
+          <section>
+            <h1 contentEditable>Generated editable heading</h1>
+          </section>
+        ),
+      })
+
+      const output = capsule.client.component({
+        props: {},
+        statementId: 'hero',
+      } as any)
+
+      const html = renderToStaticMarkup(output as ReactElement)
+      expect(html).toContain('Generated editable heading')
+      expect(html).not.toContain('contenteditable')
+      expect(
+        errorSpy.mock.calls.filter((call) =>
+          call.some((value) =>
+            String(value).includes('A component is `contentEditable`'),
+          ),
+        ),
+      ).toHaveLength(0)
+    } finally {
+      errorSpy.mockRestore()
+    }
+  })
+
+  it('does not add invalid props to fragment capsule output while sanitizing', () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const capsule = defineCapsule({
+        name: 'FragmentProbe',
+        description: 'Generated fragment output probe',
+        props: z.object({}),
+        component: () => (
+          <>
+            <h1>Fragment heading</h1>
+          </>
+        ),
+      })
+
+      const output = capsule.client.component({
+        props: {},
+        statementId: 'hero',
+      } as any)
+
+      const html = renderToStaticMarkup(output as ReactElement)
+      expect(html).toContain('Fragment heading')
+      expect(
+        errorSpy.mock.calls.filter((call) =>
+          call.some(
+            (value) =>
+              String(value).includes('Invalid prop') ||
+              String(value).includes('React.Fragment'),
+          ),
+        ),
+      ).toHaveLength(0)
+    } finally {
+      errorSpy.mockRestore()
+    }
   })
 })
 

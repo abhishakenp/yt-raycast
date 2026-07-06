@@ -43,12 +43,33 @@ describe('Image + ImageContextProvider', () => {
     expect(queryOf(markup).startsWith('organic dairy farm')).toBe(true)
   })
 
-  it('uses an explicit src verbatim, ignoring context', () => {
+  it('uses an explicit src verbatim when no override matches it', () => {
     const markup = renderToStaticMarkup(
-      <ImageContextProvider value={{ prompt: 'anything' }}>
+      <ImageContextProvider
+        value={{
+          prompt: 'anything',
+          overrides: { other: 'https://cdn.example.com/other.jpg' },
+        }}
+      >
         <Image alt="x" src="https://cdn.example.com/p.jpg" />
       </ImageContextProvider>,
     )
     expect(srcOf(markup)).toBe('https://cdn.example.com/p.jpg')
+  })
+
+  it('uses a src-key override for an explicit generated src', () => {
+    const currentSrc = '/api/pexels?query=glass+display&w=800&h=600'
+    const replacementSrc = 'https://images.pexels.com/photos/7195588/photo.jpeg'
+    const markup = renderToStaticMarkup(
+      <ImageContextProvider
+        value={{
+          overrides: { [currentSrc]: replacementSrc },
+        }}
+      >
+        <Image alt="generic image" src={currentSrc} />
+      </ImageContextProvider>,
+    )
+
+    expect(srcOf(markup)).toBe(replacementSrc)
   })
 })
