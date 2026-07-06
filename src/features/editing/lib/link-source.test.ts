@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { findHrefOccurrences, replaceHrefInSource } from './link-source'
+import {
+  findHrefOccurrences,
+  replaceHrefInSource,
+  updateLinkInSource,
+} from './link-source'
 
 describe('replaceHrefInSource', () => {
   it('replaces href in string argument', () => {
@@ -81,5 +85,97 @@ describe('findHrefOccurrences', () => {
   it('counts both single and double quoted', () => {
     const source = `FoodDeliveryFooter("name", "/old", '/old')`
     expect(findHrefOccurrences(source, '/old')).toBe(2)
+  })
+})
+
+describe('updateLinkInSource', () => {
+  it('updates href, label text, target, and rel tokens in an object link', () => {
+    const source = `links: [{ label: "Docs", href: "/docs" }]`
+    const result = updateLinkInSource(source, {
+      oldHref: '/docs',
+      newHref: '/learn',
+      oldText: 'Docs',
+      newText: 'Learn',
+      target: '_blank',
+      rel: 'noopener noreferrer nofollow',
+      occurrenceIndex: 0,
+    })
+
+    expect(result.replaced).toBe(true)
+    expect(result.source).toContain('label: "Learn"')
+    expect(result.source).toContain('href: "/learn"')
+    expect(result.source).toContain('target: "_blank"')
+    expect(result.source).toContain('rel: "noopener noreferrer nofollow"')
+  })
+
+  it('updates the linked text nearest the selected href occurrence', () => {
+    const source = `FooterLink("Docs", "/docs")\nFooterLink("Docs", "/docs")`
+    const result = updateLinkInSource(source, {
+      oldHref: '/docs',
+      newHref: '/pricing',
+      oldText: 'Docs',
+      newText: 'Pricing',
+      occurrenceIndex: 1,
+    })
+
+    expect(result.replaced).toBe(true)
+    expect(result.source).toBe(
+      `FooterLink("Docs", "/docs")\nFooterLink("Pricing", "/pricing")`,
+    )
+  })
+
+  it('persists removing new-tab and noindex attributes from an object link', () => {
+    const source = `links: [{ label: "Docs", href: "/docs", target: "_blank", rel: "noopener noreferrer nofollow" }]`
+    const result = updateLinkInSource(source, {
+      oldHref: '/docs',
+      newHref: '/docs',
+      oldText: 'Docs',
+      newText: 'Docs',
+      target: null,
+      rel: '',
+      occurrenceIndex: 0,
+    })
+
+    expect(result.replaced).toBe(true)
+    expect(result.source).toContain('href: "/docs"')
+    expect(result.source).not.toContain('target:')
+    expect(result.source).not.toContain('rel:')
+  })
+
+  it('updates target and rel attributes on HTML anchor tags', () => {
+    const source = `<nav><a href="/docs">Docs</a></nav>`
+    const result = updateLinkInSource(source, {
+      oldHref: '/docs',
+      newHref: '/docs',
+      oldText: 'Docs',
+      newText: 'Docs',
+      target: '_blank',
+      rel: 'noopener noreferrer nofollow',
+      occurrenceIndex: 0,
+    })
+
+    expect(result.replaced).toBe(true)
+    expect(result.source).toContain('<a href="/docs"')
+    expect(result.source).toContain('target="_blank"')
+    expect(result.source).toContain('rel="noopener noreferrer nofollow"')
+  })
+
+  it('removes only target and rel attributes from HTML anchor tags when requested', () => {
+    const source = `<nav><a href="/docs" target="_blank" rel="noopener noreferrer nofollow">Docs</a></nav>`
+    const result = updateLinkInSource(source, {
+      oldHref: '/docs',
+      newHref: '/docs',
+      oldText: 'Docs',
+      newText: 'Docs',
+      target: null,
+      rel: '',
+      occurrenceIndex: 0,
+    })
+
+    expect(result.replaced).toBe(true)
+    expect(result.source).toContain('<a href="/docs"')
+    expect(result.source).not.toContain('target=')
+    expect(result.source).not.toContain('rel=')
+    expect(result.source).toContain('>Docs</a>')
   })
 })
