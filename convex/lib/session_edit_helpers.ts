@@ -3,5 +3,7 @@
 export {
   applyPreviewTextEdit,
   applyImageSwap,
+  applyOpenUiVarReplace,
+  applySectionHtmlReplace,
   applyStyleEdit,
 } from '../../src/lib/edit-helpers'
