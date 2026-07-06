@@ -83,3 +83,46 @@ test('getSessionReadiness returns computed readiness through the public Convex q
     },
   })
 })
+
+test('getSessionReadiness accepts sessionId arg for backward compatibility with stale clients', async () => {
+  const t = convexTest(schema, modules)
+
+  const sessionId = await t.run(async (ctx) =>
+    ctx.db.insert('sessions', {
+      prompt: 'Backward compat readiness',
+      workspace: 'workspace_readiness_compat',
+      status: 'preview_ready',
+      preferredLanguage: 'en',
+      preferredExportTarget: 'html',
+      isPrivate: false,
+      createdAt: 100,
+      updatedAt: 120,
+    }),
+  )
+
+  // Stale clients send { sessionId } instead of { lookup } — the query must
+  // resolve the session from either field without an ArgumentValidationError.
+  const result = await t.query(api.sessions.getSessionReadiness, {
+    sessionId: sessionId as Id<'sessions'>,
+  })
+
+  expect(result).toMatchObject({
+    session: {
+      sessionId,
+      status: 'preview_ready',
+    },
+    readiness: {
+      homepageReady: true,
+      openuiReady: false,
+      siteSpecReady: true,
+    },
+  })
+})
+
+test('getSessionReadiness returns null when neither lookup nor sessionId is provided', async () => {
+  const t = convexTest(schema, modules)
+
+  const result = await t.query(api.sessions.getSessionReadiness, {})
+
+  expect(result).toBeNull()
+})

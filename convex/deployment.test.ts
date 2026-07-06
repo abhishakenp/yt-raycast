@@ -1,11 +1,25 @@
 import { convexTest } from 'convex-test'
+import type { DebouncerComponentApi } from '@ikhrustalev/convex-debouncer'
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
+import type { FunctionReference } from 'convex/server'
 import { afterEach, expect, test } from 'vitest'
-import { api, internal } from './_generated/api'
+import { api, components, internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
+type DebouncerCallDetailsReference = FunctionReference<
+  'query',
+  'internal',
+  { namespace: string; key: string },
+  { functionPath: string; functionArgs: unknown } | null
+>
+type LegacyEditedSessionExportRebuildReference = FunctionReference<
+  'mutation',
+  'internal',
+  { sessionId: Id<'sessions'>; previewVersion: number; saved: boolean },
+  { status: 'queued' | 'stale' }
+>
 
 let activeTest: ReturnType<typeof convexTest> | null = null
 
@@ -53,6 +67,24 @@ const drainScheduledFunctions = async (t: ReturnType<typeof convexTest>) => {
     await new Promise((r) => setTimeout(r, 10))
     await t.finishInProgressScheduledFunctions()
   }
+}
+
+const loadEditedSessionExportRebuildCallArgs = async (
+  t: ReturnType<typeof convexTest>,
+  sessionId: Id<'sessions'>,
+) => {
+  const debouncerComponent =
+    components.debouncer as unknown as DebouncerComponentApi
+  const debouncerCallDetails = (
+    debouncerComponent.lib as typeof debouncerComponent.lib & {
+      getCallDetails: DebouncerCallDetailsReference
+    }
+  ).getCallDetails
+
+  return await t.query(debouncerCallDetails, {
+    namespace: 'edited-session-export-rebuild',
+    key: sessionId,
+  })
 }
 
 afterEach(async () => {
@@ -349,3 +381,81 @@ test.each([
     expect(readyStatus).not.toHaveProperty('pendingPreviewVersion')
   },
 )
+
+test('inline edits on deployed sessions queue validator-clean rebuild args', async () => {
+  const t = deploymentTest()
+  const prompt = 'Deployable edited landing page'
+  const { sessionId } = await createTestSession(t, prompt)
+
+  await persistGeneratedPreview(t, sessionId, prompt)
+
+  await t.mutation(api.sessions.publishPreview, {
+    sessionId,
+    anonymousOwnerSecret: 'owner-secret',
+    requestedSlug: 'deployable-edited-landing-page',
+  })
+
+  await expect(
+    t.mutation(api.sessions.createEdit, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'text',
+      targetLabel: 'Hero headline',
+      beforeText: prompt,
+      afterText: 'Edited deployable landing page',
+    }),
+  ).resolves.toMatchObject({
+    previewVersion: 2,
+    saved: true,
+  })
+
+  const updatingStatus = await t.query(api.sessions.getDeploymentStatus, {
+    sessionId,
+  })
+  const queuedCall = await loadEditedSessionExportRebuildCallArgs(t, sessionId)
+
+  expect(updatingStatus).toMatchObject({
+    status: 'updating',
+    previewVersion: 1,
+    pendingPreviewVersion: 2,
+  })
+  expect(queuedCall?.functionArgs).toEqual({
+    sessionId,
+    previewVersion: 2,
+  })
+})
+
+test('legacy queued edited export rebuild calls with saved results still drain', async () => {
+  const t = deploymentTest()
+  const prompt = 'Legacy queued deployment rebuild'
+  const { sessionId } = await createTestSession(t, prompt)
+  const legacyRebuild = internal.sessions
+    .rebuildEditedSessionExports as LegacyEditedSessionExportRebuildReference
+
+  await persistGeneratedPreview(t, sessionId, prompt)
+
+  await t.mutation(api.sessions.publishPreview, {
+    sessionId,
+    anonymousOwnerSecret: 'owner-secret',
+    requestedSlug: 'legacy-queued-deployment-rebuild',
+  })
+
+  await expect(
+    t.mutation(legacyRebuild, {
+      sessionId,
+      previewVersion: 1,
+      saved: true,
+    }),
+  ).resolves.toEqual({ status: 'queued' })
+
+  const statusAfterLegacyPayload = await t.query(
+    api.sessions.getDeploymentStatus,
+    { sessionId },
+  )
+
+  expect(statusAfterLegacyPayload).toMatchObject({
+    status: 'ready',
+    previewVersion: 1,
+  })
+  expect(statusAfterLegacyPayload).not.toHaveProperty('pendingPreviewVersion')
+})

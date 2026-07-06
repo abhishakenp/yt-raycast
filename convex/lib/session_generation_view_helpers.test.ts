@@ -16,6 +16,7 @@ type TableName =
   | 'generatedModules'
   | 'siteSpecs'
   | 'previews'
+  | 'aiCapsules'
 
 type Row =
   | Doc<'sessions'>
@@ -26,6 +27,7 @@ type Row =
   | Doc<'generatedModules'>
   | Doc<'siteSpecs'>
   | Doc<'previews'>
+  | Doc<'aiCapsules'>
 
 const sessionId = 'session_generation_view' as Id<'sessions'>
 
@@ -108,6 +110,7 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
     generatedModules: [...(input.generatedModules ?? [])],
     siteSpecs: [...(input.siteSpecs ?? [])],
     previews: [...(input.previews ?? [])],
+    aiCapsules: [...(input.aiCapsules ?? [])],
   }
 
   const rowsFor = (table: TableName) => tables[table]
@@ -293,6 +296,62 @@ describe('session generation view helpers', () => {
     expect(view?.homeModule?.source).toBe('<main>Home</main>')
     expect(view?.siteSpec?.specJson).toContain('Generation View')
     expect(view?.latestPreview?.html).toBe('<main>Latest</main>')
+  })
+
+  it('loads AI capsules referenced by edited OpenUI source for runtime rendering', async () => {
+    const compiledJs =
+      'export default function AICustomHero() { return "Edited hero" }'
+    const ctx = ctxFor({
+      sessions: [sessionDoc({ status: 'preview_ready', previewVersion: 2 })],
+      generatedModules: [
+        {
+          _id: 'module_home_ai_capsule' as Id<'generatedModules'>,
+          _creationTime: 1,
+          sessionId,
+          moduleKey: 'home',
+          source: 'root = AICustomHero({ headline: "Edited hero" })',
+          status: 'succeeded',
+          createdAt: 1,
+          updatedAt: 2,
+        } as Doc<'generatedModules'>,
+      ],
+      previews: [
+        {
+          _id: 'preview_ai_capsule' as Id<'previews'>,
+          _creationTime: 2,
+          sessionId,
+          version: 2,
+          html: '<main id="openui-root"></main>',
+          openUiSource: 'root = AICustomHero({ headline: "Edited hero" })',
+          source: 'edit',
+          createdAt: 2,
+        } as Doc<'previews'>,
+      ],
+      aiCapsules: [
+        {
+          _id: 'ai_capsule_generation_view' as Id<'aiCapsules'>,
+          _creationTime: 2,
+          sessionId,
+          capsuleName: 'AICustomHero',
+          parentCapsule: 'MarketingAgencyHero',
+          compiledJs,
+          description: 'Edited hero',
+          createdAt: 2,
+          updatedAt: 2,
+        } as Doc<'aiCapsules'>,
+      ],
+    })
+
+    const view = await loadGenerationView(ctx, { lookup: sessionId })
+
+    expect(view?.homeModule?.source).toContain('AICustomHero')
+    expect(view?.aiCapsules).toEqual([
+      expect.objectContaining({
+        capsuleName: 'AICustomHero',
+        compiledJs,
+        parentCapsule: 'MarketingAgencyHero',
+      }),
+    ])
   })
 
   it('does not expose DB-observed OpenUI handoff HTML in the generation view payload', async () => {

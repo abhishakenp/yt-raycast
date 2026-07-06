@@ -111,6 +111,8 @@ const ctxFor = (input: {
   const tasks: TaskRecord[] = []
   const generationEvents: GenerationEventRecord[] = []
   const edits: EditRecord[] = []
+  const translationCache: Array<Record<string, unknown>> = []
+  const aiCapsules: Array<Record<string, unknown>> = []
   const usageMetrics: Array<Record<string, unknown>> = []
   const schedulerCalls: Array<{ delayMs: number; functionRef: unknown }> = []
 
@@ -132,6 +134,10 @@ const ctxFor = (input: {
         return generationEvents as unknown as Array<Record<string, unknown>>
       case 'edits':
         return edits as unknown as Array<Record<string, unknown>>
+      case 'translationCache':
+        return translationCache
+      case 'aiCapsules':
+        return aiCapsules
       case 'usageMetrics':
         return usageMetrics
       default:
@@ -177,6 +183,8 @@ const ctxFor = (input: {
           ...generatedModules,
           ...siteSpecs,
           ...sessionData,
+          ...translationCache,
+          ...aiCapsules,
         ].find((row) => row._id === id) ?? null,
       insert: async (table: string, value: Record<string, unknown>) => {
         const rows = rowsFor(table)
@@ -198,6 +206,8 @@ const ctxFor = (input: {
           ...generatedModules,
           ...siteSpecs,
           ...sessionData,
+          ...translationCache,
+          ...aiCapsules,
           ...tasks,
         ].find((item) => item._id === id)
         if (row === undefined) throw new Error(`Missing row ${id}`)
@@ -251,6 +261,8 @@ const ctxFor = (input: {
       tasks,
       generationEvents,
       edits,
+      translationCache,
+      aiCapsules,
       schedulerCalls,
     },
   }

@@ -124,6 +124,7 @@ export const restorePreviewHistoryVersion = async (
   return {
     sessionId: args.sessionId,
     previewVersion: nextPreviewVersion,
+    saved: true,
   }
 }
 

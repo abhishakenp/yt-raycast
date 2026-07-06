@@ -165,6 +165,7 @@ import {
   recordUsageMetricArgs,
   restorePreviewVersionArgs,
   sessionIdArgs,
+  sessionReadinessArgs,
   setPreferredLanguageArgs,
   setBrandLogoArgs,
   setThemeOverrideArgs,
@@ -198,13 +199,18 @@ const scheduleEditedSessionExportAutomation = async (
     previewVersion: number
   },
 ) => {
-  await markSessionDeploymentUpdating(ctx, args)
+  const rebuildArgs = {
+    sessionId: args.sessionId,
+    previewVersion: args.previewVersion,
+  }
+
+  await markSessionDeploymentUpdating(ctx, rebuildArgs)
   await editedSessionExportDebouncer.schedule(
     ctx,
     'edited-session-export-rebuild',
-    args.sessionId,
+    rebuildArgs.sessionId,
     internal.sessions.rebuildEditedSessionExports,
-    args,
+    rebuildArgs,
   )
 }
 
@@ -289,6 +295,27 @@ export const addGenerationEvent = internalMutation({
   },
 })
 
+export const setPreferredLanguageInternal = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+    preferredLanguage: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId)
+    if (session === null) return
+    if (
+      typeof session.preferredLanguage === 'string' &&
+      session.preferredLanguage === args.preferredLanguage
+    ) {
+      return
+    }
+    await ctx.db.patch(args.sessionId, {
+      preferredLanguage: args.preferredLanguage,
+      updatedAt: Date.now(),
+    })
+  },
+})
+
 export const getGenerationView = query({
   args: generationViewArgs,
   handler: async (ctx, args) => loadGenerationView(ctx, args),
@@ -310,8 +337,12 @@ export const getWorkspace = query({
 })
 
 export const getSessionReadiness = query({
-  args: lookupArgs,
-  handler: async (ctx, args) => loadSessionReadiness(ctx, args.lookup),
+  args: sessionReadinessArgs,
+  handler: async (ctx, args) => {
+    const lookup = args.lookup ?? args.sessionId
+    if (lookup === undefined) return null
+    return loadSessionReadiness(ctx, lookup)
+  },
 })
 
 export const getPublicPreview = query({
@@ -609,7 +640,10 @@ export const createEdit = mutation({
   args: createEditArgs,
   handler: async (ctx, args) => {
     const result = await createSessionEdit(ctx, args)
-    await scheduleEditedSessionExportAutomation(ctx, result)
+    await scheduleEditedSessionExportAutomation(ctx, {
+      sessionId: result.sessionId,
+      previewVersion: result.previewVersion,
+    })
     return result
   },
 })
