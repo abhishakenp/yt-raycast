@@ -13,6 +13,25 @@
 
 This rule exists because 95% of requests are for features that were already working and got broken by unnecessary reimplementation.
 
+## CRITICAL RULE - NO `as any` CASTS — FIX THE UNDERLYING TYPES
+
+**NEVER use `as any` to silence type errors.** No exceptions.
+
+1. If a type doesn't fit, fix the type definition or the call site — don't cast.
+2. If an input type is missing optional fields, add them to the interface or use `Pick`/`Partial`.
+3. If a test needs a partial input, construct it with the real type and omit only fields that are genuinely optional.
+4. `as any` hides bugs, breaks type safety, and makes refactors unsafe. The type error is telling you something — listen to it.
+5. This applies to all code: production, tests, temp scripts, everything.
+
+**Instead of `as any`:**
+
+- Use `Partial<T>` when most fields are optional
+- Use `Pick<T, 'field1' | 'field2'>` when you only need a few fields
+- Add the missing fields to the type definition
+- Use a properly typed test fixture/factory function
+
+This rule exists because `as any` casts have hidden real bugs and type mismatches that surfaced in production.
+
 ## CRITICAL RULE - ALWAYS VERIFY YOUR WORK
 
 **AFTER IMPLEMENTING ANYTHING:**

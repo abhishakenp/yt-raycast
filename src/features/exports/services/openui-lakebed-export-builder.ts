@@ -944,6 +944,41 @@ const defaultLakebedThemeVars: Record<string, string> = {
   radius: '0.5rem',
 }
 
+const lakebedColorKeys = [
+  'background',
+  'foreground',
+  'card',
+  'card-foreground',
+  'popover',
+  'popover-foreground',
+  'primary',
+  'primary-foreground',
+  'secondary',
+  'secondary-foreground',
+  'muted',
+  'muted-foreground',
+  'accent',
+  'accent-foreground',
+  'destructive',
+  'destructive-foreground',
+  'border',
+  'input',
+  'ring',
+  'chart-1',
+  'chart-2',
+  'chart-3',
+  'chart-4',
+  'chart-5',
+  'sidebar',
+  'sidebar-foreground',
+  'sidebar-primary',
+  'sidebar-primary-foreground',
+  'sidebar-accent',
+  'sidebar-accent-foreground',
+  'sidebar-border',
+  'sidebar-ring',
+] as const
+
 const buildLakebedThemeCss = (
   styles: ThemeStyles | null,
   isDark: boolean,
@@ -1015,6 +1050,47 @@ body {
 .hover\\:text-muted-foreground:hover { color: var(--muted-foreground); }
 .hover\\:text-accent-foreground:hover { color: var(--accent-foreground); }
 .hover\\:text-destructive:hover { color: var(--destructive); }`
+}
+
+/**
+ * Generates a Tailwind v4 `@theme` block that maps the site's custom color
+ * tokens to Tailwind's `--color-*` namespace. Without this, `@tailwindcss/browser`
+ * only generates utilities for its default palette — custom classes like
+ * `bg-background`, `text-foreground`, `border-border/50`, `bg-background/65`,
+ * and all responsive/state variants are silently dropped.
+ *
+ * The `--color-*` values reference the `:root` CSS variables (e.g.
+ * `var(--background)`) so runtime theme switching still works.
+ */
+const buildLakebedTailwindThemeCss = (
+  styles: ThemeStyles | null,
+  isDark: boolean,
+): string => {
+  const selected = styles
+    ? { ...styles.light, ...(isDark ? styles.dark : {}) }
+    : defaultLakebedThemeVars
+  const colorDeclarations = lakebedColorKeys
+    .map((key) => {
+      const value = selected[key] ?? defaultLakebedThemeVars[key]
+      return value == null ? null : `  --color-${key}: var(--${key});`
+    })
+    .filter((line): line is string => Boolean(line))
+    .join('\n')
+  const fontDeclarations = [
+    selected['font-sans'] && `  --font-sans: var(--font-sans);`,
+    selected['font-serif'] && `  --font-serif: var(--font-serif);`,
+    selected['font-mono'] && `  --font-mono: var(--font-mono);`,
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join('\n')
+  const radiusDeclaration = selected['radius']
+    ? `  --radius: var(--radius);`
+    : ''
+  return `@theme {
+${colorDeclarations}
+${fontDeclarations}
+${radiusDeclaration}
+}`
 }
 
 const slugifyRoute = (value: string): string =>
@@ -3314,9 +3390,11 @@ export const imageSources = ${JSON.stringify(imageSources, null, 2)} satisfies A
 
 const renderClientTheme = (
   themeCss: string,
+  tailwindThemeCss: string,
 ): string => `import { useEffect } from "preact/hooks";
 
 export const themeCss = ${JSON.stringify(themeCss)};
+export const tailwindThemeCss = ${JSON.stringify(tailwindThemeCss)};
 
 export function StyleRuntime() {
   useEffect(() => {
@@ -3327,6 +3405,19 @@ export function StyleRuntime() {
       document.head.appendChild(style);
     }
     style.textContent = themeCss;
+
+    // Inject the @theme block into a <style type="text/tailwindcss"> element
+    // so @tailwindcss/browser processes it and generates custom-color utilities
+    // (bg-background, text-foreground, border-border/50, bg-background/65,
+    // responsive variants, etc.) that the default Tailwind palette doesn't include.
+    let twStyle = document.getElementById("site-tailwind-theme");
+    if (!twStyle) {
+      twStyle = document.createElement("style");
+      twStyle.id = "site-tailwind-theme";
+      twStyle.setAttribute("type", "text/tailwindcss");
+      document.head.appendChild(twStyle);
+    }
+    twStyle.textContent = tailwindThemeCss;
   }, []);
 
   return null;
@@ -4279,9 +4370,12 @@ export async function buildOpenUILakebedProjectFiles(
   )
   const clientComponents = [...routeClientComponents, ...nestedClientComponents]
   const themeName = readThemeName(input.siteSpecJson, input.themeName)
-  const themeCss = buildLakebedThemeCss(
-    resolveThemeStyles(themeName),
-    input.isDark ?? true,
+  const resolvedThemeStyles = resolveThemeStyles(themeName)
+  const isDarkTheme = input.isDark ?? true
+  const themeCss = buildLakebedThemeCss(resolvedThemeStyles, isDarkTheme)
+  const tailwindThemeCss = buildLakebedTailwindThemeCss(
+    resolvedThemeStyles,
+    isDarkTheme,
   )
   const imageSources = await resolveLakebedImageSources(
     routes,
@@ -4307,6 +4401,7 @@ export async function buildOpenUILakebedProjectFiles(
     'client/lib/navigation.tsx': renderClientNavigation(),
     'client/lib/theme.tsx': renderClientTheme(
       themeCss + renderClientStyleOverridesCss(styleOverrides),
+      tailwindThemeCss,
     ),
     'server/index.ts': renderServerIndex(
       parsed.projectName,
