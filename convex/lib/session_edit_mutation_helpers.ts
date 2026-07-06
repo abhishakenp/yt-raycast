@@ -148,25 +148,34 @@ const normalizeComparableText = (value: string | undefined): string =>
 const translationCacheKey = (locale: string, text: string): string =>
   `${locale.trim().toLowerCase()}\n${text.trim()}`
 
-const rememberIdentityTranslation = async (
+const rememberTranslation = async (
   ctx: MutationCtx,
   locale: string | undefined,
-  text: string | undefined,
+  sourceText: string | undefined,
+  translation: string | undefined,
   now: number,
 ): Promise<void> => {
   const normalizedLocale = normalizeComparableText(locale).toLowerCase()
-  const normalizedText = String(text ?? '').trim()
-  if (!normalizedLocale || normalizedLocale === 'en' || !normalizedText) return
+  const normalizedSourceText = String(sourceText ?? '').trim()
+  const normalizedTranslation = String(translation ?? '').trim()
+  if (
+    !normalizedLocale ||
+    normalizedLocale === 'en' ||
+    !normalizedSourceText ||
+    !normalizedTranslation
+  ) {
+    return
+  }
 
-  const cacheKey = translationCacheKey(normalizedLocale, normalizedText)
-  const existing = await ctx.db
+  const cacheKey = translationCacheKey(normalizedLocale, normalizedSourceText)
+  const [existing] = await ctx.db
     .query('translationCache')
     .withIndex('by_cacheKey', (index) => index.eq('cacheKey', cacheKey))
-    .unique()
+    .take(1)
 
   if (existing) {
     await ctx.db.patch(existing._id, {
-      translation: normalizedText,
+      translation: normalizedTranslation,
       updatedAt: now,
     })
     return
@@ -175,11 +184,32 @@ const rememberIdentityTranslation = async (
   await ctx.db.insert('translationCache', {
     cacheKey,
     locale: normalizedLocale,
-    sourceText: normalizedText,
-    translation: normalizedText,
+    sourceText: normalizedSourceText,
+    translation: normalizedTranslation,
     createdAt: now,
     updatedAt: now,
   })
+}
+
+const rememberIdentityTranslation = async (
+  ctx: MutationCtx,
+  locale: string | undefined,
+  text: string | undefined,
+  now: number,
+): Promise<void> => {
+  await rememberTranslation(ctx, locale, text, text, now)
+}
+
+type CanonicalTranslatedTextEdit = {
+  locale: string
+  sourceText: string
+  selectedText: string
+}
+
+type CanonicalizedTextEdit = {
+  args: SessionEditInput
+  translatedEdit?: CanonicalTranslatedTextEdit
+  patchCanonicalArtifacts: boolean
 }
 
 const withCanonicalTranslatedBeforeText = async (
@@ -187,21 +217,25 @@ const withCanonicalTranslatedBeforeText = async (
   session: Doc<'sessions'>,
   sessionId: Id<'sessions'>,
   args: SessionEditInput,
-): Promise<SessionEditInput> => {
-  if (args.editType !== 'text') return args
+): Promise<CanonicalizedTextEdit> => {
+  const unchanged = {
+    args,
+    patchCanonicalArtifacts: true,
+  }
+  if (args.editType !== 'text') return unchanged
 
   const selectedText = normalizeComparableText(args.beforeText)
   const locale = normalizeComparableText(
     session.preferredLanguage,
   ).toLowerCase()
-  if (!selectedText || !locale || locale === 'en') return args
+  if (!selectedText || !locale || locale === 'en') return unchanged
 
   const [homeModule] = await getCurrentHomeModuleAndSiteSpec(ctx, sessionId)
   const source = homeModule?.source
-  if (!source) return args
+  if (!source) return unchanged
 
   const sourceTexts = extractOpenUISourceStrings(source)
-  if (sourceTexts.length === 0) return args
+  if (sourceTexts.length === 0) return unchanged
 
   const rows = await ctx.db
     .query('translationCache')
@@ -215,10 +249,203 @@ const withCanonicalTranslatedBeforeText = async (
         normalizeComparableText(row.sourceText) === comparableSource &&
         normalizeComparableText(row.translation) === selectedText,
     )
-    if (matchingRow) return { ...args, beforeText: sourceText }
+    if (matchingRow) {
+      const quotedSourceText = JSON.stringify(sourceText)
+      const quotedOccurrenceCount =
+        quotedSourceText.length > 2
+          ? source.split(quotedSourceText).length - 1
+          : 0
+      const extractedOccurrenceCount = sourceTexts.filter(
+        (candidate) => normalizeComparableText(candidate) === comparableSource,
+      ).length
+      const sourceOccurrenceCount = Math.max(
+        quotedOccurrenceCount,
+        extractedOccurrenceCount,
+      )
+      return {
+        args: { ...args, beforeText: sourceText },
+        translatedEdit: {
+          locale,
+          sourceText,
+          selectedText,
+        },
+        patchCanonicalArtifacts:
+          sourceOccurrenceCount > 1 && args.occurrenceIndex !== undefined,
+      }
+    }
   }
 
-  return args
+  return unchanged
+}
+
+const findAiCapsuleTextEdits = async (
+  ctx: MutationCtx,
+  sessionId: Id<'sessions'>,
+  beforeText: string | undefined,
+  afterText: string | undefined,
+  occurrenceIndex?: number,
+): Promise<
+  Array<{
+    capsule: Doc<'aiCapsules'>
+    compiledJs: string
+  }>
+> => {
+  const aiCapsules = await ctx.db
+    .query('aiCapsules')
+    .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
+    .take(100)
+
+  const edits: Array<{
+    capsule: Doc<'aiCapsules'>
+    compiledJs: string
+  }> = []
+  for (const capsule of aiCapsules) {
+    const compiledEdit = applyPreviewTextEdit(
+      capsule.compiledJs,
+      beforeText,
+      afterText,
+      occurrenceIndex,
+    )
+    if (compiledEdit.replaced) {
+      edits.push({ capsule, compiledJs: compiledEdit.html })
+      continue
+    }
+
+    const flattenedStringEdit = applyFlattenedStringLiteralEdit(
+      capsule.compiledJs,
+      beforeText,
+      afterText,
+    )
+    if (flattenedStringEdit.replaced) {
+      edits.push({ capsule, compiledJs: flattenedStringEdit.source })
+    }
+  }
+
+  return edits
+}
+
+const normalizeFlattenedEditText = (value: string | undefined): string =>
+  String(value ?? '')
+    .replace(/\s+/g, '')
+    .trim()
+    .toLowerCase()
+
+const unescapeJsStringLiteral = (value: string): string =>
+  value.replace(
+    /\\(u\{[0-9a-fA-F]+\}|u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|.)/g,
+    (raw, escaped: string) => {
+      if (escaped === 'n') return '\n'
+      if (escaped === 'r') return '\r'
+      if (escaped === 't') return '\t'
+      if (escaped === 'b') return '\b'
+      if (escaped === 'f') return '\f'
+      if (escaped === 'v') return '\v'
+      if (escaped === '0') return '\0'
+      if (escaped.startsWith('x')) {
+        return String.fromCharCode(parseInt(escaped.slice(1), 16))
+      }
+      if (escaped.startsWith('u{')) {
+        return String.fromCodePoint(parseInt(escaped.slice(2, -1), 16))
+      }
+      if (escaped.startsWith('u')) {
+        return String.fromCharCode(parseInt(escaped.slice(1), 16))
+      }
+      return raw.slice(1)
+    },
+  )
+
+const escapeJsStringLiteralContent = (value: string, quote: string): string =>
+  value
+    .replace(/\\/g, '\\\\')
+    .replace(
+      new RegExp(quote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+      `\\${quote}`,
+    )
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n')
+
+const isJsxTagNameLiteral = (
+  source: string,
+  literal: { start: number; value: string },
+): boolean => {
+  if (!/^[a-z][\w-]*$/.test(literal.value)) return false
+  const prefix = source.slice(Math.max(0, literal.start - 16), literal.start)
+  return /\bjsx[s]?\(\s*$/.test(prefix)
+}
+
+const applyFlattenedStringLiteralEdit = (
+  source: string,
+  beforeText: string | undefined,
+  afterText: string | undefined,
+): { source: string; replaced: boolean } => {
+  const target = normalizeFlattenedEditText(beforeText)
+  if (!source.trim() || !target) return { source, replaced: false }
+
+  const literalPattern = /(["'`])((?:\\[\s\S]|(?!\1)[^\\])*)\1/g
+  const literals: Array<{
+    start: number
+    end: number
+    valueStart: number
+    valueEnd: number
+    quote: string
+    value: string
+  }> = []
+  let match: RegExpExecArray | null
+  while ((match = literalPattern.exec(source)) !== null) {
+    literals.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      valueStart: match.index + 1,
+      valueEnd: match.index + match[0].length - 1,
+      quote: match[1],
+      value: unescapeJsStringLiteral(match[2]),
+    })
+    if (match[0].length === 0) literalPattern.lastIndex += 1
+  }
+
+  for (let startIndex = 0; startIndex < literals.length; startIndex += 1) {
+    let accumulated = ''
+    const matchedLiteralIndexes: number[] = []
+    for (
+      let endIndex = startIndex;
+      endIndex < Math.min(literals.length, startIndex + 10);
+      endIndex += 1
+    ) {
+      const literal = literals[endIndex]
+      if (isJsxTagNameLiteral(source, literal)) continue
+
+      const nextAccumulated =
+        accumulated + normalizeFlattenedEditText(literal.value)
+      if (!target.startsWith(nextAccumulated)) break
+
+      accumulated = nextAccumulated
+      matchedLiteralIndexes.push(endIndex)
+      if (accumulated !== target) continue
+
+      let edited = source
+      for (
+        let index = matchedLiteralIndexes.length - 1;
+        index >= 0;
+        index -= 1
+      ) {
+        const matchedLiteral = literals[matchedLiteralIndexes[index]]
+        const replacement =
+          index === 0
+            ? escapeJsStringLiteralContent(
+                String(afterText ?? ''),
+                matchedLiteral.quote,
+              )
+            : ''
+        edited =
+          edited.slice(0, matchedLiteral.valueStart) +
+          replacement +
+          edited.slice(matchedLiteral.valueEnd)
+      }
+      return { source: edited, replaced: true }
+    }
+  }
+
+  return { source, replaced: false }
 }
 
 export const applyTextEditToCurrentArtifacts = async (
@@ -233,6 +460,7 @@ export const applyTextEditToCurrentArtifacts = async (
   siteSpecJson?: string
   openUiReplaced: boolean
   siteSpecReplaced: boolean
+  aiCapsuleReplaced: boolean
 }> => {
   const [homeModule, siteSpec] = await getCurrentHomeModuleAndSiteSpec(
     ctx,
@@ -242,6 +470,7 @@ export const applyTextEditToCurrentArtifacts = async (
   let siteSpecJson = siteSpec?.specJson ?? siteSpec?.spec
   let openUiReplaced = false
   let siteSpecReplaced = false
+  let aiCapsuleReplaced = false
 
   if (homeModule !== null) {
     const sourceEdit = applyPreviewTextEdit(
@@ -250,18 +479,35 @@ export const applyTextEditToCurrentArtifacts = async (
       afterText,
       occurrenceIndex,
     )
-    if (!sourceEdit.replaced) {
-      return { openUiSource, siteSpecJson, openUiReplaced, siteSpecReplaced }
+    if (sourceEdit.replaced) {
+      openUiReplaced = true
+      openUiSource = sourceEdit.html
+      await ctx.db.patch(homeModule._id, {
+        source: sourceEdit.html,
+        status: 'succeeded',
+        errorMessage: undefined,
+        updatedAt: now,
+      })
     }
+  }
 
-    openUiReplaced = true
-    openUiSource = sourceEdit.html
-    await ctx.db.patch(homeModule._id, {
-      source: sourceEdit.html,
-      status: 'succeeded',
-      errorMessage: undefined,
-      updatedAt: now,
-    })
+  const aiCapsuleEdits = await findAiCapsuleTextEdits(
+    ctx,
+    sessionId,
+    beforeText,
+    afterText,
+    occurrenceIndex,
+  )
+  if (aiCapsuleEdits.length > 0) {
+    aiCapsuleReplaced = true
+    await Promise.all(
+      aiCapsuleEdits.map((edit) =>
+        ctx.db.patch(edit.capsule._id, {
+          compiledJs: edit.compiledJs,
+          updatedAt: now,
+        }),
+      ),
+    )
   }
 
   if (siteSpec !== null && siteSpecJson !== undefined) {
@@ -293,7 +539,13 @@ export const applyTextEditToCurrentArtifacts = async (
     }
   }
 
-  return { openUiSource, siteSpecJson, openUiReplaced, siteSpecReplaced }
+  return {
+    openUiSource,
+    siteSpecJson,
+    openUiReplaced,
+    siteSpecReplaced,
+    aiCapsuleReplaced,
+  }
 }
 
 /**
@@ -406,12 +658,13 @@ export const applySessionEdit = async (
   now: number,
 ) => {
   const sessionId = session._id
-  const patchArgs = await withCanonicalTranslatedBeforeText(
+  const canonicalized = await withCanonicalTranslatedBeforeText(
     ctx,
     session,
     sessionId,
     args,
   )
+  const patchArgs = canonicalized.args
 
   const preview = await ctx.db
     .query('previews')
@@ -432,29 +685,37 @@ export const applySessionEdit = async (
   let openUiSource: string | undefined
   let siteSpecJson: string | undefined
 
+  const isLocaleScopedTranslatedTextEdit =
+    patchArgs.editType === 'text' &&
+    canonicalized.translatedEdit !== undefined &&
+    !canonicalized.patchCanonicalArtifacts
+
   let editedPreview =
     args.afterHtml !== undefined
       ? { html: args.afterHtml, replaced: true }
-      : patchArgs.editType === 'image'
-        ? applyImageSwap(
-            preview.html,
-            patchArgs.beforeText,
-            patchArgs.afterText,
-            patchArgs.occurrenceIndex,
-          )
-        : patchArgs.editType === 'style'
-          ? applyStyleEdit(
+      : isLocaleScopedTranslatedTextEdit
+        ? { html: preview.html, replaced: true }
+        : patchArgs.editType === 'image'
+          ? applyImageSwap(
               preview.html,
               patchArgs.beforeText,
               patchArgs.afterText,
               patchArgs.occurrenceIndex,
             )
-          : applyPreviewTextEdit(
-              preview.html,
-              patchArgs.beforeText,
-              patchArgs.afterText,
-              patchArgs.occurrenceIndex,
-            )
+          : patchArgs.editType === 'style'
+            ? applyStyleEdit(
+                preview.html,
+                patchArgs.beforeText,
+                patchArgs.afterText,
+                patchArgs.occurrenceIndex,
+              )
+            : applyPreviewTextEdit(
+                preview.html,
+                patchArgs.beforeText,
+                patchArgs.afterText,
+                patchArgs.occurrenceIndex,
+                true, // preview.html is genuine HTML — escape literal <, >, & in the replacement
+              )
 
   let sourceAlreadyPatched = false
   if (!editedPreview.replaced) {
@@ -496,6 +757,18 @@ export const applySessionEdit = async (
           openUiSource = sourceEdit.html
         }
       }
+      if (!editedPreview.replaced) {
+        const aiCapsuleEdits = await findAiCapsuleTextEdits(
+          ctx,
+          sessionId,
+          patchArgs.beforeText,
+          patchArgs.afterText,
+          patchArgs.occurrenceIndex,
+        )
+        if (aiCapsuleEdits.length > 0) {
+          editedPreview = { html: preview.html, replaced: true }
+        }
+      }
     }
   }
 
@@ -522,7 +795,8 @@ export const applySessionEdit = async (
   const isTextPatchEdit =
     args.afterHtml === undefined &&
     patchArgs.editType !== 'style' &&
-    patchArgs.editType !== 'image'
+    patchArgs.editType !== 'image' &&
+    !isLocaleScopedTranslatedTextEdit
   const isAiRewriteTextPatchEdit =
     patchArgs.editType === 'ai_rewrite' &&
     args.afterHtml !== undefined &&
@@ -549,7 +823,10 @@ export const applySessionEdit = async (
       now,
       patchArgs.occurrenceIndex,
     )
-    if (!artifactSnapshot.openUiReplaced) {
+    if (
+      !artifactSnapshot.openUiReplaced &&
+      !artifactSnapshot.aiCapsuleReplaced
+    ) {
       throw new ConvexError({
         code: 'TEXT_NOT_FOUND',
         message:
@@ -558,30 +835,38 @@ export const applySessionEdit = async (
     }
     openUiSource = artifactSnapshot.openUiSource
     siteSpecJson = artifactSnapshot.siteSpecJson
+  } else if (isLocaleScopedTranslatedTextEdit) {
+    const artifactSnapshot = await snapshotCurrentArtifacts(ctx, sessionId)
+    openUiSource = artifactSnapshot.openUiSource
+    siteSpecJson = artifactSnapshot.siteSpecJson
   } else {
     const artifactSnapshot = await snapshotCurrentArtifacts(ctx, sessionId)
     openUiSource = artifactSnapshot.openUiSource
     siteSpecJson = artifactSnapshot.siteSpecJson
   }
 
-  if (
-    patchArgs.editType === 'text' &&
-    normalizeComparableText(patchArgs.beforeText) !==
-      normalizeComparableText(args.beforeText)
-  ) {
+  if (patchArgs.editType === 'text') {
+    if (isLocaleScopedTranslatedTextEdit && canonicalized.translatedEdit) {
+      await rememberTranslation(
+        ctx,
+        canonicalized.translatedEdit.locale,
+        canonicalized.translatedEdit.sourceText,
+        patchArgs.afterText,
+        now,
+      )
+    }
     await rememberIdentityTranslation(
       ctx,
       session.preferredLanguage,
       patchArgs.afterText,
       now,
     )
-  }
-
-  if (patchArgs.editType === 'text') {
     await patchTextEditIntoSessionData(
       ctx,
       sessionId,
-      [args.beforeText, patchArgs.beforeText],
+      isLocaleScopedTranslatedTextEdit
+        ? [args.beforeText]
+        : [args.beforeText, patchArgs.beforeText],
       patchArgs.afterText,
       now,
     )
@@ -628,5 +913,13 @@ export const applySessionEdit = async (
     sessionId,
     previewVersion: nextPreviewVersion,
     saved: editedPreview.replaced,
+    translatedEdit:
+      isLocaleScopedTranslatedTextEdit && canonicalized.translatedEdit
+        ? {
+            locale: canonicalized.translatedEdit.locale,
+            sourceText: canonicalized.translatedEdit.sourceText,
+            translation: String(patchArgs.afterText ?? ''),
+          }
+        : undefined,
   }
 }
