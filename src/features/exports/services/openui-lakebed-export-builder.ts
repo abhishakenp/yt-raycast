@@ -3823,15 +3823,43 @@ export function useLakebedAdapter() {
 
 const renderClientComponentModule = (
   component: ClientComponentDefinition,
-): string => `${component.imports.join('\n')}
+): string => {
+  const imports = [...component.imports]
+  let source = component.source
+
+  if (component.name === 'Avatar' || component.name === 'AvatarGroup') {
+    const avatarImportIndex = imports.findIndex((line) =>
+      line.includes("from './ui/avatar.tsx'"),
+    )
+    if (avatarImportIndex >= 0) {
+      imports[avatarImportIndex] = imports[avatarImportIndex]
+        .replace(/\n\s*AvatarImage,\n/, '\n')
+        .replace(/,\s*AvatarImage\s*,/, ',')
+        .replace(/AvatarImage,\s*/, '')
+        .replace(/,\s*AvatarImage/, '')
+    }
+    imports.push('import { Image } from "../lib/image";')
+    source = source
+      .replace(
+        /<AvatarImage\s+src=\{props\.src\}\s+alt=\{props\.alt\}\s*\/>/g,
+        '<Image src={String(props.src)} alt={props.alt ?? props.fallback ?? ""} className="aspect-square size-full" data-slot="avatar-image" />',
+      )
+      .replace(
+        /<AvatarImage\s+src=\{item\.src\}\s+alt=\{item\.alt\}\s*\/>/g,
+        '<Image src={String(item.src)} alt={item.alt ?? item.fallback ?? ""} className="aspect-square size-full" data-slot="avatar-image" />',
+      )
+  }
+
+  return `${imports.join('\n')}
 
 ${component.preludeSources.join('\n\n')}
 
 export const ${toIdentifier(component.name)}Block: (input: {
   props: Record<string, unknown>;
   lakebed: LakebedAdapter;
-}) => ComponentChildren = ${component.source};
+}) => ComponentChildren = ${source};
 `
+}
 
 const renderClientIndex = (
   routes: LakebedRoute[],

@@ -2899,6 +2899,7 @@ const dependencyVersions: Record<string, string> = {
   'radix-ui': '^1.4.3',
   '@tanstack/react-query': '^5.90.19',
   '@shoojs/react': '^0.1.0',
+  'framer-motion': '^12.40.0',
 }
 
 const toDependencyRecord = (names: Iterable<string>): Record<string, string> =>
