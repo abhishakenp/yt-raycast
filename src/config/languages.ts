@@ -73,6 +73,20 @@ export const INDIC_PURE_LANGUAGES: LanguageEntry[] = [
       'in malayalam',
       'malayalam website',
       'malayalam language',
+      // Common misspellings / typos users actually type
+      'malyalam',
+      'malayalm',
+      'malyalm',
+      'malylam',
+      'mallayalam',
+      'malayalm',
+      'in malyalam',
+      'in malayalm',
+      'in malyalm',
+      'in malylam',
+      'in mallayalam',
+      'malyalam website',
+      'malayalm website',
     ],
   },
   {
@@ -354,10 +368,36 @@ const ROMANIZED_PROMPT_LANGUAGE_HINTS: Record<string, string[]> = {
     'okke',
     'cheyyuka',
     'cheyyunna',
+    'cheyyanam',
+    'cheyyaruth',
     'undaakuka',
     'venam',
     'ente',
     'de',
+    'nalla',
+    'namukku',
+    'pinne',
+    'koodi',
+    'paranju',
+    'vannu',
+    'kaanuka',
+    'kelkkuka',
+    'valiya',
+    'sundaram',
+    'shesham',
+    'enthu',
+    'engane',
+    'enthokke',
+    'entha',
+    'eppozhu',
+    'allengil',
+    'aanaal',
+    'veedu',
+    'chorum',
+    'njan',
+    'ningal',
+    'illa',
+    'pani',
   ],
   bn: ['ekta', 'ache', 'korun', 'jonno', 'amar', 'apnar'],
   mr: ['ahe', 'karaycha', 'sathi', 'madhe', 'majha', 'tumcha'],
@@ -479,7 +519,14 @@ export const isTranslatableLocale = (code: unknown): boolean => {
   const c = String(code || '')
     .trim()
     .toLowerCase()
-  if (!c || c === 'en') return false
+  // 'english' shows up as a real preferredLanguage value when a user types
+  // "English" into the custom-language box: there's no "English" entry in
+  // KNOWN_LANGUAGES, so it falls through to AI-resolved custom-language
+  // creation and gets a code like "english" instead of the 'en' sentinel.
+  // Without this, the catch-all ad-hoc-locale regex below treats it as a
+  // real target locale and runs the full LLM translateBatch pipeline asking
+  // to "translate" already-English text into English.
+  if (!c || c === 'en' || c === 'english') return false
   return (
     /^[a-z]{2}$/.test(c) ||
     /^[a-z]{2,8}-latn$/.test(c) ||
@@ -519,12 +566,12 @@ export const preferIndicBcp47FromRomanizedPrompt = (
       .toLowerCase()
       .match(/\b[a-z][a-z']{1,}\b/g) || [],
   )
-  if (words.size < 4) return null
+  if (words.size < 3) return null
 
   let best = null
   for (const [code, hints] of Object.entries(ROMANIZED_PROMPT_LANGUAGE_HINTS)) {
     const hits = hints.filter((hint) => words.has(hint))
-    if (hits.length < 3) continue
+    if (hits.length < 2) continue
     if (!best || hits.length > best.hits) best = { code, hits: hits.length }
   }
   return best ? best.code : null
