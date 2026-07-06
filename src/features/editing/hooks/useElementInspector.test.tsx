@@ -21,6 +21,17 @@ function Harness({
       <section data-testid="hero">
         <h2>Hello world</h2>
         <p>Some paragraph text</p>
+        <a href="/pricing" data-testid="pricing-link">
+          Pricing
+        </a>
+        <img src="/hero.jpg" alt="Hero visual" data-testid="hero-image" />
+        <a href="/gallery" data-testid="linked-image-anchor">
+          <img
+            src="/gallery.jpg"
+            alt="Gallery visual"
+            data-testid="linked-image"
+          />
+        </a>
       </section>
       <div data-testid="card">
         <p>Second card</p>
@@ -58,6 +69,17 @@ const fireClick = (el: Element) => {
       clientY: 10,
     }),
   )
+}
+
+const fireCancelableClick = (el: Element) => {
+  const event = new MouseEvent('click', {
+    bubbles: true,
+    cancelable: true,
+    clientX: 10,
+    clientY: 10,
+  })
+  el.dispatchEvent(event)
+  return event
 }
 
 afterEach(() => {
@@ -167,6 +189,73 @@ describe('useElementInspector — behavioral', () => {
     act(() => {
       fireClick(heading)
     })
+    expect(onSectionSelect).not.toHaveBeenCalled()
+  })
+
+  it('prevents anchor navigation in edit mode while still deferring anchor text to text editing', () => {
+    const onSectionSelect = vi.fn()
+    const { getByTestId } = render(
+      <Harness active={true} onSectionSelect={onSectionSelect} />,
+    )
+    const link = getByTestId('pricing-link')
+
+    let event!: MouseEvent
+    act(() => {
+      event = fireCancelableClick(link)
+    })
+
+    expect(event.defaultPrevented).toBe(true)
+    expect(onSectionSelect).not.toHaveBeenCalled()
+  })
+
+  it('commits selection when clicking a container that contains an image', () => {
+    const onSectionSelect =
+      vi.fn<(selection: InspectorSelection | null) => void>()
+    const { getByTestId } = render(
+      <Harness active={true} onSectionSelect={onSectionSelect} />,
+    )
+    const hero = getByTestId('hero')
+
+    act(() => {
+      fireClick(hero)
+    })
+
+    expect(onSectionSelect).toHaveBeenCalledTimes(1)
+    expect(onSectionSelect.mock.calls[0]?.[0]).toMatchObject({
+      tag: 'section',
+      textContent: expect.stringContaining('Hello world'),
+    })
+  })
+
+  it('does NOT call onSectionSelect when clicking the image itself', () => {
+    const onSectionSelect =
+      vi.fn<(selection: InspectorSelection | null) => void>()
+    const { getByTestId } = render(
+      <Harness active={true} onSectionSelect={onSectionSelect} />,
+    )
+    const image = getByTestId('hero-image')
+
+    act(() => {
+      fireClick(image)
+    })
+
+    expect(onSectionSelect).not.toHaveBeenCalled()
+  })
+
+  it('prevents navigation but still defers linked image clicks to image editing', () => {
+    const onSectionSelect =
+      vi.fn<(selection: InspectorSelection | null) => void>()
+    const { getByTestId } = render(
+      <Harness active={true} onSectionSelect={onSectionSelect} />,
+    )
+    const linkedImage = getByTestId('linked-image')
+
+    let event!: MouseEvent
+    act(() => {
+      event = fireCancelableClick(linkedImage)
+    })
+
+    expect(event.defaultPrevented).toBe(true)
     expect(onSectionSelect).not.toHaveBeenCalled()
   })
 

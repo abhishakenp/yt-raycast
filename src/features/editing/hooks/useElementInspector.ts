@@ -107,13 +107,14 @@ export function useElementInspector(
       if (!(target instanceof HTMLElement) || !container.contains(target)) {
         return
       }
-      // Image → let useTextEdit handle image swap.
+      const link = target.closest('a[href]')
+      if (link && container.contains(link)) {
+        e.preventDefault()
+      }
+      // Direct image click → let useTextEdit handle image swap. Containers
+      // with descendant images still need to be selectable for section tools.
       const tag = target.tagName.toLowerCase()
-      const imgEl =
-        tag === 'img'
-          ? (target as HTMLImageElement)
-          : (target.querySelector('img') as HTMLImageElement | null)
-      if (imgEl) return
+      if (tag === 'img') return
       // Editable text leaf → let useTextEdit handle contentEditable editing.
       if (findTextElement(target)) return
       // Section / container → commit selection for the AI-patch path.

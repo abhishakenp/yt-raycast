@@ -56,6 +56,65 @@ describe('buildInspectorSelection', () => {
     expect(card.getAttribute('style')).toBeNull()
   })
 
+  it('omits temporary inline editor artifacts from AI selection HTML without mutating the live element', () => {
+    const root = document.createElement('div')
+    root.innerHTML = `
+      <section data-openui-component="FashionHero" data-openui-var="home_hero">
+        <h1
+          class="hero-title"
+          contenteditable="true"
+          data-ship-fast-inline-editing="true"
+          style="color: rgb(255, 0, 0); outline: 2px solid hsl(var(--primary)); outline-offset: 2px; cursor: text;"
+        >
+          Dreamy Pastel Delight<br contenteditable="false">
+        </h1>
+      </section>
+    `
+    const heading = queryHTMLElement(root, 'h1')
+    const before = heading.outerHTML
+
+    const selection = buildInspectorSelection(root, heading)
+
+    expect(selection.outerHTML).toContain('class="hero-title"')
+    expect(selection.outerHTML).toContain('color: rgb(255, 0, 0)')
+    expect(selection.outerHTML).not.toContain('contenteditable')
+    expect(selection.outerHTML).not.toContain('data-ship-fast-inline-editing')
+    expect(selection.outerHTML).not.toContain('outline')
+    expect(selection.outerHTML).not.toContain('cursor: text')
+    expect(heading.outerHTML).toBe(before)
+    expect(heading.getAttribute('contenteditable')).toBe('true')
+    expect(heading.dataset.shipFastInlineEditing).toBe('true')
+  })
+
+  it('omits transient translation shimmer artifacts from AI selection HTML without mutating the live element', () => {
+    const root = document.createElement('div')
+    root.innerHTML = `
+      <section data-openui-component="FashionHero" data-openui-var="home_hero">
+        <h1
+          class="hero-title shimmer text-muted-foreground"
+          style="background-image: linear-gradient(90deg, transparent, currentColor); background-clip: text; -webkit-background-clip: text; color: transparent;"
+        >
+          Dreamy Pastel Delight
+        </h1>
+      </section>
+    `
+    const heading = queryHTMLElement(root, 'h1')
+    const before = heading.outerHTML
+
+    const selection = buildInspectorSelection(root, heading)
+
+    expect(selection.outerHTML).toContain('class="hero-title"')
+    expect(selection.outerHTML).not.toContain('shimmer')
+    expect(selection.outerHTML).not.toContain('text-muted-foreground')
+    expect(selection.outerHTML).not.toContain('background-image')
+    expect(selection.outerHTML).not.toContain('background-clip')
+    expect(selection.outerHTML).not.toContain('color: transparent')
+    expect(heading.outerHTML).toBe(before)
+    expect(heading.classList.contains('shimmer')).toBe(true)
+    expect(heading.classList.contains('text-muted-foreground')).toBe(true)
+    expect(heading.style.color).toBe('transparent')
+  })
+
   it('truncates long text content to 500 chars and collapses whitespace', () => {
     const root = document.createElement('div')
     const p = document.createElement('p')
@@ -100,6 +159,46 @@ describe('buildInspectorSelection', () => {
     const selection = buildInspectorSelection(root, card)
     expect(selection.openuiComponent).toBeUndefined()
     expect(selection.openuiVar).toBeUndefined()
+  })
+
+  it('extracts the exported page label from the nearest data-sf-export-page ancestor', () => {
+    const root = document.createElement('div')
+    root.innerHTML = `
+      <section data-sf-export-page="Home">
+        <h1>Home hero</h1>
+      </section>
+      <section data-sf-export-page="Lookbook">
+        <main>
+          <h1>Lookbook hero</h1>
+        </main>
+      </section>
+    `
+    const heading = queryHTMLElement(
+      root,
+      'section[data-sf-export-page="Lookbook"] h1',
+    )
+
+    const selection = buildInspectorSelection(root, heading)
+
+    expect(selection.pageLabel).toBe('Lookbook')
+  })
+
+  it('extracts a durable section anchor from the nearest editable section ancestor', () => {
+    const root = document.createElement('div')
+    root.innerHTML = `
+      <main>
+        <section id="newsletter_newsletter" class="py-24">
+          <div>
+            <h2 class="section-title">Join the newsletter</h2>
+          </div>
+        </section>
+      </main>
+    `
+    const heading = queryHTMLElement(root, 'h2')
+
+    const selection = buildInspectorSelection(root, heading)
+
+    expect(selection.sectionAnchor).toBe('#newsletter_newsletter')
   })
 
   it('handles data-openui-var being absent while data-openui-component is present', () => {

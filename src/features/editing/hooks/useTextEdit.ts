@@ -5,6 +5,18 @@ interface CapturedTextNode {
   value: string
 }
 
+interface TemporaryEditingStyleSnapshot {
+  cursor: string
+  outline: string
+  outlineOffset: string
+}
+
+export interface TextEditChange {
+  oldText: string
+  newText: string
+  originalNodeIndex?: number
+}
+
 export interface TextEditState {
   element: HTMLElement
   originalText: string
@@ -17,6 +29,8 @@ export interface TextEditState {
    *  to prevent the user from accidentally deleting non-text content like SVG
    *  icons or images. Cleaned up in cleanupElement. */
   lockedChildren?: HTMLElement[]
+  /** Inline styles overwritten only as temporary editing affordances. */
+  temporaryStyle?: TemporaryEditingStyleSnapshot
 }
 
 /** Collect every Text node under `el` in document order (including those nested
@@ -58,18 +72,38 @@ function computeOccurrenceIndex(
   }
 }
 
+function computeOccurrenceIndexWithinOriginalNodes(
+  active: TextEditState,
+  target: string,
+  originalNodeIndex: number | undefined,
+): number {
+  if (!target || originalNodeIndex === undefined) return 0
+  let count = 0
+  for (
+    let nodeIndex = 0;
+    nodeIndex < Math.min(originalNodeIndex, active.originalNodes.length);
+    nodeIndex += 1
+  ) {
+    const value = active.originalNodes[nodeIndex].value
+    let at = value.indexOf(target)
+    while (at !== -1) {
+      count += 1
+      at = value.indexOf(target, at + target.length)
+    }
+  }
+  return count
+}
+
 /** Diff the element's current text nodes against the snapshot taken at
  *  activation and return one change per modified node. Preserves structure:
  *  a node's value changes, the surrounding <br>/<span>/etc. do not. Falls back
  *  to a minimal diff of the flattened textContent when node structure changed
  *  (e.g. user deleted across a <br>, merging nodes).
  *  Exported for testing. */
-export function diffEdits(
-  active: TextEditState,
-): Array<{ oldText: string; newText: string }> {
+export function diffEdits(active: TextEditState): TextEditChange[] {
   const current = collectTextNodes(active.element)
   if (current.length === active.originalNodes.length) {
-    const changes: Array<{ oldText: string; newText: string }> = []
+    const changes: TextEditChange[] = []
     for (let i = 0; i < current.length; i += 1) {
       const oldText = active.originalNodes[i].value
       const newText = current[i].nodeValue ?? ''
@@ -79,7 +113,7 @@ export function diffEdits(
         // Allow empty newText (deletion) but skip whitespace-only changes.
         (newText.length === 0 || newText.trim())
       ) {
-        changes.push({ oldText, newText })
+        changes.push({ oldText, newText, originalNodeIndex: i })
       }
     }
     return changes
@@ -118,6 +152,24 @@ export function diffEdits(
     if (oldMid.trim() && oldMid.length < oldText.length) {
       return [{ oldText: oldMid, newText: newMid }]
     }
+    const originalTextRuns = active.originalNodes
+      .map((node) => node.value)
+      .filter((value) => value.trim())
+    if (
+      oldMid.trim() &&
+      newMid.trim() &&
+      originalTextRuns.length > 1 &&
+      collectTextNodes(active.element).length === 1
+    ) {
+      const [firstRun, ...remainingRuns] = originalTextRuns
+      return [
+        { oldText: firstRun, newText: newMid },
+        ...remainingRuns.map((runText) => ({
+          oldText: runText,
+          newText: '',
+        })),
+      ]
+    }
     return [{ oldText, newText }]
   }
   return []
@@ -147,9 +199,17 @@ export function useTextEdit(
   const blurRafRef = useRef<number | null>(null)
   const finishEditRef = useRef<() => void>(() => {})
   const cancelEditRef = useRef<() => void>(() => {})
+  const editModeRef = useRef(editMode)
   callbackRef.current = onTextChange
   imageCallbackRef.current = onImageChange
   elementActivateCallbackRef.current = onElementActivate
+
+  useEffect(() => {
+    editModeRef.current = editMode
+    if (!editMode) {
+      cancelEditRef.current()
+    }
+  }, [editMode])
 
   useEffect(() => {
     const container = containerRef.current
@@ -165,18 +225,28 @@ export function useTextEdit(
       activeEditRef.current = null
 
       const changes = diffEdits(active)
-      cleanupElement(active.element, active.lockedChildren)
+      cleanupElement(
+        active.element,
+        active.lockedChildren,
+        active.temporaryStyle,
+      )
       for (const change of changes) {
         const occurrenceIndex = computeOccurrenceIndex(
           container,
           active.element,
           change.oldText,
         )
+        const occurrenceIndexWithinElement =
+          computeOccurrenceIndexWithinOriginalNodes(
+            active,
+            change.oldText,
+            change.originalNodeIndex,
+          )
         callbackRef.current({
           oldText: change.oldText,
           newText: change.newText,
           element: active.element,
-          occurrenceIndex,
+          occurrenceIndex: occurrenceIndex + occurrenceIndexWithinElement,
         })
       }
     }
@@ -196,12 +266,16 @@ export function useTextEdit(
       } else {
         active.element.textContent = active.originalText
       }
-      cleanupElement(active.element, active.lockedChildren)
+      cleanupElement(
+        active.element,
+        active.lockedChildren,
+        active.temporaryStyle,
+      )
     }
     cancelEditRef.current = cancelEdit
 
     const handleClick = (e: MouseEvent) => {
-      if (!editMode) return
+      if (!editModeRef.current) return
 
       const target = e.target as HTMLElement
 
@@ -250,6 +324,11 @@ export function useTextEdit(
 
       textEl.contentEditable = 'true'
       textEl.dataset.shipFastInlineEditing = 'true'
+      const temporaryStyle: TemporaryEditingStyleSnapshot = {
+        cursor: textEl.style.cursor,
+        outline: textEl.style.outline,
+        outlineOffset: textEl.style.outlineOffset,
+      }
       // Lock non-text children (SVG icons, images) so the user can't
       // accidentally delete them while editing the text.
       const lockedChildren = lockNonTextChildren(textEl)
@@ -290,6 +369,7 @@ export function useTextEdit(
           value: node.nodeValue ?? '',
         })),
         lockedChildren,
+        temporaryStyle,
       }
 
       e.stopPropagation()
@@ -325,6 +405,20 @@ export function useTextEdit(
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        activeEditRef.current &&
+        (e.ctrlKey || e.metaKey) &&
+        !e.altKey &&
+        e.key.toLowerCase() === 'a'
+      ) {
+        e.preventDefault()
+        const range = document.createRange()
+        range.selectNodeContents(activeEditRef.current.element)
+        const sel = window.getSelection()
+        sel?.removeAllRanges()
+        sel?.addRange(range)
+        return
+      }
       if (e.key === ' ' && activeEditRef.current) {
         // Prevent the button's native Space activation (which fires a click on
         // keyup and doesn't insert a space character). Manually insert the space
@@ -468,7 +562,7 @@ export function useTextEdit(
       }
       finishEdit()
     }
-  }, [containerRef, editMode])
+  }, [containerRef])
 
   return {
     commitEdit: () => finishEditRef.current(),
@@ -674,7 +768,11 @@ export function isEditableTextLeaf(el: HTMLElement): boolean {
   return !el.querySelector(BLOCK_CHILD_SELECTOR)
 }
 
-function cleanupElement(el: HTMLElement, lockedChildren?: HTMLElement[]) {
+function cleanupElement(
+  el: HTMLElement,
+  lockedChildren?: HTMLElement[],
+  temporaryStyle?: TemporaryEditingStyleSnapshot,
+) {
   // Remove the attribute (not just reset the property) so it never leaks into
   // the serialized afterHtml payload that gets persisted as preview.html.
   el.removeAttribute('contenteditable')
@@ -683,9 +781,12 @@ function cleanupElement(el: HTMLElement, lockedChildren?: HTMLElement[]) {
   if (lockedChildren) {
     unlockNonTextChildren(lockedChildren)
   }
-  el.style.outline = ''
-  el.style.outlineOffset = ''
-  el.style.cursor = ''
+  el.style.outline = temporaryStyle?.outline ?? ''
+  el.style.outlineOffset = temporaryStyle?.outlineOffset ?? ''
+  el.style.cursor = temporaryStyle?.cursor ?? ''
+  if (!el.getAttribute('style')?.trim()) {
+    el.removeAttribute('style')
+  }
 }
 
 /** Revert an element's text to oldText without destroying non-text
