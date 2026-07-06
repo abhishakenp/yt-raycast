@@ -281,6 +281,10 @@ const ignoredSourceBareImports = new Set([
   '@openuidev/react-lang',
   'zod',
   'zod/v4',
+  // Provided as a real npm dependency in exports (see dependencyVersions in
+  // openui-export-builder.ts) and resolved by vite in the preview runtime —
+  // never vendored as source.
+  'framer-motion',
 ])
 
 const vendorSourceManifest = {}
