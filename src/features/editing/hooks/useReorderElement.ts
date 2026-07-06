@@ -2,9 +2,8 @@ import { useMutation } from 'convex/react'
 import { useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
-import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
-import { reorderInStack } from '../lib/reorder-source'
+import { buildSectionMoveCommand } from '../lib/inline-edit-commands'
 
 interface UseReorderElementArgs {
   sessionId: string | undefined
@@ -34,29 +33,24 @@ export function useReorderElement({
         return false
       }
 
-      const result = reorderInStack(source, varName, direction)
-      if (!result.reordered) {
-        setReorderError(
-          direction === 'up'
-            ? 'Element is already at the top'
-            : 'Element is already at the bottom',
-        )
-        return false
-      }
-
       const anonymousOwnerSecret =
         typeof window === 'undefined'
           ? undefined
           : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
-      await createEdit({
-        sessionId: sessionId as Id<'sessions'>,
-        anonymousOwnerSecret,
-        editType: 'ai_rewrite',
-        targetLabel: `reorder ${varName} ${direction}`,
-        afterHtml: result.source,
-        instruction: `reorder ${varName} ${direction}`,
-      })
+      const command = buildSectionMoveCommand(
+        {
+          varName,
+          direction,
+        },
+        {
+          sessionId,
+          anonymousOwnerSecret,
+          currentSource: source,
+        },
+      )
+
+      await createEdit(command.args)
 
       return true
     } catch (error) {

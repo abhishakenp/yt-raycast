@@ -37,7 +37,7 @@ describe('useUndoRedo (behavioral)', () => {
     expect(result.current.canRedo).toBe(false)
   })
 
-  it('3. undo: pops undo, pushes to redo, calls restoreVersion', async () => {
+  it("3. undo: pops undo, pushes to redo, calls restoreVersion with the pre-edit version (regression: previously restored to the edit's own version, i.e. currentVersion — a no-op)", async () => {
     const restoreVersion = vi.fn(async (v: number) => {
       void v
     })
@@ -51,8 +51,9 @@ describe('useUndoRedo (behavioral)', () => {
     await act(async () => {
       await result.current.undo()
     })
-    // popped top of undo stack (v2) → restore to v2
-    expect(restoreVersion).toHaveBeenCalledWith(2)
+    // Latest edit produced v2 (currentVersion) — undoing it must restore
+    // v1, the state right before that edit.
+    expect(restoreVersion).toHaveBeenCalledWith(1)
     expect(result.current.canRedo).toBe(true)
   })
 

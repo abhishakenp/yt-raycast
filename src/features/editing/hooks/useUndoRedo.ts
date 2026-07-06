@@ -50,26 +50,28 @@ export function useUndoRedo(controller: UndoRedoController) {
   const prevEditsLengthRef = useRef(edits.length)
   const initializedRef = useRef(false)
 
-  // Initialize undo stack from edits on first run
+  // Initialize undo stack from edits on first run. Push the version BEFORE
+  // each edit (previewVersion - 1) — the state undo should land on —, not
+  // the edit's own previewVersion, which equals currentVersion for the most
+  // recent edit and would make undo a no-op (restoring the version you're
+  // already viewing). Edits are newest-first; sort ascending so the most
+  // recent edit's target sits on top of the stack.
   if (!initializedRef.current && edits.length > 0) {
-    // Edits are newest-first. Push all edit versions onto undo stack
-    // in order (oldest first = bottom of stack, newest = top).
-    // The undo stack should contain versions we can go back to.
-    // We push them so the most recent edit is at the top.
-    const editVersions = edits
-      .map((e) => e.previewVersion)
+    const targetVersions = edits
+      .map((e) => e.previewVersion - 1)
       .sort((a, b) => a - b)
-    undoStackRef.current = editVersions
-    setUndoStackSize(editVersions.length)
+    undoStackRef.current = targetVersions
+    setUndoStackSize(targetVersions.length)
     initializedRef.current = true
-  }
-
-  // Detect new edits (edits list grew)
-  if (edits.length > prevEditsLengthRef.current) {
-    // New edit(s) appeared — push the newest edit version onto undo stack
-    const newestVersion = edits[0]?.previewVersion
-    if (newestVersion !== undefined) {
-      undoStackRef.current = [...undoStackRef.current, newestVersion]
+  } else if (edits.length > prevEditsLengthRef.current) {
+    // Detect new edits (edits list grew) after initialization — push the
+    // newest edit's pre-edit target version onto the undo stack. This is
+    // an `else if` against the init branch above: both conditions can be
+    // true on the SAME render for the empty→populated transition (a fresh
+    // session's very first edit), and firing both would double-push.
+    const newestTargetVersion = edits[0]?.previewVersion
+    if (newestTargetVersion !== undefined) {
+      undoStackRef.current = [...undoStackRef.current, newestTargetVersion - 1]
     }
     // Clear redo stack
     redoStackRef.current = []

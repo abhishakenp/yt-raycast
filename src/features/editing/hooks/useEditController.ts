@@ -5,6 +5,17 @@ import { useRef, useState } from 'react'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { buildCreateEditCommand } from '@/features/editing/lib/inline-edit-commands'
+import { setCachedTranslation } from '@/island/openui/_providers/translation'
+
+type CreateEditResult = {
+  saved?: boolean
+  translatedEdit?: {
+    locale?: string
+    sourceText?: string
+    translation?: string
+  }
+} | null
 
 export const useEditController = (sessionId: string) => {
   const navigate = useNavigate()
@@ -71,21 +82,44 @@ export const useEditController = (sessionId: string) => {
           ? undefined
           : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
+      const command = buildCreateEditCommand(
+        {
+          editType,
+          targetLabel,
+          beforeText,
+          afterText,
+          afterHtml,
+          instruction,
+          occurrenceIndex,
+        },
+        {
+          sessionId,
+          anonymousOwnerSecret,
+        },
+      )
+
       const result = (await createEdit({
-        sessionId: sessionId as Id<'sessions'>,
+        ...command.args,
         anonymousOwnerSecret,
-        editType,
-        targetLabel,
-        beforeText,
-        afterText,
-        afterHtml,
-        instruction,
-        occurrenceIndex,
-      })) as { saved?: boolean } | null
+      })) as CreateEditResult
 
       if (result?.saved === false) {
         throw new Error(
           'Selected text was not found in the current preview. Select a smaller text block and try again.',
+        )
+      }
+
+      const translatedEdit = result?.translatedEdit
+      if (
+        translatedEdit &&
+        typeof translatedEdit.locale === 'string' &&
+        typeof translatedEdit.sourceText === 'string' &&
+        typeof translatedEdit.translation === 'string'
+      ) {
+        setCachedTranslation(
+          translatedEdit.locale,
+          translatedEdit.sourceText,
+          translatedEdit.translation,
         )
       }
 

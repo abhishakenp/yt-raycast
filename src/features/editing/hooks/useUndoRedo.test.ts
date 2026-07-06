@@ -48,7 +48,7 @@ describe('useUndoRedo', () => {
     expect(result.current.canRedo).toBe(false)
   })
 
-  it('undo calls restoreVersion with the most recent edit version', async () => {
+  it('undo calls restoreVersion with the version BEFORE the most recent edit (regression: previously restored to the version the edit itself produced, i.e. the current version — a pure no-op)', async () => {
     const restoreVersion = vi.fn(async (v: number) => {
       void v
     })
@@ -61,8 +61,10 @@ describe('useUndoRedo', () => {
     await act(async () => {
       await result.current.undo()
     })
-    // Undo stack was [1, 2], pop 2 → restore to v2
-    expect(restoreVersion).toHaveBeenCalledWith(2)
+    // The latest edit produced v2 (currentVersion), so undoing it must
+    // restore v1 — the state that existed right before that edit, not v2
+    // itself (which would leave the page unchanged).
+    expect(restoreVersion).toHaveBeenCalledWith(1)
   })
 
   it('undo enables canRedo', async () => {
@@ -92,11 +94,12 @@ describe('useUndoRedo', () => {
       restoreVersion,
     })
     const { result } = renderHook(() => useUndoRedo(ctrl))
-    // Undo: pop v2 from undoStack, push currentVersion (2) onto redoStack
+    // Undo: pop v1 (the version before the latest edit), push
+    // currentVersion (2) onto redoStack
     await act(async () => {
       await result.current.undo()
     })
-    expect(restoreVersion).toHaveBeenLastCalledWith(2)
+    expect(restoreVersion).toHaveBeenLastCalledWith(1)
     // Redo: pop v2 from redoStack, restore to v2
     await act(async () => {
       await result.current.redo()
@@ -167,17 +170,18 @@ describe('useUndoRedo', () => {
       restoreVersion,
     }
     const { result } = renderHook(() => useUndoRedo(ctrl))
-    // Undo stack initialized to [1, 2, 3]
-    // Undo: pop 3, push currentVersion(3) onto redo, restore to 3
-    await act(async () => {
-      await result.current.undo()
-    })
-    expect(restoreVersion).toHaveBeenLastCalledWith(3)
-    // Undo: pop 2, push currentVersion(4) onto redo, restore to 2
+    // Undo stack initialized to the PRE-edit versions [0, 1, 2] (one less
+    // than each edit's own previewVersion [1, 2, 3]) — see regression above.
+    // Undo: pop 2, push currentVersion(3) onto redo, restore to 2
     await act(async () => {
       await result.current.undo()
     })
     expect(restoreVersion).toHaveBeenLastCalledWith(2)
+    // Undo: pop 1, push currentVersion(4) onto redo, restore to 1
+    await act(async () => {
+      await result.current.undo()
+    })
+    expect(restoreVersion).toHaveBeenLastCalledWith(1)
     // Redo: pop 4 from redo, restore to 4
     await act(async () => {
       await result.current.redo()
@@ -189,5 +193,41 @@ describe('useUndoRedo', () => {
     })
     expect(restoreVersion).toHaveBeenLastCalledWith(3)
     expect(result.current.canRedo).toBe(false)
+  })
+
+  it("does not double-push the undo stack when edits transition from empty to populated in one update (regression: separate init and growth-detection blocks both fired on the same render, so a session's very first edit required TWO undo clicks to exhaust the stack instead of one)", async () => {
+    const restoreVersion = vi.fn(async (v: number) => {
+      void v
+    })
+    const { result, rerender } = renderHook(
+      (ctrl: ReturnType<typeof makeController>) => useUndoRedo(ctrl),
+      {
+        initialProps: makeController({
+          edits: [],
+          history: [],
+          restoreVersion,
+        }),
+      },
+    )
+    expect(result.current.canUndo).toBe(false)
+
+    rerender(
+      makeController({
+        edits: [{ previewVersion: 2 }],
+        history: [{ version: 1 }, { version: 2 }],
+        restoreVersion,
+      }),
+    )
+    expect(result.current.canUndo).toBe(true)
+
+    await act(async () => {
+      await result.current.undo()
+    })
+
+    // A single edit means a single undo step — the stack must be exhausted
+    // after exactly one undo() call, not require a second to clear a
+    // duplicate entry.
+    expect(restoreVersion).toHaveBeenCalledTimes(1)
+    expect(result.current.canUndo).toBe(false)
   })
 })

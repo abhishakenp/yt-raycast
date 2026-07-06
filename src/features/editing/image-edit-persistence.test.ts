@@ -18,7 +18,7 @@ import { Image } from '../../../packages/ship-fast-blocks/src/lib/img'
  * - Occurrence index disambiguates images sharing the same alt
  * - Image edits do NOT patch homeModule.source (unlike text edits) — they
  *   are reapplied client-side via imageOverrides → ImageContextProvider
- * - Override priority: explicit src prop > override > Pexels lookup
+ * - Override priority: matching override by alt or current src > explicit src prop > Pexels lookup
  */
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -219,6 +219,43 @@ describe('image edit persistence: Image component override reapply', () => {
       }),
     )
     expect(markup).toContain('src="https://cdn.example.com/override.jpg"')
+    expect(markup).not.toContain('/api/pexels')
+  })
+
+  it('uses an override keyed by the current src when the image alt is not stable enough', () => {
+    const currentSrc =
+      '/api/pexels?query=glass+polished+showcase+installations&w=800&h=600&seed=Showcase+of+polished+glass+installations'
+    const overrideSrc =
+      'https://images.pexels.com/photos/7195588/pexels-photo-7195588.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
+
+    const markup = renderToStaticMarkup(
+      createElement(Image, {
+        alt: 'Showcase of polished glass installations',
+        src: currentSrc,
+        context: {
+          overrides: { [currentSrc]: overrideSrc },
+        },
+      }),
+    )
+
+    expect(markup).toContain(`src="${overrideSrc.replace(/&/g, '&amp;')}"`)
+    expect(markup).not.toContain(currentSrc.replace(/&/g, '&amp;'))
+  })
+
+  it('keeps an explicit src when no alt or src override matches', () => {
+    const currentSrc = 'https://cdn.example.com/original.jpg'
+    const markup = renderToStaticMarkup(
+      createElement(Image, {
+        alt: 'Stable hero',
+        src: currentSrc,
+        context: {
+          overrides: { 'Other hero': 'https://cdn.example.com/other.jpg' },
+        },
+      }),
+    )
+
+    expect(markup).toContain(`src="${currentSrc}"`)
+    expect(markup).not.toContain('https://cdn.example.com/other.jpg')
     expect(markup).not.toContain('/api/pexels')
   })
 

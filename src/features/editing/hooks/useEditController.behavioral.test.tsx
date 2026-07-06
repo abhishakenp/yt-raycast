@@ -32,6 +32,12 @@ vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
   readAnonymousOwnerSecret: () => 'owner-secret',
 }))
 
+const mockSetCachedTranslation = vi.hoisted(() => vi.fn())
+
+vi.mock('@/island/openui/_providers/translation', () => ({
+  setCachedTranslation: mockSetCachedTranslation,
+}))
+
 // Mock the API object so useMutation can read __name off each query reference.
 vi.mock('../../../../convex/_generated/api', () => ({
   api: {
@@ -126,6 +132,34 @@ describe('useEditController (behavioral)', () => {
     expect(editResult).toBe(true)
     expect(result.current.editError).toBeUndefined()
     expect(result.current.isEditing).toBe(false)
+  })
+
+  it('refreshes the browser translation cache when a translated inline edit is saved', async () => {
+    mockCreateEdit.mockResolvedValueOnce({
+      saved: true,
+      translatedEdit: {
+        locale: 'hi',
+        sourceText: 'Original English headline',
+        translation: 'अपडेट किया गया शीर्षक',
+      },
+    })
+    const { result } = renderHook(() => useEditController(SESSION_ID))
+
+    await act(async () => {
+      await result.current.applyEdit(
+        'text',
+        'Hero headline',
+        'मूल अंग्रेज़ी शीर्षक',
+        'अपडेट किया गया शीर्षक',
+        'inline edit',
+      )
+    })
+
+    expect(mockSetCachedTranslation).toHaveBeenCalledWith(
+      'hi',
+      'Original English headline',
+      'अपडेट किया गया शीर्षक',
+    )
   })
 
   // 2. TEXT_NOT_FOUND error
@@ -307,6 +341,70 @@ describe('useEditController (behavioral)', () => {
     expect(mockCreateEdit.mock.calls[1][0].editType).toBe('style')
     expect(mockCreateEdit.mock.calls[2][0].editType).toBe('image')
     expect(mockCreateEdit.mock.calls[3][0].editType).toBe('ai_rewrite')
+  })
+
+  it('8b. style clear edits with an empty style string are persisted when the edit has an instruction', async () => {
+    mockCreateEdit.mockResolvedValueOnce({ saved: true })
+    const { result } = renderHook(() => useEditController(SESSION_ID))
+
+    let editResult: unknown
+    await act(async () => {
+      editResult = await result.current.applyEdit(
+        'style',
+        'SECTION: Hero…',
+        '[data-openui-var="home_hero"]',
+        '',
+        'inline style',
+        undefined,
+        0,
+      )
+    })
+
+    expect(editResult).toBe(true)
+    expect(mockCreateEdit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionId: SESSION_ID,
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'style',
+        targetLabel: 'SECTION: Hero…',
+        beforeText: '[data-openui-var="home_hero"]',
+        afterText: '',
+        instruction: 'inline style',
+        occurrenceIndex: 0,
+      }),
+    )
+  })
+
+  it('8c. image removal edits with an empty replacement are persisted when the edit has an instruction', async () => {
+    mockCreateEdit.mockResolvedValueOnce({ saved: true })
+    const { result } = renderHook(() => useEditController(SESSION_ID))
+
+    let editResult: unknown
+    await act(async () => {
+      editResult = await result.current.applyEdit(
+        'image',
+        'IMG: Hero…',
+        'Hero alt',
+        '',
+        'remove image',
+        undefined,
+        2,
+      )
+    })
+
+    expect(editResult).toBe(true)
+    expect(mockCreateEdit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionId: SESSION_ID,
+        anonymousOwnerSecret: 'owner-secret',
+        editType: 'image',
+        targetLabel: 'IMG: Hero…',
+        beforeText: 'Hero alt',
+        afterText: '',
+        instruction: 'remove image',
+        occurrenceIndex: 2,
+      }),
+    )
   })
 
   // 9. isEditing true while mutation pending
