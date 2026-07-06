@@ -157,21 +157,71 @@ function makeSeededRng(seed: string): () => number {
 const pick = <T>(rng: () => number, xs: readonly T[]): T =>
   xs[Math.min(xs.length - 1, Math.floor(rng() * xs.length))]
 
+// ─── Brand extraction ───────────────────────────────────────────────────────
+// The LLM extracts the brand in the first-pass superagent call (zero extra
+// cost — same call that picks the vertical and authors content). This minimal
+// fallback is ONLY used when:
+//   1. The free-form app path runs (no superagent call)
+//   2. The LLM omits the "brand" field from its JSON response
+//   3. An old cache entry has no brand
+// It just grabs the first few meaningful words from the prompt — no heuristics.
+
+const BRAND_FALLBACK_STOP = new Set([
+  'a',
+  'an',
+  'the',
+  'for',
+  'with',
+  'about',
+  'to',
+  'of',
+  'in',
+  'on',
+  'and',
+  'or',
+  'my',
+  'your',
+  'our',
+  'is',
+  'are',
+  'was',
+  'were',
+  'be',
+  'i',
+  'want',
+  'need',
+  'build',
+  'make',
+  'create',
+  'generate',
+  'website',
+  'site',
+  'app',
+  'page',
+  'landing',
+  'homepage',
+  'called',
+  'named',
+  'that',
+  'this',
+  'should',
+  'have',
+  'has',
+  'will',
+  'would',
+  'can',
+  'could',
+])
+
 export function brandFromPrompt(prompt: string): string {
-  const cleaned = prompt
-    .replace(/https?:\/\/\S+/g, ' ')
-    .replace(/[^A-Za-z0-9 ]+/g, ' ')
+  const words = String(prompt || '')
+    .replace(/[^\p{L}\p{N}&'\u2019-]+/gu, ' ')
     .split(/\s+/)
-    .filter(
-      (w) =>
-        w.length > 2 &&
-        !/^(the|and|for|with|about|site|shop|store|make|build|app|website)$/i.test(
-          w,
-        ),
-    )
+    .filter((w) => w.length >= 2 && !BRAND_FALLBACK_STOP.has(w.toLowerCase()))
     .slice(0, 2)
-  if (cleaned.length === 0) return 'Studio'
-  return cleaned.map((w) => w[0].toUpperCase() + w.slice(1)).join(' ')
+  if (words.length === 0) return 'Studio'
+  if (words.every((w) => /^\d+$/.test(w))) return 'Studio'
+  return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
 
 function classifySystem(): string {
@@ -252,11 +302,17 @@ const LANG_NAMES: Record<string, string> = {
 function localeDirective(locale?: string): string {
   if (!locale || locale === 'en') return ''
   const name = LANG_NAMES[locale] ?? locale
-  return ` Write ALL user-visible content (headings, copy, labels, button text, item names) in ${name} (${locale}). Keep JSON keys, component names, and URLs/paths unchanged and in ASCII.`
+  return ` Write ALL user-visible content (headings, copy, labels, button text, item names, person names in testimonials) in ${name} (${locale}). Keep JSON keys, component names, and URLs/paths unchanged and in ASCII.`
 }
 
 function composeSystem(locale?: string): string {
-  return `You author website content as JSON. You are given a page's section list with each section's component signature. Return ONE JSON object whose keys are the section ids and whose values are the section's props (named fields matching the signature shapes). Fill rich, realistic, on-topic content: real headings, copy, arrays of items with distinct entries, image alt text, links as quoted strings. Do NOT set brand or nav (the engine injects them). Output ONLY JSON, no prose, no markdown fences.${localeDirective(locale)}`
+  return `You author website content as JSON. You are given a page's section list with each section's component signature. Return ONE JSON object whose keys are the section ids and whose values are the section's props (named fields matching the signature shapes). Fill rich, realistic, on-topic content: real headings, copy, arrays of items with distinct entries, image alt text, links as quoted strings. Do NOT set brand or nav (the engine injects them). Output ONLY JSON, no prose, no markdown fences.
+
+CRITICAL — IMAGE ALT TEXT RULES (alt text is used as the stock-photo search query):
+1. Alt text MUST ALWAYS be in English, regardless of the page content language. No exceptions — not for avatars, not for product images, not for hero images.
+2. When the brief contains non-English concepts, TRANSLATE them to their closest English visual equivalent. Examples: Malayalam "sarikk" → "silk saree", "onam" → "harvest festival", "ponnundu" → "gift box"; Hindi "mithai" → "Indian sweets"; Tamil "pookkalam" → "flower rangoli". Never transliterate — Pexels/Unsplash search in English and cannot match transliterated words.
+3. Alt text must be a descriptive English phrase that a stock photographer would use. Write "Traditional Kerala saree on display" not "onam sarikk". Write "Portrait of smiling woman" not a non-English name. Write "Festive gift box with flowers" not "/images/hero1.jpg".
+4. Never use file paths, URLs, or non-English script as alt text.${localeDirective(locale)}`
 }
 
 function composeUser(input: {
@@ -566,7 +622,9 @@ export function shortlistFamilies(prompt: string, k = 3): string[] {
 }
 
 function superagentSystem(locale?: string): string {
-  return `You are a website superagent. You are given a build request and several CANDIDATE verticals, each with its homepage section components and prop signatures. Do BOTH in one step: (1) choose the single best-fitting vertical for the request, (2) author rich, realistic, on-topic homepage content as JSON props for THAT chosen vertical's sections (match each section's signature field shapes; arrays get several distinct entries). Do NOT set brand or nav (the engine injects them). Output ONLY a JSON object: {"family":"<ChosenVertical>","sections":{"<sectionKeyLowercase>":{...props...}}}. No prose, no markdown fences.${localeDirective(locale)}`
+  return `You are a website superagent. You are given a build request and several CANDIDATE verticals, each with its homepage section components and prop signatures. Do ALL in one step: (1) extract the brand/business/person name from the build request (the proper noun the site is FOR — e.g. "Acme Cafe", "Kaveri Silks", "Dr. Pepper"; if none, infer a short plausible brand from the vertical/topic, e.g. "Coffee House" for a coffee shop; NEVER use the verb "generate"/"build"/"create" or generic words like "website"/"app" as the brand), (2) choose the single best-fitting vertical for the request, (3) author rich, realistic, on-topic homepage content as JSON props for THAT chosen vertical's sections (match each section's signature field shapes; arrays get several distinct entries). Do NOT set brand or nav in the section props (the engine injects them). Output ONLY a JSON object: {"brand":"<extracted brand name>","family":"<ChosenVertical>","sections":{"<sectionKeyLowercase>":{...props...}}}. No prose, no markdown fences.
+
+CRITICAL — IMAGE ALT TEXT MUST ALWAYS BE IN ENGLISH. Alt text is used as the stock-photo search query. When the brief contains non-English concepts, TRANSLATE them to their closest English visual equivalent (e.g. "sarikk" → "silk saree", "onam" → "harvest festival", "mithai" → "Indian sweets"). Never transliterate. Never use file paths or non-English script as alt text.${localeDirective(locale)}`
 }
 
 function superagentUser(input: {
@@ -578,18 +636,20 @@ function superagentUser(input: {
     .map((c) => `Vertical "${c.family}":\n${c.lines.join('\n')}`)
     .join('\n\n')
   return `Build request: ${input.prompt}
-Brand: ${input.brand}
+Brand (heuristic guess, may be wrong — verify against the build request and correct if needed): ${input.brand}
 Candidate verticals and their homepage sections (sectionKey: signature):
 ${blocks}
 
-Choose ONE vertical that best fits the build request, then return:
-{"family":"<one of the candidate vertical names>","sections":{ "<sectionKey>": { ...rich props matching that section's signature... } }}
+Choose ONE vertical that best fits the build request, extract the real brand name from the request, then return:
+{"brand":"<the real brand name extracted from the request>","family":"<one of the candidate vertical names>","sections":{ "<sectionKey>": { ...rich props matching that section's signature... } }}
 Fill every section of the chosen vertical with distinct, on-topic content.`
 }
 
 export type FirstPassHome = {
   family: Family
   propsByKey: Record<string, Record<string, unknown>>
+  /** LLM-extracted brand name (empty string if the model didn't return one). */
+  brand?: string
 }
 
 /**
@@ -623,6 +683,7 @@ export async function composeHomeFirstPass(input: {
     strict: boolean,
   ): Promise<{
     family?: string
+    brand?: string
     props: Record<string, Record<string, unknown>>
   }> => {
     const sys = strict
@@ -645,6 +706,8 @@ export async function composeHomeFirstPass(input: {
       parsed = {}
     }
     const family = typeof parsed.family === 'string' ? parsed.family : undefined
+    const brand =
+      typeof parsed.brand === 'string' ? parsed.brand.trim() : undefined
     // Tolerant: props live under "sections", else any top-level object value (the
     // model sometimes flattens). Normalize keys to lowercase section roles.
     const rawSections =
@@ -653,11 +716,11 @@ export async function composeHomeFirstPass(input: {
         : parsed
     const props: Record<string, Record<string, unknown>> = {}
     for (const [key, value] of Object.entries(rawSections)) {
-      if (key === 'family' || key === 'sections') continue
+      if (key === 'family' || key === 'sections' || key === 'brand') continue
       if (value && typeof value === 'object' && !Array.isArray(value))
         props[key.toLowerCase()] = value as Record<string, unknown>
     }
-    return { family, props }
+    return { family, brand, props }
   }
 
   let out = await ask(false)
@@ -680,7 +743,11 @@ export async function composeHomeFirstPass(input: {
       chosen = retryFam
     }
   }
-  return { family: chosen, propsByKey: out.props }
+  return {
+    family: chosen,
+    propsByKey: out.props,
+    brand: out.brand && out.brand.length >= 2 ? out.brand : undefined,
+  }
 }
 
 /** Assemble a composed page from already-authored per-section props (no model call). */
@@ -1746,6 +1813,8 @@ Every value distinct and on-topic for this page role. Arrays should have several
 export type ComposedContent = {
   family: string
   pageProps: Record<string, Record<string, Record<string, unknown>>>
+  /** LLM-extracted brand name (cached so cache hits reuse it). */
+  brand?: string
 }
 
 // ---- free-form app generation (no vertical family) ----
@@ -1905,7 +1974,11 @@ export async function runV2ComposedGeneration(input: {
   input.signal?.addEventListener('abort', () => abort.abort(), { once: true })
   const seed = input.sessionSeed || `${Date.now()}-${input.prompt.length}`
   const rng = makeSeededRng(seed)
-  const brand = brandFromPrompt(input.prompt)
+  // Heuristic brand guess — used as a HINT to the LLM and as a fallback if the
+  // LLM doesn't return a brand. The LLM-extracted brand (from the first-pass
+  // superagent call) takes priority because only the LLM can understand
+  // context like "Acme inspired" (not literally "Acme") or non-Latin scripts.
+  let brand = brandFromPrompt(input.prompt)
   const locale = input.preferredLanguage || 'en'
   const theme = pick(rng, THEME_CATALOG).name
   const emit = (e: V2Event) => input.onEvent?.(e)
@@ -1964,6 +2037,8 @@ export async function runV2ComposedGeneration(input: {
   let family: Family
   if (cached) {
     family = FAMILIES.get(cached.family)!
+    // Reuse the LLM-extracted brand from the cache if present.
+    if (cached.brand && cached.brand.length >= 2) brand = cached.brand
   } else {
     emit({ type: 'status', message: 'Designing your homepage' })
     const firstPass = await composeHomeFirstPass({
@@ -1976,6 +2051,8 @@ export async function runV2ComposedGeneration(input: {
     })
     family = firstPass.family
     pageProps.home = firstPass.propsByKey
+    // LLM-extracted brand takes priority over the heuristic guess.
+    if (firstPass.brand && firstPass.brand.length >= 2) brand = firstPass.brand
   }
 
   const pages = planPages(family, seed)
@@ -2050,7 +2127,7 @@ export async function runV2ComposedGeneration(input: {
     }),
   )
 
-  input.onContent?.({ family: family.name, pageProps })
+  input.onContent?.({ family: family.name, pageProps, brand })
   const source = renderSource()
   const navTargets = buildRouteTargetMap({ pages, pageProps })
   const pagePlans: V2PagePlan[] = pages.map((p) => {

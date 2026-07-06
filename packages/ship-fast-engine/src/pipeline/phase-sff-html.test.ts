@@ -71,6 +71,15 @@ describe('phase-sff-html', () => {
     expect(prompt).toContain('https://cdn.brandfetch.io/launch/logo.svg')
   })
 
+  // Regression: non-English locales caused the LLM to write image alt text and
+  // /api/pexels query params in the locale (e.g. Malayalam), which made Pexels
+  // return irrelevant images. The system prompt must force alt text + pexels
+  // queries to English regardless of page content language.
+  it('system prompt forces image alt text and pexels queries to English', () => {
+    expect(SFF_HTML_SYSTEM_PROMPT).toMatch(/alt text.*English/i)
+    expect(SFF_HTML_SYSTEM_PROMPT).toMatch(/pexels.*English/i)
+  })
+
   it('passes the system prompt to the generator and injects the Lucide runtime when the model emits icon placeholders', async () => {
     const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-sff-lucide-'))
     let capturedSystem: string | undefined

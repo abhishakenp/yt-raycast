@@ -68,6 +68,7 @@ Rules:
 - Include a sticky nav, hero with CTA, 3 feature cards, stats/social-proof strip, and footer.
 - Use specific content from the user prompt. No lorem ipsum and no generic placeholder brands.
 - Use verified Pexels media from the supplied media block. If no verified media is supplied, use /api/pexels?query=<specific visual query>&w=<width>&h=<height>&seed=<stable slug>; do not use Unsplash, Picsum, placeholder.com, fake stock URLs, base64 images, or invented image URLs.
+- CRITICAL — IMAGE ALT TEXT AND PEXELS QUERY MUST ALWAYS BE IN ENGLISH. No exceptions. When the brief contains non-English concepts, TRANSLATE them to their closest English visual equivalent (e.g. Malayalam "sarikk" → "silk saree", "onam" → "harvest festival", "ponnundu" → "gift box"; Hindi "mithai" → "Indian sweets"; Tamil "pookkalam" → "flower rangoli"). Never transliterate — Pexels/Unsplash search in English and cannot match transliterated words. Alt text must be a descriptive English phrase a stock photographer would use, never a file path or non-English script.
 - Use official Brandfetch/brand-profile logo and brand facts from the supplied brand block when present. If no verified logo exists, render a restrained text wordmark instead of inventing a logo.
 - For pictograms and UI icons, use Lucide placeholders such as <i data-lucide="sparkles" class="w-5 h-5"></i> plus the Lucide CDN/runtime; do not generate long inline SVG pictogram sets. Inline SVG is acceptable only for a tiny original brand mark or chart.
 - Static HTML only: no JSX, no framework syntax, no template loops.

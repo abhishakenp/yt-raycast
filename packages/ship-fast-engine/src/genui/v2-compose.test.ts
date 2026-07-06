@@ -73,7 +73,7 @@ const superagentReply = (user: string): string => {
       },
     ]),
   )
-  return JSON.stringify({ family, sections })
+  return JSON.stringify({ brand: 'Test Brand', family, sections })
 }
 
 const signal = new AbortController().signal
@@ -183,6 +183,50 @@ describe('composePage (valid by construction, no fallback)', () => {
     const src = `${page.statements.join('\n')}\nroot = PageSwitch(["Home"], [home])`
     // No canned fallback page — but mapping with empty props is still valid OpenUI.
     expect(await auditOk(src)).toBe(true)
+  })
+
+  // Regression: non-English locales (e.g. Malayalam) previously caused the LLM
+  // to write image alt text in the locale, which then became the Pexels search
+  // query and returned irrelevant images. The compose system prompt must force
+  // alt text to English regardless of locale.
+  it('forces image alt text to English for non-English locales (Malayalam)', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) =>
+      richProps(String(_a[2])),
+    )
+    const family = FAMILIES.get('Crm')!
+    await composePage({
+      prompt: 'ഓണം സരിക്ക് ഒരു ഷോപ്പിങ് സൈറ്റ്',
+      family,
+      brand: 'Acme',
+      nav: ['Home'],
+      pageId: 'home',
+      seed: 's',
+      modelId: 'm',
+      signal,
+      locale: 'ml',
+    })
+    const systemPrompt = String(mocks.generateText.mock.calls[0][1])
+    expect(systemPrompt).toContain('Malayalam')
+    expect(systemPrompt).toMatch(/alt text.*English/i)
+  })
+
+  it('forces image alt text to English even for the default (en) locale', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) =>
+      richProps(String(_a[2])),
+    )
+    const family = FAMILIES.get('Crm')!
+    await composePage({
+      prompt: 'a crm',
+      family,
+      brand: 'Acme',
+      nav: ['Home'],
+      pageId: 'home',
+      seed: 's',
+      modelId: 'm',
+      signal,
+    })
+    const systemPrompt = String(mocks.generateText.mock.calls[0][1])
+    expect(systemPrompt).toMatch(/alt text.*English/i)
   })
 })
 

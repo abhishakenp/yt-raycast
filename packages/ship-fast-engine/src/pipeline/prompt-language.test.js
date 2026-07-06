@@ -107,4 +107,102 @@ describe('pipeline prompt language enforcement', () => {
     expect(prompt).toContain('Do not use placeholder filenames')
     expect(prompt).toContain('logo1.png')
   })
+
+  // ── Malayalam romanized detection regression suite ────────────────
+  // Ensures the engine pipeline detects romanized Malayalam prompts
+  // (Manglish) across a range of prompt lengths and styles, so the
+  // generated site content is in Malayalam, not Hindi or English.
+
+  describe('romanized Malayalam detection (Manglish)', () => {
+    const romanizedCases = [
+      'oru restaurant website undaakuka menu booking gallery okke',
+      'ente bakery oru website venam',
+      'oru blog website undaakuka articles okke',
+      'school website undaakuka, teachers, classes okke',
+      'oru gym website, membership plans okke',
+      'oru marketing company website, services list okke',
+      'bakery website undaakuka, oru modern design venam',
+      'nalla oru website undaakuka',
+      'oru website undaakuka',
+      'enthokke include cheyyanam',
+      'oru modern website undaakuka with sleek design and clear CTA',
+      'oru school website undaakuka with teachers list and classes',
+    ]
+
+    for (const prompt of romanizedCases) {
+      it(`detects romanized Malayalam: "${prompt.slice(0, 50)}…"`, async () => {
+        const mode = await resolvePipelineLanguage({
+          prompt,
+          preferredLanguage: 'en',
+        })
+        expect(mode.code).toBe('ml')
+        expect(mode.name).toBe('Malayalam')
+        expect(mode.prompt).toContain('server language code `ml`')
+      })
+    }
+  })
+
+  describe('native-script Malayalam detection', () => {
+    const nativeCases = [
+      'എന്റെ ബേക്കറിക്കായി ഒരു വെബ്സൈറ്റ് ഉണ്ടാക്കുക',
+      'ഒരു റെസ്റ്റോറന്റ് വെബ്സൈറ്റ് ഉണ്ടാക്കുക, മെനു, ബുക്കിംഗ്, ഗാലറി എന്നിവ ഉൾപ്പെടുത്തുക',
+    ]
+
+    for (const prompt of nativeCases) {
+      it(`detects native-script Malayalam: "${prompt.slice(0, 30)}…"`, async () => {
+        const mode = await resolvePipelineLanguage({
+          prompt,
+          preferredLanguage: 'en',
+        })
+        expect(mode.code).toBe('ml')
+        expect(mode.name).toBe('Malayalam')
+      })
+    }
+  })
+
+  describe('Malayalam misspelling detection', () => {
+    // Users frequently misspell "malayalam" in real prompts. The keyword
+    // matcher must catch common typos so the pipeline still detects Malayalam.
+    const misspellingCases = [
+      'coffee shop in malyalam with a premium storefront, product collections, featured bundles, reviews, cart-ready calls to action, and trust badges.',
+      'coffee shop in malyalam with a premium storefront',
+      'coffee shop in malayalm with a premium storefront',
+      'coffee shop in malyalm with a premium storefront',
+      'coffee shop in malylam with a premium storefront',
+      'coffee shop in mallayalam with a premium storefront',
+      'malyalam website for my bakery',
+      'malayalm website for my bakery',
+      'in malyalam',
+      'in malayalm',
+    ]
+
+    for (const prompt of misspellingCases) {
+      it(`detects misspelled "malayalam": "${prompt.slice(0, 50)}…"`, async () => {
+        const mode = await resolvePipelineLanguage({
+          prompt,
+          preferredLanguage: 'en',
+        })
+        expect(mode.code).toBe('ml')
+        expect(mode.name).toBe('Malayalam')
+      })
+    }
+  })
+
+  describe('Malayalam not confused with other languages', () => {
+    it('does not detect Hindi prompts as Malayalam', async () => {
+      const mode = await resolvePipelineLanguage({
+        prompt: 'mere gym ke liye website banao',
+        preferredLanguage: 'en',
+      })
+      expect(mode.code).not.toBe('ml')
+    })
+
+    it('does not detect English prompts as Malayalam', async () => {
+      const mode = await resolvePipelineLanguage({
+        prompt: 'Build a SaaS dashboard with charts and responsive cards',
+        preferredLanguage: 'en',
+      })
+      expect(mode.code).not.toBe('ml')
+    })
+  })
 })
