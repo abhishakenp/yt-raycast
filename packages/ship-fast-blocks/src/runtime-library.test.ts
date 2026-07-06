@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
   extractAllComponentNames,
@@ -10,6 +10,10 @@ import {
   type AiCapsuleRecord,
 } from './runtime-library'
 import { runtimeSectionComponentNameSet } from './generated/runtime-section-component-names'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('OpenUI runtime library loading', () => {
   it('extracts only known component calls and always includes the Stack root', () => {
@@ -153,5 +157,40 @@ describe('loadOpenUIRuntimeLibrary with AI capsules', () => {
     // Verify the function exists and is callable — full integration test
     // runs in the browser via OpenUIViewer.
     expect(typeof loadAiCapsule).toBe('function')
+  })
+
+  it('registers legacy double-prefixed AI capsule references under the rendered source name', async () => {
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue(
+      'data:text/javascript,export default function C(props) { return null }',
+    )
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+    const aiCapsules: AiCapsuleRecord[] = [
+      {
+        capsuleName: 'AICustom_FashionStoreHero_home_hero',
+        parentCapsule: 'FashionStoreHero',
+        compiledJs: 'export default function C(props) { return null }',
+        description: 'AI-edited fashion store hero',
+      },
+    ]
+
+    const library = await loadOpenUIRuntimeLibrary(
+      `
+        root = Stack(children=[hero])
+        hero = AICustom_AICustom_FashionStoreHero_home_hero_home_hero({
+          title: "Editorial launch"
+        })
+      `,
+      aiCapsules,
+    )
+
+    const components = (
+      library as unknown as {
+        components: Record<string, { component: unknown }>
+      }
+    ).components
+    expect(
+      typeof components.AICustom_AICustom_FashionStoreHero_home_hero_home_hero
+        ?.component,
+    ).toBe('function')
   })
 })

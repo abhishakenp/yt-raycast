@@ -64,7 +64,13 @@ export function getOpenUIRuntimeLibraryCacheKey(
   aiCapsules: AiCapsuleRecord[] = [],
 ): string {
   const staticNames = extractOpenUIRuntimeComponentNames(response)
-  const aiNames = aiCapsules.map((capsule) => capsule.capsuleName).sort()
+  const aiNames = [
+    ...aiCapsules.map((capsule) => capsule.capsuleName),
+    ...resolveReferencedAiCapsules(response, aiCapsules).map(
+      (capsule) =>
+        `${capsule.referenceName}<${capsule.parentRuntimeComponentName ?? ''}>(${capsule.propNames.join(',')})`,
+    ),
+  ].sort()
   return [...staticNames, ...aiNames].join('\0')
 }
 
@@ -128,6 +134,7 @@ export type AiCapsuleRecord = {
 }
 
 const aiCapsuleCache = new Map<string, Promise<ShipFastCapsule>>()
+const aiCapsuleOpenUIPropsArg = '__shipFastAiCapsuleProps'
 
 /** Dynamic-import compiled JS of an AI capsule and wrap it as a ShipFastCapsule.
  *  The compiled JS references globalThis.React and globalThis.__jsxRuntime
@@ -135,8 +142,12 @@ const aiCapsuleCache = new Map<string, Promise<ShipFastCapsule>>()
  *  an import map. */
 export function loadAiCapsule(
   record: AiCapsuleRecord,
+  capsuleName = record.capsuleName,
+  propNames: string[] = [],
+  parentRuntimeComponentName: RuntimeComponentName | null = null,
 ): Promise<ShipFastCapsule> {
-  let cached = aiCapsuleCache.get(record.capsuleName)
+  const cacheKey = `${record.capsuleName}\0${capsuleName}\0${parentRuntimeComponentName ?? ''}\0${[...propNames].sort().join('\0')}`
+  let cached = aiCapsuleCache.get(cacheKey)
   if (!cached) {
     cached = (async () => {
       // Ensure React globals are available for the compiled JS
@@ -161,46 +172,203 @@ export function loadAiCapsule(
         }
         // Wrap the AI component as a ShipFastCapsule so it gets data attrs
         // stamped and integrates with the OpenUI runtime.
+        const propsSchema = parentRuntimeComponentName
+          ? (await loadOpenUIRuntimeComponent(parentRuntimeComponentName))
+              .client.props
+          : createAiCapsulePropsSchema(propNames)
         return defineCapsule({
-          name: record.capsuleName,
+          name: capsuleName,
           description: record.description,
-          props: zodObjectAny,
-          component: ({ props }) => Component(props),
+          props: propsSchema,
+          component: ({ props }) => Component(normalizeAiCapsuleProps(props)),
         })
       } finally {
         URL.revokeObjectURL(url)
       }
     })()
-    aiCapsuleCache.set(record.capsuleName, cached)
+    aiCapsuleCache.set(cacheKey, cached)
   }
   return cached
 }
 
-// Minimal zod schema that accepts any props — AI capsules have freeform props
-const zodObjectAny = z.object({}).passthrough()
+const createAiCapsulePropsSchema = (propNames: string[]) => {
+  const shape = {
+    [aiCapsuleOpenUIPropsArg]: z.record(z.string(), z.unknown()).optional(),
+    ...Object.fromEntries(
+      propNames.map((propName) => [propName, z.any().optional()]),
+    ),
+  }
+  return z.object(shape).passthrough()
+}
+
+function normalizeAiCapsuleProps(props: unknown): unknown {
+  if (!props || typeof props !== 'object' || Array.isArray(props)) return props
+  const record = props as Record<string, unknown>
+  const positionalProps = record[aiCapsuleOpenUIPropsArg]
+  if (
+    !positionalProps ||
+    typeof positionalProps !== 'object' ||
+    Array.isArray(positionalProps)
+  ) {
+    return props
+  }
+
+  const { [aiCapsuleOpenUIPropsArg]: _ignored, ...namedProps } = record
+  return {
+    ...(positionalProps as Record<string, unknown>),
+    ...namedProps,
+  }
+}
+
+type ReferencedAiCapsule = {
+  referenceName: string
+  record: AiCapsuleRecord
+  propNames: string[]
+  parentRuntimeComponentName: RuntimeComponentName | null
+}
+
+function findAiCapsuleRecordForReference(
+  referenceName: string,
+  aiCapsuleMap: Map<string, AiCapsuleRecord>,
+  orderedCapsuleNames: string[],
+): AiCapsuleRecord | null {
+  const exact = aiCapsuleMap.get(referenceName)
+  if (exact) return exact
+
+  if (!referenceName.startsWith('AICustom_AICustom_')) return null
+
+  for (const capsuleName of orderedCapsuleNames) {
+    const legacyPrefix = `AICustom_${capsuleName}`
+    if (
+      referenceName === legacyPrefix ||
+      referenceName.startsWith(`${legacyPrefix}_`)
+    ) {
+      return aiCapsuleMap.get(capsuleName) ?? null
+    }
+  }
+
+  return null
+}
+
+function resolveReferencedAiCapsules(
+  response: string | null | undefined,
+  aiCapsules: AiCapsuleRecord[],
+): ReferencedAiCapsule[] {
+  const aiCapsuleMap = new Map(aiCapsules.map((c) => [c.capsuleName, c]))
+  const orderedCapsuleNames = [...aiCapsuleMap.keys()].sort(
+    (left, right) => right.length - left.length,
+  )
+
+  return extractAllComponentNames(response)
+    .map((referenceName) => {
+      const record = findAiCapsuleRecordForReference(
+        referenceName,
+        aiCapsuleMap,
+        orderedCapsuleNames,
+      )
+      return record
+        ? {
+            referenceName,
+            record,
+            propNames: extractComponentCallArgumentNames(
+              response,
+              referenceName,
+            ),
+            parentRuntimeComponentName: resolveAiCapsuleRuntimeParent(
+              record,
+              aiCapsuleMap,
+            ),
+          }
+        : null
+    })
+    .filter((value): value is ReferencedAiCapsule => value !== null)
+}
+
+function resolveAiCapsuleRuntimeParent(
+  record: AiCapsuleRecord,
+  aiCapsuleMap: Map<string, AiCapsuleRecord>,
+): RuntimeComponentName | null {
+  const seen = new Set<string>([record.capsuleName])
+  let parentName = record.parentCapsule
+
+  while (parentName.startsWith('AICustom_')) {
+    if (seen.has(parentName)) return null
+    seen.add(parentName)
+    const parentRecord = aiCapsuleMap.get(parentName)
+    if (!parentRecord) return null
+    parentName = parentRecord.parentCapsule
+  }
+
+  return isRuntimeComponentName(parentName) ? parentName : null
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function extractComponentCallArgumentNames(
+  response: string | null | undefined,
+  componentName: string,
+): string[] {
+  if (!response) return []
+  const names = new Set<string>()
+  const callPattern = new RegExp(
+    `\\b${escapeRegExp(componentName)}\\s*\\(`,
+    'g',
+  )
+
+  for (const match of response.matchAll(callPattern)) {
+    const start = (match.index ?? 0) + match[0].length
+    let depth = 1
+    let end = start
+    for (; end < response.length; end += 1) {
+      const char = response[end]
+      if (char === '(') depth += 1
+      if (char === ')') depth -= 1
+      if (depth === 0) break
+    }
+    const args = response.slice(start, end)
+    for (const argMatch of args.matchAll(
+      /(?:^|[,{]\s*)([A-Za-z_$][A-Za-z0-9_$]*)\s*[:=]/g,
+    )) {
+      const name = argMatch[1]
+      if (name) names.add(name)
+    }
+  }
+
+  return [...names].sort()
+}
 
 export function loadOpenUIRuntimeLibrary(
   response: string | null | undefined,
   aiCapsules?: AiCapsuleRecord[],
 ): Promise<Library> {
   const staticNames = extractOpenUIRuntimeComponentNames(response)
-  const aiCapsuleMap = new Map(
-    (aiCapsules ?? []).map((c) => [c.capsuleName, c]),
+  const referencedAiCapsules = resolveReferencedAiCapsules(
+    response,
+    aiCapsules ?? [],
   )
-  // Find AI capsule names that are actually referenced in the response
-  const allNames = extractAllComponentNames(response)
-  const referencedAiCapsules = allNames
-    .filter((name) => aiCapsuleMap.has(name))
-    .map((name) => aiCapsuleMap.get(name)!)
-  const aiNames = referencedAiCapsules.map((c) => c.capsuleName)
+  const aiNames = [
+    ...(aiCapsules ?? []).map((capsule) => capsule.capsuleName),
+    ...referencedAiCapsules.map(
+      (c) =>
+        `${c.referenceName}<${c.parentRuntimeComponentName ?? ''}>(${c.propNames.join(',')})`,
+    ),
+  ]
   const cacheKey = [...staticNames, ...aiNames].join('\0')
   let cached = libraryCache.get(cacheKey)
   if (!cached) {
     const staticCapsules = staticNames.map((name) =>
       loadOpenUIRuntimeComponent(name),
     )
-    const aiCapsulePromises = referencedAiCapsules.map((record) =>
-      loadAiCapsule(record),
+    const aiCapsulePromises = referencedAiCapsules.map(
+      ({ referenceName, record, propNames, parentRuntimeComponentName }) =>
+        loadAiCapsule(
+          record,
+          referenceName,
+          propNames,
+          parentRuntimeComponentName,
+        ),
     )
     cached = Promise.all([...staticCapsules, ...aiCapsulePromises]).then(
       (capsules) =>
