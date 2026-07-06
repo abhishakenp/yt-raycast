@@ -343,6 +343,74 @@ describe('BrandMediaPanel', () => {
     ).toBeTruthy()
   })
 
+  it('selects an uploaded custom image as the logo via onSelectBrand', () => {
+    convexState.userImages = [
+      {
+        url: 'https://storage.test/custom-logo.png',
+        filename: 'custom-logo.png',
+      },
+    ]
+    const onSelectBrand = vi.fn()
+
+    const view = render(
+      <BrandMediaPanel
+        sessionId="session-1"
+        prompt="linear"
+        onSelectBrand={onSelectBrand}
+      />,
+    )
+
+    const uploadButton = view.getByLabelText(/select custom-logo\.png/i)
+    fireEvent.click(uploadButton)
+
+    expect(onSelectBrand).toHaveBeenCalledTimes(1)
+    expect(onSelectBrand).toHaveBeenCalledWith({
+      name: 'custom-logo.png',
+      domain: null,
+      brandId: null,
+      icon: null,
+      logo: 'https://storage.test/custom-logo.png',
+    })
+    expect(uploadButton.getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('selecting an uploaded image clears any prior Brandfetch selection and vice versa', async () => {
+    convexState.userImages = [
+      {
+        url: 'https://storage.test/custom-logo.png',
+        filename: 'custom-logo.png',
+      },
+    ]
+    const onSelectBrand = vi.fn()
+
+    const view = render(
+      <BrandMediaPanel
+        sessionId="session-1"
+        prompt="linear"
+        onSelectBrand={onSelectBrand}
+      />,
+    )
+
+    await waitFor(() => expect(view.getByText('Linear')).toBeTruthy())
+    fireEvent.click(view.getByText('Linear'))
+    expect(onSelectBrand).toHaveBeenLastCalledWith(
+      expect.objectContaining({ brandId: 'iduDa181eM' }),
+    )
+
+    const uploadButton = view.getByLabelText(/select custom-logo\.png/i)
+    fireEvent.click(uploadButton)
+    expect(onSelectBrand).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        logo: 'https://storage.test/custom-logo.png',
+        brandId: null,
+      }),
+    )
+    expect(uploadButton.getAttribute('aria-pressed')).toBe('true')
+
+    fireEvent.click(view.getByText('Linear'))
+    expect(uploadButton.getAttribute('aria-pressed')).toBe('false')
+  })
+
   it('keeps the popover panel bounded like the other command pickers', () => {
     const view = render(
       <BrandMediaPanel

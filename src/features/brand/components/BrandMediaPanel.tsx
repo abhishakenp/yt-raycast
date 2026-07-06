@@ -101,6 +101,9 @@ export const BrandMediaPanel = ({
   const [brandQuery, setBrandQuery] = useState(initialQuery)
   const [results, setResults] = useState<BrandLogoResult[]>([])
   const [selectedLogo, setSelectedLogo] = useState<BrandLogoResult | null>(null)
+  const [selectedUploadUrl, setSelectedUploadUrl] = useState<string | null>(
+    null,
+  )
   const [continueCursor, setContinueCursor] = useState<string | null>(null)
   const [isDone, setIsDone] = useState(true)
   const [error, setError] = useState<string>()
@@ -341,6 +344,7 @@ export const BrandMediaPanel = ({
                       .join(' ')}
                     onSelect={() => {
                       setSelectedLogo(result)
+                      setSelectedUploadUrl(null)
                       onSelectBrand?.({
                         name: result.name,
                         domain: result.domain,
@@ -401,20 +405,47 @@ export const BrandMediaPanel = ({
       {uploadedImages.length > 0 && (
         <div className="grid gap-2 border-t p-2">
           <div className="grid grid-cols-6 gap-1.5">
-            {uploadedImages.map((image, index) => (
-              <span
-                key={`${image.url}-${index}`}
-                className="aspect-square overflow-hidden rounded-md border bg-muted"
-                title={image.filename ?? `Uploaded image ${index + 1}`}
-              >
-                <img
-                  src={image.url}
-                  alt=""
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                />
-              </span>
-            ))}
+            {uploadedImages.map((image, index) => {
+              const isSelected = selectedUploadUrl === image.url
+              return (
+                <button
+                  key={`${image.url}-${index}`}
+                  type="button"
+                  aria-label={`Select ${image.filename ?? `uploaded image ${index + 1}`}`}
+                  aria-pressed={isSelected}
+                  title={image.filename ?? `Uploaded image ${index + 1}`}
+                  onClick={() => {
+                    setSelectedUploadUrl(image.url)
+                    setSelectedLogo(null)
+                    onSelectBrand?.({
+                      name: image.filename ?? 'Custom upload',
+                      domain: null,
+                      brandId: null,
+                      icon: null,
+                      logo: image.url,
+                    })
+                  }}
+                  className={cn(
+                    'relative aspect-square overflow-hidden rounded-md border bg-muted transition-colors',
+                    isSelected
+                      ? 'border-primary ring-2 ring-primary'
+                      : 'border-input hover:border-primary/50',
+                  )}
+                >
+                  <img
+                    src={image.url}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                  {isSelected && (
+                    <span className="absolute right-0.5 top-0.5 grid size-4 place-items-center rounded-full bg-primary text-primary-foreground">
+                      <Check className="size-3" />
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}
