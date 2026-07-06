@@ -101,6 +101,18 @@ describe('GeneratedModulePreview (real component)', () => {
     expect(screen.queryByTestId('openui-viewer')).toBeNull()
   })
 
+  it('renders edited HTML fragment previews in an iframe instead of sending them to OpenUI', () => {
+    const fragment =
+      '<h1 class="hero-title">Dreamy Pastel Whisper of Stars</h1>'
+
+    render(<GeneratedModulePreview source={fragment} sessionId="session-1" />)
+
+    const iframe = screen.getByTitle('Generated website preview')
+    expect(iframe).toBeInstanceOf(HTMLIFrameElement)
+    expect(iframe.getAttribute('srcdoc')).toBe(fragment)
+    expect(screen.queryByTestId('openui-viewer')).toBeNull()
+  })
+
   it('renders an HTML URL source in an iframe via src', () => {
     render(
       <GeneratedModulePreview
@@ -287,6 +299,26 @@ describe('GeneratedModulePreview (real component)', () => {
       expect(anchor.style.color).toBe('rgb(255, 0, 0)')
     })
     expect(anchor.style.fontWeight).toBe('bold')
+  })
+
+  it('applies text overrides to the rendered OpenUI preview before it is shown stale', async () => {
+    render(
+      <GeneratedModulePreview
+        source='root = Text("OpenUI site")'
+        sessionId="session-1"
+        textOverrides={[
+          {
+            beforeText: 'Hero',
+            afterText: 'Edited hero',
+            occurrenceIndex: 0,
+          },
+        ]}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('hero-anchor').textContent).toBe('Edited hero')
+    })
   })
 
   it('shows editing controls (inspector overlays) when editMode is enabled', () => {

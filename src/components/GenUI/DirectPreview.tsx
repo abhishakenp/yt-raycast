@@ -39,8 +39,189 @@ export type PreviewSelection = {
   }
 }
 
+type TextOverride = {
+  beforeText: string
+  afterText: string
+  occurrenceIndex?: number
+}
+
 const normalizeSelectionText = (value: string | null | undefined) =>
   value?.trim().replace(/\s+/g, ' ') ?? ''
+
+const TEXT_OVERRIDE_SKIP_SELECTOR =
+  'script, style, textarea, input, [data-ship-fast-inline-editing="true"], [contenteditable="true"], [contenteditable="plaintext-only"]'
+
+const INLINE_EDITOR_ARTIFACT_SELECTOR =
+  '[data-ship-fast-inline-editing], [contenteditable="true"], [contenteditable="plaintext-only"]'
+
+const stripInlineEditorArtifacts = (root: HTMLElement) => {
+  const elements = root.matches(INLINE_EDITOR_ARTIFACT_SELECTOR)
+    ? [
+        root,
+        ...Array.from(
+          root.querySelectorAll<HTMLElement>(INLINE_EDITOR_ARTIFACT_SELECTOR),
+        ),
+      ]
+    : Array.from(
+        root.querySelectorAll<HTMLElement>(INLINE_EDITOR_ARTIFACT_SELECTOR),
+      )
+
+  for (const element of elements) {
+    element.removeAttribute('contenteditable')
+    delete element.dataset.shipFastInlineEditing
+    element.style.outline = ''
+    element.style.outlineOffset = ''
+    element.style.cursor = ''
+  }
+}
+
+const collectMutableTextNodes = (root: HTMLElement): Text[] => {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parent = node.parentElement
+      if (!parent || parent.closest(TEXT_OVERRIDE_SKIP_SELECTOR)) {
+        return NodeFilter.FILTER_REJECT
+      }
+      return NodeFilter.FILTER_ACCEPT
+    },
+  })
+  const nodes: Text[] = []
+  while (walker.nextNode()) {
+    nodes.push(walker.currentNode as Text)
+  }
+  return nodes
+}
+
+const findStyleOverrideTargets = (
+  root: HTMLElement,
+  anchor: string,
+): HTMLElement[] => {
+  if (!anchor) return []
+  const attributeAnchor = anchor.match(
+    /^\[(data-openui-var|data-openui-component|data-sf-export-page)=(["'])(.*?)\2\]$/,
+  )
+  if (attributeAnchor) {
+    const [, attributeName, , rawExpected] = attributeAnchor
+    const expected = rawExpected.replace(/\\(["'\\])/g, '$1')
+    return [
+      root,
+      ...Array.from(root.querySelectorAll<HTMLElement>('*')),
+    ].filter((el) => el.getAttribute(attributeName) === expected)
+  }
+  if (anchor.startsWith('#')) {
+    const idAnchor = anchor.slice(1)
+    return [
+      root,
+      ...Array.from(root.querySelectorAll<HTMLElement>('*')),
+    ].filter((el) => el.getAttribute('id') === idAnchor)
+  }
+  const anchorTokens = anchor.split(/\s+/).filter(Boolean)
+  if (anchorTokens.length === 0) return []
+  return Array.from(root.querySelectorAll<HTMLElement>('*')).filter((el) => {
+    const classTokens = new Set(
+      (el.getAttribute('class') ?? '').split(/\s+/).filter(Boolean),
+    )
+    return anchorTokens.every((token) => classTokens.has(token))
+  })
+}
+
+const findAppliedRange = (
+  value: string,
+  afterText: string,
+  index: number,
+): { start: number; end: number } | null => {
+  if (!afterText) return null
+  let start = value.indexOf(afterText)
+  while (start !== -1) {
+    const end = start + afterText.length
+    if (index >= start && index < end) return { start, end }
+    start = value.indexOf(afterText, start + Math.max(1, afterText.length))
+  }
+  return null
+}
+
+const findSupersedingRange = (
+  value: string,
+  afterTexts: string[],
+  index: number,
+): { start: number; end: number } | null => {
+  for (const afterText of afterTexts) {
+    const range = findAppliedRange(value, afterText, index)
+    if (range) return range
+  }
+  return null
+}
+
+const applyTextOverrideToValues = (
+  values: string[],
+  { beforeText, afterText, occurrenceIndex = 0 }: TextOverride,
+  supersedingAfterTexts: string[] = [],
+): void => {
+  if (!beforeText) return
+
+  let seen = 0
+  for (let valueIndex = 0; valueIndex < values.length; valueIndex += 1) {
+    const value = values[valueIndex]
+    let from = value.indexOf(beforeText)
+    while (from !== -1) {
+      const supersedingRange = findSupersedingRange(
+        value,
+        supersedingAfterTexts,
+        from,
+      )
+      if (supersedingRange) {
+        if (seen === occurrenceIndex) return
+        seen += 1
+        from = value.indexOf(beforeText, supersedingRange.end)
+        continue
+      }
+      const appliedRange = findAppliedRange(value, afterText, from)
+      if (appliedRange) {
+        if (seen === occurrenceIndex) return
+        seen += 1
+        from = value.indexOf(beforeText, appliedRange.end)
+        continue
+      }
+      if (seen === occurrenceIndex) {
+        values[valueIndex] =
+          value.slice(0, from) +
+          afterText +
+          value.slice(from + beforeText.length)
+        return
+      }
+      seen += 1
+      from = value.indexOf(beforeText, from + beforeText.length)
+    }
+  }
+}
+
+const applyTextOverrides = (
+  root: HTMLElement,
+  textOverrides: TextOverride[] | undefined,
+): void => {
+  if (!textOverrides || textOverrides.length === 0) return
+  const nodes = collectMutableTextNodes(root)
+  const nextValues = nodes.map((node) => node.nodeValue ?? '')
+
+  const chronologicalOverrides = [...textOverrides].reverse()
+  for (let index = 0; index < chronologicalOverrides.length; index += 1) {
+    const supersedingAfterTexts = chronologicalOverrides
+      .slice(index + 1)
+      .map((override) => override.afterText)
+      .filter(Boolean)
+    applyTextOverrideToValues(
+      nextValues,
+      chronologicalOverrides[index],
+      supersedingAfterTexts,
+    )
+  }
+
+  for (let index = 0; index < nodes.length; index += 1) {
+    if (nodes[index].nodeValue !== nextValues[index]) {
+      nodes[index].nodeValue = nextValues[index]
+    }
+  }
+}
 
 const createPreviewSelection = (
   root: HTMLElement,
@@ -115,6 +296,10 @@ const DirectPreview = forwardRef<
       occurrenceIndex: number
       style: string
     }>
+    /** Inline text edits to re-apply on render. Dashboard provides newest-first
+     *  history; DirectPreview replays oldest-first so chained edits land on the
+     *  final user-visible text even if canonical source is temporarily stale. */
+    textOverrides?: TextOverride[]
   }
 >(
   (
@@ -132,6 +317,7 @@ const DirectPreview = forwardRef<
       onCommitText,
       onSectionSelect,
       styleOverrides,
+      textOverrides,
     },
     ref,
   ) => {
@@ -175,6 +361,44 @@ const DirectPreview = forwardRef<
     // section/container (text-leaf & image clicks still go to useTextEdit).
     useElementInspector(internalRef, editMode, onSectionSelect)
 
+    useLayoutEffect(() => {
+      const root = internalRef.current
+      if (!root || editMode) return
+
+      stripInlineEditorArtifacts(root)
+
+      const observer = new MutationObserver(() => {
+        stripInlineEditorArtifacts(root)
+      })
+      observer.observe(root, {
+        attributes: true,
+        attributeFilter: [
+          'contenteditable',
+          'data-ship-fast-inline-editing',
+          'style',
+        ],
+        childList: true,
+        subtree: true,
+      })
+      return () => observer.disconnect()
+    }, [children, editMode])
+
+    useLayoutEffect(() => {
+      const root = internalRef.current
+      if (!root || !textOverrides || textOverrides.length === 0) return
+
+      const apply = () => applyTextOverrides(root, textOverrides)
+      apply()
+
+      const observer = new MutationObserver(() => apply())
+      observer.observe(root, {
+        characterData: true,
+        childList: true,
+        subtree: true,
+      })
+      return () => observer.disconnect()
+    }, [textOverrides, children])
+
     // Re-apply saved inline style/align edits BEFORE paint. Same rationale as
     // text overrides: useLayoutEffect runs before the browser paints, so style
     // edits appear on the first visible frame with no flash.
@@ -185,9 +409,7 @@ const DirectPreview = forwardRef<
       const apply = () => {
         for (const override of styleOverrides) {
           if (!override.classAnchor) continue
-          const matches = Array.from(
-            root.querySelectorAll<HTMLElement>('*'),
-          ).filter((el) => el.getAttribute('class') === override.classAnchor)
+          const matches = findStyleOverrideTargets(root, override.classAnchor)
           const el = matches[override.occurrenceIndex] ?? matches[0]
           if (!el) continue
           for (const declaration of override.style.split(';')) {
