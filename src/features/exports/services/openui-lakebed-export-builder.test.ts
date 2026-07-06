@@ -2673,3 +2673,196 @@ export function signOut() {}
     }
   })
 })
+
+describe('openui lakebed export — Tailwind v4 @theme block', () => {
+  const singlePageSource = `home_navbar = CoworkingNavbar("Test", ["Home"], "555-0100", null, "Book", "#tour")
+home_navbar_anchor = SectionAnchor("home_navbar", home_navbar)
+home_hero = CoworkingHero("Hub", "Work", "Terms", "Flex", "See", "Tour", ["Wi-Fi"], "space", "150+", "Members", ["m1"])
+home_hero_anchor = SectionAnchor("home_hero", home_hero, "scroll-mt-28")
+home = Stack([home_navbar_anchor, home_hero_anchor])
+root = PageSwitch(["Home"], [home], "", {})`
+
+  it('generates a @theme block with --color-* tokens for Tailwind v4 utility generation', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: singlePageSource,
+      siteSpecJson: JSON.stringify({ projectName: 'Theme Test' }),
+      sessionId: 'theme-test',
+      target: 'lakebed',
+      isDark: true,
+    })
+
+    const themeFile = built.files['client/lib/theme.tsx']
+    expect(themeFile).toBeDefined()
+
+    // The @theme block must be present so @tailwindcss/browser generates
+    // custom-color utilities (bg-background, text-foreground, border-border/50, etc.)
+    expect(themeFile).toContain('@theme')
+    expect(themeFile).toContain('--color-background')
+    expect(themeFile).toContain('--color-foreground')
+    expect(themeFile).toContain('--color-border')
+    expect(themeFile).toContain('--color-primary')
+    expect(themeFile).toContain('--color-muted-foreground')
+    expect(themeFile).toContain('--color-destructive')
+
+    // The --color-* values must reference the :root CSS variables
+    // (not hardcoded hex values) so runtime theme switching works
+    expect(themeFile).toContain('--color-background: var(--background)')
+    expect(themeFile).toContain('--color-foreground: var(--foreground)')
+    expect(themeFile).toContain('--color-border: var(--border)')
+
+    // Font tokens must be mapped for Tailwind v4 font-family utilities
+    expect(themeFile).toContain('--font-sans: var(--font-sans)')
+    expect(themeFile).toContain('--font-serif: var(--font-serif)')
+    expect(themeFile).toContain('--font-mono: var(--font-mono)')
+  })
+
+  it('injects the @theme block into a <style type="text/tailwindcss"> element', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: singlePageSource,
+      siteSpecJson: JSON.stringify({ projectName: 'Theme Test' }),
+      sessionId: 'theme-test-inject',
+      target: 'lakebed',
+      isDark: true,
+    })
+
+    const themeFile = built.files['client/lib/theme.tsx']
+    expect(themeFile).toBeDefined()
+
+    // StyleRuntime must create a <style type="text/tailwindcss"> element
+    // so @tailwindcss/browser picks up the @theme block
+    expect(themeFile).toContain('text/tailwindcss')
+    expect(themeFile).toContain('site-tailwind-theme')
+    expect(themeFile).toContain('tailwindThemeCss')
+
+    // The :root variables must still be in a regular <style> element
+    expect(themeFile).toContain('site-theme')
+    expect(themeFile).toContain('--background:')
+  })
+
+  it('preserves :root CSS variables alongside the @theme block', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: singlePageSource,
+      siteSpecJson: JSON.stringify({ projectName: 'Theme Test' }),
+      sessionId: 'theme-test-root',
+      target: 'lakebed',
+      isDark: false,
+    })
+
+    const themeFile = built.files['client/lib/theme.tsx']
+    expect(themeFile).toBeDefined()
+
+    // :root variables must still be present for runtime theming
+    expect(themeFile).toContain(':root')
+    expect(themeFile).toContain('--background:')
+    expect(themeFile).toContain('--foreground:')
+    expect(themeFile).toContain('color-scheme: light')
+
+    // The manual shims must still be present as fallback
+    expect(themeFile).toContain('.bg-background')
+    expect(themeFile).toContain('.text-foreground')
+  })
+})
+
+describe('openui lakebed export — route isolation', () => {
+  const multiPageSource = `home_navbar = CoworkingNavbar("Northside", ["Home", "Gallery", "Pricing"], "(503) 555-0123", null, "Book a Tour", "#tour")
+home_navbar_anchor = SectionAnchor("home_navbar", home_navbar)
+home_hero = CoworkingHero("Hub", "Work", "Terms", "Flex", "See", "Tour", ["Wi-Fi"], "space", "150+", "Members", ["m1"])
+home_hero_anchor = SectionAnchor("home_hero", home_hero, "scroll-mt-28")
+home = Stack([home_navbar_anchor, home_hero_anchor])
+
+gallery_navbar = CoworkingNavbar("Northside", ["Home", "Gallery", "Pricing"], "(503) 555-0123", null, "Book a Tour", "#tour")
+gallery_navbar_anchor = SectionAnchor("gallery_navbar", gallery_navbar)
+gallery_gallery = CoworkingGallery("Gallery", "Photos", null, [{"imageAlt":"workspace"}])
+gallery_gallery_anchor = SectionAnchor("gallery_gallery", gallery_gallery, "scroll-mt-28")
+gallery = Stack([gallery_navbar_anchor, gallery_gallery_anchor])
+
+pricing_navbar = CoworkingNavbar("Northside", ["Home", "Gallery", "Pricing"], "(503) 555-0123", null, "Book a Tour", "#tour")
+pricing_navbar_anchor = SectionAnchor("pricing_navbar", pricing_navbar)
+pricing_pricing = CoworkingPricing("Plans", "Simple", [{"name":"Pro","price":"$199","features":["Everything"]}])
+pricing_pricing_anchor = SectionAnchor("pricing_pricing", pricing_pricing, "scroll-mt-28")
+pricing = Stack([pricing_navbar_anchor, pricing_pricing_anchor])
+
+root = PageSwitch(["Home", "Gallery", "Pricing"], [home, gallery, pricing], "", {"Home":"home","Gallery":"gallery","Pricing":"pricing"})`
+
+  it('generates exactly one page component per route with only its own sections', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: multiPageSource,
+      siteSpecJson: JSON.stringify({ projectName: 'Route Isolation Test' }),
+      sessionId: 'route-isolation-test',
+      target: 'lakebed',
+    })
+
+    // Three page components should be generated
+    expect(built.files['client/components/HomePage.tsx']).toBeDefined()
+    expect(built.files['client/components/GalleryPage.tsx']).toBeDefined()
+    expect(built.files['client/components/PricingPage.tsx']).toBeDefined()
+
+    // HomePage should only contain home_ section IDs
+    const homeComp = built.files['client/components/HomePage.tsx']
+    expect(homeComp).toContain('home_navbar')
+    expect(homeComp).toContain('home_hero')
+    expect(homeComp).not.toContain('gallery_gallery')
+    expect(homeComp).not.toContain('pricing_pricing')
+
+    // GalleryPage should only contain gallery_ section IDs
+    const galleryComp = built.files['client/components/GalleryPage.tsx']
+    expect(galleryComp).toContain('gallery_navbar')
+    expect(galleryComp).toContain('gallery_gallery')
+    expect(galleryComp).not.toContain('home_hero')
+    expect(galleryComp).not.toContain('pricing_pricing')
+
+    // PricingPage should only contain pricing_ section IDs
+    const pricingComp = built.files['client/components/PricingPage.tsx']
+    expect(pricingComp).toContain('pricing_navbar')
+    expect(pricingComp).toContain('pricing_pricing')
+    expect(pricingComp).not.toContain('home_hero')
+    expect(pricingComp).not.toContain('gallery_gallery')
+  })
+
+  it('generates routes.ts with exactly one entry per route', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: multiPageSource,
+      siteSpecJson: JSON.stringify({ projectName: 'Route Isolation Test' }),
+      sessionId: 'route-isolation-routes',
+      target: 'lakebed',
+    })
+
+    const routesFile = built.files['client/routes.ts']
+    expect(routesFile).toBeDefined()
+
+    // Should have exactly 3 page entries
+    const labelMatches = routesFile.match(/label: '/g)
+    expect(labelMatches).toHaveLength(3)
+
+    // Should have the correct paths
+    expect(routesFile).toContain("path: '/'")
+    expect(routesFile).toContain("path: '/gallery'")
+    expect(routesFile).toContain("path: '/pricing'")
+
+    // Should have the correct component names
+    expect(routesFile).toContain("componentName: 'HomePage'")
+    expect(routesFile).toContain("componentName: 'GalleryPage'")
+    expect(routesFile).toContain("componentName: 'PricingPage'")
+  })
+
+  it('generates client/index.tsx with exactly one Router and one Routes', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: multiPageSource,
+      siteSpecJson: JSON.stringify({ projectName: 'Route Isolation Test' }),
+      sessionId: 'route-isolation-index',
+      target: 'lakebed',
+    })
+
+    const indexFile = built.files['client/index.tsx']
+    expect(indexFile).toBeDefined()
+
+    // Exactly one Router, one Routes, one App
+    expect(indexFile.match(/<Router/g)).toHaveLength(1)
+    expect(indexFile.match(/<Routes/g)).toHaveLength(1)
+    expect(indexFile.match(/export function App/g)).toHaveLength(1)
+
+    // Exactly one StyleRuntime and one AuthRuntime
+    expect(indexFile.match(/<StyleRuntime/g)).toHaveLength(1)
+    expect(indexFile.match(/<AuthRuntime/g)).toHaveLength(1)
+  })
+})
