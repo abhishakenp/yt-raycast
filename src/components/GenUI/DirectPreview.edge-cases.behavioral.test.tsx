@@ -286,6 +286,86 @@ describe('DirectPreview edge cases', () => {
     expect(root.style.getPropertyValue('--background')).toBe('#f0f8ff')
   })
 
+  it('removes leaked inline editor artifacts from generated preview content when edit mode is off', () => {
+    const { container } = render(
+      <DirectPreview themeStyles={null} isDark={false} editMode={false}>
+        <h1
+          className="hero-title"
+          contentEditable
+          data-ship-fast-inline-editing="true"
+          style={{
+            outline: '2px solid hsl(var(--primary))',
+            outlineOffset: '2px',
+            cursor: 'text',
+          }}
+          suppressContentEditableWarning
+        >
+          Leaked editor title
+        </h1>
+      </DirectPreview>,
+    )
+
+    const heading = container.querySelector('.hero-title') as HTMLElement
+    expect(heading.hasAttribute('contenteditable')).toBe(false)
+    expect(heading.dataset.shipFastInlineEditing).toBeUndefined()
+    expect(heading.style.outline).toBe('')
+    expect(heading.style.outlineOffset).toBe('')
+    expect(heading.style.cursor).toBe('')
+  })
+
+  it('removes leaked inline editor artifacts that arrive after the preview mounts', async () => {
+    const { container } = render(
+      <DirectPreview themeStyles={null} isDark={false} editMode={false}>
+        <div>initial preview shell</div>
+      </DirectPreview>,
+    )
+    const root = container.querySelector('.genui-preview') as HTMLElement
+    const leaked = document.createElement('h1')
+    leaked.className = 'late-hero-title'
+    leaked.contentEditable = 'true'
+    leaked.dataset.shipFastInlineEditing = 'true'
+    leaked.style.outline = '2px solid hsl(var(--primary))'
+    leaked.style.outlineOffset = '2px'
+    leaked.style.cursor = 'text'
+    leaked.textContent = 'Late editor title'
+
+    root.appendChild(leaked)
+
+    await waitFor(() => {
+      expect(leaked.hasAttribute('contenteditable')).toBe(false)
+    })
+    expect(leaked.dataset.shipFastInlineEditing).toBeUndefined()
+    expect(leaked.style.outline).toBe('')
+    expect(leaked.style.outlineOffset).toBe('')
+    expect(leaked.style.cursor).toBe('')
+  })
+
+  it('keeps inline editor artifacts while edit mode is active', () => {
+    const { container } = render(
+      <DirectPreview themeStyles={null} isDark={false} editMode>
+        <h1
+          className="hero-title"
+          contentEditable
+          data-ship-fast-inline-editing="true"
+          style={{
+            outline: '2px solid hsl(var(--primary))',
+            outlineOffset: '2px',
+            cursor: 'text',
+          }}
+          suppressContentEditableWarning
+        >
+          Active editor title
+        </h1>
+      </DirectPreview>,
+    )
+
+    const heading = container.querySelector('.hero-title') as HTMLElement
+    expect(heading.getAttribute('contenteditable')).toBe('true')
+    expect(heading.dataset.shipFastInlineEditing).toBe('true')
+    expect(heading.style.outline).toContain('2px')
+    expect(heading.style.cursor).toBe('text')
+  })
+
   // 5. Style override reapplication before paint (no flash).
   it('applies style overrides synchronously during commit (useLayoutEffect, no flash)', () => {
     const { container } = render(
@@ -309,6 +389,102 @@ describe('DirectPreview edge cases', () => {
     // render returns, so the first painted frame shows the override.
     expect(heading.style.fontWeight).toBe('bold')
     expect(heading.style.color).toBe('rgb(255, 0, 0)')
+  })
+
+  it('applies style overrides to id-only sections using an id anchor', () => {
+    const imageUrl = 'https://images.pexels.com/photos/newsletter-bg.jpeg'
+    const { container } = render(
+      <DirectPreview
+        themeStyles={null}
+        isDark={false}
+        styleOverrides={[
+          {
+            classAnchor: '#newsletter_newsletter',
+            occurrenceIndex: 0,
+            style: `background-image: url("${imageUrl}"); background-size: cover; background-position: center center;`,
+          },
+        ]}
+      >
+        <section id="newsletter_newsletter">Newsletter section</section>
+      </DirectPreview>,
+    )
+
+    const section = container.querySelector(
+      '#newsletter_newsletter',
+    ) as HTMLElement
+    expect(section.style.backgroundImage).toContain(imageUrl)
+    expect(section.style.backgroundSize).toBe('cover')
+    expect(section.style.backgroundPosition).toBe('center center')
+  })
+
+  it('applies style overrides to OpenUI sections using data-openui-var anchors', () => {
+    const imageUrl = 'https://images.pexels.com/photos/openui-var-bg.jpeg'
+    const { container } = render(
+      <DirectPreview
+        themeStyles={null}
+        isDark={false}
+        styleOverrides={[
+          {
+            classAnchor: '[data-openui-var="home_hero"]',
+            occurrenceIndex: 0,
+            style: `background-image: url("${imageUrl}"); background-size: cover`,
+          },
+        ]}
+      >
+        <section data-openui-var="home_hero">Hero section</section>
+      </DirectPreview>,
+    )
+
+    const section = container.querySelector(
+      '[data-openui-var="home_hero"]',
+    ) as HTMLElement
+    expect(section.style.backgroundImage).toContain(imageUrl)
+    expect(section.style.backgroundSize).toBe('cover')
+  })
+
+  it('applies style overrides to raw id anchors that are awkward CSS selectors', () => {
+    const imageUrl = 'https://images.pexels.com/photos/special-bg.jpeg'
+    const { container } = render(
+      <DirectPreview
+        themeStyles={null}
+        isDark={false}
+        styleOverrides={[
+          {
+            classAnchor: '#hero:newsletter/1',
+            occurrenceIndex: 0,
+            style: `background-image: url("${imageUrl}")`,
+          },
+        ]}
+      >
+        <section id="hero:newsletter/1">Newsletter section</section>
+      </DirectPreview>,
+    )
+
+    const section = container.querySelector(
+      '[id="hero:newsletter/1"]',
+    ) as HTMLElement
+    expect(section.style.backgroundImage).toContain(imageUrl)
+  })
+
+  it('reapplies saved style overrides when generated class token order changes', () => {
+    const { container } = render(
+      <DirectPreview
+        themeStyles={null}
+        isDark={false}
+        styleOverrides={[
+          {
+            classAnchor: 'hero-section bg-white py-20',
+            occurrenceIndex: 0,
+            style: 'background-color: rgb(12, 34, 56)',
+          },
+        ]}
+      >
+        <section className="py-20 hero-section bg-white">Hero section</section>
+      </DirectPreview>,
+    )
+
+    const section = container.querySelector('.hero-section') as HTMLElement
+    expect(section.style.backgroundColor).toBe('rgb(12, 34, 56)')
   })
 
   // 6. Style override update without remount.
@@ -352,6 +528,204 @@ describe('DirectPreview edge cases', () => {
     expect(sameHeading).toBe(heading)
     expect(sameHeading.style.fontWeight).toBe('normal')
     expect(sameHeading.style.textDecoration).toBe('underline')
+  })
+
+  it('replays saved text overrides into the rendered preview in chronological order', () => {
+    const { container } = render(
+      <DirectPreview
+        themeStyles={null}
+        isDark={false}
+        textOverrides={[
+          {
+            beforeText: 'Second headline',
+            afterText: 'Final headline',
+            occurrenceIndex: 0,
+          },
+          {
+            beforeText: 'Original headline',
+            afterText: 'Second headline',
+            occurrenceIndex: 0,
+          },
+        ]}
+      >
+        <h1>Original headline</h1>
+      </DirectPreview>,
+    )
+
+    expect(container.querySelector('h1')?.textContent).toBe('Final headline')
+  })
+
+  it('applies a text override to the requested repeated occurrence only', () => {
+    const { container } = render(
+      <DirectPreview
+        themeStyles={null}
+        isDark={false}
+        textOverrides={[
+          {
+            beforeText: 'Book now',
+            afterText: 'Reserve now',
+            occurrenceIndex: 1,
+          },
+        ]}
+      >
+        <nav>
+          <a>Book now</a>
+        </nav>
+        <main>
+          <button>Book now</button>
+        </main>
+      </DirectPreview>,
+    )
+
+    expect(container.querySelector('nav a')?.textContent).toBe('Book now')
+    expect(container.querySelector('main button')?.textContent).toBe(
+      'Reserve now',
+    )
+  })
+
+  it('replays translated text overrides against the intended repeated occurrence only', () => {
+    const { container } = render(
+      <DirectPreview
+        themeStyles={null}
+        isDark={false}
+        textOverrides={[
+          {
+            beforeText: 'पॉलिश किया हुआ',
+            afterText: 'एजेंट सत्यापन शीर्षक',
+            occurrenceIndex: 1,
+          },
+        ]}
+      >
+        <header>कांच का पॉलिश किया हुआ</header>
+        <main>
+          <h1>के साथ अपने स्थान को ऊपर उठाएं पॉलिश किया हुआ</h1>
+        </main>
+        <footer>कांच का पॉलिश किया हुआ</footer>
+      </DirectPreview>,
+    )
+
+    expect(container.querySelector('header')?.textContent).toBe(
+      'कांच का पॉलिश किया हुआ',
+    )
+    expect(container.querySelector('main h1')?.textContent).toBe(
+      'के साथ अपने स्थान को ऊपर उठाएं एजेंट सत्यापन शीर्षक',
+    )
+    expect(container.querySelector('footer')?.textContent).toBe(
+      'कांच का पॉलिश किया हुआ',
+    )
+  })
+
+  it('reapplies translated text overrides when translation mutates a text node after render', async () => {
+    const { container } = render(
+      <DirectPreview
+        themeStyles={null}
+        isDark={false}
+        textOverrides={[
+          {
+            beforeText: 'मूल शीर्षक',
+            afterText: 'संपादित शीर्षक',
+            occurrenceIndex: 0,
+          },
+        ]}
+      >
+        <h1>Original headline</h1>
+      </DirectPreview>,
+    )
+
+    const heading = container.querySelector('h1') as HTMLElement
+    heading.firstChild!.textContent = 'मूल शीर्षक'
+
+    await waitFor(() => {
+      expect(heading.textContent).toBe('संपादित शीर्षक')
+    })
+  })
+
+  it('does not repeatedly reapply an override when the replacement contains the original text', async () => {
+    const { container } = render(
+      <DirectPreview
+        themeStyles={null}
+        isDark={false}
+        textOverrides={[
+          {
+            beforeText: 'Glass',
+            afterText: 'Glass installations',
+            occurrenceIndex: 0,
+          },
+        ]}
+      >
+        <h1>Glass</h1>
+      </DirectPreview>,
+    )
+
+    const heading = container.querySelector('h1') as HTMLElement
+    await waitFor(() => {
+      expect(heading.textContent).toBe('Glass installations')
+    })
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(heading.textContent).toBe('Glass installations')
+  })
+
+  it('does not loop when chronological text overrides net back to the original text', async () => {
+    const { container } = render(
+      <DirectPreview
+        themeStyles={null}
+        isDark={false}
+        textOverrides={[
+          {
+            beforeText: 'Temporary headline',
+            afterText: 'Original headline',
+            occurrenceIndex: 0,
+          },
+          {
+            beforeText: 'Original headline',
+            afterText: 'Temporary headline',
+            occurrenceIndex: 0,
+          },
+        ]}
+      >
+        <h1>Original headline</h1>
+      </DirectPreview>,
+    )
+
+    const heading = container.querySelector('h1') as HTMLElement
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(heading.textContent).toBe('Original headline')
+  })
+
+  it('does not repeatedly prepend prefix-chain text edits over already-patched source', async () => {
+    const { container } = render(
+      <DirectPreview
+        themeStyles={null}
+        isDark={false}
+        textOverrides={[
+          {
+            beforeText: 'Dreamy हिंदी पक्का सत्यापन 0704',
+            afterText: 'Crystal-clear हिंदी पक्का सत्यापन 0704',
+            occurrenceIndex: 0,
+          },
+          {
+            beforeText: 'हिंदी पक्का सत्यापन 0704',
+            afterText: 'Dreamy हिंदी पक्का सत्यापन 0704',
+            occurrenceIndex: 0,
+          },
+          {
+            beforeText: 'हिंदी पक्का सत्यापन 0703',
+            afterText: 'हिंदी पक्का सत्यापन 0704',
+            occurrenceIndex: 0,
+          },
+        ]}
+      >
+        <h1>हिंदी पक्का सत्यापन 0704</h1>
+      </DirectPreview>,
+    )
+
+    const heading = container.querySelector('h1') as HTMLElement
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(heading.textContent).toBe('Crystal-clear हिंदी पक्का सत्यापन 0704')
+
+    heading.firstChild!.textContent = heading.textContent
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(heading.textContent).toBe('Crystal-clear हिंदी पक्का सत्यापन 0704')
   })
 
   it('reapplies style overrides when children re-render (MutationObserver)', () => {

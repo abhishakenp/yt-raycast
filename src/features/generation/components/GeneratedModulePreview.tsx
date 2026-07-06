@@ -68,7 +68,11 @@ const LazyOpenUIViewer = lazy(() => import('@/island/openui/OpenUIViewer'))
 
 export const isHtmlDocumentSource = (source: string): boolean => {
   const trimmed = source.trim()
-  return /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)
+  return (
+    /^<!doctype\s+html/i.test(trimmed) ||
+    /^<html[\s>]/i.test(trimmed) ||
+    /^<[a-z][\w:-]*(?:\s|>|\/>)/i.test(trimmed)
+  )
 }
 
 /** Best-effort brand/tagline descriptor from the persisted site spec, used as
@@ -187,6 +191,7 @@ export function GeneratedModulePreview({
   selectedBrandLogo,
   imageOverrides,
   styleOverrides,
+  textOverrides,
   isDark = true,
   themeStyles = null,
   deviceMode = 'desktop',
@@ -222,6 +227,7 @@ export function GeneratedModulePreview({
         onCommitText={onCommitText}
         onSectionSelect={onSectionSelect}
         styleOverrides={styleOverrides}
+        textOverrides={textOverrides}
       >
         {sourceUrl ? (
           <HtmlModuleUrlRenderer sourceUrl={sourceUrl} />
